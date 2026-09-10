@@ -16,38 +16,40 @@ namespace m3d
     {
         class GlyphButton;
 
-        class TabItemInfo
+        struct TabItemInfo
         {
-        public:
+            /* 0x0000 */ CStr m_caption;
+            /* 0x000c */ CStr m_diz;
+            /* 0x0018 */ rend::TexHandle m_image;
+            /* 0x001c */ rend::TexHandle m_imageDisabled;
+            /* 0x0020 */ int m_data;
+            /* 0x0024 */ bool m_bCenterX;
+            /* 0x0025 */ bool m_bCenterY;
+            TabItemInfo(TabItemInfo const& rhs);
+            TabItemInfo(CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled,
+                        int data);
             TabItemInfo();
-            TabItemInfo(CStr const&, CStr const&, rend::TexHandle, rend::TexHandle, int);
-            void Set(CStr const&, CStr const&, rend::TexHandle, rend::TexHandle, int);
-
-        private:
-            CStr m_caption;
-            CStr m_diz;
-            rend::TexHandle m_image;
-            rend::TexHandle m_imageDisabled;
-            int m_data;
-            bool m_bCenterX;
-            bool m_bCenterY;
-        };
+            TabItemInfo& operator=(TabItemInfo const& rhs);
+            void Set(CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled,
+                     int data);
+        }; /* size: 0x0028 */
 
         class TabItem
         {
         public:
-            void SetInfo(TabItemInfo const&);
-            void SetWorkWnd(ref_ptr<Wnd>);
-            ref_ptr<Wnd> GetWorkWnd() const;
-            TabItemInfo const& GetInfo() const;
+            TabItem(TabItem const& rhs);
+            TabItem(ref_ptr<Wnd> workWnd, TabItemInfo const& info, int idx);
             ~TabItem();
-            TabItem(ref_ptr<Wnd>, TabItemInfo const&, int);
+            ref_ptr<Wnd> GetWorkWnd() const;
+            void SetWorkWnd(ref_ptr<Wnd> workWnd);
+            TabItemInfo const& GetInfo() const;
+            void SetInfo(TabItemInfo const& info);
 
-        private:
-            int m_idx;
-            ref_ptr<Wnd> m_workWnd;
-            TabItemInfo m_info;
-        };
+        protected:
+            /* 0x0000 */ int m_idx;
+            /* 0x0004 */ ref_ptr<Wnd> m_workWnd;
+            /* 0x0008 */ TabItemInfo m_info;
+        }; /* size: 0x0030 */
 
         struct TabButtonInfo
         {
@@ -85,16 +87,13 @@ namespace m3d
                 BY_KB = 0x2,
             };
 
-            class AuxInfo
+            struct AuxInfo
             {
-            public:
+                /* 0x0000 */ float m_dizSpace;
+                /* 0x0004 */ float m_clientEdge;
+                /* 0x0008 */ float m_btnClientEdge;
                 AuxInfo();
-
-            private:
-                float m_dizSpace;
-                float m_clientEdge;
-                float m_btnClientEdge;
-            };
+            }; /* size: 0x000c */
 
         public:
             static Object* CreateObject();

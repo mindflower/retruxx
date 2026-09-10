@@ -32,6 +32,7 @@
 #include "server/izvratrepository.h"
 #include "server/objects/guns/bulletlauncher.h"
 #include "server/objects/ware.h"
+#include "server/objects/article.h"
 #include "game/uimanager/uidefs.h"
 #include "game/uiwindows/charwindows/znayukakprodatwnd.h"
 #include "server/objects/physicbodies/vehiclepart.h"
@@ -389,6 +390,111 @@ namespace help
         }
         ai::Workshop* workshop = town->GetWorkshopByObject(obj);
         return workshop ? static_cast<int>(workshop->GetObjectBuyPrice(obj)) : -2;
+    }
+
+    bool IsVehiclePartNameAGunPartName(CStr const& vpName)
+    {
+        // RVA 0x555860
+        int const gunResourceId = ai::theResourceManager->GetResourceId(CStr("GUN"));
+        int const vpResourceId =
+            ai::theResourceManager->GetResourceId(ai::theResourceManager->GetResourceNameByVehiclePartName(vpName));
+        return ai::theResourceManager->bResourceIsKindOf(vpResourceId, gunResourceId);
+    }
+
+    void GetAllVehiclePartsThatCanBeAttached(int vehicleId, std::vector<CStr, std::allocator<CStr>>& vpNames)
+    {
+        // RVA 0x553320
+        vpNames.clear();
+        auto* vehicle = vehicleId == -1 ? nullptr : RT_DYNCAST(ai::theObjects->GetEntityByObjId(vehicleId), ai::Vehicle);
+        if (!vehicle)
+        {
+            return;
+        }
+        auto const* proto = vehicle->GetPrototypeInfo();
+        if (!proto)
+        {
+            return;
+        }
+        auto const& allPartNames = proto->GetAllPartNames();
+        for (int i = 0; i < static_cast<int>(allPartNames.size()); ++i)
+        {
+            if (vehicle->CanPartBeAttached(allPartNames[i]))
+            {
+                vpNames.push_back(allPartNames[i]);
+            }
+        }
+    }
+
+    void GetGunPartNamesThatCanBeAttached(int vehicleId, std::vector<CStr, std::allocator<CStr>>& gunPartNames)
+    {
+        // RVA 0x553420
+        gunPartNames.clear();
+        std::vector<CStr> allPartNames;
+        GetAllVehiclePartsThatCanBeAttached(vehicleId, allPartNames);
+        for (int i = 0; i < static_cast<int>(allPartNames.size()); ++i)
+        {
+            if (IsVehiclePartNameAGunPartName(allPartNames[i]))
+            {
+                gunPartNames.push_back(allPartNames[i]);
+            }
+        }
+    }
+
+    bool CanWareBeBuyed(int warePrototypeId, int townId)
+    {
+        // RVA 0x5512D0
+        auto* town = townId == -1 ? nullptr : RT_DYNCAST(ai::theObjects->GetEntityByObjId(townId), ai::Town);
+        if (!town)
+        {
+            return false;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByPrototypeId(warePrototypeId);
+        if (!workshop)
+        {
+            return false;
+        }
+        ai::Article* article = workshop->GetArticle(warePrototypeId);
+        return article && article->IsSellable();
+    }
+
+    int GetSellPriceByPrototypeId(int objPrototypeId, int townId)
+    {
+        // RVA 0x550C60
+        if (objPrototypeId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* town = RT_DYNCAST(ai::theObjects->GetEntityByObjId(townId), ai::Town);
+        if (!town)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByPrototypeId(objPrototypeId);
+        if (!workshop)
+        {
+            return -2;
+        }
+        return static_cast<int>(workshop->GetArticleBuyPriceByPrototypeId(objPrototypeId));
+    }
+
+    int GetBuyPriceByPrototypeId(int objPrototypeId, int townId)
+    {
+        // RVA 0x550CE0
+        if (objPrototypeId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* town = RT_DYNCAST(ai::theObjects->GetEntityByObjId(townId), ai::Town);
+        if (!town)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByPrototypeId(objPrototypeId);
+        if (!workshop || !CanWareBeBuyed(objPrototypeId, townId))
+        {
+            return -3;
+        }
+        return static_cast<int>(workshop->GetArticleSellPriceByPrototypeId(objPrototypeId));
     }
 
     int GetBuyPriceByObjId(int objId, int townId)
@@ -995,6 +1101,46 @@ namespace help
             return cg->GetShellsInPool();
         }
         return 0;
+    }
+
+    void SetGunShellsInCurrentCharge(ai::Obj* gun, int value)
+    {
+        // RVA 0x553BA0
+        if (auto* g = RT_DYNCAST(gun, ai::Gun))
+        {
+            g->SetShellsInCurrentCharge(value);
+        }
+        else if (auto* cg = RT_DYNCAST(gun, ai::CompoundGun))
+        {
+            cg->SetShellsInCurrentCharge(value);
+        }
+    }
+
+    void SetGunShellsInPool(ai::Obj* gun, int value)
+    {
+        // RVA 0x553BE0
+        if (auto* g = RT_DYNCAST(gun, ai::Gun))
+        {
+            g->SetShellsInPool(value);
+        }
+        else if (auto* cg = RT_DYNCAST(gun, ai::CompoundGun))
+        {
+            cg->SetShellsInPool(value);
+        }
+    }
+
+    int GetGunShellPrototypeId(ai::Obj const* gun)
+    {
+        // RVA 0x553B60
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellPrototypeId();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellPrototypeId();
+        }
+        return -1;
     }
 
     float GetGunRechargingTime(ai::Obj const* gun)

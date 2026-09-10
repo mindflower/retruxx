@@ -10,7 +10,7 @@ namespace m3d
 {
     namespace ui
     {
-        class TabButtonInfo;
+        struct TabButtonInfo;
         class Frame;
         class BackGround;
         class Pane;
@@ -81,6 +81,7 @@ namespace m3d
             float GetGlyphHeight();
             float GetTabButtonMaxWidth() const;
             void AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg);
+            void AddTabWndPaneIzvrat(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, retruxx::vector<rend::TexHandle> const&, int, int, CStr const&, PaneFlagBg);
             void AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned int, bool);
             float GetTabButtonSpace() const;
             int Create();

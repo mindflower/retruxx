@@ -1,21 +1,41 @@
 #include "refuellist.h"
 
-RT_CLASS_EXPORTS_BEGIN(RefuelList)
-RT_CLASS_EXPORTS_END;
-RT_CLASS_DEFINE(RefuelList);
+#include <core/kernel.h>
+#include <game/m3dgame.h>
+#include <game/uimanager/truxxuimanager.h>
+#include <game/uimisc/guihelper.h>
+#include <m3dapp.h>
+#include <server/objects/base/objcontainer.h>
+#include <server/objects/player.h>
+#include <server/objects/town.h>
+#include <server/objects/vehicle.h>
+#include <ui/wndstation.h>
+
+// ===========================================================================
+//  RefuelButton
+// ===========================================================================
 
 RT_CLASS_EXPORTS_BEGIN(RefuelButton)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(RefuelButton);
 
-m3d::Object* RefuelButton::Clone()
+RefuelButton::RflAuxInfo::RflAuxInfo() :
+    m_strIdTooltipRefuel("Refuel"),
+    m_strIdTooltipRefuelNotNeed("RefuelNotNeed"),
+    m_strIdTooltipRefuelUnavailable("RefuelUnavailable"),
+    m_strIdTooltipRefuelPartial("RefuelPartial"),
+    m_strIdTooltipRefuelFull("RefuelFull")
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468AA0
 }
 
-m3d::Object* RefuelButton::CreateObject()
+RefuelButton::RflAuxInfo::RflAuxInfo(RefuelButton::RflAuxInfo const& rhs) :
+    m_strIdTooltipRefuel(rhs.m_strIdTooltipRefuel),
+    m_strIdTooltipRefuelNotNeed(rhs.m_strIdTooltipRefuelNotNeed),
+    m_strIdTooltipRefuelUnavailable(rhs.m_strIdTooltipRefuelUnavailable),
+    m_strIdTooltipRefuelPartial(rhs.m_strIdTooltipRefuelPartial),
+    m_strIdTooltipRefuelFull(rhs.m_strIdTooltipRefuelFull)
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 m3d::Class* RefuelButton::GetBaseClass()
@@ -23,69 +43,105 @@ m3d::Class* RefuelButton::GetBaseClass()
     return RT_CLASS_LOCAL(AdvancedButton);
 }
 
-RefuelButton::~RefuelButton()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
 m3d::Class* RefuelButton::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(RefuelButton);
 }
 
-RefuelButton::RefuelButton()
+m3d::Object* RefuelButton::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new RefuelButton;
 }
+
+m3d::Object* RefuelButton::Clone()
+{
+    // RVA 0x468960 - like every other window in this family, Clone hands back a
+    // fresh default-constructed button rather than a copy of *this.
+    return new RefuelButton;
+}
+
+RefuelButton::RefuelButton() = default;
 
 RefuelButton::RefuelButton(RefuelButton const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468C40 - chains to the AdvancedButton default ctor and copies
+    // nothing.
 }
 
-CStr const& RefuelButton::GetStrIdTooltipBuy() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-CStr const& RefuelButton::GetStrIdTooltipBuyFull() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+RefuelButton::~RefuelButton() = default;
 
 CStr RefuelButton::GetServiceName() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-float RefuelButton::GetPriceForOneUnit() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468C70
+    return M3D_APP->GetStringByStringId0(CStr("Refuelling"));
 }
 
 m3d::rend::TexHandle RefuelButton::GetServiceIco() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-CStr const& RefuelButton::GetStrIdTooltipBuyPartial() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-CStr const& RefuelButton::GetStrIdTooltipBuyNotNeed() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468CC0
+    return M3D_APP->m_pInterfaceManager->GetIcoByName(CStr("Refuelling"), 0);
 }
 
 int RefuelButton::GetMaxUnitsToBuy() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468D10 - how much fuel the tank is missing.
+    ai::Obj* obj = m_objId == -1 ? nullptr : ai::theObjects->GetEntityByObjId(m_objId);
+    auto* vehicle = RT_DYNCAST(obj, ai::Vehicle);
+    if (!vehicle)
+    {
+        return 0;
+    }
+    return static_cast<int>(vehicle->Fuel().maxValue().get() - vehicle->Fuel().value().get());
+}
+
+float RefuelButton::GetPriceForOneUnit() const
+{
+    // RVA 0x468DA0
+    ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return 0.0f;
+    }
+    int const price = help::GetFuelPriceForOneUnit(m_objId, town->GetId());
+    return price < 0 ? 0.0f : static_cast<float>(price);
+}
+
+CStr const& RefuelButton::GetStrIdTooltipBuy() const
+{
+    return m_rflAif.m_strIdTooltipRefuel;
+}
+
+CStr const& RefuelButton::GetStrIdTooltipBuyNotNeed() const
+{
+    return m_rflAif.m_strIdTooltipRefuelNotNeed;
 }
 
 CStr const& RefuelButton::GetStrIdTooltipBuyUnavailable() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_rflAif.m_strIdTooltipRefuelUnavailable;
+}
+
+CStr const& RefuelButton::GetStrIdTooltipBuyPartial() const
+{
+    return m_rflAif.m_strIdTooltipRefuelPartial;
+}
+
+CStr const& RefuelButton::GetStrIdTooltipBuyFull() const
+{
+    return m_rflAif.m_strIdTooltipRefuelFull;
+}
+
+// ===========================================================================
+//  RefuelList
+// ===========================================================================
+
+RT_CLASS_EXPORTS_BEGIN(RefuelList)
+RT_CLASS_EXPORTS_END;
+RT_CLASS_DEFINE(RefuelList);
+
+m3d::Class* RefuelList::GetBaseClass()
+{
+    return RT_CLASS_LOCAL(AdvancedList);
 }
 
 m3d::Class* RefuelList::GetClass() const
@@ -93,44 +149,75 @@ m3d::Class* RefuelList::GetClass() const
     return RT_CLASS_LOCAL(RefuelList);
 }
 
-m3d::Object* RefuelList::Clone()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-RefuelList::~RefuelList()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
 m3d::Object* RefuelList::CreateObject()
 {
     return new RefuelList;
 }
 
-m3d::Class* RefuelList::GetBaseClass()
+m3d::Object* RefuelList::Clone()
 {
-    return RT_CLASS_LOCAL(AdvancedList);
-}
-
-AdvancedButton* RefuelList::NewItem() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-RefuelList::RefuelList(RefuelList const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468990
+    return new RefuelList;
 }
 
 RefuelList::RefuelList() = default;
 
-std::vector<int, std::allocator<int>> RefuelList::GetObjIds() const
+RefuelList::RefuelList(RefuelList const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468EE0 - copies nothing.
 }
 
-void RefuelList::BuyService(AdvancedButton const*)
+RefuelList::~RefuelList() = default;
+
+AdvancedButton* RefuelList::NewItem() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x468FF0 - built through the kernel factory so the RT class registry
+    // is what decides the concrete type.
+    return static_cast<AdvancedButton*>(M3D_KERNEL->New("RefuelButton"));
+}
+
+std::vector<int, std::allocator<int>> RefuelList::GetObjIds() const
+{
+    // RVA 0x469010 - only ever one row: the player's own vehicle.
+    std::vector<int> ids;
+    if (!ai::thePlayer)
+    {
+        return ids;
+    }
+    ai::Vehicle* vehicle = ai::thePlayer->GetVehicle();
+    if (!vehicle)
+    {
+        return ids;
+    }
+    ids.push_back(vehicle->GetId());
+    return ids;
+}
+
+void RefuelList::BuyService(AdvancedButton const* btn)
+{
+    // RVA 0x468F10
+    if (!btn)
+    {
+        return;
+    }
+    int const objId = btn->GetObjId();
+    ai::Obj* obj = objId == -1 ? nullptr : ai::theObjects->GetEntityByObjId(objId);
+    auto* vehicle = RT_DYNCAST(obj, ai::Vehicle);
+    if (!vehicle)
+    {
+        return;
+    }
+
+    int const price = btn->GetPrice();
+    if (price > ai::thePlayer->GetMoney())
+    {
+        return;
+    }
+    int const units = btn->GetUnitsToBuy();
+    if (!units)
+    {
+        return;
+    }
+    vehicle->Fuel().value().set(static_cast<float>(units) + vehicle->Fuel().value().get());
+    ai::thePlayer->AddMoney(-price);
 }

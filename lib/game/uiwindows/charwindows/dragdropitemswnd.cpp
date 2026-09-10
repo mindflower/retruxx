@@ -329,7 +329,9 @@ int DragDropItemsWnd::StartDrag()
     {
         BoundsBase<float> const b = m_dragSlot->GetBounds();
         PointBase<float> const screenOrigin = ToScreen(PointBase<float>{b.x0, b.y0});
-        m_dragSlot->SetBounds(BoundsBase<float>{screenOrigin.x, screenOrigin.y, b.width, b.height}, true);
+        m_dragSlot->SetBounds(
+            BoundsBase<float>(screenOrigin.x, screenOrigin.y, screenOrigin.x + b.width, screenOrigin.y + b.height),
+            true);
     }
 
     if (m_dragStyle == DRAGSTYLE_HIDDEN_SRC)

@@ -10,6 +10,10 @@ class ItemAcceptInfo
     friend class DragDropItemsWnd;
     friend class ItemWnd;
     friend class RepositoryWnd;
+    // ShopWnd re-points m_eventSrcWnd at whichever tab accepted the drop.
+    friend class ShopWnd;
+    // WareWnd reads both fields when answering a quick drop.
+    friend class WareWnd;
 
 public:
     ItemAcceptInfo(m3d::ui::Wnd* eventSrcWnd, m3d::ui::Wnd* eventDstWnd, ai::GeomRepositoryItem const& item);
@@ -26,6 +30,8 @@ class GeomSlot : public m3d::ui::ImageWnd
     // RepositoryWnd owns the slots it creates and touches their item / draw-style
     // fields directly (matches the shipped game).
     friend class RepositoryWnd;
+    // WareWnd inspects the dragged item to decide whether it may be dropped.
+    friend class WareWnd;
 
 public:
     struct AuxInfo

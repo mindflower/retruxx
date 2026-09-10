@@ -446,9 +446,21 @@ namespace m3d
             return 0;
         }
 
-        int ComboBoxWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ComboBoxWnd::WriteToXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x674F60 - the mirror of ReadFromXmlNode above.
+            int const res = Wnd::WriteToXmlNode(xmlFile, writeTo);
+            if (!res)
+            {
+                return res;
+            }
+            writeTo->SetAttribute("state", CStr(static_cast<int>(m_state)).c_str());
+            writeTo->SetAttribute("maxListHeight", CStr(m_maxListH).c_str());
+            writeTo->SetAttribute("selTextFixedHeight", CStr(m_selTextFixedH).c_str());
+            writeTo->SetAttribute("comboStyle", CStr(m_comboStyle).c_str());
+            writeTo->SetAttribute("toggleBtnOpenPane", m_toggleButtonOpenPaneName.c_str());
+            writeTo->SetAttribute("toggleBtnClosePane", m_toggleButtonClosePaneName.c_str());
+            return 1;
         }
 
         void ComboBoxWnd::SetTextColorDisabled(unsigned color)
@@ -494,11 +506,15 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetListMaxBounds() const
         {
-            auto const listBounds = GetListBounds();
+            // RVA 0x71F6E0 - the drop-down at its full allowance, measured from
+            // the bottom of the selection text. It deliberately does not go
+            // through GetListBounds, which would already be offset by one list
+            // height and would also have to walk every item to find that height.
+            auto const selTextB = GetSelTextBounds();
             BoundsBase<float> result;
-            result.x0 = listBounds.x0;
-            result.y0 = listBounds.y0 + listBounds.height;
-            result.width = listBounds.width;
+            result.x0 = selTextB.x0;
+            result.y0 = selTextB.y0 + selTextB.height;
+            result.width = selTextB.width;
             result.height = m_maxListH;
             return result;
         }

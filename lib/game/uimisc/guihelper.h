@@ -181,6 +181,23 @@ namespace help
     // (-1 bad args / no such town or object, -3 when the town has no workshop
     // that deals in it). (ExMachina 1.02 NoCD RVA 0x550AA0.)
     int GetBuyPriceByObjId(int objId, int townId);
+    // Price the town's workshop pays for one unit of `objPrototypeId`, or -1 for
+    // bad ids and -2 when no workshop in the town deals in it at all.
+    int GetSellPriceByPrototypeId(int objPrototypeId, int townId);
+    // Price the town's workshop charges for one unit, or -1 for bad ids and -3
+    // when the town will not sell it (no workshop, or the article is not on
+    // sale).
+    int GetBuyPriceByPrototypeId(int objPrototypeId, int townId);
+    bool CanWareBeBuyed(int warePrototypeId, int townId);
+
+    // True when the vehicle-part name maps onto a resource that is a kind of
+    // GUN, i.e. the slot holds a weapon rather than any other attachment.
+    bool IsVehiclePartNameAGunPartName(CStr const& vpName);
+    // Every part name the vehicle's prototype declares that can currently be
+    // attached to it; `vpNames` is cleared first.
+    void GetAllVehiclePartsThatCanBeAttached(int vehicleId, std::vector<CStr, std::allocator<CStr>>& vpNames);
+    // The same list narrowed to the gun slots.
+    void GetGunPartNamesThatCanBeAttached(int vehicleId, std::vector<CStr, std::allocator<CStr>>& gunPartNames);
 
     // Repairs a Vehicle or a VehiclePart in place; no-op for anything else.
     void RepairObj(ai::Obj* o);
@@ -228,6 +245,11 @@ namespace help
     unsigned int GetGunChargeSize(ai::Obj const* gun);
     unsigned int GetGunShellsInCurrentCharge(ai::Obj const* gun);
     unsigned int GetGunShellsInPool(ai::Obj const* gun);
+    void SetGunShellsInCurrentCharge(ai::Obj* gun, int value);
+    void SetGunShellsInPool(ai::Obj* gun, int value);
+    // Prototype id of the shell the gun fires, or -1 when `gun` is neither a
+    // Gun nor a CompoundGun.
+    int GetGunShellPrototypeId(ai::Obj const* gun);
     float GetGunRechargingTime(ai::Obj const* gun);
     float GetGunCurrentRechargingTime(ai::Obj const* gun);
 

@@ -35,7 +35,9 @@ namespace m3d
 
         Object* TextBoxWnd::Clone()
         {
-            return new TextBoxWnd;
+            // RVA 0x702A30 - Clone runs the copy ctor, unlike most windows in
+            // this codebase which hand back a fresh default-constructed one.
+            return new TextBoxWnd(*this);
         }
 
         int TextBoxWnd::SetVScrollToPos(unsigned pos)
@@ -67,7 +69,7 @@ namespace m3d
             return 1;
         }
 
-        int TextBoxWnd::Create(BoundsBase<float> const& rc, unsigned flags, int id)
+        int TextBoxWnd::Create(BoundsBase<float> const& rc, unsigned flags, unsigned id)
         {
             auto result = ListBoxWnd<m3d::ui::FormattedLine>::Create(rc, flags, id);
             if (result)
@@ -132,8 +134,11 @@ namespace m3d
             return ListBoxWnd<m3d::ui::FormattedLine>::OnPaint(di);
         }
 
-        TextBoxWnd::TextBoxWnd(TextBoxWnd const&) : TextBoxWnd()
+        TextBoxWnd::TextBoxWnd(TextBoxWnd const& w) : FormattedStringsListBoxWnd(w)
         {
+            // RVA 0x702780 - chains to the FormattedStringsListBoxWnd copy ctor;
+            // m_textFormat comes across with the rest of the Wnd state rather
+            // than being reset to TF_FULL.
         }
 
         TextBoxWnd::TextBoxWnd()

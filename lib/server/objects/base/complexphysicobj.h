@@ -1,4 +1,5 @@
 #pragma once
+class WeaponSlotList;
 #include "physicobj.h"
 
 namespace ai
@@ -36,6 +37,10 @@ namespace ai
 
     class ComplexPhysicObjPrototypeInfo : public ai::PhysicObjPrototypeInfo
     {
+        // WeaponSlotList sorts gun slots by whether they hang off the cabin,
+        // which means walking the root part description.
+        friend class ::WeaponSlotList;
+
     public:
         ComplexPhysicObjPrototypeInfo();
         virtual  ~ComplexPhysicObjPrototypeInfo() override = 0 /* 0x00 */;

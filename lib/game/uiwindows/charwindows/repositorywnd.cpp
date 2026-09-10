@@ -276,7 +276,7 @@ BoundsBase<int> RepositoryWnd::WndToGeomBounds(BoundsBase<float> const& wndB)
     int rx = static_cast<int>((wndB.x0 + wndB.width - m_clientEdges[0] + sx) / m_cellSize.x);
     int ry = static_cast<int>((wndB.y0 + wndB.height - m_clientEdges[1] + sy) / m_cellSize.y);
 
-    return BoundsBase<int>{lx, ly, rx - lx, ry - ly};
+    return BoundsBase<int>(lx, ly, rx, ry);
 }
 
 // ---------------------------------------------------------------------------
@@ -1736,7 +1736,7 @@ void RepositoryWnd::DrawUnsuitableBg(m3d::ui::DrawInfo const& di)
         {
             for (int gy = slotGeomB.y0; gy < slotGeomB.y0 + slotGeomB.height; ++gy)
             {
-                BoundsBase<float> cellWndB = GeomToWndBounds(BoundsBase<int>{gx, gy, 1, 1});
+                BoundsBase<float> cellWndB = GeomToWndBounds(BoundsBase<int>(gx, gy, gx + 1, gy + 1));
                 BoundsBase<float> cellInter = IntersectRectsF(cellWndB, bunchWndB);
                 if (cellInter.width <= eps || cellInter.height <= eps)
                 {

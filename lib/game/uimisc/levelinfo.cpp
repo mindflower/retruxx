@@ -543,7 +543,7 @@ int LevelInfoManager::AddVisibilityRectForLevel(CStr const& levelName, float x0,
 {
     if (VisibilityMap* map = AddVisibilityMapForLevel(levelName))
     {
-        return map->ShowArea(BoundsBase<float>{x0, y0, w, h});
+        return map->ShowArea(BoundsBase<float>(x0, y0, x0 + w, y0 + h));
     }
     M3D_LOG_INFO(
         "LevelInfoManager::AddVisibilityRadiusForLevel error - cannot create visibility map for level " + levelName);

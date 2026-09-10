@@ -406,7 +406,8 @@ void IzvratRepositoryWnd::DrawGrid(m3d::ui::DrawInfo const& di)
                 continue;
             }
             PointBase<int> posGeomRel = rep->ToGeomSzRelative(PointBase<int>{x, y});
-            BoundsBase<float> cellB = GeomToWndBounds(BoundsBase<int>{posGeomRel.x, posGeomRel.y, 1, 1});
+            BoundsBase<float> cellB =
+                GeomToWndBounds(BoundsBase<int>(posGeomRel.x, posGeomRel.y, posGeomRel.x + 1, posGeomRel.y + 1));
             GetGfxServer()->AddImagedRect(di, cellB, m_curClr, m_cellTextures[0]);
         }
     }
@@ -436,7 +437,7 @@ void IzvratRepositoryWnd::DrawBunch(m3d::ui::DrawInfo const& di)
             PointBase<int> posMaxRel = rep->ToMaxSzRelative(PointBase<int>{x, y});
             if (cells[posMaxRel.x + posMaxRel.y * maxX] != -2)
             {
-                BoundsBase<float> cellB = GeomToWndBounds(BoundsBase<int>{x, y, 1, 1});
+                BoundsBase<float> cellB = GeomToWndBounds(BoundsBase<int>(x, y, x + 1, y + 1));
                 GetGfxServer()->AddImagedRect(di, cellB, 0xFFFFFFFFu, m_cellTextures[m_curBunch.m_state]);
             }
         }

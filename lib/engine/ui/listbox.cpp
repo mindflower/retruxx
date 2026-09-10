@@ -126,12 +126,16 @@ namespace m3d
 
         int FormattedStringsListBoxWnd::MeasureItem(int itemIdx, BoundsBase<float>& bounds) const
         {
+            // RVA 0x71D6D0 - MeasureText returns {x = text width, y = text
+            // height} and the shipped code stores them that way round. (IDA's
+            // stack tracking for this function is off by one push, which makes
+            // the decompile look like the width comes from an unrelated slot.)
             auto const point =
                 GetGfxServer()->MeasureText(m_items[itemIdx].m_item.m_text, m_defFont, TW_NOWRAP, 10000.0);
             bounds.x0 = 0.0f;
             bounds.y0 = 0.0f;
-            bounds.width = point.y;
-            bounds.height = point.x;
+            bounds.width = point.x;
+            bounds.height = point.y;
             return 1;
         }
 

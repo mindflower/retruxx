@@ -20,6 +20,9 @@ namespace m3d
 
 class WeaponSlotWnd : public m3d::ui::Wnd
 {
+    // WeaponSlotList owns the shared pattern's lifetime and builds the slots.
+    friend class WeaponSlotList;
+
 public:
     int SetupForGunPart(CStr const& gunPartName, int vehicleId);
     CStr const& GetGunPartName() const;

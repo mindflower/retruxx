@@ -358,6 +358,24 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
+    void ui::GfxServer::AddTabWndPaneIzvrat(
+        DrawInfo const&,
+        BoundsBase<float> const&,
+        unsigned,
+        TabButtonInfo const&,
+        retruxx::vector<BoundsBase<float>> const&,
+        retruxx::vector<rend::TexHandle> const&,
+        int,
+        int,
+        CStr const&,
+        PaneFlagBg)
+    {
+        // RVA 0x67F3C0 - the "izvrat" tab strip draws each tab as its own glyph
+        // image rather than a pane-framed button. Not reconstructed yet; declared
+        // and stubbed here because TabWnd::OnNcPaint dispatches to it.
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
     void ui::GfxServer::AddChkButtonFlatAxialPane(
         DrawInfo const& di,
         BoundsBase<float> const& rect,

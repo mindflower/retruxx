@@ -11,6 +11,9 @@ class ItemWnd : public DragDropItemsWnd
     // drawing + item plumbing).
     friend class GadgetWnd;
     friend class VehiclePartWnd;
+    // RepositoryItemWnd re-derives m_itemId from its repository in
+    // SetItemObjId / IsValid / GetAsRepositoryItem.
+    friend class RepositoryItemWnd;
 
 public:
     class AuxInfo
