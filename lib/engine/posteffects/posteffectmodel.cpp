@@ -10,7 +10,8 @@ PostEffectModel::PostEffectModel(std::map<CStr, float*>* vList) : m_varList(vLis
 
 bool PostEffectModel::IsInstant() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8B1610
+    return m_allInstant;
 }
 
 bool PostEffectModel::FindByName(CStr name)
@@ -28,13 +29,16 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
 
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
     int unitNum = 0;
+    // NOTE: tmpUnit lives outside the loop in the shipped build, so a unit that
+    // omits an attribute inherits the previous unit's value for it.
+    EffectUnit tmpUnit;
     for (xmlNode->GetFirstChild(node, "Unit"); !node->IsEmpty(); node->GetNextSibling(node, "Unit"))
     {
         CStr varName;
         m3d::SafeStrAttrib(varName, node, "VarName");
 
-        EffectUnit tmpUnit;
         tmpUnit.m_var = (*m_varList)[varName];
+        m3d::SafeFloatAttrib(tmpUnit.m_initVal, node, "InitVal");
         m3d::SafeFloatAttrib(tmpUnit.m_params[0], node, "Param1");
         m3d::SafeFloatAttrib(tmpUnit.m_params[1], node, "Param2");
         m3d::SafeFloatAttrib(tmpUnit.m_params[2], node, "Param3");
@@ -43,6 +47,8 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         CStr action;
         m3d::SafeStrAttrib(action, node, "Action");
         tmpUnit.m_action = action == "Save" ? OA_SAVE_STATE : (action == "Restore" ? OA_RESTORE_STATE : OA_NONE);
+        // "no exit condition" - see the fix-up pass below.
+        tmpUnit.m_condItor = ConditionList::iterator();
         m_effectUnits.push_back(tmpUnit);
 
         if (tmpUnit.m_params[0] != 0.0
@@ -56,16 +62,21 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         ++unitNum;
     }
 
+    // NOTE: as with tmpUnit, the shipped build reuses one tmpCond across the
+    // loop, so a condition without a LimitVal inherits the previous one's.
+    ExitCondition tmpCond;
     for (xmlNode->GetFirstChild(node, "ExitConditions"); !node->IsEmpty(); node->GetNextSibling(node, "ExitConditions"))
     {
         CStr varName;
         m3d::SafeStrAttrib(varName, node, "VarName");
 
-        ExitCondition tmpCond;
         tmpCond.m_var = (*m_varList)[varName];
         m3d::SafeFloatAttrib(tmpCond.m_limit, node, "LimitVal");
 
-        //TODO: check this
+        // NOTE: the shipped code reads the "Condition" attribute and then
+        // discards it - the direction is always recomputed from the variable's
+        // starting value when a PostEffect is constructed, so m_evalIncrease is
+        // seeded to true here regardless.
         CStr cond;
         m3d::SafeStrAttrib(cond, node, "Condition");
 
@@ -73,6 +84,13 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         m_conditionList.push_back(tmpCond);
     }
 
+    // Link each unit to the exit condition that watches the same variable. The
+    // shipped build stores a raw pointer and leaves it null when a unit has no
+    // condition; end() is the equivalent sentinel for a real iterator.
+    for (auto& effect : m_effectUnits)
+    {
+        effect.m_condItor = end(m_conditionList);
+    }
     for (auto it = begin(m_conditionList); it != end(m_conditionList); ++it)
     {
         for (auto& effect : m_effectUnits)
@@ -83,6 +101,9 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
                 break;
             }
         }
+        // NOTE: when no unit uses the condition's variable, the shipped loop
+        // still writes the iterator through the past-the-end unit pointer -
+        // a stray write we deliberately do not reproduce.
     }
 
     xmlNode->GetFirstChild(node, "VariableValue");
@@ -95,7 +116,7 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
     m3d::SafeIntAttrib(unitNum, node, "UnitNumb");
     CStr paramName;
     m3d::SafeStrAttrib(paramName, node, "ParamName");
-    M3D_ASSERT(unitNum < m_effectUnits.size());
+    M3D_ASSERT(unitNum < static_cast<int>(m_effectUnits.size()));
 
     if (paramName == "InitVal")
     {

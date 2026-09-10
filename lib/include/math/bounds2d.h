@@ -89,7 +89,14 @@ T BoundsBase<T>::Top() const
 template <class T>
 int BoundsBase<T>::Empty() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // ExMachina 1.02 NoCD RVA 0x491C50 (the float instantiation emitted for
+    // ZnayuKakProdatWnd::MakeBottomPanel). The shipped code really does compute
+    // (x0 + width) - x0 and y0 - (y0 + height) rather than just the extents, so
+    // the rounding of those expressions is reproduced here. Note that the second
+    // term is negated relative to the first, which is why an empty rect compares
+    // equal to zero on both.
+    return static_cast<T>((this->width + this->x0) - this->x0) == static_cast<T>(0)
+        && static_cast<T>(this->y0 - (this->height + this->y0)) == static_cast<T>(0);
 }
 
 template <class T>

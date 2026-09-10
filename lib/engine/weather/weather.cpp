@@ -229,7 +229,7 @@ namespace m3d
         {
             for (int i = 0; i < 4; ++i)
             {
-                m3d::SafeStrAttrib(m_PostEffectName[i], postEffectNode, m_colorItemsNames[i]);
+                m3d::SafeStrAttrib(m_PostEffectName[i], postEffectNode, m_colorTypesNames[i]);
             }
         }
 
@@ -240,7 +240,7 @@ namespace m3d
             for (int i = 0; i < 4; ++i)
             {
                 m_shadowVisibility[i] = true;
-                m3d::SafeBoolAttrib(m_shadowVisibility[i], shadowVisibilityNode, m_colorItemsNames[i]);
+                m3d::SafeBoolAttrib(m_shadowVisibility[i], shadowVisibilityNode, m_colorTypesNames[i]);
             }
         }
 
@@ -251,7 +251,7 @@ namespace m3d
             for (int i = 0; i < 4; ++i)
             {
                 m_shadowTransparency[i] = 0.5;
-                m3d::SafeFloatAttrib(m_shadowTransparency[i], shadowTransparencyNode, m_colorItemsNames[i]);
+                m3d::SafeFloatAttrib(m_shadowTransparency[i], shadowTransparencyNode, m_colorTypesNames[i]);
             }
         }
 
@@ -262,7 +262,7 @@ namespace m3d
             for (int i = 0; i < 4; ++i)
             {
                 m_cloudsSpeed[i] = 0.1;
-                m3d::SafeFloatAttrib(m_cloudsSpeed[i], cloudsSpeedNode, m_colorItemsNames[i]);
+                m3d::SafeFloatAttrib(m_cloudsSpeed[i], cloudsSpeedNode, m_colorTypesNames[i]);
             }
         }
 

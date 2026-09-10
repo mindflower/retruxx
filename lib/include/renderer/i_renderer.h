@@ -930,8 +930,8 @@ namespace m3d
             virtual void GetDims(m3d::rend::TexHandle const&, int&, int&) = 0;
             virtual void TexCopy(const m3d::rend::TexHandle&, const m3d::rend::TexHandle&) = 0;
             virtual void RepaintAllTexturesMips() = 0;
-            virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual void DrawFullScreenQuad() = 0;
+            virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual m3d::rend::IbHandle AddIb(int, bool) = 0;
             virtual void SetIndices(const m3d::rend::IbHandle&, int) = 0;
             virtual void SetIndices(const m3d::rend::IbPoolField&, int) = 0;
