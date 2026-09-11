@@ -11,6 +11,8 @@
 #include <server/ai/aipassagestate.h>
 #include <server/obstacle.h>
 #include "server/objects/basket.h"
+#include "server/objects/blastwave.h"
+#include "server/objects/guns/thunderbolt.h"
 #include "server/objects/cabin.h"
 #include "server/utils.h"
 #include <server/objects/physicbodies/physichelpers.h>
@@ -3536,6 +3538,10 @@ namespace ai
                 {
                     for (auto& [name, part] : m_vehicleParts)
                     {
+                        if (!part)
+                        {
+                            continue;
+                        }
                         if (IS_KIND_OF(part, CompoundVehiclePart))
                         {
                             auto compoundPart = RT_DYNCAST(part, CompoundVehiclePart);
@@ -3913,9 +3919,122 @@ namespace ai
         }
     }
 
-    void Vehicle::InflictDamage(DamageInfo const&)
+    void Vehicle::InflictDamage(DamageInfo const& damageInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E68A0
+        if (m_bGodMode || damageInfo.damage < 0.0099999998f)
+        {
+            return;
+        }
+
+        auto* attacker = theObjects->GetEntityByObjId(damageInfo.attackerId);
+
+        // Friendly fire is ignored unless the hit explicitly asks for it.
+        if (!damageInfo.bDamageFriends && attacker &&
+            theRelationship->GetTolerance(attacker->GetBelong(), GetBelong()) >= 3.0f)
+        {
+            return;
+        }
+
+        // A vehicle that is already battered soaks up proportionally less: the
+        // coefficient grows with how much durability is left to lose.
+        float const fullDurability = GetFullDurability();
+        float const maxDurability = GetMaxFullDurability();
+        float const durabilitySpecialCoeff = GetFullDurabilityCoeffForDamageType(damageInfo.damageType);
+
+        float durabilityCoeff = 0.0f;
+        if (fullDurability > 0.0001f)
+        {
+            durabilityCoeff =
+                ((maxDurability + fullDurability) * 0.050000001f + durabilitySpecialCoeff) * 0.0099999998f;
+        }
+
+        float damageCoeff = 1.0f;
+        if (auto* agent = theObjects->GetEntityByObjId(damageInfo.attackingAgentId))
+        {
+            if (m_bIsControlledByPlayer)
+            {
+                // What the player takes from enemy fire is scaled by difficulty.
+                if (agent->IsKindOf(&Shell::m_classShell) ||
+                    agent->IsKindOf(&Thunderbolt::m_classThunderbolt) ||
+                    agent->IsKindOf(&BlastWave::m_classBlastWave))
+                {
+                    damageCoeff = theGlobProp.GetCoeffsForCurrentDifficultyLevel().m_damageCoeffForPlayerFromEnemies;
+                }
+            }
+            else if (agent->IsKindOf(&Vehicle::m_classVehicle) &&
+                     static_cast<Vehicle*>(agent)->m_bIsControlledByPlayer)
+            {
+                // ... and what the player deals by ramming has its own coefficient.
+                damageCoeff = M3D_ENGINE_CFG.m_ai_enemies_ramming_damage_coeff.GetF();
+            }
+        }
+
+        float const damage = ((1.0f - durabilityCoeff) * damageCoeff) * damageInfo.damage;
+        if (damage < 0.0099999998f)
+        {
+            return;
+        }
+
+        SetLastDamageSource(damageInfo.attackerId);
+
+        if (damageInfo.damagedPartName.empty())
+        {
+            M3D_LOG_ERR("Error: vehicle part with empty name damaged");
+            return;
+        }
+
+        auto* part = GetPartByName(damageInfo.damagedPartName);
+        if (!part)
+        {
+            M3D_LOG_ERR("Error: unknown vehicle part damaged: '" + damageInfo.damagedPartName + "'");
+            return;
+        }
+
+        m_lastDamage = damageInfo.damageType;
+        m_lastDamagedPart = part;
+
+        // Durability is worn down on the part that was hit; health comes off the
+        // vehicle as a whole.
+        Modifier modToDurability;
+        float const durabilityDamage = ((100.0f - durabilitySpecialCoeff) * damage) * 0.00050000002f;
+        modToDurability.Create("dur", MO_SUB, m3d::AIParam(durabilityDamage));
+        part->AddModifier(modToDurability);
+
+        Modifier modToHealth;
+        modToHealth.Create("hp", MO_SUB, m3d::AIParam(damage));
+        modToHealth.m_SenderID = damageInfo.bDamageFriends ? -1 : damageInfo.attackerId;
+        AddModifier(modToHealth);
+
+        if (part->IsKindOf(&Basket::m_classBasket))
+        {
+            _InflictDamageToRepository(durabilityDamage);
+        }
+
+        // Visual damage only while the vehicle is actually simulated, and never
+        // from water.
+        if (bIsUpdatingByODE() && damageInfo.damageType != DAMAGE_WATER)
+        {
+            VehiclePart::BreakData breakData;
+            breakData.point = damageInfo.hitPos;
+            breakData.dir = damageInfo.hitDir;
+            breakData.normal = damageInfo.normal;
+            breakData.damage = modToDurability.m_Value.GetAsFloat();
+            breakData.decalId = damageInfo.decalId;
+            part->BreakModel(breakData);
+        }
+
+        if (m_bIsControlledByPlayer)
+        {
+            M3D_APP->EnqueueMessage(
+                66561,
+                damageInfo.attackerId,
+                damageInfo.gunPrototypeId,
+                damageInfo.damageType,
+                static_cast<int>(damage),
+                {},
+                {});
+        }
     }
 
     float Vehicle::GetMaxFullDurability() const
@@ -4876,13 +4995,100 @@ namespace ai
 
     void Vehicle::_CauseCustomGunPointedEvents()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E9550 - fires an event whenever a gun starts or stops bearing
+        // on the custom control target, so scripts can react to the moment the
+        // aim lands rather than polling.
+        float const AIM_EPS = 0.02f;
+
+        CVector const customTarget = _GetCustomWeaponTargetPoint();
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            bool newState;
+            int gunId;
+
+            if (part->IsKindOf(&Gun::m_classGun))
+            {
+                auto* gun = static_cast<Gun*>(part);
+                gunId = gun->GetId();
+                newState = gun->isLookAtPoint(customTarget, AIM_EPS);
+            }
+            else if (part->IsKindOf(&CompoundGun::m_classCompoundGun))
+            {
+                auto* gun = static_cast<CompoundGun*>(part);
+                gunId = gun->GetId();
+                newState = gun->isLookAtPoint(customTarget, AIM_EPS);
+            }
+            else
+            {
+                continue;
+            }
+
+            bool oldState = false;
+            auto const it = m_gunsPointed.find(gunId);
+            if (it != m_gunsPointed.end())
+            {
+                oldState = it->second;
+            }
+
+            if (newState != oldState)
+            {
+                CauseEvent(
+                    newState ? GE_CUSTOM_GUN_POINTED : GE_CUSTOM_GUN_DISPOINTED,
+                    0.0f,
+                    GetId(),
+                    gunId);
+            }
+            m_gunsPointed[gunId] = newState;
+        }
     }
 
     void Vehicle::_KeepSuspension()
     {
-        // TODO: implement Vehicle::_KeepSuspension
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DAF20 - drives each wheel's suspension animation from how far
+        // the wheel has travelled vertically, measured in the vehicle's own
+        // frame so that body roll does not count as suspension travel.
+        for (auto& info : m_wheels)
+        {
+            auto* wheel = info.GetWheel();
+            if (!wheel)
+            {
+                continue;
+            }
+            auto* node = wheel->m_suspensionNode;
+            if (!node)
+            {
+                continue;
+            }
+
+            CVector const vehiclePos = GetPosition();
+            CVector const wheelPos = wheel->GetPosition();
+            CVector delta;
+            delta.x = wheelPos.x - vehiclePos.x;
+            delta.y = wheelPos.y - vehiclePos.y;
+            delta.z = wheelPos.z - vehiclePos.z;
+
+            CMatrix unrot;
+            unrot.rotTranslate(GetRotation().getInversed(), CVector(0.0f, 0.0f, 0.0f));
+            float const localY = unrot.vecRot(delta).y;
+
+            float const range = wheel->GetPrototypeInfo()->m_suspensionRange;
+            float suspensionDelta = localY - info.m_initialPos.y;
+            if (-range > suspensionDelta)
+            {
+                suspensionDelta = -range;
+            }
+            if (suspensionDelta > range)
+            {
+                suspensionDelta = range;
+            }
+
+            // The animation runs across the whole travel, so the middle of its
+            // range is the wheel at rest.
+            if (auto* anim = GetNodeAnimInfo(node))
+            {
+                anim->SetCurFrame((suspensionDelta + range) / (range * 2.0f));
+            }
+        }
     }
 
     CVector Vehicle::_GetNextPathPoint() const
@@ -4956,10 +5162,19 @@ namespace ai
         if (m_bAutoBrake)
         {
             auto const direction = GetDirection();
-            auto const isWrongWay = (wheelRpm > 5.0 && (RoughSign(m_engineRpm) * RoughSign(m_throttle) <= 0)) ||
-                (wheelRpm <= 5.0 &&
-                 ((direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) < -0.1 ||
-                  RoughSign(m_throttle) == 0));
+            auto const throttleSign = RoughSign(m_throttle);
+
+            // Above walking pace the vehicle is fighting itself when the engine
+            // and the throttle disagree. Near standstill the test is whether it
+            // is drifting against the commanded direction, which is why the dot
+            // product is signed by the throttle - rolling backwards under
+            // reverse throttle is not the wrong way.
+            auto const alongThrottle =
+                (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) *
+                static_cast<float>(throttleSign);
+
+            auto const isWrongWay = (wheelRpm > 5.0 && (RoughSign(m_engineRpm) * throttleSign <= 0)) ||
+                (wheelRpm <= 5.0 && (throttleSign == 0 || alongThrottle < -0.1));
 
             if (isWrongWay)
             {
@@ -5015,7 +5230,7 @@ namespace ai
             {
                 doApplyActions(AT_MOVE1);
             }
-            else if ((velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) > 1.0)
+            else if ((velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) >= 0.1)
             {
                 doApplyActions(AT_MOVE2);
             }

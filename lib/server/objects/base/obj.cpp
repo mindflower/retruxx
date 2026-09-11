@@ -322,7 +322,25 @@ namespace ai
 
     bool Obj::ApplyModifier(Modifier const& modifier)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x68A0A0 - the base class understands one property, "belong";
+        // derived objects override this and chain up for anything they do not
+        // recognise themselves. Returning false means "not mine".
+        if (!(modifier.m_PropertyName == "belong"))
+        {
+            return false;
+        }
+
+        // The modifier arithmetic is all in floats, so the side goes through a
+        // float and back. The current value doubles as the base, which makes
+        // MO_BACK a no-op here.
+        float belong = static_cast<float>(m_belong);
+        modifier.Apply(&belong, belong);
+
+        if (static_cast<int>(belong) != m_belong)
+        {
+            SetBelong(static_cast<int>(belong));
+        }
+        return true;
     }
 
     PrototypeInfo const* Obj::GetPrototypeInfo() const
@@ -737,9 +755,9 @@ namespace ai
         }
     }
 
-    void Obj::SetLastDamageSource(int)
+    void Obj::SetLastDamageSource(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_LastDamageSource = objId;
     }
 
     Obj::~Obj()

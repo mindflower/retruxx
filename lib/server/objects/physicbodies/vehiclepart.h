@@ -50,6 +50,9 @@ namespace ai
     class VehiclePart : public ai::PhysicBody
     {
         friend class VehiclePartPrototypeInfo;
+        // Vehicle::InflictDamage builds a BreakData directly, as the shipped
+        // code does.
+        friend class Vehicle;
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::VehiclePart, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::VehiclePart, ai::Modifier, float, bool>;

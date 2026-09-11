@@ -35,6 +35,17 @@ namespace ai
         return 0.0f;
     }
 
+    float GetDurabilityRepairCoeff(ai::NumericInRange<float> const& durability)
+    {
+        // RVA 0x6AA470 - the share of the item's price a full repair costs. The
+        // 0.75 means restoring a wreck is always cheaper than buying new.
+        if (durability.maxValue().get() >= 0.001f)
+        {
+            return (durability.maxValue().get() - durability.value().get()) / durability.maxValue().get() * 0.75f;
+        }
+        return 0.0f;
+    }
+
     CStr const& WarePrototypeInfo::GetModelName() const
     {
         return m_modelName;

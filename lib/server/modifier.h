@@ -25,6 +25,7 @@ namespace ai
         /* 0x001c */ m3d::AIParam m_Value;
         Modifier(const ai::Modifier& Mod);
         Modifier();
+        ai::Modifier& operator=(const ai::Modifier& rhs);
         ~Modifier();
         void Create(const CStr& PropertyName, ai::eModifierOperation Operation, const m3d::AIParam& value);
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);

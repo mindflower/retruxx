@@ -1118,9 +1118,13 @@ namespace ai
         }
     }
 
-    CStr const& DynamicScene::GetVehicleSoilEffectName(unsigned short) const
+    CStr const& DynamicScene::GetVehicleSoilEffectName(unsigned short splashType) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (splashType < m_vehicleSoilEffectNames.size())
+        {
+            return m_vehicleSoilEffectNames[splashType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     m3d::Class* DynamicScene::GetBaseClass()
@@ -1178,7 +1182,7 @@ namespace ai
 
     int DynamicScene::GetClashDecalId()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_clashDecalId;
     }
 
     void DynamicScene::InitOnce()
@@ -1457,9 +1461,13 @@ namespace ai
         return m_roadEffectNames[2 * wheelType + bVehicleIsBraking];
     }
 
-    CStr const& DynamicScene::GetShellRoadEffectName(unsigned short) const
+    CStr const& DynamicScene::GetShellRoadEffectName(unsigned short shellType) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (shellType < m_shellsRoadEffNames.size())
+        {
+            return m_shellsRoadEffNames[shellType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     void DynamicScene::Clear()

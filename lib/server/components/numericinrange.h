@@ -72,36 +72,50 @@ namespace ai
             return m_maxValue;
         }
 
-        void assign(const ai::NumericInRange<T>&)
+        // NOTE: assign and _AssignUnsafe are declared in the PDB but were
+        // never instantiated, so unlike the rest of this class their bodies do
+        // not come from the binary. They follow the guarded/unguarded split the
+        // rest of the components use.
+        void assign(const ai::NumericInRange<T>& other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The bounds go in before the value so that the value is clamped
+            // against the new window rather than the old one.
+            m_maxValue.set(other.m_maxValue.get());
+            m_minValue.set(other.m_minValue.get());
+            m_value.set(other.m_value.get());
         }
 
         void setToMax()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x6CF260
+            m_value.set(m_maxValue.get());
         }
 
         bool bIsMax() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_value.get() == m_maxValue.get();
         }
 
         void setToMin()
         {
-            // TODO: check this
+            // RVA 0x650B50
             m_value.set(m_minValue.get());
         }
 
         bool bIsMin() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_value.get() == m_minValue.get();
         }
 
     protected:
-        void _AssignUnsafe(const ai::NumericInRange<T>&)
+        void _AssignUnsafe(const ai::NumericInRange<T>& other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Stores all three values with neither the BeforeChange guards nor
+            // the AfterChange notifications, so the callbacks stay bound to
+            // this object and no clamping runs.
+            m_value.SetUnsafe(other.m_value.get());
+            m_minValue.SetUnsafe(other.m_minValue.get());
+            m_maxValue.SetUnsafe(other.m_maxValue.get());
         }
 
     private:
@@ -158,17 +172,21 @@ namespace ai
 
         bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& newValue)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5CDAD0 (float) / 0x834FB0 (int) - the FuncPtr call operator
+            // is the null check; an unset hook means "do not veto".
+            return m_BeforeValueApplyModifier(modifier, newValue);
         }
 
         bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& newValue)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5CDAF0 (float) / 0x834FD0 (int)
+            return m_BeforeMinValueApplyModifier(modifier, newValue);
         }
 
         bool _OnBeforeMaxValueApplyModifier(const ai::Modifier& modifier, T& newValue)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5CDB10 (float) / 0x834FF0 (int)
+            return m_BeforeMaxValueApplyModifier(modifier, newValue);
         }
         /* 0x0058 */ ai::Numeric<T> m_value;
         /* 0x0074 */ ai::Numeric<T> m_minValue;

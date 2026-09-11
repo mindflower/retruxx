@@ -9,6 +9,7 @@
 #include "core/log.h"
 #include "ode/odecpp.h"
 #include "scene/scenegraph.h"
+#include "scene/servers/dataserver.h"
 
 namespace ai
 {
@@ -50,7 +51,61 @@ namespace ai
 
     void Wheel::BreakModel()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EF470 - a wheel has no per-mesh damage model. It simply steps
+        // to the next whole configuration, so its visual damage is a fixed
+        // sequence of ever more ruined wheels rather than anything derived from
+        // where it was hit.
+        m_bModelBroken = true;
+
+        auto* node = m_physicBody->m_Node;
+        if (!node)
+        {
+            return;
+        }
+
+        m3d::Configuration* cfg = nullptr;
+        node->GetProperty(8707, &cfg);
+
+        m3d::AnimatedModel* mdl = nullptr;
+        node->GetServer()->GetItemProperty(node->GetServerHandle(), 16394, &mdl);
+        if (!mdl)
+        {
+            return;
+        }
+
+        // A single configuration means there is no damaged variant to step to,
+        // and the last one is as broken as the wheel gets.
+        unsigned int const cfgSize = mdl->GetCfgSize();
+        if (cfgSize == 1 || cfg->m_num == cfgSize - 1)
+        {
+            return;
+        }
+
+        CVector const breakNormal = GetDirection().getNormalized();
+
+        // The effect is pushed half a radius out along the wheel's facing so it
+        // sits on the tyre rather than inside the hub.
+        float const radius = GetRadius();
+        CVector offset;
+        offset.x = breakNormal.x * radius * 0.5f;
+        offset.y = breakNormal.y * radius * 0.5f;
+        offset.z = breakNormal.z * radius * 0.5f;
+
+        CVector const wheelPos = GetPosition();
+        CVector breakPos;
+        breakPos.x = wheelPos.x + offset.x;
+        breakPos.y = wheelPos.y + offset.y;
+        breakPos.z = wheelPos.z + offset.z;
+
+        CMatrix rot;
+        rot.lookAtLH(CVector(0.0f, 0.0f, 0.0f), breakNormal, CVector(0.0f, 1.0f, 0.0f));
+        Quaternion q;
+        q.FromMatrix(rot);
+        PhysicBody::CreateEffectNode(CStr("ET_PS_VEH_PART_BROKEN"), breakPos, q, true, 1.0f);
+
+        ++cfg->m_num;
+        mdl->FromCfgNum(*cfg);
+        mdl->CalculateMeshes(*cfg);
     }
 
     Wheel::Wheel(WheelPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)

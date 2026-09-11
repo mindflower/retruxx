@@ -10,6 +10,10 @@ namespace m3d
 {
     class DecalSource
     {
+        // DecalsServer::SetItemProperty fills one of these in from the caller's
+        // DecalData plus the prototype's dimensions.
+        friend class DecalsServer;
+
     private:
         CVector center;
         CVector normal;

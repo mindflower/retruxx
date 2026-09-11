@@ -248,7 +248,12 @@ namespace ai
 
     CVector PhysicBody::GetPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto position = dGeomGetPosition(m_pGeoms[0]->GetGeomId());
+        CVector result;
+        result.x = position[0];
+        result.y = position[1];
+        result.z = position[2];
+        return result;
     }
 
     void PhysicBody::SetPosition(CVector const&)

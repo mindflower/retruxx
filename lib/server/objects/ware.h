@@ -15,6 +15,10 @@ namespace ai
     // Fraction of full price a used item fetches: currentDurability / maxDurability (0 when max ~ 0).
     float GetDurabilityPriceCoeff(const ai::NumericInRange<float>& durability);
 
+    // Fraction of full price a full repair costs: (max - current) / max * 0.75
+    // (0 when max ~ 0). The 0.75 keeps repairing cheaper than replacing.
+    float GetDurabilityRepairCoeff(const ai::NumericInRange<float>& durability);
+
     class WarePrototypeInfo : public ai::PrototypeInfo
     {
     public:

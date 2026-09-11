@@ -1025,4 +1025,7 @@ namespace m3d
     // draws on top of already rendered geometry. The matching PopZbState /
     // PopZFunc / PopZBiasSlopeScale / PopZBias are done by the callers.
     void overlayStart();
+
+    // RVA 0x75EDB0 - undoes overlayStart.
+    void overlayStop();
 }

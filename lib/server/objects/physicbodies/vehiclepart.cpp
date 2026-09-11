@@ -9,6 +9,8 @@
 #include "scene/scenegraph.h"
 #include "scene/servers/dataserver.h"
 #include "server/objects/basket.h"
+#include "server/objects/ware.h"
+#include "server/objects/vehicle.h"
 #include "server/objects/base/prototypemanager.h"
 
 namespace ai
@@ -19,7 +21,9 @@ namespace ai
 
     CVector const& VehiclePartPrototypeInfo::GetSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D3320 - a part's nominal size is its first collision shape's.
+        // NOTE: the shipped code does not check the vector is non-empty.
+        return m_collisionInfos.front().m_size;
     }
 
     VehiclePartPrototypeInfo::VehiclePartPrototypeInfo()
@@ -196,12 +200,44 @@ namespace ai
 
     VehiclePart::BreakData::BreakData()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE770 - the default hit is at the part's own origin travelling
+        // along +X, with a matching normal, so a BreakData that is only
+        // partially filled in still describes a usable impact rather than a
+        // degenerate one. A decalId of -1 means "leave no mark".
+        this->point.x = 0.0;
+        this->point.y = 0.0;
+        this->point.z = 0.0;
+        this->dir.x = 1.0;
+        this->dir.y = 0.0;
+        this->dir.z = 0.0;
+        this->normal.x = 1.0;
+        this->normal.y = 0.0;
+        this->normal.z = 0.0;
+        this->damage = 0.0;
+        this->decalId = -1;
+    }
+
+    VehiclePart::BreakData::BreakData(BreakData const& other)
+    {
+        // NOTE: the header declares this but the shipped build never emitted
+        // it - every caller passes a BreakData by const reference - so unlike
+        // the default constructor its body does not come from the binary. A
+        // memberwise copy is the only thing it can have been.
+        this->point = other.point;
+        this->dir = other.dir;
+        this->normal = other.normal;
+        this->damage = other.damage;
+        this->decalId = other.decalId;
     }
 
     VehiclePart::BreakModelData::BreakModelData()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CEF90 - NOTE: groupId, pos, dir and normal are deliberately
+        // left uninitialised; BreakModel fills them in before the struct is
+        // handed to _CalcMeshToBreak.
+        this->mdl = nullptr;
+        this->cfg = nullptr;
+        this->meshId = -1;
     }
 
     VehiclePart::ModelPart::ModelPart()
@@ -237,7 +273,8 @@ namespace ai
 
     CompoundVehiclePart* VehiclePart::GetOwnerCompoundVehiclePart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CDC70
+        return m_ownerCompoundPart;
     }
 
     CompoundVehiclePart const* VehiclePart::GetOwnerCompoundVehiclePart() const
@@ -252,12 +289,26 @@ namespace ai
 
     CStr const& VehiclePart::GetBlowEffectName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BC5E0
+        return m_blowEffectName;
     }
 
     unsigned VehiclePart::GetRepairPrice() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CF110 - what it costs to bring this part back to full.
+        if (m_durability.maxValue().get() < 0.001f)
+        {
+            return 0;
+        }
+
+        auto const* proto = GetPrototypeInfo();
+
+        // A part worth less than one unit of currency is still charged for as
+        // if it cost one, so trivially priced parts are not repaired for free.
+        float const price = m_price.get();
+        float const priceMult = (price >= 1.0f) ? price : 1.0f;
+
+        return GetIntRepairPrice(GetDurabilityRepairCoeff(m_durability) * proto->m_repairCoef * priceMult);
     }
 
     m3d::Class* VehiclePart::GetClass() const
@@ -277,14 +328,26 @@ namespace ai
         return {0.0, 0.0, 0.0};
     }
 
-    CStr VehiclePart::GetPropertyName(int) const
+    CStr VehiclePart::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BB600 - a linear scan, since only the name->id direction of
+        // the map is indexed.
+        for (auto const& entry : m_propertiesMap)
+        {
+            if (entry.second == id)
+            {
+                return entry.first;
+            }
+        }
+        return Obj::GetPropertyName(id);
     }
 
-    void VehiclePart::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void VehiclePart::DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D20A0
+        PhysicBody::DumpPhysicInfo(xmlFile, xmlNode);
+        xmlNode->SetAttribute("PartName", m_partName.c_str());
+        xmlNode->SetAttribute("Size", CStr(GetSize()).c_str());
     }
 
     VehiclePartPrototypeInfo const* VehiclePart::GetPrototypeInfo() const
@@ -297,14 +360,40 @@ namespace ai
         m_partName = newName;
     }
 
-    bool VehiclePart::ApplyModifier(Modifier const&)
+    bool VehiclePart::ApplyModifier(Modifier const& modifier)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D0D00 - the base class gets first refusal, then the two
+        // properties a part owns itself. Returning false means no one has
+        // claimed the property.
+        if (Obj::ApplyModifier(modifier))
+        {
+            return true;
+        }
+
+        if (modifier.m_PropertyName == "price")
+        {
+            // Price is modified relative to the prototype's, so a part that has
+            // already been repriced does not compound the modifier.
+            float const base = static_cast<float>(GetPrototypeInfo()->m_price);
+            m_price.ApplyModifier(modifier, base);
+            return true;
+        }
+
+        if (modifier.m_PropertyName == "dur")
+        {
+            // Durability is relative to this part's own maximum rather than to
+            // the prototype's, so upgrades that raised the maximum scale with it.
+            m_durability.value().ApplyModifier(modifier, m_durability.maxValue().get());
+            return true;
+        }
+
+        return false;
     }
 
-    void VehiclePart::SetOwnerCompoundVehiclePart(CompoundVehiclePart*)
+    void VehiclePart::SetOwnerCompoundVehiclePart(CompoundVehiclePart* compoundVehiclePart)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CDC90
+        m_ownerCompoundPart = compoundVehiclePart;
     }
 
     void VehiclePart::DefineSuppressedLPs()
@@ -394,14 +483,24 @@ namespace ai
         return this->m_durability;
     }
 
-    void VehiclePart::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void VehiclePart::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BB5A0 - this class's own properties, then the base class's.
+        for (auto const& entry : m_propertiesMap)
+        {
+            Props.insert(entry.second);
+        }
+        Obj::GetPropertiesIDs(Props);
     }
 
-    void VehiclePart::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void VehiclePart::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BB540
+        for (auto const& entry : m_propertiesMap)
+        {
+            Props.insert(entry.first);
+        }
+        Obj::GetPropertiesNames(Props);
     }
 
     void VehiclePart::Update(float elapsedTime, unsigned workTime)
@@ -486,17 +585,35 @@ namespace ai
 
     float VehiclePart::GetRepairPriceForOneUnit() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D33A0 - the rate quoted to the player. NOTE: it is worked out
+        // from a stand-in part sitting at durability 1, not from this part's
+        // actual condition, so the quote does not change as the part wears.
+        if (m_durability.maxValue().get() < 0.001f)
+        {
+            return 0.0f;
+        }
+
+        auto const* proto = GetPrototypeInfo();
+        if (!proto)
+        {
+            return 0.0f;
+        }
+
+        NumericInRange<float> const oneUnit(1.0f, m_durability.minValue().get(), m_durability.maxValue().get());
+        return GetDurabilityRepairCoeff(oneUnit) * proto->m_repairCoef * m_price.get();
     }
 
-    unsigned VehiclePart::GetPrice(IPriceCoeffProvider const*) const
+    unsigned VehiclePart::GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CF0C0 - a worn part fetches proportionally less.
+        float const durabilityCoeff = GetDurabilityPriceCoeff(m_durability);
+        return GetIntPrice(GetPriceCoeff(priceCoeffProvider) * durabilityCoeff * m_price.get());
     }
 
     CVector const& VehiclePart::GetLastHitPos() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x602650
+        return m_lastHitPos;
     }
 
     void VehiclePart::SetPassedToAnotherMapStatus()
@@ -511,9 +628,15 @@ namespace ai
         m_propertiesMap["Price"] = 21;
     }
 
-    eGObjPropertySaveStatus VehiclePart::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus VehiclePart::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BB000
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it == m_propertiesSaveStatesMap.end())
+        {
+            return Obj::GetPropertySaveStatus(id);
+        }
+        return it->second;
     }
 
     int VehiclePart::GetPropertyId(char const* propName) const
@@ -527,9 +650,158 @@ namespace ai
         return PhysicBody::GetPropertyId(propName);
     }
 
-    void VehiclePart::BreakModel(BreakData const&)
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0xA02258 - picked at random when a piece is destroyed outright.
+        char const* const JADED_EFFECT_NAMES[3] = {
+            "ET_PS_VEH_PART_JADED_FIRE",
+            "ET_PS_VEH_PART_JADED_SMOKE",
+            "ET_PS_VEH_PART_JADED_SPARKLE",
+        };
+
+        // RVA 0x5CCAF0 - note this is rand() scaled by RAND_MAX+1, so the top
+        // bound is exclusive.
+        int IntRandom(int highBound)
+        {
+            return highBound * rand() / 0x8000;
+        }
+    }  // namespace
+
+    void VehiclePart::BreakModel(BreakData const& breakData)
+    {
+        // RVA 0x6D7DF0 - a part with no engine model has nothing to break.
+        if (GetPrototypeInfo()->m_engineModelId == -1)
+        {
+            return;
+        }
+
+        BreakModelData modelData;
+        modelData.mdl = nullptr;
+        modelData.cfg = nullptr;
+        modelData.meshId = -1;
+        modelData.pos = breakData.point;
+        modelData.dir = breakData.dir;
+        modelData.normal = breakData.normal;
+
+        // Casts a ray along the impact direction to find which mesh was hit and
+        // rewrites pos/dir/normal into that mesh's frame.
+        _CalcMeshToBreak(modelData);
+        if (modelData.meshId == -1)
+        {
+            return;
+        }
+
+        auto const& group = modelData.mdl->GetGroup(modelData.groupId);
+        auto& part = m_modelParts[modelData.groupId];
+        unsigned const curVar = modelData.cfg->m_groupVariants[modelData.groupId];
+
+        CVector const pos = modelData.pos;
+
+        // cross(dir, dir + up) written out as the shipped code has it. It
+        // reduces to cross(dir, up) = (-dir.z, 0, dir.x), but the literal form
+        // is kept because the float rounding differs.
+        CVector tangent;
+        tangent.x = (modelData.dir.y * modelData.dir.z) - (modelData.dir.z * (modelData.dir.y + 1.0f));
+        tangent.y = (modelData.dir.z * modelData.dir.x) - (modelData.dir.z * modelData.dir.x);
+        tangent.z = ((modelData.dir.y + 1.0f) * modelData.dir.x) - (modelData.dir.y * modelData.dir.x);
+
+        // A hit straight down the up axis leaves no usable tangent.
+        if (sqrt(tangent.x * tangent.x + tangent.z * tangent.z + tangent.y * tangent.y) < 0.0000099999997f)
+        {
+            tangent.x = 1.0f;
+            tangent.y = 0.0f;
+            tangent.z = 0.0f;
+        }
+
+        float const tangentScale =
+            1.0f / sqrt(tangent.x * tangent.x + tangent.z * tangent.z + tangent.y * tangent.y + 0.00000011920929f);
+        CVector const decalTangent(tangent.x * tangentScale, tangent.y * tangentScale, tangent.z * tangentScale);
+
+        // NOTE: the decal is oriented by the impact direction, not by the
+        // surface normal the ray came back with.
+        _AddDecal(pos, modelData.dir, decalTangent, modelData.meshId, breakData.decalId);
+
+        // A group with a single variant has no damaged state to show.
+        if (group.m_variants.size() <= 1)
+        {
+            return;
+        }
+
+        part.health = part.health - breakData.damage;
+        if (part.health < 0.0f)
+        {
+            part.health = 0.0f;
+        }
+        if (part.health > part.maxHealth)
+        {
+            part.health = part.maxHealth;
+        }
+
+        unsigned const numVariants = group.m_variants.size();
+        int const healthSteps = static_cast<int>(
+            static_cast<double>(numVariants - 1) / part.maxHealth * part.health + 1.0 - 0.001);
+        unsigned newVar = numVariants - healthSteps - 1;
+        if (newVar >= numVariants)
+        {
+            newVar = numVariants - 1;
+        }
+
+        if (curVar != newVar)
+        {
+            auto* owner = GetOwner();
+            if (owner && IS_KIND_OF(owner, Vehicle))
+            {
+                owner->CauseEvent(GE_PART_BROKEN, 0.0f, m3d::AIParam(), m3d::AIParam());
+            }
+
+            modelData.cfg->m_groupVariants[modelData.groupId] = static_cast<unsigned char>(newVar);
+            modelData.mdl->FromGroupVariants(*modelData.cfg);
+            modelData.mdl->CalculateMeshes(*modelData.cfg);
+            m_cfgNum = modelData.cfg->m_num;
+            DefineSuppressedLPs();
+
+            // The effect is spawned in world space, so both the hit point and
+            // the impact direction go through the node's current transform -
+            // the direction without the translation.
+            auto const& xf = m_Node->GetCurrentMatrix();
+            CVector breakPos;
+            breakPos.x = xf._31 * modelData.pos.z + xf._21 * modelData.pos.y + xf._11 * modelData.pos.x + xf._41;
+            breakPos.y = xf._32 * modelData.pos.z + xf._22 * modelData.pos.y + xf._12 * modelData.pos.x + xf._42;
+            breakPos.z = xf._33 * modelData.pos.z + xf._23 * modelData.pos.y + xf._13 * modelData.pos.x + xf._43;
+
+            CVector worldDir;
+            worldDir.x = xf._31 * modelData.dir.z + xf._21 * modelData.dir.y + xf._11 * modelData.dir.x;
+            worldDir.y = xf._32 * modelData.dir.z + xf._22 * modelData.dir.y + xf._12 * modelData.dir.x;
+            worldDir.z = xf._33 * modelData.dir.z + xf._23 * modelData.dir.y + xf._13 * modelData.dir.x;
+
+            // The effect faces back along the incoming shot.
+            CMatrix rot;
+            rot.lookAtLH(
+                CVector(0.0f, 0.0f, 0.0f),
+                CVector(-worldDir.x, -worldDir.y, -worldDir.z),
+                CVector(0.0f, 1.0f, 0.0f));
+            Quaternion q;
+            q.FromMatrix(rot);
+            PhysicBody::CreateEffectNode(CStr("ET_PS_VEH_PART_BROKEN"), breakPos, q, true, 1.0f);
+
+            // Decals were placed against the old mesh, so move them onto the
+            // first mesh of the variant that just replaced it.
+            auto const& newVariant = group.m_variants[newVar];
+            if (!newVariant.empty())
+            {
+                _RecalcDecals(modelData.meshId, group.MeshesId[newVariant.front()]);
+            }
+        }
+
+        // Once a piece is destroyed it burns, smokes or sparks until repaired.
+        if (part.health < 0.0099999998f && part.maxHealth > 0.0099999998f && !part.jadedEffect)
+        {
+            CStr const effectName(JADED_EFFECT_NAMES[IntRandom(3)]);
+            part.jadedEffect = PhysicBody::CreateNode(effectName, 0, CVector(1.0f, 1.0f, 1.0f), nullptr, false);
+            m_Node->AddChild(part.jadedEffect);
+            part.jadedEffect->SetOriginAbs(pos);
+            part.jadedEffect->UpdateXForm(0, true);
+        }
     }
 
     VehiclePart::VehiclePart(VehiclePartPrototypeInfo const& prototypeInfo) :
@@ -575,17 +847,24 @@ namespace ai
 
     void VehiclePart::_SetAllPropertiesToMax()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D0480 - durability is the only property a plain part has.
+        m_durability.setToMax();
     }
 
-    void VehiclePart::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void VehiclePart::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D9060 - a save status of 0 is the default and is not recorded,
+        // so GetPropertySaveStatus falls through to the base class for it.
+        m_propertiesMap[CStr(Name)] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     bool VehiclePart::_OnDurabilityValueBeforeApplyModifier(Modifier const&, float&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return false;
     }
 
     bool VehiclePart::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
@@ -610,14 +889,123 @@ namespace ai
         return true;
     }
 
-    float VehiclePart::_GetModelPartHealth(int) const
+    float VehiclePart::_GetModelPartHealth(int groupId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D0E50 - NOTE: the index is unchecked, as shipped.
+        return m_modelParts[groupId].health;
     }
 
-    void VehiclePart::_OnDurabilityValueAfterChange(float)
+    void VehiclePart::_OnDurabilityValueAfterChange(float oldDurabilityValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D50B0 - this is the repair path only. Damage picks its mesh
+        // variants through BreakModel, which knows where it was hit; a repair
+        // has no impact point, so the whole part is reassessed from its new
+        // durability and every piece of battle damage is thrown away.
+        if (m_durability.value().get() <= oldDurabilityValue)
+        {
+            return;
+        }
+
+        if (!m_Node)
+        {
+            return;
+        }
+
+        m3d::Configuration* cfg = nullptr;
+        m_Node->GetProperty(8707, &cfg);
+
+        m3d::AnimatedModel* mdl = nullptr;
+        m_Node->GetServer()->GetItemProperty(m_Node->GetServerHandle(), 16394, &mdl);
+        if (!mdl)
+        {
+            return;
+        }
+
+        // The two run in lockstep - one model part per mesh group - so a
+        // mismatch means the visual model is not the one this part was built
+        // against and nothing can be matched up safely.
+        if (m_modelParts.size() != mdl->GetGroupsNum())
+        {
+            return;
+        }
+
+        float const delta = m_durability.value().get() - oldDurabilityValue;
+        bool variantsChanged = false;
+
+        for (unsigned i = 0; i < m_modelParts.size(); ++i)
+        {
+            auto const& group = mdl->GetGroup(i);
+            auto& part = m_modelParts[i];
+            unsigned const curVar = cfg->m_groupVariants[i];
+
+            // Every piece heals by the same absolute amount, not in proportion
+            // to its own share of the part's durability.
+            part.health = part.health + delta;
+            if (part.health < 0.0f)
+            {
+                part.health = 0.0f;
+            }
+            if (part.health > part.maxHealth)
+            {
+                part.health = part.maxHealth;
+            }
+
+            // Variant 0 is the intact mesh and the last is the most battered,
+            // so the index tracks damage taken rather than health left.
+            unsigned const numVariants = group.m_variants.size();
+            unsigned newVar = static_cast<unsigned>(
+                static_cast<double>(part.maxHealth - part.health) / part.maxHealth *
+                static_cast<double>(numVariants));
+
+            // NOTE: an empty variant list underflows here exactly as it does in
+            // the shipped build, leaving newVar at 0xFFFFFFFF.
+            if (newVar >= group.m_variants.size())
+            {
+                newVar = group.m_variants.size() - 1;
+            }
+
+            if (curVar != newVar)
+            {
+                // NOTE: m_groupVariants holds bytes, so only the low byte of
+                // the index is stored while the comparison above uses all 32
+                // bits. Groups never carry more than 256 variants in practice.
+                cfg->m_groupVariants[i] = static_cast<unsigned char>(newVar);
+                variantsChanged = true;
+            }
+
+            // The scorch/smoke effect belongs to the damage that is being
+            // repaired away.
+            if (part.jadedEffect)
+            {
+                part.jadedEffect->GetGraph()->RemoveNode(part.jadedEffect);
+                part.jadedEffect = nullptr;
+            }
+        }
+
+        if (variantsChanged)
+        {
+            mdl->FromGroupVariants(*cfg);
+            mdl->CalculateMeshes(*cfg);
+            m_cfgNum = cfg->m_num;
+            DefineSuppressedLPs();
+        }
+
+        // Bullet holes and dents go with the damage too.
+        for (auto& [id, node] : m_decals)
+        {
+            if (node)
+            {
+                node->GetGraph()->RemoveNode(node);
+                node = nullptr;
+            }
+        }
+        m_decals.clear();
+
+        auto* owner = GetOwner();
+        if (owner && IS_KIND_OF(owner, Vehicle))
+        {
+            static_cast<Vehicle*>(owner)->HealWheels();
+        }
     }
 
     void VehiclePart::_InternalCreateVisualPart()
@@ -731,7 +1119,9 @@ namespace ai
 
     m3d::Object* VehiclePart::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D01C0 - parts only ever come from a prototype.
+        SYS_ERROR(CStr("!\"Object cannot be created directly\""));
+        return nullptr;
     }
 
     void VehiclePart::SaveDecalsRuntime(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
@@ -751,7 +1141,9 @@ namespace ai
 
     m3d::Object* VehiclePart::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D0000
+        SYS_ERROR(CStr("!\"Object cannot be cloned\""));
+        return nullptr;
     }
 
     void VehiclePart::_RecalcDecals(unsigned, unsigned)
