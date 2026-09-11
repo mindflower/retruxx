@@ -19,7 +19,7 @@ namespace m3d
 
         float ProgressBarWnd::GetMaxValue() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_maxValue;
         }
 
         void ProgressBarWnd::SetCurValue(float curValue)
@@ -122,7 +122,7 @@ namespace m3d
 
         float ProgressBarWnd::GetCurValue() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_curValue;
         }
 
         void ProgressBarWnd::SetBarTexture(rend::TexHandle barTexture)
@@ -188,7 +188,7 @@ namespace m3d
 
         float ProgressBarWnd::GetMinValue() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_minValue;
         }
 
         ProgressBarWnd::~ProgressBarWnd()
@@ -204,9 +204,27 @@ namespace m3d
             m_textureStyle = textureStyle;
         }
 
-        int ProgressBarWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ProgressBarWnd::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x674DA0
+            if (!Wnd::WriteToXmlNode(file, writeTo))
+            {
+                return 0;
+            }
+
+            CStr clr;
+            clr.format("%08x", m_barColor);
+            writeTo->SetAttribute("barColor", clr.c_str());
+            writeTo->SetAttribute("numOfSteps", CStr(m_numOfSteps).c_str());
+            writeTo->SetAttribute("orientation", CStr(static_cast<int>(m_orientation)).c_str());
+
+            CStr barTexFile;
+            Application::g_pApp->m_renderer->GetTextureName(m_barTexture, barTexFile);
+            writeTo->SetAttribute("barTexture", barTexFile.c_str());
+
+            writeTo->SetAttribute("textStyle", CStr(static_cast<int>(m_textStyle)).c_str());
+            writeTo->SetAttribute("textureStyle", CStr(static_cast<int>(m_textureStyle)).c_str());
+            return 1;
         }
 
         void ProgressBarWnd::SetMinValue(float minValue)
@@ -250,33 +268,34 @@ namespace m3d
 
         CStr ProgressBarWnd::GetStringValue() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x725520 - "cur/max", rounded down for the integer style.
+            if (m_textStyle == TEXT_INTEGER)
+            {
+                return CStr(static_cast<int>(m_curValue)) + "/" + CStr(static_cast<int>(m_maxValue));
+            }
+            if (m_textStyle == TEXT_FLOAT)
+            {
+                return CStr(m_curValue) + "/" + CStr(m_maxValue);
+            }
+            return CStr();
         }
 
         BoundsBase<float> ProgressBarWnd::GetBarRect() const
         {
-            //TODO: check and refactor this
-            auto maxBar = this->GetMaxBarRect();
-            auto valueInPixel = GetValueInPixel();
-            auto v4 = m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT;
-            auto v5 = m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP;
+            // RVA 0x7257C0 - the filled part of the bar, measured along whichever
+            // axis the orientation runs and anchored at the far end when inversed.
+            auto rect = GetMaxBarRect();
+            auto const valueInPixel = GetValueInPixel();
 
-            float* v6 = nullptr;
-            float* v7 = nullptr;
-            if (v4)
+            float& origin = IsHorizontal() ? rect.x0 : rect.y0;
+            float& size = IsHorizontal() ? rect.width : rect.height;
+
+            if (IsInversed())
             {
-                v6 = &maxBar.x0;
-                v7 = &maxBar.width;
+                origin = size - valueInPixel;
             }
-            else
-            {
-                v6 = &maxBar.y0;
-                v7 = &maxBar.height;
-            }
-            if (v5)
-                *v6 = *v7 - valueInPixel;
-            *v7 = valueInPixel;
-            return maxBar;
+            size = valueInPixel;
+            return rect;
         }
 
         int ProgressBarWnd::OnPaint(DrawInfo const& di)
@@ -311,7 +330,8 @@ namespace m3d
 
         bool ProgressBarWnd::IsInversed() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x724D30
+            return m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP;
         }
 
         void ProgressBarWnd::CalcTexCoordinates(float& u0, float& v0, float& u1, float& v1) const
@@ -426,50 +446,39 @@ namespace m3d
 
         float ProgressBarWnd::GetMaxValueInPixel() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x724E80
+            return IsHorizontal() ? GetMaxBarRect().width : GetMaxBarRect().height;
         }
 
         bool ProgressBarWnd::IsHorizontal() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x724D10
+            return m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT;
         }
 
         float ProgressBarWnd::GetValueInPixel() const
         {
-            //TODO: check and refactor this
-            m3d::ui::ProgressBarWnd* v1; // ecx
-            double result; // st7
-            float v3; // xmm1_4
-            float v4; // xmm0_4
-            m3d::ui::ProgressBarWnd::Orientation v5; // eax
-            float value; // [esp+4h] [ebp-28h]
-            float v7; // [esp+8h] [ebp-24h]
-            char v8[16]; // [esp+Ch] [ebp-20h] BYREF
-            char v9[16]; // [esp+1Ch] [ebp-10h] BYREF
+            // RVA 0x725440 - a stepped bar snaps to whole steps, a plain one
+            // scales linearly between min and max.
+            if (m_numOfSteps > 1)
+            {
+                return GetSizeOfStepInPixel() * static_cast<float>(GetCurNumOfSteps());
+            }
 
-            if (this->m_numOfSteps <= 1)
+            float value = 0.0f;
+            if (m_minValue != m_maxValue)
             {
-                v3 = 0.0;
-                value = 0.0;
-                if (this->m_minValue != this->m_maxValue)
+                value = (m_curValue - m_minValue) / (m_maxValue - m_minValue);
+                if (value < 0.0f)
                 {
-                    v4 = (this->m_curValue - this->m_minValue) / (this->m_maxValue - this->m_minValue);
-                    value = v4;
-                    if (v4 < 0.0 || (v3 = 1.0, v4 > 1.0))
-                        value = v3;
+                    value = 0.0f;
                 }
-                v5 = this->m_orientation;
-                if (v5 == ORIENTATION_LEFT_TO_RIGHT || v5 == ORIENTATION_RIGHT_TO_LEFT)
-                    result = this->GetMaxBarRect().width * value;
-                else
-                    result = this->GetMaxBarRect().height * value;
+                else if (value > 1.0f)
+                {
+                    value = 1.0f;
+                }
             }
-            else
-            {
-                v7 = m3d::ui::ProgressBarWnd::GetCurNumOfSteps();
-                result = m3d::ui::ProgressBarWnd::GetSizeOfStepInPixel() * v7;
-            }
-            return result;
+            return (IsHorizontal() ? GetMaxBarRect().width : GetMaxBarRect().height) * value;
         }
 
         ProgressBarWnd::ProgressBarWnd(ProgressBarWnd const& rhs)

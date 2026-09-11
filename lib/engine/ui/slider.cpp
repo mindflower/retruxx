@@ -42,7 +42,10 @@ namespace m3d
             auto result = CreateWnd(caption, st, rc, id);
             if (result)
             {
-                m_style |= 4u;
+                // RVA 0x6B2730 does BYTE2(m_style) |= 4, i.e. |= 0x40000. Without
+                // it SetNotch never notifies the parent, since it gates on that
+                // very bit.
+                m_style |= WS_SEND_NOTIFY_MESSAGES;
                 SetMinMax(0, 10);
                 m_notchWidth = GetGfxServer()->GetSliderNotchWidthRatio() * rc.height;
                 result = 1;
@@ -73,21 +76,17 @@ namespace m3d
 
         void SliderWnd::SetMinMax(int min, int max)
         {
-            //TODO: refactor
-            int v3; // eax
-            int v4; // esi
-
-            v3 = this->m_cur;
-            v4 = max;
-            if (max < min)
-                v4 = min;
-            if (v3 < min)
-                v3 = min;
-            this->m_min = min;
-            if (v3 > v4)
-                v3 = v4;
-            this->m_max = v4;
-            SetNotch(v3);
+            // RVA 0x6B2880 - an inverted range collapses onto its minimum, and the
+            // current notch is dragged back into the new range.
+            auto hi = max < min ? min : max;
+            auto cur = m_cur < min ? min : m_cur;
+            m_min = min;
+            if (cur > hi)
+            {
+                cur = hi;
+            }
+            m_max = hi;
+            SetNotch(cur);
         }
 
         int SliderWnd::GetNotch() const
@@ -97,18 +96,19 @@ namespace m3d
 
         void SliderWnd::SetNotch(int n)
         {
-            //TODO: check and refactor
-            int v2; // eax
-            bool v3; // zf
-
-            v2 = n;
-            if (n < this->m_min)
-                v2 = this->m_min;
-            if (v2 > this->m_max)
-                v2 = this->m_max;
-            v3 = (this->m_style & 0x40000) == 0;
-            this->m_cur = v2;
-            if (!v3)
+            // RVA 0x6B2CE0
+            auto cur = n;
+            if (cur < m_min)
+            {
+                cur = m_min;
+            }
+            if (cur > m_max)
+            {
+                cur = m_max;
+            }
+            bool const bNotify = (m_style & WS_SEND_NOTIFY_MESSAGES) != 0;
+            m_cur = cur;
+            if (bNotify)
             {
                 CallParentNotify(5u, {}, false);
             }
@@ -147,9 +147,11 @@ namespace m3d
             rect.height = bounds.height;
             rect.width = bounds.width - (sideW * 2.0);
             auto const bodyTex = GetGfxServer()->GetTexture(TEX_SLIDER_BODY);
-            GetGfxServer()->AddImagedRectGeneral(di, rect, clr, bodyTex, 0.0, 0.0, rect.width / bounds.width, 1.0);
+            // NOTE: the u1 texture coordinate really is the strip width over the
+            // window *height* - the shipped code divides by the wrong extent, so a
+            // slider that is not square repeats its body texture oddly.
+            GetGfxServer()->AddImagedRectGeneral(di, rect, clr, bodyTex, 0.0, 0.0, rect.width / bounds.height, 1.0);
 
-            //TODO: check this
             rect.x0 = (bounds.width - m_notchWidth) * (static_cast<float>(m_cur - m_min) / (m_max - m_min));
             rect.y0 = 0.0;
             rect.height = bounds.height;
@@ -209,15 +211,10 @@ namespace m3d
 
         SliderWnd::SliderWnd(SliderWnd const& sw)
             : Wnd(sw)
-            , m_min(sw.m_min)
-            , m_max(sw.m_max)
-            , m_cur(sw.m_cur)
-            , m_tracking(sw.m_tracking)
-            , m_notchWidth(sw.m_notchWidth)
         {
-            // NOTE: the shipped copy ctor only chains to the (partial) Wnd copy ctor
-            // and leaves the slider fields indeterminate; we copy them so Clone()
-            // produces a usable slider.
+            // RVA 0x6B25F0 - the shipped copy constructor chains to the Wnd one and
+            // copies none of the slider's own state, so a cloned slider starts with
+            // an indeterminate range, notch and notch width.
         }
     }
 }

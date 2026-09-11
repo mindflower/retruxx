@@ -121,44 +121,28 @@ namespace m3d
 
         void ScrollWnd::SetScrollRect(float szX, float szY)
         {
-            //TODO: check this!! and refactor
-            float v4; // xmm1_4
-            float v6; // xmm0_4
-            m3d::ui::ScrollPane* v7; // eax
-            char v8[16]; // [esp+4h] [ebp-10h] BYREF
+            // RVA 0x6FA3C0 - the scrollable overhang is whatever the content
+            // sticks out past the bar; content that fits resets the position.
+            float const barSz = m_vertical ? GetBounds().height : GetBounds().width;
+            float const contentSz = m_vertical ? szY : szX;
 
-            if (this->m_vertical)
+            if (barSz < contentSz)
             {
-                v4 = GetBounds().height;
+                m_maxPos = contentSz - barSz;
             }
             else
             {
-                v4 = GetBounds().width;
-                szY = szX;
+                m_maxPos = 0.0;
+                m_curPos = 0.0;
             }
-            if (v4 < szY)
+
+            if (auto* pane = GetGfxServer()->GetScrollPane(m_scrollPaneName))
             {
-                v6 = szY - v4;
-                if (v6 != m_maxPos)
-                    this->m_maxPos = v6;
-            }
-            else
-            {
-                v6 = 0.0;
-                this->m_curPos = 0.0;
-            }
-            this->m_maxPos = v6;
-            v7 = GetGfxServer()->GetScrollPane(m_scrollPaneName);
-            if (v7)
-            {
-                if (this->m_vertical)
-                    this->m_thumbSz = v7->m_thumbSize.y;
-                else
-                    this->m_thumbSz = v7->m_thumbSize.x;
+                m_thumbSz = m_vertical ? pane->m_thumbSize.y : pane->m_thumbSize.x;
             }
             else
             {
-                this->m_thumbSz = 30.0;
+                m_thumbSz = 30.0;
             }
         }
 
@@ -241,40 +225,40 @@ namespace m3d
 
         void ScrollWnd::RecalcLayot()
         {
-            //TODO: check this
-            if (m_vertical)
+            // RVA 0x6FA480 - parks the two stepper buttons at the ends of the bar.
+            // NOTE: only the vertical layout is handled; a horizontal scroll bar
+            // leaves its buttons wherever they were created.
+            if (!m_vertical)
             {
-                auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName);
-                if (pane)
-                {
-                    auto btn1Y1 = pane->GetWidth();
-                    float v4 = (btn1Y1 - pane->m_btnSize.x) * 0.5;
-                    auto v5 = m_bounds.height - pane->m_btnSize.y;
-                    auto v6 = m_bounds.height;
-                    auto v7 = pane->m_btnSize.x + v4;
-                    auto btnX0 = v4;
-                    auto btnX1 = v7;
-                    if (m_btn0)
-                    {
-                        BoundsBase<float> bounds;
-                        bounds.x0 = v4;
-                        bounds.y0 = 0.0;
-                        bounds.width = v7 - v4;
-                        bounds.height = pane->m_btnSize.y;
-                        m_btn0->SetBounds(bounds, true);
-                        v7 = btnX1;
-                        v4 = btnX0;
-                    }
-                    if (m_btn1)
-                    {
-                        BoundsBase<float> bounds;
-                        bounds.x0 = v4;
-                        bounds.y0 = v5;
-                        bounds.width = v7 - v4;
-                        bounds.height = v6 - v5;
-                        m_btn1->SetBounds(bounds, true);
-                    }
-                }
+                return;
+            }
+            auto* pane = GetGfxServer()->GetScrollPane(m_scrollPaneName);
+            if (!pane)
+            {
+                return;
+            }
+
+            float const btnX0 = (pane->GetWidth() - pane->m_btnSize.x) * 0.5f;
+            float const btnW = pane->m_btnSize.x;
+
+            if (m_btn0)
+            {
+                BoundsBase<float> bounds;
+                bounds.x0 = btnX0;
+                bounds.y0 = 0.0f;
+                bounds.width = btnW;
+                bounds.height = pane->m_btnSize.y;
+                m_btn0->SetBounds(bounds, true);
+            }
+            if (m_btn1)
+            {
+                float const btn1Y0 = m_bounds.height - pane->m_btnSize.y;
+                BoundsBase<float> bounds;
+                bounds.x0 = btnX0;
+                bounds.y0 = btn1Y0;
+                bounds.width = btnW;
+                bounds.height = m_bounds.height - btn1Y0;
+                m_btn1->SetBounds(bounds, true);
             }
         }
 

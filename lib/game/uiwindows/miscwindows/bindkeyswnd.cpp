@@ -442,7 +442,11 @@ int BindKeysWnd::BindKeysItem::SetUp(Impulse impId, retruxx::vector<retruxx::vec
     {
         float const btnW = (m_aif.m_itemW - impW) * 0.5f;
         float const x0 = i * btnW + impW;
-        BoundsBase<float> rc{x0, 0.0f, btnW, m_aif.m_itemH};
+        BoundsBase<float> rc;
+        rc.x0 = x0;
+        rc.y0 = 0.0f;
+        rc.width = btnW;
+        rc.height = m_aif.m_itemH;
         m_btns[i] = new KeySetButton(rc);
 
         m_btns[i]->m_impId = impId;

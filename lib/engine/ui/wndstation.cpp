@@ -1,4 +1,5 @@
 #include <cassert>
+#include <config.h>
 #include <m3dapp.h>
 #include <stdexcept>
 #include <core/ini.h>
@@ -22,6 +23,15 @@ char const STR_ERROR[] = "error";
 namespace
 {
     m3d::ui::GfxServer* gfxserver = nullptr;
+
+    // Where CheckForMouseDblClick has got to in the press / release / press
+    // sequence it is watching for.
+    enum DblClickState
+    {
+        DBLCLICK_NOTHING = 0,
+        DBLCLICK_PRESS = 1,
+        DBLCLICK_PRESS_RELEASE = 2,
+    };
 }
 
 namespace m3d
@@ -286,11 +296,63 @@ namespace m3d
             return 1;
         }
 
-        int WndStation::CheckForMouseClick(Wnd*, bool, PointBase<float> const*)
+        int WndStation::CheckForMouseClick(Wnd* w, bool set, PointBase<float> const* pt)
         {
-            // TODO: implement WndStation::CheckForMouseClick
-            // RETRUXX_NOT_IMPLEMENTED;
-            return 0;
+            // RVA 0x592E30 - the second half of the click machine: the press and
+            // release are recorded by "set", and the click is only delivered once
+            // the double-click window has passed without a second press.
+            static unsigned clickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            static PointBase<float> savePt{0.0f, 0.0f};
+            static bool isSet = false;
+
+            if (!w)
+            {
+                return 0;
+            }
+            if (w != m_wndCandidateForDblClick)
+            {
+                return 0;
+            }
+            if (!m_wndCandidateForDblClick)
+            {
+                isSet = false;
+                return 0;
+            }
+
+            if (set)
+            {
+                if (pt)
+                {
+                    clickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                    savePt = *pt;
+                    isSet = true;
+                }
+                return 0;
+            }
+
+            if (!isSet)
+            {
+                return 0;
+            }
+            auto const now = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            if (now - clickTime <= static_cast<unsigned>(M3D_ENGINE_CFG.m_ui_dblClickDelay.GetI()))
+            {
+                return 0;
+            }
+
+            isSet = false;
+            w->OnMouseClick(savePt);
+            if (w == this)
+            {
+                // A click on the station itself is reported as an event instead.
+                Event clickEvent;
+                clickEvent.m_timeStamp = g_Kernel->GetTimer().GetCurTimeUnscaled() * 0.001;
+                clickEvent.m_eventType = EV_MOUSE_CLICK;
+                clickEvent.m_ushortEv[0] = static_cast<unsigned short>(savePt.x);
+                clickEvent.m_ushortEv[1] = static_cast<unsigned short>(savePt.y);
+                OnEvent(clickEvent);
+            }
+            return 1;
         }
 
         Wnd* WndStation::GetWndForMousePoint(Wnd* curWnd, PointBase<float> const& pt, bool affectAll)
@@ -350,9 +412,12 @@ namespace m3d
             return m_wndModalRetVal;
         }
 
-        int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
+        int WndStation::PulseKeyForWindow(Wnd* w, unsigned short key, unsigned char scanCode)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CBE0 - a synthetic press followed immediately by a release.
+            w->OnKey(key, scanCode, 1);
+            w->OnKey(key, scanCode, 0);
+            return 1;
         }
 
         Wnd* WndStation::GetCapture() const
@@ -362,12 +427,14 @@ namespace m3d
 
         Wnd* WndStation::GetWndMouseOver()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CAF0
+            return m_wndMouseOver;
         }
 
-        void WndStation::EnableAnimation(bool)
+        void WndStation::EnableAnimation(bool bEnable)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CC70
+            m_bAnimationEnabled = bEnable;
         }
 
         int WndStation::Activate(Wnd* wnd)
@@ -413,9 +480,12 @@ namespace m3d
             return 1;
         }
 
-        Wnd* WndStation::CaptureMouse(Wnd*)
+        Wnd* WndStation::CaptureMouse(Wnd* wnd)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB30 - hands back whoever held the capture before.
+            auto* prev = m_wndMouseCapture;
+            m_wndMouseCapture = wnd;
+            return prev;
         }
 
         CStr WndStation::GetStringByStringId0(CStr const& id)
@@ -453,9 +523,104 @@ namespace m3d
             return 1;
         }
 
-        int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)
+        int WndStation::CheckForMouseDblClick(Wnd* w, PointBase<float> const& pt, unsigned mouseState,
+                                              PointBase<float>& prevClickPt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x593210 - press / release / press on the same window inside the
+            // double-click delay makes a double click; anything else restarts the
+            // sequence. Returns 1 exactly on the closing press.
+            static PointBase<float> firstClickCoords{-1.0f, -1.0f};
+            static unsigned firstClickTime = 0;
+            static DblClickState clickState = DBLCLICK_NOTHING;
+
+            if (!w)
+            {
+                return 0;
+            }
+
+            auto const startSequence = [&]()
+            {
+                firstClickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                clickState = DBLCLICK_PRESS;
+                firstClickCoords = pt;
+            };
+            auto const resetSequence = [&]()
+            {
+                firstClickTime = 0;
+                clickState = DBLCLICK_NOTHING;
+                m_wndCandidateForDblClick = nullptr;
+                firstClickCoords.x = -1.0f;
+                firstClickCoords.y = -1.0f;
+            };
+
+            if (w != m_wndCandidateForDblClick)
+            {
+                if (mouseState)
+                {
+                    m_wndCandidateForDblClick = w;
+                    startSequence();
+                }
+                else
+                {
+                    resetSequence();
+                }
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            auto const now = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            if (now - firstClickTime > static_cast<unsigned>(M3D_ENGINE_CFG.m_ui_dblClickDelay.GetI()))
+            {
+                // Too slow: this press, if any, becomes the start of a new pair.
+                if (mouseState)
+                {
+                    startSequence();
+                }
+                else
+                {
+                    resetSequence();
+                }
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            if (clickState == DBLCLICK_PRESS)
+            {
+                if (!mouseState)
+                {
+                    clickState = DBLCLICK_PRESS_RELEASE;
+                    CheckForMouseClick(m_wndCandidateForDblClick, true, &pt);
+                }
+                else
+                {
+                    firstClickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                    firstClickCoords = pt;
+                }
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            if (clickState != DBLCLICK_PRESS_RELEASE)
+            {
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            clickState = DBLCLICK_NOTHING;
+            firstClickTime = 0;
+            if (mouseState)
+            {
+                prevClickPt = firstClickCoords;
+                m_wndCandidateForDblClick = nullptr;
+                firstClickCoords.x = -1.0f;
+                firstClickCoords.y = -1.0f;
+                return 1;
+            }
+            m_wndCandidateForDblClick = nullptr;
+            firstClickCoords.x = -1.0f;
+            firstClickCoords.y = -1.0f;
+            prevClickPt = firstClickCoords;
+            return 0;
         }
 
         int WndStation::GetDefaultCursor(Cursor& cur)
@@ -503,7 +668,11 @@ namespace m3d
 
         int WndStation::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58E9A0 - the station is not an ordinary window: the shipped
+            // build raises a system error here and returns success anyway. Use
+            // Create(stringsName, schemaName) instead.
+            SYS_ERROR("0");
+            return 1;
         }
 
         void WndStation::StopAllAnimations()
@@ -536,7 +705,8 @@ namespace m3d
 
         Wnd* WndStation::GetFocus() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB60
+            return m_wndKbdCapture;
         }
 
         int WndStation::ProcessEvent(Event const& ev)
@@ -648,9 +818,15 @@ namespace m3d
             return v3;
         }
 
-        Wnd* WndStation::GetWndByUniqueId(int) const
+        Wnd* WndStation::GetWndByUniqueId(int uniqueId) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x591B80
+            Wnd* wnd = nullptr;
+            if (m_allWindowsById.getValueByKey(static_cast<unsigned>(uniqueId), wnd))
+            {
+                return wnd;
+            }
+            return nullptr;
         }
 
         void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
@@ -676,7 +852,8 @@ namespace m3d
 
         Wnd* WndStation::GetActive() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB70
+            return m_wndActive;
         }
 
         bool WndStation::IsModal(ModalWnd* wnd)
@@ -905,9 +1082,12 @@ namespace m3d
             this->m_wndOpenedComboBox = nullptr;
         }
 
-        int WndStation::DispatchJoystick(Event const&)
+        int WndStation::DispatchJoystick(Event const& event)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB00 - joystick input is not a window concern; it goes
+            // straight to the impulse layer.
+            Application::g_pApp->m_pImpulses->HandleKeyboardMouseEvent(event, this);
+            return 1;
         }
 
         void WndStation::OnCloseComboBox(ComboBoxWnd* combo)
@@ -944,9 +1124,15 @@ namespace m3d
             }
         }
 
-        void WndStation::ForEachChild(Wnd*, void (Wnd::*)())
+        void WndStation::ForEachChild(Wnd* curWnd, void (Wnd::*fn)())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58DCD0 - pre-order walk of the whole subtree.
+            (curWnd->*fn)();
+            for (auto* child = RT_DYNCAST(curWnd->GetFirstChild(), Wnd); child;
+                 child = RT_DYNCAST(child->GetNextSibling(), Wnd))
+            {
+                ForEachChild(child, fn);
+            }
         }
 
         void WndStation::RegisterWnd(Wnd* w)
@@ -965,7 +1151,12 @@ namespace m3d
 
         GfxServer* WndStation::getGfxServer()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CC20 - the one graphics server is made on first use.
+            if (!gfxserver)
+            {
+                gfxserver = new GfxServer;
+            }
+            return gfxserver;
         }
 
         void WndStation::UnregisterWnd(Wnd* w)

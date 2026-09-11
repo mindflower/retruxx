@@ -194,33 +194,34 @@ namespace m3d
             {
                 return 0;
             }
-            const char* frameIds[4] = { "frameOut", "frameDown", "frameOver", "frameDisable" };
-            for (size_t i =0; i<4; ++i)
-            {
-                CStr texName;
-                SafeStrAttrib(texName, node, frameIds[i]);
-                auto it = std::find_if(gfxFrames.begin(), gfxFrames.end(), [&texName](auto* frame)
-                {
-                    return texName == frame->m_name;
-                });
-                if (it != gfxFrames.end())
-                {
-                    m_frame[i] = *it;
-                }
-            }
-
-            const char* bgIds[4] = { "bgOut", "bgDown", "bgOver", "bgDisable" };
+            // The shipped order is backgrounds first, then frames, and the scan
+            // runs to the end of the table so a duplicated name resolves to the
+            // last entry that carries it.
+            const char* bgIds[4] = {"bgOut", "bgDown", "bgOver", "bgDisable"};
             for (size_t i = 0; i < 4; ++i)
             {
                 CStr texName;
                 SafeStrAttrib(texName, node, bgIds[i]);
-                auto it = std::find_if(gfxBgs.begin(), gfxBgs.end(), [&texName](auto* frame)
+                for (auto* bg : gfxBgs)
                 {
-                    return texName == frame->m_name;
-                });
-                if (it != gfxBgs.end())
+                    if (bg->m_name == texName)
+                    {
+                        m_bg[i] = bg;
+                    }
+                }
+            }
+
+            const char* frameIds[4] = {"frameOut", "frameDown", "frameOver", "frameDisable"};
+            for (size_t i = 0; i < 4; ++i)
+            {
+                CStr texName;
+                SafeStrAttrib(texName, node, frameIds[i]);
+                for (auto* frame : gfxFrames)
                 {
-                    m_bg[i] = *it;
+                    if (frame->m_name == texName)
+                    {
+                        m_frame[i] = frame;
+                    }
                 }
             }
 
@@ -249,17 +250,22 @@ namespace m3d
             {
                 return 0;
             }
-            CVector2 vec;
+            SafeFloatAttrib(m_barWidth, node, "scrollBarWidth");
+
+            CVector2 vec{0.0, 0.0};
             SafeVector2Attrib(vec, node, "scrollThumbSize");
             m_thumbSize.x = vec.x;
             m_thumbSize.y = vec.y;
             
+            vec.x = 0.0;
+            vec.y = 0.0;
             SafeVector2Attrib(vec, node, "scrollBtnSize");
             m_btnSize.x = vec.x;
             m_btnSize.y = vec.y;
 
             SafeFloatAttrib(m_space, node, "scrollSpace");
 
+            m_thumbTex.SetInvalid();
             CStr texName;
             SafeStrAttrib(texName, node, "scrollThumb");
             if (!texName.empty())
@@ -276,10 +282,10 @@ namespace m3d
 
         ScrollPane::~ScrollPane()
         {
-            if (m_thumbTex.IsValid())
-            {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_thumbTex);
-            }
+            // RVA 0x6F8930 - NOTE: unlike Frame and BackGround, this releases the
+            // handle without checking it first, so a scroll pane that never loaded
+            // a thumb still hands an invalid handle to the renderer.
+            Application::g_pApp->m_renderer->ReleaseTexture(m_thumbTex);
         }
 
         ScrollPane::ScrollPane()

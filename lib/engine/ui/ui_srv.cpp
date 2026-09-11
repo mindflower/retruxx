@@ -355,6 +355,35 @@ namespace m3d
         CStr const&,
         PaneFlagBg)
     {
+        // RVA 0x680D60 - the tab strip: the same pane drawing as
+        // AddFlatAxialPane0, but with the top edge broken open around the tab
+        // buttons and each button framed in its own right.
+        //
+        // Structure recovered from the disassembly (not yet written out):
+        //  * pane lookup falls back to "defaultTab", not "defaultWnd";
+        //    stage state is TS_TEXTURE here where AddFlatAxialPane0 uses
+        //    TS_MODULATE.
+        //  * cornerSz / cornerRoundSz / usedBarW come from m_frame[bgFlags],
+        //    else m_frame[0]; both corner sizes are forced to 0 when
+        //    (drawFlags & 4) == 0.
+        //  * background (drawFlags & 1) is not one quad but a list of rects:
+        //    the body below the tab row, the strip directly under the buttons,
+        //    one rect per button spanning cornerRoundSz..btnHeight, and (with
+        //    complex corners) each button's rounded top inset by cornerRoundSz.
+        //    Rects belonging to a button other than selButton are drawn from
+        //    m_bg[1]'s texture, or from the normal one in colour 3 if the pane
+        //    has no second background.
+        //  * frame (drawFlags & 2): left bar m_textures[0] and right bar
+        //    m_textures[2] (or [0] with U flipped) span
+        //    rect.y0 + btnHeight + cornerRoundSz .. rect.y0 + rect.height - cornerSz;
+        //    the top bar m_textures[1] is drawn as two segments either side of
+        //    the selected button, cut at (cornerSz - usedBarW) from its edges;
+        //    the bottom bar is m_textures[3], or [1] with V flipped.
+        //  * each button then gets its own top / left / right bars, taking the
+        //    texture from m_frame[1] when the button is not selected.
+        //  * corners (drawFlags & 4): the window's own from m_textures[4..7],
+        //    and each button's rounded corners from m_textures[8..11] - the
+        //    tabbtn_corner_* set that Frame::ReadFromXmlNode loads.
         RETRUXX_NOT_IMPLEMENTED;
     }
 
@@ -371,8 +400,10 @@ namespace m3d
         PaneFlagBg)
     {
         // RVA 0x67F3C0 - the "izvrat" tab strip draws each tab as its own glyph
-        // image rather than a pane-framed button. Not reconstructed yet; declared
-        // and stubbed here because TabWnd::OnNcPaint dispatches to it.
+        // image (the buttonImages vector) rather than a pane-framed button.
+        // Same shape as AddTabWndPaneNormal above, which should be written
+        // first; not reconstructed yet. TabWnd::OnNcPaint dispatches here when
+        // the tab info asks for DRAWSTYLE_IZVRAT.
         RETRUXX_NOT_IMPLEMENTED;
     }
 

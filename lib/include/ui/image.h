@@ -34,9 +34,9 @@ namespace m3d
             RT_CLASS_DECLARE(ImageWnd);
 
         protected:
-            CStr m_textureName;
-            rend::TexHandle m_texture;
-            bool m_bDrawPane = false;
+            /* 0x0220 */ CStr m_textureName;
+            /* 0x022c */ rend::TexHandle m_texture;
+            /* 0x0230 */ bool m_bDrawPane = false;
         };
     }
 }

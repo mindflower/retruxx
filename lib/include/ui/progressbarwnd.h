@@ -77,16 +77,18 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(ProgressBarWnd);
 
+        protected:
+            /* 0x0220 */ float m_curValue = 0.0;
+            /* 0x0224 */ float m_minValue = 0.0;
+            /* 0x0228 */ float m_maxValue = 0.0;
+            /* 0x022c */ unsigned int m_barColor = 0;
+            /* 0x0230 */ rend::TexHandle m_barTexture;
+            /* 0x0234 */ Orientation m_orientation = ORIENTATION_LEFT_TO_RIGHT;
+            /* 0x0238 */ TextStyle m_textStyle = TEXT_NONE;
+            /* 0x023c */ TextureStyle m_textureStyle = TEXTURE_STRETCH;
+
         private:
-            float m_curValue = 0.0;
-            float m_minValue = 0.0;
-            float m_maxValue = 0.0;
-            unsigned int m_barColor;
-            rend::TexHandle m_barTexture;
-            Orientation m_orientation = ORIENTATION_LEFT_TO_RIGHT;
-            TextStyle m_textStyle = TEXT_NONE;
-            TextureStyle m_textureStyle =TEXTURE_STRETCH;
-            int m_numOfSteps = 1;
+            /* 0x0240 */ int m_numOfSteps = 1;
         };
     }
 }

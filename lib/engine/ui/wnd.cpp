@@ -1360,32 +1360,39 @@ namespace m3d
 
         BoundsBase<float> Wnd::GetClientBounds() const
         {
-            //TODO: check and refactor
-            auto barWidth = GetFrameWidth();
-            auto v4 = m_clientEdges[0] + (float)(0.0 - (float)(0.0 - barWidth));
-            auto v5 = m_clientEdges[1] + (float)(0.0 - (float)(0.0 - barWidth));
-            auto v6 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.width) -
-                (float)(m_clientEdges[0] + m_clientEdges[2]);
-            auto v7 = (float)((float)((float)(0.0 - barWidth) * 2.0) + m_bounds.height) -
-                (float)(m_clientEdges[1] + m_clientEdges[3]);
-            if (v6 < 0.0)
+            // RVA 0x677F50 - the client area is the window inset by its frame on
+            // every side and then by the four client edges.
+            auto const barWidth = GetFrameWidth();
+
+            float x0 = m_clientEdges[0] + barWidth;
+            float y0 = m_clientEdges[1] + barWidth;
+            float width = m_bounds.width - 2.0f * barWidth - (m_clientEdges[0] + m_clientEdges[2]);
+            float height = m_bounds.height - 2.0f * barWidth - (m_clientEdges[1] + m_clientEdges[3]);
+
+            // A window too small for its own insets collapses onto its centre.
+            // NOTE: those two fallbacks are in absolute coordinates while the
+            // normal path is relative to the window; that is how it shipped.
+            if (width < 0.0)
             {
-                v4 = (float)(m_bounds.width * 0.5) + m_bounds.x0;
-                v6 = 0.0;
+                x0 = m_bounds.x0 + m_bounds.width * 0.5f;
+                width = 0.0;
             }
-            if (v7 < 0.0)
+            if (height < 0.0)
             {
-                v5 = (float)(m_bounds.height * 0.5) + m_bounds.y0;
-                v7 = 0.0;
+                y0 = m_bounds.y0 + m_bounds.height * 0.5f;
+                height = 0.0;
             }
 
-            BoundsBase<float> res{0.0, 0.0, 0.0, 0.0};
-            res.x0 = v4;
-            res.y0 = v5;
-            res.width = v6;
-            res.height = v7;
+            // NOTE: BoundsBase's four-argument constructor takes corners, not
+            // extents, so the fields are set individually here.
+            BoundsBase<float> res;
+            res.x0 = x0;
+            res.y0 = y0;
+            res.width = width;
+            res.height = height;
             return res;
         }
+
 
         int Wnd::OnBeforeRemoveFromWndStation()
         {
@@ -1444,12 +1451,17 @@ namespace m3d
 
         void Wnd::AdjustToFitChildren()
         {
-            // NOTE: the original's Hex-Rays output for this method is heavily
-            // garbled (uninitialised stack byrefs); reconstructed from the readable
-            // structure - grow bounds to cover every child plus a corner margin.
+            // RVA 0x676E50 - grow the bounds to cover every child plus a corner
+            // margin. The tail (bounds.width = w + cornerSz, likewise height) and
+            // the zeroed accumulators are unambiguous in the disassembly.
+            //
+            // NOTE: the shipped loop also writes back into each child and calls
+            // the child's SetBounds. IDA mislabels that block's stack slots by a
+            // whole BoundsBase and every candidate reading is nonsensical, so it
+            // has not been reproduced - this pass only measures the children.
             float const cornerSz = static_cast<float>(GetGfxServer()->GetCornerSz());
-            float w = cornerSz / 4.0f;
-            float h = cornerSz / 4.0f;
+            float w = 0.0f;
+            float h = 0.0f;
             for (auto* child = RT_DYNCAST(GetFirstChild(), Wnd); child;
                  child = RT_DYNCAST(child->GetNextSibling(), Wnd))
             {
@@ -1971,7 +1983,12 @@ namespace m3d
         {
             m_created = true;
             SetText(m_wndStation->InitializeStringUsingIds(caption));
-            SetBounds(rc, true);
+            // RVA 0x611BF0 writes the bounds straight into the members rather
+            // than calling the virtual SetBounds, so a derived class's layout
+            // override does not run while the window is still half-built.
+            m_bounds = rc;
+            m_baseOrigin.x = rc.x0;
+            m_baseOrigin.y = rc.y0;
             SetId(id);
             if (style)
             {
@@ -2247,17 +2264,14 @@ namespace m3d
 
         int Wnd::IsPtInBounds(PointBase<float> const& pt) const
         {
-            //TODO: check this
-            auto const result = ToScreen(PointBase<float>{});
-            if (pt.x < result.x || (((m_bounds.width + result.x) - result.x) + result.x) <= pt.x)
+            // RVA 0x481D10 - the point is in screen space, so the window's own
+            // origin is mapped over first.
+            auto const org = ToScreen(PointBase<float>{});
+            if (pt.x < org.x || pt.x >= org.x + m_bounds.width)
             {
                 return false;
             }
-            if (pt.y >= result.y && (((m_bounds.height + result.y) - result.y) + result.y) > pt.y)
-            {
-                return true;
-            }
-            return false;
+            return pt.y >= org.y && pt.y < org.y + m_bounds.height;
         }
 
         int Wnd::SetProperty(unsigned propId, void* prop)

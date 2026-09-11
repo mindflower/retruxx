@@ -231,11 +231,11 @@ namespace m3d
                 return -1;
             }
 
-            virtual int ScrollList(bool toStart)
+            virtual void ScrollList(bool toStart)
             {
                 if (!m_scrollVWnd)
                 {
-                    return 0;
+                    return;
                 }
                 float delta;
                 if (toStart)
@@ -247,15 +247,14 @@ namespace m3d
                     delta = GetItemBounds(GetBottomVisibleItemId()).height;
                 }
                 m_scrollVWnd->SetCurPos(m_scrollVWnd->GetCurPos() + delta);
-                return 1;
             }
 
-            virtual int ScrollSelection(bool toStart)
+            virtual void ScrollSelection(bool toStart)
             {
                 int const n = static_cast<int>(m_items.size());
                 if (n <= 0)
                 {
-                    return 0;
+                    return;
                 }
                 int idx = toStart ? m_curSel - 1 : m_curSel + 1;
                 if (idx < 0)
@@ -267,16 +266,75 @@ namespace m3d
                     idx = n - 1;
                 }
                 SetCurSel(idx);
-                return 1;
             }
 
-            virtual int Scroll(bool toStart)
+            virtual void Scroll(bool toStart)
             {
                 if ((m_drawFlags & 4) != 0)
                 {
-                    return ScrollList(toStart);
+                    ScrollList(toStart);
+                    return;
                 }
-                return ScrollSelection(toStart);
+                ScrollSelection(toStart);
+            }
+
+            // RVA 0x4A90D0 - without this the list draws its frame and nothing
+            // else: RenderItem is never reached, so a list box (and the drop-down
+            // of a combo box) comes up empty.
+            int OnPaint(DrawInfo const& di) override
+            {
+                RecalcLayout();
+
+                if ((m_style & WS_NOFRAME) == 0)
+                {
+                    unsigned clr = m_curClr;
+                    if ((m_style & WS_DISABLE) != 0 || (m_style & WS_GRAYED) != 0)
+                    {
+                        clr = 3;
+                    }
+                    DrawNonClient(di, clr);
+                }
+
+                float curPosV = 0.0f;
+                float curPosH = 0.0f;
+                if (m_scrollVWnd)
+                {
+                    curPosV = m_scrollVWnd->GetCurPos();
+                }
+                if (m_scrollHWnd)
+                {
+                    curPosH = m_scrollHWnd->GetCurPos();
+                }
+
+                auto const clientRect = GetClientBounds();
+
+                for (int i = 0; i < static_cast<int>(m_items.size()); ++i)
+                {
+                    auto const& item = m_items[i];
+
+                    // The selected row gets a highlight quad behind it, unless the
+                    // list is in "do not highlight" mode.
+                    if (m_curSel == i && (m_drawFlags & 1) == 0)
+                    {
+                        BoundsBase<float> b = item.m_rect;
+                        b.width = GetClientBounds().width;
+                        if (m_scrollVWnd && (m_scrollVWnd->GetStyle() & WS_IS_VISIBLE) == 0)
+                        {
+                            // No scroll bar on screen: the highlight takes back the
+                            // width that was reserved for it.
+                            b.width = m_clientEdges[2] + m_scrollVWnd->GetBounds().width + b.width;
+                        }
+                        b.x0 = (item.m_origin.x - curPosH) + clientRect.x0 + b.x0;
+                        b.y0 = (item.m_origin.y - curPosV) + clientRect.y0 + b.y0;
+                        GetGfxServer()->AddFlatAxialQuad(di, b, 1);
+                    }
+
+                    PointBase<float> org;
+                    org.x = item.m_origin.x - curPosH;
+                    org.y = item.m_origin.y - curPosV;
+                    RenderItem(i, org, di);
+                }
+                return 1;
             }
 
             int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override
@@ -323,6 +381,16 @@ namespace m3d
                     return Wnd::OnMouseDblClick(firstClickPt, secondClickPt);
                 }
                 return 0;
+            }
+
+            int WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo) override
+            {
+                if (!Wnd::WriteToXmlNode(file, writeTo))
+                {
+                    return 0;
+                }
+                writeTo->SetAttribute("drawFlags", CStr(static_cast<int>(m_drawFlags)).c_str());
+                return 1;
             }
 
             int ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node) override
@@ -468,18 +536,23 @@ namespace m3d
                         }
                         else
                         {
-                            //TODO: check this and refactor
-                            auto pt = GetOriginPoint();
-                            auto bounds = GetClientBounds();
-                            auto v8 = m_items[i].m_rect.y0 + m_items[i].m_origin.y;
-                            auto v10 = m_items[i].m_rect.height;
-                            auto v11 = v8 + (0.0 - pt.y);
-                            auto v12 = bounds.height * 0.5;
-                            auto v13 = (bounds.height - v12) * 0.5;
-                            if (v13 > (v10 + v11) || v11 > (v13 + v12))
+                            // Scroll the row into view, but only when it falls
+                            // outside the middle half of the client area.
+                            auto const origin = GetOriginPoint();
+                            auto const& item = m_items[i];
+                            float const itemTop = (item.m_rect.y0 + item.m_origin.y) - origin.y;
+                            float const itemH = item.m_rect.height;
+
+                            auto const clientB = GetClientBounds();
+                            float const bandH = clientB.height * 0.5f;
+                            float const bandTop = (clientB.height - bandH) * 0.5f;
+
+                            if (bandTop > (itemH + itemTop) || itemTop > (bandTop + bandH))
                             {
                                 if (m_scrollVWnd)
-                                    m_scrollVWnd->SetCurPos(m_items[i].m_origin.y - v12);
+                                {
+                                    m_scrollVWnd->SetCurPos(item.m_origin.y - bandH);
+                                }
                             }
                         }
                         if ((m_style & 0x40000) != 0)
@@ -491,7 +564,7 @@ namespace m3d
                 }
             }
             //ScrollSelection(bool);
-            unsigned GetDrawFlags()
+            unsigned GetDrawFlags() const
             {
                 return m_drawFlags;
             }
@@ -546,10 +619,9 @@ namespace m3d
                 }
             }
 
-            virtual int MeasureItem(int, BoundsBase<float>&) const
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-            }
+            // Pure in the shipped declaration: only a concrete list knows how to
+            // size its own rows.
+            virtual int MeasureItem(int, BoundsBase<float>&) const = 0;
 
             void SetItemData(int idx,int data)
             {

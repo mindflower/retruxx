@@ -28,7 +28,8 @@ namespace m3d
 
         Object* StringsListBoxWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x71EE30
+            return new StringsListBoxWnd(*this);
         }
 
         StringsListBoxWnd::~StringsListBoxWnd()
@@ -40,25 +41,61 @@ namespace m3d
             return RT_CLASS_LOCAL(StringsListBoxWnd);
         }
 
-        int StringsListBoxWnd::RenderItem(int, PointBase<float> const&, DrawInfo const&)
+        int StringsListBoxWnd::RenderItem(int itemIdx, PointBase<float> const& pt, DrawInfo const& di)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x71CFA0
+            float const width = di.m_clientRect.width;
+
+            // Measured for side effects only, matching the original (the result is not used further).
+            GetGfxServer()->MeasureText(m_items[itemIdx].m_item, m_defFont, m_textWrap, width);
+
+            PointBase<float> origin = pt;
+            if (m_textFormat == TF_CENTER)
+            {
+                float x = width * 0.5f;
+                if (x < 0.0f)
+                {
+                    x = 0.0f;
+                }
+                origin.x = x > width ? width : x;
+            }
+            else if (m_textFormat == TF_RIGHT)
+            {
+                origin.x = width;
+            }
+
+            // A "highlight the selection only" list greys out every other row.
+            CStr textColor = m_strTextColor;
+            if ((m_style & WS_DISABLE) != 0 || (m_style & WS_GRAYED) != 0 ||
+                ((m_drawFlags & 1) != 0 && itemIdx != m_curSel))
+            {
+                textColor = m_strTextColorDisabled;
+            }
+
+            GetGfxServer()->AddText(
+                di, origin, textColor + m_items[itemIdx].m_item, m_defFont, TW_NOWRAP, m_textFormat);
+            return 1;
         }
 
         int StringsListBoxWnd::MeasureItem(int itemIdx, BoundsBase<float>& bounds) const
         {
-            auto point = GetGfxServer()->MeasureText(m_items[itemIdx].m_item, m_defFont, TW_NOWRAP, 10000.0);
-            //TODO: check this!!!
-            bounds.x0 = 0.0;
-            bounds.y0 = 0.0;
-            bounds.width = point.y;
-            bounds.height = point.x;
+            // RVA 0x71D290 - MeasureText returns {x = text width, y = text
+            // height} and the shipped code stores them that way round. (IDA's
+            // stack tracking for this function is off by one push, which makes
+            // the decompile look like the two come from unrelated slots.)
+            auto const point = GetGfxServer()->MeasureText(m_items[itemIdx].m_item, m_defFont, TW_NOWRAP, 10000.0);
+            bounds.x0 = 0.0f;
+            bounds.y0 = 0.0f;
+            bounds.width = point.x;
+            bounds.height = point.y;
             return 1;
         }
 
         int StringsListBoxWnd::DeleteItem(int)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x71CC60 - the items are plain strings, so there is nothing to
+            // release.
+            return 1;
         }
 
         StringsListBoxWnd::StringsListBoxWnd()
@@ -69,14 +106,17 @@ namespace m3d
             m_defFont = 1;
         }
 
-        StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const&)
+        StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const& slbw)
+            : ListBoxWnd<CStr>(slbw)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x71ECC0 - carries the items, the selection and the draw flags
+            // across; unlike the default constructor it does not reset the font.
         }
 
-        int StringsListBoxWnd::CompareItem(int, int)
+        int StringsListBoxWnd::CompareItem(int itemIdx0, int itemIdx1)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x71D1C0
+            return strcmp(m_items[itemIdx0].m_item.c_str(), m_items[itemIdx1].m_item.c_str());
         }
 
         Object* FormattedStringsListBoxWnd::CreateObject()

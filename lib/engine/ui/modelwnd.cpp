@@ -36,46 +36,35 @@ namespace m3d
 
         PointBase<int> ModelWnd::GetFitTargetTextureSize(BoundsBase<float> const& wndBounds)
         {
-            //TODO: check this and refactor
-            PointBase<int> result;  // eax
-            float v3;               // xmm0_4
-            int* v4;                // ecx
-            int v5;                 // edx
-            bool v6;                // cc
-            char v7;                // cl
-            int v8;                 // edx
-            int v9;                 // [esp+4h] [ebp-8h] BYREF
-            int v10;                // [esp+8h] [ebp-4h] BYREF
+            // RVA 0x708010 - the render target is square and a power of two, just
+            // large enough to cover the longer side of the window, clamped to
+            // [32, 512].
+            int const w = static_cast<int>(wndBounds.width);
+            int const h = static_cast<int>(wndBounds.height);
+            int const maxSide = w >= h ? w : h;
 
-            v9 = wndBounds.height;
-            v3 = wndBounds.width;
-            v10 = v9;
-            v9 = v3;
-            v4 = &v10;
-            if (v9 >= v10)
-                v4 = &v9;
-            v5 = *v4;
-            v6 = *v4 < 4;
-            v7 = 2;
-            if (!v6)
+            int shift = 2;
+            if (maxSide >= 4)
             {
                 do
-                    ++v7;
-                while (1 << v7 <= v5);
+                {
+                    ++shift;
+                } while ((1 << shift) <= maxSide);
             }
-            v8 = 1 << v7;
-            if (1 << v7 >= 32)
+
+            int size = 1 << shift;
+            if (size < 32)
             {
-                if (v8 > 512)
-                    v8 = 512;
-                result.x = v8;
-                result.y = v8;
+                size = 32;
             }
-            else
+            else if (size > 512)
             {
-                result.x = 32;
-                result.y = 32;
+                size = 512;
             }
+
+            PointBase<int> result;
+            result.x = size;
+            result.y = size;
             return result;
         }
 
