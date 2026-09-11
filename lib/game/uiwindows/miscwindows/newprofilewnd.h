@@ -10,41 +10,37 @@ namespace m3d
     }
 }
 
-class NewProfileWnd :  public m3d::ui::ModalWnd
+class NewProfileWnd : public m3d::ui::ModalWnd
 {
 public:
-    class AuxInfo
+    struct AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_editNameName;
+        /* 0x000c */ CStr m_btnCancelName;
+        AuxInfo(NewProfileWnd::AuxInfo const&);
         AuxInfo();
-
-    public:
-        CStr m_editNameName = "editName";
-        CStr m_btnCancelName = "btnCancel";
-    };
-
-public:
-    virtual m3d::Object * Clone();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
-    virtual ~NewProfileWnd();
+    }; /* size: 0x0018 */
 
 protected:
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
-    virtual int OnBeforeAddToWndStation();
-    virtual int GameDataSetup();
-    void OnEditChange();
-    virtual int OnKey(unsigned short,unsigned char,unsigned int);
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override /* 0x00 */;
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
     int CreateNewProfile();
-    NewProfileWnd(NewProfileWnd const &);
+    void OnEditChange();
+
+    /* 0x0224 */ m3d::ui::EditWnd* m_editName;
+    /* 0x0228 */ m3d::ui::ButtonWnd* m_btnCancel;
+    /* 0x022c */ NewProfileWnd::AuxInfo m_aif;
+
     NewProfileWnd();
+    NewProfileWnd(NewProfileWnd const& rhs);
 
 public:
+    virtual ~NewProfileWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
     RT_CLASS_DECLARE(NewProfileWnd);
-
-private:
-    m3d::ui::EditWnd *m_editName = nullptr;
-    m3d::ui::ButtonWnd *m_btnCancel = nullptr;
-    AuxInfo m_aif;
-};
+}; /* size: 0x0244 */

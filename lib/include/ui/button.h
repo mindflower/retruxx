@@ -45,14 +45,14 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(ButtonWnd);
 
-        private:
-            int m_isImaged = 0;
-            int m_isInside = 0;
-            rend::TexHandle m_image;
-            rend::TexHandle m_imageMouseIn;
-            rend::TexHandle m_imageMouseDown;
-            rend::TexHandle m_imageDisabled;
-            bool m_isSounded = true;
+        protected:
+            /* 0x0220 */ int m_isImaged = 0;
+            /* 0x0224 */ int m_isInside = 0;
+            /* 0x0228 */ rend::TexHandle m_image;
+            /* 0x022c */ rend::TexHandle m_imageMouseIn;
+            /* 0x0230 */ rend::TexHandle m_imageMouseDown;
+            /* 0x0234 */ rend::TexHandle m_imageDisabled;
+            /* 0x0238 */ bool m_isSounded = true;
         };
 
         class CheckWnd : public ButtonWnd

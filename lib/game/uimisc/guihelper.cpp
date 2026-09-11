@@ -740,6 +740,76 @@ namespace help
         return standAnimations[rand() % standAnimations.size()];
     }
 
+    bool IsMoveAnimation(ActionType action)
+    {
+        // RVA 0x5560C0
+        retruxx::vector<ActionType> moveAnimations;
+        GetAllMoveAnimations(moveAnimations);
+        return std::find(begin(moveAnimations), end(moveAnimations), action) != end(moveAnimations);
+    }
+
+    bool IsStandAnimation(ActionType action)
+    {
+        // RVA 0x556120
+        retruxx::vector<ActionType> standAnimations;
+        GetAllStandAnimations(standAnimations);
+        return std::find(begin(standAnimations), end(standAnimations), action) != end(standAnimations);
+    }
+
+    void RandomizeCurAnimationOnFinish(m3d::AnimatedModel* model, m3d::AnimInfo* animInfo, help::_ActionType nextActionType)
+    {
+        // RVA 0x5561E0
+        if (!model || !animInfo)
+        {
+            return;
+        }
+        auto const* curAnimation = animInfo->GetCurAnimation();
+        if (!curAnimation)
+        {
+            return;
+        }
+
+        short const numFrames = curAnimation->m_numFrames;
+        if (numFrames != 0 && animInfo->CurAnimFrame() < numFrames - 2)
+        {
+            return;
+        }
+
+        ActionType const action = curAnimation->m_action;
+        if (action == AT_NUMTYPES)
+        {
+            return;
+        }
+
+        ActionType next = AT_NUMTYPES;
+        switch (nextActionType)
+        {
+        case _AT_STAND:
+            next = GetRandomStandAnimation(model);
+            break;
+        case _AT_MOVE:
+            model->SetNextForAnimation(action, GetRandomMoveAnimation(model));
+            return;
+        case _AT_NUMTYPES:
+            // Stay within whichever set the current animation came from; an
+            // action in neither set queues nothing at all.
+            if (IsMoveAnimation(action))
+            {
+                model->SetNextForAnimation(action, GetRandomMoveAnimation(model));
+                return;
+            }
+            if (!IsStandAnimation(action))
+            {
+                return;
+            }
+            next = GetRandomStandAnimation(model);
+            break;
+        default:
+            break;
+        }
+        model->SetNextForAnimation(action, next);
+    }
+
     int GetScaledFontId(int patternFontId, float wantedFontSz)
     {
         auto* gfx = m3d::ui::Wnd::GetGfxServer();

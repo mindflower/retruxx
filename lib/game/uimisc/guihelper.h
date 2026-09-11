@@ -125,6 +125,15 @@ namespace help
     // AT_NUMTYPES when model is null. (RVA 0x555FC0 / 0x556040.)
     ActionType GetRandomMoveAnimation(m3d::AnimatedModel* model);
     ActionType GetRandomStandAnimation(m3d::AnimatedModel* model);
+    // True when the action belongs to the corresponding animation set above.
+    // (RVA 0x5560C0 / 0x556120.)
+    bool IsMoveAnimation(ActionType action);
+    bool IsStandAnimation(ActionType action);
+    // Once the model's current animation is within two frames of its end, queue
+    // a follow-up animation after it. nextActionType picks the set to draw from;
+    // _AT_NUMTYPES means "whichever set the current animation came from".
+    // (RVA 0x5561E0.)
+    void RandomizeCurAnimationOnFinish(m3d::AnimatedModel* model, m3d::AnimInfo* animInfo, help::_ActionType nextActionType);
     // Re-resolves a font id at a different point size: looks up the pattern font,
     // then asks the GfxServer for a font with the same name/type/style scaled to
     // wantedFontSz. Returns -1 when the pattern font id is unknown.

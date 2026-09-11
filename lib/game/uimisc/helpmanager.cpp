@@ -82,9 +82,14 @@ HelpManager::AuxInfo::AuxInfo()
 {
 }
 
-CStr HelpManager::GetHelpMsgByHelpId(CStr const&) const
+CStr HelpManager::GetHelpMsgByHelpId(CStr const& strHelpId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x559C70 - the help id doubles as the string id of its body text.
+    if (strHelpId.empty())
+    {
+        return CStr();
+    }
+    return M3D_APP->GetStringByStringId0(strHelpId);
 }
 
 CStr HelpManager::Enumered2StrHelpId(HelpId)
@@ -149,9 +154,14 @@ m3d::Object* HelpManager::Clone()
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-CStr HelpManager::GetHelpTitleByHelpId(CStr const&) const
+CStr HelpManager::GetHelpTitleByHelpId(CStr const& strHelpId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x559CC0 - the title lives under the help id plus a fixed suffix.
+    if (strHelpId.empty())
+    {
+        return CStr();
+    }
+    return M3D_APP->GetStringByStringId0(strHelpId + m_aif.m_strTitleSuffix);
 }
 
 HelpManager::~HelpManager()

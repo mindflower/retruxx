@@ -179,7 +179,7 @@ void CinemaPanel::ClearNormal()
 
 int CinemaPanel::OnPaint(const m3d::ui::DrawInfo& di)
 {
-    // TODO: check this
+    // RVA 0x4AEDE0
     if (m_bSkipMessage)
     {
         Clear();
@@ -695,7 +695,9 @@ void CinemaPanel::UpdateAnimation()
         return;
     }
 
-    // TODO: generated code CinemaPanel::UpdateAnimation
+    // RVA 0x4AF000 - when a portrait's idle animation is within two frames of
+    // its end, queue a random move animation after it so the speaker keeps
+    // fidgeting.
     for (int i = 0; i < 2; ++i)
     {
         auto* portrait = m_wndsPortraits[i];

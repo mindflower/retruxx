@@ -30,8 +30,14 @@ enum HackedMusicType
     HACKMUSIC_LAST = 0x4,
 };
 
+class CreditsWnd;
+
 class CMiracle3d : public m3d::Application
 {
+    // CreditsWnd takes the music system off the game playlist for the
+    // duration of the credits and hands it back afterwards.
+    friend class ::CreditsWnd;
+
 public:
     class CurGameMode
     {

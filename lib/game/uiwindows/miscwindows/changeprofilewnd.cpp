@@ -1,10 +1,15 @@
 #include "changeprofilewnd.h"
 #include <core/log.h>
+#include <m3dapp.h>
 #include <ui/button.h>
 #include <ui/listbox.h>
+#include <ui/msgbox.h>
+#include <ui/wndstation.h>
 
 #include "game/m3dgame.h"
 #include "game/profile.h"
+#include "game/uimanager/truxxuimanager.h"
+#include "game/uimanager/uidefs.h"
 #include "game/uimisc/guihelper.h"
 
 RT_CLASS_EXPORTS_BEGIN(ChangeProfileWnd)
@@ -13,16 +18,24 @@ RT_CLASS_DEFINE(ChangeProfileWnd);
 
 ChangeProfileWnd::AuxInfo::AuxInfo()
 {
+    // RVA 0x4AACB0
+    m_wndProfileListName = "wndProfileList";
+    m_btnChoseName = "btnChose";
+    m_btnDeleteName = "btnDelete";
+    m_lblCurProfileName = "lblCurProfileName";
+    m_strIdCurProfile = "CurProfile";
+    m_curProfileNameColor = 0xFF904040;
 }
 
 m3d::Object* ChangeProfileWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AABF0
+    return new ChangeProfileWnd(*this);
 }
 
 ChangeProfileWnd::~ChangeProfileWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AAF30 - only the aux info and the ModalWnd base need unwinding.
 }
 
 m3d::Object* ChangeProfileWnd::CreateObject()
@@ -55,11 +68,18 @@ CStr ChangeProfileWnd::GetSelectedProfileName() const
 
 ChangeProfileWnd::ChangeProfileWnd()
 {
+    // RVA 0x4AAE00
+    m_wndProfileList = nullptr;
+    m_btnChose = nullptr;
+    m_btnDelete = nullptr;
+    m_lblCurProfile = nullptr;
 }
 
 ChangeProfileWnd::ChangeProfileWnd(ChangeProfileWnd const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AAF10 - the shipped copy constructor copies nothing from rhs and,
+    // unlike the default one, leaves the four child window pointers
+    // uninitialised.
 }
 
 int ChangeProfileWnd::GameDataSetup()
@@ -152,14 +172,28 @@ void ChangeProfileWnd::OnChangeProfileSelection()
     }
 }
 
-int ChangeProfileWnd::OnKey(unsigned short, unsigned char, unsigned)
+int ChangeProfileWnd::OnKey(unsigned short key, unsigned char scanCode, unsigned state)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4ABD90 - Enter picks the highlighted profile, but only when there is
+    // one highlighted.
+    if (static_cast<unsigned char>(key) != 4 || !state)
+    {
+        return ModalWnd::OnKey(key, scanCode, state);
+    }
+    if (GetSelectedProfileName().empty())
+    {
+        return ModalWnd::OnKey(key, scanCode, state);
+    }
+    ChoseProfileAndExit();
+    return 1;
 }
 
 int ChangeProfileWnd::ChoseProfileAndExit()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AB730 - the window closes whether or not the switch succeeded.
+    int const res = ChoseProfile();
+    M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, false, false, false, false, nullptr);
+    return res;
 }
 
 void ChangeProfileWnd::OnProfilesListChanged()
@@ -172,7 +206,12 @@ void ChangeProfileWnd::OnProfilesListChanged()
         {
             m_wndProfileList->AddItem(name);
         }
-        m_wndProfileList->SetCurSel(0);
+        // The shipped code re-reads the list box's own item count here; with no
+        // public accessor for it, the source vector is the same thing.
+        if (!names.empty())
+        {
+            m_wndProfileList->SetCurSel(0);
+        }
     }
 }
 
@@ -202,7 +241,22 @@ int ChangeProfileWnd::GameDataUpdate(void* data, int dataType)
 
 int ChangeProfileWnd::ChoseProfile()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AB600
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    CStr const selProfileName = GetSelectedProfileName();
+    if (M3D_APP->GetProfileManager()->SetCurProfile(selProfileName))
+    {
+        return 1;
+    }
+
+    // NOTE: the shipped code really does report the *create* error string when
+    // switching to an existing profile fails.
+    M3D_APP->RunMsgBoxDlg(CStr(), M3D_APP->GetStringByStringId0(CStr("ProfileCreateError")), 1u, false);
+    return 0;
 }
 
 void ChangeProfileWnd::OnCurProfileChanged()
@@ -224,7 +278,25 @@ void ChangeProfileWnd::OnCurProfileChanged()
 
 int ChangeProfileWnd::DeleteProfile()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AB760
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    CStr const selProfileName = GetSelectedProfileName();
+    if (M3D_APP->RunMsgBoxDlg(CStr(), M3D_APP->GetStringByStringId0(CStr("DeleteProfileWarning")), 2u, false) !=
+        m3d::ui::MBX_RET_YES)
+    {
+        return 1;
+    }
+    if (M3D_APP->GetProfileManager()->DeleteProfile(selProfileName))
+    {
+        return 1;
+    }
+
+    M3D_APP->RunMsgBoxDlg(CStr(), M3D_APP->GetStringByStringId0(CStr("ProfileDeleteError")), 1u, false);
+    return 0;
 }
 
 void ChangeProfileWnd::Clear()
@@ -238,12 +310,32 @@ void ChangeProfileWnd::Clear()
 
 int ChangeProfileWnd::CreateProfile()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AB950 - hands over to the modal "new profile" dialog and closes
+    // this window when it reports success.
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    int ret = 3;
+    M3D_APP->m_pInterfaceManager->ShowWindow(IW_WND_NEW_PROFILE, true, true, true, true, &ret);
+    if (ret == 1)
+    {
+        M3D_APP->m_pInterfaceManager->ShowWindow(m_guiId, false, false, false, false, nullptr);
+    }
+    return 1;
 }
 
 void ChangeProfileWnd::FullUpdate()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4ABAD0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+    Clear();
+    OnProfilesListChanged();
+    OnCurProfileChanged();
 }
 
 int ChangeProfileWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)

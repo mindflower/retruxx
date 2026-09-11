@@ -1,69 +1,69 @@
 #pragma once
 #include "vehiclewnd.h"
 
+#include <vector>
+
 class WorkshopVehicleWnd : public VehicleWnd
 {
 public:
-    class WAuxInfo
-    {
-    public:
-        WAuxInfo();
-
-    private:
-        CStr m_btnPrevName;
-        CStr m_btnNextName;
-        CStr m_btnSkinNextName;
-        CStr m_btnSkinPrevName;
-        CStr m_wndPriceName;
-    };
-
-public:
-    ai::Workshop* GetWorkshop() const;
-    virtual ~WorkshopVehicleWnd();
-    static m3d::Class* GetBaseClass();
+    int SetupForWorkshop(int workshopId);
     int GetWorkshopId() const;
-    static m3d::Object* CreateObject();
-    virtual void OnRestoreStyles();
-    int SetupForWorkshop(int);
-    virtual m3d::Class* GetClass() const;
-    virtual m3d::Object* Clone();
-protected:
+    ai::Workshop* GetWorkshop() const;
+    virtual void OnRestoreStyles() override /* 0x00 */;
 
-    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
-    virtual int GameDataSetup();
-    WorkshopVehicleWnd(WorkshopVehicleWnd const&);
-    WorkshopVehicleWnd();
-    void LaunchNewVehicleInventoryWnd();
-    void FullUpdate();
-    int GetNextObjId(int) const;
-    void OnFinishTrade(void*);
-    void OnRepositoryChanged();
-    void UpdateNextPrevButtonsStates();
-    void AddInfoToEncyclopaedia();
+    struct WAuxInfo
+    {
+        /* 0x0000 */ CStr m_btnPrevName;
+        /* 0x000c */ CStr m_btnNextName;
+        /* 0x0018 */ CStr m_btnSkinNextName;
+        /* 0x0024 */ CStr m_btnSkinPrevName;
+        /* 0x0030 */ CStr m_wndPriceName;
+        WAuxInfo(WorkshopVehicleWnd::WAuxInfo const&);
+        WAuxInfo();
+    }; /* size: 0x003c */
+
+protected:
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
+        /* 0x00 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int OnAfterAddToWndStation() override /* 0x00 */;
+    virtual void SetVehicleId(int vehicleId) override /* 0x11c */;
     int MakeVehiclesList();
-    int GetPrevObjId(int) const;
-    virtual int OnAfterAddToWndStation();
-    virtual int OnBeforeAddToWndStation();
     void ShowNextVehicle();
-    void Hide();
-    virtual int GameDataUpdate(void*, int);
-    virtual void SetVehicleId(int);
     void ShowPrevVehicle();
-    virtual int GameDataClear(bool);
+    int GetNextObjId(int curVehicleObjId) const;
+    int GetPrevObjId(int curVehicleObjId) const;
+    void UpdateNextPrevButtonsStates();
+    void LaunchNewVehicleInventoryWnd();
     ai::GeomRepository* GetWorkshopRepository() const;
+    void OnRepositoryChanged();
+    void FullUpdate();
+    void AddInfoToEncyclopaedia();
+    void Hide();
+    void OnFinishTrade(void* data);
+
+    /* 0x0290 */ WorkshopVehicleWnd::WAuxInfo m_waif;
+    /* 0x02cc */ m3d::ui::ButtonWnd* m_btnPrev;
+    /* 0x02d0 */ m3d::ui::ButtonWnd* m_btnNext;
+    /* 0x02d4 */ int m_workshopId;
+    /* 0x02d8 */ std::vector<int, std::allocator<int> > m_vehicleObjIdList;
+    /* 0x02e8 */ m3d::ui::ButtonWnd* m_btnSkinNext;
+    /* 0x02ec */ m3d::ui::ButtonWnd* m_btnSkinPrev;
+    /* 0x02f0 */ int m_curSkin;
+    /* 0x02f4 */ SkinSwitcher* m_skinSwitcher;
+    /* 0x02f8 */ m3d::ui::Wnd* m_wndPrice;
+
+    WorkshopVehicleWnd();
+    WorkshopVehicleWnd(WorkshopVehicleWnd const& rhs);
 
 public:
+    virtual ~WorkshopVehicleWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
     RT_CLASS_DECLARE(WorkshopVehicleWnd);
-
-private:
-    WorkshopVehicleWnd::WAuxInfo m_waif;
-    m3d::ui::ButtonWnd* m_btnPrev;
-    m3d::ui::ButtonWnd* m_btnNext;
-    int m_workshopId;
-    std::vector<int> m_vehicleObjIdList;
-    m3d::ui::ButtonWnd* m_btnSkinNext;
-    m3d::ui::ButtonWnd* m_btnSkinPrev;
-    int m_curSkin;
-    SkinSwitcher* m_skinSwitcher;
-    m3d::ui::Wnd* m_wndPrice;
-};
+}; /* size: 0x02fc */
