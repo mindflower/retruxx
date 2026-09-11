@@ -648,7 +648,7 @@ namespace ai
 
     m3d::Level* CServer::GetLevel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_level;
     }
 
     m3d::Profiler* CServer::GetPathFindingProfiler()

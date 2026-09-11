@@ -5,6 +5,7 @@
 
 #include "geomobject.h"
 #include "landscape.h"
+#include "level.h"
 #include "physicbody.h"
 #include "world.h"
 #include "core/kernel.h"
@@ -18,6 +19,7 @@
 #include "server/objects/town.h"
 #include "server/objects/base/shell.h"
 #include "server/objects/vehicle.h"
+#include "vehiclepart.h"
 #include <algorithm>
 
 #include "m3dapp.h"
@@ -339,6 +341,163 @@ namespace ai
             return v4 >= 2;
         }
     }  // namespace
+
+    bool CollideGeom(
+        ai::Geom const& testGeom,
+        bool dontCollideWithLittle,
+        bool dontCollideWithPlayer,
+        bool dontCollideWithWater,
+        bool dontCollideWithShells)
+    {
+        // RVA 0x608E90 - a yes/no overlap test for one geom against the single
+        // collision cell it sits in, plus the terrain. Unlike TraceLine it never
+        // reports where it hit, so it stops at the first contact.
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        float const invCellSize = 1.0f / static_cast<int>(VISCELL_EDGE_LENGTH);
+
+        auto const* geomPos = dGeomGetPosition(testGeom.GetGeomId());
+        int const cellX = static_cast<int>(invCellSize * static_cast<float>(geomPos[0]));
+        int const cellZ = static_cast<int>(invCellSize * static_cast<float>(geomPos[2]));
+
+        // land_size counts cells, not world units - GetLevelSize() is the latter
+        // and must not be used to bound a cell index.
+        int const landSize = ai::pServer->GetLevel()->land_size;
+        if (cellX < 0 || cellX >= landSize || cellZ < 0 || cellZ >= landSize)
+        {
+            return false;
+        }
+
+        dContact contact;
+        auto& landscape = ai::pServer->GetWorld()->GetLandscape();
+
+        if (auto* terrain = landscape.GetTerrainGeomObject())
+        {
+            if (dCollide(testGeom.GetGeomId(), terrain->GetGeom(), 1, &contact.geom, sizeof(dContact)))
+            {
+                return true;
+            }
+        }
+
+        auto* cellItem = landscape.GetCollisionCellItem(cellX, cellZ);
+        if (!cellItem)
+        {
+            M3D_LOG_INFO(
+                "Warning: null collision cell item, cellX = " + CStr(cellX) + ", cellZ = " + CStr(cellZ));
+            return false;
+        }
+
+        for (auto* geomObject : cellItem->m_geomsList)
+        {
+            if (dontCollideWithLittle && IsLittle(geomObject->GetGeom()))
+            {
+                continue;
+            }
+            if (dontCollideWithWater && geomObject->IsKindOf(&m3d::GeomObjectWater::m_classGeomObjectWater))
+            {
+                continue;
+            }
+            if (geomObject->IsKindOf(&m3d::GeomObjectPassCell::m_classGeomObjectPassCell))
+            {
+                continue;
+            }
+            if (dCollide(testGeom.GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, sizeof(dContact)))
+            {
+                return true;
+            }
+        }
+
+        for (int objId : cellItem->m_physicObjIds)
+        {
+            auto* obj = dynamic_cast<ai::PhysicObj*>(ai::theObjects->GetEntityByObjId(objId));
+            if (!obj)
+            {
+                M3D_LOG_ERR(
+                    "Error: NULL object is linked to collision cell x = " + CStr(cellX) + ", y = " + CStr(cellZ) +
+                    ", id = " + CStr(objId));
+                continue;
+            }
+
+            // A body-less object has no geometry worth testing, and a blast wave
+            // is a pressure volume rather than something solid.
+            if (!obj->GetBody() || obj->IsKindOf(&ai::BlastWave::m_classBlastWave))
+            {
+                continue;
+            }
+
+            if (obj->IsKindOf(&ai::SimplePhysicObj::m_classSimplePhysicObj))
+            {
+                auto* simple = static_cast<ai::SimplePhysicObj*>(obj);
+                // The original indexes the first geom unconditionally; here a body
+                // that never got its geometry built would be a null dereference.
+                auto* body = simple->GetPhysicBody();
+                if (!body || body->m_pGeoms.empty() || !body->m_pGeoms.front())
+                {
+                    continue;
+                }
+                dxGeom* geom = body->m_pGeoms.front()->GetGeomId();
+
+                if (dontCollideWithLittle && IsLittle(geom))
+                {
+                    continue;
+                }
+                if (dontCollideWithShells && obj->IsKindOf(&ai::Shell::m_classShell))
+                {
+                    continue;
+                }
+                if (dontCollideWithPlayer &&
+                    static_cast<ai::Vehicle*>(obj->GetParent()) ==
+                        ai::gDynamicScene->GetVehicleControlledByPlayer())
+                {
+                    continue;
+                }
+                // Geoms parked in the intersection space, or in our own space,
+                // are not real obstacles.
+                if (dGeomGetSpace(geom) == ai::gIntersectionSpace)
+                {
+                    continue;
+                }
+                if (dGeomGetSpace(geom) == dGeomGetSpace(testGeom.GetGeomId()))
+                {
+                    continue;
+                }
+                if (dCollide(testGeom.GetGeomId(), geom, 1, &contact.geom, sizeof(dContact)))
+                {
+                    return true;
+                }
+            }
+            else if (obj->IsKindOf(&ai::ComplexPhysicObj::m_classComplexPhysicObj))
+            {
+                auto* complex = static_cast<ai::ComplexPhysicObj*>(obj);
+                if (dontCollideWithPlayer && complex == ai::gDynamicScene->GetVehicleControlledByPlayer())
+                {
+                    continue;
+                }
+
+                for (auto const& part : complex->m_vehicleParts)
+                {
+                    if (!part.second || part.second->m_pGeoms.empty() || !part.second->m_pGeoms.front())
+                    {
+                        continue;
+                    }
+                    dxGeom* geom = part.second->m_pGeoms.front()->GetGeomId();
+                    if (dGeomGetSpace(geom) == ai::gIntersectionSpace)
+                    {
+                        continue;
+                    }
+                    if (dGeomGetSpace(geom) == dGeomGetSpace(testGeom.GetGeomId()))
+                    {
+                        continue;
+                    }
+                    if (dCollide(testGeom.GetGeomId(), geom, 1, &contact.geom, sizeof(dContact)))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     bool TraceLine(
         ai::Ray const& ray,

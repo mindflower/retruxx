@@ -880,118 +880,121 @@ namespace m3d
 
     void Cinematic::Update(CCamera& cam, float deltaTime)
     {
-        // TODO: generated code
-        if (this->m_curItem.m_playType == CINEMATIC_PLAY_PATH)
+        // RVA 0x627E70
+        if (m_curItem.m_playType == CINEMATIC_PLAY_PATH)
         {
-            // Get camera position and rotation from camera path
-            CVector cameraPosition{0.0, 0.0, 0.0};
-            Quaternion cameraRotation{ 0.0, 0.0, 0.0, 1.0 };
+            // The zoom travels in and out of the path: whatever the camera is
+            // on now is the starting point, and the path hands back the value
+            // for this instant.
             float zoom = M3D_APP->getZoom();
+            CVector cameraPosition{0.0f, 0.0f, 0.0f};
+            Quaternion cameraRotation{0.0f, 0.0f, 0.0f, 1.0f};
+            m_curItem.m_cameraPath.GetCameraForTime(m_curTime, cameraPosition, cameraRotation, zoom);
 
-            m_curItem.m_cameraPath.GetCameraForTime(this->m_curTime,cameraPosition, cameraRotation, zoom);
-
-            // Store current camera state for interpolation
-            CVector currentCamPos = cam.m_worldOrigin;
+            // Where the camera is right now, to spring away from.
+            CVector const currentCamPos = cam.m_worldOrigin;
 
             CMatrix currentCamMatrix;
             currentCamMatrix.rotYPR(cam.m_rotYaw, cam.m_rotPitch, cam.m_rotRoll);
-
             Quaternion currentCamRot;
             currentCamRot.FromMatrix(currentCamMatrix);
 
-            // Calculate interpolation factor based on spring coefficient and delta time
-            float springCoeff = M3D_ENGINE_CFG.m_cinematic_spring_coeff.GetF();
-            float interpolationFactor = springCoeff * deltaTime;
-            interpolationFactor = (interpolationFactor <= 1.0f) ? interpolationFactor : 1.0f;
-
-            // Handle relative coordinate transformations
-            if (this->m_curItem.m_bRelativePoints)
+            float interpolationFactor = M3D_ENGINE_CFG.m_cinematic_spring_coeff.GetF() * deltaTime;
+            if (interpolationFactor > 1.0f)
             {
-                // Transform camera position by base rotation and translation
-                Quaternion baseRotation = m3d::Cinematic::_GetBaseRotation();
-                CVector basePoint = m3d::Cinematic::_GetBasePoint();
+                interpolationFactor = 1.0f;
+            }
 
-                // Rotate camera position by base rotation
-                CMatrix rotationMatrix = baseRotation.ToMatrix();
+            bool lerpPosition = m_curItem.m_bLerpFromPreviousItem && m_numConsecutiveItemPlayingNow >= 2;
+
+            if (m_curItem.m_bRelativePoints)
+            {
+                // The path is authored in the base object's frame.
+                CMatrix const rotationMatrix = _GetBaseRotation().ToMatrix();
                 cameraPosition = rotationMatrix.vecRot(cameraPosition);
+                cameraPosition = cameraPosition + _GetBasePoint();
 
-                // Translate by base point
-                cameraPosition = cameraPosition + basePoint;
-
-                // Apply interpolation if needed
-                if (this->m_curTime > 0.1f ||
-                    (this->m_curItem.m_bLerpFromPreviousItem && this->m_numConsecutiveItemPlayingNow >= 2))
+                // Past the first tenth of a second the camera always springs
+                // towards the relative path rather than snapping onto it.
+                if (m_curTime > 0.1f)
                 {
-                    cameraPosition = lerp(currentCamPos, cameraPosition, interpolationFactor);
+                    lerpPosition = true;
                 }
             }
-            else
+
+            if (lerpPosition)
             {
-                // Apply interpolation for non-relative points with consecutive items
-                if (this->m_curItem.m_bLerpFromPreviousItem && this->m_numConsecutiveItemPlayingNow >= 2)
-                {
-                    cameraPosition = lerp(currentCamPos, cameraPosition, interpolationFactor);
-                }
+                cameraPosition = lerp(currentCamPos, cameraPosition, interpolationFactor);
             }
-
-            // Update camera position
             cam.m_worldOrigin = cameraPosition;
 
-            // Handle camera rotation
-            if (!this->m_curItem.m_bLookTo)
+            Quaternion newCamRot{0.0f, 0.0f, 0.0f, 1.0f};
+            if (!m_curItem.m_bLookTo)
             {
-                if (this->m_curItem.m_bRelativeRotations)
+                if (m_curItem.m_bRelativeRotations)
                 {
-                    // Transform rotation by base rotation
-                    Quaternion baseRotation = m3d::Cinematic::_GetBaseRotation();
-                    Quaternion inverseBaseRotation = baseRotation.getInversed();
-                    cameraRotation = inverseBaseRotation;
-                    cameraRotation *= cameraRotation;
+                    cameraRotation *= _GetBaseRotation().getInversed();
                 }
-
-                // Apply interpolation to rotation if needed
-                if ((this->m_curItem.m_bRelativePoints && this->m_curTime > 0.1f) ||
-                    (this->m_curItem.m_bLerpFromPreviousItem && this->m_numConsecutiveItemPlayingNow >= 2))
-                {
-                    cameraRotation.Lerp(currentCamRot, cameraRotation, interpolationFactor);
-                }
-
-                // Convert quaternion to Euler angles and update camera
-                CMatrix rotationMatrix = cameraRotation.ToMatrix();
-
-                float yaw, pitch, roll;
-                rotationMatrix.getYPR(yaw, pitch, roll);
-
-                cam.m_rotYaw = yaw;
-                cam.m_rotPitch = pitch;
-                cam.m_rotRoll = roll;
+                newCamRot = cameraRotation;
             }
             else
             {
-                // Look at specific point
-                CVector targetPoint = m3d::Cinematic::_GetPointToLookAt();
-                cam.lookAt(targetPoint);
+                // Aim at the target, then read the resulting angles back out so
+                // they go through the same smoothing as a path rotation would.
+                cam.lookAt(_GetPointToLookAt());
+
+                CMatrix lookAtMatrix;
+                lookAtMatrix.rotYPR(cam.m_rotYaw, cam.m_rotPitch, cam.m_rotRoll);
+                newCamRot.FromMatrix(lookAtMatrix);
             }
-        }
-        else if (this->m_curItem.m_playType == CINEMATIC_FLY_AROUND)
-        {
 
-            RETRUXX_NOT_IMPLEMENTED;
-        }
-
-        // Handle cinematic completion
-        if (this->m_curTime > this->m_curItem.m_cameraPath.GetFullTime() && !this->m_curItem.m_bWaitWhenStop)
-        {
-            // Reset zoom and stop cinematic if not in debug mode
-            M3D_APP->setZoom(1.0f);
-            if (!this->m_bDebugMode)
+            if ((m_curItem.m_bRelativePoints && m_curTime > 0.1f) ||
+                (m_curItem.m_bLerpFromPreviousItem && m_numConsecutiveItemPlayingNow >= 2))
             {
-                this->m_curItem.m_playType = CINEMATIC_OFF;
+                newCamRot = SLerpAcc(currentCamRot, newCamRot, interpolationFactor);
+            }
+
+            newCamRot.ToMatrix().getYPR(cam.m_rotYaw, cam.m_rotPitch, cam.m_rotRoll);
+
+            M3D_APP->setZoom(zoom);
+        }
+        else if (m_curItem.m_playType == CINEMATIC_FLY_AROUND)
+        {
+            // A spherical orbit around the target: the two angles and the radius
+            // are interpolated straight across the item's full time.
+            float const t = m_curTime / m_curItem.m_cameraPath.GetFullTime();
+            float const curPhi = m_curItem.m_startPhi * (1.0f - t) + m_curItem.m_finalPhi * t;
+            float const curTheta = m_curItem.m_startTheta * (1.0f - t) + m_curItem.m_finalTheta * t;
+            float const curRadius = m_curItem.m_startRadius * (1.0f - t) + m_curItem.m_finalRadius * t;
+
+            CVector const pointToLookAt = _GetPointToLookAt();
+
+            float const cosTheta = cosf(curTheta);
+            cam.m_worldOrigin.x = cosf(curPhi) * cosTheta * curRadius + pointToLookAt.x;
+            cam.m_worldOrigin.z = cosTheta * sinf(curPhi) * curRadius + pointToLookAt.z;
+            cam.m_worldOrigin.y = sinf(curTheta) * curRadius + pointToLookAt.y;
+
+            // Never orbit through the ground.
+            float const minY =
+                pClient->GetWorld().GetLandscape().GetLsHeight(cam.m_worldOrigin.x, cam.m_worldOrigin.z) + 3.0f;
+            if (minY > cam.m_worldOrigin.y)
+            {
+                cam.m_worldOrigin.y = minY;
+            }
+
+            cam.lookAt(pointToLookAt);
+        }
+
+        if (m_curTime > m_curItem.m_cameraPath.GetFullTime() && !m_curItem.m_bWaitWhenStop)
+        {
+            M3D_APP->setZoom(1.0f);
+            if (!m_bDebugMode)
+            {
+                m_curItem.m_playType = CINEMATIC_OFF;
             }
         }
 
-        // Update current time
-        this->m_curTime += deltaTime;
+        m_curTime += deltaTime;
     }
 
     void Cinematic::SetLerpFromPreviousItem(bool bLerp)

@@ -170,7 +170,7 @@ namespace m3d
 
     float WeatherManager::GetShadowTransparencyFromWeather() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_currentWeather->m_shadowTransparency[m_curDayTime];
     }
 
     GlobalTimeParams WeatherManager::GetCurrentDayTime() const

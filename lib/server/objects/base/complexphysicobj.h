@@ -6,6 +6,7 @@ namespace ai
 {
     class CollisionInfo;
     class VehiclePart;
+    class Geom;
 
     class ComplexPhysicObjPartDescription : public m3d::Object
     {
@@ -153,6 +154,9 @@ namespace ai
         using VehiclePartsMap = retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > >;
 
     protected:
+        // ai::CollideGeom walks every part's geometry directly, exactly as the
+        // shipped code does.
+        friend bool CollideGeom(ai::Geom const&, bool, bool, bool, bool);
         /* 0x0120 */ retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > > m_vehicleParts;
         virtual void _InternalCreateVisualPart() override /* 0x100 */;
         virtual void _ConstructVehiclePart(const CStr& name, ai::VehiclePart* vehiclePart, int index, bool bForAnimation) /* 0x1b8 */;

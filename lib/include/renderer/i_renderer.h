@@ -726,12 +726,12 @@ namespace m3d
             virtual void PushFillMode(m3d::rend::FillMode) = 0;
             virtual void PopFillMode() = 0;
             virtual void SetFillMode(m3d::rend::FillMode, bool) = 0;
-            virtual void PushZBias(float) = 0;
             virtual void PushZBias() = 0;
+            virtual void PushZBias(float) = 0;
             virtual void PopZBias() = 0;
             virtual void SetZBias(float, bool) = 0;
-            virtual void PushZBiasSlopeScale(float) = 0;
             virtual void PushZBiasSlopeScale() = 0;
+            virtual void PushZBiasSlopeScale(float) = 0;
             virtual void PopZBiasSlopeScale() = 0;
             virtual void SetZBiasSlopeScale(float, bool) = 0;
             virtual void PushShadeMode(m3d::rend::ShadeMode) = 0;
@@ -980,8 +980,8 @@ namespace m3d
             virtual void EnableClipPlane(int, bool) = 0;
             virtual int GetMaxAnisotropy() = 0;
             virtual void ResetStats() = 0;
-            virtual void GetStats(m3d::rend::RenderStats*) = 0;
-            virtual void GetDeviceMemStats(m3d::rend::DeviceMemStats*) = 0;
+            virtual void GetStats(m3d::rend::RenderStats&) = 0;
+            virtual void GetDeviceMemStats(m3d::rend::DeviceMemStats&) = 0;
             virtual void ShowStats() = 0;
             virtual int OptimizeGeometryToSingleStrip(m3d::rend::VertexType, void*, int, unsigned __int16*, int, int, void**, int*, int**, unsigned __int16**, int*) = 0;
             virtual int OptimizeGeometryToTriList(m3d::rend::VertexType, void*, int, unsigned __int16*, int, int, void**, int*, int**, unsigned __int16**, int*) = 0;
@@ -1019,4 +1019,10 @@ namespace m3d
             IRenderer() {}
         };
     }
+
+    // RVA 0x75ED50 - the render state every "overlay" pass (decals, projectors,
+    // sprites, lights and the landscape/grass shadow passes) pushes before it
+    // draws on top of already rendered geometry. The matching PopZbState /
+    // PopZFunc / PopZBiasSlopeScale / PopZBias are done by the callers.
+    void overlayStart();
 }

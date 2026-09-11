@@ -805,9 +805,22 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    CVector PhysicObj::GetPositionAtRelPoint(CVector) const
+    CVector PhysicObj::GetPositionAtRelPoint(CVector point) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FC710 - takes a point in the object's own frame into world
+        // space. rotTranslate with a zero origin is exactly the quaternion to
+        // matrix conversion the original inlines here.
+        CMatrix rot;
+        rot.rotTranslate(GetRotation(), CVector(0.0f, 0.0f, 0.0f));
+
+        CVector const rotated = rot.vecRot(point);
+        CVector const pos = GetPosition();
+
+        CVector res;
+        res.x = rotated.x + pos.x;
+        res.y = pos.y + rotated.y;
+        res.z = pos.z + rotated.z;
+        return res;
     }
 
     void PhysicObj::SetPosition(CVector const& pos)

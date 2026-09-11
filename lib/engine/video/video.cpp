@@ -200,11 +200,14 @@ namespace m3d
 
     long CTextureRenderer::SetMediaType(CMediaType const* pmt)
     {
-        m_lVidWidth = pmt->pbFormat[13];
-        m_lVidHeight = pmt->pbFormat[14];
+        const auto* header = (const VIDEOINFOHEADER*)pmt->pbFormat;
+        m_lVidWidth = header->bmiHeader.biWidth;
+        m_lVidHeight = header->bmiHeader.biHeight;
+
         auto v4 = 2;
         auto v5 = 2;
         for (m_lVidPitch = 4 * m_lVidWidth; v5 < m_lVidWidth; v5 *= 2);
+
         if (m_lVidHeight > 2)
         {
             do
@@ -229,9 +232,10 @@ namespace m3d
         return result;
     }
 
-    void CTextureRenderer::GetVideoDims(int&, int&)
+    void CTextureRenderer::GetVideoDims(int& w, int& h)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        w = m_lVidWidth;
+        h = m_lVidHeight;
     }
 
     long CTextureRenderer::DoRenderSample(IMediaSample* pSample)
@@ -248,10 +252,7 @@ namespace m3d
         int ysize = 0;
         M3D_APP->m_renderer->GetDims(g_pTexture, xsize, ysize);
 
-        int retaddr = 0;
-        auto texLock = static_cast<char*>(M3D_APP->m_renderer->LockTexture(g_pTexture, rend::TM_DTF_RGBA8888_VIDEOFRAME, retaddr, 0));
         RETRUXX_NOT_IMPLEMENTED;
-
 
         M3D_APP->m_renderer->UnlockTexture(g_pTexture);
         SetEvent(g_Event1);

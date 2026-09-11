@@ -4,6 +4,20 @@
 
 namespace m3d
 {
+    // Deletes every element of a container of owning raw pointers and then
+    // releases the container's own storage - not just clear(), the buffer goes
+    // too. Elements are destroyed back to front, as in the original.
+    template <class T>
+    void emptyPtrContainer(T& c)
+    {
+        while (!c.empty())
+        {
+            delete c.back();
+            c.pop_back();
+        }
+        T().swap(c);
+    }
+
     template<class T>
     class CStrHash
     {

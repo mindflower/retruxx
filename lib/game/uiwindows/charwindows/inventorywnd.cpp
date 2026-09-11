@@ -307,28 +307,32 @@ void InventoryWnd::AddCBWindows()
     }
 
     // Add cabin window if not already a child
-    if (m_wndCabin && !m_wndCabin->IsChildOf(this))
+    if (!m_wndCabin->IsChildOf(this))
     {
         // Disable animations
         m_wndCabin->EnableOnShowAnimation(false);
         m_wndCabin->EnableOnHideAnimation(false);
 
         // Set bounds from saved info
-        m_wndCabin->SetBounds(m_childSaveInfo.m_cabinB, true);
+        auto bounds = m_childSaveInfo.m_cabinB;
+        bounds.x0 = 0.0;
+        m_wndCabin->SetBounds(bounds, true);
 
         // Add as child
         AddChild(m_wndCabin.get());
     }
 
     // Add basket window if not already a child
-    if (m_wndBasket && !m_wndBasket->IsChildOf(this))
+    if (!m_wndBasket->IsChildOf(this))
     {
         // Disable animations
         m_wndBasket->EnableOnShowAnimation(false);
         m_wndBasket->EnableOnHideAnimation(false);
 
         // Set bounds from saved info
-        m_wndBasket->SetBounds(m_childSaveInfo.m_basketB, true);
+        auto bounds = m_childSaveInfo.m_basketB;
+        bounds.x0 = 0.0;
+        m_wndBasket->SetBounds(bounds, true);
 
         // Add as child
         AddChild(m_wndBasket.get());

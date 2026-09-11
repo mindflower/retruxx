@@ -51,7 +51,25 @@ void CMatrix::zero()
 
 CMatrix CMatrix::getTransposed() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4058D0
+    CMatrix res;
+    res._11 = _11;
+    res._12 = _21;
+    res._13 = _31;
+    res._14 = _41;
+    res._21 = _12;
+    res._22 = _22;
+    res._23 = _32;
+    res._24 = _42;
+    res._31 = _13;
+    res._32 = _23;
+    res._33 = _33;
+    res._34 = _43;
+    res._41 = _14;
+    res._42 = _24;
+    res._43 = _34;
+    res._44 = _44;
+    return res;
 }
 
 CMatrix CMatrix::getInverseRot() const
@@ -148,9 +166,34 @@ float CMatrix::GetScaleZ() const
     return sqrt(_33 * _33 + _23 * _23 + _13 * _13);
 }
 
-void CMatrix::shadow(CVector4 const&, CPlane const&)
+void CMatrix::shadow(CVector4 const& light, CPlane const& plane)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8A1E10 - the classic planar projection matrix. CPlane keeps the
+    // plane as "n.p == m_dist", so the four component form is (n, -m_dist) and
+    // the light/plane dot product picks up a minus in front of the w term.
+    float const nDotL = light.x * plane.m_normal.x;
+    float const dot = (light.y * plane.m_normal.y + plane.m_normal.z * light.z + nDotL) -
+        plane.m_dist * light.w;
+
+    _11 = dot - nDotL;
+    _21 = -(light.x * plane.m_normal.y);
+    _31 = -(light.x * plane.m_normal.z);
+    _41 = plane.m_dist * light.x;
+
+    _12 = -(light.y * plane.m_normal.x);
+    _22 = dot - light.y * plane.m_normal.y;
+    _32 = -(light.y * plane.m_normal.z);
+    _42 = light.y * plane.m_dist;
+
+    _13 = -(plane.m_normal.x * light.z);
+    _23 = -(light.z * plane.m_normal.y);
+    _33 = dot - plane.m_normal.z * light.z;
+    _43 = plane.m_dist * light.z;
+
+    _14 = -(light.w * plane.m_normal.x);
+    _24 = -(light.w * plane.m_normal.y);
+    _34 = -(light.w * plane.m_normal.z);
+    _44 = plane.m_dist * light.w + dot;
 }
 
 void CMatrix::GetInvBasis(CVector& x, CVector& y, CVector& z) const

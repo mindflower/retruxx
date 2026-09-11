@@ -25,6 +25,22 @@
 
 namespace m3d
 {
+    RoadInRadius2dTest::RoadInRadius2dTest(CVector const& origin, float r) : org(origin), radius(r)
+    {
+        // RVA 0x8A2240
+    }
+
+    bool RoadInRadius2dTest::TestRoadNode(RoadNode* rn) const
+    {
+        // RVA 0x7B3970 - the height of the node plays no part, so a road is
+        // accepted whenever its bounding circle overlaps the test circle when
+        // both are flattened onto the ground.
+        float const dx = rn->m_boundCenter.x - org.x;
+        float const dz = rn->m_boundCenter.z - org.z;
+        float const r = rn->m_boundRadius + radius;
+        return r * r > dx * dx + dz * dz;
+    }
+
     CStr const RoadManager::GetRoadSetNameByHandle(int handle)
     {
         CStr toRet;

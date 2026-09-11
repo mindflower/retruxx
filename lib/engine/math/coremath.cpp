@@ -230,6 +230,38 @@ float CalculateAngle(CVector2 const& a, CVector2 const& b)
     return angleb;
 }
 
+Quaternion SLerp(Quaternion const& a, Quaternion const& b, float t)
+{
+    // RVA 0x5FED10 - spherical interpolation, except close to parallel or
+    // antiparallel where sin(theta) is too small to divide by; there it falls
+    // back to a straight lerp and renormalises.
+    float const cosTheta = ((a.w * b.w + a.z * b.z) + a.y * b.y) + a.x * b.x;
+
+    if (fabsf(cosTheta + 1.0f) <= 0.059999999f || fabsf(cosTheta - 1.0f) <= 0.059999999f)
+    {
+        // Antiparallel: walk away from a rather than towards it.
+        float const ka = cosTheta <= 0.0f ? t - 1.0f : 1.0f - t;
+
+        Quaternion r;
+        r.x = b.x * t + a.x * ka;
+        r.y = b.y * t + a.y * ka;
+        r.z = b.z * t + a.z * ka;
+        r.w = b.w * t + a.w * ka;
+
+        float const lenSq = ((r.w * r.w + r.z * r.z) + r.y * r.y) + r.x * r.x;
+        if (lenSq <= 0.0f)
+        {
+            return Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+        float const inv = 1.0f / sqrtf(lenSq);
+        return Quaternion(r.x * inv, r.y * inv, r.z * inv, r.w * inv);
+    }
+
+    float const theta = acosf(cosTheta);
+    float const invSinTheta = 1.0f / sqrtf(1.0f - cosTheta * cosTheta);
+    return a * (sinf((1.0f - t) * theta) * invSinTheta) + b * (sinf(theta * t) * invSinTheta);
+}
+
 Quaternion SLerpAcc(Quaternion const& a, Quaternion const& b, float t)
 {
     // TODO: check this

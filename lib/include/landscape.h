@@ -706,3 +706,30 @@ namespace m3d
 
     static_assert(sizeof(Landscape) == 0x8f10);
 }
+
+// Scratch buffers the grass passes collect a cell into before handing it to
+// Landscape::RenderGrass. They live in the global namespace in the original
+// (0xA37410 and 0xA354D0), shared between the landscape and the shadow code.
+int const MAX_VISIBLE_GRASS_INSTANCES = 2000;
+extern m3d::Landscape::GrassInstance* visGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
+extern int visModelsForGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
+
+struct GrassModelInfo
+{
+    /* 0x0000 */ m3d::rend::VbHandle vb;
+    /* 0x0004 */ m3d::rend::IbHandle ib;
+    /* 0x0008 */ m3d::rend::TexHandle tex;
+    /* 0x000c */ unsigned short numVerts;
+    /* 0x000e */ unsigned short numTris;
+    /* 0x0010 */ unsigned short numIndices;
+    /* 0x0012 */ char Padding_121[2];
+    /* 0x0014 */ CStr modelName;
+    /* 0x0020 */ float boundRadius;
+}; /* size: 0x0024 */
+
+static_assert(sizeof(GrassModelInfo) == 0x0024);
+
+// 0xA17A30 - a fixed table, not a growable one; m_numGrassModels says how many
+// of the slots are in use.
+int const MAX_GRASS_MODELS = 20;
+extern GrassModelInfo m_grassModels[MAX_GRASS_MODELS];

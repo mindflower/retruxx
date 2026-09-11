@@ -9,6 +9,7 @@
 #include "core/timer.h"
 #include "world.h"
 #include "level.h"
+#include "client.h"
 #include "core/log.h"
 #include "scene/nodes/sgnodeanimatedmodel.h"
 #include "scene/nodes/sgnodedecals.h"
@@ -29,6 +30,88 @@
 namespace
 {
     float const VISCELL_EDGE_LENGTH_6 = 128.0;
+
+    // Shadows never start fading closer than this, however short the fog is.
+    float const FADE_START = 128.0;
+
+    // The shadow texture packs one cell per colour channel.
+    int const CELLS_PER_SHADOW_TEXTURE = 3;
+    unsigned const COLOR_MASK[CELLS_PER_SHADOW_TEXTURE] = {0x0000FFu, 0x00FF00u, 0xFF0000u};
+
+    struct ShadowStats
+    {
+        // RVA 0x8A1D10
+        /* 0x0000 */ int numToTexDIPs = 0;
+        /* 0x0004 */ int numPutDIPs = 0;
+        /* 0x0008 */ int numToTexPolys = 0;
+        /* 0x000c */ int numPutPolys = 0;
+        /* 0x0010 */ int numCells = 0;
+    };
+
+    // RVA 0x8A2360 - builds the world -> shadow texture transform for one cell
+    // batch: move the batch centre to the origin, scale it into the [-0.5, 0.5]
+    // box, shift it into [0, 1] and finally move the world z into the texture v
+    // coordinate. The y row of the scale is deliberately zero, so the height of
+    // a point never reaches the texture coordinates.
+    CMatrix CalcLinearTransform(float sc, float tx, float tz)
+    {
+        CMatrix shift;
+        shift.zero();
+        shift._11 = 1.0f;
+        shift._22 = 1.0f;
+        shift._33 = 1.0f;
+        shift._44 = 1.0f;
+        shift._41 = -tx;
+        shift._43 = -tz;
+
+        CMatrix scale;
+        scale.zero();
+        scale._11 = sc;
+        scale._33 = sc;
+        scale._44 = 1.0f;
+
+        CMatrix shiftHalf1;
+        shiftHalf1.zero();
+        shiftHalf1._11 = 1.0f;
+        shiftHalf1._22 = 1.0f;
+        shiftHalf1._33 = 1.0f;
+        shiftHalf1._44 = 1.0f;
+        shiftHalf1._41 = 0.5f;
+        shiftHalf1._43 = 0.5f;
+
+        // Swaps the y and z columns.
+        CMatrix change;
+        change.zero();
+        change._11 = 1.0f;
+        change._23 = 1.0f;
+        change._32 = 1.0f;
+        change._44 = 1.0f;
+
+        return shift * scale * shiftHalf1 * change;
+    }
+
+    struct SortCells
+    {
+        // RVA 0x8A2270 / 0x8A22A0 - orders cells back to front, measuring from
+        // the camera to the centre of each cell. The y term is the camera
+        // height and is identical on both sides, so it only shifts both
+        // distances by the same amount.
+        explicit SortCells(CVector const& p) : pos(p)
+        {
+        }
+
+        bool operator()(retruxx::pair<int, int> const& a, retruxx::pair<int, int> const& b) const
+        {
+            float const ax = (static_cast<float>(a.first) + 0.5f) * VISCELL_EDGE_LENGTH_6 - pos.x;
+            float const az = (static_cast<float>(a.second) + 0.5f) * VISCELL_EDGE_LENGTH_6 - pos.z;
+            float const bx = (static_cast<float>(b.first) + 0.5f) * VISCELL_EDGE_LENGTH_6 - pos.x;
+            float const bz = (static_cast<float>(b.second) + 0.5f) * VISCELL_EDGE_LENGTH_6 - pos.z;
+            float const y = -pos.y;
+            return (az * az + y * y) + ax * ax > (bz * bz + y * y) + bx * bx;
+        }
+
+        /* 0x0000 */ CVector pos;
+    };
 
     CVector camOrg;
     float transparentRadius = 0.0;
@@ -2060,10 +2143,773 @@ namespace m3d
         // debug-only consistency check.
     }
 
+    void SceneGraph::DrawDetailedShadows(
+        CVector const& pos,
+        float radius,
+        rend::TexHandle tex,
+        retruxx::vector<Class*> const& classesToRender)
+    {
+        // RVA 0x8A8950 - everything close to the camera gets a second, much
+        // sharper shadow pass of its own: one texture covering a single disc of
+        // the world instead of one channel per landscape cell.
+        auto const& cfg = M3D_ENGINE_CFG;
+
+        int const maxIdx = pClient->GetWorld().m_level->land_size - 1;
+        int x0 = static_cast<int>((pos.x - radius) * (1.0f / VISCELL_EDGE_LENGTH_6));
+        int z0 = static_cast<int>((pos.z - radius) * (1.0f / VISCELL_EDGE_LENGTH_6));
+        int x1 = static_cast<int>((pos.x + radius) * (1.0f / VISCELL_EDGE_LENGTH_6));
+        int z1 = static_cast<int>((pos.z + radius) * (1.0f / VISCELL_EDGE_LENGTH_6));
+        x0 = std::clamp(x0, 0, maxIdx);
+        z0 = std::clamp(z0, 0, maxIdx);
+        x1 = std::clamp(x1, 0, maxIdx);
+        z1 = std::clamp(z1, 0, maxIdx);
+
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        auto& lsc = m_owner->GetLandscape();
+        unsigned const ls = pClient->GetWorld().m_level->land_size;
+
+        if (!M3D_RENDERER->RenderToTexStart(tex, false))
+        {
+            return;
+        }
+
+        M3D_RENDERER->ClearViewport(rend::M3DCLEAR_C, 0);
+        M3D_RENDERER->PushBlend(rend::BM_1_1);
+        M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+        M3D_RENDERER->SetAlphaTest(cfg.m_g_shadowAlphaTest.GetI());
+        M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+        M3D_RENDERER->PushFog(false);
+        M3D_RENDERER->PushLighting(true);
+        LightSwitchOffAllLights();
+        M3D_RENDERER->PushAmbient();
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+        M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+
+        CVector4 const light(m_owner->m_sunDir, 0.0f);
+
+        CMatrix matProj;
+        matProj.zero();
+        matProj._11 = 2.0f / (radius * 2.0f);
+        matProj._22 = 2.0f / (radius * -2.0f);
+        matProj._33 = 0.000099999997f;
+        matProj._43 = -0.000099999997f;
+        matProj._44 = 1.0f;
+        M3D_RENDERER->MatSetProj(matProj);
+
+        float scale = radius * 2.0f;
+
+        CVector at;
+        at.x = pos.x;
+        at.y = 0.0f;
+        at.z = pos.z;
+        CVector eye;
+        eye.x = pos.x;
+        eye.y = 5000.0f;
+        eye.z = pos.z;
+        CVector up;
+        up.x = 0.0f;
+        up.y = 0.0f;
+        up.z = 1.0f;
+
+        CMatrix matView;
+        matView.lookAtLH(eye, at, up);
+        M3D_RENDERER->MatSet(matView);
+        // The detailed shadow lives entirely in the blue channel.
+        M3D_RENDERER->SetAmbient(255u, false);
+
+        for (int x = x0; x <= x1; ++x)
+        {
+            for (int z = z0; z <= z1; ++z)
+            {
+                for (size_t j = 0; j < classesToRender.size(); ++j)
+                {
+                    retruxx::set<SgNode*> nodes;
+                    CollectShadowingNodes(nodes, classesToRender[j], x, z, 1, ls, curFrame);
+                    if (nodes.empty())
+                    {
+                        continue;
+                    }
+                    auto* server = (*nodes.begin())->GetServer();
+                    if (server != &M3D_APP->GetAnimatedModelsServer())
+                    {
+                        continue;
+                    }
+
+                    retruxx::vector<SgNode*> nodesVector;
+                    retruxx::vector<CMatrix> matrVector;
+
+                    CVector normal;
+                    normal.x = 0.0f;
+                    normal.y = 1.0f;
+                    normal.z = 0.0f;
+                    CPlane projectPlane;
+
+                    for (SgNode* node : nodes)
+                    {
+                        // Only what actually reaches into the detailed disc is
+                        // worth the sharper pass.
+                        float const dx = node->m_originWorldAbsForSphere.x - pos.x;
+                        float const dz = node->m_originWorldAbsForSphere.z - pos.z;
+                        if (sqrtf(dx * dx + dz * dz) >= node->m_boundingRadius + node->m_boundingRadius + radius)
+                        {
+                            continue;
+                        }
+
+                        nodesVector.push_back(node);
+                        matrVector.push_back(node->m_currentXForm);
+
+                        CVector org;
+                        org.x = node->m_currentWorldOrigin.x;
+                        org.z = node->m_currentWorldOrigin.z;
+                        org.y = lsc.GetHeight(org.x, org.z, -1, true);
+                        projectPlane.fromPointNormal(org, normal);
+
+                        CMatrix shadowMatr;
+                        shadowMatr.shadow(light, projectPlane);
+                        node->m_currentXForm = node->m_currentXForm * shadowMatr;
+                    }
+
+                    if (!nodesVector.empty())
+                    {
+                        RenderNodeInfo rni;
+                        rni.rnt = RNT_FOR_SHADOW;
+                        rni.isUseImpostors = true;
+                        server->RenderNodeSet(&nodesVector.front(), nodesVector.size(), rni);
+                    }
+
+                    for (size_t k = 0; k < nodesVector.size(); ++k)
+                    {
+                        nodesVector[k]->m_currentXForm = matrVector[k];
+                    }
+                }
+            }
+        }
+
+        M3D_RENDERER->PopAmbient();
+        M3D_RENDERER->PopLighting();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZbState();
+
+        if (cfg.m_g_shadowBlur.GetB())
+        {
+            // Blur in place: copy the render target aside and run the blur
+            // shader back over it.
+            M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+            M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
+            M3D_RENDERER->PushFog(false);
+            M3D_RENDERER->PushBlend(rend::BM_NONE);
+            M3D_RENDERER->SetAlphaTest(0);
+            M3D_RENDERER->TexCopy(m_texBlurShadow, tex);
+            m_blurShadowShader->SetTexture(rend::IEffect::DiffMap0, &m_texBlurShadow);
+            m_blurShadowShader->SetFloat(
+                rend::IEffect::User_float_param,
+                cfg.m_g_shadowBlurCoeff.GetF() * 0.000099999997f);
+            M3D_RENDERER->DrawFullScreenQuad(m_blurShadowShader);
+            M3D_RENDERER->PopBlend();
+            M3D_RENDERER->PopFog();
+            M3D_RENDERER->PopCull();
+            M3D_RENDERER->PopZbState();
+        }
+
+        M3D_RENDERER->RenderToTexFinish();
+
+        // Second half: modulate the landscape and the roads under the disc with
+        // the texture that was just rendered.
+        overlayStart();
+        M3D_RENDERER->PushBlend(rend::BM_DCOLOR_0);
+        M3D_RENDERER->SetAlphaTest(10);
+        M3D_RENDERER->PushFog(false);
+        M3D_RENDERER->SingleLayerStencilStart();
+
+        m_lsDetailShadowShader->SetTexture(rend::IEffect::DiffMap0, &tex);
+        scale = 1.0f / scale;
+        M3D_RENDERER->MatGetOrgInv();
+
+        retruxx::vector<unsigned> roadCells;
+
+        CVector4 fac;
+        fac.x = 0.0f;
+        fac.y = 0.0f;
+        fac.z = pClient->GetWorld().GetWeatherManager().GetShadowTransparencyFromWeather() * 0.0078125f;
+        fac.w = 0.0f;
+        m_lsDetailShadowShader->SetVector4(rend::IEffect::User_float4_param, fac);
+        m_roadDetailShadowShader->SetVector4(rend::IEffect::User_float4_param, fac);
+
+        CMatrix const resMatr = CalcLinearTransform(scale, pos.x, pos.z);
+        m_lsDetailShadowShader->SetMatrix(rend::IEffect::User_float4x4_param, resMatr);
+        m_roadDetailShadowShader->SetMatrix(rend::IEffect::User_float4x4_param, resMatr);
+
+        for (int x = x0; x <= x1; ++x)
+        {
+            for (int z = z0; z <= z1; ++z)
+            {
+                if (static_cast<unsigned>(x) < ls && static_cast<unsigned>(z) < ls &&
+                    (m_enableVisSpaceMask & m_enableMap[256 * z + x]) != 0)
+                {
+                    roadCells.push_back(x + (z << 16));
+                }
+            }
+        }
+
+        if (!roadCells.empty())
+        {
+            M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+            m_roadDetailShadowShader->SetTexture(rend::IEffect::DiffMap0, &tex);
+            RoadInRadius2dTest const roadTest(pos, radius);
+            pClient->GetWorld().GetRoadManager().RenderRoads(
+                roadCells,
+                RRT_FOR_DETAILED_SHADOW,
+                &roadTest,
+                false);
+            M3D_RENDERER->PopCull();
+        }
+
+        M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+        for (int x = x0; x <= x1; ++x)
+        {
+            for (int z = z0; z <= z1; ++z)
+            {
+                if (static_cast<unsigned>(x) < ls && static_cast<unsigned>(z) < ls &&
+                    (m_enableVisSpaceMask & m_enableMap[256 * z + x]) != 0)
+                {
+                    m_owner->GetLandscape().drawCellOverlayedShader(x, z, m_lsDetailShadowShader);
+                }
+            }
+        }
+        M3D_RENDERER->PopCull();
+
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->SingleLayerStencilFinish();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZFunc();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopZBiasSlopeScale();
+        M3D_RENDERER->PopZBias();
+    }
+
+    void SceneGraph::DrawShadowsToTexture(
+        int* cis,
+        int cnt,
+        int size,
+        rend::TexHandle tex,
+        retruxx::vector<Class*> const& classesToRender,
+        CVector& pos,
+        float radius)
+    {
+        // RVA 0x8A7B00 - renders the flattened silhouette of everything standing
+        // in the given cells into one channel each of the shared shadow texture.
+        (void)pos;
+        (void)radius;
+
+        auto const& cfg = M3D_ENGINE_CFG;
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        auto& lsc = m_owner->GetLandscape();
+        unsigned const ls = pClient->GetWorld().m_level->land_size;
+
+        M3D_RENDERER->SetWhiteTexture(0);
+        M3D_RENDERER->SetWhiteTexture(1);
+        M3D_RENDERER->SetWhiteTexture(2);
+        M3D_RENDERER->SetWhiteTexture(3);
+
+        if (!M3D_RENDERER->RenderToTexStart(tex, false))
+        {
+            return;
+        }
+
+        M3D_RENDERER->ClearViewport(rend::M3DCLEAR_C, 0);
+        M3D_RENDERER->PushBlend(rend::BM_1_1);
+        M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+        M3D_RENDERER->SetAlphaTest(cfg.m_g_shadowAlphaTest.GetI());
+        M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+        M3D_RENDERER->PushFog(false);
+        M3D_RENDERER->PushLighting(true);
+        LightSwitchOffAllLights();
+        M3D_RENDERER->PushAmbient();
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+        M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+
+        CVector4 const light(m_owner->m_sunDir, 0.0f);
+
+        // A top down orthographic projection exactly one cell batch wide. The
+        // depth range is enormous and almost flat - nothing is z tested here.
+        CMatrix matProj;
+        matProj.zero();
+        matProj._11 = 2.0f / (static_cast<float>(size) * VISCELL_EDGE_LENGTH_6);
+        matProj._22 = 2.0f / (static_cast<float>(-size) * VISCELL_EDGE_LENGTH_6);
+        matProj._33 = 0.000099999997f;
+        matProj._43 = -0.000099999997f;
+        matProj._44 = 1.0f;
+        M3D_RENDERER->MatSetProj(matProj);
+
+        // One texel of margin all round, so filtering never bleeds between the
+        // cell batches that share the texture.
+        rend::Viewport viewPort;
+        M3D_RENDERER->GetDims(tex, viewPort.m_width, viewPort.m_height);
+        viewPort.m_width -= 2;
+        viewPort.m_height -= 2;
+        viewPort.m_x0 = 1;
+        viewPort.m_y0 = 1;
+        viewPort.m_zMin = 0.0f;
+        viewPort.m_zMax = 1.0f;
+        M3D_RENDERER->SetViewport(viewPort);
+
+        if (cfg.m_testShadowActualRenderToTexture.GetB())
+        {
+            float const half = static_cast<float>(size) * 0.5f;
+            for (int i = 0; i < cnt; ++i)
+            {
+                int const x = cis[2 * i];
+                int const z = cis[2 * i + 1];
+
+                CVector lookAt;
+                lookAt.x = (static_cast<float>(x) + half) * VISCELL_EDGE_LENGTH_6;
+                lookAt.y = 0.0f;
+                lookAt.z = (static_cast<float>(z) + half) * VISCELL_EDGE_LENGTH_6;
+                CVector lookFrom;
+                lookFrom.x = lookAt.x;
+                lookFrom.y = 5000.0f;
+                lookFrom.z = lookAt.z;
+                CVector up;
+                up.x = 0.0f;
+                up.y = 0.0f;
+                up.z = 1.0f;
+
+                CMatrix matView;
+                matView.lookAtLH(lookFrom, lookAt, up);
+                M3D_RENDERER->MatSet(matView);
+                // Each cell of the batch owns one colour channel.
+                M3D_RENDERER->SetAmbient(COLOR_MASK[i], false);
+
+                for (size_t j = 0; j < classesToRender.size(); ++j)
+                {
+                    retruxx::set<SgNode*> nodes;
+                    CollectShadowingNodes(nodes, classesToRender[j], x, z, size, ls, curFrame);
+                    if (nodes.empty())
+                    {
+                        continue;
+                    }
+                    auto* server = (*nodes.begin())->GetServer();
+                    if (server != &M3D_APP->GetAnimatedModelsServer())
+                    {
+                        continue;
+                    }
+
+                    retruxx::vector<SgNode*> nodesVector;
+                    retruxx::vector<CMatrix> matrVector;
+
+                    CVector normal;
+                    normal.x = 0.0f;
+                    normal.y = 1.0f;
+                    normal.z = 0.0f;
+                    CPlane projectPlane;
+
+                    for (SgNode* node : nodes)
+                    {
+                        nodesVector.push_back(node);
+                        matrVector.push_back(node->m_currentXForm);
+
+                        // Flatten the node onto the ground under its own origin.
+                        CVector org;
+                        org.x = node->m_currentWorldOrigin.x;
+                        org.z = node->m_currentWorldOrigin.z;
+                        org.y = lsc.GetHeight(org.x, org.z, -1, true);
+                        projectPlane.fromPointNormal(org, normal);
+
+                        CMatrix shadowMatr;
+                        shadowMatr.shadow(light, projectPlane);
+                        node->m_currentXForm = node->m_currentXForm * shadowMatr;
+                    }
+
+                    if (!nodesVector.empty())
+                    {
+                        RenderNodeInfo rni;
+                        rni.rnt = RNT_FOR_SHADOW;
+                        rni.isUseImpostors = true;
+                        server->RenderNodeSet(&nodesVector.front(), nodesVector.size(), rni);
+                    }
+
+                    for (size_t k = 0; k < nodesVector.size(); ++k)
+                    {
+                        nodesVector[k]->m_currentXForm = matrVector[k];
+                    }
+                }
+            }
+        }
+
+        M3D_RENDERER->PopAmbient();
+        M3D_RENDERER->PopLighting();
+        M3D_RENDERER->SetAlphaTest(0);
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->RenderToTexFinish();
+    }
+
+    void SceneGraph::PutShadowTextureToGrass(
+        int* cis,
+        int cnt,
+        float fade0,
+        float fade1,
+        int size,
+        rend::TexHandle tex)
+    {
+        // RVA 0x8A2EE0 - the grass is drawn after the landscape has already been
+        // shadowed, so it gets its own pass through the same shadow texture.
+        auto const& cfg = M3D_ENGINE_CFG;
+        if (cfg.m_g_grassDrawDist.GetF() < 10.0f)
+        {
+            return;
+        }
+
+        unsigned const ls = pClient->GetWorld().m_level->land_size;
+        auto& lsc = pClient->GetWorld().GetLandscape();
+
+        m_grassShadowVs->Apply();
+        m_grassShadowPs->Apply();
+
+        overlayStart();
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+        M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
+        M3D_RENDERER->SetAlphaTest(cfg.m_g_grassAlphatest.GetI());
+        M3D_RENDERER->PushFog(false);
+
+        CMatrix const viewMatrix = M3D_RENDERER->MatGet();
+        CMatrix const viewProjMatrix = viewMatrix * M3D_RENDERER->MatGetProj();
+        m_grassShadowVs->SetMatrix(m_grassShadowVs->GetParamHandleByName("mViewProj"), viewProjMatrix);
+
+        CVector const viewPos = viewMatrix.getOrgInv();
+        m_grassShadowVs->SetVector3(m_grassShadowVs->GetParamHandleByName("ViewPos"), viewPos);
+        m_grassShadowVs->SetFloat(m_grassShadowVs->GetParamHandleByName("drawDist"), cfg.m_g_grassDrawDist.GetF());
+
+        M3D_RENDERER->SetTexture(2, tex, -1.0);
+        M3D_RENDERER->SetTextureParameter(tex, rend::TM_WRAP_S, 3u);
+        M3D_RENDERER->SetTextureParameter(tex, rend::TM_WRAP_T, 3u);
+
+        m_grassShadowVs->SetFloat(m_grassShadowVs->GetParamHandleByName("FadeStart"), fade0);
+        m_grassShadowVs->SetFloat(m_grassShadowVs->GetParamHandleByName("FadeEnd"), fade1);
+
+        CVector lightmapScale;
+        lightmapScale.x = 1.0f / (static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH_6);
+        lightmapScale.y = -lightmapScale.x;
+        lightmapScale.z = 0.0f;
+        m_grassShadowVs->SetVector3(m_grassShadowVs->GetParamHandleByName("lightmapScale"), lightmapScale);
+
+        int w = 0;
+        int h = 0;
+        M3D_RENDERER->GetDims(tex, w, h);
+        float const sc = (1.0f - 4.0f / static_cast<float>(w)) / (static_cast<float>(size) * VISCELL_EDGE_LENGTH_6);
+        M3D_RENDERER->MatGetOrgInv();
+
+        float const half = static_cast<float>(size) * 0.5f;
+        for (int i = 0; i < cnt; ++i)
+        {
+            unsigned const cellX = cis[2 * i];
+            unsigned const cellZ = cis[2 * i + 1];
+
+            float const transparency =
+                pClient->GetWorld().GetWeatherManager().GetShadowTransparencyFromWeather() * 0.0078125f;
+            unsigned const mask = COLOR_MASK[i];
+
+            CVector4 fac;
+            fac.x = (mask & 0xFF0000u) != 0 ? transparency : 0.0f;
+            fac.y = (mask & 0x00FF00u) != 0 ? transparency : 0.0f;
+            fac.z = (mask & 0x0000FFu) != 0 ? transparency : 0.0f;
+            fac.w = 0.0f;
+            m_grassShadowPs->SetVector4(m_grassShadowPs->GetParamHandleByName("TFactor"), fac);
+
+            CMatrix const resMatr = CalcLinearTransform(
+                sc,
+                (static_cast<float>(static_cast<int>(cellX)) + half) * VISCELL_EDGE_LENGTH_6,
+                (static_cast<float>(static_cast<int>(cellZ)) + half) * VISCELL_EDGE_LENGTH_6);
+            m_grassShadowVs->SetMatrix(m_grassShadowVs->GetParamHandleByName("textureTransform"), resMatr);
+
+            for (unsigned x = cellX; x < cellX + size; ++x)
+            {
+                for (unsigned z = cellZ; z < cellZ + size; ++z)
+                {
+                    if (x >= ls || z >= ls || (m_enableVisSpaceMask & m_enableMap[256 * z + x]) == 0)
+                    {
+                        continue;
+                    }
+
+                    unsigned numVisibleInstances = 0;
+                    lsc.CollectGrassCell(x, z, numVisibleInstances, visGrassInstances, visModelsForGrassInstances);
+                    lsc.RenderGrass(
+                        numVisibleInstances,
+                        visGrassInstances,
+                        visModelsForGrassInstances,
+                        Landscape::RGT_FOR_SHADOW);
+                }
+            }
+        }
+
+        M3D_RENDERER->PopCull();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopZFunc();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopZBiasSlopeScale();
+        M3D_RENDERER->PopZBias();
+        M3D_RENDERER->SetWhiteTexture(1);
+    }
+
+    void SceneGraph::PutShadowTextureToLandscapeAndRoad(
+        int* cis,
+        int cnt,
+        float fade0,
+        float fade1,
+        int size,
+        rend::TexHandle tex)
+    {
+        // RVA 0x8A7180 - modulates the already rendered landscape and road with
+        // the shadow texture rendered by DrawShadowsToTexture.
+        unsigned const ls = pClient->GetWorld().m_level->land_size;
+
+        overlayStart();
+        M3D_RENDERER->PushBlend(rend::BM_DCOLOR_0);
+        M3D_RENDERER->SetAlphaTest(10);
+        M3D_RENDERER->PushFog(false);
+
+        m_roadShadowShader->SetTexture(rend::IEffect::DiffMap0, &tex);
+        m_lsShadowShader->SetTexture(rend::IEffect::DiffMap0, &tex);
+        m_roadShadowShader->SetFloat(rend::IEffect::User_float_param, fade0);
+        m_roadShadowShader->SetFloat(rend::IEffect::User_float_param2, fade1);
+        m_lsShadowShader->SetFloat(rend::IEffect::User_float_param, fade0);
+        m_lsShadowShader->SetFloat(rend::IEffect::User_float_param2, fade1);
+
+        int w = 0;
+        int h = 0;
+        M3D_RENDERER->GetDims(tex, w, h);
+        // The outermost texel row is left out so that bilinear filtering never
+        // samples across the edge of a cell.
+        float const scale = (1.0f - 4.0f / static_cast<float>(w)) / (static_cast<float>(size) * VISCELL_EDGE_LENGTH_6);
+        M3D_RENDERER->MatGetOrgInv();
+
+        retruxx::vector<unsigned> oneCell(1u, 0u);
+
+        float const half = static_cast<float>(size) * 0.5f;
+        for (int i = 0; i < cnt; ++i)
+        {
+            unsigned const cellX = cis[2 * i];
+            unsigned const cellZ = cis[2 * i + 1];
+
+            float const transparency =
+                pClient->GetWorld().GetWeatherManager().GetShadowTransparencyFromWeather() * 0.0078125f;
+            unsigned const mask = COLOR_MASK[i];
+
+            CVector4 fac;
+            fac.x = (mask & 0xFF0000u) != 0 ? transparency : 0.0f;
+            fac.y = (mask & 0x00FF00u) != 0 ? transparency : 0.0f;
+            fac.z = (mask & 0x0000FFu) != 0 ? transparency : 0.0f;
+            fac.w = 0.0f;
+            m_roadShadowShader->SetVector4(rend::IEffect::User_float4_param, fac);
+            m_lsShadowShader->SetVector4(rend::IEffect::User_float4_param, fac);
+
+            CMatrix const resMatr = CalcLinearTransform(
+                scale,
+                (static_cast<float>(static_cast<int>(cellX)) + half) * VISCELL_EDGE_LENGTH_6,
+                (static_cast<float>(static_cast<int>(cellZ)) + half) * VISCELL_EDGE_LENGTH_6);
+            m_roadShadowShader->SetMatrix(rend::IEffect::User_float4x4_param, resMatr);
+            m_lsShadowShader->SetMatrix(rend::IEffect::User_float4x4_param, resMatr);
+
+            for (unsigned x = cellX; x < cellX + size; ++x)
+            {
+                for (unsigned z = cellZ; z < cellZ + size; ++z)
+                {
+                    if (x >= ls || z >= ls || (m_enableVisSpaceMask & m_enableMap[256 * z + x]) == 0)
+                    {
+                        continue;
+                    }
+
+                    // The stencil keeps the road and the landscape underneath it
+                    // from being darkened twice.
+                    M3D_RENDERER->SingleLayerStencilStart();
+                    M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+                    oneCell.back() = x + (z << 16);
+                    pClient->GetWorld().GetRoadManager().RenderRoads(oneCell, RRT_FOR_SHADOW, nullptr, false);
+                    m_owner->GetLandscape().drawCellOverlayedShader(x, z, m_lsShadowShader);
+                    M3D_RENDERER->PopCull();
+                    M3D_RENDERER->SingleLayerStencilFinish();
+                }
+            }
+        }
+
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopZFunc();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopZBiasSlopeScale();
+        M3D_RENDERER->PopZBias();
+    }
+
     void SceneGraph::DrawShadows()
     {
-        // TODO: implement SceneGraph::DrawShadow
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8AA1E0
+        auto const& cfg = M3D_ENGINE_CFG;
+        if (!cfg.m_dsShadows.GetB() || !pClient->GetWorld().GetWeatherManager().GetShadowVisibilityFromWeather())
+        {
+            return;
+        }
+
+        ShadowStats shadowStats;
+
+        // The shadows fade out well before the fog does, and never reach
+        // further than the configured cell radius.
+        float fadeStart = 0.0f;
+        float fadeEnd = 0.0f;
+        m_owner->GetLandscape().GetFogStartAndEnd(fadeStart, fadeEnd);
+        fadeStart = fadeStart * 0.75f;
+        fadeEnd = fadeEnd * 0.75f;
+        if (FADE_START <= fadeStart)
+        {
+            fadeStart = FADE_START;
+        }
+        float const farDist = (static_cast<float>(cfg.m_g_shadowFarDist.GetI()) - 0.5f) * VISCELL_EDGE_LENGTH_6;
+        if (farDist <= fadeEnd)
+        {
+            fadeEnd = farDist;
+        }
+
+        retruxx::vector<Class*> classes;
+        classes.push_back(RT_CLASS_LOCAL(SgGameUnitNode));
+        classes.push_back(RT_CLASS_LOCAL(SgAnimatedModelNode));
+
+        for (int tg = 0; tg < 8; ++tg)
+        {
+            M3D_RENDERER->TgDisable(tg);
+        }
+
+        // The detailed shadow map is centred a little in front of the camera
+        // rather than on it, so the whole radius stays in view.
+        float const radius = cfg.m_g_shadowDetailRadius.GetF();
+        CVector r;
+        CVector u;
+        CVector f;
+        M3D_RENDERER->MatGetBasis(r, u, f);
+        float const invLen = 1.0f / sqrtf(f.x * f.x + f.z * f.z + f.y * f.y + 1.1920929e-7f);
+        float const ahead = radius + 1.0f;
+        CVector const camOrgInv = M3D_RENDERER->MatGetOrgInv();
+        CVector pos;
+        pos.x = camOrgInv.x + f.x * invLen * ahead;
+        pos.y = camOrgInv.y + f.y * invLen * ahead;
+        pos.z = camOrgInv.z + f.z * invLen * ahead;
+
+        m_lsDetailShadowShader->SetVector3(rend::IEffect::User_float3_param, pos);
+        m_lsDetailShadowShader->SetFloat(rend::IEffect::User_float_param3, radius);
+        m_roadDetailShadowShader->SetVector3(rend::IEffect::User_float3_param, pos);
+        m_roadDetailShadowShader->SetFloat(rend::IEffect::User_float_param3, radius);
+        m_lsShadowShader->SetVector3(rend::IEffect::User_float3_param, pos);
+        m_lsShadowShader->SetFloat(rend::IEffect::User_float_param3, radius);
+        m_roadShadowShader->SetVector3(rend::IEffect::User_float3_param, pos);
+        m_roadShadowShader->SetFloat(rend::IEffect::User_float_param3, radius);
+
+        DrawDetailedShadows(pos, radius, m_detTexShadow, classes);
+
+        // Collect every visible cell within the shadow radius. SortedCellsFetch
+        // walks outwards ring by ring, so pushing to the front leaves the list
+        // roughly far-to-near before the exact sort below.
+        retruxx::deque<retruxx::pair<int, int>> cls;
+        m_sortedCellsEndRadius = cfg.m_g_shadowFarDist.GetI();
+        m_sortedCellsCurCell = 0;
+        m_sortedCellsCurRadius = 0;
+        {
+            int cellX = 0;
+            int cellY = 0;
+            int vis = 0;
+            int rad = 0;
+            while (SortedCellsFetch(cellX, cellY, vis, rad))
+            {
+                if (vis)
+                {
+                    cls.push_front(retruxx::pair<int, int>(cellX, cellY));
+                }
+            }
+        }
+
+        // Only the camera's ground position is used; the height is explicitly
+        // zeroed, which is what makes the y term of the comparator dead.
+        CVector const camOrg = M3D_RENDERER->MatGetOrgInv();
+        CVector camPos;
+        camPos.x = camOrg.x;
+        camPos.y = 0.0f;
+        camPos.z = camOrg.z;
+        std::sort(cls.begin(), cls.end(), SortCells(camPos));
+
+        pClient->GetWorld().GetLandscape().RenderGrass(cls);
+
+        // Cells are shadowed three at a time - one per colour channel of the
+        // shared shadow texture.
+        size_t off = 0;
+        while (off != cls.size())
+        {
+            int cnt = static_cast<int>(cls.size() - off);
+            if (cnt >= CELLS_PER_SHADOW_TEXTURE)
+            {
+                cnt = CELLS_PER_SHADOW_TEXTURE;
+            }
+
+            int cis[2 * CELLS_PER_SHADOW_TEXTURE];
+            for (int k = 0; k < cnt; ++k)
+            {
+                cis[2 * k] = cls[off + k].first;
+                cis[2 * k + 1] = cls[off + k].second;
+            }
+            off += cnt;
+
+            rend::RenderStats rsBefore{};
+            rend::RenderStats rsAfter{};
+
+            M3D_RENDERER->GetStats(rsBefore);
+            if (cfg.m_testShadowRenderToTexture.GetB())
+            {
+                DrawShadowsToTexture(cis, cnt, 1, m_texShadow, classes, pos, radius);
+            }
+            M3D_RENDERER->GetStats(rsAfter);
+            shadowStats.numToTexPolys += rsAfter.polyCount - rsBefore.polyCount;
+            shadowStats.numToTexDIPs += rsAfter.DIPs - rsBefore.DIPs;
+            shadowStats.numCells += cnt;
+
+            M3D_RENDERER->GetStats(rsBefore);
+            if (cfg.m_testShadowRenderToLandscape.GetB())
+            {
+                PutShadowTextureToLandscapeAndRoad(cis, cnt, fadeStart, fadeEnd, 1, m_texShadow);
+            }
+            if (cfg.m_testShadowRenderToGrass.GetB())
+            {
+                PutShadowTextureToGrass(cis, cnt, fadeStart, fadeEnd, 1, m_texShadow);
+            }
+            M3D_RENDERER->GetStats(rsAfter);
+            shadowStats.numPutPolys += rsAfter.polyCount - rsBefore.polyCount;
+            shadowStats.numPutDIPs += rsAfter.DIPs - rsBefore.DIPs;
+        }
+
+        if (cfg.m_g_showShadowsStats.GetB())
+        {
+            M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+            M3D_APP->SetFont("Lucida Console", 10.0f, 1u, M3D_APP->m_codePage.CodePage);
+
+            CStr statStr;
+            statStr.format("%-12s %8d", "shadowPutDIPS", shadowStats.numPutDIPs);
+            M3D_APP->DrawTextRel(724.0f, 224.0f, 0xFF888888u, statStr, 0, -1);
+            statStr.format("%-12s %8d", "shadowPutPolys", shadowStats.numPutPolys);
+            M3D_APP->DrawTextRel(724.0f, 236.0f, 0xFF888888u, statStr, 0, -1);
+            statStr.format("%-12s %8d", "shadowToTexDIPs", shadowStats.numToTexDIPs);
+            M3D_APP->DrawTextRel(724.0f, 248.0f, 0xFF888888u, statStr, 0, -1);
+            statStr.format("%-12s %8d", "shadowToTexPolys", shadowStats.numToTexPolys);
+            M3D_APP->DrawTextRel(724.0f, 260.0f, 0xFF888888u, statStr, 0, -1);
+            statStr.format("%-12s %8d", "shadowCells", shadowStats.numCells);
+            M3D_APP->DrawTextRel(724.0f, 272.0f, 0xFF888888u, statStr, 0, -1);
+
+            M3D_RENDERER->PopZbState();
+        }
     }
 
     void SceneGraph::enableCellsSetRect(int* rc, unsigned orValue, unsigned andValue)

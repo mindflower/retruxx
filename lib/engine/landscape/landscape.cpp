@@ -36,6 +36,150 @@ extern "C" {
 #include <ode/collision_trimesh.h>
 }
 
+namespace
+{
+    // A visibility cell is split into four tiles a side; one tile spans four
+    // heightmap steps, so it takes a 5x5 grid of vertices to redraw.
+    int const TILE_EDGE_VERTS = 5;
+    int const VERTS_PER_TILE = TILE_EDGE_VERTS * TILE_EDGE_VERTS;
+
+    // How many tiles go into one streaming vertex buffer lock.
+    int const CELLS_PER_DRAW_BATCH = 64;
+
+    // The grass tile array is indexed by a packed 16 bit tile coordinate.
+    int const GRASS_TILE_ARRAY_SIZE = 0x10000;
+
+    // A visibility cell is 4x4 grass tiles of 32 world units each; the bound
+    // sphere covers such a tile with room for the blades themselves.
+    int const GRASS_TILES_PER_CELL = 4;
+    float const GRASS_TILE_BOUND_RADIUS = 45.261669f;
+
+    // At most two vertex shader constants per instance fit in one draw.
+    unsigned const MAX_GRASS_INSTANCES_PER_BATCH = 246;
+
+    // RVA 0x6AC750 - loads one grass model and bakes it into a vertex and index
+    // buffer that already holds as many copies of the mesh as a single draw can
+    // place. Each copy carries the index of its own constant register pair, so
+    // the shader can look up where that blade goes.
+    bool LoadGrassModel(CStr const& fileName, GrassModelInfo& modelInfo)
+    {
+        unsigned const maxInstancePerPass = (M3D_RENDERER->GetMaxVertexShaderConst() - 20) / 2;
+
+        m3d::AnimatedModel animModel;
+
+        // The extension's first character selects the binary or the text form:
+        // ".s.." becomes ".g.." when loading from GAM.
+        CStr newFileName(fileName);
+        char const* dot = strrchr(newFileName.c_str(), '.');
+        int const dotPos = dot ? static_cast<int>(dot - newFileName.c_str()) : -1;
+        bool const fromGam = M3D_ENGINE_CFG.m_loadFromGAM.GetB();
+        newFileName[dotPos + 1] = fromGam ? 'g' : 's';
+
+        bool const loaded =
+            fromGam ? animModel.LoadGAM(newFileName, false) : animModel.LoadSAM(newFileName, false);
+        if (!loaded)
+        {
+            return false;
+        }
+
+        auto* mesh = &animModel.GetMesh(0);
+        modelInfo.numVerts = static_cast<unsigned short>(mesh->m_numDrawVerts);
+        modelInfo.numIndices = static_cast<unsigned short>(mesh->m_numDrawIndices);
+        modelInfo.numTris = static_cast<unsigned short>(mesh->m_numFaces);
+
+        modelInfo.tex = animModel.GetTexHandle(0, 0, 0);
+        M3D_RENDERER->ReferenceTexture(modelInfo.tex);
+
+        modelInfo.vb = M3D_RENDERER->AddVb(
+            m3d::rend::VERTEX_GRASSTEST,
+            maxInstancePerPass * modelInfo.numVerts,
+            "Grass",
+            0);
+
+        // Source vertices are 8 floats (position, normal, uv); the grass vertex
+        // keeps position, the constant index and the uv.
+        auto* dst = static_cast<float*>(M3D_RENDERER->LockVb(modelInfo.vb, 0, 0, 0));
+        for (unsigned instance = 0; instance < maxInstancePerPass; ++instance)
+        {
+            auto const* src = static_cast<float const*>(mesh->m_drawVerts);
+            float const constantIdx = static_cast<float>(instance) + static_cast<float>(instance);
+            for (unsigned k = 0; k < modelInfo.numVerts; ++k)
+            {
+                dst[0] = src[0];
+                dst[1] = src[1];
+                dst[2] = src[2];
+                dst[3] = constantIdx;
+                dst[4] = src[6];
+                dst[5] = src[7];
+                dst += 6;
+                src += 8;
+            }
+        }
+        M3D_RENDERER->UnlockVb(modelInfo.vb);
+
+        modelInfo.ib = M3D_RENDERER->AddIb(maxInstancePerPass * modelInfo.numIndices, false);
+        auto* idx = static_cast<unsigned short*>(M3D_RENDERER->LockIb(modelInfo.ib, 0, 0, 0));
+        for (unsigned instance = 0; instance < maxInstancePerPass; ++instance)
+        {
+            auto const* srcIdx = mesh->m_drawIndices;
+            unsigned short const base = static_cast<unsigned short>(instance * modelInfo.numVerts);
+            for (unsigned k = 0; k < modelInfo.numIndices; ++k)
+            {
+                *idx++ = static_cast<unsigned short>(base + *srcIdx++);
+            }
+        }
+        M3D_RENDERER->UnlockIb(modelInfo.ib);
+
+        modelInfo.modelName = fileName;
+
+        float const dx = animModel.m_box.m_box[3] - animModel.m_box.m_box[0];
+        float const dy = animModel.m_box.m_box[4] - animModel.m_box.m_box[1];
+        float const dz = animModel.m_box.m_box[5] - animModel.m_box.m_box[2];
+        modelInfo.boundRadius = sqrtf(dz * dz + dy * dy + dx * dx);
+
+        return true;
+    }
+
+    // Per frame grass culling counters, reported through the debug counter
+    // stack by RenderGrass.
+    int numTilesRejectedSphere = 0;
+    int numInstancesFarAway = 0;
+    int numInstancesBehindCamera = 0;
+    int numInstancesRejected = 0;
+
+    // RVA 0x6AB770 / 0x6ABFC0 - orders instance indices far to near. Only the
+    // index is moved, the instances themselves stay put.
+    struct GrassInstanceSortPred
+    {
+        GrassInstanceSortPred(m3d::Landscape::GrassInstance** instances, CVector const& cameraPos) :
+            m_instances(instances),
+            m_cameraPos(cameraPos)
+        {
+        }
+
+        bool operator()(unsigned instanceIdx1, unsigned instanceIdx2) const
+        {
+            auto const& a = m_instances[instanceIdx1]->pos;
+            auto const& b = m_instances[instanceIdx2]->pos;
+            float const ax = a.x - m_cameraPos.x;
+            float const ay = a.y - m_cameraPos.y;
+            float const az = a.z - m_cameraPos.z;
+            float const bx = b.x - m_cameraPos.x;
+            float const by = b.y - m_cameraPos.y;
+            float const bz = b.z - m_cameraPos.z;
+            return (az * az + ay * ay) + ax * ax > (bz * bz + by * by) + bx * bx;
+        }
+
+        /* 0x0000 */ m3d::Landscape::GrassInstance** m_instances;
+        /* 0x0004 */ CVector const& m_cameraPos;
+    };
+}  // namespace
+
+GrassModelInfo m_grassModels[MAX_GRASS_MODELS];
+
+m3d::Landscape::GrassInstance* visGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
+int visModelsForGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
+
 namespace m3d
 {
     extern CClient* pClient;
@@ -465,9 +609,83 @@ namespace m3d
         } while (v25);
     }
 
-    void Landscape::DrawCellsOverlayedEditor(cmn::vector<unsigned> const&, unsigned)
+    void Landscape::DrawCellsOverlayedEditor(cmn::vector<unsigned> const& cellsPerTex, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8DF540 - the same grid as DrawCells, but lit: the vertices carry
+        // a straight up normal and sit half a unit above the ground so the
+        // overlay does not fight the terrain it is drawn on.
+        auto vb = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZNC);
+
+        int numCells = cellsPerTex.m_numItems;
+        if (!numCells)
+        {
+            return;
+        }
+
+        unsigned const* curCell = cellsPerTex.m_data;
+        int cellsToDraw = numCells;
+        while (true)
+        {
+            cellsToDraw = std::clamp(cellsToDraw, 0, CELLS_PER_DRAW_BATCH);
+
+            int const numVerts = VERTS_PER_TILE * cellsToDraw;
+            int vofs = 0;
+            auto* v = static_cast<rend::VertexXYZNC*>(M3D_RENDERER->LockVbStreaming(vb, numVerts, vofs, nullptr));
+
+            for (int i = 0; i < cellsToDraw; ++i)
+            {
+                int const hx = 4 * (*curCell & 0xFFu);
+                int const hz = 4 * ((*curCell >> 8) & 0xFFu);
+                ++curCell;
+
+                float const* h = &m_heightMap[hx + hz * (m_mapSize + 1)];
+                for (int row = 0; row < TILE_EDGE_VERTS; ++row)
+                {
+                    for (int col = 0; col < TILE_EDGE_VERTS; ++col)
+                    {
+                        v->x = static_cast<float>(hx + col) * 8.0f;
+                        v->y = h[col] + 0.5f;
+                        v->z = static_cast<float>(hz + row) * 8.0f;
+                        v->nx = 0.0f;
+                        v->ny = 1.0f;
+                        v->nz = 0.0f;
+                        v->c = clr;
+                        ++v;
+                    }
+                    h += m_mapSize + 1;
+                }
+            }
+
+            M3D_RENDERER->UnlockVb(vb);
+
+            int const numPrims = cellsToDraw * m_lsNumIndices[0] - 3;
+            if (numPrims > 0)
+            {
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(m_landIbConst[0], vofs);
+                if (overlayShader)
+                {
+                    M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                        rend::M3DPT_TRIANGLESTRIP,
+                        overlayShader,
+                        0,
+                        numVerts,
+                        0,
+                        numPrims);
+                }
+                else
+                {
+                    M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, numVerts, 0, numPrims);
+                }
+            }
+
+            numCells -= cellsToDraw;
+            if (!numCells)
+            {
+                break;
+            }
+            cellsToDraw = numCells;
+        }
     }
 
     void Landscape::DrawSolidLandscape(LandRenderMode landMode, int lod)
@@ -1775,14 +1993,205 @@ namespace m3d
         return 1;
     }
 
-    void Landscape::RenderGrass(unsigned, GrassInstance**, int*, RenderGrassType)
+    void Landscape::RenderGrass(
+        unsigned numVisibleInstances,
+        GrassInstance** visGrassInstancesArr,
+        int* visModelsForGrassInstancesArr,
+        RenderGrassType rgt)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6B0230 - every blade is an instance of one of a handful of
+        // models, drawn by repeating the model's geometry and feeding the per
+        // instance placement through vertex shader constants.
+        CVector const cameraPos = M3D_RENDERER->GetViewOrigin();
+
+        // Two constants per instance, leaving the first twenty for everything
+        // else the shader needs.
+        unsigned maxInstancesPerBatch = (M3D_RENDERER->GetMaxVertexShaderConst() - 20) / 2;
+        if (maxInstancesPerBatch > MAX_GRASS_INSTANCES_PER_BATCH)
+        {
+            maxInstancesPerBatch = MAX_GRASS_INSTANCES_PER_BATCH;
+        }
+
+        auto const& timer = M3D_KERNEL->GetTimer();
+        float const windPhase = timer.GetFrameStartTimeSec() + timer.GetFrameStartTimeSec();
+
+        int numTris = 0;
+        int numDips = 0;
+
+        if (numVisibleInstances)
+        {
+            unsigned sorted[MAX_VISIBLE_GRASS_INSTANCES];
+            for (unsigned i = 0; i < numVisibleInstances; ++i)
+            {
+                sorted[i] = i;
+            }
+            std::sort(
+                sorted,
+                sorted + numVisibleInstances,
+                GrassInstanceSortPred(visGrassInstancesArr, cameraPos));
+
+            float constants[8 * MAX_GRASS_INSTANCES_PER_BATCH];
+
+            unsigned remaining = numVisibleInstances;
+            unsigned first = 0;
+            do
+            {
+                // The instances are sorted by distance, so a run of the same
+                // model is however long it happens to be.
+                int const model = visModelsForGrassInstancesArr[sorted[first]];
+                GrassModelInfo* info = &m_grassModels[model];
+
+                unsigned run = 0;
+                unsigned const* scan = &sorted[first];
+                do
+                {
+                    if (visModelsForGrassInstancesArr[*scan] != model)
+                    {
+                        break;
+                    }
+                    ++run;
+                    ++scan;
+                } while (run < remaining);
+
+                numTris += run * info->numTris;
+                remaining -= run;
+
+                M3D_RENDERER->SetTexture(0, info->tex, -1.0);
+                M3D_RENDERER->SetToStream0(info->vb);
+                M3D_RENDERER->SetIndices(info->ib, 0);
+                M3D_RENDERER->SetTexture(1, GetLightmapTexture(), -1.0);
+                // The shadow pass has its own texture bound at stage 2.
+                M3D_RENDERER->DisableTextureStages(rgt == RGT_FOR_SHADOW ? 3 : 2);
+
+                unsigned cur = first;
+                first += run;
+                while (run)
+                {
+                    unsigned batch = run;
+                    if (batch > maxInstancesPerBatch)
+                    {
+                        batch = maxInstancesPerBatch;
+                    }
+
+                    float* c = constants;
+                    for (unsigned k = 0; k < batch; ++k)
+                    {
+                        GrassInstance const* gi = visGrassInstancesArr[sorted[cur]];
+                        ++cur;
+                        c[0] = gi->pos.x;
+                        c[1] = gi->pos.y;
+                        c[2] = gi->pos.z;
+                        c[3] = gi->scale;
+                        c[4] = gi->sinYaw;
+                        c[5] = gi->cosYaw;
+                        // Sway, offset by the blade's own x so a field does not
+                        // move as one.
+                        float const phase = windPhase + gi->pos.x;
+                        c[6] = sinf(phase);
+                        c[7] = cosf(phase);
+                        c += 8;
+                    }
+
+                    M3D_RENDERER->SetVsFloatConst(20u, constants, 2 * batch);
+                    M3D_RENDERER->DrawIndexedPrimitiveShader(
+                        rend::M3DPT_TRIANGLELIST,
+                        0,
+                        batch * info->numVerts,
+                        0,
+                        batch * info->numTris);
+                    ++numDips;
+
+                    run -= batch;
+                }
+            } while (remaining);
+        }
+
+        if (rgt == RGT_SIMPLE)
+        {
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("grass polys = " + CStr(numTris)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("grass dips = " + CStr(numDips)).c_str());
+        }
     }
 
-    void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const&)
+    void Landscape::RenderGrass(retruxx::deque<retruxx::pair<int, int>> const& excludedCells)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6B0740 - collects every visible cell within the grass draw
+        // distance, minus the ones the caller has already drawn itself, and
+        // hands the lot to the instanced renderer above.
+        auto const& cfg = M3D_ENGINE_CFG;
+        float const drawDist = cfg.m_g_grassDrawDist.GetF();
+        if (drawDist < 10.0f)
+        {
+            return;
+        }
+
+        m_profilerDrawGrass->StartCountdown();
+
+        m_grassVs->Apply();
+        m_grassPs->Apply();
+        M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
+        M3D_RENDERER->SetAlphaTest(cfg.m_g_grassAlphatest.GetI());
+        M3D_RENDERER->SetBlend(rend::BM_ALPHA, false);
+        M3D_RENDERER->SetFog(false, false);
+        M3D_RENDERER->SetCull(rend::M3DCULL_NONE, false);
+
+        CMatrix const viewMatrix = M3D_RENDERER->MatGet();
+        CMatrix const viewProjMatrix = viewMatrix * M3D_RENDERER->MatGetProj();
+        m_grassVs->SetMatrix(m_grassVs->GetParamHandleByName("mViewProj"), viewProjMatrix);
+
+        CVector const viewPos = viewMatrix.getOrgInv();
+        m_grassVs->SetVector3(m_grassVs->GetParamHandleByName("ViewPos"), viewPos);
+        m_grassVs->SetFloat(m_grassVs->GetParamHandleByName("drawDist"), drawDist);
+
+        float const VISCELL_EDGE_LENGTH_12 = 128.0f;
+        CVector lightmapScale;
+        lightmapScale.x = 1.0f / (static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH_12);
+        lightmapScale.y = -lightmapScale.x;
+        lightmapScale.z = 0.0f;
+        m_grassVs->SetVector3(m_grassVs->GetParamHandleByName("lightmapScale"), lightmapScale);
+
+        numTilesRejectedSphere = 0;
+        numInstancesFarAway = 0;
+        numInstancesBehindCamera = 0;
+        numInstancesRejected = 0;
+
+        auto& graph = m_owner->GetGraph();
+        int const radius = static_cast<int>(ceilf(drawDist * (1.0f / VISCELL_EDGE_LENGTH_12)));
+        graph.SortedCellsStartFetching(0, radius + 1);
+
+        m3d::Landscape::GrassInstance* visGrass[MAX_VISIBLE_GRASS_INSTANCES];
+        int visModels[MAX_VISIBLE_GRASS_INSTANCES];
+
+        unsigned numVisibleInstances = 0;
+        int cellX = 0;
+        int cellY = 0;
+        int vis = 0;
+        int cellRadius = 0;
+        while (graph.SortedCellsFetch(cellX, cellY, vis, cellRadius))
+        {
+            if (!vis)
+            {
+                continue;
+            }
+            retruxx::pair<int, int> const cell(cellX, cellY);
+            if (std::find(excludedCells.begin(), excludedCells.end(), cell) == excludedCells.end())
+            {
+                CollectGrassCell(cellX, cellY, numVisibleInstances, visGrass, visModels);
+            }
+        }
+
+        RenderGrass(numVisibleInstances, visGrass, visModels, RGT_SIMPLE);
+
+        auto& counters = M3D_APP->GetDbgCounterStack();
+        counters.DrawStringThisFrame(("grass instances = " + CStr(static_cast<int>(numVisibleInstances))).c_str());
+        counters.DrawStringThisFrame(("grass tiles cull s = " + CStr(numTilesRejectedSphere)).c_str());
+        counters.DrawStringThisFrame(("grass instances far away = " + CStr(numInstancesFarAway)).c_str());
+        counters.DrawStringThisFrame(("grass instances behind cam = " + CStr(numInstancesBehindCamera)).c_str());
+        counters.DrawStringThisFrame(("grass instances cull = " + CStr(numInstancesRejected)).c_str());
+
+        M3D_RENDERER->PopZbState();
+
+        m_profilerDrawGrass->EndCountdown();
     }
 
     int Landscape::GetLsSize() const
@@ -2137,9 +2546,52 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::drawCellOverlayedShader(int, int, rend::IEffect*)
+    void Landscape::drawCellOverlayedShader(int x, int z, rend::IEffect* shader)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8E01A0
+        float const VISCELL_EDGE_LENGTH_37 = 128.0f;
+
+        if (m_renderMode != RM_GAME)
+        {
+            // The editor has no prebuilt solid geometry to reuse, so the cell is
+            // re-emitted as a sprite patch. One unit is shaved off each half
+            // extent so neighbouring cells do not overlap.
+            float const halfSize = VISCELL_EDGE_LENGTH_37 * 0.5f - 1.0f;
+            overlayShader = shader;
+            drawSpriteOverlayed2(
+                (static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH_37,
+                (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH_37,
+                halfSize,
+                halfSize,
+                0xFFFFFFFFu,
+                false);
+            overlayShader = nullptr;
+        }
+        else
+        {
+            float const land_scale_41 = 8.0f;
+
+            // The shader is told where this cell starts so it can rebuild world
+            // coordinates from the cell local vertices; z carries the vertex
+            // spacing rather than a height.
+            CVector v;
+            v.x = static_cast<float>(x) * 128.0f;
+            v.y = static_cast<float>(z) * 128.0f;
+            v.z = land_scale_41;
+            shader->SetVector3(rend::IEffect::User_float3_param2, v);
+
+            M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
+            M3D_RENDERER->SetToStream0(m_solidVb);
+            M3D_RENDERER->SetIndices(m_solidIb[0], vertsPerCell * (z + x * m_owner->m_level->land_size));
+            M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                rend::M3DPT_TRIANGLESTRIP,
+                shader,
+                0,
+                vertsPerCell,
+                0,
+                trisPerCell[0]);
+            M3D_RENDERER->PopZbState();
+        }
     }
 
     Landscape::TileInfo const& Landscape::GetTileInfo(int x, int y) const
@@ -2218,9 +2670,36 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    bool Landscape::AddGrassModel(char const*)
+    bool Landscape::AddGrassModel(char const* modelFileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6ACB20 - the model table is a fixed twenty slots; a name that is
+        // already in it counts as success without loading anything again.
+        if (m_numGrassModels == MAX_GRASS_MODELS)
+        {
+            return false;
+        }
+
+        CStr name(modelFileName);
+        name.toLower(0x400u);
+
+        for (unsigned i = 0; i < m_numGrassModels; ++i)
+        {
+            if (name == m_grassModels[i].modelName)
+            {
+                return true;
+            }
+        }
+
+        // NOTE: LoadGrassModel is handed the name as it came in, not the
+        // lowercased one, so that is what ends up in modelName - which is what
+        // the comparison above is then made against.
+        CStr fileName(modelFileName);
+        bool const loaded = LoadGrassModel(fileName, m_grassModels[m_numGrassModels]);
+        if (loaded)
+        {
+            ++m_numGrassModels;
+        }
+        return loaded;
     }
 
     void Landscape::GenerateOneDPVSCellMesh(int, int, CVector*, int*)
@@ -2233,9 +2712,81 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::drawSpriteOverlayed2(float, float, float, float, unsigned, bool)
+    void Landscape::drawSpriteOverlayed2(float cx, float cz, float hsx, float hsz, unsigned clr, bool all)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8DFF20 - draws the axis aligned patch of tiles covered by the
+        // rectangle, either through the overlay shader or in the editor's own
+        // way. Tiles are a quarter the size of a visibility cell: 32 world
+        // units, hence the 1/32 below and the 4 * land_size bound.
+        float const TILE_SIZE_INV = 0.03125f;
+
+        float const xMin = cx - hsx;
+        float const xMax = cx + hsx;
+        float const zMin = cz - hsz;
+        float const zMax = cz + hsz;
+
+        // Unless the caller asks for everything, a rectangle that touches any
+        // collision volume is skipped entirely - those get their overlay from
+        // the collision geometry instead.
+        bool overCollision = false;
+        for (auto* ci : m_collisions)
+        {
+            if (ci->m_box.m_box[0] <= xMax && xMin <= ci->m_box.m_box[3] && ci->m_box.m_box[2] <= zMax &&
+                zMin <= ci->m_box.m_box[5])
+            {
+                overCollision = true;
+            }
+        }
+
+        int const maxIdx = 4 * m_owner->m_level->land_size - 1;
+        int const x0 = std::clamp(static_cast<int>(xMin * TILE_SIZE_INV), 0, maxIdx);
+        int const x1 = std::clamp(static_cast<int>(xMax * TILE_SIZE_INV), 0, maxIdx);
+        int const z0 = std::clamp(static_cast<int>(zMin * TILE_SIZE_INV), 0, maxIdx);
+        int const z1 = std::clamp(static_cast<int>(zMax * TILE_SIZE_INV), 0, maxIdx);
+
+        if (!all && overCollision)
+        {
+            return;
+        }
+
+        int const numX = x1 - x0 + 1;
+        int const numZ = z1 - z0 + 1;
+
+        cmn::vector<unsigned> cells;
+        cells.Allocate(numX * numZ);
+
+        // NOTE: the shipped build allocates this second buffer of the same size,
+        // never writes a single entry and frees it again on the way out.
+        cmn::vector<unsigned> cliffs;
+        cliffs.Allocate(numX * numZ);
+
+        for (int x = x0; x <= x1; ++x)
+        {
+            if (z0 > z1)
+            {
+                continue;
+            }
+            unsigned key = x + (z0 << 8);
+            for (int k = 0; k < numZ; ++k)
+            {
+                cells.push_back(key);
+                key += 0x100u;
+            }
+        }
+
+        if (m_renderMode != RM_GAME)
+        {
+            DrawCellsOverlayedEditor(cells, clr);
+        }
+        else
+        {
+            DrawCells(cells, clr);
+        }
+
+        // NOTE: a push immediately followed by its pop - the shipped code leaves
+        // the cull mode exactly as it found it.
+        M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+        M3D_RENDERER->PopCull();
     }
 
     int Landscape::RecalcNormalMap(int, int, int, int)
@@ -2600,9 +3151,102 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::CollectGrassCell(int, int, unsigned&, GrassInstance**, int*)
+    void Landscape::CollectGrassCell(
+        int x,
+        int z,
+        unsigned& numVisibleInstances,
+        GrassInstance** visGrassInstancesArr,
+        int* visModelsForGrassInstancesArr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AE710 - a visibility cell holds 4x4 grass tiles; each surviving
+        // tile contributes its instances, three rejection tests deep.
+        CMatrix const viewMatrix = M3D_RENDERER->MatGet();
+        CMatrix const invView = viewMatrix.getInverse();
+        CVector const cameraPos = invView.getOrg();
+
+        float const drawDist = M3D_ENGINE_CFG.m_g_grassDrawDist.GetF();
+
+        for (int tz = 0; tz < GRASS_TILES_PER_CELL; ++tz)
+        {
+            int const gz = 4 * z + tz;
+            for (int tx = 0; tx < GRASS_TILES_PER_CELL; ++tx)
+            {
+                int const gx = 4 * x + tx;
+
+                TileGrass* grassTile = m_grassArray[(z << 10) + gx + (tz << 8)];
+                if (!grassTile)
+                {
+                    continue;
+                }
+
+                // Tile wide reject first: a sphere around the tile centre that
+                // comfortably contains a 32 unit square of grass.
+                CVector o;
+                o.x = (static_cast<float>(gx) + 0.5f) * 32.0f;
+                o.z = (static_cast<float>(gz) + 0.5f) * 32.0f;
+                o.y = GetLsHeight(o.x, o.z);
+                if (!m_frustumCull.testSphere(o, GRASS_TILE_BOUND_RADIUS))
+                {
+                    ++numTilesRejectedSphere;
+                    continue;
+                }
+
+                for (unsigned m = 0; m < grassTile->instancesPerModel.size(); ++m)
+                {
+                    GrassInstancesForModel* perModel = grassTile->instancesPerModel[m];
+                    if (!perModel)
+                    {
+                        continue;
+                    }
+
+                    for (unsigned i = 0; i < perModel->grass.size(); ++i)
+                    {
+                        if (numVisibleInstances == MAX_VISIBLE_GRASS_INSTANCES)
+                        {
+                            break;
+                        }
+
+                        GrassInstance* gi = perModel->grass[i];
+                        if (!gi)
+                        {
+                            continue;
+                        }
+
+                        float const dx = gi->pos.x - cameraPos.x;
+                        float const dy = gi->pos.y - cameraPos.y;
+                        float const dz = gi->pos.z - cameraPos.z;
+                        if ((dz * dz + dy * dy) + dx * dx > drawDist * drawDist)
+                        {
+                            ++numInstancesFarAway;
+                            continue;
+                        }
+
+                        // Dot the camera-to-blade vector against the view
+                        // direction; anything behind the eye is dropped before
+                        // the more expensive frustum test.
+                        float const behind = ((cameraPos.y - gi->pos.y) * viewMatrix._23 +
+                                                 (cameraPos.z - gi->pos.z) * viewMatrix._33) +
+                            (cameraPos.x - gi->pos.x) * viewMatrix._13;
+                        if (behind > 0.0f)
+                        {
+                            ++numInstancesBehindCamera;
+                            continue;
+                        }
+
+                        float const radius = m_grassModels[perModel->modelId].boundRadius * gi->scale;
+                        if (!m_frustumCull.testSphere(gi->pos, radius))
+                        {
+                            ++numInstancesRejected;
+                            continue;
+                        }
+
+                        visGrassInstancesArr[numVisibleInstances] = gi;
+                        visModelsForGrassInstancesArr[numVisibleInstances] = perModel->modelId;
+                        ++numVisibleInstances;
+                    }
+                }
+            }
+        }
     }
 
     void Landscape::DrawGeom(dxGeom* geom)
@@ -3382,9 +4026,80 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Landscape::DrawCells(cmn::vector<unsigned> const&, unsigned)
+    void Landscape::DrawCells(cmn::vector<unsigned> const& cellsPerTex, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8DF0C0 - re-emits the named tiles as flat coloured geometry
+        // through the streaming vertex buffer. Each tile spans four heightmap
+        // steps, so it needs a 5x5 grid of vertices.
+        auto vb = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
+
+        int numCells = cellsPerTex.m_numItems;
+        if (!numCells)
+        {
+            return;
+        }
+
+        unsigned const* curCell = cellsPerTex.m_data;
+        int cellsToDraw = numCells;
+        while (true)
+        {
+            cellsToDraw = std::clamp(cellsToDraw, 0, CELLS_PER_DRAW_BATCH);
+
+            int const numVerts = VERTS_PER_TILE * cellsToDraw;
+            int vofs = 0;
+            auto* v = static_cast<rend::VertexXYZC*>(M3D_RENDERER->LockVbStreaming(vb, numVerts, vofs, nullptr));
+
+            for (int i = 0; i < cellsToDraw; ++i)
+            {
+                int const hx = 4 * (*curCell & 0xFFu);
+                int const hz = 4 * ((*curCell >> 8) & 0xFFu);
+                ++curCell;
+
+                float const* h = &m_heightMap[hx + hz * (m_mapSize + 1)];
+                for (int row = 0; row < TILE_EDGE_VERTS; ++row)
+                {
+                    for (int col = 0; col < TILE_EDGE_VERTS; ++col)
+                    {
+                        v->x = static_cast<float>(hx + col) * 8.0f;
+                        v->y = h[col];
+                        v->z = static_cast<float>(hz + row) * 8.0f;
+                        v->c = clr;
+                        ++v;
+                    }
+                    h += m_mapSize + 1;
+                }
+            }
+
+            M3D_RENDERER->UnlockVb(vb);
+
+            int const numPrims = cellsToDraw * m_lsNumIndices[0] - 3;
+            if (numPrims > 0)
+            {
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(m_landIbConst[0], vofs);
+                if (overlayShader)
+                {
+                    M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                        rend::M3DPT_TRIANGLESTRIP,
+                        overlayShader,
+                        0,
+                        numVerts,
+                        0,
+                        numPrims);
+                }
+                else
+                {
+                    M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, numVerts, 0, numPrims);
+                }
+            }
+
+            numCells -= cellsToDraw;
+            if (!numCells)
+            {
+                break;
+            }
+            cellsToDraw = numCells;
+        }
     }
 
     void Landscape::GetVisCellHeights(float&, float&, int, int) const
@@ -3522,19 +4237,19 @@ namespace m3d
     bool Landscape::InitGrass()
     {
         m_grassVs = M3D_RENDERER->NewHlslShader("data/shaders/grassTest_vs11.vs", "GrassVS", rend::IHlslShader::VS_1_1);
-        if (!m_grassVs->IsValid())
+        if (!m_grassVs)
         {
             return false;
         }
 
         m_grassPs = M3D_RENDERER->NewHlslShader("data/shaders/grassTest_ps11.ps", "GrassPS", rend::IHlslShader::PS_1_1);
-        if (!m_grassPs->IsValid())
+        if (!m_grassPs)
         {
             return false;
         }
 
-        m_grassArray = new TileGrass*[0x10000];
-        memset(m_grassArray, 0, 0x10000 * sizeof(TileGrass*));
+        m_grassArray = new TileGrass*[GRASS_TILE_ARRAY_SIZE];
+        memset(m_grassArray, 0, GRASS_TILE_ARRAY_SIZE * sizeof(TileGrass*));
 
         return true;
     }
@@ -3571,9 +4286,53 @@ namespace m3d
 
     void Landscape::DoneGrass()
     {
-        if (m_grassArray)
+        // RVA 0x6AFF10 - nothing is released unless the tile array exists, so a
+        // landscape that never got as far as InitGrass leaves the shaders and
+        // the model table alone.
+        if (!m_grassArray)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return;
+        }
+
+        for (int i = 0; i < GRASS_TILE_ARRAY_SIZE; ++i)
+        {
+            TileGrass* tile = m_grassArray[i];
+            if (!tile)
+            {
+                continue;
+            }
+
+            for (unsigned m = 0; m < tile->instancesPerModel.size(); ++m)
+            {
+                if (auto* perModel = tile->instancesPerModel[m])
+                {
+                    emptyPtrContainer(perModel->grass);
+                }
+            }
+            emptyPtrContainer(tile->instancesPerModel);
+            delete tile;
+        }
+
+        delete[] m_grassArray;
+        m_grassArray = nullptr;
+
+        for (unsigned i = 0; i < m_numGrassModels; ++i)
+        {
+            M3D_RENDERER->ReleaseVb(m_grassModels[i].vb);
+            M3D_RENDERER->ReleaseIb(m_grassModels[i].ib);
+            M3D_RENDERER->ReleaseTexture(m_grassModels[i].tex);
+        }
+        m_numGrassModels = 0;
+
+        if (m_grassVs)
+        {
+            m_grassVs->Release();
+            m_grassVs = nullptr;
+        }
+        if (m_grassPs)
+        {
+            m_grassPs->Release();
+            m_grassPs = nullptr;
         }
     }
 
@@ -3582,9 +4341,20 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int Landscape::getGrassModelIdByName(char const*) const
+    int Landscape::getGrassModelIdByName(char const* modelFileName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AB690
+        CStr name(modelFileName);
+        name.toLower(0x400u);
+
+        for (unsigned i = 0; i < m_numGrassModels; ++i)
+        {
+            if (name == m_grassModels[i].modelName)
+            {
+                return static_cast<int>(i);
+            }
+        }
+        return -1;
     }
 
     int Landscape::SaveCameraMap(CStr const&, int)
@@ -4069,10 +4839,105 @@ namespace m3d
         return 0;
     }
 
-    void Landscape::ReadGrassFromXmlFile(char const*)
+    void Landscape::ReadGrassFromXmlFile(char const* fileName)
     {
-        // TODO: implement Landscape::ReadGrassFromXmlFile
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AEF30 - despite the name this reads the tagged binary grass
+        // file, not XML: chunk 1 holds the counts, chunk 2 the model names and
+        // chunk 3 the per tile placement.
+        fs::auxTaggedFile file;
+        if (file.Open(fileName, fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC) != fs::auxTaggedFile::SUCCESS)
+        {
+            M3D_LOG_INFO(CStr("Grass::Load - could not read file ") + fileName);
+            return;
+        }
+
+        char* formatTitle = nullptr;
+        file.getFormatTitle(&formatTitle);
+        if (strcmp(formatTitle, "Grass"))
+        {
+            M3D_LOG_INFO(CStr("Grass::Load - bad format for file ") + fileName);
+            return;
+        }
+
+        unsigned formatVersion = 0;
+        file.getFormatVersion(formatVersion);
+        if (formatVersion != 1 && formatVersion != 2)
+        {
+            M3D_LOG_INFO(CStr("Grass::Load - bad format version for file ") + fileName);
+            return;
+        }
+
+        unsigned char* dataPtr = nullptr;
+        file.getChunkData(1u, reinterpret_cast<void**>(&dataPtr));
+        unsigned const numModels = *reinterpret_cast<unsigned*>(dataPtr);
+        dataPtr += 4;
+        unsigned const numTilesWithGrass = *reinterpret_cast<unsigned*>(dataPtr);
+
+        file.getChunkData(2u, reinterpret_cast<void**>(&dataPtr));
+        for (unsigned i = 0; i < numModels; ++i)
+        {
+            char const* modelName = reinterpret_cast<char const*>(dataPtr);
+            if (!AddGrassModel(modelName))
+            {
+                M3D_LOG_INFO(CStr("Error loading level grass: could not load model ") + modelName);
+                return;
+            }
+            dataPtr += strlen(modelName) + 1;
+        }
+
+        file.getChunkData(3u, reinterpret_cast<void**>(&dataPtr));
+        for (unsigned t = 0; t < numTilesWithGrass; ++t)
+        {
+            unsigned const tileIdx = *reinterpret_cast<unsigned*>(dataPtr);
+            dataPtr += 4;
+            unsigned const numDiffModels = *reinterpret_cast<unsigned*>(dataPtr);
+            dataPtr += 4;
+            unsigned const numInstances = *reinterpret_cast<unsigned*>(dataPtr);
+            dataPtr += 4;
+
+            auto* tile = new TileGrass;
+            m_grassArray[tileIdx] = tile;
+            tile->numDiffModels = numDiffModels;
+            tile->numInstances = numInstances;
+            tile->instancesPerModel.resize(numDiffModels, nullptr);
+
+            for (unsigned j = 0; j < numDiffModels; ++j)
+            {
+                auto* perModel = new GrassInstancesForModel;
+                tile->instancesPerModel[j] = perModel;
+                perModel->modelId = *reinterpret_cast<int*>(dataPtr);
+                dataPtr += 4;
+                perModel->numInstances = *reinterpret_cast<int*>(dataPtr);
+                dataPtr += 4;
+                perModel->grass.resize(perModel->numInstances, nullptr);
+
+                for (int k = 0; k < perModel->numInstances; ++k)
+                {
+                    auto* gi = new GrassInstance;
+                    perModel->grass[k] = gi;
+
+                    auto const* f = reinterpret_cast<float const*>(dataPtr);
+                    gi->pos.x = f[0];
+                    gi->pos.y = f[1];
+                    gi->pos.z = f[2];
+                    if (formatVersion == 1)
+                    {
+                        // Version 1 has no per blade scale.
+                        gi->sinYaw = f[3];
+                        gi->cosYaw = f[4];
+                        gi->scale = 1.0f;
+                        dataPtr += 20;
+                    }
+                    else
+                    {
+                        gi->scale = f[3];
+                        gi->sinYaw = f[4];
+                        gi->cosYaw = f[5];
+                        dataPtr += 24;
+                    }
+                }
+            }
+        }
     }
 
     bool Landscape::WriteGrassToXmlFile(char const*)

@@ -49,6 +49,9 @@ namespace m3d
     class CWorld
     {
         friend class Landscape;
+        // SceneGraph::DrawDetailedShadows / DrawShadowsToTexture read m_sunDir
+        // directly, exactly as the shipped code does.
+        friend class SceneGraph;
 
     public:
         /* 0x0000 */ m3d::CVar m_lsInscatterCoeff;

@@ -6,9 +6,12 @@ void CPlane::buildplane(CPlane*, CVector*)
     RETRUXX_NOT_IMPLEMENTED;
 }
 
-void CPlane::fromPointNormal(CVector const&, CVector const&)
+void CPlane::fromPointNormal(CVector const& org, CVector const& n)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7A4550 - neither m_type nor m_signbits is touched; callers that
+    // need them run calcStuff() afterwards.
+    m_normal = n;
+    m_dist = (org.z * n.z + org.y * n.y) + org.x * n.x;
 }
 
 float CPlane::intersectRay(CVector const&, CVector const&)

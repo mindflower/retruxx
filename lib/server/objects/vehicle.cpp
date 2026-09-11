@@ -640,7 +640,7 @@ namespace ai
         this->m_priority = -56;
         this->m_decisionMatrixNum = -1;
         this->m_cameraHeight = -1.0;
-        this->m_cameraMaxDist = 2.0;
+        this->m_cameraMaxDist = 25.0;
         this->m_blastWavePrototypeId = -1;
         this->m_additionalWheelsHover = 0.0;
         this->m_driftCoeff = 1.0;

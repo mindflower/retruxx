@@ -119,6 +119,23 @@ namespace m3d
             void xyz(CVector const&);
         };
 
+        struct VertexXYZNC
+        {
+            void xyz(const CVector& v);
+            void xyz(float xx, float yy, float zz);
+            void n(float nnx, float nny, float nnz);
+            void n(const CVector& nn);
+            /* 0x0000 */ float x;
+            /* 0x0004 */ float y;
+            /* 0x0008 */ float z;
+            /* 0x000c */ float nx;
+            /* 0x0010 */ float ny;
+            /* 0x0014 */ float nz;
+            /* 0x0018 */ unsigned int c;
+        }; /* size: 0x001c */
+
+        static_assert(sizeof(VertexXYZNC) == 0x001c);
+
         struct VertexXYZT1I
         {
             float x;
