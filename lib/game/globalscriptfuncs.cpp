@@ -511,7 +511,7 @@ int n_SetCameraBehindPlayerVehicle(m3d::sArgStack& scriptStack)
         return -1;
     }
     auto const playerDir = vehicle->GetDirection();
-    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.y);
+    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.z);
     return 1;
 }
 
