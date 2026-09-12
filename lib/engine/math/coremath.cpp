@@ -6,6 +6,14 @@
 
 int CBrezLine::start(int srcx, int srcy, int dstx, int dsty)
 {
+    // RVA 0x6014D0. NOTE - original defect, kept verbatim: the error term is
+    // seeded at the usual full scale (2*minor - major) but both increments are
+    // HALVED (`sar edx, 1` / `sar ebp, 1` at 0x60151C..0x601551) instead of
+    // doubled, so they are four times too small for that scale. The walk
+    // therefore lags the true line badly - (0,0)->(10,3) ends at (10,2) - and
+    // when the minor delta is 1 the minor increment floors to 0, so m_d never
+    // climbs back to zero and the minor axis never advances at all. This is
+    // what ai::TraceLine has always traced; do not "fix" it.
     this->m_y1 = dsty;
     auto v5 = dstx - srcx;
     auto v6 = dsty - srcy;
@@ -59,27 +67,30 @@ int CBrezLine::start(int srcx, int srcy, int dstx, int dsty)
 
 int CBrezLine::step(int& curx, int& cury)
 {
+    // RVA 0x6015A0. The error term and the chosen y step are LOCALS here: the
+    // binary only reads the members. Assigning the picked step back into
+    // m_yinc1 would overwrite the major-axis increment for every later step.
     if (m_i >= this->m_numsteps)
         return 0;
     this->m_i = m_i + 1;
     curx = this->m_x;
     cury = this->m_y;
-    m_d = this->m_d;
-    if (m_d >= 0)
+
+    int const d = this->m_d;
+    int yinc = 0;
+    if (d >= 0)
     {
-        auto v8 = m_d + this->m_dinc1;
+        this->m_d = d + this->m_dinc1;
         this->m_x += this->m_xinc1;
-        this->m_d = v8;
-        m_yinc1 = this->m_yinc1;
+        yinc = this->m_yinc1;
     }
     else
     {
-        auto v6 = m_d + this->m_dinc0;
+        this->m_d = d + this->m_dinc0;
         this->m_x += this->m_xinc0;
-        this->m_d = v6;
-        m_yinc1 = this->m_yinc0;
+        yinc = this->m_yinc0;
     }
-    this->m_y += m_yinc1;
+    this->m_y += yinc;
     return 1;
 }
 

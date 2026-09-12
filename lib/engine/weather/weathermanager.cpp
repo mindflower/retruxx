@@ -185,6 +185,11 @@ namespace m3d
 
     unsigned WeatherManager::GetWeatherColor(ColorItems ci) const
     {
+        // RVA 0x65D6F0. Builds 0xFFRRGGBB by truncating the three 0..255
+        // float channels and folding them in through a sign-extended
+        // 0xFFFFFF00 seed: (x|0xFFFFFF00)<<8 leaves 0xFFFFxx00, then |y and
+        // <<8 gives 0xFFxxyy00, then |z. The channels are OR-ed, not masked,
+        // so a component outside 0..255 bleeds into the neighbouring byte.
         return (int)this->m_currentWeather->m_currentColors[ci].z | (((int)this->m_currentWeather->m_currentColors[ci].y | (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8)) << 8);
     }
 
@@ -194,9 +199,12 @@ namespace m3d
         m_owner->GetLandscape().ReloadLightmapTexture(path);
     }
 
-    float WeatherManager::GetGlobalTimeParam(unsigned) const
+    float WeatherManager::GetGlobalTimeParam(unsigned iParamIdx) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D580
+        if (iParamIdx >= 4)
+            return 0.0;
+        return m_globalTimeParams[iParamIdx];
     }
 
     int WeatherManager::LoadWeatherStateFromXMLNode(cmn::XmlFile*, cmn::XmlNode*)

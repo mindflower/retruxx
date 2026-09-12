@@ -478,12 +478,17 @@ namespace ai
         {
             m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(node);
 
-            // TODO: check this!!!!!
+            // The original reuses the scale argument's stack slot as the action
+            // id after zeroing it, so its "action != -1" guard is always taken
+            // and the action is always set to 0.
             int nullValue = 0;
             node->SetProperty(m3d::PROP_DM_ACTION, &nullValue);
             node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &nullValue);
 
-            node->SetScale(scale);
+            // Uniform scale on all three axes. Passing the bare float would
+            // implicitly build CVector(scale) - which is {scale, 0, 0}, and
+            // flattens the model away entirely.
+            node->SetScale(CVector(scale, scale, scale));
             node->SetPersistance(false);
             node->UpdateXForm(0, 1);
 

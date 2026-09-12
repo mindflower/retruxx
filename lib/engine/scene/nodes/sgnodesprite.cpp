@@ -39,7 +39,7 @@ namespace m3d
 
     Object* SgSpriteNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgSpriteNode(*this);
     }
 
     int SgSpriteNode::ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*)
@@ -77,8 +77,11 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgSpriteNode::SgSpriteNode(SgSpriteNode const&)
+    SgSpriteNode::SgSpriteNode(SgSpriteNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (int i = 0; i < 6; ++i)
+        {
+            m_props[i] = node.m_props[i];
+        }
     }
 }

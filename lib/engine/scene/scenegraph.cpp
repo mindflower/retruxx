@@ -482,10 +482,10 @@ namespace m3d
         // Handle static model nodes with server-side transparency
         if (IS_KIND_OF(node, SgStaticModelNode))
         {
-            float transparency = 0.0f;
-            node->GetServerItemProperty(2, &transparency);
+            m3d::TransparencyType tt = TT_NONE;
+            node->GetServerItemProperty(2, &tt);
 
-            if (transparency != 0.0f)
+            if (tt != TT_NONE)
             {
                 // Calculate distance from camera to node
                 auto renderer = Application::g_pApp->m_renderer;
@@ -2105,7 +2105,8 @@ namespace m3d
         }
 
         n->m_isWaitingForRender = true;
-        *(&this->m_visSlots[2000 * cls->m_index] + this->m_visNumSlots[cls->m_index]++) = n;
+        auto const curSlot = this->m_visNumSlots[cls->m_index]++;
+        *(&this->m_visSlots[2000 * cls->m_index] + curSlot) = n;
         n->m_frameVisible = curFrame;
         return 1;
     }
@@ -2307,8 +2308,7 @@ namespace m3d
             M3D_RENDERER->TexCopy(m_texBlurShadow, tex);
             m_blurShadowShader->SetTexture(rend::IEffect::DiffMap0, &m_texBlurShadow);
             m_blurShadowShader->SetFloat(
-                rend::IEffect::User_float_param,
-                cfg.m_g_shadowBlurCoeff.GetF() * 0.000099999997f);
+                rend::IEffect::User_float_param, cfg.m_g_shadowBlurCoeff.GetF() * 0.000099999997f);
             M3D_RENDERER->DrawFullScreenQuad(m_blurShadowShader);
             M3D_RENDERER->PopBlend();
             M3D_RENDERER->PopFog();
@@ -2361,11 +2361,7 @@ namespace m3d
             M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
             m_roadDetailShadowShader->SetTexture(rend::IEffect::DiffMap0, &tex);
             RoadInRadius2dTest const roadTest(pos, radius);
-            pClient->GetWorld().GetRoadManager().RenderRoads(
-                roadCells,
-                RRT_FOR_DETAILED_SHADOW,
-                &roadTest,
-                false);
+            pClient->GetWorld().GetRoadManager().RenderRoads(roadCells, RRT_FOR_DETAILED_SHADOW, &roadTest, false);
             M3D_RENDERER->PopCull();
         }
 
@@ -2553,13 +2549,7 @@ namespace m3d
         M3D_RENDERER->RenderToTexFinish();
     }
 
-    void SceneGraph::PutShadowTextureToGrass(
-        int* cis,
-        int cnt,
-        float fade0,
-        float fade1,
-        int size,
-        rend::TexHandle tex)
+    void SceneGraph::PutShadowTextureToGrass(int* cis, int cnt, float fade0, float fade1, int size, rend::TexHandle tex)
     {
         // RVA 0x8A2EE0 - the grass is drawn after the landscape has already been
         // shadowed, so it gets its own pass through the same shadow texture.
@@ -2643,10 +2633,7 @@ namespace m3d
                     unsigned numVisibleInstances = 0;
                     lsc.CollectGrassCell(x, z, numVisibleInstances, visGrassInstances, visModelsForGrassInstances);
                     lsc.RenderGrass(
-                        numVisibleInstances,
-                        visGrassInstances,
-                        visModelsForGrassInstances,
-                        Landscape::RGT_FOR_SHADOW);
+                        numVisibleInstances, visGrassInstances, visModelsForGrassInstances, Landscape::RGT_FOR_SHADOW);
                 }
             }
         }
@@ -3028,6 +3015,10 @@ namespace m3d
 
     int SceneGraph::AddNodeAndItsChildrenToRender(SgNode* n, CClipper const& frusta, int curFrame)
     {
+        if (n->GetName() == std::string("ET_PS_MACHINEGUNROADEXPLOSION"))
+        {
+            bool asd = true;
+        }
         if (n->m_isWaitingForRender)
             return 0;
 

@@ -21,7 +21,7 @@ namespace m3d
 
     Object* SgPointLightSourceNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgPointLightSourceNode(*this);
     }
 
     DataServer* SgPointLightSourceNode::GetServer() const
@@ -96,9 +96,12 @@ namespace m3d
         RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
-    SgPointLightSourceNode::SgPointLightSourceNode(SgPointLightSourceNode const&)
+    SgPointLightSourceNode::SgPointLightSourceNode(SgPointLightSourceNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_props[0] = node.m_props[0];
+        m_props[1] = node.m_props[1];
+        m_props[2] = node.m_props[2];
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
     void SgPointLightSourceNode::UpdateOwnBoundingBox()

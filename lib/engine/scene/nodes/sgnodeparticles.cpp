@@ -248,12 +248,11 @@ namespace m3d
 
     Object* SgParticlesOpaqueNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgParticlesOpaqueNode(*this);
     }
 
-    SgParticlesOpaqueNode::SgParticlesOpaqueNode(SgParticlesOpaqueNode const&)
+    SgParticlesOpaqueNode::SgParticlesOpaqueNode(SgParticlesOpaqueNode const& node) : SgParticlesNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgParticlesOpaqueNode::SgParticlesOpaqueNode()

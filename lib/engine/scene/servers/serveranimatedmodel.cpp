@@ -326,6 +326,23 @@ namespace m3d
             /* 0x0000 */ const MeshInfo* m_meshes;
         }; /* size: 0x0004 */
 
+        // Orders nodes by squared distance from the camera, nearest first.
+        struct SortByDist
+        {
+            explicit SortByDist(const CVector& org) : m_org(org)
+            {
+            }
+
+            bool operator()(m3d::SgNode* a, m3d::SgNode* b) const
+            {
+                const CVector da = a->GetOriginWorldAbsForSphere() - m_org;
+                const CVector db = b->GetOriginWorldAbsForSphere() - m_org;
+                return (db.x * db.x + db.y * db.y + db.z * db.z) > (da.x * da.x + da.y * da.y + da.z * da.z);
+            }
+
+            /* 0x0000 */ CVector m_org;
+        }; /* size: 0x000c */
+
         // A material contributes an alpha-tested diffuse texture when it has any
         // texture at all and either carries no shader or its first technique is
         // flagged as alpha-using.
@@ -702,10 +719,88 @@ namespace m3d
         return 1;
     }
 
-    void AnimatedModelsServer::RenderTransparents(SgNode**, unsigned)
+    void AnimatedModelsServer::RenderTransparents(SgNode** nodes, unsigned numNodes)
     {
-        // TODO: implement AnimatedModelsServer::RenderTransparents
-        //RETRUXX_NOT_IMPLEMENTED;
+        SceneGraph* graph = &pClient->GetWorld().GetGraph();
+        if (!numNodes)
+        {
+            return;
+        }
+
+        M3D_RENDERER->SetAlphaTest(1);
+        M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
+        M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);
+        M3D_RENDERER->SetZbState(rend::ZB_ENABLE, 0);
+        M3D_RENDERER->SetFog(false, false);
+        for (int stage = 0; stage < 8; ++stage)
+        {
+            M3D_RENDERER->TgDisable(stage);
+        }
+
+        UpdateGlobalRenderingParams();
+
+        std::sort(nodes, nodes + numNodes, SortByDist(M3D_RENDERER->MatGetOrgInv()));
+
+        // The three transparency parameters are pushed into whichever shader the
+        // meshes happen to use, so remember the last one that took each and reset
+        // it once the whole set is drawn.
+        rend::IEffect* transparencyShader = nullptr;
+        rend::IEffect* transStartDistShader = nullptr;
+        rend::IEffect* transObjWidthShader = nullptr;
+
+        for (unsigned i = 0; i < numNodes; ++i)
+        {
+            auto* node = static_cast<SgAnimatedModelNode*>(nodes[i]);
+            auto* model = static_cast<DynamicModel*>(m_models[node->GetServerHandle()].m_ptr)->m_mdl[0];
+
+            Configuration* configuration = nullptr;
+            node->GetProperty(PROP_DM_CFG, &configuration);
+
+            graph->LightSetupLightsForNode(node);
+
+            for (auto* mesh : configuration->m_meshes)
+            {
+                auto& material = m_MeshMaterialManager.GetMaterial(*node, *mesh);
+                rend::IEffect* shader = model->ApplyMaterial(material);
+
+                const TransparencyParams& params = node->GetTransparencyParams();
+
+                if (shader->IsParameterUsed(rend::IEffect::Transparency))
+                {
+                    shader->SetFloat(rend::IEffect::Transparency, params.value);
+                    transparencyShader = shader;
+                }
+                if (shader->IsParameterUsed(rend::IEffect::TransStartDist))
+                {
+                    shader->SetFloat(rend::IEffect::TransStartDist, params.startDist);
+                    transStartDistShader = shader;
+                }
+                if (shader->IsParameterUsed(rend::IEffect::TransObjectWidth))
+                {
+                    shader->SetFloat(rend::IEffect::TransObjectWidth, params.objectWidth);
+                    transObjWidthShader = shader;
+                }
+
+                M3D_RENDERER->MatPush(node->GetCurrentMatrix());
+                RenderMesh(node, *mesh, shader);
+                M3D_RENDERER->MatPop(true);
+            }
+        }
+
+        // Put the shared shaders back to fully opaque so the next pass is not
+        // drawn with this set's transparency still applied.
+        if (transparencyShader)
+        {
+            transparencyShader->SetFloat(rend::IEffect::Transparency, 1.0f);
+        }
+        if (transStartDistShader)
+        {
+            transStartDistShader->SetFloat(rend::IEffect::TransStartDist, 10000.0f);
+        }
+        if (transObjWidthShader)
+        {
+            transObjWidthShader->SetFloat(rend::IEffect::TransObjectWidth, 0.0f);
+        }
     }
 
     int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned)

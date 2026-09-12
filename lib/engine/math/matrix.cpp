@@ -74,12 +74,25 @@ CMatrix CMatrix::getTransposed() const
 
 CMatrix CMatrix::getInverseRot() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x875E50. A plain transpose of all sixteen elements, which inverts an
+    // orthonormal rotation; it is byte for byte what getTransposed does.
+    return getTransposed();
 }
 
-void CMatrix::FromInvBasis(CVector const&, CVector const&, CVector const&)
+void CMatrix::FromInvBasis(CVector const& x, CVector const& y, CVector const& z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F9D70. Writes the three vectors as the matrix ROWS, which is the
+    // transpose of FromBasis and the counterpart to GetInvBasis.
+    zero();
+    _11 = x.x;
+    _12 = x.y;
+    _13 = x.z;
+    _21 = y.x;
+    _22 = y.y;
+    _23 = y.z;
+    _31 = z.x;
+    _32 = z.y;
+    _33 = z.z;
 }
 
 void CMatrix::DecomposeScale(float& x, float& y, float& z)
@@ -198,20 +211,39 @@ void CMatrix::shadow(CVector4 const& light, CPlane const& plane)
 
 void CMatrix::GetInvBasis(CVector& x, CVector& y, CVector& z) const
 {
+    // RVA 0x70AC10. Reads the matrix ROWS - the transposed, i.e. inverted,
+    // basis. Reading columns here would just repeat GetBasis.
     x.x = _11;
-    x.y = _21;
-    x.z = _31;
-    y.x = _12;
+    x.y = _12;
+    x.z = _13;
+    y.x = _21;
     y.y = _22;
-    y.z = _32;
-    z.x = _13;
-    z.y = _23;
+    y.z = _23;
+    z.x = _31;
+    z.y = _32;
     z.z = _33;
 }
 
-void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
+void CMatrix::composeSRT(CVector const& s, CMatrix const& rot, CVector const& t)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63ECB0. Scales each row of the rotation by the matching scale
+    // component and drops the translation in; the fourth column is zeroed.
+    _11 = s.x * rot._11;
+    _12 = rot._12 * s.x;
+    _13 = rot._13 * s.x;
+    _14 = 0.0f;
+    _21 = rot._21 * s.y;
+    _22 = rot._22 * s.y;
+    _23 = rot._23 * s.y;
+    _24 = 0.0f;
+    _31 = rot._31 * s.z;
+    _32 = rot._32 * s.z;
+    _33 = rot._33 * s.z;
+    _34 = 0.0f;
+    _41 = t.x;
+    _42 = t.y;
+    _43 = t.z;
+    _44 = 1.0f;
 }
 
 void CMatrix::reflect(CPlane const& p)
@@ -238,9 +270,30 @@ void CMatrix::reflect(CPlane const& p)
     _43 = p.m_normal.z * p.m_dist * 2.0f;
 }
 
-void CMatrix::translation(CVector const&)
+void CMatrix::translation(float x, float y, float z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41DC80
+    zero();
+    _11 = 1.0f;
+    _22 = 1.0f;
+    _33 = 1.0f;
+    _44 = 1.0f;
+    _41 = x;
+    _42 = y;
+    _43 = z;
+}
+
+void CMatrix::translation(CVector const& t)
+{
+    // RVA 0x5130F0
+    zero();
+    _11 = 1.0f;
+    _22 = 1.0f;
+    _33 = 1.0f;
+    _44 = 1.0f;
+    _41 = t.x;
+    _42 = t.y;
+    _43 = t.z;
 }
 
 void CMatrix::getYPR(float& y, float& p, float& r) const
@@ -346,14 +399,30 @@ CVector CMatrix::vecMul(CVector const& v) const
     return result;
 }
 
-CVector4 CMatrix::vecMul(CVector4 const&) const
+CVector4 CMatrix::vecMul(CVector4 const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7A46D0. Row-vector convention, same as the CVector overload but
+    // with w taken from the vector rather than assumed to be one.
+    CVector4 result;
+    result.x = v.x * _11 + v.y * _21 + v.z * _31 + v.w * _41;
+    result.y = v.x * _12 + v.y * _22 + v.z * _32 + v.w * _42;
+    result.z = v.x * _13 + v.y * _23 + v.z * _33 + v.w * _43;
+    result.w = v.x * _14 + v.y * _24 + v.z * _34 + v.w * _44;
+    return result;
 }
 
-void CMatrix::GetBasis(CVector&, CVector&, CVector&) const
+void CMatrix::GetBasis(CVector& x, CVector& y, CVector& z) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5C74C0. The basis vectors are the matrix columns.
+    x.x = _11;
+    x.y = _21;
+    x.z = _31;
+    y.x = _12;
+    y.y = _22;
+    y.z = _32;
+    z.x = _13;
+    z.y = _23;
+    z.z = _33;
 }
 
 CVector CMatrix::getOrg() const
@@ -361,14 +430,30 @@ CVector CMatrix::getOrg() const
     return {_41, _42, _43};
 }
 
-CVector CMatrix::vecRotBack(CVector const&) const
+CVector CMatrix::vecRotBack(CVector const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x405FC0. Rotates by the transposed 3x3, i.e. undoes vecRot for an
+    // orthonormal matrix, and ignores the translation.
+    CVector result;
+    result.x = v.x * _11 + v.y * _12 + v.z * _13;
+    result.y = v.x * _21 + v.y * _22 + v.z * _23;
+    result.z = v.x * _31 + v.y * _32 + v.z * _33;
+    return result;
 }
 
-void CMatrix::FromBasis(CVector const&, CVector const&, CVector const&)
+void CMatrix::FromBasis(CVector const& x, CVector const& y, CVector const& z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7BB020. Writes the three vectors as the matrix columns.
+    zero();
+    _11 = x.x;
+    _21 = x.y;
+    _31 = x.z;
+    _12 = y.x;
+    _22 = y.y;
+    _32 = y.z;
+    _13 = z.x;
+    _23 = z.y;
+    _33 = z.z;
 }
 
 CMatrix CMatrix::getInverse() const
@@ -514,9 +599,18 @@ void CMatrix::perspectiveFovLH(float fovY, float aspect, float z0, float z1)
     this->_22 = 1.0 / tan(fovY * 0.5);
 }
 
-void CMatrix::rotZ(float)
+void CMatrix::rotZ(float a)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4069A0
+    float const s = std::sin(a);
+    float const c = std::cos(a);
+    zero();
+    _11 = c;
+    _12 = s;
+    _21 = -s;
+    _22 = c;
+    _33 = 1.0f;
+    _44 = 1.0f;
 }
 
 void CMatrix::rotY(float a)
@@ -547,9 +641,15 @@ void CMatrix::rotX(float a)
     _44 = 1.0f;
 }
 
-void CMatrix::orthoLH(float, float, float, float)
+void CMatrix::orthoLH(float w, float h, float z0, float z1)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8A1DA0
+    zero();
+    _11 = 2.0f / w;
+    _22 = 2.0f / h;
+    _33 = 1.0f / (z1 - z0);
+    _43 = z0 / (z0 - z1);
+    _44 = 1.0f;
 }
 
 void CMatrix::rotYPR(float y, float p, float r)
@@ -594,14 +694,16 @@ void CMatrix::rotYPR(float y, float p, float r)
     *this = matYaw * matPitch * matRoll;
 }
 
-float CMatrix::operator()(int, int) const
+float CMatrix::operator()(int i, int j) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FEAC0. Row major, unchecked.
+    return m[i][j];
 }
 
-float& CMatrix::operator()(int, int)
+float& CMatrix::operator()(int i, int j)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8C71E0. Row major, unchecked.
+    return m[i][j];
 }
 
 void CMatrix::setOrg(CVector const& org)
@@ -611,14 +713,24 @@ void CMatrix::setOrg(CVector const& org)
     _43 = org.z;
 }
 
-void CMatrix::scaling(float)
+void CMatrix::scaling(float x)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8CB7C0
+    zero();
+    _11 = x;
+    _22 = x;
+    _33 = x;
+    _44 = 1.0f;
 }
 
-void CMatrix::scaling(float, float, float)
+void CMatrix::scaling(float x, float y, float z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63EC70
+    zero();
+    _11 = x;
+    _22 = y;
+    _33 = z;
+    _44 = 1.0f;
 }
 
 void CMatrix::identity()
@@ -685,7 +797,18 @@ void CMatrix::lookAtLH(CVector const& eye, CVector const& at, CVector const& up)
     _44 = 1.0f;
 }
 
-void CMatrix::shear(float, float, float, float, float, float)
+void CMatrix::shear(float sxy, float sxz, float syx, float syz, float szx, float szy)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63ED80
+    zero();
+    _11 = 1.0f;
+    _22 = 1.0f;
+    _33 = 1.0f;
+    _44 = 1.0f;
+    _12 = sxy;
+    _13 = sxz;
+    _21 = syx;
+    _23 = syz;
+    _31 = szx;
+    _32 = szy;
 }

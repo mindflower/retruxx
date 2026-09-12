@@ -1059,12 +1059,17 @@ namespace ai
             correctionMatrix._43 = 0.0f;
             correctionMatrix._44 = 1.0f;
 
-            // Apply correction to deviated direction
+            // Apply correction to deviated direction. Every component has to be
+            // built from the original vector, so rotate into a fresh one rather
+            // than updating in place.
             CMatrix finalMatrix(correctionMatrix);
-            float originalX = deviatedDir.x;
-            deviatedDir.x = (finalMatrix._11 * deviatedDir.x) + (finalMatrix._21 * deviatedDir.y) + (finalMatrix._31 * deviatedDir.z);
-            deviatedDir.y = (finalMatrix._12 * originalX) + (finalMatrix._22 * deviatedDir.y) + (finalMatrix._32 * deviatedDir.z);
-            deviatedDir.z = (finalMatrix._13 * originalX) + (finalMatrix._23 * deviatedDir.y) + (finalMatrix._33 * deviatedDir.z);
+            CVector const preCorrection = deviatedDir;
+            deviatedDir.x = (finalMatrix._11 * preCorrection.x) + (finalMatrix._21 * preCorrection.y) +
+                (finalMatrix._31 * preCorrection.z);
+            deviatedDir.y = (finalMatrix._12 * preCorrection.x) + (finalMatrix._22 * preCorrection.y) +
+                (finalMatrix._32 * preCorrection.z);
+            deviatedDir.z = (finalMatrix._13 * preCorrection.x) + (finalMatrix._23 * preCorrection.y) +
+                (finalMatrix._33 * preCorrection.z);
         }
 
         return deviatedDir;

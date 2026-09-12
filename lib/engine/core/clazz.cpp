@@ -348,7 +348,7 @@ namespace m3d
     Object* Object::ChildNodeFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
     {
         CStr const name(xmlNode->GetAttribute("name"));
-        for (auto* it = GetFirstChild(); it; it = GetNextSibling())
+        for (auto* it = GetFirstChild(); it; it = it->GetNextSibling())
         {
             if (it->GetName() == name)
             {
@@ -380,20 +380,21 @@ namespace m3d
             }
             isNewObject = true;
         }
-        if (res->ReadFromXmlNode(xmlFile, xmlNode))
+        int loaded = res->ReadFromXmlNode(xmlFile, xmlNode);
+        if (loaded)
         {
             if (isNewObject)
             {
                 AddChild(res);
             }
-            res->ReadFromXmlNodeAfterAdd(xmlFile, xmlNode);
+            loaded = res->ReadFromXmlNodeAfterAdd(xmlFile, xmlNode);
         }
         else if (isNewObject)
         {
             delete res;
             res = nullptr;
         }
-        if (res != nullptr)
+        if (loaded)
         {
             return res;
         }

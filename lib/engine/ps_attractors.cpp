@@ -171,6 +171,13 @@ namespace m3d
 
     void Attractor::ReadFromProto(const AttrProps& props)
     {
+        // RVA 0x9504A0. The base copy has to run first - without it none of
+        // m_On, m_wtime, m_mode, m_State, m_org or m_force[] is ever set, so an
+        // attractor loaded from effects.bps is inert or reads stale memory.
+        Attr::ReadFromProto(props);
+
+        // The binary copies the whole Force base in one go from props.m_min
+        // (`this->Force = *(Force *)&props->m_min`); these four fields are it.
         m_min = props.m_min;
         m_max = props.m_max;
         m_freq = props.m_freq;
@@ -184,7 +191,7 @@ namespace m3d
 
     void Attractor::InitParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        // TODO: generated code Attractor::InitParticle
+        // RVA 0x952730
         WorkMode state = m_State;
 
         if (state == SPEED && m_max != 0.0f && m_min != 0.0f)
@@ -270,10 +277,13 @@ namespace m3d
             normalizedDir.y = toAttractor.y * invDistance;
             normalizedDir.z = toAttractor.z * invDistance;
 
-            // Apply position-based force
-            pParticle->m_locorigin.x += normalizedDir.x * Time * forceMagnitude * ForceCoeff;
-            pParticle->m_locorigin.y += normalizedDir.y * Time * forceMagnitude * ForceCoeff;
-            pParticle->m_locorigin.z += normalizedDir.z * Time * forceMagnitude * ForceCoeff;
+            // Apply position-based force. Only three factors: the normalized
+            // direction, the force magnitude and ForceCoeff (0x95295C..0x952991).
+            // MSVC reuses the Time parameter slot to hold forceMagnitude, which
+            // makes the decompilation read as though Time were still a factor.
+            pParticle->m_locorigin.x += normalizedDir.x * forceMagnitude * ForceCoeff;
+            pParticle->m_locorigin.y += normalizedDir.y * forceMagnitude * ForceCoeff;
+            pParticle->m_locorigin.z += normalizedDir.z * forceMagnitude * ForceCoeff;
         }
     }
 
@@ -283,7 +293,7 @@ namespace m3d
 
     void Attractor::AffectParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        // TODO: generated code Attractor::InitParticle
+        // RVA 0x9529D0
         // Only process if in ACCELERATION mode with valid force range
         if (m_State != ACCELERATION || m_max == 0.0f || m_min == 0.0f)
         {
@@ -566,7 +576,7 @@ namespace m3d
 
     void GameAttractor::InitParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9505E0 - empty in the shipped build, like Attractor's.
     }
 
     void GameAttractor::AffectParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
@@ -576,7 +586,7 @@ namespace m3d
 
     void GameAttractor::AffectParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9505F0 - empty in the shipped build, like Attractor's.
     }
 
     void SAttractor::ReadFromXmlNode(cmn::XmlFile* m_file, ref_ptr<cmn::XmlNode>& sattr)
@@ -591,10 +601,10 @@ namespace m3d
 
     void SAttractor::InitParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        m_State = this->m_State;
-        if (m_State != SPEED || this->m_emitterOn)
+        WorkMode const state = this->m_State;
+        if (state != SPEED || this->m_emitterOn)
         {
-            if (m_State == WMPOSITION && !this->m_emitterOn)
+            if (state == WMPOSITION && !this->m_emitterOn)
             {
                 auto forces = m3d::CalcForces(m_csType, m_force, Time, pParticle->m_dir);
                 if (Orient)
@@ -741,7 +751,7 @@ namespace m3d
 
     void CalcForcesCarthesian(CVector& dest, Force const (&forces)[3], float time)
     {
-        // TODO: generated code CalcForcesCarthesian
+        // RVA 0x8E1C50
         for (int i = 0; i < 3; ++i)
         {
             const Force& force = (forces)[i];
@@ -767,7 +777,7 @@ namespace m3d
 
     void CalcForcesPolar(CVector& dest, Force const (&forces)[3], float time)
     {
-        // TODO: generated code CalcForcesPolar
+        // RVA 0x8E1CE0
         CVector force;
 
         // Calculate force components for each spherical coordinate (radius, theta, phi)
@@ -786,7 +796,7 @@ namespace m3d
             case PS_FORCE_RANDOM:
             {
                 // Random value between min and max
-                float randomFactor = static_cast<float>(rndGet() >> 16) / 65536.0f;
+                float randomFactor = static_cast<float>(rndGet() >> 16) * 0.000015259022f;
                 outputComponent = (maxValue - minValue) * randomFactor + minValue;
                 break;
             }
@@ -831,9 +841,29 @@ namespace m3d
         }
     }
 
-    void CalcForcesPolarOrg(CVector&, Force const (&)[3], CVector const&, float)
+    void CalcForcesPolarOrg(CVector& dest, Force const (&forces)[3], CVector const& dir, float time)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8E1E00. Unlike the other two this uses only forces[0], as a
+        // scalar magnitude along the supplied direction.
+        Force const& force = forces[0];
+
+        float magnitude;
+        if (force.m_type == PS_FORCE_RANDOM)
+        {
+            float const randomFactor = static_cast<float>(rndGet() >> 16) * 0.000015259022f;
+            magnitude = (force.m_max - force.m_min) * randomFactor + force.m_min;
+        }
+        else
+        {
+            // PS_FORCE_SINE. For any other value the binary leaves the reused
+            // `time` parameter slot alone and multiplies by the raw time, which
+            // ForceType cannot actually reach.
+            magnitude = fabs(sin(time * force.m_freq)) * (force.m_max - force.m_min) + force.m_min;
+        }
+
+        dest.x = dir.x * magnitude;
+        dest.y = dir.y * magnitude;
+        dest.z = dir.z * magnitude;
     }
     CVector CalcForces(CoordinatesSystemType cst, Force const (&forces)[3], float time, CVector const& dir)
     {

@@ -354,10 +354,15 @@ namespace m3d
         for (int i = 0; i < 7; ++i)
         {
             m_currentColors[i] = fullColor;
-            m_colorSets[0][i] = m_colorItemsInit[0];
-            m_colorSets[1][i] = m_colorItemsInit[1];
-            m_colorSets[2][i] = m_colorItemsInit[2];
-            m_colorSets[3][i] = m_colorItemsInit[3];
+            // RVA 0x7B1460 walks m_colorSets with a stride of 4 CVectors per
+            // iteration (`v3 += 4`), i.e. the outer index is the ColorItem and
+            // the four defaults fill that item's ColorTypes. The PDB-derived
+            // header declares this array as [4][7]; the real layout is [7][4],
+            // so the indices have to be the other way round here.
+            m_colorSets[i][0] = m_colorItemsInit[0];
+            m_colorSets[i][1] = m_colorItemsInit[1];
+            m_colorSets[i][2] = m_colorItemsInit[2];
+            m_colorSets[i][3] = m_colorItemsInit[3];
         }
 
         this->m_waterSpeed = 0.51999998;
@@ -374,7 +379,8 @@ namespace m3d
 
         for (int i = 0; i < 4; ++i)
         {
-            m_cloudsSpeed[i] = 1.0;
+            m_cloudsSpeed[i] = 0.1;
+            m_shadowVisibility[i] = true;
             m_shadowTransparency[i] = 0.5;
             m_lightmapTextureName[i] = "LoadMe.txt";
             m_cloudsTextureName[i] = "LoadMe.txt";

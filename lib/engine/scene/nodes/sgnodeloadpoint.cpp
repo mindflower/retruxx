@@ -19,7 +19,7 @@ namespace m3d
 
     Object* SgLoadpointNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgLoadpointNode(*this);
     }
 
     int SgLoadpointNode::Think(int, int)
@@ -37,9 +37,10 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgLoadpointNode::SgLoadpointNode(SgLoadpointNode const&)
+    SgLoadpointNode::SgLoadpointNode(SgLoadpointNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        RitualInConstructor(RITUAL_THINK_NODE);
+        m_persistant = false;
     }
 
     SgLoadpointNode::SgLoadpointNode()

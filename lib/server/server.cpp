@@ -796,7 +796,7 @@ namespace ai
 
     int CServer::GetLastId()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_lastId;
     }
 
     CStr CServer::GetPrototypeFullName(int)

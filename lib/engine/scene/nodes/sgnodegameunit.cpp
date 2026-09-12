@@ -23,12 +23,11 @@ namespace m3d
 
     Object* SgGameUnitNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgGameUnitNode(*this);
     }
 
-    SgGameUnitNode::SgGameUnitNode(m3d::SgGameUnitNode const&)
+    SgGameUnitNode::SgGameUnitNode(m3d::SgGameUnitNode const& node) : SgAnimatedModelNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgGameUnitNode::SgGameUnitNode()

@@ -4,6 +4,7 @@
 #include <ode/collision.h>
 #include <ode/collision_space.h>
 #include <ode/objects.h>
+#include <ode/odecpp.h>
 
 #include "config.h"
 #include "geomobject.h"
@@ -44,6 +45,8 @@
 #include "game/m3dgame.h"
 #include "objects/chassis.h"
 #include "objects/dynamicquestdestroy.h"
+#include "processmanager.h"
+#include "relationship.h"
 #include "objects/infectionzone.h"
 #include "objects/npcmotioncontroller.h"
 #include "objects/team.h"
@@ -71,6 +74,8 @@ namespace ai
         dxJointGroup* contactGroup = nullptr;
         int numNearCallbacksLastFrame = 0;
         CStr const STANDARD_EXPLOSION = "ET_PS_EXPLOSION";
+        CStr const STANDARD_WATERSPLASH = "ET_PS_WATERSPLASH";
+        CStr const STANDART_DECAL = "DC_TEST";
     }  // namespace
 
     class ShellTraceLineCallback : public TraceLineCallback
@@ -232,7 +237,8 @@ namespace ai
         }
 
         // Handle bullet collisions specially (find closest contact point)
-        if ((owner1 && owner1->GetClass() == &Bullet::m_classBullet) || (owner2 && owner2->GetClass() == &Bullet::m_classBullet))
+        if ((owner1 && owner1->GetClass() == &Bullet::m_classBullet) ||
+            (owner2 && owner2->GetClass() == &Bullet::m_classBullet))
         {
             Bullet* bullet = nullptr;
             if (owner1 && owner1->GetClass() == &Bullet::m_classBullet)
@@ -339,7 +345,7 @@ namespace ai
 
     void DynamicScene::DeleteAll()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ai::theObjects->DeleteAll();
     }
 
     void DynamicScene::PurgeBodies()
@@ -347,7 +353,8 @@ namespace ai
         if (thePlayer)
         {
             auto vehicle = thePlayer->GetVehicle();
-            if (!vehicle || ((vehicle->GetFlags() & 8) != 0) || (vehicle->GetFlags() & 2) != 0 || vehicle->GetParentRepository())
+            if (!vehicle || ((vehicle->GetFlags() & 8) != 0) || (vehicle->GetFlags() & 2) != 0 ||
+                vehicle->GetParentRepository())
             {
                 M3D_APP->ImmediateMessage(66544, 0, 0, 0, 0, {}, {});
                 thePlayer->CauseEvent(GE_PLAYER_VEHICLE_CHANGED, 0.0, {}, {});
@@ -356,9 +363,13 @@ namespace ai
         theObjects->Purge();
     }
 
-    CStr const& DynamicScene::GetBoEffectTypeName(unsigned short)
+    CStr const& DynamicScene::GetBoEffectTypeName(unsigned short BoEffectType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (BoEffectType < m_BoEffectTypeNames.size())
+        {
+            return m_BoEffectTypeNames[BoEffectType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     m3d::Object* DynamicScene::Clone()
@@ -380,7 +391,12 @@ namespace ai
         }
     }
 
-    int DynamicScene::ProcessShellAndBody(Shell* shell, PhysicBody* body, dContact* contact, unsigned& numContacts, bool reverse)
+    int DynamicScene::ProcessShellAndBody(
+        Shell* shell,
+        PhysicBody* body,
+        dContact* contact,
+        unsigned& numContacts,
+        bool reverse)
     {
         // TODO: check all this shit!!!
         using namespace m3d;
@@ -402,12 +418,22 @@ namespace ai
         auto const attackerId = shell->GetEmittedObjId();
         auto* attackerObj = RT_DYNCAST(theObjects->GetEntityByObjId(attackerId), PhysicObj);
 
-        if (!gunPrototypeInfo || IS_KIND_OF(shell, Mine))
+        if (!gunPrototypeInfo)
+        {
+            return 0;
+        }
+        if (IS_KIND_OF(shell, Mine))
         {
             auto* mine = RT_DYNCAST(shell, Mine);
-            if (mine->getState() == Mine::msActivation || IS_KIND_OF(body, GeomObject))
+            if (mine->getState() == Mine::msActivation)
             {
                 return 0;
+            }
+            if (IS_KIND_OF(body, GeomObject))
+            {
+                // An armed mine is the one case that keeps its contact, so it
+                // comes to rest on the surface instead of falling through.
+                return 1;
             }
         }
         if (IS_KIND_OF(shell, Rocket))
@@ -517,7 +543,48 @@ namespace ai
                 }
                 else
                 {
-                    RETRUXX_NOT_IMPLEMENTED;
+                    // A shell hitting a physic body gets a more accurate impact
+                    // point by casting back along its travel direction, since the
+                    // ODE contact sits wherever the broad phase happened to touch.
+                    static scoped_ptr shellHitRay = ai::Ray::CreateObject(nullptr, 100.0, nullptr);
+
+                    CVector const rayStart = shell->GetPosition() - info.hitDir * 50.0f;
+                    shellHitRay->SetPosition(rayStart);
+                    shellHitRay->SetDirection(info.hitDir);
+
+                    dContact rayContact;
+                    unsigned geomIdx = 0;
+                    for (; geomIdx < body->GetNumGeoms(); ++geomIdx)
+                    {
+                        if (dCollide(
+                                shellHitRay->GetGeomId(),
+                                body->GetGeom(geomIdx)->GetGeomId(),
+                                1,
+                                &rayContact.geom,
+                                sizeof(dContact)))
+                        {
+                            info.hitPos.x = rayContact.geom.pos[0];
+                            info.hitPos.y = rayContact.geom.pos[1];
+                            info.hitPos.z = rayContact.geom.pos[2];
+
+                            info.normal.x = rayContact.geom.normal[0];
+                            info.normal.y = rayContact.geom.normal[1];
+                            info.normal.z = rayContact.geom.normal[2];
+                            break;
+                        }
+                    }
+
+                    if (geomIdx == body->GetNumGeoms())
+                    {
+                        // Nothing along the ray, so fall back to the contact.
+                        info.hitPos.x = contact->geom.pos[0];
+                        info.hitPos.y = contact->geom.pos[1];
+                        info.hitPos.z = contact->geom.pos[2];
+
+                        info.normal.x = contact->geom.normal[0];
+                        info.normal.y = contact->geom.normal[1];
+                        info.normal.z = contact->geom.normal[2];
+                    }
                 }
                 hitPhysicObj->InflictDamage(info);
             }
@@ -530,12 +597,35 @@ namespace ai
 
         shell->Remove();
 
-        if (IS_KIND_OF(shell, Rocket))
+        if (IS_KIND_OF(shell, Rocket) && hitPhysicObj)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // A rocket shoves what it hits: a linear impulse along its flight
+            // direction, biased upwards, plus a spin about an axis perpendicular
+            // to it.
+            auto* rocket = RT_DYNCAST(shell, Rocket);
+            float const speed = rocket->GetVelocity();
+
+            CVector const dir = shell->GetDirection();
+            CVector force(dir.x, dir.y + 0.5f, dir.z);
+
+            force *= shell->GetMass();
+            force *= speed;
+            force *= hitPhysicObj->GetMass();
+            force *= 3.0f;
+
+            hitPhysicObj->SetPostEnablePhysicsIfPossible();
+            dBodyAddForce(hitPhysicObj->GetBody()->id(), force.x, force.y, force.z);
+
+            CVector const n = force.getNormalized();
+            CVector axis(n.z, 0.0f, -n.x);
+
+            axis *= CVector2(3.0f, 6.0f).randomValue();
+            axis *= shell->GetMass();
+            hitPhysicObj->SetAngularVelocity(axis);
         }
         // TODO: check this!!!
-        if (body && (!hitPhysicObj || hitPhysicObj->bIsUpdatingByODE()) && (!attackerObj || attackerObj->bIsUpdatingByODE()))
+        if (body && (!hitPhysicObj || hitPhysicObj->bIsUpdatingByODE()) &&
+            (!attackerObj || attackerObj->bIsUpdatingByODE()))
         {
             if (IS_KIND_OF(body, GeomObjectLandscape))
             {
@@ -564,7 +654,8 @@ namespace ai
                 // Vehicle part impact effect
                 if (part->m_Node)
                 {
-                    CStr const& vehicleEffectName = ai::gDynamicScene->GetShellVehicleEffectName(gunPrototypeInfo->m_explosionType);
+                    CStr const& vehicleEffectName =
+                        ai::gDynamicScene->GetShellVehicleEffectName(gunPrototypeInfo->m_explosionType);
 
                     CVector scale(1.0f, 1.0f, 1.0f);
                     m3d::SgNode* effectNode = PhysicBody::CreateNode(vehicleEffectName, 0, scale, 0, 0);
@@ -600,7 +691,9 @@ namespace ai
                 PhysicBody::CreateEffectNode(effectName, pos, IdentityQuaternion, true, 1.0f);
             }
         }
-        return 1;
+        // A shell never leaves a contact joint behind: it is consumed by the hit,
+        // so the caller must not build one for it.
+        return 0;
     }
 
     void DynamicScene::InitClashDecalId()
@@ -706,7 +799,8 @@ namespace ai
         // Update splash type indices
         for (size_t i = 0; i < m_soilProps.size(); ++i)
         {
-            auto it = std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), m_soilProps[i].m_splashTypeName);
+            auto it =
+                std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), m_soilProps[i].m_splashTypeName);
             if (it != m_soilSplashTypeNames.end())
             {
                 m_soilProps[i].m_splashType = static_cast<int>(std::distance(m_soilSplashTypeNames.begin(), it));
@@ -724,7 +818,8 @@ namespace ai
         {
             for (size_t x = 0; x < tileSize; ++x)
             {
-                m3d::Landscape::TileInfo const& tileInfo = landscape.GetTileInfo(static_cast<int>(y), static_cast<int>(x));
+                m3d::Landscape::TileInfo const& tileInfo =
+                    landscape.GetTileInfo(static_cast<int>(y), static_cast<int>(x));
                 uint16_t texIndex = tileInfo.m_texIndex0;
 
                 size_t index = y * tileSize + x;
@@ -753,12 +848,19 @@ namespace ai
         }
     }
 
-    CStr const& DynamicScene::GetShellWaterEffectName(unsigned short) const
+    CStr const& DynamicScene::GetShellWaterEffectName(unsigned short shellType) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (shellType < m_shellWaterEffectNames.size())
+        {
+            return m_shellWaterEffectNames[shellType];
+        }
+        return STANDARD_WATERSPLASH;
     }
 
-    bool DynamicScene::LoadSceneFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* rootNode, retruxx::vector<m3d::Class*> const& allowedClasses)
+    bool DynamicScene::LoadSceneFromXml(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* rootNode,
+        retruxx::vector<m3d::Class*> const& allowedClasses)
     {
         // TODO: generated code
         // Validate allowed classes
@@ -934,9 +1036,37 @@ namespace ai
         }
     }
 
-    bool DynamicScene::SaveSceneToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+    bool DynamicScene::SaveSceneToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* sceneNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        bool const fullSave = ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL;
+
+        if (fullSave)
+        {
+            sceneNode->SetAttribute("PhysicTimeAccumulator", CStr(m_physicTimeAccumulator).c_str());
+        }
+
+        if (ai::theRelationship && fullSave)
+        {
+            ref_ptr relationshipNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "relationship");
+            ai::theRelationship->SaveToXML(xmlFile, relationshipNode.get());
+            sceneNode->AddChild(relationshipNode.get());
+        }
+
+        ref_ptr targetsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "TargetNamesForDestroy");
+        ai::DynamicQuestDestroy::SaveNamesForTargetsToXml(targetsNode.get());
+        sceneNode->AddChild(targetsNode.get());
+
+        ai::theObjects->SaveToXml(xmlFile, sceneNode);
+
+        if (fullSave)
+        {
+            ref_ptr processNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "ProcessManager");
+            sceneNode->AddChild(processNode.get());
+            ai::theProcessManager->SaveToXML(xmlFile, processNode.get());
+        }
+
+        sceneNode->SetAttribute("LastId", CStr(ai::pServer->GetLastId()).c_str());
+        return true;
     }
 
     DynamicScene::SoilProps const& DynamicScene::GetSoilProps(unsigned x, unsigned z) const
@@ -950,16 +1080,19 @@ namespace ai
         return dummy;
     }
 
-    CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short) const
+    CStr const& DynamicScene::GetShellStaticsEffectName(unsigned short shellType) const
     {
-        // TODO: implement DynamicScene::GetShellStaticsEffectName
-        // RETRUXX_NOT_IMPLEMENTED;
-        return {};
+        if (shellType < m_shellsStaticsEffNames.size())
+        {
+            return m_shellsStaticsEffNames[shellType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     CStr const STANDARD_GROUNDSPLASH = "ET_PS_GROUNDSPLASH";
 
-    CStr const& DynamicScene::GetSoilEffectName(unsigned wheelType, unsigned short soilType, bool bVehicleIsBraking) const
+    CStr const& DynamicScene::GetSoilEffectName(unsigned wheelType, unsigned short soilType, bool bVehicleIsBraking)
+        const
     {
         if (m_soilEffectNames.empty())
         {
@@ -990,8 +1123,8 @@ namespace ai
 
         bool debugAnything = false;
 
-        if (bWaypointDebug || bDebugPhysicObjects || bDebugTeams || bDebugPassmap || bDebugPlayerPassmap || bDebugLocations || bDebugMouse ||
-            bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns)
+        if (bWaypointDebug || bDebugPhysicObjects || bDebugTeams || bDebugPassmap || bDebugPlayerPassmap ||
+            bDebugLocations || bDebugMouse || bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns)
         {
             debugAnything = true;
             M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
@@ -1019,16 +1152,19 @@ namespace ai
             mat.identity();
             M3D_RENDERER->MatMul(mat);
 
-            if (bDebugPhysicObjects || bDebugTeams || bDebugLocations || bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns)
+            if (bDebugPhysicObjects || bDebugTeams || bDebugLocations || bDebugInfections || bDebugObstacles ||
+                bDebugCompositeObjs || bDebugGuns)
             {
                 for (auto const* obj : *theObjects)
                 {
                     if (bDebugPhysicObjects &&
-                            (IS_KIND_OF(obj, PhysicObj) || IS_KIND_OF(obj, VehicleRecollection) || IS_KIND_OF(obj, NPCMotionController) ||
-                             IS_KIND_OF(obj, Thunderbolt) || IS_KIND_OF(obj, JointedObj)) &&
+                            (IS_KIND_OF(obj, PhysicObj) || IS_KIND_OF(obj, VehicleRecollection) ||
+                             IS_KIND_OF(obj, NPCMotionController) || IS_KIND_OF(obj, Thunderbolt) ||
+                             IS_KIND_OF(obj, JointedObj)) &&
                             !IS_KIND_OF(obj, Location) ||
                         bDebugTeams && IS_KIND_OF(obj, Team) || bDebugLocations && IS_KIND_OF(obj, Location) ||
-                        bDebugInfections && IS_KIND_OF(obj, InfectionZone) || bDebugCompositeObjs && IS_KIND_OF(obj, CompositeObj))
+                        bDebugInfections && IS_KIND_OF(obj, InfectionZone) ||
+                        bDebugCompositeObjs && IS_KIND_OF(obj, CompositeObj))
                     {
                         obj->RenderDebugInfo();
                     }
@@ -1058,9 +1194,13 @@ namespace ai
         return new DynamicScene;
     }
 
-    CStr const& DynamicScene::GetBoVehicleEffectName(unsigned short) const
+    CStr const& DynamicScene::GetBoVehicleEffectName(unsigned short BoEffectType) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (BoEffectType < m_BoVehicleEffectNames.size())
+        {
+            return m_BoVehicleEffectNames[BoEffectType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     void DynamicScene::CollideScene(float elapsedTime)
@@ -1078,9 +1218,13 @@ namespace ai
         }
     }
 
-    CStr const& DynamicScene::GetShellVehicleEffectName(unsigned short) const
+    CStr const& DynamicScene::GetShellVehicleEffectName(unsigned short shellType) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (shellType < m_shellsVehiclesEffNames.size())
+        {
+            return m_shellsVehiclesEffNames[shellType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     void DynamicScene::CreateBoShellEffectNames()
@@ -1132,9 +1276,13 @@ namespace ai
         return RT_CLASS_LOCAL(Object);
     }
 
-    CStr const& DynamicScene::GetDecalName(int)
+    CStr const& DynamicScene::GetDecalName(int id)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (id >= 0 && id < static_cast<int>(m_decalsNames.size()))
+        {
+            return m_decalsNames[id];
+        }
+        return STANDART_DECAL;
     }
 
     void DynamicScene::ClearOnce()
@@ -1164,7 +1312,7 @@ namespace ai
 
     int DynamicScene::GetNumNearCallbacksLastFrame()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return numNearCallbacksLastFrame;
     }
 
     int DynamicScene::AddDecalName(CStr const& name)
@@ -1237,9 +1385,15 @@ namespace ai
         return m_wheelTypeNames.size() - 1;
     }
 
-    CStr const& DynamicScene::GetBoShellEffectName(unsigned short, unsigned short)
+    CStr const& DynamicScene::GetBoShellEffectName(unsigned short BoEffectType, unsigned short ShellEffectType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The shell index is bounds-checked against the shell effect table, which
+        // is the same length as each inner row of m_BoShellEffectNames.
+        if (ShellEffectType < m_shellsEffectsNames.size() && BoEffectType < m_BoEffectTypeNames.size())
+        {
+            return m_BoShellEffectNames[BoEffectType][ShellEffectType];
+        }
+        return STANDARD_EXPLOSION;
     }
 
     void DynamicScene::CollideBullet(Bullet const& bullet)
@@ -1314,7 +1468,10 @@ namespace ai
         return false;
     }
 
-    int DynamicScene::ReadNewObjectFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, retruxx::vector<m3d::Class*> const& allowedClasses)
+    int DynamicScene::ReadNewObjectFromXml(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode,
+        retruxx::vector<m3d::Class*> const& allowedClasses)
     {
         CStr name = xmlNode->GetAttribute("Name");
         CStr prototypeName = xmlNode->GetAttribute("Prototype");
@@ -1328,7 +1485,22 @@ namespace ai
 
         if (!allowedClasses.empty())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            auto const* proto = ai::thePrototypeManager->GetPrototypeInfo(prototypeId);
+            m3d::Class* protoClass = M3D_KERNEL->FindClass(proto->m_className.c_str());
+
+            bool allowed = false;
+            for (auto* allowedClass : allowedClasses)
+            {
+                if (protoClass->IsKindOf(allowedClass))
+                {
+                    allowed = true;
+                    break;
+                }
+            }
+            if (!allowed)
+            {
+                return -1;
+            }
         }
 
         int objId = -1;
@@ -1336,7 +1508,9 @@ namespace ai
 
         if (theObjects->GetObjIdByObjName(name) != -1)
         {
-            M3D_LOG_ERR("Attempting to load object " + name + " of prototype " + prototypeName + ", but an object with this name already exists!");
+            M3D_LOG_ERR(
+                "Attempting to load object " + name + " of prototype " + prototypeName +
+                ", but an object with this name already exists!");
         }
 
         auto entityForLoadId = theObjects->CreateEntityForLoad(prototypeId, name.c_str(), -1, objId);
@@ -1348,7 +1522,8 @@ namespace ai
         auto* obj = theObjects->GetEntityByObjId(entityForLoadId);
         if (!obj)
         {
-            M3D_LOG_ERR("Error: object with id " + CStr(entityForLoadId) + " was created but it is not in the ObjContainer");
+            M3D_LOG_ERR(
+                "Error: object with id " + CStr(entityForLoadId) + " was created but it is not in the ObjContainer");
             return -1;
         }
 
@@ -1436,9 +1611,25 @@ namespace ai
         return static_cast<int>(m_shellTypesNames.size() - 1);
     }
 
-    bool DynamicScene::SaveSceneToFile(char const*)
+    bool DynamicScene::SaveSceneToFile(char const* fileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!stream->Open(fileName, m3d::fs::IStream::OPEN_WRITE))
+        {
+            return false;
+        }
+
+        ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "DynamicScene");
+        xmlFile->AddChild(rootNode.get());
+
+        bool const res = SaveSceneToXml(xmlFile.get(), rootNode.get());
+
+        xmlFile->Write(*stream);
+        stream->Close();
+
+        return res;
     }
 
     Vehicle* DynamicScene::GetVehicleControlledByPlayer() const
@@ -1494,12 +1685,15 @@ namespace ai
 
     void DynamicScene::UpdateSceneItems(float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Retired before release; the shipped build asserts here.
+        M3D_ASSERT(!"obsolete");
     }
 
     DynamicScene::DynamicScene(DynamicScene const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The scene is a singleton; the shipped build default-initializes every
+        // member and then asserts, so copying it is never valid.
+        M3D_ASSERT(false);
     }
 
     TraceLineCallback::~TraceLineCallback() = default;
@@ -1512,46 +1706,78 @@ namespace ai
         ColliderKrnl::RegisterCollider(0, 0, DefaultCollider);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(GeomObjectWater), RT_CLASS_LOCAL(Object), EmptyCollider);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(DummyObject), RT_CLASS_LOCAL(Object), DefaultCollider);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(DummyObject), RT_CLASS_LOCAL(VehiclePart), CollideDummyAndVehiclePart);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(ParticleSplinter), RT_CLASS_LOCAL(Object), CollideParticleSplinter);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(BreakableObject), CollideVehicleAndBreakableObject);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(VehiclePart), CollideVehiclePartAndVehiclePart);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectLandscape), CollideVehicleAndLandscape);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectStatics), CollideVehicleAndStatics);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectRoad), CollideVehicleAndRoad);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectWater), CollideVehicleAndWater);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(DummyObject), RT_CLASS_LOCAL(VehiclePart), CollideDummyAndVehiclePart);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(ParticleSplinter), RT_CLASS_LOCAL(Object), CollideParticleSplinter);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(BreakableObject), CollideVehicleAndBreakableObject);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(VehiclePart), CollideVehiclePartAndVehiclePart);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectLandscape), CollideVehicleAndLandscape);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectStatics), CollideVehicleAndStatics);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectRoad), CollideVehicleAndRoad);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectWater), CollideVehicleAndWater);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(Town), CollideVehicleAndStatics);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), 0, CollideWheelDefault);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(Object), CollideWheelDefault);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(GeomObject), CollideWheelDefault);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(GeomObjectRoad), CollideWheelAndAsphalt);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(GeomObjectLandscape), CollideWheelAndLandscape);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(GeomObjectLandscape), CollideWheelAndLandscape);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(GeomObjectWater), CollideWheelAndWater);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(BreakableObject), CollideVehicleAndBreakableObject);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(PhysicObj), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(Wheel), RT_CLASS_LOCAL(BreakableObject), CollideVehicleAndBreakableObject);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(Wheel), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(PhysicObj),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(PhysicBody), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(Wheel),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(StaticAutoGun), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(PhysicBody),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(VehiclePart), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(StaticAutoGun),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(GeomObject), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(VehiclePart),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(GeomObject),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(GeomObjectWater), CollideShellAndWater);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Shell), 0, (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(GeomObjectRoad), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(BreakableObject), CollideVehicleAndBreakableObject);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(BreakableObject), RT_CLASS_LOCAL(GeomObject), CollideBreakableObjectAndGeomObject);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(BreakableObject), RT_CLASS_LOCAL(GeomObjectWater), CollidePOAndWater);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehicleSplinter), RT_CLASS_LOCAL(GeomObjectLandscape), CollideVehicleSplinterAndLandscape);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehicleSplinter), RT_CLASS_LOCAL(GeomObjectRoad), CollideVehicleSplinterAndLandscape);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehicleSplinter), RT_CLASS_LOCAL(ParticleSplinter), EmptyCollider);
+            RT_CLASS_LOCAL(Shell), 0, (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(GeomObjectRoad),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(BreakableObject), CollideVehicleAndBreakableObject);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(BreakableObject), RT_CLASS_LOCAL(GeomObject), CollideBreakableObjectAndGeomObject);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(BreakableObject), RT_CLASS_LOCAL(GeomObjectWater), CollidePOAndWater);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehicleSplinter), RT_CLASS_LOCAL(GeomObjectLandscape), CollideVehicleSplinterAndLandscape);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehicleSplinter), RT_CLASS_LOCAL(GeomObjectRoad), CollideVehicleSplinterAndLandscape);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehicleSplinter), RT_CLASS_LOCAL(ParticleSplinter), EmptyCollider);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(DummyObject), RT_CLASS_LOCAL(GeomObjectWater), CollidePOAndWater);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(ParticleSplinter), RT_CLASS_LOCAL(GeomObjectWater), CollideParticleSplinterAndWater);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(ParticleSplinter), RT_CLASS_LOCAL(GeomObjectWater), CollideParticleSplinterAndWater);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(BlastWave), RT_CLASS_LOCAL(Object), EmptyCollider);
         ColliderKrnl::RegisterCollider(
             RT_CLASS_LOCAL(BlastWave),
@@ -1561,20 +1787,30 @@ namespace ai
             RT_CLASS_LOCAL(BlastWave),
             RT_CLASS_LOCAL(PhysicBody),
             (int (*)(Object*, Object*, dContact*, unsigned&, bool))BlastWave::CollideBlastWaveAndPhysicObj);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(PhysicUnit), RT_CLASS_LOCAL(VehiclePart), CollidePhysicUnitAndVehicle);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(PhysicUnit), RT_CLASS_LOCAL(VehiclePart), CollidePhysicUnitAndVehicle);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(PhysicUnit), RT_CLASS_LOCAL(Wheel), CollidePhysicUnitAndVehicle);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(PhysicUnit), RT_CLASS_LOCAL(Shell), CollidePhysicUnitAndShell);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(PhysicUnit), RT_CLASS_LOCAL(BlastWave), CollidePhysicUnitAndBlastWave);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(PhysicUnit), RT_CLASS_LOCAL(BlastWave), CollidePhysicUnitAndBlastWave);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(GeomObj), RT_CLASS_LOCAL(Object), CollideGeomObjAndLandscape);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(GeomObj), RT_CLASS_LOCAL(Shell), CollideGeomObjAndShell);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(GeomObj), RT_CLASS_LOCAL(GeomObjectWater), CollidePOAndWater);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(BlastWave), RT_CLASS_LOCAL(GeomObj), (int (*)(Object*, Object*, dContact*, unsigned&, bool))BlastWave::CollideBlastWaveAndPhysicObj);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObj), CollideVehiclePartAndGeomObj);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(ParticleSplinter), RT_CLASS_LOCAL(GeomObj), EmptyCollider);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(BossMetalArmLoad), RT_CLASS_LOCAL(Object), BossMetalArmLoad::CollideBossMetalArmLoadWithObject);
+            RT_CLASS_LOCAL(BlastWave),
+            RT_CLASS_LOCAL(GeomObj),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))BlastWave::CollideBlastWaveAndPhysicObj);
         ColliderKrnl::RegisterCollider(
-            RT_CLASS_LOCAL(Shell), RT_CLASS_LOCAL(BossMetalArmLoad), (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObj), CollideVehiclePartAndGeomObj);
+        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(ParticleSplinter), RT_CLASS_LOCAL(GeomObj), EmptyCollider);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(BossMetalArmLoad),
+            RT_CLASS_LOCAL(Object),
+            BossMetalArmLoad::CollideBossMetalArmLoadWithObject);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Shell),
+            RT_CLASS_LOCAL(BossMetalArmLoad),
+            (int (*)(Object*, Object*, dContact*, unsigned&, bool))ProcessShellAndBody);
         ColliderKrnl::RegisterCollider(
             RT_CLASS_LOCAL(Boss03Part),
             RT_CLASS_LOCAL(VehiclePart),
@@ -1583,10 +1819,13 @@ namespace ai
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Boss04Part), RT_CLASS_LOCAL(VehiclePart), EmptyCollider);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Boss04Part), RT_CLASS_LOCAL(Wheel), EmptyCollider);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Boss04Part), RT_CLASS_LOCAL(GeomObjectLandscape), EmptyCollider);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Boss04StationPart), RT_CLASS_LOCAL(Boss04StationPart), EmptyCollider);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Boss04StationPart), RT_CLASS_LOCAL(GeomObjectLandscape), EmptyCollider);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Boss04StationPart), RT_CLASS_LOCAL(Boss04StationPart), EmptyCollider);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(Boss04StationPart), RT_CLASS_LOCAL(GeomObjectLandscape), EmptyCollider);
         ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(Object), RT_CLASS_LOCAL(GeomObjectPassCell), EmptyCollider);
-        ColliderKrnl::RegisterCollider(RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectPassCell), CollideVehicleAndPassCell);
+        ColliderKrnl::RegisterCollider(
+            RT_CLASS_LOCAL(VehiclePart), RT_CLASS_LOCAL(GeomObjectPassCell), CollideVehicleAndPassCell);
     }
 
     void DynamicScene::_InitWheelTraces()
@@ -1640,21 +1879,42 @@ namespace ai
 
     void DynamicScene::_RecalcWheelEffectNames()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_soilEffectNames.clear();
+        m_roadEffectNames.clear();
+        for (auto const& wheelTypeName : m_wheelTypeNames)
+        {
+            _AddSoilEffectNameForWheelTypeName(wheelTypeName);
+        }
     }
 
-    void DynamicScene::_AddSoilEffectNameForWheelTypeName(CStr const&)
+    void DynamicScene::_AddSoilEffectNameForWheelTypeName(CStr const& wheelTypeName)
     {
-        // TODO: implement DynamicScene::_AddSoilEffectNameForWheelTypeName
-        //RETRUXX_NOT_IMPLEMENTED;
+        // One row per wheel type, holding a rolling and a braking effect name for
+        // every soil splash type, plus the matching pair of road smoke names.
+        m_soilEffectNames.push_back({});
+        auto& row = m_soilEffectNames.back();
+        row.resize(2 * m_soilSplashTypeNames.size());
+
+        for (size_t i = 0; i < m_soilSplashTypeNames.size(); ++i)
+        {
+            CStr const base = "ET_PS_" + wheelTypeName + m_soilSplashTypeNames[i];
+            row[2 * i] = base + "SPLASH";
+            row[2 * i + 1] = base + "SPLASH_BRAKE";
+        }
+
+        m_roadEffectNames.push_back("ET_PS_" + wheelTypeName + "ROADSMOKE");
+        m_roadEffectNames.push_back("ET_PS_" + wheelTypeName + "ROADSMOKE_BRAKE");
     }
 
-    ObjIdExceptionalTraceLineCallback::ObjIdExceptionalTraceLineCallback(ai::ObjIdExceptionalTraceLineCallback const&)
+    ObjIdExceptionalTraceLineCallback::ObjIdExceptionalTraceLineCallback(
+        ai::ObjIdExceptionalTraceLineCallback const& rhs) :
+        m_Exceptions(rhs.m_Exceptions)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
-    ObjIdExceptionalTraceLineCallback::ObjIdExceptionalTraceLineCallback(std::vector<int, std::allocator<int>> const& Exceptions) : m_Exceptions(Exceptions)
+    ObjIdExceptionalTraceLineCallback::ObjIdExceptionalTraceLineCallback(
+        std::vector<int, std::allocator<int>> const& Exceptions) :
+        m_Exceptions(Exceptions)
     {
     }
 

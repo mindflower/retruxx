@@ -82,7 +82,7 @@ CVector strToVec(CStr const& str)
 
 Quaternion strToQuat(CStr const& str)
 {
-    Quaternion res;
+    Quaternion res{0.0, 0.0, 0.0, 1.0};
     if (!str.empty())
     {
         sscanf(str.c_str(), "%f %f %f %f", &res.x, &res.y, &res.z, &res.w);

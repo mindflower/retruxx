@@ -73,7 +73,7 @@ namespace m3d
 
     m3d::Object* SgAnimatedModelNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgAnimatedModelNode(*this);
     }
 
     int SgAnimatedModelNode::Think(int dt, int curTime)
@@ -395,8 +395,26 @@ namespace m3d
         RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
-    SgAnimatedModelNode::SgAnimatedModelNode(SgAnimatedModelNode const&)
+    SgAnimatedModelNode::SgAnimatedModelNode(SgAnimatedModelNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_action = node.m_action;
+        m_effectActions = node.m_effectActions;
+        m_SkinNumber = node.m_SkinNumber;
+
+        m_cfg.m_num = node.m_cfg.m_num;
+        m_cfg.m_meshes = node.m_cfg.m_meshes;
+        m_cfg.m_groupVariants = node.m_cfg.m_groupVariants;
+
+        m_suppressedLPs = node.m_suppressedLPs;
+        m_lastTimeUpdated = -1000;
+        m_skipFrames = -1;
+        m_frameUpdated = -100;
+        m_manualAnimControl = node.m_manualAnimControl;
+        m_castShadow = node.m_castShadow;
+        m_passable = node.m_passable;
+        m_obstacle = nullptr;
+        m_imposted = true;
+
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 }

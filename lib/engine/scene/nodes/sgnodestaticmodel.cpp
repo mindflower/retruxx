@@ -39,7 +39,7 @@ namespace m3d
 
     Object* SgStaticModelNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgStaticModelNode(*this);
     }
 
     int SgStaticModelNode::GetProperty(unsigned, void*) const
@@ -57,9 +57,8 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgStaticModelNode::SgStaticModelNode(SgStaticModelNode const&)
+    SgStaticModelNode::SgStaticModelNode(SgStaticModelNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     SgStaticModelNode::~SgStaticModelNode()

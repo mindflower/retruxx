@@ -10,10 +10,12 @@
 #include <core/scoped_ptr.h>
 #include <core/ini.h>
 #include <core/kernel.h>
+#include <core/log.h>
 #include <file/fileserver.h>
 #include <file/filestream.h>
 #include <client.h>
 #include <algorithm>
+#include <cstring>
 
 bool loadedViaBPS = false;
 
@@ -78,14 +80,22 @@ namespace m3d
         /* 0x0040 */ int m_numSkinMesh;
     }; /* size: 0x0044 */
 
-    int ParticlesServer::SetItemProperty(int, int, void*)
+    int ParticlesServer::SetItemProperty(int id, int prop, void* src)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m3d::DataServer::SetItemProperty(id, prop, src);
     }
 
     ParticlesServer::~ParticlesServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        QuadPS::ReleaseIb();
+        SpritePS::ReleaseIb();
+        GlowQuadPS::ReleaseIb();
+        PolyPS::ReleaseIb();
+        Poly1PS::ReleaseIb();
+        RainPS::ReleaseIb();
+        StripAllPS::ReleaseIb();
+        StripOnePS::ReleaseIb();
+        ParticlesServer::Release();
     }
 
     int ParticlesServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, m3d::RenderNodeInfo rni)
@@ -239,7 +249,7 @@ namespace m3d
             unsigned int m_dt;
         };
 
-        m_profiler->StartCountdown();
+        m_profilerUpdate->StartCountdown();
 
         RenderInfo* ri = (RenderInfo*)params;
         SgNode* node = ri->m_node;
@@ -279,7 +289,7 @@ namespace m3d
         // Update the particle system
         particleSystem->Update(particlesList, deltaTime, 1.0f);
 
-        m_profiler->EndCountdown();
+        m_profilerUpdate->EndCountdown();
     }
 
     int ParticlesServer::GetItemProperty(int id, int prop, void* dest)
@@ -307,9 +317,10 @@ namespace m3d
         }
         else
         {
-            if (prop == 12293)
+            if (prop == PROP_SRV_IS_LOCAL)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                auto* system = static_cast<ParticleSystem*>(m_models[id].m_ptr);
+                *static_cast<bool*>(dest) = system->IsLocal();
             }
             return m3d::DataServer::GetItemProperty(id, prop, dest);
         }
@@ -339,12 +350,13 @@ namespace m3d
 
     void ParticlesServer::MoveParticles(m3d::SgNode* node, retruxx::vector<CVector> const* newPoses)
     {
-        auto* system = (ParticleSystem*)&m_models[node->GetServerHandle()];
-        m3d::ParticlesList* list = nullptr;
-        node->GetProperty(1, &list);
-        if (list)
+        auto* system = static_cast<ParticleSystem*>(m_models[node->GetServerHandle()].m_ptr);
+
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(PROP_SERVER_SLOT, &info);
+        if (info)
         {
-            system->MoveParticles(list, newPoses);
+            system->MoveParticles(info->m_list, newPoses);
         }
     }
 
@@ -356,7 +368,17 @@ namespace m3d
 
     int ParticlesServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            auto* system = static_cast<ParticleSystem*>(model.m_ptr);
+            if (system)
+            {
+                delete system;
+            }
+        }
+        ModelVector().swap(m_models);
+        return 1;
     }
 
     void ParticlesServer::RenderItem(int, void*)
@@ -365,17 +387,60 @@ namespace m3d
 
     void ParticlesServer::SaveAllLoadedEntitiesToBPS()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!fileStream->Open("data\\models\\effects.bps", fs::IStream::OPEN_WRITE))
+        {
+            return;
+        }
+
+        retruxx::vector<AttrProps> attractors;
+        PSProps psProps;
+
+        unsigned version = 2;
+        fileStream->WriteBytes(&version, 4u);
+
+        unsigned psNum = static_cast<unsigned>(m_models.size());
+        fileStream->WriteBytes(&psNum, 4u);
+
+        for (unsigned i = 0; i < psNum; ++i)
+        {
+            auto* system = static_cast<ParticleSystem*>(m_models[i].m_ptr);
+            system->WriteToProtos(psProps, attractors);
+
+            // The record holds a fixed 50-byte name field; pad rather than read
+            // past the end of a shorter name as the original does.
+            char nameField[50] = {};
+            std::strncpy(nameField, m_models[i].m_name.c_str(), sizeof(nameField) - 1);
+            fileStream->WriteBytes(nameField, sizeof(nameField));
+            fileStream->WriteBytes(&psProps, sizeof(PSProps));
+
+            unsigned attrNum = static_cast<unsigned>(attractors.size());
+            fileStream->WriteBytes(&attrNum, 4u);
+            for (unsigned j = 0; j < attrNum; ++j)
+            {
+                fileStream->WriteBytes(&attractors[j], sizeof(AttrProps));
+            }
+        }
+
+        fileStream->Close();
     }
 
     int ParticlesServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Particle systems are shared by handle and are never removed individually.
+        return 1;
     }
 
-    void ParticlesServer::ResetItem(m3d::SgNode*)
+    void ParticlesServer::ResetItem(m3d::SgNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* system = static_cast<ParticleSystem*>(m_models[node->GetServerHandle()].m_ptr);
+
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(PROP_SERVER_SLOT, &info);
+        if (info)
+        {
+            system->Reset(info->m_list);
+        }
     }
 
     void ParticlesServer::UnregisterNode(m3d::SgNode* node)
@@ -421,14 +486,34 @@ namespace m3d
         }
     }
 
-    int ParticlesServer::AddItem(char const*, char const*)
+    int ParticlesServer::AddItem(char const* params, char const* id)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int existing = GetItemByName(id, false);
+        if (existing != -1)
+        {
+            return existing;
+        }
+
+        Proto proto;
+        int paramsPos;
+        ParseProto(params, &proto, &paramsPos);
+        if (proto != PROTO_FILE)
+        {
+            M3D_LOG_INFO("Protocol is not supported: " + CStr(proto));
+            return -1;
+        }
+
+        char const* fileName = params + paramsPos;
+
+        auto* system = ParticleSystem::Factory(fileName);
+        m_models.push_back(Model(system, fileName, fileName, id));
+        return static_cast<int>(m_models.size()) - 1;
     }
 
     int ParticlesServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Particle systems are written as a single pack, see SaveAllLoadedEntitiesToBPS.
+        return 1;
     }
 
     void ParticlesServer::RegisterNode(m3d::SgNode* node)
@@ -506,18 +591,40 @@ namespace m3d
         }
     }
 
-    void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>&)
+    void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (size_t i = 0; i < itemslist.size(); ++i)
+        {
+            if (m_fnLoadCallback)
+            {
+                m_fnLoadCallback(static_cast<int>(i * 100 / itemslist.size()), m_fnLoadCallbackData);
+            }
+
+            const CStr fn = itemslist[i].m_filename;
+            const CStr id = itemslist[i].m_id;
+            if (AddItem(fn.c_str(), id.c_str()) == -1)
+            {
+                M3D_LOG_INFO("DataServer: cannot read " + fn + " id = " + id);
+            }
+        }
     }
 
     void ParticlesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
+        // RVA 0x769730
         if (!loadedViaBPS)
         {
             scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (fileStream->Open("data\\models\\effects.bps", fs::IStream::OPEN_READ))
             {
+                // 0x76979D calls timeGetTime() and throws the result away - a
+                // leftover load timer whose paired report was compiled out; the
+                // binary also builds psProps and m_Attractors here, ahead of the
+                // version check, so they are declared up front to match.
+                retruxx::vector<AttrProps> m_Attractors;
+                char buffer[52];
+                PSProps psProps;
+
                 unsigned version = 0;
                 fileStream->ReadBytes(&version, 4u);
                 if (version != 2)
@@ -527,12 +634,9 @@ namespace m3d
                     return;
                 }
 
-                retruxx::vector<AttrProps> m_Attractors;
-                char buffer[52];
-                PSProps psProps;
                 unsigned psNum = 0;
                 fileStream->ReadBytes(&psNum, 4u);
-                for (int i = 0; i < psNum; ++i)
+                for (unsigned i = 0; i < psNum; ++i)
                 {
                     fileStream->ReadBytes(buffer, 50);
                     buffer[50] = 0;
@@ -544,7 +648,7 @@ namespace m3d
                     AttrProps attrProps;
                     m_Attractors.resize(attrNum, attrProps);
 
-                    for (int j = 0; j < attrNum; ++j)
+                    for (unsigned j = 0; j < attrNum; ++j)
                     {
                         fileStream->ReadBytes(&m_Attractors[j], sizeof(AttrProps));
                     }

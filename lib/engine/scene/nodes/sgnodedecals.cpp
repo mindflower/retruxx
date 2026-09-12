@@ -43,7 +43,7 @@ namespace m3d
 
     Object* SgDecalsNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgDecalsNode(*this);
     }
 
     int SgDecalsNode::Render(SgNodeRenderFlags, void*, int, int)
@@ -66,9 +66,10 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgDecalsNode::SgDecalsNode(SgDecalsNode const&)
+    SgDecalsNode::SgDecalsNode(SgDecalsNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The decal list is not copied: the clone starts out empty.
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
     SgDecalsNode::SgDecalsNode()

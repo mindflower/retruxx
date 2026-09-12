@@ -49,7 +49,7 @@ namespace m3d
 
     Object* SgLinesNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgLinesNode(*this);
     }
 
     SgLinesNode::~SgLinesNode()
@@ -57,9 +57,10 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    SgLinesNode::SgLinesNode(SgLinesNode const&)
+    SgLinesNode::SgLinesNode(SgLinesNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_props[0] = node.m_props[0];
+        m_props[1] = node.m_props[1];
     }
 
     SgLinesNode::SgLinesNode()

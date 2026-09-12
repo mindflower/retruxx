@@ -125,7 +125,8 @@ namespace ai
         if (propertyId != 31)
             return Gun::SetPropertyById(propertyId, newValue);
 
-        m_groupingAngle = -ai::theGlobProp.m_maxGroupingAngle * newValue.GetAsFloat() * 0.0099999998 + ai::theGlobProp.m_maxGroupingAngle;
+        m_groupingAngle = -ai::theGlobProp.m_maxGroupingAngle * newValue.GetAsFloat() * 0.0099999998 +
+            ai::theGlobProp.m_maxGroupingAngle;
         return 1;
     }
 
@@ -224,7 +225,8 @@ namespace ai
                         m_numBulletsToTracer = 0;
 
                         // Create tracer node
-                        auto* tracerNode = CreateNode(protoInfo->m_tracerEffectName, 0, {1.0, 1.0, 1.0}, nullptr, false);
+                        auto* tracerNode =
+                            CreateNode(protoInfo->m_tracerEffectName, 0, {1.0, 1.0, 1.0}, nullptr, false);
                         M3D_ASSERT(tracerNode);
 
                         tracerNode->RemoveImmediateAfterParent(false);
@@ -248,12 +250,15 @@ namespace ai
                         auto barrelInverse = barrelNode->GetCurrentMatrix().getInverse();
 
                         CVector tracerLocalPos;
-                        tracerLocalPos.x = (barrelInverse._11 * tracerWorldPos.x) + (barrelInverse._21 * tracerWorldPos.y) +
-                            (barrelInverse._31 * tracerWorldPos.z) + barrelInverse._41;
-                        tracerLocalPos.y = (barrelInverse._12 * tracerWorldPos.x) + (barrelInverse._22 * tracerWorldPos.y) +
-                            (barrelInverse._32 * tracerWorldPos.z) + barrelInverse._42;
-                        tracerLocalPos.z = (barrelInverse._13 * tracerWorldPos.x) + (barrelInverse._23 * tracerWorldPos.y) +
-                            (barrelInverse._33 * tracerWorldPos.z) + barrelInverse._43;
+                        tracerLocalPos.x = (barrelInverse._11 * tracerWorldPos.x) +
+                            (barrelInverse._21 * tracerWorldPos.y) + (barrelInverse._31 * tracerWorldPos.z) +
+                            barrelInverse._41;
+                        tracerLocalPos.y = (barrelInverse._12 * tracerWorldPos.x) +
+                            (barrelInverse._22 * tracerWorldPos.y) + (barrelInverse._32 * tracerWorldPos.z) +
+                            barrelInverse._42;
+                        tracerLocalPos.z = (barrelInverse._13 * tracerWorldPos.x) +
+                            (barrelInverse._23 * tracerWorldPos.y) + (barrelInverse._33 * tracerWorldPos.z) +
+                            barrelInverse._43;
 
                         // Set tracer position
                         tracerNode->SetOriginAbs(tracerLocalPos);
