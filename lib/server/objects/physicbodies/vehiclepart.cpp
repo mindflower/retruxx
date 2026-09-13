@@ -5,7 +5,11 @@
 #include "m3dapp.h"
 #include "core/log.h"
 #include "geoms/box.h"
+#include "geoms/ray.h"
 #include "geoms/trimesh.h"
+#include <core/scoped_ptr.h>
+#include <ode/collision.h>
+#include <ode/contact.h>
 #include "scene/scenegraph.h"
 #include "scene/servers/dataserver.h"
 #include "server/objects/basket.h"
@@ -652,6 +656,14 @@ namespace ai
 
     namespace
     {
+        // RVA 0x99E348 - the probe ray reaches this far either side of the
+        // reported impact point, so it is 2 * HALF_RAY_LENGTH long.
+        float const HALF_RAY_LENGTH = 4.0f;
+
+        // How far beyond the impact the reference point used to pick the
+        // nearest contact is pushed.
+        float const CAUSE_POINT_DISTANCE = 100.0f;
+
         // RVA 0xA02258 - picked at random when a piece is destroyed outright.
         char const* const JADED_EFFECT_NAMES[3] = {
             "ET_PS_VEH_PART_JADED_FIRE",
@@ -1129,14 +1141,279 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void VehiclePart::_CalcMeshToBreak(BreakModelData&)
+    void VehiclePart::_CalcMeshToBreak(BreakModelData& modelData)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D0E70 - turns the world-space impact BreakModel was handed into
+        // the particular collision mesh that was hit, by firing a short ray
+        // through the impact point in the part's own space and keeping the
+        // nearest contact.
+        if (!m_Node)
+        {
+            return;
+        }
+
+        CVector const dir = modelData.dir;
+        float const dirLenSq = dir.x * dir.x + dir.y * dir.y + dir.z * dir.z;
+        if (dirLenSq < 0.1f)
+        {
+            // NOTE: logged but not acted on - the ray is still built from the
+            // degenerate direction below.
+            M3D_LOG_ERR("Error: invalid dir for breaking mesh: dir = " + CStr(dir) + " for " + GetDebugDescription());
+        }
+
+        // NOTE: the shipped code normalises the direction twice over, computing
+        // the same reciprocal square root once for each end of the ray.
+        float invDirLen = 1.0f / sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z + 0.00000011920929f);
+        CVector rayStart;
+        rayStart.x = modelData.pos.x - dir.x * invDirLen * HALF_RAY_LENGTH;
+        rayStart.y = modelData.pos.y - dir.y * invDirLen * HALF_RAY_LENGTH;
+        rayStart.z = modelData.pos.z - dir.z * invDirLen * HALF_RAY_LENGTH;
+
+        invDirLen = 1.0f / sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z + 0.00000011920929f);
+        CVector rayEnd;
+        rayEnd.x = modelData.pos.x + dir.x * invDirLen * HALF_RAY_LENGTH;
+        rayEnd.y = modelData.pos.y + dir.y * invDirLen * HALF_RAY_LENGTH;
+        rayEnd.z = modelData.pos.z + dir.z * invDirLen * HALF_RAY_LENGTH;
+
+        // The collision meshes live in the part's own space, so everything is
+        // taken there. The normal is only rotated.
+        CMatrix const inv = m_Node->GetCurrentMatrix().getInverse();
+        rayStart = inv.vecMul(rayStart);
+        rayEnd = inv.vecMul(rayEnd);
+        CVector const localNormal = inv.vecRot(modelData.normal);
+
+        CVector hitPoint;
+        hitPoint.x = (rayEnd.x + rayStart.x) * 0.5f;
+        hitPoint.y = (rayEnd.y + rayStart.y) * 0.5f;
+        hitPoint.z = (rayEnd.z + rayStart.z) * 0.5f;
+        m_lastHitPos = hitPoint;
+
+        CVector delta;
+        delta.x = rayEnd.x - rayStart.x;
+        delta.y = rayEnd.y - rayStart.y;
+        delta.z = rayEnd.z - rayStart.z;
+
+        float const invDelta =
+            1.0f / sqrt(delta.x * delta.x + delta.z * delta.z + delta.y * delta.y + 0.00000011920929f);
+        CVector rayDir;
+        rayDir.x = delta.x * invDelta * CAUSE_POINT_DISTANCE;
+        rayDir.y = delta.y * invDelta * CAUSE_POINT_DISTANCE;
+        rayDir.z = delta.z * invDelta * CAUSE_POINT_DISTANCE;
+
+        // Contacts are ranked by how close they are to a point well out on the
+        // struck side of the surface, so the ray's own direction is turned to
+        // agree with the surface normal first.
+        if (rayDir.x * localNormal.x + rayDir.z * localNormal.z + rayDir.y * localNormal.y < 0.0f)
+        {
+            rayDir.x = -rayDir.x;
+            rayDir.y = -rayDir.y;
+            rayDir.z = -rayDir.z;
+        }
+
+        CVector causePos;
+        causePos.x = rayDir.x + hitPoint.x;
+        causePos.y = rayDir.y + hitPoint.y;
+        causePos.z = rayDir.z + hitPoint.z;
+
+        m3d::Configuration* cfg = nullptr;
+        m_Node->GetProperty(8707, &cfg);
+        M3D_ASSERT(cfg);
+
+        m3d::AnimatedModel* mdl = nullptr;
+        m_Node->GetServer()->GetItemProperty(m_Node->GetServerHandle(), 16394, &mdl);
+        if (!mdl)
+        {
+            return;
+        }
+
+        auto const* proto = GetPrototypeInfo();
+
+        // One ray is made the first time a part is ever broken and reused from
+        // then on.
+        static scoped_ptr<Ray> ray(Ray::CreateObject(nullptr, 2.0f * HALF_RAY_LENGTH, nullptr));
+
+        dGeomSetPosition(ray->GetGeomId(), rayStart.x, rayStart.y, rayStart.z);
+
+        CVector rayDirection;
+        rayDirection.x = delta.x * invDelta;
+        rayDirection.y = delta.y * invDelta;
+        rayDirection.z = delta.z * invDelta;
+        ray->SetDirection(rayDirection);
+
+        float minLength = 100000.0f;
+        int resMeshId = -1;
+        int resGroupId = -1;
+        CVector closestPoint;
+        CVector closestNormal;
+
+        // Only the meshes the current configuration actually shows are tested.
+        for (unsigned j = 0; j < cfg->m_meshes.size(); ++j)
+        {
+            unsigned const meshId = cfg->m_meshes[j]->meshId;
+            if (meshId >= proto->m_boundsForMeshes.size() || meshId >= proto->m_modelMeshes.size())
+            {
+                M3D_LOG_INFO("Empty info on vehicle collision meshes for model " + proto->m_engineModelName);
+                return;
+            }
+
+            // The box is only a cheap reject; a ray starting inside it still
+            // counts even when it reports no crossing.
+            auto* box = proto->m_boundsForMeshes[meshId];
+            M3D_ASSERT(box);
+
+            dContact boxContact;
+            int const boxHits = dCollide(ray->GetGeomId(), box->GetGeomId(), 1, &boxContact.geom, sizeof(dContact));
+
+            dReal const* rayPos = dGeomGetPosition(ray->GetGeomId());
+            dReal const depth = dGeomBoxPointDepth(box->GetGeomId(), rayPos[0], rayPos[1], rayPos[2]);
+            if (!boxHits && depth < 0.0)
+            {
+                continue;
+            }
+
+            auto* mesh = proto->m_modelMeshes[meshId];
+            M3D_ASSERT(mesh);
+
+            dContactGeom meshContacts[3];
+            int const numContacts =
+                dCollide(ray->GetGeomId(), mesh->GetGeomId(), 3, meshContacts, sizeof(dContactGeom));
+            if (!numContacts)
+            {
+                continue;
+            }
+
+            CVector hitPos(meshContacts[0].pos[0], meshContacts[0].pos[1], meshContacts[0].pos[2]);
+            CVector hitNormal =
+                CVector(meshContacts[0].normal[0], meshContacts[0].normal[1], meshContacts[0].normal[2])
+                    .getNormalized();
+
+            for (int i = 1; i < numContacts; ++i)
+            {
+                CVector const other(meshContacts[i].pos[0], meshContacts[i].pos[1], meshContacts[i].pos[2]);
+                float const bestDist = sqrt(
+                    (hitPos.x - causePos.x) * (hitPos.x - causePos.x) +
+                    (hitPos.z - causePos.z) * (hitPos.z - causePos.z) +
+                    (hitPos.y - causePos.y) * (hitPos.y - causePos.y));
+                float const otherDist = sqrt(
+                    (other.x - causePos.x) * (other.x - causePos.x) +
+                    (other.y - causePos.y) * (other.y - causePos.y) +
+                    (other.z - causePos.z) * (other.z - causePos.z));
+                if (bestDist > otherDist)
+                {
+                    hitPos = other;
+                    hitNormal =
+                        CVector(meshContacts[i].normal[0], meshContacts[i].normal[1], meshContacts[i].normal[2])
+                            .getNormalized();
+                }
+            }
+
+            // NOTE: the normal is turned away from the part's own origin, not
+            // away from the ray, so a contact whose position happens to face
+            // back towards the origin comes out inverted.
+            if (hitNormal.x * hitPos.x + hitNormal.z * hitPos.z + hitNormal.y * hitPos.y < 0.0f)
+            {
+                hitNormal.x = -hitNormal.x;
+                hitNormal.y = -hitNormal.y;
+                hitNormal.z = -hitNormal.z;
+            }
+
+            CVector toCause;
+            toCause.x = hitPos.x - causePos.x;
+            toCause.y = hitPos.y - causePos.y;
+            toCause.z = hitPos.z - causePos.z;
+            float const length = sqrt(toCause.x * toCause.x + toCause.y * toCause.y + toCause.z * toCause.z);
+            if (minLength > length)
+            {
+                resGroupId = cfg->m_meshes[j]->groupId;
+                closestPoint = hitPos;
+                resMeshId = meshId;
+                closestNormal = hitNormal;
+                minLength = length;
+            }
+        }
+
+        // Nothing was hit: modelData keeps meshId == -1 and BreakModel gives up.
+        if (resMeshId != -1)
+        {
+            // NOTE: dir comes back as the surface normal of the mesh that was
+            // hit, not as the incoming direction it went in as.
+            modelData.dir = closestNormal;
+            modelData.meshId = resMeshId;
+            modelData.groupId = resGroupId;
+            modelData.cfg = cfg;
+            modelData.mdl = mdl;
+            modelData.pos = closestPoint;
+            m_lastHitPos = closestPoint;
+        }
     }
 
-    void VehiclePart::_AddDecal(CVector const&, CVector const&, CVector const&, unsigned, int)
+    void VehiclePart::_AddDecal(
+        CVector const& pos,
+        CVector const& normal,
+        CVector const& tangent,
+        unsigned meshId,
+        int decalId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D6B80 - stamps one decal onto the mesh that was hit. All the
+        // decals of a given kind share a single SgDecalsNode, created here the
+        // first time that kind is used on this part.
+        if (decalId < 0)
+        {
+            return;
+        }
+
+        auto const* proto = GetPrototypeInfo();
+
+        auto it = m_decals.find(decalId);
+
+        if (proto->m_modelMeshes.empty() || meshId >= proto->m_modelMeshes.size())
+        {
+            return;
+        }
+
+        if (it == m_decals.end())
+        {
+            CStr const decalName = gDynamicScene->GetDecalName(decalId);
+            int modelId = M3D_APP->GetDecalsServer().GetItemByName(decalName.c_str(), true);
+            if (modelId == -1)
+            {
+                return;
+            }
+
+            auto* node = static_cast<m3d::SgNode*>(M3D_KERNEL->New("SgDecalsNode"));
+            node->SetProperty(4360, &modelId);
+            m_Node->AddChild(node);
+            node->UpdateXForm(false, true);
+            m_decals[decalId] = node;
+            it = m_decals.find(decalId);
+        }
+
+        m3d::DecalData decalData;
+        decalData.pos = pos;
+        decalData.normal = normal;
+        decalData.tangent = tangent;
+        decalData.toPutOn.mesh = proto->m_modelMeshes[meshId];
+        decalData.toPutOn.numIndices = proto->m_numsTris[meshId];
+        decalData.toPutOn.indices = reinterpret_cast<m3d::Triangle*>(proto->m_inds[meshId]);
+        decalData.toPutOn.vertices = static_cast<unsigned char*>(proto->m_verts[meshId]);
+        decalData.toPutOn.vertexStride = proto->m_vertsStride[meshId];
+
+        // A skinned mesh moves with its bone, so the decal has to be told which
+        // transform to follow.
+        m3d::AnimInfo* anim = nullptr;
+        m_Node->GetProperty(1, &anim);
+
+        decalData.toPutOn.transform = nullptr;
+        if (anim && !anim->IsEmpty())
+        {
+            auto& mesh = anim->GetMesh(meshId);
+            if (mesh.m_meshType == 1 && mesh.m_numNode >= 0)
+            {
+                decalData.toPutOn.transform = &anim->GetBoneAnim(mesh.m_numNode).m_curMatrix;
+            }
+        }
+
+        it->second->SetProperty(10497, &decalData);
     }
 
     m3d::Object* VehiclePart::Clone()
@@ -1146,9 +1423,44 @@ namespace ai
         return nullptr;
     }
 
-    void VehiclePart::_RecalcDecals(unsigned, unsigned)
+    void VehiclePart::_RecalcDecals(unsigned oldMeshId, unsigned newMeshId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D3450 - after a mesh variant is swapped out the decals are
+        // still clipped against the old geometry, so every decal node on this
+        // part is asked to re-fit itself to the replacement.
+        auto const* proto = GetPrototypeInfo();
+        if (proto->m_modelMeshes.empty() || newMeshId >= proto->m_modelMeshes.size())
+        {
+            return;
+        }
+
+        m3d::GeometryInfo geometryInfo;
+        geometryInfo.mesh = proto->m_modelMeshes[newMeshId];
+        geometryInfo.numIndices = proto->m_numsTris[newMeshId];
+        geometryInfo.indices = reinterpret_cast<m3d::Triangle*>(proto->m_inds[newMeshId]);
+        geometryInfo.vertices = static_cast<unsigned char*>(proto->m_verts[newMeshId]);
+        geometryInfo.vertexStride = proto->m_vertsStride[newMeshId];
+
+        // NOTE: oldMeshId is not range checked the way newMeshId is.
+        geometryInfo.oldMesh = proto->m_modelMeshes[oldMeshId];
+
+        m3d::AnimInfo* anim = nullptr;
+        m_Node->GetProperty(1, &anim);
+
+        geometryInfo.transform = nullptr;
+        if (anim && !anim->IsEmpty())
+        {
+            auto& mesh = anim->GetMesh(newMeshId);
+            if (mesh.m_meshType == 1 && mesh.m_numNode >= 0)
+            {
+                geometryInfo.transform = &anim->GetBoneAnim(mesh.m_numNode).m_curMatrix;
+            }
+        }
+
+        for (auto& decal : m_decals)
+        {
+            decal.second->SetProperty(10498, &geometryInfo);
+        }
     }
 
     void VehiclePart::LoadDecalsRuntime(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)

@@ -64,6 +64,8 @@
 
 #include <algorithm>
 #include <client.h>
+#include "statistic/intintratiostatistic.h"
+#include "statistic/statisticmanager.h"
 
 namespace ai
 {
@@ -105,7 +107,10 @@ namespace ai
 
     int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
     {
-        // TODO: check and refactor this
+        // RVA 0x88D360 - verified against the binary, including the raw offset
+        // arithmetic. The mode is 0x3018 = dContactApprox1 | dContactSoftERP |
+        // dContactSoftCFM, so mu2, motion1 and motion2 are deliberately left
+        // alone; only colliders that set the matching flag also set those.
         if (numContacts)
         {
             auto p_slip1 = &contacts->surface.slip1;
@@ -129,7 +134,7 @@ namespace ai
 
     void NearCallback(void* data, dxGeom* geom1, dxGeom* geom2)
     {
-        // TODO: generated code
+        // RVA 0x6027F0 - ODE's broadphase hands every candidate pair here.
         if (!dGeomIsEnabled(geom1) || !dGeomIsEnabled(geom2))
             return;
 
@@ -240,6 +245,12 @@ namespace ai
         if ((owner1 && owner1->GetClass() == &Bullet::m_classBullet) ||
             (owner2 && owner2->GetClass() == &Bullet::m_classBullet))
         {
+            // NOTE: the shipped code picks owner1 whenever it is non-null,
+            // having only checked that *one* of the two is a bullet. When
+            // owner1 is some other object and owner2 is the bullet it therefore
+            // calls Bullet::_Ray on the wrong object. This picks the object
+            // that really is the bullet, which differs from the binary only in
+            // that already-undefined case.
             Bullet* bullet = nullptr;
             if (owner1 && owner1->GetClass() == &Bullet::m_classBullet)
             {
@@ -398,7 +409,7 @@ namespace ai
         unsigned& numContacts,
         bool reverse)
     {
-        // TODO: check all this shit!!!
+        // RVA 0x607200
         using namespace m3d;
 
         if (!numContacts)
@@ -466,12 +477,22 @@ namespace ai
         else
         {
             isShellHit = true;
-            if (body && IS_KIND_OF(body, PhysicObj))
+
+            // NOTE: the collider table registers this function through a cast to
+            // (Object*, Object*, ...), so `body` really carries an Object* and
+            // reaching here means it is NOT a PhysicBody at all. PhysicObj and
+            // Wheel sit on the other branch of the hierarchy (PhysicObj -> Obj,
+            // PhysicBody -> Obj), so dynamic_cast from the declared PhysicBody*
+            // has no source sub-object to work from and returns null. The engine
+            // RTTI (IS_KIND_OF) answers correctly because it is a virtual call.
+            // Recover the pointer the caller actually passed before casting.
+            auto* bodyObj = reinterpret_cast<m3d::Object*>(body);
+            if (bodyObj && IS_KIND_OF(bodyObj, PhysicObj))
             {
-                hitPhysicObj = RT_DYNCAST(body, PhysicObj);
-                if (IS_KIND_OF(body, Wheel))
+                hitPhysicObj = RT_DYNCAST(bodyObj, PhysicObj);
+                if (IS_KIND_OF(bodyObj, Wheel))
                 {
-                    auto* wheel = RT_DYNCAST(body, Wheel);
+                    auto* wheel = RT_DYNCAST(bodyObj, Wheel);
                     auto* vehicle = wheel->GetVehicle();
                     if (vehicle)
                     {
@@ -497,17 +518,40 @@ namespace ai
                 CStr partName;
                 if (IS_KIND_OF(hitPhysicObj, ComplexPhysicObj))
                 {
-                    auto* chassis = RT_DYNCAST(body, Chassis);
-                    partName = chassis->GetPartName();
-
-                    auto* vehicle = RT_DYNCAST(chassis->GetOwner(), Vehicle);
-                    M3D_ASSERT(hitPhysicObj == vehicle);
-                    M3D_ASSERT(vehicle->GetPartByName(partName));
-
-                    auto* gun = shell->GetGun();
-                    if (gun)
+                    // The name of the part that was struck, whichever kind of
+                    // VehiclePart it happens to be.
+                    auto* part = RT_DYNCAST(body, VehiclePart);
+                    if (part)
                     {
-                        // TODO: increase statistics
+                        partName = part->GetPartName();
+                    }
+
+                    auto* v = RT_DYNCAST(body->GetOwner(), ComplexPhysicObj);
+                    M3D_ASSERT(hitPhysicObj == v);
+                    M3D_ASSERT(v->GetPartByName(partName));
+
+                    // A connecting shot from the player's own gun raises the
+                    // hit-ratio numerator; Gun::_EmitShell raised the
+                    // denominator when the shell was fired.
+                    auto* gunOwner = static_cast<Obj*>(shell->GetGun());
+                    while (gunOwner && !IS_KIND_OF(gunOwner, Vehicle))
+                    {
+                        gunOwner = static_cast<Obj*>(gunOwner->GetParent());
+                    }
+
+                    if (gunOwner && RT_DYNCAST(gunOwner, Vehicle)->bIsControlledByPlayer())
+                    {
+                        CStr const& levelName = pServer->GetWorld()->m_level->m_levelName;
+
+                        auto* hitRatio = static_cast<IntIntRatioStatistic*>(
+                            theStatisticManager->GetStatistic(STATISTIC_HIT_RATIO, "IntIntRatioStatistic"));
+                        hitRatio->SetGlobalFlag(true);
+                        hitRatio->IncreaseNumerator(1);
+
+                        auto* levelHitRatio = static_cast<IntIntRatioStatistic*>(
+                            theStatisticManager->GetStatistic(STATISTIC_HIT_RATIO + levelName, "IntIntRatioStatistic"));
+                        levelHitRatio->SetGlobalFlag(false);
+                        levelHitRatio->IncreaseNumerator(1);
                     }
                 }
 
@@ -1398,7 +1442,7 @@ namespace ai
 
     void DynamicScene::CollideBullet(Bullet const& bullet)
     {
-        // TODO: check this
+        // RVA 0x60D6C0
         static scoped_ptr bulletCollideRay = ai::Ray::CreateObject(nullptr, 1.0, nullptr);
 
         auto* ray = bullet._Ray();
@@ -1421,6 +1465,9 @@ namespace ai
             auto g2 = closestContact.geom.g2;
             auto wasEnabled1 = IsEnabled;
             auto wasEnabled2 = dGeomIsEnabled(closestContact.geom.g2);
+            // NOTE: the second call really does pass g1 again in the shipped
+            // build, so g2's body is never woken for this collision and its
+            // enabled state is not restored afterwards. Kept as is.
             auto Body = dGeomGetBody(g1);
             auto v14 = dGeomGetBody(g1);
             int wasBodyEnabled1 = 0;
@@ -1701,6 +1748,13 @@ namespace ai
     DynamicScene::DynamicScene()
     {
         using namespace m3d;
+
+        // RVA 0x60E3A0 - the vectors construct themselves; these two scalars are
+        // the only state the constructor sets. Both are also assigned later
+        // (ReadDecals and LoadSceneFromXml), but nothing guarantees those run
+        // before GetClashDecalId or the physics step reads them.
+        m_clashDecalId = -1;
+        m_physicTimeAccumulator = 0.0f;
 
         ColliderKrnl::Init();
         ColliderKrnl::RegisterCollider(0, 0, DefaultCollider);

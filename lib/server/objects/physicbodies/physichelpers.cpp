@@ -510,7 +510,7 @@ namespace ai
         bool dontCollideWithShells,
         bool smartCollideWithTowns)
     {
-        // TODO: generated code
+        // RVA 0x60B780
 
         // Get ray start position and direction
         auto* geomPos = dGeomGetPosition(ray.GetGeomId());
@@ -672,7 +672,9 @@ namespace ai
                     {
                         continue;
                     }
-                    if (dontCollideWithDynamic && (object->GetPhysicState() & 4) != 0)
+                    // Bit 4 is set by _SetStatic, so "don't collide with
+                    // dynamic" means only static objects are eligible.
+                    if (dontCollideWithDynamic && (object->GetPhysicState() & 4) == 0)
                     {
                         continue;
                     }
@@ -680,7 +682,9 @@ namespace ai
                     {
                         continue;
                     }
-                    if ((object->GetPhysicState() & 2) != 0)
+                    // Bit 2 is set by _SetGeomEnabledBit: the object is only
+                    // traced against while its geoms are enabled.
+                    if ((object->GetPhysicState() & 2) == 0)
                     {
                         continue;
                     }

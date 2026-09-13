@@ -3361,7 +3361,7 @@ namespace m3d
 
     DataServer& Application::GetDecalsServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return *m_serverDecals;
     }
 
     int Application::DrawTextRelClip(

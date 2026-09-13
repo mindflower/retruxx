@@ -92,7 +92,7 @@ namespace ai
 
     float BulletLauncher::GetDamageForOneShell() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_damage / m_numBulletsInShot;
     }
 
     float BulletLauncher::GetAccuracy() const
