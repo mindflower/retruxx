@@ -13,7 +13,6 @@ namespace
     IMediaControl* g_pMC = nullptr;
     IMediaPosition * g_pMP = nullptr;
     IFileSourceFilter* g_pFileSource = nullptr;
-    IBaseFilter* g_pReader = nullptr;
     HANDLE g_Event1 = NULL;
     HANDLE g_Event2 = NULL;
 
@@ -33,20 +32,26 @@ namespace
         return hr;
     }
 
-    //HRESULT AddKeyProvider(IGraphBuilder* graph)
-    //{
-    //    CKeyProvider prov;
-    //    prov.AddRef();
-    //    IObjectWithSite* objectWithSite = nullptr;
-    //    auto hr = graph->QueryInterface(IID_IObjectWithSite, reinterpret_cast<LPVOID*>(&objectWithSite));
-    //    if (FAILED(hr))
-    //    {
-    //        return hr;
-    //    }
-    //    hr = objectWithSite->SetSite(&prov);
-    //    objectWithSite->Release();
-    //    return hr;
-    //}
+    // The only key provider there is. AddKeyProvider takes a reference on it
+    // that is never given back, so its count never drops to zero.
+    CKeyProvider prov;
+
+    HRESULT AddKeyProvider(IGraphBuilder* pGraph)
+    {
+        // RVA 0x6A3FD0
+        prov.AddRef();
+
+        IObjectWithSite* pObjectWithSite = nullptr;
+        HRESULT hr = pGraph->QueryInterface(IID_IObjectWithSite, reinterpret_cast<void**>(&pObjectWithSite));
+        if (FAILED(hr))
+        {
+            return hr;
+        }
+
+        hr = pObjectWithSite->SetSite(&prov);
+        pObjectWithSite->Release();
+        return hr;
+    }
 
     HRESULT RenderOutputPins(IGraphBuilder* pGB, IBaseFilter* pFilter)
     {
@@ -130,153 +135,207 @@ namespace
     }
 }
 
-//CKeyProvider::CKeyProvider() : m_cRef(0)
-//{
-//}
-//
-//// IUnknown methods
-//ULONG CKeyProvider::AddRef()
-//{
-//    return InterlockedIncrement(&m_cRef);
-//}
-//
-//ULONG CKeyProvider::Release()
-//{
-//    ASSERT(m_cRef > 0);
-//
-//    ULONG lCount = InterlockedDecrement(&m_cRef);
-//    if (m_cRef == 0)
-//    {
-//        delete this;
-//        return (ULONG)0;
-//    }
-//    return (ULONG)lCount;
-//}
-//
-//// We only support IUnknown and IServiceProvider.
-//HRESULT CKeyProvider::QueryInterface(REFIID riid, void** ppv)
-//{
-//    if (!ppv) return E_POINTER;
-//
-//    if (riid == IID_IUnknown)
-//    {
-//        *ppv = (void*) static_cast<IUnknown*>(this);
-//        AddRef();
-//        return S_OK;
-//    }
-//    if (riid == IID_IServiceProvider)
-//    {
-//        *ppv = (void*) static_cast<IServiceProvider*>(this);
-//        AddRef();
-//        return S_OK;
-//    }
-//
-//    return E_NOINTERFACE;
-//}
-//
-//STDMETHODIMP CKeyProvider::QueryService(REFIID siid, REFIID riid, void** ppv)
-//{
-//    if (!ppv) return E_POINTER;
-//
-//    if (siid == __uuidof(IWMReader) && riid == IID_IUnknown)
-//    {
-//        IUnknown* punkCert;
-//        HRESULT hr = WMCreateCertificate(&punkCert);
-//        if (SUCCEEDED(hr))
-//        {
-//            *ppv = (void*)punkCert;
-//        }
-//        return hr;
-//    }
-//    return E_NOINTERFACE;
-//}
+CKeyProvider::CKeyProvider()
+{
+    // RVA 0x6A4B40
+    m_cRef = 0;
+}
 
-unsigned int g_Tex = 0;
+ULONG CKeyProvider::AddRef()
+{
+    // RVA 0x6A3F30 - NOTE: returns the count read back after the increment
+    // rather than InterlockedIncrement's own result.
+    InterlockedIncrement(&m_cRef);
+    return m_cRef;
+}
+
+ULONG CKeyProvider::Release()
+{
+    // RVA 0x6A3F50
+    LONG const count = InterlockedDecrement(&m_cRef);
+    if (count == 0)
+    {
+        // NOTE: frees the object as if it were heap allocated, but the only
+        // instance is the file-level `prov`. Its count never reaches zero (see
+        // AddKeyProvider), so this never runs.
+        delete this;
+    }
+    return count;
+}
+
+HRESULT CKeyProvider::QueryInterface(const _GUID& riid, void** ppv)
+{
+    // RVA 0x6A3F80 - NOTE: unlike the SDK sample this is based on, ppv is not
+    // checked for null.
+    if (!IsEqualGUID(riid, IID_IServiceProvider) && !IsEqualGUID(riid, IID_IUnknown))
+    {
+        return E_NOINTERFACE;
+    }
+    *ppv = this;
+    AddRef();
+    return S_OK;
+}
+
+HRESULT CKeyProvider::QueryService(const _GUID& siid, const _GUID& riid, void** ppv)
+{
+    // RVA 0x6A4B50 - the ASF reader asks for its certificate under IWMReader's
+    // IID; nothing else is served.
+    if (!IsEqualGUID(siid, __uuidof(IWMReader)) || !IsEqualGUID(riid, IID_IUnknown))
+    {
+        return E_NOINTERFACE;
+    }
+
+    // The shipped code answers with WMCreateCertificate(&punk) and hands the
+    // certificate back through ppv. NOTE: that function came from the static
+    // wmstub.lib of the discontinued Windows Media Format 9 SDK; neither the
+    // current Windows SDK nor wmvcore.dll provides it, so it cannot be called
+    // here. The request is failed the same way the shipped code fails when
+    // WMCreateCertificate itself fails. The provider is still installed on the
+    // graph, so this only matters if the ASF reader actually asks for one.
+    HRESULT const hr = E_NOTIMPL;
+    M3D_LOG_INFO("CKeyProvider::QueryService failed to create certificate!  hr = " + CStr::format_("%x", hr));
+    return hr;
+}
+
+// NOTE: only CTextureRenderer's constructor and destructor touch this in the
+// shipped build, and neither allocates it, so it is always null.
+unsigned int* g_Tex = nullptr;
 m3d::rend::TexHandle g_pTexture;
 
 namespace m3d
 {
     CTextureRenderer* g_pRenderer = nullptr;
 
-    long CTextureRenderer::SetMediaType(CMediaType const* pmt)
+    HRESULT CTextureRenderer::SetMediaType(CMediaType const* pmt)
     {
-        const auto* header = (const VIDEOINFOHEADER*)pmt->pbFormat;
+        // RVA 0x6A44B0 - called once the graph has agreed a format, so this is
+        // where the texture the frames are copied into gets created.
+        auto const* header = reinterpret_cast<VIDEOINFOHEADER const*>(pmt->pbFormat);
         m_lVidWidth = header->bmiHeader.biWidth;
-        m_lVidHeight = header->bmiHeader.biHeight;
+        // A negative height marks a top-down bitmap; only the magnitude is kept,
+        // and DoRenderSample always treats the frame as bottom-up.
+        m_lVidHeight = abs(header->bmiHeader.biHeight);
+        m_lVidPitch = 4 * m_lVidWidth;
 
-        auto v4 = 2;
-        auto v5 = 2;
-        for (m_lVidPitch = 4 * m_lVidWidth; v5 < m_lVidWidth; v5 *= 2);
-
-        if (m_lVidHeight > 2)
+        // The texture is the smallest power of two that holds the frame, and
+        // never smaller than 2 on either side.
+        int texWidth = 2;
+        while (texWidth < m_lVidWidth)
         {
-            do
-                v4 *= 2;
-            while (v4 < m_lVidHeight);
+            texWidth *= 2;
         }
-        g_pTexture = M3D_APP->m_renderer->AddDynamicTexture("$TexMedia", v5, v4, 5);
-        M3D_APP->m_renderer->SetTextureParameter(g_pTexture, rend::TM_WRAP_S, 3);
-        M3D_APP->m_renderer->SetTextureParameter(g_pTexture, rend::TM_WRAP_T, 3);
-        return 0;
+        int texHeight = 2;
+        while (texHeight < m_lVidHeight)
+        {
+            texHeight *= 2;
+        }
+
+        g_pTexture = M3D_RENDERER->AddDynamicTexture("$TexMedia", texWidth, texHeight, rend::TM_DTF_RGBA8888_VIDEOFRAME);
+        M3D_RENDERER->SetTextureParameter(g_pTexture, rend::TM_WRAP_S, 3);
+        M3D_RENDERER->SetTextureParameter(g_pTexture, rend::TM_WRAP_T, 3);
+        return S_OK;
     }
 
-    long CTextureRenderer::CheckMediaType(CMediaType const* pmt)
+    HRESULT CTextureRenderer::CheckMediaType(CMediaType const* pmt)
     {
-        auto result = 0;
+        // RVA 0x6A3D90 - only uncompressed 32-bit RGB video is accepted, so the
+        // graph has to insert a colour converter in front of this filter.
         if (!pmt)
-            return 0x80004003;
-        if (memcmp(&pmt->formattype, &FORMAT_VideoInfo, 0x10u))
-            return 0x80070057;
-        if (memcmp(pmt, &MEDIATYPE_Video, 0x10u) || memcmp(&pmt->subtype, &MEDIASUBTYPE_RGB32, 0x10u))
-            result = 0x8004022A;
-        return result;
+        {
+            return E_POINTER;
+        }
+        if (memcmp(&pmt->formattype, &FORMAT_VideoInfo, sizeof(GUID)))
+        {
+            return E_INVALIDARG;
+        }
+        if (memcmp(&pmt->majortype, &MEDIATYPE_Video, sizeof(GUID)))
+        {
+            return VFW_E_TYPE_NOT_ACCEPTED;
+        }
+        if (memcmp(&pmt->subtype, &MEDIASUBTYPE_RGB32, sizeof(GUID)))
+        {
+            return VFW_E_TYPE_NOT_ACCEPTED;
+        }
+        return S_OK;
     }
 
     void CTextureRenderer::GetVideoDims(int& w, int& h)
     {
+        // RVA 0x6A3C30
         w = m_lVidWidth;
         h = m_lVidHeight;
     }
 
-    long CTextureRenderer::DoRenderSample(IMediaSample* pSample)
+    HRESULT CTextureRenderer::DoRenderSample(IMediaSample* pSample)
     {
-        if (::WaitForSingleObject(g_Event2, 0x1E))
+        // RVA 0x6A3E00 - runs on the DirectShow streaming thread. g_Event2 is
+        // set while the game wants frames and g_Event1 tells mVideoPlayer::Update
+        // that a new one has been copied in; if the game isn't ready within 30ms
+        // the frame is simply dropped.
+        if (::WaitForSingleObject(g_Event2, 30) != WAIT_OBJECT_0)
         {
-            return 0;
+            return S_OK;
         }
 
-        unsigned char* pBmpBuffer;
+        BYTE* pBmpBuffer = nullptr;
         pSample->GetPointer(&pBmpBuffer);
 
-        int xsize = 0;
-        int ysize = 0;
-        M3D_APP->m_renderer->GetDims(g_pTexture, xsize, ysize);
+        int texWidth = 0;
+        int texHeight = 0;
+        M3D_RENDERER->GetDims(g_pTexture, texWidth, texHeight);
+        int const texRowBytes = texWidth * 4;
 
-        RETRUXX_NOT_IMPLEMENTED;
+        int lockedPitch = 0;
+        auto* dst = static_cast<BYTE*>(
+            M3D_RENDERER->LockTexture(g_pTexture, rend::TM_DTF_RGBA8888_VIDEOFRAME, lockedPitch, 0));
 
-        M3D_APP->m_renderer->UnlockTexture(g_pTexture);
-        SetEvent(g_Event1);
-        return 0;
+        // DIBs are stored bottom-up, so the rows are copied starting from the
+        // last one to turn the image the right way up.
+        // NOTE: the destination advances by the texture's width rather than by
+        // the pitch LockTexture reports, which is ignored. The two agree for the
+        // power-of-two RGBA textures made in SetMediaType.
+        BYTE const* src = pBmpBuffer + 4 * m_lVidWidth * (m_lVidHeight - 1);
+        for (unsigned row = 0; row < static_cast<unsigned>(m_lVidHeight); ++row)
+        {
+            memcpy(dst, src, m_lVidPitch);
+            src -= m_lVidPitch;
+            dst += 4 * (texRowBytes / 4);
+        }
+
+        M3D_RENDERER->UnlockTexture(g_pTexture);
+        ::SetEvent(g_Event1);
+        return S_OK;
     }
 
-    CTextureRenderer::CTextureRenderer(IUnknown* pUnk, long* phr) : CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer), NULL, pUnk, phr)
+    CTextureRenderer::CTextureRenderer(IUnknown* pUnk, HRESULT* phr) :
+        CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer), NULL, pUnk, phr)
     {
-        m_bUseDynamicTextures = false;
-        g_Tex = 0;
+        // RVA 0x6A3C50 - NOTE: this overwrites whatever the base class stored in
+        // *phr, so a failure inside CBaseVideoRenderer is reported as success.
+        m_bUseDynamicTextures = FALSE;
+        g_Tex = nullptr;
         if (phr)
         {
-            *phr = 0;
+            *phr = S_OK;
         }
     }
 
     CTextureRenderer::~CTextureRenderer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A3D20
+        M3D_RENDERER->ReleaseTexture(g_pTexture);
+        if (g_Tex)
+        {
+            delete[] g_Tex;
+        }
+        g_Tex = nullptr;
     }
 
-    void CTextureRenderer::GetTextureDims(int&, int&)
+    void CTextureRenderer::GetTextureDims(int& w, int& h)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A3C00 - the texture's size, which is the frame size rounded up
+        // to powers of two.
+        M3D_RENDERER->GetDims(g_pTexture, w, h);
     }
 
     mVideoPlayer::~mVideoPlayer()
@@ -292,118 +351,142 @@ namespace m3d
         return 1;
     }
 
+    // The shipped build checks most of Play's calls with a macro that evaluates
+    // its argument a second time to put the failing hr in the log, so a call
+    // that fails is made twice. Kept as is.
+#define VIDEO_JIF(expr)                                                                   \
+    hr = (expr);                                                                          \
+    if (FAILED(hr))                                                                       \
+    {                                                                                     \
+        M3D_LOG_INFO("FAILED(hr=" + CStr::format_("%x", (expr)) + ") in " #expr "\n");    \
+        return 0;                                                                         \
+    }
+
     int mVideoPlayer::Play(char const* filename)
     {
-        auto hr = ::CoInitialize(NULL);
-        if (FAILED(hr))
+        // RVA 0x6A4C80 - builds WM ASF reader -> decoders -> CTextureRenderer and
+        // starts it running. NOTE: apart from a file that fails to load, every
+        // failure returns with whatever was built so far left in place.
+        HRESULT hr = S_OK;
+        if (FAILED(::CoInitialize(nullptr)))
         {
             return 0;
         }
+
         hr = ::CoCreateInstance(
             CLSID_FilterGraph,
-            NULL,
+            nullptr,
             CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER,
             IID_IGraphBuilder,
-            reinterpret_cast<LPVOID*>(&g_pGB)
-        );
+            reinterpret_cast<void**>(&g_pGB));
         if (FAILED(hr))
         {
-            return -2147467259;
+            // NOTE: E_FAIL is non-zero, so a caller testing the result as a bool
+            // takes this for success.
+            return E_FAIL;
         }
-        auto* renderer = new CTextureRenderer(NULL, &hr);
-        if (SUCCEEDED(hr) && renderer != nullptr)
-        {
-            g_pRenderer = renderer;
-            hr = g_pGB->AddFilter(g_pRenderer, L"TEXTURERENDERER");
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("Could not add renderer filter to graph! hr = " + CStr(hr));
-                return 0;
-            }
-            hr = CreateFilter(CLSID_WMAsfReader, &g_pReader);
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("Failed to create WMAsfReader filter!  hr = " + CStr(hr));
-                return 0;
-            }
-            hr = g_pGB->AddFilter(g_pReader, L"ASF Reader");
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("Failed to add ASF reader filter to graph!  hr = " + CStr(hr));
-                return 0;
-            }
-            //hr = AddKeyProvider(g_pGB);
-            //if (FAILED(hr))
-            //{
-            //    LOG("Could not create the key provider!  hr = " + std::to_string(hr), LOG_INFO);
-            //    return 0;
-            //}
-            hr = g_pReader->QueryInterface(IID_IFileSourceFilter, reinterpret_cast<LPVOID*>(&g_pFileSource));
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pReader->QueryInterface( IID_IFileSourceFilter, (void**)&g_pFileSource )");
-                return 0;
-            }
-            wchar_t wFileName[MAX_PATH + 1] = { 0 };
-            ::MultiByteToWideChar(0, 0, filename, -1, wFileName, MAX_PATH);
-            hr = g_pFileSource->Load(wFileName, nullptr);   //TODO: check this
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO(CStr("Could not load specified video file: ") + filename);
-                Release();
-                return 0;
-            }
-            hr = RenderOutputPins(g_pGB, g_pReader);
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in RenderOutputPins( g_pGB, g_pReader )");
-                return 0;    
-            }
-            g_pReader->Release();
-            hr = g_pGB->QueryInterface(IID_IMediaControl, reinterpret_cast<LPVOID*>(&g_pMC));
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pGB->QueryInterface( IID_IMediaControl, (void**)&g_pMC)");
-                return 0;
-            }
-            hr = g_pGB->QueryInterface(IID_IMediaEventEx, reinterpret_cast<LPVOID*>(&g_pME));
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pGB->QueryInterface( IID_IMediaEventEx, (void**)&g_pME)");
-                return 0;
-            }
-            hr = g_pGB->QueryInterface(IID_IMediaPosition, reinterpret_cast<LPVOID*>(&g_pMP));
-            if (FAILED(hr))
-            {
-                M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in g_pGB->QueryInterface( IID_IMediaPosition, (void**)&g_pMP)");
-                return 0;
-            }
-            g_Event1 = ::CreateEventA(0, 0, 0, 0);
-            g_Event2 = ::CreateEventA(0, 0, 1, 0);
 
-            int volume = -10000;
-            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
-            {
-                auto cfgVolume = g_Kernel->GetEngineCfg().m_snd_2dVolume.GetI();
-                if (cfgVolume > 0)
-                {
-                    //TODO: clamp and other
-                    volume = cfgVolume;
-                }
-            }
-            SetAudioVolume(volume);
-            hr = g_pMC->Run();
-            if (SUCCEEDED(hr))
-            {
-                m_texRend = g_pRenderer;
-                return 1;
-            }
-            M3D_LOG_INFO("Could not run the DirectShow graph! hr = " + CStr(hr));
+        auto* renderer = new CTextureRenderer(nullptr, &hr);
+        if (FAILED(hr) || !renderer)
+        {
+            M3D_LOG_INFO("Could not create texture renderer object! hr = " + CStr::format_("%x", hr));
             return 0;
         }
-        M3D_LOG_INFO("Could not create texture renderer object! hr = " + CStr(hr));
-        return 0;
+
+        g_pRenderer = renderer;
+        hr = g_pGB->AddFilter(renderer, L"TEXTURERENDERER");
+        if (FAILED(hr))
+        {
+            M3D_LOG_INFO("Could not add renderer filter to graph! hr = " + CStr::format_("%x", hr));
+            return 0;
+        }
+
+        IBaseFilter* g_pReader = nullptr;
+        hr = CreateFilter(CLSID_WMAsfReader, &g_pReader);
+        if (FAILED(hr))
+        {
+            M3D_LOG_INFO("Failed to create WMAsfReader filter!  hr = " + CStr::format_("%x", hr));
+            return 0;
+        }
+
+        hr = g_pGB->AddFilter(g_pReader, L"ASF Reader");
+        if (FAILED(hr))
+        {
+            M3D_LOG_INFO("Failed to add ASF reader filter to graph!  hr = " + CStr::format_("%x", hr));
+            return 0;
+        }
+
+        hr = AddKeyProvider(g_pGB);
+        if (FAILED(hr))
+        {
+            M3D_LOG_INFO("Could not create the key provider!");
+            return 0;
+        }
+
+        VIDEO_JIF(g_pReader->QueryInterface( IID_IFileSourceFilter, (void**)&g_pFileSource ))
+
+        // NOTE: the conversion result is not checked, so a name too long for
+        // the buffer reaches Load unterminated.
+        WCHAR wFileName[MAX_PATH];
+        ::MultiByteToWideChar(CP_ACP, 0, filename, -1, wFileName, MAX_PATH);
+
+        hr = g_pFileSource->Load(wFileName, nullptr);
+        if (FAILED(hr))
+        {
+            M3D_LOG_INFO(
+                "Could not load specified video file: " + CStr(filename) + " (hr = " + CStr::format_("%x", hr) + ")");
+            Release();
+            return 0;
+        }
+
+        VIDEO_JIF(RenderOutputPins( g_pGB, g_pReader ))
+
+        // The graph holds its own reference now.
+        g_pReader->Release();
+
+        VIDEO_JIF(g_pGB->QueryInterface( IID_IMediaControl, (void**)&g_pMC))
+        VIDEO_JIF(g_pGB->QueryInterface( IID_IMediaEventEx, (void**)&g_pME))
+        VIDEO_JIF(g_pGB->QueryInterface( IID_IMediaPosition, (void**)&g_pMP))
+
+        // g_Event1 is signalled by DoRenderSample when a frame has been copied;
+        // g_Event2 starts signalled and gates whether frames are copied at all.
+        g_Event1 = ::CreateEventA(nullptr, FALSE, FALSE, nullptr);
+        g_Event2 = ::CreateEventA(nullptr, FALSE, TRUE, nullptr);
+
+        // Volume is in hundredths of a decibel: full volume is 0, each halving
+        // of the setting takes off another 10dB, and it bottoms out at -100dB.
+        int volume = -10000;
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
+        {
+            int const vol2d = M3D_ENGINE_CFG.m_snd_2dVolume.GetI();
+            if (vol2d > 0)
+            {
+                double attenuation = log(vol2d * 0.01) / log(2.0);
+                if (attenuation < -10.0)
+                {
+                    attenuation = -10.0;
+                }
+                if (attenuation > 0.0)
+                {
+                    attenuation = 0.0;
+                }
+                volume = static_cast<int>(attenuation * 1000.0);
+            }
+        }
+        SetAudioVolume(volume);
+
+        hr = g_pMC->Run();
+        if (FAILED(hr))
+        {
+            M3D_LOG_INFO("Could not run the DirectShow graph! hr = " + CStr::format_("%x", hr));
+            return 0;
+        }
+
+        m_texRend = renderer;
+        return 1;
     }
+
+#undef VIDEO_JIF
 
     int mVideoPlayer::Stop()
     {
@@ -423,26 +506,29 @@ namespace m3d
         {
             return 0;
         }
-        Application::g_pApp->m_renderer->BeginScene();
-        Application::g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_CZ, 0);   //TODO ClearViewport second arg
-        Application::g_pApp->m_renderer->PushBlend(rend::BM_NONE);
-        Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
-        Application::g_pApp->m_renderer->PushLighting(false);
-        Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
-        Application::g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
-        Application::g_pApp->m_renderer->SetTexture(0, g_pTexture, -1.0);
+        M3D_RENDERER->BeginScene();
+        M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0xFF000000);
+        M3D_RENDERER->PushBlend(rend::BM_NONE);
+        M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
+        M3D_RENDERER->PushLighting(false);
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
+        M3D_RENDERER->SetTexture(0, g_pTexture, -1.0);
 
         int tH = 0, tW = 0;
-        Application::g_pApp->m_renderer->GetDims(g_pTexture, tW, tH);
+        M3D_RENDERER->GetDims(g_pTexture, tW, tH);
+        
         int sH = 0, sW = 0;
         m_texRend->GetVideoDims(sW, sH);
-        Application::g_pApp->PutSprite2Rel(0.0, 0.0, 0.0, 0.0, 1024.0, 768.0, sW / tW, sH / tW, static_cast<unsigned>(-1));
+        
+        M3D_APP->PutSprite2Rel(0.0, 0.0, 0.0, 0.0, 1024.0, 768.0, static_cast<float>(sW) / static_cast<float>(tW), static_cast<float>(sH) / static_cast<float>(tH), 0xFFFFFFFF);
 
-        Application::g_pApp->m_renderer->PopLighting();
-        Application::g_pApp->m_renderer->PopZbState();
-        Application::g_pApp->m_renderer->PopBlend();
-        Application::g_pApp->m_renderer->EndScene();
-        Application::g_pApp->m_renderer->PresentScene();
+        M3D_RENDERER->PopLighting();
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->EndScene();
+        M3D_RENDERER->PresentScene();
+
         ::SetEvent(g_Event2);
         return 1;
     }

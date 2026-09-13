@@ -11,6 +11,7 @@
 #include "uimisc/guihelper.h"
 #include "uimisc/savesmanager.h"
 #include "uiwindows/charwindows/motherpanel.h"
+#include "uiwindows/miscwindows/mainmenu.h"
 #include <cameracontroller.h>
 #include <cinematic.h>
 #include <client.h>
@@ -298,7 +299,21 @@ float CMiracle3d::GetMinTimeScale() const
 
 int CMiracle3d::OnFinishVideoPlaying()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (M3D_APP->m_sound)
+    {
+        M3D_APP->m_sound->PauseAllSounds(false);
+    }
+
+    auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_MAINMENU);
+    if (auto* mainMenu = RT_DYNCAST(wnd.get(), MainMenuUI))
+    {
+        if (mainMenu->IsChildOf(M3D_APP))
+        {
+            mainMenu->OnFinishVideoPlaying();
+        }
+    }
+
+    return 1;
 }
 
 void CMiracle3d::SetMinTimeScale(float)

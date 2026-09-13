@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <vector>
 #include <math/vector2.h>
 
@@ -41,7 +42,6 @@ namespace ai
         void DecLine8(CVector2 const &,CVector2 const &,unsigned char);
         void GetIndex(CVector2 const &,MapIndex &);
         void Create(float,float,float,float,Map *);
-        bool IsBlocked(int,int,int,int,unsigned char);
         void IncLineTo(CVector2 const &,unsigned char);
         bool IsLine4Blocked(int,int,int,int,unsigned int);
         void IncValue(CVector2 const &,unsigned char);
@@ -79,11 +79,23 @@ namespace ai
         bool IsCircleBlocked(MapIndex const &,int,unsigned char);
         bool IsCircleBlocked(CVector2 const &,float,unsigned char);
         void DecLineTo(CVector2 const &,unsigned char);
+        bool IsBlocked(int xIndex, int yIndex, int direction, int radius, unsigned char BV);
 
     public:
         static inline Map* theGlobalMap = nullptr;
 
     private:
+        // Shared helpers - not in the original, which repeats each of these
+        // inline at every call site.
+        bool InBounds(int xIndex, int yIndex) const;
+        unsigned char* CellAt(int xIndex, int yIndex);
+        unsigned char CellValue(int xIndex, int yIndex) const;
+        int RadiusToCells(float radius) const;
+        void RectRange(CVector2 const& p1, CVector2 const& p2, int& x0, int& y0, int& x1, int& y1) const;
+        template <typename Plot> void Walk8(int x1, int y1, int x2, int y2, bool plotFirst, Plot plot);
+        template <typename Plot> void Walk4(int x1, int y1, int x2, int y2, Plot plot);
+        template <typename LineToFn> void WalkRing(CVector2 const& point, float radius, LineToFn lineTo);
+
         CVector2 m_cellSize;
         CVector2 m_size;
         MapIndex m_lastIndex;

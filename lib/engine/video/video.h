@@ -5,42 +5,46 @@
 class CMediaType;
 struct __declspec(uuid("{71771540-2017-11cf-ae26-0020afd79767}")) CLSID_TextureRenderer;
 
-//class CKeyProvider : public IServiceProvider
-//{
-//public:
-//    // IUnknown interface
-//    STDMETHODIMP QueryInterface(REFIID riid, void** ppv);
-//    STDMETHODIMP_(ULONG) AddRef();
-//    STDMETHODIMP_(ULONG) Release();
-//
-//    CKeyProvider();
-//
-//    // IServiceProvider
-//    STDMETHODIMP QueryService(REFIID siid, REFIID riid, void** ppv);
-//
-//private:
-//    ULONG m_cRef;
-//};
+// Hands the Windows Media ASF reader the certificate it insists on before it
+// will open a file. The reader finds it by asking the filter graph's site.
+class CKeyProvider : public IServiceProvider
+{
+public:
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(const _GUID& riid, void** ppv) override;
+    virtual ULONG STDMETHODCALLTYPE AddRef() override;
+    virtual ULONG STDMETHODCALLTYPE Release() override;
+    CKeyProvider();
+    virtual HRESULT STDMETHODCALLTYPE QueryService(const _GUID& siid, const _GUID& riid, void** ppv) override;
+
+private:
+    /* 0x0004 */ volatile long m_cRef;
+}; /* size: 0x0008 */
+
+static_assert(sizeof(CKeyProvider) == 0x0008);
 
 namespace m3d
 {
+    // Layout and offsets as in the shipped build. There is deliberately no
+    // sizeof check: CBaseVideoRenderer comes from the vendored DirectShow SDK
+    // base classes, which are 0x20 bytes larger than the 2005 ones, so here the
+    // object is 0x190 bytes with the members starting at 0x180. Nothing reads
+    // them by offset from outside this class, so the shift is harmless.
     class CTextureRenderer : public CBaseVideoRenderer
     {
     public:
-        virtual long SetMediaType(CMediaType const*);
-        virtual long CheckMediaType(CMediaType const*);
-        void GetVideoDims(int&, int&);
-        virtual long DoRenderSample(IMediaSample*);
-        CTextureRenderer(IUnknown*, long*);
-        virtual ~CTextureRenderer();
-        void GetTextureDims(int&, int&);
+        CTextureRenderer(IUnknown* pUnk, HRESULT* phr);
+        virtual ~CTextureRenderer() override /* 0x00 */;
+        virtual HRESULT CheckMediaType(const CMediaType* pmt) override /* 0x00 */;
+        virtual HRESULT SetMediaType(const CMediaType* pmt) override /* 0x00 */;
+        virtual HRESULT DoRenderSample(IMediaSample* pSample) override /* 0x00 */;
+        /* 0x0160 */ int m_bUseDynamicTextures;
+        /* 0x0164 */ long m_lVidWidth;
+        /* 0x0168 */ long m_lVidHeight;
+        /* 0x016c */ long m_lVidPitch;
+        void GetTextureDims(int& w, int& h);
+        void GetVideoDims(int& w, int& h);
+    }; /* size: 0x0170 */
 
-    private:
-        int m_bUseDynamicTextures;
-        int m_lVidWidth;
-        int m_lVidHeight;
-        int m_lVidPitch;
-    };
 
 
     class mVideoPlayer

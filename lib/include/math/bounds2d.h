@@ -41,49 +41,66 @@ public:
 template <class T>
 BoundsBase<T> BoundsBase<T>::SizeRect() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x437650 - the extents moved to the origin.
+    BoundsBase<T> res;
+    res.x0 = static_cast<T>(0);
+    res.y0 = static_cast<T>(0);
+    res.width = width;
+    res.height = height;
+    return res;
 }
 
 template <class T>
-int BoundsBase<T>::IsPtInBounds(PointBase<T> const&) const
+int BoundsBase<T>::IsPtInBounds(PointBase<T> const& p) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4450B0 (float) / 0x45BC10 (int). Left/top inclusive, right/bottom
+    // exclusive, and the far edges are computed as origin + extent.
+    return p.x >= x0 && (width + x0) > p.x && p.y >= y0 && (height + y0) > p.y;
 }
 
 template <class T>
 T BoundsBase<T>::Height() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x435530
+    return height;
 }
 
 template <class T>
 T BoundsBase<T>::Width() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x437640
+    return width;
 }
 
 template <class T>
 PointBase<T> BoundsBase<T>::BottomLeft() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4E5A80
+    return PointBase<T>(x0, height + y0);
 }
 
 template <class T>
-void BoundsBase<T>::Inflate(T, T)
+void BoundsBase<T>::Inflate(T a, T b)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x43F580 (float) / 0x6B9040 (int) - grows on all four sides.
+    x0 = x0 - a;
+    y0 = y0 - b;
+    width = width + a * static_cast<T>(2);
+    height = height + b * static_cast<T>(2);
 }
 
 template <class T>
 T BoundsBase<T>::Bottom() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4355A0
+    return height + y0;
 }
 
 template <class T>
 T BoundsBase<T>::Top() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41CF90
+    return y0;
 }
 
 template <class T>
@@ -100,63 +117,84 @@ int BoundsBase<T>::Empty() const
 }
 
 template <class T>
-void BoundsBase<T>::Offset(PointBase<T> const&)
+void BoundsBase<T>::Offset(PointBase<T> const& p)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x440E30 (float) / 0x6B9020 (int) - moves the origin, keeps extents.
+    x0 = p.x + x0;
+    y0 = p.y + y0;
 }
 
 template <class T>
 void BoundsBase<T>::Zero()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x673AE0
+    x0 = static_cast<T>(0);
+    y0 = static_cast<T>(0);
+    width = static_cast<T>(0);
+    height = static_cast<T>(0);
 }
 
 template <class T>
 T BoundsBase<T>::Right() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x43FEA0
+    return width + x0;
 }
 
 template <class T>
 T BoundsBase<T>::CenterX() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4DCF20 (float: (x0 * 2 + width) * 0.5) / 0x584B00 (int: the same
+    // expression with a signed halve, so integer bounds truncate toward zero).
+    return (x0 + x0 + width) / static_cast<T>(2);
 }
 
 template <class T>
 T BoundsBase<T>::Left() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41CFA0
+    return x0;
 }
 
 template <class T>
-void BoundsBase<T>::CenterIn(BoundsBase<T> const&)
+void BoundsBase<T>::CenterIn(BoundsBase<T> const& rc)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B7290. NOTE: the shipped code centres against rc's EXTENTS only -
+    // rc.x0 and rc.y0 are never added - so the result is relative to rc's
+    // origin. Callers pass a client rect, which starts at the origin anyway.
+    x0 = (rc.width - width) / static_cast<T>(2);
+    y0 = (rc.height - height) / static_cast<T>(2);
 }
 
 template <class T>
 PointBase<T> BoundsBase<T>::BottomRight() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x445060
+    return PointBase<T>(width + x0, height + y0);
 }
 
 template <class T>
 T BoundsBase<T>::CenterY() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4375F0 (float) / 0x584B10 (int)
+    return (y0 + y0 + height) / static_cast<T>(2);
 }
 
 template <class T>
 PointBase<T> BoundsBase<T>::TopLeft() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41CD70
+    return PointBase<T>(x0, y0);
 }
 
 template <class T>
 BoundsBase<T>::BoundsBase(int)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x611910 - the argument is ignored; everything zeroes.
+    x0 = static_cast<T>(0);
+    y0 = static_cast<T>(0);
+    width = static_cast<T>(0);
+    height = static_cast<T>(0);
 }
 
 template <class T>
@@ -187,9 +225,13 @@ BoundsBase<T>::BoundsBase(T x, T y, T xx, T yy)
 }
 
 template <class T>
-BoundsBase<T>::BoundsBase(PointBase<T> const&, PointBase<T> const&)
+BoundsBase<T>::BoundsBase(PointBase<T> const& topLeft, PointBase<T> const& bottomRight)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x445080 - corners in, extents stored.
+    x0 = topLeft.x;
+    y0 = topLeft.y;
+    width = bottomRight.x - x0;
+    height = bottomRight.y - y0;
 }
 
 template <class T>
@@ -238,5 +280,6 @@ BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
 template <class T>
 PointBase<T> BoundsBase<T>::TopRight() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4E5A60
+    return PointBase<T>(width + x0, y0);
 }

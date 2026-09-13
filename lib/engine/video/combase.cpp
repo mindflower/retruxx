@@ -24,15 +24,15 @@ CBaseObject::CBaseObject(__in_opt LPCTSTR pName)
     /* Increment the number of active objects */
     InterlockedIncrement(&m_cObjects);
 
-#ifdef DEBUG
-
-#ifdef UNICODE
-    m_dwCookie = DbgRegisterObjectCreation(0, pName);
-#else
-    m_dwCookie = DbgRegisterObjectCreation(pName, 0);
-#endif
-
-#endif
+//#ifdef DEBUG
+//
+//#ifdef UNICODE
+//    m_dwCookie = DbgRegisterObjectCreation(0, pName);
+//#else
+//    m_dwCookie = DbgRegisterObjectCreation(pName, 0);
+//#endif
+//
+//#endif
 }
 
 #ifdef UNICODE
@@ -63,9 +63,9 @@ CBaseObject::~CBaseObject()
     };
 
 
-#ifdef DEBUG
-    DbgRegisterObjectDestruction(m_dwCookie);
-#endif
+//#ifdef DEBUG
+//    DbgRegisterObjectDestruction(m_dwCookie);
+//#endif
 }
 
 static const TCHAR szOle32Aut[]   = TEXT("OleAut32.dll");
