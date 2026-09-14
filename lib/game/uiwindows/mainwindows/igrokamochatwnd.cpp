@@ -10,6 +10,7 @@
 
 #include "server/objects/base/objcontainer.h"
 #include "server/objects/base/physicobj.h"
+#include "server/event.h"
 
 RT_CLASS_EXPORTS_BEGIN(IgrokaMochatWnd)
 RT_CLASS_EXPORTS_END;
@@ -109,11 +110,11 @@ int IgrokaMochatWnd::GameDataUpdate(void* data, int dataType)
     {
         return 0;
     }
-    if (dataType == 76)
+    if (dataType == IE_EV_SM_PLAYER_VEHICLE_DAMAGED)
     {
         OnPlayerVehicleDamaged(data);
     }
-    else if (dataType == 89)
+    else if (dataType == IE_CUST_NEW_FRAME)
     {
         OnNewFrame();
         return 1;

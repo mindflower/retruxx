@@ -3,6 +3,8 @@
 #include <stdexcept>
 
 #include "core/aiparam.h"
+#include "core/ini.h"
+#include "core/kernel.h"
 
 namespace ai
 {
@@ -12,27 +14,33 @@ namespace ai
 
     CStr FloatStatistic::GetValue() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E550
+        return CStr::format_("%.2f", m_value);
     }
 
     void FloatStatistic::Increase(float delta)
     {
-        this->m_value = delta + this->m_value;
+        // RVA 0x72E250
+        m_value = delta + m_value;
     }
 
     m3d::Object* FloatStatistic::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E580 - see IntStatistic::Clone; the copy constructor asserts.
+        return new FloatStatistic(*this);
     }
 
-    void FloatStatistic::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void FloatStatistic::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E2E0
+        Statistic::LoadFromXml(xmlFile, xmlNode);
+        m3d::SafeFloatAttrib(m_value, xmlNode, "Value");
     }
 
     m3d::Object* FloatStatistic::CreateObject()
     {
-        return new FloatStatistic;
+        // RVA 0x72E270
+        return new FloatStatistic();
     }
 
     FloatStatistic::~FloatStatistic() = default;
@@ -44,17 +52,21 @@ namespace ai
 
     m3d::AIParam FloatStatistic::GetValueAsAIParam() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E5B0
+        return m3d::AIParam(m_value);
     }
 
     void FloatStatistic::Zero()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E230
+        m_value = 0.0f;
     }
 
-    void FloatStatistic::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void FloatStatistic::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E4F0
+        Statistic::SaveToXml(xmlFile, xmlNode);
+        xmlNode->SetAttribute("Value", CStr(m_value).c_str());
     }
 
     m3d::Class* FloatStatistic::GetClass() const
@@ -62,13 +74,15 @@ namespace ai
         return RT_CLASS_LOCAL(FloatStatistic);
     }
 
-    FloatStatistic::FloatStatistic(FloatStatistic const&)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
     FloatStatistic::FloatStatistic()
     {
-        m_value = 0.0;
+        // RVA 0x72E210
+        m_value = 0.0f;
+    }
+
+    FloatStatistic::FloatStatistic(FloatStatistic const&)
+    {
+        // RVA 0x72E320
+        M3D_ASSERT(0);
     }
 }

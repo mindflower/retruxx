@@ -1184,10 +1184,6 @@ namespace ai
 
     void Gun::_LaunchShells()
     {
-        // TODO: increace statistics
-        return;
-
-        
         // RVA 0x2E10C0 - the base implementation only books the shot into the
         // player's statistics; derived guns override this to spawn the shells.
         Obj* parentObj = this;

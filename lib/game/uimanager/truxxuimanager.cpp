@@ -830,9 +830,10 @@ void TruxxUiManager::GUI_EndModalDlg()
 
 int TruxxUiManager::GUI_BindWindowsToEvents()
 {
-    // RVA 0x54CE20 - a window is only told about an event it is
-    // registered for here, so a missing entry silently stops that
-    // window updating. Generated from the shipped binary.
+    // RVA 0x54CE20 - a window is only told about an event it is registered for
+    // here, so a missing entry silently stops that window updating. The order
+    // and the event lists below are those of the shipped binary, recovered from
+    // its disassembly.
     int res = 1;
 
     res &= GUI_SetEventsForWindow(IW_DLG_BINDKEYS, {IE_EV_EV_KEYBINDINGS_CHANGED});
@@ -953,25 +954,45 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_HEALTH_IN_WORKSHOP_VEHICLE_WND, {IE_CUST_NEW_FRAME});
 
-    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_CABIN_DURABILITY, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_PLAYERVEHICLE_CABIN_DURABILITY,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_BASKET_DURABILITY, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_PLAYERVEHICLE_BASKET_DURABILITY,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_CABIN_DURABILITY_IN_FIGNYA_WND, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_PLAYERVEHICLE_CABIN_DURABILITY_IN_FIGNYA_WND,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_BASKET_DURABILITY_IN_FIGNYA_WND, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_PLAYERVEHICLE_BASKET_DURABILITY_IN_FIGNYA_WND,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_CABIN_DURABILITY_IN_CHARACTERISTIC_WND_LEFT, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_CABIN_DURABILITY_IN_CHARACTERISTIC_WND_LEFT,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_CABIN_DURABILITY_IN_CHARACTERISTIC_WND_RIGHT, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_CABIN_DURABILITY_IN_CHARACTERISTIC_WND_RIGHT,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_CABIN_DURABILITY_IN_WORKSHOP_VEHICLE_WND, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_CABIN_DURABILITY_IN_WORKSHOP_VEHICLE_WND,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_BASKET_DURABILITY_IN_CHARACTERISTIC_WND_LEFT, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_BASKET_DURABILITY_IN_CHARACTERISTIC_WND_LEFT,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_BASKET_DURABILITY_IN_CHARACTERISTIC_WND_RIGHT, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_BASKET_DURABILITY_IN_CHARACTERISTIC_WND_RIGHT,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_BASKET_DURABILITY_IN_WORKSHOP_VEHICLE_WND, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_BASKET_DURABILITY_IN_WORKSHOP_VEHICLE_WND,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
     res &= GUI_SetEventsForWindow(IW_WND_PLAYERVEHICLE_FUEL, {IE_CUST_NEW_FRAME});
 
@@ -983,7 +1004,7 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_DAMAGEINFO_IN_CHARACTERISTIC_WND_RIGHT, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_ITEM_INFO, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_ITEM_INFO, {IE_CUST_NEW_FRAME, IE_EV_SM_REPOSITORY_CHANGED});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_SALE_GOODS,
@@ -1013,29 +1034,35 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_WEAPON_INFO_LIST_IN_CHAR_WND_WORKSHOP, {IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(
-        IW_DLG_BINDKEYS,
-        {IE_CUST_DD_DRAGITEM_MOVE,
-         IE_CUST_DD_START_DRAG,
-         IE_CUST_DD_END_DRAG,
-         IE_CUST_DD_MOUSE_IN,
-         IE_CUST_DD_MOUSE_OUT,
-         IE_CUST_DD_DRAGITEM_ACCEPTED,
-         IE_CUST_DD_ITEM_WANT_ADD,
-         IE_CUST_DD_ITEM_ALLOW_ADD,
-         IE_EV_SM_GADGET_CHANGED});
+    for (int wnd = IW_WND_PLAYER_GADGET_MIN; wnd <= IW_WND_PLAYER_GADGET_MAX; ++wnd)
+    {
+        res &= GUI_SetEventsForWindow(
+            wnd,
+            {IE_CUST_DD_DRAGITEM_MOVE,
+             IE_CUST_DD_START_DRAG,
+             IE_CUST_DD_END_DRAG,
+             IE_CUST_DD_MOUSE_IN,
+             IE_CUST_DD_MOUSE_OUT,
+             IE_CUST_DD_DRAGITEM_ACCEPTED,
+             IE_CUST_DD_ITEM_WANT_ADD,
+             IE_CUST_DD_ITEM_ALLOW_ADD,
+             IE_EV_SM_GADGET_CHANGED});
+    }
 
-    res &= GUI_SetEventsForWindow(
-        IW_DLG_BINDKEYS,
-        {IE_CUST_DD_DRAGITEM_MOVE,
-         IE_CUST_DD_START_DRAG,
-         IE_CUST_DD_END_DRAG,
-         IE_CUST_DD_MOUSE_IN,
-         IE_CUST_DD_MOUSE_OUT,
-         IE_CUST_DD_DRAGITEM_ACCEPTED,
-         IE_CUST_DD_ITEM_WANT_ADD,
-         IE_CUST_DD_ITEM_ALLOW_ADD,
-         IE_EV_SM_GADGET_CHANGED});
+    for (int wnd = IW_WND_WORKSHOP_GADGET_MIN; wnd <= IW_WND_WORKSHOP_GADGET_MAX; ++wnd)
+    {
+        res &= GUI_SetEventsForWindow(
+            wnd,
+            {IE_CUST_DD_DRAGITEM_MOVE,
+             IE_CUST_DD_START_DRAG,
+             IE_CUST_DD_END_DRAG,
+             IE_CUST_DD_MOUSE_IN,
+             IE_CUST_DD_MOUSE_OUT,
+             IE_CUST_DD_DRAGITEM_ACCEPTED,
+             IE_CUST_DD_ITEM_WANT_ADD,
+             IE_CUST_DD_ITEM_ALLOW_ADD,
+             IE_EV_SM_GADGET_CHANGED});
+    }
 
     res &= GUI_SetEventsForWindow(
         IW_WND_GROUND,
@@ -1077,40 +1104,17 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_EV_SM_VEHICLEPART_CHANGED,
          IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_PLAYER_MONEY,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_CUST_SHOW_VEHICLEPART,
-         IE_EV_SM_VEHICLEPART_CHANGED,
-         IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_MONEY, {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_PLAYER_MONEY_IN_NPC_DIALOG,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_CUST_SHOW_VEHICLEPART,
-         IE_EV_SM_VEHICLEPART_CHANGED,
-         IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
+        {IE_EV_SM_PLAYER_MONEY_CHANGED, IE_CUST_START_LEVEL});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_PLAYER_VEHICLE_MODEL_LEFT,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_CUST_SHOW_VEHICLEPART,
-         IE_EV_SM_VEHICLEPART_CHANGED,
-         IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_LEFT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_PLAYER_VEHICLE_MODEL_RIGHT,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_CUST_SHOW_VEHICLEPART,
-         IE_EV_SM_VEHICLEPART_CHANGED,
-         IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_PLAYER_VEHICLE_MODEL_RIGHT, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_WORKSHOP_VEHICLE_MODEL,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_CUST_SHOW_VEHICLEPART,
-         IE_EV_SM_VEHICLEPART_CHANGED,
-         IE_EV_UM_CHARACTERISTIC_TAB_SEL_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_WORKSHOP_VEHICLE_MODEL, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_QUEST_LIST,
@@ -1124,9 +1128,9 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_MAP_LIST_IN_MAP, {IE_CUST_START_LEVEL});
 
-    res &= GUI_SetEventsForWindow(IW_DLG_TALK_WITH_NPC, {IE_CUST_START_LEVEL});
+    res &= GUI_SetEventsForWindow(IW_DLG_TALK_WITH_NPC, {IE_EV_UM_BAR_NPC, IE_EV_SM_LOCATION_NPC});
 
-    res &= GUI_SetEventsForWindow(IW_WND_NPC_IMAGE_IN_CONVERSATION, {IE_CUST_START_LEVEL});
+    res &= GUI_SetEventsForWindow(IW_WND_NPC_IMAGE_IN_CONVERSATION, {IE_EV_UM_NPC_REPLY_SHOWN, IE_CUST_NEW_FRAME});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_LOCAL_CHART,
@@ -1153,9 +1157,11 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_ENCYCLOPAEDIA_3D_SIMPLE_MODEL, {IE_CUST_NEW_FRAME});
 
-    res &= GUI_SetEventsForWindow(IW_WND_3D_COMPLEX_MODEL, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(IW_WND_3D_COMPLEX_MODEL, {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_ENCYCLOPAEDIA_3D_COMPLEX_MODEL, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_ENCYCLOPAEDIA_3D_COMPLEX_MODEL,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_VEHICLEPART_CHANGED});
 
     res &= GUI_SetEventsForWindow(IW_WND_VIDEO, {IE_CUST_NEW_FRAME});
 
@@ -1173,33 +1179,15 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
          IE_CUST_NEW_FRAME_FORCE,
          IE_EV_UM_BELONG_MET});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_GLOBAL_MAP,
-        {IE_CUST_START_LEVEL,
-         IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_EV_SM_GADGET_CHANGED,
-         IE_EV_SM_OBJ_MET,
-         IE_EV_SM_PROTOTYPE_MET,
-         IE_EV_SM_PLAYER_VEHICLE_DAMAGED,
-         IE_EV_SM_QUEST_ITEMS_CHANGED,
-         IE_CUST_NEW_FRAME_FORCE,
-         IE_EV_UM_BELONG_MET});
+    res &= GUI_SetEventsForWindow(IW_WND_GLOBAL_MAP, {IE_CUST_START_LEVEL, IE_EV_SM_LOCATION_STATE_CHANGED});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_STATS,
-        {IE_CUST_START_LEVEL,
-         IE_EV_SM_PLAYER_VEHICLE_CHANGED,
-         IE_EV_SM_GADGET_CHANGED,
-         IE_EV_SM_OBJ_MET,
-         IE_EV_SM_PROTOTYPE_MET,
-         IE_EV_SM_PLAYER_VEHICLE_DAMAGED,
-         IE_EV_SM_QUEST_ITEMS_CHANGED,
-         IE_CUST_NEW_FRAME_FORCE,
-         IE_EV_UM_BELONG_MET});
+    res &= GUI_SetEventsForWindow(IW_WND_STATS, {IE_CUST_NEW_FRAME, IE_CUST_START_LEVEL});
 
     res &= GUI_SetEventsForWindow(IW_WND_REPUTATION, {IE_EV_UM_KNOWN_CLANS_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_CHANGE_PROFILE, {IE_EV_UM_KNOWN_CLANS_CHANGED});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_CHANGE_PROFILE,
+        {IE_EV_UM_PROFILES_LIST_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED});
 
     res &= GUI_SetEventsForWindow(IW_WND_MAINMENU, {IE_EV_UM_CUR_PROFILE_CHANGED});
 
@@ -1223,17 +1211,21 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_CURSOR_MAIN, {IE_CUST_NEW_FRAME});
 
-    res &= GUI_SetEventsForWindow(IW_WND_CURSOR_MAIN, {IE_CUST_NEW_FRAME});
+    // NOTE: the original binds IW_WND_CURSOR_MAIN twice in a row. The second call
+    // replaces the list installed just above, so that first list is dead.
+    res &= GUI_SetEventsForWindow(IW_WND_CURSOR_MAIN, {IE_EV_UM_SHOW_CURSOR, IE_EV_UM_GAME_MODE_CHANGED});
 
     res &= GUI_SetEventsForWindow(IW_WND_VEHICLE_INFO_PANEL, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_FADING_MSG_LIST, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_FADING_MSG_LIST, {IE_CUST_NEW_FRAME, IE_EV_SM_FADING_MESSAGE});
 
-    res &= GUI_SetEventsForWindow(IW_WND_IMPORTANT_FADING_MSG_LIST, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_IMPORTANT_FADING_MSG_LIST,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_IMPORTANT_FADING_MESSAGE});
 
-    res &= GUI_SetEventsForWindow(IW_WND_QUESTLOG, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_QUESTLOG, {IE_EV_UM_CUR_PROFILE_PARAM_CHANGED, IE_EV_UM_CUR_PROFILE_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_LOCAL_MAP, {IE_EV_SM_PLAYER_VEHICLE_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_LOCAL_MAP, {IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_WORKSHOP,
@@ -1241,21 +1233,21 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(
         IW_WND_REFUEL_LIST,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME, IE_EV_SM_REPOSITORY_CHANGED, IE_EV_UM_FINISH_TRADE});
+        {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_REPAIR_LIST,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME, IE_EV_SM_REPOSITORY_CHANGED, IE_EV_UM_FINISH_TRADE});
+        {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_RECHARGE_LIST,
-        {IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME, IE_EV_SM_REPOSITORY_CHANGED, IE_EV_UM_FINISH_TRADE});
+        {IE_EV_SM_VEHICLEPART_CHANGED, IE_EV_SM_PLAYER_VEHICLE_CHANGED, IE_CUST_NEW_FRAME});
 
     res &= GUI_SetEventsForWindow(IW_WND_CABIN_LIST, {IE_EV_SM_REPOSITORY_CHANGED});
 
     res &= GUI_SetEventsForWindow(IW_WND_BASKET_LIST, {IE_EV_SM_REPOSITORY_CHANGED});
 
-    res &= GUI_SetEventsForWindow(IW_WND_IGROKA_MOCHAT, {IE_EV_SM_REPOSITORY_CHANGED});
+    res &= GUI_SetEventsForWindow(IW_WND_IGROKA_MOCHAT, {IE_EV_SM_PLAYER_VEHICLE_DAMAGED, IE_CUST_NEW_FRAME});
 
     res &= GUI_SetEventsForWindow(IW_WND_QUEST_ITEMS, {IE_EV_SM_QUEST_ITEMS_CHANGED});
 
@@ -1263,9 +1255,7 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
         IW_WND_COUNTER,
         {IE_CUST_NEW_FRAME, IE_EV_SM_DYNAMIC_QUESTSTATE_CHANGED, IE_CUST_START_LEVEL});
 
-    res &= GUI_SetEventsForWindow(
-        IW_WND_QUEST_DIZ,
-        {IE_CUST_NEW_FRAME, IE_EV_SM_DYNAMIC_QUESTSTATE_CHANGED, IE_CUST_START_LEVEL});
+    res &= GUI_SetEventsForWindow(IW_WND_QUEST_DIZ, {IE_EV_UM_NAVPOINT_ADDED, IE_EV_UM_NAVPOINT_DELETED});
 
     res &= GUI_SetEventsForWindow(
         IW_WND_MAIN_GAME_INTERFACE,
@@ -1291,7 +1281,9 @@ int TruxxUiManager::GUI_BindWindowsToEvents()
 
     res &= GUI_SetEventsForWindow(IW_WND_CREDITS, {IE_CUST_NEW_FRAME});
 
-    res &= GUI_SetEventsForWindow(IW_WND_FADE_PANEL_BEFORE_NEXT_MAP, {IE_CUST_NEW_FRAME});
+    res &= GUI_SetEventsForWindow(
+        IW_WND_FADE_PANEL_BEFORE_NEXT_MAP,
+        {IE_CUST_NEW_FRAME, IE_EV_SM_PLAYER_PASS_TO_MAP_FADING});
 
     res &= GUI_SetEventsForWindow(IW_WND_BOSS_INDICATOR, {IE_CUST_NEW_FRAME});
 

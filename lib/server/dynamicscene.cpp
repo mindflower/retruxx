@@ -564,15 +564,15 @@ namespace ai
                 info.gunPrototypeId = gunPrototypeInfo->m_prototypeId;
                 info.damagedPartName = partName;
 
-                float damage = 0.0;
+                info.damage = 0.0;
                 auto* gun = shell->GetGun();
                 if (gun)
                 {
-                    damage = gun->GetDamageForOneShell();
+                    info.damage = gun->GetDamageForOneShell();
                 }
                 else
                 {
-                    damage = gunPrototypeInfo->GetDamageForOneShell();
+                    info.damage = gunPrototypeInfo->GetDamageForOneShell();
                 }
 
                 if (IS_KIND_OF(shell, Bullet) || !IS_KIND_OF(body, PhysicBody))

@@ -168,9 +168,11 @@ namespace ai
         return 1;
     }
 
-    void Team::AttackNow(int)
+    void Team::AttackNow(int id)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        _AdjustRoles(id);
+        m3d::AIParam param1(id);
+        m_AI.InsCommand(2, param1, {}, {});
     }
 
     m3d::AIParam Team::TeamAIOnMoveFinished(Obj*)
@@ -713,9 +715,9 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void Team::_DoUnderAttack(int)
+    void Team::_DoUnderAttack(int attackerId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        AttackNow(attackerId);
     }
 
     void Team::_TeamUpdate(float, unsigned)
@@ -783,9 +785,14 @@ namespace ai
         m_formation->SetLinearVelocity(100.0);
     }
 
-    void Team::_OnUnderAttack(Event const&)
+    void Team::_OnUnderAttack(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const id = evn.m_param1.GetAsID();
+        auto* obj = ai::theObjects->GetEntityByObjId(id);
+        if (bIsEnemyWith(obj))
+        {
+            _DoUnderAttack(id);
+        }
     }
 
     void Team::_AddVehicleToFormation(Vehicle* pVehicle)
