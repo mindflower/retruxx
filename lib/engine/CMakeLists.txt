@@ -42,7 +42,6 @@ target_sources(retruxx_lib PRIVATE
     particles.cpp
     prefabs.cpp
     ps_attractors.cpp
-    ps_serialization.cpp
     psprops.cpp
     renderhelpers.cpp
     serialization.cpp

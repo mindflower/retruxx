@@ -674,7 +674,9 @@ int LocalMapWnd::GameDataUpdate(void* data, int dataType)
     {
         return 0;
     }
-    if ((dataType == 28 || dataType == 29) && data && static_cast<int*>(data)[16] == 2)
+
+    m3d::Event* ev = static_cast<m3d::Event*>(data);
+    if ((dataType == 28 || dataType == 29) && ev && ev->m_uintEv[3] == 2)
     {
         UpdateBtnNavPointState();
     }

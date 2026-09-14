@@ -12,27 +12,27 @@ namespace m3d
 
     DbgCounter::eType DbgCounter::GetType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_curType;
     }
 
     int DbgCounter::GetI() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_i;
     }
 
     bool DbgCounter::GetB() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_b;
     }
 
     float DbgCounter::GetF() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_f;
     }
 
     char const* DbgCounter::GetS() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_s.c_str();
     }
 
     char const* DbgCounter::GetName() const
@@ -76,16 +76,18 @@ namespace m3d
     {
         //TODO: check this
         std::string_view nameView(name);
-        for (unsigned i =0; i<m_stack.size(); ++i)
+        for (unsigned i = 0; i < m_stack.size(); ++i)
         {
             if (nameView == m_stack[i]->GetName())
             {
                 return i;
             }
         }
+
         auto counter = new DbgCounter;
         counter->SetName(name);
         m_stack.push_back(counter);
+
         m_numCounters++;
         return m_stack.size() - 1;
     }
@@ -113,8 +115,8 @@ namespace m3d
     DbgCounterStack::DbgCounterStack()
     {
         m_stringStack.resize(0x32, "");
-        this->m_numCounters = 0;
-        this->m_numStrings = 0;
+        m_numCounters = 0;
+        m_numStrings = 0;
     }
 
     unsigned DbgCounterStack::GetNumStrings() const
@@ -142,7 +144,7 @@ namespace m3d
         if (m_numStrings < 0x32)
         {
             m_stringStack[m_numStrings] = str;
-            ++this->m_numStrings;
+            ++m_numStrings;
         }
     }
-}
+}  // namespace m3d

@@ -8,10 +8,7 @@ namespace m3d
     rend::TexHandle CFlare::m_tex[6];
     rend::TexHandle CFlare::m_texSunGlow;
 
-    CFlare::~CFlare()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    CFlare::~CFlare() = default;
 
     int CFlare::Init()
     {
@@ -26,7 +23,11 @@ namespace m3d
 
     void CFlare::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto& tex : m_tex)
+        {
+            M3D_RENDERER->ReleaseTexture(tex);
+        }
+        M3D_RENDERER->ReleaseTexture(m_texSunGlow);
     }
 
     CFlare::CFlare()
