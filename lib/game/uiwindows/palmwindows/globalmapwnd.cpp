@@ -647,7 +647,7 @@ int LevelIco::SetUpForLevel(CStr const& levelName)
     }
     m_levelName = levelName;
     SetImage(li->GetImage1());
-    SetProperty(PROP_WND_TOOLTIP, const_cast<char*>(li->GetFullName().c_str()));
+    SetProperty(PROP_WND_TOOLTIP, const_cast<CStr*>(&li->GetFullName()));
     return 1;
 }
 

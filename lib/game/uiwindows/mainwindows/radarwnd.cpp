@@ -55,7 +55,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, AllowDistances)
 RT_CLASS_EXPORT_METHOD_DEFINE(RadarWnd, SetScanRadius)
 {
     auto radar = (RadarWnd*)context->asObject(0, "RadarWnd");
-    bool radius = context->asFloat(1);
+    float radius = context->asFloat(1);
     radar->SetScanRadius(radius);
     return 1;
 }
