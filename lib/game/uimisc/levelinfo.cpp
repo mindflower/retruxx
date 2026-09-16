@@ -31,32 +31,62 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddKnownLevel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D710
+    auto* manager = (LevelInfoManager*)context->asObject(0, "LevelInfoManager");
+    CStr const levelName = context->asString(1);
+    context->pushInt(manager->AddKnownLevel(levelName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddVisibilityCircleForLevel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D780
+    auto* manager = (LevelInfoManager*)context->asObject(0, "LevelInfoManager");
+    CStr const levelName = context->asString(1);
+    auto const radius = context->asFloat(3);
+    auto const& origin = context->asVector(2);
+    context->pushInt(manager->AddVisibilityCircleForLevel(levelName, origin, radius));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, AddVisibilityRectForLevel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D800 - the arguments are read last to first.
+    auto* manager = (LevelInfoManager*)context->asObject(0, "LevelInfoManager");
+    CStr const levelName = context->asString(1);
+    auto const h = context->asFloat(5);
+    auto const w = context->asFloat(4);
+    auto const y0 = context->asFloat(3);
+    auto const x0 = context->asFloat(2);
+    context->pushInt(manager->AddVisibilityRectForLevel(levelName, x0, y0, w, h));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, IsLevelKnown)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D8A0
+    auto* manager = (LevelInfoManager*)context->asObject(0, "LevelInfoManager");
+    CStr const levelName = context->asString(1);
+    context->pushBool(manager->IsLevelKnown(levelName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, IsLevelVisited)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D910
+    auto* manager = (LevelInfoManager*)context->asObject(0, "LevelInfoManager");
+    CStr const levelName = context->asString(1);
+    context->pushBool(manager->IsLevelVisited(levelName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(LevelInfoManager, ClearVisibilityMapForLevel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D980
+    auto* manager = (LevelInfoManager*)context->asObject(0, "LevelInfoManager");
+    CStr const levelName = context->asString(1);
+    manager->ClearVisibilityMapForLevel(levelName);
+    return 1;
 }
 
 RT_CLASS_EXPORTS_BEGIN(LevelInfoManager)
@@ -743,8 +773,25 @@ void LevelInfoManager::UpdateObjectInfoForCurrentLevel()
 
 void LevelInfoManager::UpdateObjectPositions()
 {
-    // TODO: refresh m_position of current-level ObjectInfos from their live PhysicObj.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x560100 - refresh the charted positions of the current level's objects.
+    CStr const curLevelName = help::GetCurrentLevelName();
+    auto const levelIt = m_levelObjects.find(curLevelName);
+    if (levelIt == m_levelObjects.end())
+    {
+        return;
+    }
+    for (auto const& [name, info] : levelIt->second)
+    {
+        if (!info || info->m_levelName != curLevelName)
+        {
+            continue;
+        }
+        auto* obj = ai::theObjects->GetEntityByObjId(info->m_objectId);
+        if (obj && obj->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+        {
+            info->m_position = static_cast<ai::PhysicObj*>(obj)->GetPosition();
+        }
+    }
 }
 
 // --- images -----------------------------------------------------------------------------------
@@ -846,16 +893,177 @@ int LevelInfoManager::LoadLevelSizeFromXml(CStr const& fileName)
     return 1;
 }
 
-int LevelInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+int LevelInfoManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
-    // TODO: save-game restore of <VisibilityMaps>/KnownLevels/VisitedLevels/<LevelObjects>.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x560260
+    int res = 1;
+    ClearBeforeNewLevel();
+
+    ref_ptr vmapsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    xmlNode->GetFirstChild(vmapsNode, "VisibilityMaps");
+    if (!vmapsNode->IsEmpty())
+    {
+        ref_ptr vmapNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        for (vmapsNode->GetFirstChild(vmapNode, "Level"); !vmapNode->IsEmpty(); vmapNode->GetNextSibling(vmapNode, "Level"))
+        {
+            auto* vmap = new VisibilityMap;
+            if (!vmap)
+            {
+                M3D_LOG_INFO("LevelInfoManager::LoadFromXml error - cannot instantiate VisibilityMap");
+                res = 0;
+                continue;
+            }
+            if (!vmap->LoadFromXml(xmlFile, vmapNode))
+            {
+                M3D_LOG_INFO(
+                    "LevelInfoManager::LoadFromXml error - cannot load visibility map for level " + vmap->GetLevelName());
+                delete vmap;
+                res = 0;
+                continue;
+            }
+
+            auto const& levelName = vmap->GetLevelName();
+            if (m_visibilityMaps.find(levelName) != m_visibilityMaps.end())
+            {
+                delete m_visibilityMaps[levelName];
+                m_visibilityMaps[levelName] = nullptr;
+            }
+            // NOTE: when the level already had a map, insert() leaves the entry
+            // just cleared to nullptr and the freshly loaded map leaks, as in the
+            // original.
+            m_visibilityMaps.insert({CStr(levelName), vmap});
+        }
+    }
+    else
+    {
+        M3D_LOG_INFO("LevelInfoManager::LoadFromXml warning - cannot find any visibility maps");
+        res = 0;
+    }
+
+    CStr strKnownLevelNames;
+    m3d::SafeStrAttrib(strKnownLevelNames, xmlNode, "KnownLevels");
+    retruxx::vector<CStr> knownLevelNames;
+    ai::StrToStringVector(strKnownLevelNames, knownLevelNames);
+    for (auto const& levelName : knownLevelNames)
+    {
+        res &= AddKnownLevel(levelName);
+    }
+
+    CStr strVisitedLevelNames;
+    if (!xmlNode->IsEmpty())
+    {
+        if (auto const* attr = xmlNode->GetAttribute("VisitedLevels"))
+        {
+            strVisitedLevelNames = CStr(attr);
+        }
+    }
+    retruxx::vector<CStr> visitedLevelNames;
+    ai::StrToStringVector(strVisitedLevelNames, visitedLevelNames);
+    for (auto const& levelName : visitedLevelNames)
+    {
+        res &= AddVisitedLevel(levelName);
+    }
+
+    ref_ptr levelObjectsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    xmlNode->GetFirstChild(levelObjectsNode, "LevelObjects");
+    if (!levelObjectsNode->IsEmpty())
+    {
+        ref_ptr ndLevel = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        for (levelObjectsNode->GetFirstChild(ndLevel, "Level"); !ndLevel->IsEmpty(); ndLevel->GetNextSibling(ndLevel, "Level"))
+        {
+            // The level name attribute is read but not needed: each object
+            // carries its own level name.
+            CStr levelName;
+            if (!ndLevel->IsEmpty())
+            {
+                if (auto const* attr = ndLevel->GetAttribute("LevelName"))
+                {
+                    levelName = CStr(attr);
+                }
+            }
+
+            ref_ptr objectsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            ndLevel->GetFirstChild(objectsNode, "Objects");
+            if (objectsNode->IsEmpty())
+            {
+                continue;
+            }
+            ref_ptr objectNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            for (objectsNode->GetFirstChild(objectNode, "Object"); !objectNode->IsEmpty();
+                 objectNode->GetNextSibling(objectNode, "Object"))
+            {
+                auto* info = new ObjectInfo;
+                if (!info->LoadFromXml(xmlFile, objectNode) || !AddObjectInfo(info))
+                {
+                    delete info;
+                    res = 0;
+                }
+            }
+        }
+    }
+
+    if (!res)
+    {
+        M3D_LOG_INFO("LevelInfoManager::LoadFromXml - errors while loading");
+    }
+    return res;
 }
 
-int LevelInfoManager::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+int LevelInfoManager::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
 {
-    // TODO: mirror of LoadFromXml.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x560C20
+    int res = 1;
+    if (!m_visibilityMaps.empty())
+    {
+        ref_ptr vmapsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "VisibilityMaps");
+        xmlNode->AddChild(vmapsNode);
+        for (auto const& [levelName, vmap] : m_visibilityMaps)
+        {
+            if (!vmap)
+            {
+                res = 0;
+                continue;
+            }
+            ref_ptr ndLevel = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Level");
+            vmapsNode->AddChild(ndLevel);
+            res &= vmap->SaveToXml(xmlFile, ndLevel);
+        }
+    }
+
+    retruxx::vector<CStr> const knownLevels(m_knownLevels.begin(), m_knownLevels.end());
+    xmlNode->SetAttribute("KnownLevels", ai::StringVectorToStr(knownLevels).c_str());
+    retruxx::vector<CStr> const visitedLevels(m_visitedLevels.begin(), m_visitedLevels.end());
+    xmlNode->SetAttribute("VisitedLevels", ai::StringVectorToStr(visitedLevels).c_str());
+
+    if (!m_levelObjects.empty())
+    {
+        ref_ptr ndLevelObjects = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "LevelObjects");
+        xmlNode->AddChild(ndLevelObjects);
+        for (auto const& [levelName, objects] : m_levelObjects)
+        {
+            ref_ptr ndLevel = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Level");
+            ndLevelObjects->AddChild(ndLevel);
+            ndLevel->SetAttribute("LevelName", CStr(levelName).c_str());
+            if (objects.empty())
+            {
+                continue;
+            }
+            ref_ptr ndObjects = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Objects");
+            ndLevel->AddChild(ndObjects);
+            for (auto const& [objectName, info] : objects)
+            {
+                ref_ptr ndObject = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Object");
+                ndObjects->AddChild(ndObject);
+                res &= info->SaveToXml(xmlFile, ndObject);
+            }
+        }
+    }
+
+    if (!res)
+    {
+        M3D_LOG_INFO("LevelInfoManager::SaveToXml - errors while saving");
+    }
+    return res;
 }
 
 // --- clear / hooks --------------------------------------------------------------------------
@@ -919,18 +1127,76 @@ void LevelInfoManager::OnNewFrame()
     UpdateVisibilityMaps();
 }
 
-void LevelInfoManager::OnLocationStateChanged(void*)
+void LevelInfoManager::OnLocationStateChanged(void* data)
 {
-    // TODO: resolve ai::Location from event payload; update ObjectInfo::m_bIsActive (prop 53);
-    //       AddKnownLevel(GetLevelNameFromPassageAddress(...)) while active.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x561680
+    if (!data)
+    {
+        return;
+    }
+    auto* obj = ai::theObjects->GetEntityByObjId(static_cast<m3d::Event*>(data)->m_intEv[0]);
+    if (!obj || !obj->IsKindOf(&ai::Location::m_classLocation))
+    {
+        return;
+    }
+
+    ObjectInfo* info = nullptr;
+    if (auto* objects = GetObjectsForLevel(help::GetCurrentLevelName()))
+    {
+        auto const it = objects->find(CStr(obj->GetName()));
+        if (it != objects->end())
+        {
+            info = it->second;
+        }
+    }
+    if (!info)
+    {
+        return;
+    }
+
+    // Property 53 is the location's "active" flag; an active passage makes the
+    // level it leads to known.
+    info->m_bIsActive = obj->GetPropertyById(53).GetAsID() != 0;
+    if (info->m_bIsActive)
+    {
+        if (CStr const* passage = info->GetPassageAddress())
+        {
+            AddKnownLevel(ai::Location::GetLevelNameFromPassageAddress(*passage));
+        }
+    }
 }
 
-void LevelInfoManager::OnTownRuined(void*)
+void LevelInfoManager::OnTownRuined(void* data)
 {
-    // TODO: resolve ai::Town from event payload; ObjectInfo::m_bRuined = Town::IsRuined();
-    //       on ruined -> ObjectInfo::DeleteSavedPrices().
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x561840
+    if (!data)
+    {
+        return;
+    }
+    auto* obj = ai::theObjects->GetEntityByObjId(static_cast<m3d::Event*>(data)->m_intEv[0]);
+    if (!obj || !obj->IsKindOf(&ai::Town::m_classTown))
+    {
+        return;
+    }
+    auto* town = static_cast<ai::Town*>(obj);
+
+    ObjectInfo* info = nullptr;
+    if (auto* objects = GetObjectsForLevel(help::GetCurrentLevelName()))
+    {
+        auto const it = objects->find(CStr(town->GetName()));
+        if (it != objects->end())
+        {
+            info = it->second;
+        }
+    }
+    if (info)
+    {
+        info->m_bRuined = town->IsRuined();
+        if (town->IsRuined())
+        {
+            info->DeleteSavedPrices();
+        }
+    }
 }
 
 // =================================================================================================
@@ -1062,8 +1328,18 @@ bool ObjectInfo::IsLocation() const
 
 int ObjectInfo::SavePrices()
 {
-    // TODO: needs help::GetWarePricesForTown(town, m_savedPrices) once the pricing helper exists.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x55D5F0 - snapshot the town's current ware prices.
+    if (!IsTown() || m_levelName != help::GetCurrentLevelName())
+    {
+        return 0;
+    }
+    auto* obj = ai::theObjects->GetEntityByObjId(m_objectId);
+    if (!obj || !obj->IsKindOf(&ai::Town::m_classTown))
+    {
+        return 0;
+    }
+    DeleteSavedPrices();
+    return help::GetWarePricesForTown(static_cast<ai::Town*>(obj), m_savedPrices);
 }
 
 int ObjectInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

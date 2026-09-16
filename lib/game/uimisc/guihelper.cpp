@@ -330,9 +330,186 @@ namespace help
         return 0;
     }
 
-    int CreateWindowsDir(CStr const&)
+    int CreateWindowsDir(CStr const& dirPath)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x551EB0 - creates every missing component of `dirPath`, walking
+        // into each one in turn, and restores the current directory afterwards.
+        if (dirPath.empty())
+        {
+            M3D_LOG_INFO("CreateWindowsFolder error - empty dir name");
+            return 0;
+        }
+
+        char saveDir[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, saveDir);
+
+        retruxx::vector<CStr> subDirs;
+        m3d::Tokenize(dirPath, subDirs, "\\/");
+        for (auto const& subDir : subDirs)
+        {
+            auto const attr = GetFileAttributesA(subDir.c_str());
+            if ((attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY) == 0) &&
+                !CreateDirectoryA(subDir.c_str(), nullptr))
+            {
+                M3D_LOG_INFO("CreateWindowsFolder error - cannot create folder " + subDir);
+                SetCurrentDirectoryA(saveDir);
+                return 0;
+            }
+            if (!SetCurrentDirectoryA(subDir.c_str()))
+            {
+                M3D_LOG_INFO("CreateWindowsDir error - cannot set folder " + subDir + " as current");
+                SetCurrentDirectoryA(saveDir);
+                return 0;
+            }
+        }
+        SetCurrentDirectoryA(saveDir);
+        return 1;
+    }
+
+    int GetWarePricesForTown(ai::Town const* town, retruxx::map<int, CVector2>& prices)
+    {
+        // RVA 0x555420 - buy (x) and sell (y) price of every ware in the town's shop.
+        prices.clear();
+        if (!town || !GetShopForTown(town))
+        {
+            return 0;
+        }
+
+        retruxx::vector<int> warePrototypeIds;
+        ai::thePrototypeManager->GetPrototypeIdsByResourceId(
+            ai::theResourceManager->GetResourceId(CStr("GOODS")), warePrototypeIds);
+        int const townId = town->GetId();
+        for (auto const prototypeId : warePrototypeIds)
+        {
+            auto const buyPrice = static_cast<float>(GetBuyPriceByPrototypeId(prototypeId, townId));
+            auto const sellPrice = static_cast<float>(GetSellPriceByPrototypeId(prototypeId, townId));
+            prices.insert({prototypeId, CVector2(buyPrice, sellPrice)});
+        }
+        return 1;
+    }
+
+    bool CopyDirectory(char const* src, char const* dst)
+    {
+        // RVA 0x552B50 - copies the files (not subfolders' contents) of `src`
+        // into `dst`, which is created if needed and emptied first.
+        char currentDir[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, currentDir);
+        if (!CreateDirectoryExA(currentDir, dst, nullptr) && GetLastError() != ERROR_ALREADY_EXISTS)
+        {
+            return false;
+        }
+        SetLastError(0);
+        DeleteAllFilesInDirectory(dst);
+
+        WIN32_FIND_DATAA findData;
+        auto const hf = FindFirstFileA((CStr(src) + CStr("\\*.*")).c_str(), &findData);
+        if (hf == INVALID_HANDLE_VALUE)
+        {
+            FindClose(hf);
+            return true;
+        }
+
+        CStr strSrc = src;
+        M3D_ASSERT(strSrc.length() > 0);
+        if (strSrc.c_str()[strSrc.length() - 1] != '\\' && strSrc.c_str()[strSrc.length() - 1] != '/')
+        {
+            strSrc += CStr("\\");
+        }
+        CStr strDst = dst;
+        M3D_ASSERT(strDst.length() > 0);
+        if (strDst.c_str()[strDst.length() - 1] != '\\' && strDst.c_str()[strDst.length() - 1] != '/')
+        {
+            strDst += CStr("\\");
+        }
+
+        // NOTE: the loop starts with FindNextFileA, so the entry returned by
+        // FindFirstFileA is never copied (normally it is just ".").
+        while (FindNextFileA(hf, &findData))
+        {
+            if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+            {
+                continue;
+            }
+            CStr const srcFileName = strSrc + CStr(findData.cFileName);
+            CStr const destFileName = strDst + CStr(findData.cFileName);
+            // Clear the read-only and system bits so the copy can be overwritten.
+            auto const attr = GetFileAttributesA(srcFileName.c_str());
+            SetFileAttributesA(srcFileName.c_str(), (attr & ~0xFFul) | (attr & 0xFA));
+            CopyFileA(srcFileName.c_str(), destFileName.c_str(), FALSE);
+            m3d::g_Kernel->GetFileServer().AddFile(destFileName.c_str());
+        }
+        FindClose(hf);
+        return GetLastError() == ERROR_NO_MORE_FILES;
+    }
+
+    int DeleteWindowsDir(CStr const& dirPath)
+    {
+        // RVA 0x5521D0 - recursively deletes the folder's contents, then the
+        // folder itself. The current directory is left at the startup folder.
+        if (!SetCurrentDirectoryA(dirPath.c_str()))
+        {
+            return 0;
+        }
+
+        WIN32_FIND_DATAA findData;
+        auto const hFind = FindFirstFileA("*.*", &findData);
+        if (hFind != INVALID_HANDLE_VALUE)
+        {
+            bool bNoMoreFiles = false;
+            do
+            {
+                // NOTE: the original returns here without closing the search handle.
+                if (!SetCurrentDirectoryA(dirPath.c_str()))
+                {
+                    return 0;
+                }
+
+                CStr const saveName = findData.cFileName;
+                CStr const fullName = dirPath + "\\" + saveName;
+                auto const attributes = findData.dwFileAttributes;
+                // NOTE: any other FindNextFileA failure is not treated as the end,
+                // so the loop would revisit the stale entry indefinitely.
+                if (!FindNextFileA(hFind, &findData) && GetLastError() == ERROR_NO_MORE_FILES)
+                {
+                    bNoMoreFiles = true;
+                }
+
+                if (attributes & FILE_ATTRIBUTE_DIRECTORY)
+                {
+                    if (strcmp(saveName.c_str(), ".") != 0 && strcmp(saveName.c_str(), "..") != 0)
+                    {
+                        DeleteWindowsDir(fullName);
+                    }
+                }
+                else
+                {
+                    DeleteFileA(saveName.c_str());
+                }
+            } while (!bNoMoreFiles);
+        }
+
+        // The handle is closed even when FindFirstFileA failed.
+        FindClose(hFind);
+        if (!SetCurrentDirectoryA(M3D_APP->GetStartupFolder().c_str()))
+        {
+            return 0;
+        }
+        if (!RemoveDirectoryA(dirPath.c_str()))
+        {
+            LPSTR lpMsgBuf = nullptr;
+            FormatMessageA(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr,
+                GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                reinterpret_cast<LPSTR>(&lpMsgBuf),
+                0,
+                nullptr);
+            M3D_LOG_INFO("DeleteWindowsDir error - fail to remove dir " + dirPath + "; error: " + CStr(lpMsgBuf));
+            LocalFree(lpMsgBuf);
+            return 0;
+        }
+        return 1;
     }
 
     CStr GetMapNameFromFileName(CStr const& fileName)

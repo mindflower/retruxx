@@ -1,4 +1,8 @@
 #include "truxxuimanager.h"
+#include <client.h>
+#include <level.h>
+#include <world.h>
+#include "server/objects/player.h"
 
 #include "uidefs.h"
 
@@ -362,14 +366,17 @@ CStr TruxxUiManager::GetPathToDynamicDialogsFileGlobal() const
     return m_cvPathToDynamicDialogs.GetS();
 }
 
-bool TruxxUiManager::IsWindowVisibleAndNotAnimating(int) const
+bool TruxxUiManager::IsWindowVisibleAndNotAnimating(int wndGuiId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x54AA30
+    auto wnd = GetWindow(wndGuiId);
+    return wnd && wnd->IsChildOf(M3D_APP) && !wnd->IsAnimatingNow();
 }
 
-int TruxxUiManager::Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int TruxxUiManager::Load(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> rootNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548A70
+    return GUI_Load(xmlFile, rootNode);
 }
 
 int TruxxUiManager::Init()
@@ -443,9 +450,22 @@ LevelInfoManager* TruxxUiManager::GetLevelInfoManager() const
     return m_levelInfoManager;
 }
 
-void TruxxUiManager::OnEnterTown(int)
+void TruxxUiManager::OnEnterTown(int townId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x549A00
+    m_currentTownId = townId;
+    auto* town = GetCurrentTown();
+    if (!town)
+    {
+        return;
+    }
+
+    M3D_APP->SetCurHackedMusicType(HACKMUSIC_BAR);
+    ShowWindow(155, false, false, false, false, nullptr);
+    M3D_APP->EnqueueMessage(65686, town->GetBelong(), 0, 0, 0, CStr(), m3d::AIParam());
+    M3D_APP->KillPostEffect("BWFadeOut");
+    M3D_APP->AddPostEffect("BWFadeIn", 0.0f);
+    M3D_APP->AddPostEffect("Shift", 0.0f);
 }
 
 CStr TruxxUiManager::GetPathToLevelInfoFile() const
@@ -492,12 +512,19 @@ int TruxxUiManager::CreateAndAddWindow(int wndId)
 
 StringParser const& TruxxUiManager::GetStringParser() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548990
+    return m_stringParser;
 }
 
 ai::Workshop* TruxxUiManager::GetCurrentShop() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x549390 - the shop window is not type-checked before use.
+    auto wndShop = M3D_APP->m_pInterfaceManager->GetWindow(66);
+    if (!wndShop || !wndShop->IsChildOf(M3D_APP))
+    {
+        return nullptr;
+    }
+    return static_cast<SaleWnd*>(static_cast<m3d::ui::Wnd*>(wndShop))->GetWorkshop();
 }
 
 void TruxxUiManager::AddFadingMsgByStrId(CStr const& msgStrId, std::vector<m3d::AIParam> const& params) const
@@ -520,7 +547,20 @@ NavPointManager* TruxxUiManager::GetNavPointManager() const
 
 ai::Workshop* TruxxUiManager::GetCurrentWorkshop() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5491C0
+    auto wndWshop = M3D_APP->m_pInterfaceManager->GetWindow(67);
+    if (wndWshop && wndWshop->IsKindOf(&GarageWnd::m_classGarageWnd) && wndWshop->IsChildOf(M3D_APP))
+    {
+        return static_cast<GarageWnd*>(static_cast<m3d::ui::Wnd*>(wndWshop))->GetWorkshop();
+    }
+
+    auto wndWorkshopVehicle = M3D_APP->m_pInterfaceManager->GetWindow(73);
+    if (wndWorkshopVehicle && wndWorkshopVehicle->IsKindOf(&WorkshopVehicleWnd::m_classWorkshopVehicleWnd) &&
+        wndWorkshopVehicle->IsChildOf(M3D_APP))
+    {
+        return static_cast<WorkshopVehicleWnd*>(static_cast<m3d::ui::Wnd*>(wndWorkshopVehicle))->GetWorkshop();
+    }
+    return nullptr;
 }
 
 void TruxxUiManager::AddFadingMsg(CStr const& msg, std::vector<m3d::AIParam> const& params) const
@@ -555,7 +595,27 @@ int TruxxUiManager::Str2WndGuiId(CStr const& strId) const
 
 ai::Vehicle* TruxxUiManager::GetVehicleSellingInWorkshop() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x549490
+    if (!GetCurrentWorkshop())
+    {
+        return nullptr;
+    }
+
+    // NOTE: the original does not null-check window 94 before IsKindOf.
+    auto znayuKakProdatWnd = GetWindow(94);
+    if (znayuKakProdatWnd->IsKindOf(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd) &&
+        znayuKakProdatWnd->IsChildOf(M3D_APP))
+    {
+        return static_cast<ZnayuKakProdatWnd*>(static_cast<m3d::ui::Wnd*>(znayuKakProdatWnd))->GetWorkshopVehicle();
+    }
+
+    auto buyVehicleWnd = GetWindow(73);
+    if (buyVehicleWnd && buyVehicleWnd->IsKindOf(&WorkshopVehicleWnd::m_classWorkshopVehicleWnd) &&
+        buyVehicleWnd->IsChildOf(M3D_APP))
+    {
+        return static_cast<ChildPanel*>(static_cast<m3d::ui::Wnd*>(buyVehicleWnd))->GetVehicle();
+    }
+    return nullptr;
 }
 
 std::vector<int, std::allocator<int>> const& TruxxUiManager::GetTakenQuestIds() const
@@ -565,7 +625,8 @@ std::vector<int, std::allocator<int>> const& TruxxUiManager::GetTakenQuestIds() 
 
 RepliesManager* TruxxUiManager::GetRepliesManager() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548760
+    return m_repliesManager;
 }
 
 int TruxxUiManager::Reset(bool beforeContinuousLevel)
@@ -654,7 +715,23 @@ int TruxxUiManager::SetEventsForWindow(int wndId, std::vector<int> const& events
 
 TruxxUiManager::~TruxxUiManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x547450
+    delete m_questInfoManager;
+    m_questInfoManager = nullptr;
+    delete m_repliesManager;
+    m_repliesManager = nullptr;
+    delete m_levelInfoManager;
+    m_levelInfoManager = nullptr;
+    delete m_navPointManager;
+    m_navPointManager = nullptr;
+    delete m_weaponGroupManager;
+    m_weaponGroupManager = nullptr;
+    delete m_savesManager;
+    m_savesManager = nullptr;
+    delete m_msgManager;
+    m_msgManager = nullptr;
+    delete m_helpManager;
+    m_helpManager = nullptr;
 }
 
 CStr TruxxUiManager::GetPathToSplashes() const
@@ -706,10 +783,58 @@ int TruxxUiManager::HandleAppEvent(m3d::Event const& appEvent)
     return GUI_ProcessEvent(GUI_EVENT_FROM_APPEVENT, appEvent.m_eventType, &const_cast<m3d::Event&>(appEvent), nullptr);
 }
 
-void TruxxUiManager::OnLeaveTown(bool)
+void TruxxUiManager::OnLeaveTown(bool bQuick)
 {
-    // TODO: implement TruxxUiManager::OnLeaveTown
-    // RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x549650
+    auto* curTown = GetCurrentTown();
+    if (!curTown)
+    {
+        m_currentTownId = -1;
+        return;
+    }
+
+    M3D_APP->SetCurHackedMusicType(HACKMUSIC_GAME);
+    curTown->SendVehicleOff(ai::thePlayer->GetVehicle(), bQuick);
+
+    // Time may have passed in town; announce a change of the time of day.
+    auto& weatherManager = m3d::pClient->GetWorld().GetWeatherManager();
+    auto const prevDayTime = weatherManager.GetCurrentDayTime();
+    weatherManager.UpdateDayTime();
+    if (prevDayTime != weatherManager.GetCurrentDayTime())
+    {
+        M3D_APP->EnqueueMessage(66563, weatherManager.GetCurrentDayTime() + 10, 0, 0, 0, CStr(), m3d::AIParam());
+    }
+
+    ShowWindow(155, true, false, false, false, nullptr);
+
+    // Remember the town's prices as they were when the player left.
+    CStr const townName = curTown->GetName();
+    CStr levelName;
+    if (m3d::pClient && m3d::pClient->GetWorld().m_level)
+    {
+        levelName = m3d::pClient->GetWorld().m_level->m_levelName;
+    }
+    ObjectInfo* townInfo = nullptr;
+    if (auto* objects = m_levelInfoManager->GetObjectsForLevel(levelName))
+    {
+        auto const it = objects->find(townName);
+        if (it != objects->end())
+        {
+            townInfo = it->second;
+        }
+    }
+    if (townInfo)
+    {
+        townInfo->SavePrices();
+    }
+
+    ai::thePlayer->CauseEvent(ai::GE_LEAVE_TOWN, 0.0f, m3d::AIParam(m_currentTownId), m3d::AIParam());
+    curTown->CauseEvent(ai::GE_LEAVE_TOWN, 0.0f, m3d::AIParam(), m3d::AIParam());
+
+    M3D_APP->KillPostEffect("BWFadeIn");
+    M3D_APP->KillPostEffect("Shift");
+    M3D_APP->AddPostEffect("BWFadeOut", 0.0f);
+    m_currentTownId = -1;
 }
 
 void TruxxUiManager::AddImportantFadingMsg(CStr const& msg, std::vector<m3d::AIParam> const& params)
@@ -746,19 +871,82 @@ bool TruxxUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd* w) const
     return false;
 }
 
-int TruxxUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int TruxxUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> rootNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548DC0
+    if (!GameUiManager::GUI_ReadFromXml(xmlFile, rootNode))
+    {
+        M3D_LOG_INFO("TruxxUiManager::GUI_ReadFromXml error - fail to load");
+        return 0;
+    }
+
+    int res = 1;
+    ref_ptr liManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    rootNode->GetFirstChild(liManagerNode, "LevelInfoManager");
+    if (!liManagerNode->IsEmpty())
+    {
+        res = m_levelInfoManager->LoadFromXml(xmlFile, liManagerNode) & 1;
+    }
+    ref_ptr wgManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    rootNode->GetFirstChild(wgManagerNode, "WeaponGroupManager");
+    if (!wgManagerNode->IsEmpty())
+    {
+        res &= m_weaponGroupManager->LoadFromXml(xmlFile, wgManagerNode);
+    }
+    ref_ptr npManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    rootNode->GetFirstChild(npManagerNode, "NavPointManager");
+    if (!npManagerNode->IsEmpty())
+    {
+        res &= m_navPointManager->LoadFromXml(xmlFile, npManagerNode);
+    }
+    ref_ptr qiManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    rootNode->GetFirstChild(qiManagerNode, "QuestInfoManager");
+    if (!qiManagerNode->IsEmpty())
+    {
+        res &= m_questInfoManager->LoadModifiedQuestInfosFromXml(xmlFile, qiManagerNode);
+    }
+
+    if (res)
+    {
+        M3D_LOG_INFO("TruxxUiManager loaded successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("TruxxUiManager loaded with errors");
+    }
+    return res;
 }
 
 int TruxxUiManager::IncRef()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x547100
+    if (m_parent)
+    {
+        m_parent->IncRef();
+    }
+    return ++m_refCount;
 }
 
 void TruxxUiManager::GUI_UnRegisterScriptGlobals()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x550260
+    for (auto const* name : {"g_CinemaPanel",
+                             "ConversationWnd",
+                             "RepliesManager",
+                             "TalkWithNpcDlg",
+                             "JournalWnd",
+                             "RadarWnd",
+                             "FadingMsgList",
+                             "TownDlg",
+                             "MotherPanel",
+                             "LevelInfoManager",
+                             "SavesManager",
+                             "MsgManager",
+                             "WeaponGroupManager",
+                             "HelpManager"})
+    {
+        m3d::g_Kernel->UnRegisterGlobal(name);
+    }
 }
 
 void TruxxUiManager::ShowGameMenu(CStr const& levelName)
@@ -1328,9 +1516,39 @@ void TruxxUiManager::GUI_RegisterCVars()
     m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvDefaultFloatPrecision, nullptr);
 }
 
-int TruxxUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int TruxxUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> node)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548AD0
+    if (!GameUiManager::GUI_WriteToXml(xmlFile, node))
+    {
+        return 0;
+    }
+
+    ref_ptr liManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "LevelInfoManager");
+    node->AddChild(liManagerNode);
+    int res = m_levelInfoManager->SaveToXml(xmlFile, liManagerNode) & 1;
+
+    ref_ptr wgManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "WeaponGroupManager");
+    node->AddChild(wgManagerNode);
+    res &= m_weaponGroupManager->SaveToXml(xmlFile, wgManagerNode);
+
+    ref_ptr npManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "NavPointManager");
+    node->AddChild(npManagerNode);
+    res &= m_navPointManager->SaveToXml(xmlFile, npManagerNode);
+
+    ref_ptr qiManagerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "QuestInfoManager");
+    node->AddChild(qiManagerNode);
+    res &= m_questInfoManager->SaveModifiedQuestInfosToXml(xmlFile, qiManagerNode);
+
+    if (res)
+    {
+        M3D_LOG_INFO("TruxxUiManager saved successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("TruxxUiManager saved with errors");
+    }
+    return res;
 }
 
 void TruxxUiManager::OnStartLevel(void* data)
@@ -1346,19 +1564,23 @@ void TruxxUiManager::OnStartLevel(void* data)
     }
 }
 
-void TruxxUiManager::OnEndLevel(bool)
+void TruxxUiManager::OnEndLevel(bool beforeContinuousLevel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548920
+    Show(false, false);
+    Reset(beforeContinuousLevel);
 }
 
 int TruxxUiManager::LoadCommonDiz()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x547E10
+    return 1;
 }
 
 bool TruxxUiManager::CanLaunchModalEqualWindow()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x548940
+    return !M3D_APP->GetStation()->HasChildModalRunning() && !GUI_IsModalEqualWndRunning();
 }
 
 void TruxxUiManager::PrepareMenuForShow(CStr const& levelName)
@@ -1413,7 +1635,17 @@ void TruxxUiManager::PrepareMenuForShow(CStr const& levelName)
 
 int TruxxUiManager::DecRef()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x547130
+    int const refCount = --m_refCount;
+    if (m_parent)
+    {
+        m_parent->DecRef();
+    }
+    if (m_refCount <= 0)
+    {
+        delete this;
+    }
+    return refCount;
 }
 
 bool TruxxUiManager::GUI_NeedUpdateWndOnEvent(ref_ptr<m3d::ui::Wnd> wnd, int eventId, void* data)
@@ -1445,10 +1677,13 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         return 0;
     }
 
+    // RVA 0x547E20
     switch (guiEventId)
     {
     case IE_IMP_IM_UI_TOGGLE_INTERFACE:
-        RETRUXX_NOT_IMPLEMENTED;
+        Show(IsHidden(), true);
+        m_bIsHiddenByUser = IsHidden();
+        return 0;
 
     case IE_IMP_IM_QUICK_SAVE:
     case IE_IMP_IM_QUICK_LOAD:
@@ -1484,7 +1719,8 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         return 0;
 
     case IE_EV_UM_OPTIONS:
-        RETRUXX_NOT_IMPLEMENTED;
+        ShowWindow(148, true, true, true, true, nullptr);
+        return 0;
 
     case IE_EV_UM_GAME_MENU_MODE_ENTER:
         SetGameMenuMode(true);
@@ -1495,7 +1731,16 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         return 0;
 
     case IE_EV_SM_QUEST_WAS_TAKEN:
-        RETRUXX_NOT_IMPLEMENTED;
+    {
+        // NOTE: data is not null-checked here, as in the original.
+        int const questId = static_cast<m3d::Event*>(data)->m_intEv[0];
+        if (std::find(m_takenQuestIds.begin(), m_takenQuestIds.end(), questId) == m_takenQuestIds.end())
+        {
+            m_takenQuestIds.push_back(questId);
+        }
+        m_navPointManager->GameDataUpdate(data, guiEventId);
+        return 0;
+    }
 
     case IE_EV_SM_QUESTSTATE_CHANGED:
         m_navPointManager->GameDataUpdate(data, guiEventId);
@@ -1524,7 +1769,13 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     }
 
     case IE_EV_SM_OBJECT_DESTROYED:
-        RETRUXX_NOT_IMPLEMENTED;
+        if (data)
+        {
+            // The destroyed-object event carries the object itself, not its id.
+            m_objectCollection.RemoveObject(
+                reinterpret_cast<ai::Obj*>(static_cast<intptr_t>(static_cast<m3d::Event*>(data)->m_intEv[0])));
+        }
+        return 1;
 
     case IE_EV_SM_OBJECTS_CLEARED:
         m_objectCollection.ClearObjects();
@@ -1537,12 +1788,12 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         {
             return 0;
         }
-        m_bIsHiddenByUser = true;
+        m_bIsPlayerDead = true;
         return 0;
 
     case IE_EV_SM_DYNAMIC_QUESTSTATE_CHANGED:
-        m_questInfoManager->GameDataUpdate(data, guiEventId);
         m_navPointManager->GameDataUpdate(data, guiEventId);
+        m_questInfoManager->GameDataUpdate(data, guiEventId);
         return 0;
 
     case IE_EV_SM_LOCATION_STATE_CHANGED:
@@ -1585,9 +1836,10 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
     return 0;
 }
 
-void* TruxxUiManager::QueryIface(char const*)
+void* TruxxUiManager::QueryIface(char const* ifaceName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x547170
+    return m_parent ? m_parent->QueryIface(ifaceName) : nullptr;
 }
 
 void TruxxUiManager::GUI_RegisterEvents()
@@ -1884,7 +2136,14 @@ void TruxxUiManager::OnChangeGameMenuMode()
 
 void TruxxUiManager::GUI_UnregisterCVars()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5485F0
+    GameUiManager::GUI_UnregisterCVars();
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToQuestInfo);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToDialogs);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToDynamicDialogs);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToLevelInfo);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToSplashes);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvDefaultFloatPrecision);
 }
 
 void TruxxUiManager::SetGameMenuMode(bool bState)

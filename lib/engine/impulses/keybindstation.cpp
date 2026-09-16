@@ -84,7 +84,8 @@ namespace m3d
 
     KeyBindStation::~KeyBindStation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x599790
+        // m_ks points into m_bindings and is not owned.
     }
 
     void KeyBindStation::UnbindImpulse(int)
@@ -97,9 +98,46 @@ namespace m3d
         m_bindings.clear();
     }
 
-    void KeyBindStation::UnbindImpulseFromKeyset(int, KeysSet const&)
+    void KeyBindStation::UnbindImpulseFromKeyset(int imp, KeysSet const& keyset)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7590A0
+        for (m_lastIndex = m_bindings.begin(); m_lastIndex != m_bindings.end(); ++m_lastIndex)
+        {
+            if (imp == m_lastIndex->m_impulse)
+            {
+                break;
+            }
+        }
+        if (m_lastIndex == m_bindings.end())
+        {
+            return;
+        }
+
+        auto& keys = m_lastIndex->m_keys;
+        for (auto it = keys.begin(); it != keys.end(); ++it)
+        {
+            // NOTE: the shipped code uses std::mismatch over the requested set only, so any stored set
+            // that starts with the requested keys matches, even if it has more keys after them.
+            // A stored set shorter than the requested one made the original read past its end; that
+            // case is treated as a mismatch here.
+            auto storedIt = it->begin();
+            bool matches = true;
+            for (int const key : keyset)
+            {
+                if (storedIt == it->end() || *storedIt != key)
+                {
+                    matches = false;
+                    break;
+                }
+                ++storedIt;
+            }
+
+            if (matches)
+            {
+                keys.erase(it);
+                return;
+            }
+        }
     }
 
     int KeyBindStation::FindImpulseByLongestSetPossible(m3d::KeysSet const& setToSearchFrom, int keyToSearchWith, KeysSet& impulseSet)
@@ -183,9 +221,17 @@ namespace m3d
         }
     }
 
-    KeyBindStation::BindKey* KeyBindStation::GetBindByImpulse(int)
+    KeyBindStation::BindKey* KeyBindStation::GetBindByImpulse(int imp)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x758020
+        for (m_lastIndex = m_bindings.begin(); m_lastIndex != m_bindings.end(); ++m_lastIndex)
+        {
+            if (imp == m_lastIndex->m_impulse)
+            {
+                return &*m_lastIndex;
+            }
+        }
+        return nullptr;
     }
 
     KeyBindStation::BindKey* KeyBindStation::FindImpulseBySet_r(KeysSet const& ks, int key)

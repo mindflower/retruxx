@@ -6,6 +6,7 @@
 #include <renderer/i_renderer.h>
 #include <core/clazz.h>
 #include "font.h"
+#include <ui/msgbox.h>
 
 namespace m3d
 {
@@ -102,6 +103,7 @@ namespace m3d
         {
             friend class WndStation;
             friend class ModalWnd;
+            friend MbRetCodes __fastcall RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
 
         protected:
             Wnd();

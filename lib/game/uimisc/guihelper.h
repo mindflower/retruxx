@@ -110,6 +110,8 @@ namespace help
     int CloneWndWithChildren(m3d::ui::Wnd const*, m3d::ui::Wnd*);
     int GetWindowsSubDirs(CStr const&, retruxx::vector<CStr>&, CStr const&);
     int CreateWindowsDir(CStr const&);
+    int DeleteWindowsDir(CStr const&);
+    bool CopyDirectory(char const* src, char const* dst);
     CStr GetMapNameFromFileName(CStr const&);
     CStr Color2Str(unsigned);
     // Formats a float with a fixed number of decimals. precision == -1 means "use
@@ -265,6 +267,7 @@ namespace help
     ai::Bar* GetBarWithBarmanForTown(ai::Town const*);
     ai::Bar* GetBarWithoutBarmanForTown(ai::Town const*);
     ai::Building* GetShopForTown(ai::Town const*);
+    int GetWarePricesForTown(ai::Town const* town, retruxx::map<int, CVector2>& prices);
     ai::Building* GetWorkshopForTown(ai::Town const*);
 
     ai::FiringTypes GetGunFiringType(ai::Obj const* gun);

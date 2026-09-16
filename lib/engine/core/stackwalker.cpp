@@ -18,6 +18,47 @@ int g_bInitialized = 0;
 
 HMODULE g_hImagehlpDll = nullptr;
 
+using MiniDumpWriteDumpType = BOOL(WINAPI*)(HANDLE, DWORD, HANDLE, int, void*, void*, void*);
+
+// NOTE: InitStackWalk does not resolve MiniDumpWriteDump yet, so this stays null and WriteDump is a no-op.
+MiniDumpWriteDumpType pMDWD = nullptr;
+
+void __fastcall WriteDump(char const* szFileName, _EXCEPTION_POINTERS* pExcP, unsigned long& lastError)
+{
+    // RVA 0x75A0E0
+    struct MinidumpExceptionInformation
+    {
+        DWORD ThreadId;
+        _EXCEPTION_POINTERS* ExceptionPointers;
+        BOOL ClientPointers;
+    };
+
+    lastError = 0;
+    if (!pMDWD)
+    {
+        return;
+    }
+
+    HANDLE const file = ::CreateFileA(szFileName, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (file == INVALID_HANDLE_VALUE)
+    {
+        lastError = ::GetLastError();
+        return;
+    }
+
+    MinidumpExceptionInformation mdeInfo;
+    mdeInfo.ExceptionPointers = pExcP;
+    mdeInfo.ThreadId = ::GetCurrentThreadId();
+    mdeInfo.ClientPointers = FALSE;
+    // 1 = MiniDumpWithDataSegs
+    if (!pMDWD(::GetCurrentProcess(), ::GetCurrentProcessId(), file, 1, pExcP ? &mdeInfo : nullptr, nullptr, nullptr))
+    {
+        lastError = ::GetLastError();
+    }
+    ::FlushFileBuffers(file);
+    ::CloseHandle(file);
+}
+
 RTL_CRITICAL_SECTION g_csFileOpenClose;
 
 
@@ -47,6 +88,31 @@ LONG WINAPI CrashHandlerExceptionFilter(PEXCEPTION_POINTERS pe)
     //    return ::GetLastError();
     //}
     //auto
+    return 0;
+}
+
+unsigned int __fastcall DeInitAllocCheck()
+{
+    // RVA 0x759DD0
+    if (g_bInitialized)
+    {
+        ::EnterCriticalSection(&g_csFileOpenClose);
+        g_bInitialized = 0;
+        ::FreeLibrary(g_hImagehlpDll);
+        ::LeaveCriticalSection(&g_csFileOpenClose);
+        if (g_pszAllocLogName)
+        {
+            free(g_pszAllocLogName);
+            g_pszAllocLogName = nullptr;
+        }
+        ::DeleteCriticalSection(&g_csFileOpenClose);
+    }
+    // NOTE: the test is inverted in the binary, so the filter is only cleared when this module did not set it.
+    if (s_bUnhandledExeptionFilterSet != 1)
+    {
+        ::SetUnhandledExceptionFilter(nullptr);
+        s_bUnhandledExeptionFilterSet = 0;
+    }
     return 0;
 }
 

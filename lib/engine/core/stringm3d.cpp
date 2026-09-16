@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <core/stringm3d.h>
+#include <core/stringw.h>
 #include <file/i_stream.h>
 #include <windows.h>
 
@@ -714,4 +715,17 @@ float strToFloat(CStr const& str)
     float v = 0.0;
     sscanf(str.c_str(), "%f", &v);
     return v;
+}
+
+CStr StrW::ToStr(unsigned int codePage) const
+{
+    // RVA 0x5831A0
+    int const size = WideCharToMultiByte(codePage, 0, m_charPtr, -1, nullptr, 0, nullptr, nullptr);
+    if (!size)
+    {
+        return CStr();
+    }
+    std::string buffer(size, 0);
+    WideCharToMultiByte(codePage, 0, m_charPtr, -1, &buffer[0], size, nullptr, nullptr);
+    return CStr(buffer.c_str());
 }

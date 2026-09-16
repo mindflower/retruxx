@@ -447,13 +447,11 @@ bool NavPointManager::CanNavPointBeAdded(
             return false;
         }
         ai::Obj* obj = ai::theObjects->GetEntityByObjId(objectId);
-        if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+        if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest) ||
+            static_cast<ai::DynamicQuest*>(obj)->GetQuestStatus() != ai::DynamicQuest::STATUS_PROCESSING)
         {
             return false;
         }
-        // TODO(RVA 0x16C7E0: the shipped build also requires the dynamic quest
-        //  status to equal 1 ("taken"); DynamicQuest::GetQuestStatus() and its
-        //  QuestStatus enum are not yet available in retruxx)
     }
     return true;
 }
@@ -666,12 +664,45 @@ int NavPointManager::UpdateOnQuestStateChanged(void* data)
     return 1;
 }
 
-int NavPointManager::UpdateOnDynamicQuestStateChanged(void*)
+int NavPointManager::UpdateOnDynamicQuestStateChanged(void* data)
 {
-    // TODO(RVA 0x16C3A0: branches entirely on the DynamicQuest "taken" status
-    //  (== 1); DynamicQuest::GetQuestStatus() and its QuestStatus enum are not
-    //  yet available in retruxx)
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x16C3A0
+    if (!data)
+    {
+        return 0;
+    }
+
+    int const questId = static_cast<int*>(data)[13];
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(questId);
+    if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+    {
+        return 0;
+    }
+
+    auto const* quest = static_cast<ai::DynamicQuest*>(obj);
+    if (quest->GetQuestStatus() == ai::DynamicQuest::STATUS_PROCESSING)
+    {
+        // A freshly taken dynamic quest gets a nav point.
+        AddNavPointObjectDependend(
+            help::GetCurrentLevelName(), NavPoint::NAVPOINT_TYPE_USER_QUEST, NavPoint::OBJECT_TYPE_DYNAMIC_QUEST, questId, false);
+        return 1;
+    }
+
+    // Any other status drops the quest's nav point; when that leaves no quest
+    // nav point on the level, the next suitable quest gets one.
+    NavPoint const* np = GetNavPointByObjectId(help::GetCurrentLevelName(), questId, NavPoint::OBJECT_TYPE_DYNAMIC_QUEST);
+    if (np)
+    {
+        RemoveNavPointById(np->GetId());
+        if (GetNavPointsByType(help::GetCurrentLevelName(), NavPoint::NAVPOINT_TYPE_USER_QUEST).empty())
+        {
+            if (MakeNavPointOnFirstFitStaticQuest(help::GetCurrentLevelName(), false) == -1)
+            {
+                MakeNavPointOnFirstFitDynamicQuest();
+            }
+        }
+    }
+    return 1;
 }
 
 int NavPointManager::GameDataUpdate(void* data, int dataType)

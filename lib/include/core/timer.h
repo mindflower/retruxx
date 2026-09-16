@@ -2,10 +2,15 @@
 
 namespace m3d
 {
+    class Application;
+
     namespace cmn
     {
         class Timer
         {
+            // Application::OneFrame reads the frame statistics directly.
+            friend class m3d::Application;
+
         public:
             Timer();
             unsigned int GetLastFrameTime() const;

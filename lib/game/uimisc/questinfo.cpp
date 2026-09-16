@@ -1,4 +1,9 @@
 #include "questinfo.h"
+#include "core/scoped_ptr.h"
+#include "file/fileserver.h"
+#include "file/filestream.h"
+#include "server/objects/dynamicquest.h"
+#include "server/objects/dynamicquestconvoy.h"
 
 #include "core/ini.h"
 #include "core/log.h"
@@ -465,41 +470,99 @@ int QuestInfo::SaveCoordinatesToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
 // QuestInfoManager
 // =================================================================================================
 
-int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+namespace
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // Quest info patterns used for each dynamic quest type; a concrete info is
+    // one of "<pattern>_0" .. "<pattern>_4".
+    struct DQuestTypeToName
+    {
+        int m_dQuestType;
+        char const* m_dQuestName;
+    };
+
+    DQuestTypeToName const l_dQuestTypeToName[] = {
+        {0, "Dynamic_Destroy"},
+        {1, "Dynamic_Reach"},
+        {2, "Dynamic_Convoy"},
+        {3, "Dynamic_Peace"},
+        {4, "Dynamic_Hunt"},
+    };
+}
+
+int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
+{
+    // RVA 0x573E90 - only quest infos whose coordinates were changed are saved.
+    for (auto const& [name, info] : m_questInfos)
+    {
+        if (info && info->m_bCoordinateModified)
+        {
+            ref_ptr qiNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "QuestInfo");
+            xmlNode->AddChild(qiNode);
+            info->SaveCoordinatesToXml(xmlFile, qiNode);
+        }
+    }
+    return 1;
 }
 
 QuestInfoManager::QuestInfoManager() = default;
 
-QuestInfo const* QuestInfoManager::GetQuestInfoByQuestInfoName(CStr const&) const
+QuestInfo const* QuestInfoManager::GetQuestInfoByQuestInfoName(CStr const& questInfoName) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x573F50
+    auto const it = m_questInfos.find(questInfoName);
+    return it != m_questInfos.end() ? it->second : nullptr;
 }
 
-void QuestInfoManager::SetCoordinateForQuest(CStr const&, CStr const&, CVector const&)
+void QuestInfoManager::SetCoordinateForQuest(CStr const& questName, CStr const& mapName, CVector const& coordinate)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x574080
+    auto const it = m_questInfos.find(questName);
+    if (it == m_questInfos.end())
+    {
+        M3D_LOG_ERR("Error: no quest exists with name '" + questName + "'");
+        return;
+    }
+    it->second->SetCoordinateForMap(mapName, coordinate);
 }
 
-CStr QuestInfoManager::GetDynamicQuestInfoPatternNameByType(int)
+CStr QuestInfoManager::GetDynamicQuestInfoPatternNameByType(int type)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5741D0
+    for (auto const& entry : l_dQuestTypeToName)
+    {
+        if (entry.m_dQuestType == type)
+        {
+            return entry.m_dQuestName;
+        }
+    }
+    return CStr();
 }
 
-QuestInfo const* QuestInfoManager::GetQuestInfoForStaticQuest(int) const
+QuestInfo const* QuestInfoManager::GetQuestInfoForStaticQuest(int questId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x573FA0
+    auto* quest = ai::theQuestManager->GetQuestById(questId);
+    if (!quest)
+    {
+        return nullptr;
+    }
+    return GetQuestInfoByQuestInfoName(quest->GetName());
 }
 
 void QuestInfoManager::Clear()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5731D0
+    ClearQuestInfos();
+    ClearDynamicQuestInfos();
+    m_isInited = false;
 }
 
 QuestInfoManager::~QuestInfoManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x573160
+    ClearQuestInfos();
+    ClearDynamicQuestInfos();
+    m_isInited = false;
 }
 
 int QuestInfoManager::Init()
@@ -527,14 +590,36 @@ int QuestInfoManager::Init()
     return 1;
 }
 
-int QuestInfoManager::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+int QuestInfoManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* rootNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5733E0 - the first quest info of a given name wins.
+    ref_ptr qiNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    for (rootNode->GetFirstChild(qiNode, "QuestInfo"); !qiNode->IsEmpty(); qiNode->GetNextSibling(qiNode, "QuestInfo"))
+    {
+        auto* info = new QuestInfo;
+        if (info->LoadFromXml(xmlFile, qiNode) && m_questInfos.find(info->m_questInfoName) == m_questInfos.end())
+        {
+            m_questInfos.insert({info->m_questInfoName, info});
+        }
+        else
+        {
+            delete info;
+        }
+    }
+    return 1;
 }
 
-bool QuestInfoManager::IsQuestDynamic(CStr const&)
+bool QuestInfoManager::IsQuestDynamic(CStr const& questInfoName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x574000
+    for (auto const& entry : l_dQuestTypeToName)
+    {
+        if (questInfoName == entry.m_dQuestName)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int QuestInfoManager::GameDataUpdate(void* data, int dataType)
@@ -570,19 +655,47 @@ int QuestInfoManager::GameDataUpdate(void* data, int dataType)
     }
 }
 
-QuestInfo const* QuestInfoManager::GetQuestInfoForDynamicQuest(int)
+QuestInfo const* QuestInfoManager::GetQuestInfoForDynamicQuest(int dQuestId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x573FC0 - created on first request.
+    if (dQuestId == -1)
+    {
+        return nullptr;
+    }
+    auto const it = m_dynamicQuestInfos.find(dQuestId);
+    if (it != m_dynamicQuestInfos.end())
+    {
+        return it->second;
+    }
+    return AddQuestInfoForDynamicQuest(dQuestId);
 }
 
-int QuestInfoManager::LoadModifiedQuestInfosFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+int QuestInfoManager::LoadModifiedQuestInfosFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x573B90
+    ref_ptr qiNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    for (xmlNode->GetFirstChild(qiNode, "QuestInfo"); !qiNode->IsEmpty(); qiNode->GetNextSibling(qiNode, "QuestInfo"))
+    {
+        CStr questInfoName;
+        m3d::SafeStrAttrib(questInfoName, qiNode, "questName");
+        auto const it = m_questInfos.find(questInfoName);
+        if (it == m_questInfos.end())
+        {
+            M3D_LOG_ERR("Error: invalid quest info name: '" + questInfoName + "' in save file");
+            continue;
+        }
+        it->second->LoadCoordinatesFromXml(xmlFile, qiNode);
+        it->second->m_bCoordinateModified = true;
+    }
+    return 1;
 }
 
 void QuestInfoManager::OnEndLevel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x574380
+    ClearQuestInfos();
+    ClearDynamicQuestInfos();
+    m_isInited = false;
 }
 
 void QuestInfoManager::ClearQuestInfos()
@@ -595,9 +708,81 @@ void QuestInfoManager::ClearQuestInfos()
     m_questInfos.clear();
 }
 
-QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int) const
+QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int dQuestId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x574530 - a random "<pattern>_N" quest info for the quest's type,
+    // with its texts filled in and a map mark for the current level.
+    if (dQuestId == -1)
+    {
+        return nullptr;
+    }
+    auto* obj = ai::theObjects->GetEntityByObjId(dQuestId);
+    if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+    {
+        return nullptr;
+    }
+    auto* dQuest = static_cast<ai::DynamicQuest*>(obj);
+    auto const type = static_cast<int>(dQuest->GetQuestType());
+
+    std::vector<CStr> patternQuestInfoNames;
+    GetAllQuestInfosByNamePattern(GetDynamicQuestInfoPatternNameByType(type), patternQuestInfoNames);
+    if (patternQuestInfoNames.empty())
+    {
+        return nullptr;
+    }
+    auto const* pattern =
+        GetQuestInfoByQuestInfoName(patternQuestInfoNames[rand() % patternQuestInfoNames.size()]);
+    if (!pattern)
+    {
+        return nullptr;
+    }
+
+    auto* dQuestInfo = new QuestInfo;
+    *dQuestInfo = *pattern;
+    dQuestInfo->m_briefDiz = pattern->m_briefDiz;
+    dQuestInfo->m_fullDiz = pattern->m_fullDiz;
+    dQuestInfo->m_literaryDiz = pattern->m_literaryDiz;
+    auto const& stringParser = M3D_APP->m_pInterfaceManager->GetStringParser();
+    stringParser.FormatStringForDynamicQuest(dQuestInfo->m_briefDiz, dQuest);
+    stringParser.FormatStringForDynamicQuest(dQuestInfo->m_fullDiz, dQuest);
+    stringParser.FormatStringForDynamicQuest(dQuestInfo->m_literaryDiz, dQuest);
+    dQuestInfo->m_hirerName = dQuest->GetHirerName();
+
+    QuestInfo::AuxLevelInfo levelInfo;
+    switch (type)
+    {
+    case 0:
+    case 1:
+    case 3:
+        levelInfo.SetUpForObj(help::GetCurrentLevelName(), dQuest->GetTargetName());
+        break;
+    case 2:
+        // A convoy quest points at the caravan.
+        if (dQuest->IsKindOf(&ai::DynamicQuestConvoy::m_classDynamicQuestConvoy))
+        {
+            auto const caravanId = static_cast<ai::DynamicQuestConvoy*>(dQuest)->GetCaravanId();
+            if (caravanId != -1)
+            {
+                auto* caravan = ai::theObjects->GetEntityByObjId(caravanId);
+                if (caravan && caravan->IsKindOf(&ai::Obj::m_classObj) && !CStr(caravan->GetName()).empty())
+                {
+                    levelInfo.SetUpForObj(help::GetCurrentLevelName(), CStr(caravan->GetName()));
+                }
+            }
+        }
+        break;
+    case 4:
+        levelInfo.SetUp(help::GetCurrentLevelName());
+        break;
+    default:
+        break;
+    }
+
+    if (levelInfo.IsValid())
+    {
+        dQuestInfo->m_levelInfo.insert({help::GetCurrentLevelName(), levelInfo});
+    }
+    return dQuestInfo;
 }
 
 void QuestInfoManager::OnStartLevel()
@@ -615,26 +800,96 @@ void QuestInfoManager::OnStartLevel()
     }
 }
 
-void QuestInfoManager::OnDynamicQuestStateChanged(void*)
+void QuestInfoManager::OnDynamicQuestStateChanged(void* data)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5743B0
+    if (!data)
+    {
+        return;
+    }
+    int const dQuestId = static_cast<m3d::Event*>(data)->m_intEv[0];
+    auto* obj = ai::theObjects->GetEntityByObjId(dQuestId);
+    if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+    {
+        return;
+    }
+    if (static_cast<ai::DynamicQuest*>(obj)->GetQuestStatus() == ai::DynamicQuest::STATUS_PROCESSING)
+    {
+        AddQuestInfoForDynamicQuest(dQuestId);
+    }
+    else
+    {
+        RemoveQuestInfoForDynamicQuest(dQuestId);
+    }
 }
 
-void QuestInfoManager::GetAllQuestInfosByNamePattern(CStr const&, std::vector<CStr>&) const
+void QuestInfoManager::GetAllQuestInfosByNamePattern(CStr const& questInfoPatternName, std::vector<CStr>& questInfoNames) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5749E0 - "<pattern>_0" .. "<pattern>_4" that exist.
+    questInfoNames.clear();
+    for (int i = 0; i < 5; ++i)
+    {
+        CStr const qiName = questInfoPatternName + CStr("_") + CStr(i);
+        auto const it = m_questInfos.find(qiName);
+        if (it != m_questInfos.end() && it->second)
+        {
+            questInfoNames.push_back(qiName);
+        }
+    }
 }
 
-int QuestInfoManager::LoadFromFile(CStr const&)
+int QuestInfoManager::LoadFromFile(CStr const& fileName)
 {
-    // TODO: implement QuestInfoManager::LoadFromFile
-    // RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x573620
+    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
+    {
+        // NOTE: a missing file still counts as success, as in the original.
+        M3D_LOG_INFO("Can't open file " + fileName + " for read.");
+        return 1;
+    }
+
+    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    if (!xmlFile->Read(*stream))
+    {
+        M3D_LOG_INFO("Error: cannot parse " + fileName + " (" + CStr(xmlFile->GetError()) + ") ");
+        return 0;
+    }
+    stream->Close();
+
+    ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    xmlFile->GetFirstChild(rootNode, "QuestInfoResource");
+    if (rootNode->IsEmpty())
+    {
+        M3D_LOG_INFO("QuestInfoManager: file " + fileName + " is empty");
+    }
+    else
+    {
+        LoadFromXml(xmlFile, rootNode);
+        M3D_LOG_INFO("Quest infos were loaded successfully from file " + fileName);
+    }
     return 1;
 }
 
-QuestInfo const* QuestInfoManager::AddQuestInfoForDynamicQuest(int)
+QuestInfo const* QuestInfoManager::AddQuestInfoForDynamicQuest(int dQuestId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x574420
+    if (dQuestId == -1)
+    {
+        return nullptr;
+    }
+    auto const it = m_dynamicQuestInfos.find(dQuestId);
+    if (it != m_dynamicQuestInfos.end())
+    {
+        return it->second;
+    }
+    auto* info = CreateQuestInfoForDynamicQuest(dQuestId);
+    if (!info)
+    {
+        return nullptr;
+    }
+    m_dynamicQuestInfos.insert({dQuestId, info});
+    return info;
 }
 
 void QuestInfoManager::ClearDynamicQuestInfos()
@@ -649,10 +904,24 @@ void QuestInfoManager::ClearDynamicQuestInfos()
 
 void QuestInfoManager::OnEndLevelBeforeContinuousLevel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5743A0
+    ClearDynamicQuestInfos();
 }
 
-int QuestInfoManager::RemoveQuestInfoForDynamicQuest(int)
+int QuestInfoManager::RemoveQuestInfoForDynamicQuest(int dQuestId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5744B0
+    if (dQuestId == -1)
+    {
+        return 0;
+    }
+    auto const it = m_dynamicQuestInfos.find(dQuestId);
+    if (it == m_dynamicQuestInfos.end())
+    {
+        return 0;
+    }
+    delete it->second;
+    it->second = nullptr;
+    m_dynamicQuestInfos.erase(it);
+    return 1;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+class CStr;
+
 namespace m3d
 {
     namespace ui
@@ -12,5 +14,7 @@ namespace m3d
             MBX_RET_CANCEL = 0x3,
             MBX_RET_USER = 0x4,
         };
+
+        MbRetCodes __fastcall RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool pause);
     }
 }

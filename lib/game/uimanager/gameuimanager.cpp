@@ -131,10 +131,19 @@ bool WindowResourceInfo::IsValid() const
 
 m3d::Object* WindowResourceInfo::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53FF90
+    return new WindowResourceInfo(*this);
 }
 
 WindowResourceInfo::WindowResourceInfo() = default;
+
+WindowResourceInfo::WindowResourceInfo(WindowResourceInfo const&) :
+    ResourceInfo()
+{
+    // Inlined into Clone (RVA 0x53FF90): nothing is copied, the clone starts as
+    // a default resource info. The original leaves m_wndGuiId and
+    // m_bShowImmediate uninitialised; here they take their declared defaults.
+}
 
 RT_CLASS_EXPORTS_BEGIN(IcoResourceInfo)
 RT_CLASS_EXPORTS_END;
@@ -191,9 +200,11 @@ bool IcoResourceInfo::IsValid() const
 
 IcoResourceInfo::IcoResourceInfo() = default;
 
-int GameUiManager::GUI_SetNextDynamicId(int)
+int GameUiManager::GUI_SetNextDynamicId(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x542410
+    m_nextDynamicId = GUI_ValidateDynamicId(id);
+    return m_nextDynamicId;
 }
 
 int GameUiManager::GUI_LoadResourceInfos()
@@ -274,9 +285,11 @@ int GameUiManager::GUI_LoadWindowsResources(ResourceInfo::ResourceLoadType loadT
     return res;
 }
 
-int GameUiManager::GUI_SetMinDynamicId(int)
+int GameUiManager::GUI_SetMinDynamicId(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x542400
+    m_minDynamicId = id;
+    return 1;
 }
 
 int GameUiManager::GUI_SetEventsForWindow(int wndId, retruxx::vector<int> const& events)
@@ -421,9 +434,40 @@ void GameUiManager::GUI_GetResourceInfosByLoadType(
     }
 }
 
-int GameUiManager::GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int GameUiManager::GUI_Save(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> rootNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x542480
+    M3D_LOG_INFO("Interface: saving...");
+    if (!xmlFile || !rootNode)
+    {
+        M3D_LOG_INFO("Interface: saving failed ");
+        return 0;
+    }
+
+    ref_ptr guiNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "GUI");
+    rootNode->AddChild(guiNode);
+    int res = GUI_WriteToXml(xmlFile, guiNode) & 1;
+    for (auto& [wndId, wnd] : m_windows)
+    {
+        if (wnd)
+        {
+            res &= wnd->GameDataSave(xmlFile, guiNode);
+        }
+        else
+        {
+            res = 0;
+        }
+    }
+
+    if (res)
+    {
+        M3D_LOG_INFO("Interface: was saved successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("Interface: was saved with errors");
+    }
+    return res;
 }
 
 int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needShow, CStr const& fileName)
@@ -470,9 +514,10 @@ int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needS
 
 GameUiManager::GameUiManager() = default;
 
-bool GameUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd*) const
+bool GameUiManager::GUI_IsWndModalEqual(m3d::ui::Wnd* w) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x543260
+    return w && w->IsKindOf(&m3d::ui::ModalWnd::m_classModalWnd);
 }
 
 int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const* info)
@@ -656,9 +701,14 @@ int GameUiManager::GUI_Init(bool reloadResources)
     return res;
 }
 
-int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd>)
+int GameUiManager::GUI_RemoveWindow(ref_ptr<m3d::ui::Wnd> w)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5423C0
+    if (!w)
+    {
+        return 0;
+    }
+    return GUI_RemoveWindow(w->GetGuiId());
 }
 
 int GameUiManager::GUI_RemoveWindow(int wndId)
@@ -680,17 +730,34 @@ int GameUiManager::GUI_RemoveWindow(int wndId)
 
 void GameUiManager::GUI_UnregisterCVars()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x542D10
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToUiWindows);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToUiStrings);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToUiIcons);
 }
 
-int GameUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int GameUiManager::GUI_ReadFromXml(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> node)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x542AF0
+    if (!xmlFile || !node)
+    {
+        M3D_LOG_INFO("GameUiManager::GUI_ReadFromXml error - null xmlFile or xmlNode");
+        return 0;
+    }
+
+    // NOTE: the original reads into a stack byte that still holds the low byte of
+    // the xmlFile pointer, so a missing "isHidden" attribute leaves that stale
+    // byte as the value. Reproduced as such.
+    bool isHidden = (reinterpret_cast<uintptr_t>(static_cast<m3d::cmn::XmlFile*>(xmlFile)) & 0xFF) != 0;
+    m3d::SafeBoolAttrib(isHidden, node, "isHidden");
+    GUI_ShowInterface(!isHidden, true);
+    return 1;
 }
 
 void GameUiManager::GUI_RegisterEvents()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x543240
+    m_eventToEvent[41] = 0;
 }
 
 int GameUiManager::GUI_LoadStringsResources(ResourceInfo::ResourceLoadType loadType)
@@ -763,9 +830,44 @@ int GameUiManager::GUI_ShowInterface(bool needShow, bool enableAnimation)
     return res;
 }
 
-int GameUiManager::GUI_Load(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int GameUiManager::GUI_Load(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> rootNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5427E0
+    M3D_LOG_INFO("Interface: is loading");
+    if (!xmlFile || !rootNode || rootNode->IsEmpty())
+    {
+        M3D_LOG_INFO("Interface: failed to load");
+        return 0;
+    }
+
+    ref_ptr guiNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    rootNode->GetFirstChild(guiNode, "GUI");
+    int res = 0;
+    if (!guiNode->IsEmpty())
+    {
+        res = GUI_ReadFromXml(xmlFile, guiNode) & 1;
+        for (auto& [wndId, wnd] : m_windows)
+        {
+            if (wnd)
+            {
+                res &= wnd->GameDataLoad(xmlFile, guiNode);
+            }
+            else
+            {
+                res = 0;
+            }
+        }
+    }
+
+    if (res)
+    {
+        M3D_LOG_INFO("Interface: was loaded successfully");
+    }
+    else
+    {
+        M3D_LOG_INFO("Interface: was loaded with errors");
+    }
+    return res;
 }
 
 int GameUiManager::GUI_Clear(bool beforeContinuousLevel)
@@ -885,7 +987,13 @@ int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void*
 
 GameUiManager::~GameUiManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x540A30
+    GUI_Done();
+    m_packToEvent.clear();
+    m_impulseToEvent.clear();
+    m_eventToEvent.clear();
+    delete m_icons;
+    m_icons = nullptr;
 }
 
 void GameUiManager::GUI_RegisterCVars()
@@ -981,7 +1089,27 @@ int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRet
 
 int GameUiManager::GUI_Done()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x540CD0
+    M3D_LOG_INFO("Interface: done...");
+    for (auto& [wndId, wnd] : m_windows)
+    {
+        wnd->GameDataClear(false);
+    }
+    GUI_ShowInterface(false, false);
+    for (auto& [wndId, wnd] : m_windows)
+    {
+        wnd->SetGuiId(-1);
+    }
+    m_windows.clear();
+    m_onScreenWindows.clear();
+    GUI_ClearAllResourceInfos();
+    m_eventMap.clear();
+    m_isEventMapValide = false;
+    m_isInited = false;
+    m_oneTimeStuffIsInited = false;
+    GUI_UnregisterCVars();
+    M3D_LOG_INFO("Interface: is done");
+    return 1;
 }
 
 void GameUiManager::GUI_ClearAllResourceInfos()
@@ -1024,12 +1152,20 @@ int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
 
 bool GameUiManager::GUI_IsHidden() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x543340
+    return m_isHidden;
 }
 
-int GameUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>)
+int GameUiManager::GUI_WriteToXml(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn::XmlNode> node)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x542700
+    if (!xmlFile || !node)
+    {
+        M3D_LOG_INFO("GameUiManager::GUI_WriteToXml error - null xmlFile or xmlNode");
+        return 0;
+    }
+    node->SetAttribute("isHidden", CStr(static_cast<int>(m_isHidden)).c_str());
+    return 1;
 }
 
 int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bool pause, int* modalRetVal)

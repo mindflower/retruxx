@@ -3,8 +3,13 @@
 
 namespace m3d
 {
+    class Application;
+
     class Profiler
     {
+        // Application::OneFrame reads the timings directly.
+        friend class Application;
+
     public:
         Profiler(const m3d::Profiler&);
         Profiler(const char* name);
@@ -37,8 +42,12 @@ namespace m3d
 
     static_assert(sizeof(Profiler) == 0x0058);
 
+    class Application;
+
     class ProfilerStack
     {
+        friend class Application;
+
     public:
         ProfilerStack(const m3d::ProfilerStack&);
         ProfilerStack();

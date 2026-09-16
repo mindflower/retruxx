@@ -3,9 +3,13 @@
 
 namespace m3d
 {
+    class Application;
+
     class DbgCounter
     {
         friend class DbgCounterStack;
+        // Application::OneFrame draws the counters directly.
+        friend class Application;
         enum eType
         {
             DBG_COUNTER_STRING = 0,
@@ -48,8 +52,12 @@ namespace m3d
 
     static_assert(sizeof(DbgCounter) == 0x0040);
 
+    class Application;
+
     class DbgCounterStack
     {
+        friend class Application;
+
     public:
         DbgCounterStack(const m3d::DbgCounterStack&);
         DbgCounterStack();

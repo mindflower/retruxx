@@ -21,6 +21,8 @@ class ZnayuKakProdatWnd : public ChildPanel
 {
     // MotherPanel drives the trade panel and reads its state directly.
     friend class MotherPanel;
+    // The help manager picks its page by the trade type.
+    friend class HelpManager;
 
 public:
     enum TradeType

@@ -41,7 +41,8 @@ namespace ai
 
     int DynamicQuestConvoy::GetCaravanId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7471F0
+        return m_caravanId;
     }
 
     DynamicQuestConvoy::DynamicQuestConvoy(DynamicQuestConvoyPrototypeInfo const& prototype) : DynamicQuest(prototype)

@@ -646,7 +646,8 @@ namespace m3d
 
     retruxx::map<CStr, ScriptServer::auxFuncDesc> const& ScriptServer::getRegisteredFunctionsDesc() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8BB6E0
+        return m_funcDescs;
     }
 
     eScriptError ScriptServer::addScript(char const*)

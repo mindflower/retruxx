@@ -36,6 +36,7 @@ target_sources(retruxx_lib PRIVATE
     gsmodel.cpp
     landscapeoverlays.cpp
     level.cpp
+    graphinfo.cpp
     m3dapp.cpp
     m3dapp_console.cpp
     m3dfont.cpp

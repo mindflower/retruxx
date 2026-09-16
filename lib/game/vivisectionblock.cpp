@@ -3,32 +3,43 @@
 #include <stdexcept>
 #include <core/kernel.h>
 #include <core/log.h>
+#include <client.h>
+#include <landscape.h>
+#include <world.h>
 
 Vivisector* g_Vivisector = nullptr;
 
 bool Vivisector::init()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x42D7C0
+    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCommand("vivisect", 0, this);
+    return true;
 }
 
-void Vivisector::HandleCommand(int, m3d::CConsoleParams const&)
+void Vivisector::HandleCommand(int cmdID, m3d::CConsoleParams const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x42D800 - "vivisect" dumps the landscape grass to an XML file.
+    if (cmdID == 0)
+    {
+        m3d::pClient->GetWorld().GetLandscape().WriteGrassToXmlFile("data/testGrass.xml");
+    }
 }
 
 bool Vivisector::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x42D830
+    return true;
 }
 
 Vivisector::~Vivisector()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x42D630 - only m_test is released.
 }
 
 bool Vivisector::shutdown()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x42D7F0
+    return true;
 }
 
 bool initVivisectionBlock()

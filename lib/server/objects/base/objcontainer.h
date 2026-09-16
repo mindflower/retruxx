@@ -4,6 +4,9 @@
 
 struct CVector;
 
+class CMiracle3d;
+class SavesManager;
+
 namespace ai
 {
     class ObjContainer;
@@ -43,6 +46,10 @@ namespace ai
 
     class ObjContainer : public m3d::Object
     {
+        // The game's debug overlay and save/load read the containers directly.
+        friend class ::CMiracle3d;
+        friend class ::SavesManager;
+
     protected:
         ObjContainer();
         ObjContainer(const ai::ObjContainer& rhs);

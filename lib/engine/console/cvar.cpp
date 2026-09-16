@@ -12,7 +12,9 @@ namespace m3d
 
     CVar::CVar()
     {
-        m_s = "errormsg";
+        // RVA 0x414680 - IDA labels the string this copies "errormsg", but it is
+        // just an empty C string, so the value starts out empty.
+        m_s = "";
         m_type = CVAR_UNDEFINED;
         m_defaultValue = 0;
         m_handler = 0;
@@ -38,7 +40,7 @@ namespace m3d
 
     void CVar::SetB(bool b, bool ignoreFlags)
     {
-        char buffer[1] = { 0 };
+        char buffer[16] = { 0 };
         sprintf_s(buffer, "%d", b);
         Set(buffer, ignoreFlags);
     }
@@ -66,7 +68,7 @@ namespace m3d
 
     void CVar::Set(char const* value, bool ignoreFlags)
     {
-        if (ignoreFlags || m_flags & CVAR_READONLY == 0)
+        if (ignoreFlags || (m_flags & CVAR_READONLY) == 0)
         {
             switch (m_type)
             {

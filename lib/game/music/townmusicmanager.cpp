@@ -7,17 +7,42 @@
 #include "core/log.h"
 #include "core/ref_ptr.h"
 #include <core/ini.h>
+#include "game/m3dgame.h"
+#include "server/objects/town.h"
 
 namespace m3d
 {
     void TownMusicManager::Activate()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x42CF00
+        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            return;
+        }
+
+        auto* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+        if (town)
+        {
+            M3D_LOG_INFO("TownMusicManager: start playing new music: '" + town->GetPrototypeInfo()->m_musicName + "'");
+            M3D_APP->StartPlayingMusic(town->GetPrototypeInfo()->m_musicName.c_str(), true, true);
+        }
     }
 
     int TownMusicManager::LaunchAmbientWorkshop()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x42D0F0
+        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            return -1;
+        }
+
+        StopAmbient();
+        if (!m_ambientWorkshopSounds.empty())
+        {
+            auto const numSounds = static_cast<unsigned>(m_ambientWorkshopSounds.size());
+            m_curAmbientChannelId = M3D_APP->m_sound->PlaySound2D(m_ambientWorkshopSounds[static_cast<unsigned>(rand()) % numSounds], true);
+        }
+        return m_curAmbientChannelId;
     }
 
     void TownMusicManager::StopAmbient()
@@ -70,6 +95,18 @@ namespace m3d
 
     int TownMusicManager::LaunchAmbientShop()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x42D070
+        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        {
+            return -1;
+        }
+
+        StopAmbient();
+        if (!m_ambientShopSounds.empty())
+        {
+            auto const numSounds = static_cast<unsigned>(m_ambientShopSounds.size());
+            m_curAmbientChannelId = M3D_APP->m_sound->PlaySound2D(m_ambientShopSounds[static_cast<unsigned>(rand()) % numSounds], true);
+        }
+        return m_curAmbientChannelId;
     }
 }  // namespace m3d

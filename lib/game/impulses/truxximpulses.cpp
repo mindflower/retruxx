@@ -2,6 +2,7 @@
 #include <stdexcept>
 
 #include "game/m3dgame.h"
+#include "game/profile.h"
 
 RT_CLASS_EXPORTS_BEGIN(TruxxImpulse)
     RT_CLASS_EXPORTS_END;
@@ -175,14 +176,40 @@ int TruxxImpulse::GetGameModeIdByName(CStr const& modeName)
     return -1;
 }
 
-CStr TruxxImpulse::GetImpulseNameById(int)
+CStr TruxxImpulse::GetImpulseNameById(int impId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5506E0
+    CStr ret;
+    if (static_cast<unsigned>(impId) < 0x38)
+    {
+        for (auto const& name : l_impulseNames)
+        {
+            if (name.m_id == impId)
+            {
+                ret = name.m_name;
+                break;
+            }
+        }
+    }
+    return ret;
 }
 
-CStr TruxxImpulse::GetGameModeNameById(int)
+CStr TruxxImpulse::GetGameModeNameById(int modeId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5505A0
+    CStr ret;
+    if (static_cast<unsigned>(modeId) < 4)
+    {
+        for (auto const& mode : l_gameModeNames)
+        {
+            if (mode.m_id == modeId)
+            {
+                ret = mode.m_name;
+                break;
+            }
+        }
+    }
+    return ret;
 }
 
 m3d::Class* TruxxImpulse::GetClass() const
@@ -192,12 +219,13 @@ m3d::Class* TruxxImpulse::GetClass() const
 
 m3d::Object* TruxxImpulse::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x550350
+    return new TruxxImpulse(*this);
 }
 
 TruxxImpulse::~TruxxImpulse()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x550460 - nothing beyond the GameImpulse base.
 }
 
 m3d::Object* TruxxImpulse::CreateObject()
@@ -212,14 +240,22 @@ m3d::Class* TruxxImpulse::GetBaseClass()
 
 CStr TruxxImpulse::GetProfileFolder()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5508C0
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
+    if (profile)
+    {
+        return profile->GetFolder();
+    }
+    return {};
 }
 
 TruxxImpulse::TruxxImpulse()
 {
 }
 
-TruxxImpulse::TruxxImpulse(TruxxImpulse const&)
+TruxxImpulse::TruxxImpulse(TruxxImpulse const&) :
+    m3d::GameImpulse()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5504D0 - the source is ignored: the base is default-constructed,
+    // so Clone() yields a fresh impulse handler rather than a copy.
 }

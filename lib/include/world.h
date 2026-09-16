@@ -49,6 +49,8 @@ namespace m3d
     class CWorld
     {
         friend class Landscape;
+        // Application::SaveUsedOnlyServers walks the scene graph directly.
+        friend class Application;
         // SceneGraph::DrawDetailedShadows / DrawShadowsToTexture read m_sunDir
         // directly, exactly as the shipped code does.
         friend class SceneGraph;

@@ -21,6 +21,9 @@ namespace m3d
 
 class GarageWnd : public ChildPanel
 {
+    // The help manager checks which sub-list the workshop has open.
+    friend class HelpManager;
+
 public:
     struct AuxInfo
     {

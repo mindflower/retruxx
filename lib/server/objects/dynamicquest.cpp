@@ -74,7 +74,8 @@ namespace ai
 
     CStr const& DynamicQuest::GetTargetName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x571960
+        return m_targetName;
     }
 
     int DynamicQuest::GetHirerObjId() const
@@ -109,12 +110,14 @@ namespace ai
 
     int DynamicQuest::GetReward() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x581F80
+        return m_reward;
     }
 
     CStr const& DynamicQuest::GetHirerName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x571950
+        return m_hirerName;
     }
 
     bool DynamicQuest::SetPropertyById(int, m3d::AIParam const&)
@@ -176,7 +179,8 @@ namespace ai
 
     DynamicQuest::QuestStatus DynamicQuest::GetQuestStatus() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x497720
+        return m_questStatus;
     }
 
     DynamicQuest::~DynamicQuest()

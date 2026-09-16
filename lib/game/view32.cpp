@@ -1,4 +1,7 @@
 #include "geomobject.h"
+#include "server/processmanager.h"
+#include "server/queststate.h"
+#include "server/statistic/statisticmanager.h"
 #include "globalscriptfuncs.h"
 #include "m3dgame.h"
 #include "profile.h"
@@ -138,14 +141,46 @@ void CMiracle3d::CurGameMode::Set(GameState mode)
     g_pApp->ImmediateMessage(65683, mode, oldMode, 0, 0, {}, {});
 }
 
-void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+void CMiracle3d::Player::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x419100
+    auto cameraMode = m_cameraMode;
+    if (!xmlNode->IsEmpty())
+    {
+        if (auto const* attr = xmlNode->GetAttribute("CameraMode"))
+        {
+            cameraMode = static_cast<CameraModes>(atoi(attr));
+        }
+    }
+    m_cameraMode = cameraMode;
+    m3d::SafeVectorAttrib(m_gameLookAt, xmlNode, "GameLookAt");
+    m3d::SafeQuaternionAttrib(m_lastobjQuat, xmlNode, "LastObjQuat");
+    if (!xmlNode->IsEmpty())
+    {
+        if (auto const* attr = xmlNode->GetAttribute("ElapsedTime"))
+        {
+            m_elapsedtime = atoi(attr);
+        }
+    }
+    if (!xmlNode->IsEmpty())
+    {
+        if (auto const* attr = xmlNode->GetAttribute("DesiredDistance"))
+        {
+            m_desiredDistance = static_cast<float>(atof(attr));
+        }
+    }
 }
 
-void CMiracle3d::Player::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+void CMiracle3d::Player::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode* xmlNode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4191A0
+    xmlNode->SetAttribute("CameraMode", CStr(static_cast<int>(m_cameraMode)).c_str());
+    xmlNode->SetAttribute("GameLookAt", CStr(m_gameLookAt).c_str());
+    CStr quat;
+    quat.format("%.4f %.4f %.4f %.4f", m_lastobjQuat.x, m_lastobjQuat.y, m_lastobjQuat.z, m_lastobjQuat.w);
+    xmlNode->SetAttribute("LastObjQuat", quat.c_str());
+    xmlNode->SetAttribute("ElapsedTime", CStr(m_elapsedtime).c_str());
+    xmlNode->SetAttribute("DesiredDistance", CStr(m_desiredDistance).c_str());
 }
 
 int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
@@ -284,17 +319,37 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 
 void CMiracle3d::SkipCinematicMessage()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41E400
+    OnChangeMode(m3d::AuxImpulseInfo(3, true, m_curGameMode.m_mode, 0, 0));
 }
 
-int CMiracle3d::OnGameDrag(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnGameDrag(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x402F80
+    if (GetWndMouseOver() != this)
+    {
+        m_pImpulses->ResetImpulseWithoutNotification(impInfo.m_impId);
+        return 1;
+    }
+
+    // A press grabs the mouse; a release (or a second press) lets it go.
+    if (!impInfo.m_state || GetCapture() == this)
+    {
+        CaptureMouse(nullptr);
+    }
+    else
+    {
+        CaptureMouse(this);
+    }
+    m_dragHit.x = static_cast<float>(M3D_APP->GetMouseX());
+    m_dragHit.y = static_cast<float>(M3D_APP->GetMouseY());
+    return 0;
 }
 
 float CMiracle3d::GetMinTimeScale() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40C4E0
+    return m_minTimeScale;
 }
 
 int CMiracle3d::OnFinishVideoPlaying()
@@ -316,14 +371,126 @@ int CMiracle3d::OnFinishVideoPlaying()
     return 1;
 }
 
-void CMiracle3d::SetMinTimeScale(float)
+void CMiracle3d::SetMinTimeScale(float value)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40C4D0
+    m_minTimeScale = value;
 }
 
-bool CMiracle3d::LoadSavedGame(CStr const&)
+bool CMiracle3d::LoadSavedGame(CStr const& saveDir)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4202C0
+    ClearViewportToBlack();
+    M3D_LOG_INFO("Game loading: \"" + saveDir + "\" ...");
+
+    CStr const fileName = saveDir + "\\currentmap.xml";
+    m3d::g_Kernel->GetFileServer().AddFile(fileName.c_str());
+    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
+    {
+        M3D_ENGINE_CFG.m_console->PrintF("File " + fileName + " not found\n");
+        return false;
+    }
+
+    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    xmlFile->Read(*stream);
+
+    ref_ptr ndGeneral = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    xmlFile->GetFirstChild(ndGeneral, "General");
+    ndGeneral->IsEmpty();
+    bool res = true;
+    CStr const sMapName = ndGeneral->GetAttribute("MapName");
+
+    ref_ptr ndDynamicScene = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndDynamicScene, "DynamicScene");
+    ndDynamicScene->IsEmpty();
+
+    if (help::GetMapNameFromFileName(CStr(M3D_ENGINE_CFG.m_levFileName.GetS())) != sMapName)
+    {
+        // The save was made on another map: load that map from scratch.
+        m_pInterfaceManager->StartSplashing(12);
+        res = LoadMap(sMapName, false, xmlFile, ndDynamicScene, ai::ObjContainer::SAVE_FULL);
+        if (!res)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        // Same map: reset the running level and reload its objects in place.
+        m_pInterfaceManager->StartSplashing(1);
+        CleanLevel(true, false);
+        PutSplash(0, GetStringByStringId0("SavedGameLoading").c_str());
+        m3d::pClient->GetWorld().GetWheelTracesMgr().ClearTraces();
+        ai::pServer->Init(&m3d::pClient->GetWorld());
+        m3d::pClient->GetWorld().GetLandscape().ManageLandScapeCollisionTriMeshes();
+        PutSplash(2, GetStringByStringId0("SavedGameLoading").c_str());
+        m_pInterfaceManager->LaunchEvent(84, GUI_EVENT_CUSTOM, nullptr);
+        ai::pServer->Load(ai::LOCAL_GAME, xmlFile, ndDynamicScene, true, ai::ObjContainer::SAVE_FULL);
+        PutSplash(55, GetStringByStringId0("SavedGameLoading").c_str());
+        m_pInterfaceManager->GetQuestInfoManager()->Init();
+    }
+
+    PutSplash(65, GetStringByStringId0("SavedGameLoading").c_str());
+    CStr const tmpMapsDir = m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
+    help::CopyDirectory(saveDir.c_str(), tmpMapsDir.c_str());
+    DeleteFileA((tmpMapsDir + "\\currentmap.xml").c_str());
+    m_pInterfaceManager->Load(xmlFile, ndGeneral);
+
+    PutSplash(70, GetStringByStringId0("SavedGameLoading").c_str());
+    ref_ptr ndQuestManager = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndQuestManager, "QuestManager");
+    ndQuestManager->IsEmpty();
+    ai::theQuestStateManager->LoadFromXml(xmlFile, ndQuestManager);
+
+    PutSplash(85, GetStringByStringId0("SavedGameLoading").c_str());
+    ref_ptr ndApplication = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndApplication, "Application");
+    ndApplication->IsEmpty();
+    LoadFromXml(xmlFile, ndApplication);
+
+    PutSplash(86, GetStringByStringId0("SavedGameLoading").c_str());
+    ref_ptr ndGameTime = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndGameTime, "GameTime");
+    ndGameTime->IsEmpty();
+    ai::theObjects->m_GameTime.LoadFromXML(xmlFile, ndGameTime);
+
+    PutSplash(87, GetStringByStringId0("SavedGameLoading").c_str());
+    ref_ptr ndWeatherState = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndWeatherState, "WeatherState");
+    ndWeatherState->IsEmpty();
+    m3d::pClient->GetWorld().GetWeatherManager().LoadWeatherStateFromXMLNode(xmlFile, ndWeatherState);
+
+    PutSplash(88, GetStringByStringId0("SavedGameLoading").c_str());
+    ref_ptr ndProcessManager = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndProcessManager, "ProcessManager");
+    ndProcessManager->IsEmpty();
+    ai::theProcessManager->LoadFromXML(xmlFile, ndProcessManager);
+
+    PutSplash(89, GetStringByStringId0("SavedGameLoading").c_str());
+    ref_ptr ndStatistics = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    ndGeneral->GetFirstChild(ndStatistics, "Statistics");
+    ndStatistics->IsEmpty();
+    ai::theStatisticManager->LoadFromXml(xmlFile, ndStatistics);
+
+    PutSplash(90, GetStringByStringId0("SavedGameLoading").c_str());
+    m3d::g_Kernel->GetTimer().SetTimeScale(1.0f);
+    m_serverAnimatedModels->GenerateImpostorsIfNeeded();
+
+    PutSplash(100, GetStringByStringId0("SavedGameLoading").c_str());
+    StartLevelType startType = FROM_SAVE;
+    m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, &startType);
+    M3D_LOG_INFO("Game loaded: \"" + saveDir + "\"");
+
+    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    if (AppActive() && M3D_ENGINE_CFG.m_clipCursorWithinRenderWnd.GetB())
+    {
+        CaptureAndClipSystemCursor(true);
+    }
+    m_bRenderAsBackground = false;
+    m_bBackgroundTextureIsValid = false;
+    return res;
 }
 
 bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
@@ -406,9 +573,32 @@ int CMiracle3d::GameDone()
     return 1;
 }
 
-int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnFlyMouse(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x401020
+    if (GetCapture() != this)
+    {
+        CaptureMouse(this);
+    }
+
+    if (impInfo.m_state)
+    {
+        float dx = 0.0f;
+        float dy = 0.0f;
+        impInfo.UnpackXy(nullptr, nullptr, &dx, &dy);
+        if (IsMouseYAxisFlipped())
+        {
+            dy = 0.0f - dy;
+        }
+        if (IsMouseXAxisFlipped())
+        {
+            dx = 0.0f - dx;
+        }
+        auto const sensitivity = GetMouseSensitivity();
+        m_flyCamTurn.x += dx * sensitivity * 0.003f;
+        m_flyCamTurn.y += sensitivity * dy * 0.003f;
+    }
+    return 1;
 }
 
 int CMiracle3d::GameInit()
@@ -789,23 +979,84 @@ int CMiracle3d::HandleCinematic(float dT)
 
 m3d::Object* CMiracle3d::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x414DC0
+    return new CMiracle3d;
 }
 
 void CMiracle3d::OnChangeProfile()
 {
-    // TODO: implement CMiracle3d::OnChangeProfile
-    //RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x419470 - apply the newly selected profile's input settings.
+    auto* profile = m_profileManager->GetCurProfile();
+    if (!profile)
+    {
+        return;
+    }
+
+    m_pImpulses->LoadFromProfile();
+
+    m3d::AIParam mouseSensitivity;
+    if (profile->GetParam(PP_MOUSE_SENSITIVITY, mouseSensitivity))
+    {
+        SetMouseSensitivity(mouseSensitivity.GetAsFloat());
+    }
+    m3d::AIParam mouseYAxisFlip;
+    if (profile->GetParam(PP_MOUSE_YAXIS_FLIP, mouseYAxisFlip))
+    {
+        SetMouseYAxisFlipped(mouseYAxisFlip.GetAsID() != 0);
+    }
+    m3d::AIParam mouseXAxisFlip;
+    if (profile->GetParam(PP_MOUSE_XAXIS_FLIP, mouseXAxisFlip))
+    {
+        SetMouseXAxisFlipped(mouseXAxisFlip.GetAsID() != 0);
+    }
+    m3d::AIParam langParam;
+    if (profile->GetParam(PP_INPUT_LANGUAGE, langParam))
+    {
+        auto const language = static_cast<unsigned>(langParam.GetAsID());
+        if (language <= 1 && m_input)
+        {
+            m_input->SetLanguage(static_cast<m3d::input::Language>(language));
+        }
+    }
 }
 
 void CMiracle3d::CleanMainMenuLevel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x404300 - the same teardown as CleanLevel(false, true), skipped
+    // entirely when no main-menu level was loaded.
+    if (m_bDoNotLoadMainmenuLevel)
+    {
+        return;
+    }
+
+    ClearViewportToBlack();
+    CinematicClear();
+    help::DeleteAllFilesInDirectory(m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps().c_str());
+    if (m3d::pClient)
+    {
+        ProcessAllEvents();
+        m_pInterfaceManager->ShowWindow(166, false, false, false, false, nullptr);
+        m_pInterfaceManager->LaunchEvent(86, GUI_EVENT_CUSTOM, nullptr);
+        ai::pServer->Clear();
+        ai::pServer->ClearOnce();
+        m3d::pClient->Reset();
+        m3d::pClient->GetWorld().Release();
+        DiscardAllEvents();
+        m_pImpulses->ResetAllImpulses(true);
+        m_bRenderAsBackground = false;
+        m_bBackgroundTextureIsValid = false;
+    }
 }
 
-void CMiracle3d::BeginModalDlg(bool)
+void CMiracle3d::BeginModalDlg(bool forcePause)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x401250
+    if (forcePause)
+    {
+        Pause();
+    }
+    M3D_APP->m_pImpulses->ResetAllImpulses(false);
+    m_gameSlideAuto = CVector(0.0f, 0.0f, 0.0f);
 }
 
 m3d::ui::MbRetCodes CMiracle3d::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
@@ -819,7 +1070,11 @@ int CMiracle3d::CleanLevel(bool beforeContinuousMap, bool releaseWorld)
     CinematicClear();
     if (beforeContinuousMap && releaseWorld)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x417BA0 - moving on to a connected map: keep the current map's
+        // state among the temporary maps so it can be returned to.
+        CStr const levelName = help::GetMapNameFromFileName(CStr(M3D_ENGINE_CFG.m_levFileName.GetS()));
+        ai::pServer->SaveVisitedMap(
+            M3D_APP->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps() + levelName + CStr(".xml"));
     }
     else
     {
@@ -860,9 +1115,16 @@ int CMiracle3d::CleanLevel(bool beforeContinuousMap, bool releaseWorld)
     return true;
 }
 
-int CMiracle3d::OnGameZoom(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnGameZoom(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x403030
+    if (impInfo.m_state && m_player.m_cameraMode == CM_FOLLOWMODE)
+    {
+        auto const wheel = impInfo.UnpackWheel();
+        m_gameCameraRho -= wheel;
+        m_player.m_desiredDistance -= wheel;
+    }
+    return 1;
 }
 
 void CMiracle3d::PutSplash(int proc, char const* text)
@@ -877,12 +1139,22 @@ bool CMiracle3d::bIsMousePointing() const
 
 void CMiracle3d::ClearSomeGameElementsBeforeModal()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4012A0
+    M3D_APP->m_pImpulses->ResetAllImpulses(false);
+    m_gameSlideAuto = CVector(0.0f, 0.0f, 0.0f);
 }
 
 void CMiracle3d::ChangeLanguage()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x419610
+    Application::ChangeLanguage();
+    auto* profile = m_profileManager->GetCurProfile();
+    if (profile && m_input)
+    {
+        // An ID-typed parameter holding the language index.
+        m3d::AIParam paramVal(static_cast<int>(m_input->GetLanguage()));
+        profile->SetParam(PP_INPUT_LANGUAGE, paramVal);
+    }
 }
 
 float CMiracle3d::getZoom()
@@ -921,7 +1193,8 @@ int CMiracle3d::CinematicClear()
 
 void CMiracle3d::OnBeforeDeviceReset()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x417170 - the captured background does not survive a device reset.
+    m_bBackgroundTextureIsValid = false;
 }
 
 void CMiracle3d::CinematicInterrupt()
@@ -968,7 +1241,7 @@ void CMiracle3d::setZoom(float zoom)
 
 void CMiracle3d::OnAfterDeviceReset()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x417160 - nothing to do.
 }
 
 int CMiracle3d::OnSkipCinematic(m3d::AuxImpulseInfo const& impInfo)
@@ -1129,12 +1402,14 @@ void CMiracle3d::UpdateCameraPosition(ai::PhysicObj* trackedObj)
 
 float CMiracle3d::GetMaxTimeScale() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40C500
+    return m_maxTimeScale;
 }
 
-void CMiracle3d::SetMaxTimeScale(float)
+void CMiracle3d::SetMaxTimeScale(float value)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40C4F0
+    m_maxTimeScale = value;
 }
 
 int CMiracle3d::OnObtainingFocus()
@@ -1235,17 +1510,27 @@ int CMiracle3d::LoadLevel(
 
 void CMiracle3d::FullSystyemAndUserUnpause()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x402420
+    m3d::g_Kernel->GetTimer().SetTimeScale(m_normalTimeScale);
+    m_paused = false;
+    m_userPaused = false;
+    m_saveTimeScale = 0.0f;
+    if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
+    {
+        M3D_APP->m_sound->PauseGroup(2, false);
+    }
 }
 
-bool CMiracle3d::GetPostEffectParam(CStr const&, float&)
+bool CMiracle3d::GetPostEffectParam(CStr const& effectName, float& effParam)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4159C0
+    return m_postEffect->GetParam(effectName, effParam);
 }
 
-bool CMiracle3d::SetPostEffectParam(CStr const&, float)
+bool CMiracle3d::SetPostEffectParam(CStr const& effectName, float effParam)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4159D0
+    return m_postEffect->SetParam(effectName, effParam);
 }
 
 //Verified: CMiracle3d::StartMainMenu
@@ -1262,14 +1547,22 @@ void CMiracle3d::StartMainMenu()
     }
 }
 
-void CMiracle3d::SetMouseSensitivity(float)
+void CMiracle3d::SetMouseSensitivity(float sensitivity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4192D0
+    Application::SetMouseSensitivity(sensitivity);
+    auto* profile = m_profileManager->GetCurProfile();
+    if (profile)
+    {
+        m3d::AIParam paramVal(GetMouseSensitivity());
+        profile->SetParam(PP_MOUSE_SENSITIVITY, paramVal);
+    }
 }
 
 void CMiracle3d::UpdateCinematicCameraRotation()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41EFA0
+    m_cinematic->UpdateCameraRotation(m_curCamera);
 }
 
 void CMiracle3d::SetCurHackedMusicType(HackedMusicType musicType)
@@ -1287,22 +1580,66 @@ void CMiracle3d::SetCurHackedMusicType(HackedMusicType musicType)
 
 HackedMusicType CMiracle3d::GetCurHackedMusicType() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41DDC0
+    return m_hackedMusicType;
 }
 
 int CMiracle3d::ValidateCameraOrigin(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x402650
+    return 1;
 }
 
-void CMiracle3d::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+void CMiracle3d::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x418F40
+    Application::LoadFromXml(xmlFile, xmlNode);
+
+    ref_ptr playerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    xmlNode->GetFirstChild(playerNode, "Player");
+    m_player.LoadFromXml(xmlFile, playerNode);
+
+    auto mode = m_curGameMode.m_mode;
+    if (!xmlNode->IsEmpty())
+    {
+        if (auto const* attr = xmlNode->GetAttribute("CurGameMode"))
+        {
+            mode = static_cast<GameState>(atoi(attr));
+        }
+    }
+    m_curGameMode.Set(mode);
 }
 
-int CMiracle3d::OnGameSwitchCamera(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnGameSwitchCamera(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4034F0 - cycles follow -> bumper -> fly -> follow.
+    if (!impInfo.m_state || !M3D_ENGINE_CFG.m_g_switchCameraAllow.GetB())
+    {
+        return 1;
+    }
+
+    switch (m_player.m_cameraMode)
+    {
+    case CM_BUMPER:
+    {
+        CVector aim = m_curCamera.m_worldOrigin;
+        aim.x += 1.0f;
+        m_curCamera.lookAt(aim);
+        m_player.m_cameraMode = CM_FLYCAMERA;
+        break;
+    }
+    case CM_FOLLOWMODE:
+        m_player.m_cameraMode = CM_BUMPER;
+        break;
+    case CM_FLYCAMERA:
+    case CM_CONST:
+        m_player.m_cameraMode = CM_FOLLOWMODE;
+        break;
+    default:
+        M3D_LOG_ERR("Error: invalid camera mode: " + CStr(static_cast<int>(m_player.m_cameraMode)));
+        break;
+    }
+    return 1;
 }
 
 int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
@@ -1350,19 +1687,29 @@ int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
     return 1;
 }
 
-void CMiracle3d::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+void CMiracle3d::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x419000
+    Application::SaveToXml(xmlFile, xmlNode);
+
+    ref_ptr playerNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Player");
+    xmlNode->AddChild(playerNode);
+    m_player.SaveToXml(xmlFile, playerNode);
+
+    xmlNode->SetAttribute("CurGameMode", CStr(static_cast<int>(m_curGameMode.m_mode)).c_str());
+    xmlNode->SetAttribute("Paused", CStr(static_cast<int>(m_paused)).c_str());
 }
 
 void CMiracle3d::EndModalDlg()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x401290
+    UnPause();
 }
 
 bool CMiracle3d::CanLaunchIfaceWindow()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4188E0
+    return !M3D_APP->GetStation()->HasChildModalRunning();
 }
 
 int CMiracle3d::LoadMainMenuLevel()
@@ -1400,9 +1747,22 @@ int CMiracle3d::LoadMainMenuLevel()
     return 0;
 }
 
-int CMiracle3d::OnDebug(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnDebug(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4012D0 - IM_DEBUG_0..9 (12..21) latch a server key; IM_DEBUG_WIREFRAME
+    // (22) toggles the landscape draw mode in debug mode.
+    if (impInfo.m_state)
+    {
+        if (impInfo.m_impId != 22)
+        {
+            m_srvKeys[impInfo.m_impId - 12] = true;
+        }
+        if (impInfo.m_impId == 22 && M3D_ENGINE_CFG.m_debugMode.GetB())
+        {
+            m3d::pClient->GetWorld().GetLandscape().SwitchDrawMode();
+        }
+    }
+    return 1;
 }
 
 bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const& params, bool isContinuousMap)
@@ -1468,22 +1828,154 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int (CMiracle3d::*onFin
 
 CMiracle3d::~CMiracle3d()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4154F0 - only the members are released.
 }
 
 float CMiracle3d::GetNormalTimeScale() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40C4C0
+    return m_normalTimeScale;
 }
 
-void CMiracle3d::SetNormalTimeScale(float)
+void CMiracle3d::SetNormalTimeScale(float value)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40C4B0
+    m_normalTimeScale = value;
 }
 
-bool CMiracle3d::SaveGame(CStr const&, bool)
+bool CMiracle3d::SaveGame(CStr const& saveDir, bool bQuiet)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x421630
+    if (CStr(M3D_ENGINE_CFG.m_levFileName.GetS()).empty())
+    {
+        M3D_ENGINE_CFG.m_console->PrintF("Nothing to save");
+        return false;
+    }
+
+    if (!bQuiet)
+    {
+        m_pInterfaceManager->StartSplashing(1);
+        PutSplash(0, GetStringByStringId0("GameSaving").c_str());
+    }
+    M3D_LOG_INFO("Begin saving game '" + saveDir + "'...");
+
+    CStr const tmpMapsDir = m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
+    help::CopyDirectory(tmpMapsDir.c_str(), saveDir.c_str());
+    if (!bQuiet)
+    {
+        PutSplash(5, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    CStr const fileName = saveDir + "\\currentmap.xml";
+    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_WRITE))
+    {
+        M3D_ENGINE_CFG.m_console->PrintF("File " + fileName + " couldn't be open for writing\n");
+        return false;
+    }
+
+    if (!bQuiet)
+    {
+        CaptureMouse(this);
+    }
+    m3d::g_Kernel->GetTimer().SetActiveState(1);
+
+    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr ndGeneral = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "General");
+    xmlFile->AddChild(ndGeneral);
+    ndGeneral->SetAttribute(
+        "MapName", help::GetMapNameFromFileName(CStr(M3D_ENGINE_CFG.m_levFileName.GetS())).c_str());
+    m_pInterfaceManager->Save(xmlFile, ndGeneral);
+    if (!bQuiet)
+    {
+        PutSplash(15, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndDynamicScene = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "DynamicScene");
+    ndGeneral->AddChild(ndDynamicScene);
+    auto const saveType = ai::theObjects->m_SaveType;
+    ai::theObjects->m_SaveType = ai::ObjContainer::SAVE_FULL;
+    M3D_LOG_INFO("\tSaving Dynamic scene...");
+    bool const res = ai::gDynamicScene->SaveSceneToXml(xmlFile, ndDynamicScene);
+    M3D_LOG_INFO("\tDynamic scene saved.");
+    ai::theObjects->m_SaveType = saveType;
+    if (!bQuiet)
+    {
+        PutSplash(65, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndQuestManager = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "QuestManager");
+    ndGeneral->AddChild(ndQuestManager);
+    M3D_LOG_INFO("\tSaving quest states...");
+    ai::theQuestStateManager->SaveToXml(xmlFile, ndQuestManager);
+    M3D_LOG_INFO("\tQuest states saved.");
+    if (!bQuiet)
+    {
+        PutSplash(75, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndApplication = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Application");
+    ndGeneral->AddChild(ndApplication);
+    SaveToXml(xmlFile, ndApplication);
+    if (!bQuiet)
+    {
+        PutSplash(80, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndGameTime = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "GameTime");
+    ndGeneral->AddChild(ndGameTime);
+    M3D_LOG_INFO("\tSaving Game Time...");
+    ai::theObjects->m_GameTime.SaveToXML(xmlFile, ndGameTime);
+    M3D_LOG_INFO("\tGame Time saved.");
+    if (!bQuiet)
+    {
+        PutSplash(82, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndWeatherState = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "WeatherState");
+    ndGeneral->AddChild(ndWeatherState);
+    M3D_LOG_INFO("\tSaving Weather State...");
+    m3d::pClient->GetWorld().GetWeatherManager().SaveWeatherStateToXMLNode(xmlFile, ndWeatherState);
+    M3D_LOG_INFO("\tWeather State saved.");
+    if (!bQuiet)
+    {
+        PutSplash(84, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndProcessManager = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "ProcessManager");
+    ndGeneral->AddChild(ndProcessManager);
+    M3D_LOG_INFO("\tSaving ProcessManager...");
+    ai::theProcessManager->SaveToXML(xmlFile, ndProcessManager);
+    M3D_LOG_INFO("\tProcessManager saved.");
+    if (!bQuiet)
+    {
+        PutSplash(86, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    ref_ptr ndStatistics = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Statistics");
+    ndGeneral->AddChild(ndStatistics);
+    M3D_LOG_INFO("\tSaving statistics...");
+    ai::theStatisticManager->SaveToXml(xmlFile, ndStatistics);
+    M3D_LOG_INFO("\tStatistics saved.");
+    if (!bQuiet)
+    {
+        PutSplash(88, GetStringByStringId0("GameSaving").c_str());
+    }
+
+    xmlFile->Write(*stream);
+    if (!bQuiet)
+    {
+        PutSplash(100, GetStringByStringId0("GameSaving").c_str());
+    }
+    stream->Close();
+    M3D_LOG_INFO("Game '" + fileName + "' saved.");
+
+    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    if (AppActive() && M3D_ENGINE_CFG.m_clipCursorWithinRenderWnd.GetB())
+    {
+        CaptureAndClipSystemCursor(true);
+    }
+    return res;
 }
 
 bool CMiracle3d::LoadMap(
@@ -1726,9 +2218,17 @@ int CMiracle3d::CollideCamera(CVector& pos, float& dist, CVector const& dir, CVe
     return 1;
 }
 
-int CMiracle3d::OnSkipCinematicMessage(m3d::AuxImpulseInfo const&)
+int CMiracle3d::OnSkipCinematicMessage(m3d::AuxImpulseInfo const& impInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41E430
+    if (!impInfo.m_state)
+    {
+        if (auto* cinemaPanel = GetCinemaPanel())
+        {
+            cinemaPanel->m_bSkipMessage = true;
+        }
+    }
+    return 1;
 }
 
 m3d::BlockMusicManager* CMiracle3d::GetBlockMusicManager()
@@ -1738,12 +2238,13 @@ m3d::BlockMusicManager* CMiracle3d::GetBlockMusicManager()
 
 bool CMiracle3d::IsRenderAsBackground() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4196B0
+    return m_bRenderAsBackground;
 }
 
 void CMiracle3d::EmergencyRedrawAllObjs()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x418000 - nothing to do.
 }
 
 int CMiracle3d::Controls(double t0, double tlen)
@@ -1884,29 +2385,85 @@ int CMiracle3d::Controls(double t0, double tlen)
     return 1;
 }
 
-float CMiracle3d::GetMeanHigh(float, float)
+float CMiracle3d::GetMeanHigh(float x, float y)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x401330 - samples the ground (or water surface, whichever is higher)
+    // on a 10 m grid over the 100 m square centred on (x, y).
+    auto const landSize = static_cast<float>(16 * m3d::pClient->GetWorld().m_level->land_size) * 8.0f;
+    float meanZ = 0.0f;
+    int count = 0;
+    for (float xx = x - 50.0f; xx <= x + 50.0f; xx += 10.0f)
+    {
+        for (float yy = y - 50.0f; yy <= y + 50.0f; yy += 10.0f)
+        {
+            if (xx >= 0.0f && yy >= 0.0f && landSize > xx && landSize > yy)
+            {
+                auto& landscape = m3d::pClient->GetWorld().GetLandscape();
+                float const waterHeight = landscape.getWaterHeight(
+                    static_cast<int>(xx * 0.03125f), static_cast<int>(yy * 0.03125f));
+                float const height = landscape.GetHeight(xx, yy, -1, false);
+                float const z = waterHeight > height ? waterHeight : height;
+                meanZ += z;
+                ++count;
+            }
+        }
+    }
+    return count > 0 ? meanZ / static_cast<float>(count) : meanZ;
 }
 
-float CMiracle3d::GetMaxHigh(float, float)
+float CMiracle3d::GetMaxHigh(float x, float y)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4014F0 - samples the ground (or water surface, whichever is higher)
+    // on a 10 m grid over the 100 m square centred on (x, y).
+    auto const landSize = static_cast<float>(16 * m3d::pClient->GetWorld().m_level->land_size) * 8.0f;
+    float maxZ = -99999.0f;
+    for (float xx = x - 50.0f; xx <= x + 50.0f; xx += 10.0f)
+    {
+        for (float yy = y - 50.0f; yy <= y + 50.0f; yy += 10.0f)
+        {
+            if (xx >= 0.0f && yy >= 0.0f && landSize > xx && landSize > yy)
+            {
+                auto& landscape = m3d::pClient->GetWorld().GetLandscape();
+                float const waterHeight = landscape.getWaterHeight(
+                    static_cast<int>(xx * 0.03125f), static_cast<int>(yy * 0.03125f));
+                float const height = landscape.GetHeight(xx, yy, -1, false);
+                float const z = waterHeight > height ? waterHeight : height;
+                if (z > maxZ)
+                {
+                    maxZ = z;
+                }
+            }
+        }
+    }
+    return maxZ;
 }
 
 float CMiracle3d::getFov() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x418900
+    return m_fov.GetF();
 }
 
 void CMiracle3d::initZoom()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x418E20
+    if (!zoomInited)
+    {
+        m_Fov0 = m_fov.GetF();
+        zoomInited = true;
+    }
 }
 
 int CMiracle3d::CreateInterfaceManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4187D0
+    m_pInterfaceManager = new TruxxUiManager;
+    if (!m_pInterfaceManager)
+    {
+        return 0;
+    }
+    m_pInterfaceManager->Init();
+    return 1;
 }
 
 void CMiracle3d::DrawBackground()
@@ -2339,14 +2896,92 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         M3D_RENDERER->SetFog(false, false);
         m_postEffect->Render(m_bBackgroundTextureIsValid);
 
+        // RVA 0x415B40 - debug overlays: camera position / speed / angles in the
+        // top-right corner, and object and vehicle counters.
         if (M3D_ENGINE_CFG.m_camInfo.GetB() && m3d::pClient)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
+
+            CStr strText;
+            strText.format(
+                "%0.4f %0.4f %0.4f", m_curCamera.m_worldOrigin.x, m_curCamera.m_worldOrigin.y, m_curCamera.m_worldOrigin.z);
+            DrawTextRel(1024.0f - static_cast<float>(strText.length()) * 10.0f, 12.0f, 0xFFFF0000, strText, 0, -1);
+
+            if (auto* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer())
+            {
+                CStr const speed(vehicle->GetLinearVelocity().length() * 3.5999999f);
+                DrawTextRel(1024.0f - static_cast<float>(speed.length()) * 10.0f, 24.5f, 0xFFFF0000, speed, 0, -1);
+            }
+
+            CStr angles;
+            angles.format("Y=%0.4f P=%0.4f R=%0.4f", m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+            DrawTextRel(1024.0f - static_cast<float>(angles.length()) * 10.0f, 37.0f, 0xFFFF0000, angles, 0, -1);
+
+            M3D_RENDERER->PopZbState();
         }
 
-        if (M3D_ENGINE_CFG.m_ai_vehicle_stats.GetB() && m3d::pClient)
+        if (m3d::pClient && M3D_ENGINE_CFG.m_ai_vehicle_stats.GetB())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Every scene-graph node below the root.
+            int numNodes = 0;
+            std::vector<m3d::Object*> stack;
+            stack.push_back(m3d::pClient->GetWorld().GetGraph().GetRootNode());
+            while (!stack.empty())
+            {
+                auto* node = stack.back();
+                stack.pop_back();
+                for (auto* child = node->GetFirstChild(); child; child = child->GetNextSibling())
+                {
+                    ++numNodes;
+                    if (child->GetFirstChild())
+                    {
+                        stack.push_back(child);
+                    }
+                }
+            }
+
+            // Objects whose exact class is Vehicle.
+            int numVehicles = 0;
+            for (auto id = ai::theObjects->m_allObjects.m_firstNodeId; id != -1;
+                 id = ai::theObjects->m_allObjects.m_records[id].m_nextId)
+            {
+                if (ai::theObjects->m_allObjects.m_records[id].m_value->GetClass() == &ai::Vehicle::m_classVehicle)
+                {
+                    ++numVehicles;
+                }
+            }
+
+            M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
+            DrawTextRel(800.0f, 413.0f, 0xFFFF0000, CStr(ai::theObjects->m_GameTime.Diff()) + CStr(" game time"), 0, -1);
+            DrawTextRel(800.0f, 426.0f, 0xFFFF0000, CStr(ai::gGlobalSpace->count) + CStr(" geoms in global space"), 0, -1);
+            DrawTextRel(800.0f, 439.0f, 0xFFFF0000, CStr(numNodes) + CStr(" nodes"), 0, -1);
+            DrawTextRel(800.0f, 452.0f, 0xFFFF0000, CStr(ai::theObjects->m_allObjects.m_size) + CStr(" objects"), 0, -1);
+            DrawTextRel(
+                800.0f, 465.0f, 0xFFFF0000, CStr(ai::theObjects->m_updatingObjects.m_size) + CStr(" updating objects"), 0, -1);
+            DrawTextRel(800.0f, 478.0f, 0xFFFF0000, CStr(numVehicles) + CStr(" vehicles"), 0, -1);
+            DrawTextRel(
+                800.0f,
+                491.0f,
+                0xFFFF0000,
+                CStr(ai::gDynamicScene->GetNumNearCallbacksLastFrame()) + CStr(" near callbacks"),
+                0,
+                -1);
+            DrawTextRel(800.0f, 504.0f, 0xFFFF0000, CStr(ai::theObjects->m_numRemovalsLastFrame) + CStr(" removals"), 0, -1);
+
+            if (auto* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer())
+            {
+                DrawTextRel(270.0f, 717.0f, 0xFFFF0000, CStr(vehicle->Fuel().value().get()) + CStr(" fuel"), 0, -1);
+                DrawTextRel(
+                    270.0f,
+                    730.0f,
+                    0xFFFF0000,
+                    CStr(vehicle->GetLinearVelocity().length() * 3.5999999f) + CStr(" km/h"),
+                    0,
+                    -1);
+                DrawTextRel(270.0f, 743.0f, 0xFFFF0000, CStr(vehicle->GetEngineRpm()) + CStr(" rpm"), 0, -1);
+                DrawTextRel(270.0f, 756.0f, 0xFFFF0000, CStr(vehicle->GetCurrentGear()) + CStr(" gear"), 0, -1);
+            }
+            M3D_RENDERER->PopZbState();
         }
     }
 
@@ -2543,6 +3178,8 @@ int CMiracle3d::FrameMove()
 void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
 {
     Application::HandleCommand(i, consoleParams);
+    // RVA 0x41F230
+    auto* console = M3D_ENGINE_CFG.m_console;
     switch (i)
     {
     case 4096:
@@ -2550,8 +3187,145 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         LoadMapFromConsole(consoleParams, false);
         break;
     }
+    case 4112: // load
+    {
+        if (consoleParams.NumOfTokens(' ') == 2)
+        {
+            LoadSavedGame(CStr(consoleParams.UnsafeStringToken(1, ' ')));
+        }
+        else
+        {
+            console->PrintF("Usage: /load <file_name>\n");
+        }
+        break;
+    }
+    case 4117:
+    {
+        M3D_APP->MiniDump();
+        break;
+    }
+    case 4118:
+    {
+        LoadMapFromConsole(consoleParams, true);
+        break;
+    }
+    case 4119:
+    {
+        m3d::pClient->GetWorld().GetLandscape().ReBuildShoresVb();
+        break;
+    }
+    case 4120: // save
+    {
+        if (consoleParams.NumOfTokens(' ') == 2)
+        {
+            SaveGame(CStr(consoleParams.UnsafeStringToken(1, ' ')), true);
+        }
+        else
+        {
+            console->PrintF("Usage: /save <file_name>\n");
+        }
+        break;
+    }
+    case 4121:
+    {
+        console->PrintF(ai::theStatisticManager->GetAllStatisticsDescription());
+        break;
+    }
+    case 4128:
+    {
+        ReloadPostEffects();
+        break;
+    }
+    case 4129: // add post effect
+    {
+        if (consoleParams.NumOfTokens(' ') < 2)
+        {
+            console->PrintF("input name of effect\n");
+            break;
+        }
+        char buf[50];
+        consoleParams.StringToken(1, buf, 50, ' ');
+        bool const added = consoleParams.NumOfTokens(' ') == 2
+            ? AddPostEffect(CStr(buf), 0.0f)
+            : AddPostEffect(CStr(buf), consoleParams.FloatToken(2, ' '));
+        if (!added)
+        {
+            console->PrintF("there is no effect with name '" + CStr(buf) + CStr("'\n"));
+        }
+        break;
+    }
+    case 4130: // get / set post effect param
+    {
+        if (consoleParams.NumOfTokens(' ') < 2)
+        {
+            console->PrintF("input name of param\n");
+            break;
+        }
+        char buf[50];
+        consoleParams.StringToken(1, buf, 50, ' ');
+        if (consoleParams.NumOfTokens(' ') == 2)
+        {
+            float value = 0.0f;
+            if (GetPostEffectParam(CStr(buf), value))
+            {
+                console->PrintF(CStr(buf) + CStr(" = ") + CStr(value) + CStr("\n"));
+            }
+            else
+            {
+                console->PrintF("Param " + CStr(buf) + CStr(" not exist\n"));
+            }
+        }
+        else if (consoleParams.NumOfTokens(' ') == 3)
+        {
+            if (SetPostEffectParam(CStr(buf), consoleParams.FloatToken(2, ' ')))
+            {
+                console->PrintF(CStr(buf) + CStr(" set to ") + CStr(consoleParams.FloatToken(2, ' ')) + CStr("\n"));
+            }
+            else
+            {
+                console->PrintF("Param " + CStr(buf) + CStr(" not exist\n"));
+            }
+        }
+        else
+        {
+            console->PrintF("too many parameters\n");
+        }
+        break;
+    }
+    case 4131: // kill post effect
+    {
+        if (consoleParams.NumOfTokens(' ') < 2)
+        {
+            console->PrintF("input name of effect\n");
+            break;
+        }
+        char buf[50];
+        consoleParams.StringToken(1, buf, 50, ' ');
+        if (!KillPostEffect(CStr(buf)))
+        {
+            console->PrintF("there is no effect with name '" + CStr(buf) + CStr("' or effect not running\n"));
+        }
+        break;
+    }
+    case 4132: // hardware cursor
+    {
+        // NOTE: the original only requires one token (the command itself), so
+        // with no argument IntToken(1) reads past the parameters.
+        if (consoleParams.NumOfTokens(' ') < 1)
+        {
+            console->PrintF("input name of param\n");
+            break;
+        }
+        bool const bEnable = consoleParams.IntToken(1, ' ') != 0;
+        M3D_ENGINE_CFG.m_r_dxcursor.SetB(bEnable, false);
+        if (!bEnable || GetCapture() != this)
+        {
+            EnableDXCursor(bEnable);
+        }
+        break;
+    }
     default:
-        RETRUXX_NOT_IMPLEMENTED;
+        break;
     }
 }
 

@@ -77,9 +77,15 @@ namespace m3d
             return 0;
         }
 
-        unsigned FileReader::WriteBytes(void const* dst, unsigned numBytes)
+        unsigned FileReader::WriteBytes(void const* src, unsigned numBytes)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757730
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->WriteBytes(src, numBytes);
+            }
+            return 0;
         }
 
         FILETIME FileReader::GetDate() const

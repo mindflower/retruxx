@@ -13,6 +13,7 @@
 #include "file/fileserver.h"
 #include "file/filestream.h"
 #include "uimisc/guihelper.h"
+#include "uimanager/uidefs.h"
 
 RT_CLASS_EXPORTS_BEGIN(Profile)
 RT_CLASS_EXPORTS_END;
@@ -30,6 +31,9 @@ namespace
         {"PP_SAVE_SORT_ARG", 0},
         {"PP_SAVE_SORT_DIR", 1},
         {"PP_NEXT_SAVE_FOLDER_NUM", 2},
+        {"PP_MOTION_BLUR", 11},
+        {"PP_MOTION_BLUR_ALPHA", 12},
+        {"PP_BLOOM", 13},
         {"PP_QUESTS_FILTER", 3},
         {"PP_MOUSE_SENSITIVITY", 4},
         {"PP_MOUSE_YAXIS_FLIP", 5},
@@ -38,9 +42,6 @@ namespace
         {"PP_INPUT_LANGUAGE", 8},
         {"PP_NUM_RADIO_REPLIES_COEFF", 9},
         {"PP_MINIMAP_ENABLE_OBJECT_NAMES", 10},
-        {"PP_MOTION_BLUR", 11},
-        {"PP_MOTION_BLUR_ALPHA", 12},
-        {"PP_BLOOM", 13},
         {"PP_AUTOHELP_ENABLED", 14},
         {"PP_DIFFICULTY_LEVEL", 15},
         {"PP_HELP_ID_MAIN_GAME_INTERFACE", 16},
@@ -155,7 +156,8 @@ void Profile::SetFolder(CStr const& folder)
 
 m3d::Object* Profile::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40D840
+    return new Profile(*this);
 }
 
 int Profile::GetParam(ProfileParam paramId, m3d::AIParam& param) const
@@ -180,14 +182,42 @@ m3d::Class* Profile::GetBaseClass()
     return RT_CLASS_LOCAL(Object);
 }
 
-void Profile::SetName(CStr const&)
+void Profile::SetName(CStr const& name)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40DB30
+    m_name = name;
 }
 
-int Profile::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+int Profile::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40EA80
+    if (!xmlFile || !xmlNode)
+    {
+        M3D_LOG_INFO("Profile::SaveToXml error - invalid params");
+        return 0;
+    }
+    if (!IsValid())
+    {
+        M3D_LOG_INFO("Profile::SaveToXml - profile is invalid");
+        return 0;
+    }
+
+    CStr const name = m_name;
+    xmlNode->SetAttribute("Name", name.c_str());
+
+    ref_ptr paramsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Params");
+    xmlNode->AddChild(paramsNode);
+    for (auto const& param : m_params)
+    {
+        ref_ptr paramNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Param");
+        paramsNode->AddChild(paramNode);
+        paramNode->SetAttribute("Id", ParamId2Name(param.first).c_str());
+
+        ref_ptr valueNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Value");
+        paramNode->AddChild(valueNode);
+        param.second.SaveToXML(xmlFile, valueNode);
+    }
+    return 1;
 }
 
 bool Profile::IsValid() const
@@ -213,7 +243,7 @@ int Profile::SetParam(ProfileParam paramId, m3d::AIParam const& paramVal)
 
 Profile::~Profile()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40DA80 - only the members are released.
 }
 
 CStr const& Profile::GetName() const
@@ -311,7 +341,9 @@ void Profile::Clear()
 
 Profile::Profile(Profile const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40DA20 - nothing is copied and, unlike the default constructor,
+    // the parameters are not reset to their defaults either: a clone starts
+    // with no name, no folder and an empty parameter map.
 }
 
 Profile::Profile()
@@ -334,9 +366,17 @@ ProfileParam Profile::ParamName2Id(CStr const& name) const
     return PP_NUM_PROFILE_PARAMS;
 }
 
-CStr Profile::ParamId2Name(ProfileParam) const
+CStr Profile::ParamId2Name(ProfileParam id) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40E510
+    for (auto const& param : l_paramName2Id)
+    {
+        if (param.m_id == id)
+        {
+            return param.m_name;
+        }
+    }
+    return {};
 }
 
 RT_CLASS_EXPORTS_BEGIN(ProfileManager)
@@ -374,17 +414,79 @@ int ProfileManager::SetCurProfile(CStr const& profileName)
 
 CStr ProfileManager::GetDefaultProfileName() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x411760 - the localised default name, numbered "00", "01", ...
+    // when a profile with that name already exists.
+    CStr const defProfileName = M3D_APP->GetStringByStringId0("DefaultProfileName");
+    if (!_GetProfileByName(defProfileName))
+    {
+        return defProfileName;
+    }
+
+    for (int i = 0;; ++i)
+    {
+        CStr strNum;
+        strNum.format("%02d", i);
+        CStr const defProfileNamePlus = defProfileName + strNum;
+        if (!_GetProfileByName(defProfileNamePlus))
+        {
+            return defProfileNamePlus;
+        }
+    }
 }
 
 m3d::Class* ProfileManager::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40ED60
+    return RT_CLASS_LOCAL(ProfileManager);
 }
 
-int ProfileManager::DeleteProfile(CStr const&)
+int ProfileManager::DeleteProfile(CStr const& name)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40FD80
+    // Copied first: `name` is often the doomed profile's own m_name.
+    CStr const profileName = name;
+
+    auto it = m_profiles.begin();
+    for (; it != m_profiles.end(); ++it)
+    {
+        if (*it && (*it)->GetName() == profileName)
+        {
+            break;
+        }
+    }
+    if (it == m_profiles.end())
+    {
+        M3D_LOG_INFO("ProfileManager::DeleteProfile error - profile with name " + profileName + " not found");
+        return 0;
+    }
+
+    CStr const dirPath = M3D_APP->GetStartupFolder() + "\\" + GetProfileFolderName(profileName);
+    help::DeleteWindowsDir(dirPath);
+
+    delete *it;
+    *it = nullptr;
+    m_profiles.erase(it);
+    M3D_APP->EnqueueMessage(65679, 0, 0, 0, 0, CStr(), m3d::AIParam());
+
+    if (profileName == m_curProfileName)
+    {
+        if (!m_profiles.empty())
+        {
+            if (m_profiles.front())
+            {
+                SetCurProfile(m_profiles.front()->GetName());
+            }
+        }
+        else
+        {
+            // With the "change profile" window up, the plain new-profile window
+            // is shown; otherwise the stand-alone one.
+            auto const changeProfileVisible = M3D_APP->m_pInterfaceManager->IsWindowVisible(IW_WND_CHANGE_PROFILE);
+            M3D_APP->m_pInterfaceManager->ShowWindow(
+                IW_WND_NEW_PROFILE_ALONE - (changeProfileVisible ? 1 : 0), true, true, true, true, nullptr);
+        }
+    }
+    return 1;
 }
 
 retruxx::vector<CStr> ProfileManager::GetProfilesNames() const
@@ -400,7 +502,8 @@ retruxx::vector<CStr> ProfileManager::GetProfilesNames() const
 
 int ProfileManager::Done()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x411DF0
+    return SaveProfile(_GetProfileByName(m_curProfileName));
 }
 
 int ProfileManager::Init()
@@ -424,9 +527,35 @@ int ProfileManager::Init()
     return 1;
 }
 
-Profile const* ProfileManager::CreateNewProfile(CStr const&)
+Profile const* ProfileManager::CreateNewProfile(CStr const& profileName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40F8E0
+    auto* profile = static_cast<Profile*>(m3d::g_Kernel->New("Profile"));
+    if (!profile)
+    {
+        M3D_LOG_INFO("ProfileManager::CreateNewProfile error - cannot instatntiate profile object");
+        return nullptr;
+    }
+
+    profile->SetName(profileName);
+    profile->SetFolder(GetProfileFolderName(profileName));
+
+    // NOTE: the original logs the name of the *current* profile in both error
+    // messages below, not the name of the profile that failed to be created.
+    CStr const sProfileName = m_curProfileName;
+    if (!AddProfile(profile))
+    {
+        delete profile;
+        M3D_LOG_INFO("ProfileManager::CreateNewProfile error - fail to add profile \"" + sProfileName + "\"");
+        return nullptr;
+    }
+    if (!SaveProfile(profile))
+    {
+        DeleteProfile(profile->GetName());
+        M3D_LOG_INFO("ProfileManager::CreateNewProfile error - fail to save profile " + sProfileName + " to xml file");
+        return nullptr;
+    }
+    return profile;
 }
 
 m3d::Class* ProfileManager::GetBaseClass()
@@ -436,7 +565,10 @@ m3d::Class* ProfileManager::GetBaseClass()
 
 ProfileManager::~ProfileManager()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40EF90
+    Clear();
+    m3d::g_Kernel->GetEngineCfg().m_console->UnregisterCVar(&m_cvPathToProfiles);
+    m3d::g_Kernel->GetEngineCfg().m_console->UnregisterCVar(&m_cvProfileFileName);
 }
 
 m3d::Object* ProfileManager::CreateObject()
@@ -506,14 +638,16 @@ int ProfileManager::LoadProfiles()
     return 1;
 }
 
-Profile* ProfileManager::GetProfileByName(CStr const&) const
+Profile* ProfileManager::GetProfileByName(CStr const& profileName) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40FCC0
+    return _GetProfileByName(profileName);
 }
 
 m3d::Object* ProfileManager::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40D870
+    return new ProfileManager(*this);
 }
 
 //Verified: ProfileManager::Clear
@@ -527,14 +661,20 @@ void ProfileManager::Clear()
     m_curProfileName = {};
 }
 
-CStr ProfileManager::GetProfileOwnFolderName(CStr const&) const
+CStr ProfileManager::GetProfileOwnFolderName(CStr const& profileName) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4110B0 - a profile's folder is simply named after the profile.
+    if (profileName.empty())
+    {
+        return {};
+    }
+    return profileName;
 }
 
 Profile const* ProfileManager::CreateDefaultProfile()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x411720
+    return CreateNewProfile(GetDefaultProfileName());
 }
 
 int ProfileManager::AddProfile(Profile* profile)
@@ -556,7 +696,8 @@ int ProfileManager::AddProfile(Profile* profile)
 
 ProfileManager::ProfileManager(ProfileManager const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x40EF10 - nothing is copied: the profile list and current name start
+    // empty and both cvars are default-constructed and left unregistered.
 }
 
 ProfileManager::ProfileManager() :
@@ -597,27 +738,70 @@ int ProfileManager::GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CSt
     return 1;
 }
 
-CStr ProfileManager::GetProfileFolderName(CStr const&) const
+CStr ProfileManager::GetProfileFolderName(CStr const& profileName) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x411130
+    if (profileName.empty())
+    {
+        return {};
+    }
+    auto const ownFolderName = GetProfileOwnFolderName(profileName);
+    return CStr(m_cvPathToProfiles.GetS()) + "\\" + ownFolderName;
 }
 
-CStr ProfileManager::GetProfileFilePath(CStr const&) const
+CStr ProfileManager::GetProfileFilePath(CStr const& profileName) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x411240
+    if (profileName.empty())
+    {
+        return {};
+    }
+    auto const folderName = GetProfileFolderName(profileName);
+    // NOTE: the original joins the folder and the file name without a path
+    // separator, yielding e.g. "data\\profiles\\Nameprofile.xml".
+    // SaveProfile builds its own path and does not use this.
+    return folderName + CStr(m_cvProfileFileName.GetS());
 }
 
 int ProfileManager::SaveProfile(Profile const* profile) const
 {
-    if (profile && profile->IsValid())
+    // RVA 0x4102A0
+    if (!profile || !profile->IsValid())
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-    else
-    {
-        M3D_LOG_ERR("ProfileManager::SaveProfile error - invalid profile");
+        M3D_LOG_INFO("ProfileManager::SaveProfile error - invalid profile");
         return 0;
     }
+
+    auto const& folder = profile->GetFolder();
+    auto const attr = GetFileAttributesA(folder.c_str());
+    if ((attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY) == 0) && !help::CreateWindowsDir(folder))
+    {
+        M3D_LOG_INFO("ProfileManager::SaveProfile error - cannot create folder \"" + folder);
+        SetCurrentDirectoryA(M3D_APP->GetStartupFolder().c_str());
+        return 0;
+    }
+
+    CStr const profileFileName = folder + "\\" + CStr(m_cvProfileFileName.GetS());
+    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    if (!stream->Open(profileFileName.c_str(), m3d::fs::IStream::OPEN_WRITE))
+    {
+        M3D_LOG_INFO("ProfileManager::SaveProfile error - can't open file " + profileFileName + " for write.");
+        return 0;
+    }
+
+    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Profile");
+    xmlFile->AddChild(node);
+
+    auto const res = profile->SaveToXml(xmlFile, node);
+    CStr const sProfileName = profile->GetName();
+    if (!res)
+    {
+        M3D_LOG_INFO("ProfileManager::SaveProfile - errors while saving profile " + sProfileName);
+    }
+    xmlFile->Write(*stream);
+    stream->Close();
+    return res;
 }
 
 Profile* ProfileManager::_GetProfileByName(CStr const& profileName) const

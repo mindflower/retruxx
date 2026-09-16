@@ -27,7 +27,8 @@ void ShowCurrentStack()
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
 {
     auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
-    auto id = objContainer->CreateNewObject(context->asInt(1), context->asString(2), context->asInt(3), context->asInt(4));
+    auto id =
+        objContainer->CreateNewObject(context->asInt(1), context->asString(2), context->asInt(3), context->asInt(4));
     context->pushInt(id);
     return 1;
 }
@@ -265,16 +266,17 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void GameTime::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void GameTime::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m3d::SafeInt64Attrib(m_milliSeconds, xmlNode, "Seconds");
+        m3d::SafeInt64Attrib(m_milliSeconds0, xmlNode, "Seconds0");
     }
 
     void GameTime::setExpanded(int hour, int minute, int day, int month, int year)
     {
         //TODO: check this
-        uint64_t res =
-            (uint64_t)60000 * (uint64_t)(minute + 60 * (uint64_t)(hour + 24 * (uint64_t)(day + 31 * (uint64_t)(month + 12 * year) - 32)));
+        uint64_t res = (uint64_t)60000 *
+            (uint64_t)(minute + 60 * (uint64_t)(hour + 24 * (uint64_t)(day + 31 * (uint64_t)(month + 12 * year) - 32)));
         m_milliSeconds = res;
         m_milliSeconds0 = res;
     }
@@ -502,7 +504,8 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) : ObjContainer::const_iterator(pRecords, nodeId)
+    ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) :
+        ObjContainer::const_iterator(pRecords, nodeId)
     {
     }
 
@@ -647,7 +650,11 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    int ObjContainer::CreateNewObjectWithSuspendedPostLoad(int prototypeId, char const* name, int parentId, int belongId)
+    int ObjContainer::CreateNewObjectWithSuspendedPostLoad(
+        int prototypeId,
+        char const* name,
+        int parentId,
+        int belongId)
     {
         auto const objId = CreateEntityForLoad(prototypeId, name, parentId, -1);
         if (objId >= 0)
@@ -962,21 +969,24 @@ namespace ai
             m_GameTime += ai::theGlobProp.m_gameTimeMult * elapsedTime;
 
             // Update global game time statistic
-            auto* gameTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("GameTime", "TimeStatistic"));
+            auto* gameTimeStat =
+                dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("GameTime", "TimeStatistic"));
 
             gameTimeStat->m_bGlobalFlag = true;
             gameTimeStat->IncreaseByMilliseconds(ai::theGlobProp.m_gameTimeMult * elapsedTime * 1000.0);
 
             // Update level-specific game time statistic
             auto levelStatName = "GameTime" + ai::pServer->GetWorld()->m_level->m_levelName;
-            auto* levelGameTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic(levelStatName, "TimeStatistic"));
+            auto* levelGameTimeStat =
+                dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic(levelStatName, "TimeStatistic"));
 
             levelGameTimeStat->m_bGlobalFlag = false;
             levelGameTimeStat->IncreaseByMilliseconds(ai::theGlobProp.m_gameTimeMult * elapsedTime * 1000.0);
         }
 
         // Update real time statistics (always updated)
-        auto* realTimeStat = dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("RealTime", "TimeStatistic"));
+        auto* realTimeStat =
+            dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("RealTime", "TimeStatistic"));
         realTimeStat->m_bGlobalFlag = true;
         uint64_t realTimeDelta = static_cast<uint64_t>(elapsedTime * 1000.0);
         realTimeStat->IncreaseByMilliseconds(realTimeDelta);
@@ -1023,7 +1033,8 @@ namespace ai
         for (auto iter = begin(); iter != end(); ++iter)
         {
             M3D_ASSERT(*iter);
-            M3D_ASSERT(GetEntityByObjId(iter.m_nodeId + (m_allObjects.m_records[iter.m_nodeId].m_totalObjects << BITS_IN_MAX_OBJECTS)));
+            M3D_ASSERT(GetEntityByObjId(
+                iter.m_nodeId + (m_allObjects.m_records[iter.m_nodeId].m_totalObjects << BITS_IN_MAX_OBJECTS)));
             if (!bDeleteObjectsPassedToAnotherMap)
             {
                 if (iter->m_bPassedToAnotherMap)
