@@ -39,6 +39,8 @@ namespace m3d
         public IDeviceResetCallback,
         public ui::WndStation
     {
+        friend class LightsServer;
+
     public:
         Application(const m3d::Application&);
         Application(const char* logName);

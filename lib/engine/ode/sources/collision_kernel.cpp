@@ -234,6 +234,7 @@ dxGeom::dxGeom (dSpaceID _space, int is_placeable)
   next = 0;
   tome = 0;
   parent_space = 0;
+  parent_transform = 0;
   dSetZero (aabb,6);
   category_bits = ~0;
   collide_bits = ~0;
@@ -349,6 +350,13 @@ dBodyID dGeomGetBody (dxGeom *g)
 {
   dAASSERT (g);
   return g->body;
+}
+
+
+dGeomID dGeomGetParentTransform (dxGeom *g)
+{
+  // RVA 0x600620 (engine extension)
+  return g->parent_transform;
 }
 
 

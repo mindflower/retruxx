@@ -49,6 +49,8 @@ namespace ai
         // The game's debug overlay and save/load read the containers directly.
         friend class ::CMiracle3d;
         friend class ::SavesManager;
+        // DynamicQuestManager::ConsiderPlayerKill walks the updating objects directly.
+        friend class DynamicQuestManager;
 
     protected:
         ObjContainer();

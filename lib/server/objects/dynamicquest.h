@@ -40,6 +40,9 @@ namespace ai
 
     class DynamicQuest : public ai::Obj
     {
+        // DynamicQuestHunt::ConsiderPlayerKill reads the quest state directly.
+        friend class DynamicQuestHunt;
+
     protected:
         virtual  ~DynamicQuest() override = 0 /* 0x00 */;
 

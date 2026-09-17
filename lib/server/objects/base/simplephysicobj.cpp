@@ -5,6 +5,7 @@
 #include <ode/collision.h>
 #include <ode/objects.h>
 
+#include "server/objects/base/objcontainer.h"
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
@@ -331,9 +332,13 @@ namespace ai
             this->m_physicBody->RelinkSceneGraphNode();
     }
 
-    void SimplePhysicObj::SetDeadTimer(int, bool)
+    void SimplePhysicObj::SetDeadTimer(int resttime, bool testVisibility)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F6B20 - the object is removed once resttime milliseconds have passed.
+        m_testVisibility = testVisibility;
+        m_deadTimerActive = true;
+        m_deadTimer = static_cast<float>(resttime) * 0.001f;
+        theObjects->AddObjToUpdate(this);
     }
 
     void SimplePhysicObj::TransferToSpace(dxSpace* newSpace)
@@ -644,9 +649,16 @@ namespace ai
         PhysicObj::_LinkBodyToGeoms();
     }
 
-    void SimplePhysicObj::_UpdateFullPhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
+    void SimplePhysicObj::_UpdateFullPhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F74B0
+        m_collisionInfos = collisionInfos;
+        if (m_physicBody)
+        {
+            m_physicBody->ChangePhysicBodyByCollisionInfo(collisionInfos);
+        }
+        // NOTE: the first collision info is used without checking that there is one.
+        _SetMassCenter(collisionInfos.front().m_relTranslation);
     }
 
     void SimplePhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)

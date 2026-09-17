@@ -742,13 +742,16 @@ namespace ai
 
     int Obj::GetLastDamageSource() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6895A0
+        return m_LastDamageSource;
     }
 
     void Obj::_SetDeadStatus()
     {
+        // RVA 0x692760 - only the first call announces the death.
+        unsigned const oldFlags = m_flags;
         m_flags |= 8;
-        if ((m_flags & 8) == 0)
+        if ((oldFlags & 8) == 0)
         {
             M3D_APP->ImmediateMessage(66542, (int)this, 0, 0, 0, {}, {});
             CauseEvent(GE_OBJECT_DIE, 0.0, {GetId()}, {});

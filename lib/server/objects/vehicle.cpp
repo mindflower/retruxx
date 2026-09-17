@@ -71,6 +71,8 @@
 #include "server/roles/VehicleRole.h"
 #include "server/statistic/floatstatistic.h"
 #include "server/statistic/statisticmanager.h"
+#include "server/statistic/intstatistic.h"
+#include "server/dynamicquestmanager.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -922,9 +924,54 @@ namespace ai
         }
     }
 
-    void Vehicle::Flow(Obj*, float)
+    void Vehicle::Flow(Obj* partToFlow, float averageSpeed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA290 - besides tearing off parts, a vehicle can shed a wheel, which flies off and later vanishes.
+        if (!partToFlow)
+        {
+            return;
+        }
+        ComplexPhysicObj::Flow(partToFlow, averageSpeed);
+        if ((GetFlags() & 2) != 0)
+        {
+            return;
+        }
+
+        auto wheelInfo = m_wheels.begin();
+        while (wheelInfo != m_wheels.end() && wheelInfo->GetWheel() != partToFlow)
+        {
+            ++wheelInfo;
+        }
+        if (wheelInfo == m_wheels.end())
+        {
+            return;
+        }
+
+        Wheel* const wheel = wheelInfo->GetWheel();
+        wheel->DetachFromPhysicObj();
+        wheel->TransferToNewSpace();
+
+        // Away from the vehicle's centre raised by its height, roughly, at 0.5 to 1.5 times the average speed.
+        float const height = m_size.y;
+        CVector const vehiclePos = GetPosition();
+        CVector const wheelPos = wheel->GetPosition();
+        CVector const away(wheelPos.x - vehiclePos.x, wheelPos.y - vehiclePos.y + height, wheelPos.z - vehiclePos.z);
+        float const invLen =
+            static_cast<float>(1.0 / sqrt(static_cast<double>(away.z) * away.z + static_cast<double>(away.y) * away.y +
+                                          static_cast<double>(away.x) * away.x + 0.00000011920929f));
+        CVector const flyDir = GetRandomDeviatedVector(CVector(invLen * away.x, away.y * invLen, away.z * invLen), 1.0f);
+
+        float const lowSpeed = averageSpeed * 0.5f;
+        float const highSpeed = averageSpeed * 1.5f;
+        float const minSpeed = std::min(lowSpeed, highSpeed);
+        float const maxSpeed = std::max(lowSpeed, highSpeed);
+        float const speed = static_cast<float>(rand()) * (maxSpeed - minSpeed) * 0.000030518509f + minSpeed;
+        wheel->SetLinearVelocity(CVector(flyDir.x * speed, flyDir.y * speed, flyDir.z * speed));
+        wheel->SetAutoDisabling(true, 0.1f, 0.1f, 5);
+        wheel->SetDeadTimer(60000, true);
+        wheel->GetPhysicBody()->SetNodeAction(2 * rand() / 0x8000 == 1 ? 8 : 9, true);
+
+        wheelInfo->SetWheel(nullptr);
     }
 
     void Vehicle::DetachTrailer()
@@ -5243,7 +5290,16 @@ namespace ai
 
     void Vehicle::_CreateBlastWave()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DE120 - spawns the vehicle's death blast wave, named "<vehicle name>BlastWave", at its position.
+        VehiclePrototypeInfo const* const protoInfo = GetPrototypeInfo();
+        CStr const name = CStr(GetName()) + CStr("BlastWave");
+        int const blastWaveId = theObjects->CreateNewObject(protoInfo->m_blastWavePrototypeId, name.c_str(), -1, -1);
+        if (blastWaveId != -1)
+        {
+            // NOTE: the shipped code does not check the looked-up object, so a stale id dereferences null.
+            auto* const blastWave = static_cast<PhysicObj*>(theObjects->GetEntityByObjId(blastWaveId));
+            blastWave->SetPosition(GetPosition());
+        }
     }
 
     CStr Vehicle::_GetTrailerName() const
@@ -7085,12 +7141,305 @@ namespace ai
 
     void Vehicle::_DropChests()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E3EB0 - a destroyed vehicle may leave a chest with some of its cargo and guns.
+        if (!theGlobProp.m_vehiclesDropChests)
+        {
+            return;
+        }
+
+        int const chestPrototypeId = thePrototypeManager->GetPrototypeId(CStr("vanishingChest"));
+        int const chestId = theObjects->CreateNewObject(chestPrototypeId, "", -1, -1);
+        // NOTE: the chest is used without a null check.
+        auto* const chest = static_cast<SimplePhysicObj*>(theObjects->GetEntityByObjId(chestId));
+
+        // Behind the wreck, lifted by the chest's own height, then tossed upwards.
+        float const backOffset = m_size.z * 0.60000002f + 1.0f;
+        CVector const dir = GetDirection();
+        CVector const offset(backOffset * dir.x, dir.y * backOffset, dir.z * backOffset);
+        CVector const position = GetPosition();
+        CVector posForChest(position.x - offset.x, position.y - offset.y, position.z - offset.z);
+        Aabb const chestAabb = static_cast<Geom*>(chest->GetPhysicBody()->m_pGeoms[0])->GetAabb();
+        posForChest.y = chestAabb.m_box[4] - chestAabb.m_box[1] + posForChest.y;
+        chest->SetPosition(posForChest);
+
+        float const throwSpeed = static_cast<float>(rand()) * 0.00015259255f + 2.0f;
+        CVector const throwDir = GetRandomDeviatedVector(CVector(0.0f, 1.0f, 0.0f), 1.5707964f);
+        chest->SetLinearVelocity(CVector(throwDir.x * throwSpeed, throwDir.y * throwSpeed, throwDir.z * throwSpeed));
+        chest->SetAutoDisabling(true, 0.1f, 0.1f, 5);
+
+        bool added = false;
+        if (m_repository)
+        {
+            for (unsigned int slot = 0; slot < m_repository->GetNumItems(); ++slot)
+            {
+                auto* const killsStatistic = theStatisticManager->GetStatistic(
+                    STATISTIC_VEHICLE_KILLED + pServer->GetWorld()->m_level->m_levelName, CStr("IntStatistic"));
+                killsStatistic->m_bGlobalFlag = false;
+                int kills = 0;
+                {
+                    CStr const value = killsStatistic->GetValue();
+                    if (value.c_str() && strlen(value.c_str()) != 0)
+                    {
+                        sscanf(value.c_str(), "%d", &kills);
+                    }
+                }
+
+                // NOTE: the ratio sqrt(level size) / kills is only tested for being positive; the chance is then
+                // clamped from the kill count itself, so it is 0.2 before the first kill on the level and 1 after.
+                float const killsF = static_cast<float>(kills);
+                float dropProbability = 1.0f;
+                if (sqrt(pServer->GetLevelSize()) / killsF > 0.0)
+                {
+                    dropProbability = killsF;
+                    if (killsF < 0.2f)
+                    {
+                        dropProbability = 0.2f;
+                    }
+                    else if (killsF > 1.0f)
+                    {
+                        dropProbability = 1.0f;
+                    }
+                }
+
+                if (theGlobProp.m_probabilityToDropArticlesFromDeadVehicles * dropProbability >
+                    static_cast<float>(rand()) * 0.000030518509f * 0.99000001f)
+                {
+                    int const objId = m_repository->GetItem(slot).GetObjId();
+                    if (objId != -1)
+                    {
+                        m_repository->GiveUpThingFromSlotUnsafe(slot, 1);
+                        chest->AddChild(theObjects->GetEntityByObjId(objId));
+                        added = true;
+                    }
+                }
+            }
+            m_repository->Purge();
+        }
+
+        // Each gun shown in the encyclopedia may go into the chest; the chance is rolled for every part.
+        retruxx::vector<CStr> partsToPutInChest;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (theGlobProp.m_probabilityToDropGunsFromDeadVehicles > static_cast<float>(rand()) * 0.000030518509f * 0.99000001f &&
+                (part->IsKindOf(RT_CLASS_LOCAL(Gun)) || part->IsKindOf(RT_CLASS_LOCAL(CompoundGun))) &&
+                part->GetPrototypeInfo()->m_bVisibleInEncyclopedia)
+            {
+                partsToPutInChest.push_back(name);
+                added = true;
+            }
+        }
+
+        // A dropped gun is worn down to 20-50% of its durability.
+        for (CStr const& partName : partsToPutInChest)
+        {
+            VehiclePart* const part = GetPartByName(partName);
+            chest->AddChild(static_cast<Obj*>(part));
+            SetPartByName(partName, nullptr, false);
+            float const maxDurability = part->m_durability.maxValue().get();
+            part->m_durability.value().set((static_cast<float>(rand()) * 0.000030518509f * 0.30000001f + 0.2f) * maxDurability);
+        }
+
+        if (!added)
+        {
+            chest->Remove();
+        }
     }
 
     void Vehicle::_EvaluateToDead()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E88E0
+        CStr const& levelName = pServer->GetWorld()->m_level->m_levelName;
+        if (m_bIsControlledByPlayer)
+        {
+            auto* deaths = static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_DEATH_COUNTER, "IntStatistic"));
+            deaths->SetGlobalFlag(true);
+            deaths->Increase(1);
+            auto* levelDeaths =
+                static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_DEATH_COUNTER + levelName, "IntStatistic"));
+            levelDeaths->SetGlobalFlag(false);
+            levelDeaths->Increase(1);
+        }
+
+        if (Vehicle* const playerVehicle = thePlayer->GetVehicle())
+        {
+            if (GetLastDamageSource() == playerVehicle->GetId())
+            {
+                DynamicQuestManager::ConsiderPlayerKill(GetBelong());
+                auto* kills = static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_VEHICLE_KILLED, "IntStatistic"));
+                kills->SetGlobalFlag(true);
+                kills->Increase(1);
+                auto* levelKills =
+                    static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_VEHICLE_KILLED + levelName, "IntStatistic"));
+                levelKills->SetGlobalFlag(false);
+                levelKills->Increase(1);
+            }
+        }
+
+        // Nothing regenerates on a wreck.
+        VehiclePart* const chassisPart = GetPartByName(CHASSIS);
+        if (chassisPart && chassisPart->IsKindOf(RT_CLASS_LOCAL(Chassis)))
+        {
+            static_cast<Chassis*>(chassisPart)->Health().regeneration().set(0.0f);
+        }
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (!part)
+            {
+                continue;
+            }
+            if (part->IsKindOf(RT_CLASS_LOCAL(CompoundVehiclePart)))
+            {
+                static_cast<CompoundVehiclePart*>(part)->SetDurabilityRegeneration(0.0f);
+            }
+            else
+            {
+                part->m_durability.regeneration().set(0.0f);
+            }
+        }
+
+        // One of up to three variants of the explosion for the killing damage type: "name", "name1" or "name2".
+        CStr effectName(m_destroyEffectNames[m_lastDamage]);
+        int const variant = 3 * rand() / 0x8000;
+        if (variant > 0)
+        {
+            effectName += CStr(variant);
+        }
+        PhysicBody::CreateEffectNode(effectName, GetPosition(), GetRotation(), true, 1.0f);
+        _CreateBlastWave();
+        WeaponFirer::FireFromWeaponsIfPossible(this, false, ZeroVector, nullptr);
+        if (bIsContoured())
+        {
+            RemoveContour();
+        }
+        _DropChests();
+        SetSkin(8);
+        m_deathDamage = m_lastDamage;
+        if (m_engineHighSoundNode)
+        {
+            m3d::SgNode* node = m_engineHighSoundNode;
+            m_engineHighSoundNode->GetGraph()->RemoveNode(node);
+            m_engineHighSoundNode = nullptr;
+        }
+
+        // One of the two death animations (8 or 9), picked at random.
+        auto const randomDeathAction = []() { return 2 * rand() / 0x8000 == 1 ? 8 : 9; };
+
+        if (!bIsUpdatingByODE())
+        {
+            Remove();
+        }
+        else if (m_lastDamage == DAMAGE_PIERCING)
+        {
+            // Thrown up; the part that took the last hit flies off or bursts, everything else plays its death animation.
+            AddForce(CVector(0.0f, GetMass() * theGlobProp.m_throwCoeff * 9.8100004f, 0.0f));
+            for (auto it = m_vehicleParts.begin(); it != m_vehicleParts.end();)
+            {
+                VehiclePart* const part = (it++)->second;
+                if (part == m_lastDamagedPart && !part->IsKindOf(RT_CLASS_LOCAL(Chassis)))
+                {
+                    if (2 * rand() / 0x8000 == 1)
+                    {
+                        Flow(part, theGlobProp.m_flowVpVelocity);
+                    }
+                    else
+                    {
+                        Blow(part);
+                    }
+                }
+                else
+                {
+                    part->SetNodeEffectAction(randomDeathAction());
+                    part->SetNodeAnimAction(0, true);
+                    part->SetNodeAnimAction(8, true);
+                }
+            }
+            for (auto& wheelInfo : m_wheels)
+            {
+                Wheel* const wheel = wheelInfo.GetWheel();
+                if (!wheel)
+                {
+                    continue;
+                }
+                int action = randomDeathAction();
+                wheel->m_suspensionNode->SetProperty(8704, &action);
+                if (2 * rand() / 0x8000 == 1)
+                {
+                    Flow(wheel, theGlobProp.m_flowWheelVelocity);
+                }
+                else
+                {
+                    wheel->GetPhysicBody()->SetNodeAction(randomDeathAction(), true);
+                }
+            }
+            FlowUnattachableParts(theGlobProp.m_flowWheelVelocity);
+            _Construct(false);
+        }
+        else if (m_lastDamage == DAMAGE_BLAST)
+        {
+            // Blown apart: the part that took the last hit bursts, the rest flies off, and the hulk is removed.
+            for (auto it = m_vehicleParts.begin(); it != m_vehicleParts.end();)
+            {
+                VehiclePart* const part = (it++)->second;
+                if (part == m_lastDamagedPart)
+                {
+                    Blow(part);
+                }
+                else
+                {
+                    Flow(part, theGlobProp.m_flowVpVelocity);
+                }
+            }
+            for (auto& wheelInfo : m_wheels)
+            {
+                if (wheelInfo.GetWheel())
+                {
+                    Flow(wheelInfo.GetWheel(), theGlobProp.m_flowWheelVelocity);
+                }
+            }
+            Remove();
+        }
+        else if (m_lastDamage == DAMAGE_ENERGY)
+        {
+            // Thrown up and burnt out in one piece.
+            AddForce(CVector(0.0f, GetMass() * theGlobProp.m_throwCoeff * 9.8100004f, 0.0f));
+            for (auto it = m_vehicleParts.begin(); it != m_vehicleParts.end();)
+            {
+                VehiclePart* const part = (it++)->second;
+                part->SetNodeEffectAction(randomDeathAction());
+                part->SetNodeAnimAction(0, true);
+                part->SetNodeAnimAction(8, true);
+            }
+            for (auto& wheelInfo : m_wheels)
+            {
+                Wheel* const wheel = wheelInfo.GetWheel();
+                if (!wheel)
+                {
+                    continue;
+                }
+                int action = randomDeathAction();
+                wheel->m_suspensionNode->SetProperty(8704, &action);
+                wheel->GetPhysicBody()->SetNodeAction(randomDeathAction(), true);
+            }
+        }
+
+        _SetDeadStatus();
+
+        if (m_bIsControlledByPlayer)
+        {
+            M3D_APP->KillPostEffect("DamageStatic");
+            M3D_APP->KillPostEffect("DamageBlast");
+            M3D_APP->KillPostEffect("DamageIntegrated");
+            M3D_APP->KillPostEffect("DamageEnergy");
+            M3D_APP->AddPostEffect("Dead", 0.0f);
+
+            m3d::sArgStack stack;
+            stack.newIn()->SetV(GetPosition());
+            if (auto const error = M3D_KERNEL->GetScriptServer().callScriptFunc("PlayerDead", stack, 3))
+            {
+                M3D_LOG_ERR(M3D_KERNEL->GetScriptServer().getFormatedScriptErrorDesc(error));
+            }
+            M3D_APP->ImmediateMessage(0x103F0, 1, 0, 0, 0, CStr(), m3d::AIParam());
+        }
     }
 
     Vehicle::VehicleMoveStatus Vehicle::GetMoveStatus() const

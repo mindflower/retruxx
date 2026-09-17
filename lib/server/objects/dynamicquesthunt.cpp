@@ -3,6 +3,10 @@
 
 #include "core/ini.h"
 
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/player.h"
+#include "server/relationship.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DynamicQuestHunt)
@@ -36,9 +40,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void DynamicQuestHunt::ConsiderPlayerKill(int)
+    void DynamicQuestHunt::ConsiderPlayerKill(int victimBelong)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x741C00 - a kill counts when the victim is hostile to the player and not of the hirer's own belong.
+        if (m_questStatus != STATUS_PROCESSING)
+        {
+            return;
+        }
+        Obj* const hirer = theObjects->GetEntityByObjId(m_hirerObjId);
+        if (!hirer || !thePlayer)
+        {
+            return;
+        }
+        int const hirerBelong = hirer->GetBelong();
+        if (theRelationship->CheckTolerance(victimBelong, thePlayer->GetBelong()) <= RS_ENEMY && victimBelong != hirerBelong)
+        {
+            ++m_fragsAtStart;
+        }
     }
 
     DynamicQuestManager::QuestType DynamicQuestHunt::GetQuestType() const

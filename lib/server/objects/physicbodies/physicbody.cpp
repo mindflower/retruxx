@@ -1,4 +1,5 @@
 #include "physicbody.h"
+#include <scene/nodes/sgnodeanimatedmodel.h>
 
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
@@ -241,9 +242,32 @@ namespace ai
         m_collisionInfos = collisionInfos;
     }
 
-    void PhysicBody::SetSgNode(m3d::SgNode*)
+    void PhysicBody::SetSgNode(m3d::SgNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61BA60 - replaces the body's visual node and takes the model name from it.
+        // The shipped code also fetches the node's absolute position, relative rotation and the body rotation here,
+        // then discards all three.
+        if (m_Node)
+        {
+            m_Node->GetGraph()->RemoveNode(m_Node);
+            m_Node = nullptr;
+        }
+        m_Node = node;
+        if (!node)
+        {
+            m_modelname = CStr();
+            return;
+        }
+
+        if (!m_Node->IsKindOf(&m3d::SgAnimatedModelNode::m_classSgAnimatedModelNode))
+        {
+            SYS_ERROR("IS_KIND_OF( m_Node, SgAnimatedModelNode )");
+        }
+        PhysicBody* pThis = this;
+        m_Node->SetProperty(4356, &pThis);
+        int modelId = -1;
+        m_Node->GetProperty(4360, &modelId);
+        m_modelname = M3D_ENGINE_CFG.GetNameByModelId(modelId + 0x200000);
     }
 
     CVector PhysicBody::GetPosition() const

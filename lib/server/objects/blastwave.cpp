@@ -67,7 +67,8 @@ namespace ai
 
     int BlastWave::GetEmitterId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7DF100
+        return m_emitterId;
     }
 
     short BlastWave::GetRocketExplosionType() const
@@ -112,7 +113,8 @@ namespace ai
 
     float BlastWave::GetWaveForceIntensity() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7DF0C0
+        return m_WaveForceIntensity;
     }
 
     float BlastWave::GetDampedForceIntensity(float) const

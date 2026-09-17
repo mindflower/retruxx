@@ -23,6 +23,8 @@
 #include "client.h"
 #include "world.h"
 #include "scene/scenegraph.h"
+#include "server/objects/dummyobject.h"
+#include <server/server.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
@@ -1648,19 +1650,91 @@ namespace ai
     }
 
     void ComplexPhysicObj::_CreateSplinterFromSgNode(
-        VehiclePart*,
-        int,
-        CVector const&,
-        float,
-        m3d::SgNode*,
-        CollisionInfo const*)
+        VehiclePart* vp,
+        int splinterPrototypeId,
+        CVector const& dir,
+        float averageSpeed,
+        m3d::SgNode* sgNode,
+        CollisionInfo const* collisionInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C01C0 - a free-flying debris object that takes over the part's scene graph node.
+        int const splinterId = theObjects->CreateNewObject(splinterPrototypeId, "", -1, -1);
+        // NOTE: the splinter is used without a null check.
+        auto* const splinter = static_cast<DummyObject*>(theObjects->GetEntityByObjId(splinterId));
+        splinter->SetBelong(GetBelong());
+        splinter->SetSgNodeAndCollision(sgNode, collisionInfo);
+        splinter->SetMass(vp->m_mass.mass);
+        splinter->SetSkin(8);
+        splinter->GetPhysicBody()->SetNodeAction(0, true);
+        splinter->GetPhysicBody()->SetNodeAction(8, true);
+        splinter->GetPhysicBody()->SetNodeEffectAction(2 * rand() / 0x8000 == 1 ? 8 : 9);
+        splinter->SetPosition(vp->GetNodeAbsolutePosition());
+        splinter->SetRotation(vp->GetNodeAbsoluteRotation());
+
+        // Flies away from the owner's centre (straight up if the part sits on it), at 0.5 to 1.5 times the speed.
+        CVector const ownerPos = GetPosition();
+        CVector const partPos = vp->GetNodeAbsolutePosition();
+        CVector away(partPos.x - ownerPos.x, partPos.y - ownerPos.y, partPos.z - ownerPos.z);
+        float const horizontalSq = away.x * away.x + away.z * away.z;
+        if (sqrt(static_cast<double>(away.y) * away.y + horizontalSq) < 0.0001)
+        {
+            away.y = 1.0f;
+        }
+        double const invLen = 1.0 / sqrt(static_cast<double>(away.y) * away.y + horizontalSq + 0.00000011920929f);
+        CVector const flyDir = GetRandomDeviatedVector(
+            CVector(static_cast<float>(away.x * invLen), static_cast<float>(away.y * invLen), static_cast<float>(invLen * away.z)),
+            1.0f);
+
+        float const lowSpeed = averageSpeed * 0.5f;
+        float const highSpeed = averageSpeed * 1.5f;
+        float const minSpeed = (std::min)(lowSpeed, highSpeed);
+        float const maxSpeed = (std::max)(lowSpeed, highSpeed);
+        float const speed = static_cast<float>(rand()) * (maxSpeed - minSpeed) * 0.000030518509f + minSpeed;
+        splinter->SetLinearVelocity(CVector(flyDir.x * speed, speed * flyDir.y, flyDir.z * speed));
+
+        // Tumbles about the axis perpendicular to both the flight and the owner's heading, at 2 to 6 rad/s.
+        float const side = dir.x * flyDir.x + dir.y * flyDir.y + dir.z * flyDir.z < 0.0f ? -1.0f : 1.0f;
+        float const hx = dir.x * side;
+        float const hy = dir.y * side;
+        float const hz = dir.z * side;
+        float const spinX = hz * flyDir.y - hy * flyDir.z;
+        float const spinY = hx * flyDir.z - hz * flyDir.x;
+        float const spinZ = hy * flyDir.x - hx * flyDir.y;
+        float const invSpinLen = static_cast<float>(
+            1.0 / sqrt(static_cast<double>(spinZ) * spinZ + static_cast<double>(spinY) * spinY + static_cast<double>(spinX) * spinX +
+                       0.00000011920929f));
+        float const spinSpeed = static_cast<float>(rand()) * 0.00012207404f + 2.0f;
+        splinter->SetAngularVelocity(
+            CVector(invSpinLen * spinX * spinSpeed, invSpinLen * spinY * spinSpeed, invSpinLen * spinZ * spinSpeed));
+        splinter->SetAutoDisabling(true, 0.1f, 0.1f, 5);
+        splinter->SetDeadTimer(60000, true);
     }
 
-    void ComplexPhysicObj::_TearOffPart(VehiclePart*, float)
+    void ComplexPhysicObj::_TearOffPart(VehiclePart* vp, float averageSpeed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C0600 - the part's model flies off as a splinter (a gun's barrel as a second one) and the part is removed.
+        int const splinterPrototypeId = thePrototypeManager->GetPrototypeId(CStr("vehicleSplinter"));
+        CVector const dir = GetDirection();
+        // The shipped code passes the start of the collision info vector as is, null when it is empty.
+        _CreateSplinterFromSgNode(
+            vp,
+            splinterPrototypeId,
+            dir,
+            averageSpeed,
+            vp->m_Node,
+            vp->m_collisionInfos.empty() ? nullptr : vp->m_collisionInfos.data());
+        if (vp->IsKindOf(RT_CLASS_LOCAL(Gun)))
+        {
+            m3d::SgNode* const barrelNode = static_cast<Gun*>(vp)->GetBarrelNode();
+            vp->m_Node->RemoveChild(barrelNode);
+            m3d::SceneGraph& graph = pServer->GetWorld()->GetGraph();
+            graph.GetRootNode()->AddChild(barrelNode);
+            graph.LinkNode(barrelNode);
+            _CreateSplinterFromSgNode(vp, splinterPrototypeId, dir, averageSpeed, barrelNode, nullptr);
+        }
+        vp->m_Node = nullptr;
+        SetPartByName(vp->GetPartName(), nullptr, true);
+        vp->Remove();
     }
 
     std::map<CStr, VehiclePart*>::const_iterator ComplexPhysicObj::begin() const

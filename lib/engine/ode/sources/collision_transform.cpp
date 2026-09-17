@@ -70,7 +70,11 @@ dxGeomTransform::dxGeomTransform (dSpaceID space) : dxGeom (space,1)
 
 dxGeomTransform::~dxGeomTransform()
 {
-  if (obj && cleanup) delete obj;
+  // RVA 0x87C080
+  if (obj) {
+    obj->parent_transform = 0;
+    if (cleanup) delete obj;
+  }
 }
 
 
@@ -181,8 +185,14 @@ void dGeomTransformSetGeom (dGeomID g, dGeomID obj)
   dUASSERT (g && g->type == dGeomTransformClass,
 	    "argument not a geom transform");
   dxGeomTransform *tr = (dxGeomTransform*) g;
-  if (tr->obj && tr->cleanup) delete tr->obj;
+  // RVA 0x87C130
+  if (tr->obj) {
+    tr->obj->parent_transform = 0;
+    if (tr->cleanup) delete tr->obj;
+  }
   tr->obj = obj;
+  // NOTE: the shipped code dereferences obj without checking it for null.
+  obj->parent_transform = tr;
 }
 
 

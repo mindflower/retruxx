@@ -92,7 +92,8 @@ namespace ai
 
     Obj* Shell::GetEmittedObj() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7E64D0
+        return theObjects->GetEntityByObjId(m_emittedObjId);
     }
 
     Shell::~Shell() = default;

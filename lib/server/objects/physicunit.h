@@ -1,5 +1,6 @@
 #pragma once
 #include "base/simplephysicobj.h"
+#include "server/colliders/physicunitcolliders.h"
 #include <game/uiwindows/mainwindows/durabilityindicatorwnd.h>
 #include <server/components/numericinrangeregenerating.h>
 
@@ -21,6 +22,10 @@ namespace ai
     class PhysicUnit : public ai::SimplePhysicObj
     {
         friend class PhysicUnitPrototypeInfo;
+        // The colliders set the ragdoll cause and kill the unit directly.
+        friend int CollidePhysicUnitAndVehicle(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+        friend int CollidePhysicUnitAndShell(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+        friend int CollidePhysicUnitAndBlastWave(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
     protected:
         virtual  ~PhysicUnit() override /* 0x00 */;
 

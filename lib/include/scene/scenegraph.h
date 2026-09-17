@@ -61,6 +61,7 @@ namespace m3d
     class SceneGraph
     {
         friend class CWorld;
+        friend class LightsServer;
 
     public:
         SceneGraph(const m3d::SceneGraph&);

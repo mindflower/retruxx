@@ -13,9 +13,30 @@
 
 namespace m3d
 {
-    CStr EngineConfig::GetNameByModelId(int)
+    CStr EngineConfig::GetNameByModelId(int modelId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C01A0 - the inverse of GetModelIdByName: the high bits say which server the id belongs to.
+        if ((modelId & 0x1000000) != 0)
+        {
+            return M3D_APP->GetSpritesServer().GetNameByItem(modelId - 0x1000000);
+        }
+        if ((modelId & 0x800000) != 0)
+        {
+            return M3D_APP->GetLightsServer().GetNameByItem(modelId - 0x800000);
+        }
+        if ((modelId & 0x400000) != 0)
+        {
+            return pClient->GetWorld().GetFxNames()[modelId - 0x400000];
+        }
+        if ((modelId & 0x200000) != 0)
+        {
+            return M3D_APP->GetAnimatedModelsServer().GetNameByItem(modelId - 0x200000);
+        }
+        if ((modelId & 0x100000) != 0)
+        {
+            return M3D_APP->GetProjectorsServer().GetNameByItem(modelId - 0x100000);
+        }
+        return CStr();
     }
 
     float EngineConfig::GetHeight(float x, float y)

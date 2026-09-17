@@ -41,6 +41,21 @@ namespace m3d
         return r * r > dx * dx + dz * dz;
     }
 
+    RoadInRadius3dTest::RoadInRadius3dTest(CVector const& origin, float r) : org(origin), radius(r)
+    {
+        // RVA 0x76BA50
+    }
+
+    bool RoadInRadius3dTest::TestRoadNode(RoadNode* rn) const
+    {
+        // RVA 0x7B39D0 - the bounding sphere of the road node overlaps the test sphere.
+        float const dz = rn->m_boundCenter.z - org.z;
+        float const dx = rn->m_boundCenter.x - org.x;
+        float const dy = rn->m_boundCenter.y - org.y;
+        float const r = rn->m_boundRadius + radius;
+        return r * r > dz * dz + dx * dx + dy * dy;
+    }
+
     CStr const RoadManager::GetRoadSetNameByHandle(int handle)
     {
         CStr toRet;
@@ -371,8 +386,9 @@ namespace m3d
                             // Set lightmap if needed
                             if (effect->IsParameterUsed(rend::IEffect::LightMap0))
                             {
+                                // The lightmap is addressed as (x, -z) in world units scaled to the whole map.
                                 float scale = 1.0f / (m_owner->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_30);
-                                CVector lightmapScale(-scale, scale, 0.0f);
+                                CVector lightmapScale(scale, 0.0f - scale, 0.0f);
                                 effect->SetVector3(rend::IEffect::User_float3_param, lightmapScale);
 
                                 m3d::rend::TexHandle lightmap = m_owner->GetLightmapTexture();

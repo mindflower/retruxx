@@ -10,6 +10,11 @@
 class Obb;
 class ComplexModelWnd;
 
+namespace ai
+{
+    class DummyObject;
+}
+
 namespace m3d
 {
     class GraphItemsForSgNode;
@@ -53,6 +58,8 @@ namespace m3d
         // each node's own bounding box to frame the model.
         friend class m3d::ui::SgNodeArrayWnd;
         friend class ::ComplexModelWnd;
+        // DummyObject::SetSgNodeAndCollision sizes a box collision from the node's own bounds.
+        friend class ::ai::DummyObject;
 
     protected:
         SgNode();

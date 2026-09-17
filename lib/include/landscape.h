@@ -111,6 +111,7 @@ namespace m3d
     {
         friend class CWorld;
         friend class RoadManager;
+        friend class LightsServer;
 
     protected:
         Landscape();

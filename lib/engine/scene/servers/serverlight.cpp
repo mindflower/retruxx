@@ -5,6 +5,12 @@
 #include <core/log.h>
 #include <core/ini.h>
 #include <core/ref_ptr.h>
+#include <core/kernel.h>
+#include <core/timer.h>
+#include <config.h>
+#include <client.h>
+#include <world.h>
+#include <level.h>
 
 int statsInited = 0;
 
@@ -45,6 +51,7 @@ namespace m3d
 
     int LightsServer::AddItem(char const* params, char const* id)
     {
+        // RVA 0x76C220
         auto item = GetItemByName(id, false);
         if (item == -1)
         {
@@ -65,9 +72,10 @@ namespace m3d
                         return -1;
                     }
 
-                    int radius = 0;
-                    CVector color;
-                    float ttl = 0.0;
+                    // Attributes missing from the descriptor keep these defaults.
+                    int radius = 10;
+                    CVector color(1.0f, 1.0f, 1.0f);
+                    float ttl = -1.0f;
 
                     SafeIntAttrib(radius, xmlNode, "Radius");
                     SafeVectorAttrib(color, xmlNode, "Color");
@@ -82,6 +90,10 @@ namespace m3d
                     m_models.push_back(std::move(model));
                     return m_models.size() - 1;
                 }
+
+                // NOTE: a light file that cannot be read yields item 0 instead of -1.
+                M3D_LOG_INFO("LightServer:: cannot load " + CStr(filename) + " err: " + err);
+                return 0;
             }
             else
             {
@@ -97,17 +109,167 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void LightsServer::RenderItem(int id, void*)
+    void LightsServer::RenderItem(int id, void* params)
     {
+        // RVA 0x76C690 - a point light brightens the landscape cells, roads and models inside its radius.
         static PointLightStats stats_0;
         m_profiler->StartCountdown();
 
-        // TODO: implement LightsServer::RenderItem
+        auto* const renderer = M3D_RENDERER;
+        switch (id)
+        {
+        case -2:
+        {
+            overlayStart();
+            renderer->PushCull(rend::M3DCULL_CCW);
+            renderer->SetAlphaTest(0);
+            renderer->PushLighting(false);
+            renderer->PushBlend(rend::BM_DCOLOR_1);
+            renderer->PushFog(false);
+            renderer->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+            renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
+            renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+            renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
 
-        //if (id != -4)
-        //{
-        //    RETRUXX_NOT_IMPLEMENTED;
-        //}
+            // Once a frame, print what the previous frame's lights cost and start counting afresh.
+            if (M3D_ENGINE_CFG.m_g_showProjectorsStats.GetB() && stats_0.curFrame != M3D_KERNEL->GetTimer().GetCurFrame())
+            {
+                renderer->PushZbState(rend::ZB_DISABLE);
+                M3D_APP->SetFont(CStr("Lucida Console"), 10.0f, 1, M3D_APP->m_codePage.CodePage);
+                CStr statStr;
+                statStr.format("%-12s %8d", "numLights", stats_0.numLightsToRender);
+                M3D_APP->DrawTextRel(724.0f, 320.0f, 0xFF888888, statStr, 0, -1);
+                statStr.format("%-12s %8d", "numLightCells", stats_0.numLightCellsRendered);
+                M3D_APP->DrawTextRel(724.0f, 332.0f, 0xFF888888, statStr, 0, -1);
+                statStr.format("%-12s %8d", "numLightModels", stats_0.numLightModelsRendered);
+                M3D_APP->DrawTextRel(724.0f, 344.0f, 0xFF888888, statStr, 0, -1);
+                renderer->PopZbState();
+                stats_0.numLightModelsRendered = 0;
+                stats_0.numLightsToRender = 0;
+                stats_0.numLightCellsRendered = 0;
+                stats_0.curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+            }
+            break;
+        }
+        case -3:
+            overlayStop();
+            renderer->PopCull();
+            renderer->SetAlphaTest(0);
+            renderer->PopLighting();
+            renderer->PopBlend();
+            renderer->PopFog();
+            renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+            renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+            renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+            renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+            break;
+        case -4:
+            break;
+        default:
+        {
+            float const VISCELL_EDGE_LENGTH = 128.0f;
+
+            int const farDist = M3D_ENGINE_CFG.m_g_projectorsFarDist.GetI();
+            renderer->SingleLayerStencilStart();
+
+            auto const* const model = static_cast<PointLightModel const*>(m_models[id].m_ptr);
+            CWorld& world = pClient->GetWorld();
+            rend::IEffect* const lsShader = world.GetGraph().m_lsLightShader;
+            rend::IEffect* const roadShader = world.GetGraph().m_roadLightShader;
+            Landscape& ls = world.GetLandscape();
+            RoadManager& roadManager = world.GetRoadManager();
+            SceneGraph& graph = world.GetGraph();
+
+            retruxx::vector<unsigned int> roadCells;
+            retruxx::set<SgNode*> lightNodes;
+
+            // The light's position is the translation row of its world matrix.
+            auto const* const transform = static_cast<CMatrix const*>(params);
+            CVector const pos(transform->_41, transform->_42, transform->_43);
+            float const radius = static_cast<float>(model->m_radius);
+            CVector const& color = model->m_color;
+
+            lsShader->SetVector3(rend::IEffect::User_float4_param, pos);
+            lsShader->SetFloat(rend::IEffect::User_float_param, radius);
+            lsShader->SetVector3(rend::IEffect::User_float3_param, color);
+            roadShader->SetVector3(rend::IEffect::User_float4_param, pos);
+            roadShader->SetFloat(rend::IEffect::User_float_param, radius);
+            roadShader->SetVector3(rend::IEffect::User_float3_param, color);
+
+            float const fadeDist = (static_cast<float>(M3D_ENGINE_CFG.m_g_projectorsFarDist.GetI()) - 0.5f) * VISCELL_EDGE_LENGTH;
+            lsShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            roadShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            graph.m_objectLightShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            graph.m_treeLightShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+
+            // Every visible cell whose centre lies within the light radius (plus half a cell diagonal) is lit.
+            graph.SortedCellsStartFetching(0, farDist);
+            int x = 0;
+            int z = 0;
+            int vis = 0;
+            int cellRadius = 0;
+            while (graph.SortedCellsFetch(x, z, vis, cellRadius))
+            {
+                if (!vis)
+                {
+                    continue;
+                }
+                Landscape::CellParams const& cell = ls.m_cellParams[x + z * ls.m_owner->m_level->land_size];
+                float const dx = pos.x - (static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH;
+                float const dy = pos.y - (cell.m_h1 + cell.m_h0) * 0.5f;
+                float const dz = pos.z - (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH;
+                // The shipped code squares and sums on the x87 stack, hence the double precision.
+                double const dist = sqrt(static_cast<double>(dz) * dz + static_cast<double>(dy) * dy + static_cast<double>(dx) * dx);
+                if (static_cast<double>(VISCELL_EDGE_LENGTH) * 0.70700002f + radius > dist)
+                {
+                    ls.drawCellOverlayedShader(x, z, lsShader);
+                    roadCells.push_back(x + (z << 16));
+                    graph.CollectNodesLight(lightNodes, x, z, pos, radius);
+                    ++stats_0.numLightCellsRendered;
+                }
+            }
+
+            renderer->PushCull(rend::M3DCULL_CCW);
+            RoadInRadius3dTest const roadTest(pos, radius);
+            roadManager.RenderRoads(roadCells, RRT_FOR_POINTLIGHT, &roadTest, false);
+            renderer->SingleLayerStencilFinish();
+
+            if (!lightNodes.empty())
+            {
+                retruxx::vector<SgNode*> nodesVector;
+                for (SgNode* node : lightNodes)
+                {
+                    nodesVector.push_back(node);
+                }
+
+                RenderNodeInfo rni;
+                rni.projOrg = pos;
+                rni.rnt = RNT_FOR_POINTLIGHT;
+                rni.isCullInverted = false;
+                rni.isPrimaryRender = false;
+                rni.isUseImpostors = true;
+
+                graph.m_objectLightShader->SetFloat(rend::IEffect::User_float_param, radius);
+                graph.m_treeLightShader->SetFloat(rend::IEffect::User_float_param, radius);
+                graph.m_objectLightShader->SetVector3(rend::IEffect::User_float3_param, color);
+                graph.m_treeLightShader->SetVector3(rend::IEffect::User_float3_param, color);
+                renderer->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
+                renderer->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+                renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+                renderer->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
+                M3D_APP->m_serverAnimatedModels->RenderNodeSet(
+                    nodesVector.empty() ? nullptr : nodesVector.data(), static_cast<unsigned int>(nodesVector.size()), rni);
+                renderer->SetAlphaTest(0);
+                renderer->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+                renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
+            }
+
+            renderer->PopCull();
+            stats_0.numLightModelsRendered += static_cast<int>(lightNodes.size());
+            ++stats_0.numLightsToRender;
+            break;
+        }
+        }
 
         m_profiler->EndCountdown();
     }

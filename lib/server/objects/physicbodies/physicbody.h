@@ -37,6 +37,9 @@ namespace ai
 
     class PhysicBody : public Obj
     {
+        // ComplexPhysicObj::_TearOffPart hands the part's collision infos to its splinter.
+        friend class ComplexPhysicObj;
+
     protected:
         PhysicBody(const ai::PhysicBodyPrototypeInfo& prototypeInfo);
         PhysicBody();

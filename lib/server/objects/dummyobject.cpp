@@ -133,9 +133,40 @@ namespace ai
         SetMass(GetMass());
     }
 
-    void DummyObject::SetSgNodeAndCollision(m3d::SgNode*, CollisionInfo const*)
+    void DummyObject::SetSgNodeAndCollision(m3d::SgNode* node, CollisionInfo const* collisionInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x852970 - adopts a scene graph node; without a collision description the node's own bounds become a box.
+        m_physicBody->SetSgNode(node);
+        m_modelName = m_physicBody->m_modelname;
+        if (collisionInfo)
+        {
+            retruxx::vector<CollisionInfo> tmpCollisionInfos;
+            tmpCollisionInfos.push_back(*collisionInfo);
+            if (m_physicBody && m_physicBody->m_Node)
+            {
+                _UpdateFullPhysicBodyByCollisionInfo(tmpCollisionInfos);
+            }
+        }
+        else
+        {
+            // NOTE: node is dereferenced here without a null check.
+            Aabb const aabb = node->m_ownBoundingBox;
+            CollisionInfo tmpCollisionInfo;
+            tmpCollisionInfo.Init();
+            tmpCollisionInfo.m_size.x = aabb.m_box[3] - aabb.m_box[0];
+            tmpCollisionInfo.m_size.y = aabb.m_box[4] - aabb.m_box[1];
+            tmpCollisionInfo.m_relTranslation.x = (aabb.m_box[3] + aabb.m_box[0]) * 0.5f;
+            tmpCollisionInfo.m_relTranslation.y = (aabb.m_box[4] + aabb.m_box[1]) * 0.5f;
+            tmpCollisionInfo.m_size.z = aabb.m_box[5] - aabb.m_box[2];
+            tmpCollisionInfo.m_relRotation = IdentityQuaternion;
+            tmpCollisionInfo.m_relTranslation.z = (aabb.m_box[5] + aabb.m_box[2]) * 0.5f;
+            tmpCollisionInfo.m_geomType = GEOM_TYPE_BOX;
+
+            retruxx::vector<CollisionInfo> tmpCollisionInfos;
+            tmpCollisionInfos.push_back(tmpCollisionInfo);
+            _UpdateFullPhysicBodyByCollisionInfo(tmpCollisionInfos);
+        }
+        SetScale(m_scale, true);
     }
 
     void DummyObject::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const

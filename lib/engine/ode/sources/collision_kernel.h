@@ -98,6 +98,7 @@ struct dxGeom : public dBase {
   dxGeom *next;		// next geom in linked list of geoms
   dxGeom **tome;	// linked list backpointer
   dxSpace *parent_space;// the space this geom is contained in, 0 if none
+  dxGeom *parent_transform; // engine extension: the geom transform that encapsulates this geom, 0 if none
   dReal aabb[6];	// cached AABB for this space
   unsigned long category_bits,collide_bits;
   void (*m_movedCallback)(dGeomID);

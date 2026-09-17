@@ -24,8 +24,15 @@ namespace ai
             //throw std::runtime_error("not implemented");
         }
 
-        const ai::Numeric<T>& regeneration() const;
-        ai::Numeric<T>& regeneration();
+        const ai::Numeric<T>& regeneration() const
+        {
+            return m_regeneration;
+        }
+
+        ai::Numeric<T>& regeneration()
+        {
+            return m_regeneration;
+        }
 
         void regenerate(T time)
         {

@@ -360,7 +360,12 @@ namespace ai
 
     void PhysicObj::TransferToNewSpace()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAC90 - moves the object's geoms into a space of its own.
+        dxSpace* const parentSpace = ai::gGlobalSpace->lock_count ? ai::gTempSpace : ai::gGlobalSpace;
+        m_spaceId = dSimpleSpaceCreate(parentSpace);
+        dSpaceSetCleanup(m_spaceId, 0);
+        TransferToSpace(m_spaceId);
+        m_bIsSpaceOwner = true;
     }
 
     void PhysicObj::SetRotation(Quaternion const& rot)

@@ -62,7 +62,13 @@ namespace ai
 
     void PhysicUnit::OnCollideWithStandingVehicle()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80AAD0 - a walking unit that bumps into a stopped vehicle stops and stands for a random time.
+        if (m_walkState != STAND)
+        {
+            m_walkState = STAND;
+            m_standTtl.value().set(CVector2(0.0f, m_standTtl.maxValue().get()).randomValue());
+            m_physicBody->SetNodeAction(0, true);
+        }
     }
 
     eGObjPropertySaveStatus PhysicUnit::GetPropertySaveStatus(int) const
