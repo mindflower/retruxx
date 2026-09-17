@@ -729,3 +729,9 @@ CStr StrW::ToStr(unsigned int codePage) const
     WideCharToMultiByte(codePage, 0, m_charPtr, -1, &buffer[0], size, nullptr, nullptr);
     return CStr(buffer.c_str());
 }
+
+CStr vecToStr(CVector const& v)
+{
+    // RVA 0x666090
+    return CStr::format_("%.3f %.3f %.3f", v.x, v.y, v.z);
+}

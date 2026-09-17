@@ -73,6 +73,11 @@
 #include "server/statistic/statisticmanager.h"
 #include "server/statistic/intstatistic.h"
 #include "server/dynamicquestmanager.h"
+#include "server/dynamicscene.h"
+#include "server/map.h"
+#include "server/relationship.h"
+
+extern "C" void __cdecl _assert(char const* message, char const* file, unsigned line);
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetRandomSkin)
 {
@@ -99,37 +104,62 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetSize)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCabin)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFD80
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushObject(vehicle->GetCabin());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetBasket)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFDE0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushObject(vehicle->GetBasket());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetChassis)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFE40
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushObject(vehicle->GetChassis());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetHealth)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D5020
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    // NOTE: a vehicle without a chassis is dereferenced as null.
+    context->pushFloat(vehicle->GetChassis()->Health().value().get());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxHealth)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D5070
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    // NOTE: a vehicle without a chassis is dereferenced as null.
+    context->pushFloat(vehicle->GetChassis()->Health().maxValue().get());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetFuel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D50C0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    // NOTE: a vehicle without a chassis is dereferenced as null.
+    context->pushFloat(vehicle->GetChassis()->Fuel().value().get());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxFuel)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D5110
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    // NOTE: a vehicle without a chassis is dereferenced as null.
+    context->pushFloat(vehicle->GetChassis()->Fuel().maxValue().get());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetExternalPathByName)
@@ -142,7 +172,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetExternalPathByName)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCanBeDistractedFromMoving)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFEA0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetCanBeDistractedFromMoving(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, PlaceToEndOfPath)
@@ -163,7 +196,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetThrottle)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetThrottle)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFED0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushFloat(vehicle->GetThrottle());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlEnabled)
@@ -176,57 +212,93 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlEnabled)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetSteer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFF30
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetSteer(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetSteer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFF60
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushFloat(vehicle->GetSteer());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, FireFromWeaponCustom)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFF90
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    CVector const& targetPoint = context->asVector(2);
+    bool const enable = context->asBool(1);
+    ai::WeaponFirer::FireFromWeaponsIfPossible(vehicle, enable, targetPoint, nullptr);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, FireFromWeaponCustom2)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5DF570
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    int const targetId = context->asInt(2);
+    vehicle->FireFromWeaponCustom2(context->asBool(1), targetId);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, HoldFire)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CFFD0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->HoldFire(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlWeapons)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D51C0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetCustomControlWeapons(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeapons)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0020
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushInt(vehicle->GetCustomControlWeapons());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlWeaponsTarget)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0050
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetCustomControlWeaponsTarget(context->asVector(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeaponsTarget)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0090
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushVector(vehicle->GetCustomControlWeaponsTarget());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomControlWeaponsTargetObj)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D00F0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetCustomControlWeaponsTargetObj(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCustomControlWeaponsTargetObj)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0120
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushInt(vehicle->GetCustomControlWeaponsTargetObj());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCustomLinearVelocity)
@@ -251,62 +323,108 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AddItemsToRepository)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, RemoveItemsFromRepository)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0190
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    int const amount = context->asInt(2);
+    char const* const prototypeName = context->asString(1);
+    auto* const repository = vehicle->GetRepository();
+    context->pushBool(repository ? repository->RemoveItems(prototypeName, amount) : false);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, HasAmountOfItemsInRepository)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D01F0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    int const amount = context->asInt(2);
+    char const* const prototypeName = context->asString(1);
+    auto const* const repository = vehicle->GetRepository();
+    context->pushBool(repository ? repository->HasAmountOfItems(prototypeName, amount) : false);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, CanPlaceItemsToRepository)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0250
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    int const amount = context->asInt(2);
+    char const* const prototypeName = context->asString(1);
+    auto* const repository = vehicle->GetRepository();
+    context->pushBool(repository ? repository->CanPlaceItems(prototypeName, amount) : false);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AddObjectToRepository)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D51F0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    auto* const obj = dynamic_cast<ai::Obj*>(context->asObject(1, "Obj"));
+    context->pushBool(vehicle->AddObjectToRepository(obj));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, TakeOffAllGuns)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5E9B50
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushAIParam(vehicle->TakeOffAllGuns());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, AttachTrailer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5DF5B0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->AttachTrailer(context->asString(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, DetachTrailer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5E2970
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->DetachTrailer();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, TrailerExists)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5E2990
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushBool(vehicle->GetTrailer() != nullptr);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetTrailer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5DF5E0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushObject(vehicle->GetTrailer());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, getGodMode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D02B0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushBool(vehicle->getGodMode());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setGodMode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D02E0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->setGodMode(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, getImmortalMode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0310
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushBool(vehicle->getImmortalMode());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setImmortalMode)
@@ -319,72 +437,114 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, setImmortalMode)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetHorn)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0370
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushBool(vehicle->GetHorn());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetHorn)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5E9B90
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetHorn(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetVisible)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CB790
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetVisible();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetInvisible)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CB7B0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetInvisible();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxTorque)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D03A0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushFloat(vehicle->GetMaxTorque());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetMaxTorque)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0410
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetMaxTorque(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetMaxSpeed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D5230
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushFloat(vehicle->GetMaxSpeed());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetMaxSpeed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0480
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetMaxSpeed(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, GetCruisingSpeed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D04F0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    context->pushFloat(vehicle->GetCruisingSpeed());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetCruisingSpeed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D5260
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetCruisingSpeed(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, LimitMaxSpeed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0520
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->LimitMaxSpeed(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, UnlimitMaxSpeed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0550
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->UnlimitMaxSpeed();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, SetForcedMaxTorque)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D0570
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->SetForcedMaxTorque(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Vehicle, ResetForcedMaxTorque)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5D05A0
+    auto* vehicle = dynamic_cast<ai::Vehicle*>(context->asObject(0, "Vehicle"));
+    vehicle->ResetForcedMaxTorque();
+    return 1;
 }
 
 CStr CABIN = "CABIN";
@@ -1008,9 +1168,95 @@ namespace ai
         pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
     }
 
-    void Vehicle::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Vehicle::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D9350
+        ComplexPhysicObj::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("TimeAfterDeath", CStr(m_timeAfterDeath).c_str());
+        xmlNode->SetAttribute("NumBlownParts", CStr(m_numBlownParts).c_str());
+        xmlNode->SetAttribute("TimeAfterLastBlow", CStr(m_timeAfterLastBlow).c_str());
+        if (_GetDeadStatus())
+        {
+            xmlNode->SetAttribute("DeathDamage", CStr(static_cast<int>(m_deathDamage)).c_str());
+        }
+        xmlNode->SetAttribute("CurrentGear", CStr(m_currentGear).c_str());
+        xmlNode->SetAttribute("Throttle", CStr(m_throttle).c_str());
+        xmlNode->SetAttribute("RealThrottle", CStr(m_realThrottle).c_str());
+        xmlNode->SetAttribute("AutoBrake", CStr(static_cast<int>(m_bAutoBrake)).c_str());
+        xmlNode->SetAttribute("HandBrake", CStr(static_cast<int>(m_bHandBrake)).c_str());
+        xmlNode->SetAttribute("EngineRPM", CStr(m_engineRpm).c_str());
+        if (m_npcMotionControllerId != -1)
+        {
+            xmlNode->SetAttribute("NpcMotionControllerId", CStr(m_npcMotionControllerId).c_str());
+        }
+        xmlNode->SetAttribute("CurrentDestination", CStr(m_currentDestination).c_str());
+        xmlNode->SetAttribute("PathNum", CStr(m_pathNum).c_str());
+        xmlNode->SetAttribute("Priority", CStr(static_cast<int>(m_priority)).c_str());
+        xmlNode->SetAttribute("PathIndex", CStr(m_pathIndex).c_str());
+        xmlNode->SetAttribute("IsMovingAlongExternalPath", CStr(static_cast<int>(m_bIsMovingAlongExternalPath)).c_str());
+        xmlNode->SetAttribute("CanBeDistractedFromMoving", CStr(static_cast<int>(m_bCanBeDistractedFromMoving)).c_str());
+        xmlNode->SetAttribute("StoppageMode", CStr(m_stoppageMode).c_str());
+        xmlNode->SetAttribute("OnOilMode", CStr(m_onOilMode).c_str());
+        xmlNode->SetAttribute("InSmokeScreenMode", CStr(m_inSmokeScreenMode).c_str());
+        xmlNode->SetAttribute("TurboThrottleTime", CStr(m_turboThrottleTime).c_str());
+        xmlNode->SetAttribute("TurboThrottleValue", CStr(m_turboThrottleValue).c_str());
+        xmlNode->SetAttribute("ImmortalMode", CStr(static_cast<int>(m_bImmortalMode)).c_str());
+        xmlNode->SetAttribute("Hidden", CStr(static_cast<int>(m_bHidden)).c_str());
+        xmlNode->SetAttribute("MoveStatus", CStr(static_cast<int>(m_moveStatus)).c_str());
+        xmlNode->SetAttribute("CruisingSpeed", CStr(m_cruisingSpeed).c_str());
+        xmlNode->SetAttribute("Role", CStr(m_roleId).c_str());
+        xmlNode->SetAttribute("RecollectionId", CStr(m_recollectionId).c_str());
+        xmlNode->SetAttribute("WasStuck", CStr(static_cast<int>(m_bWasStuck)).c_str());
+        xmlNode->SetAttribute("PrevPosToCheckStuck", CStr(m_prevPosToCheckStuck).c_str());
+        xmlNode->SetAttribute("TimeOutToCheckStuck", CStr(m_timeOutToCheckStuck).c_str());
+        if (m_bIsControlledByPlayer)
+        {
+            xmlNode->SetAttribute("PastTakingPos", CStr(m_pastTakingSpherePosition).c_str());
+            // m3d::XmlNodeSetAttribute<bool>, inlined.
+            xmlNode->SetAttribute("AllowInventoryMessage", CStr(static_cast<int>(m_bAllowPickUpMessage)).c_str());
+        }
+
+        if (m_pPath)
+        {
+            ref_ptr pathNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Path");
+            xmlNode->AddChild(pathNode);
+            m_pPath->SaveToXML(xmlFile, pathNode);
+        }
+
+        if (!m_gunsPointed.empty())
+        {
+            ref_ptr gunsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "GunPointed");
+            xmlNode->AddChild(gunsNode);
+            for (auto const& [gunId, pointed] : m_gunsPointed)
+            {
+                ref_ptr gunNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Gun");
+                gunsNode->AddChild(gunNode);
+                gunNode->SetAttribute("Id", CStr(gunId).c_str());
+                gunNode->SetAttribute("Pointed", CStr(static_cast<int>(pointed)).c_str());
+            }
+        }
+
+        // The second effect action is the headlights: 13 when they are on, 12 when off.
+        if (m_effectActions[1] == 13)
+        {
+            xmlNode->SetAttribute("Headlights", CStr(1).c_str());
+        }
+
+        ref_ptr wheelsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Wheels");
+        xmlNode->AddChild(wheelsNode);
+        for (auto it = m_wheels.begin(); it != m_wheels.end(); ++it)
+        {
+            ref_ptr wheelInfoNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "WheelInfo");
+            wheelsNode->AddChild(wheelInfoNode);
+            wheelInfoNode->SetAttribute("Id", CStr(static_cast<int>(it - m_wheels.begin())).c_str());
+            wheelInfoNode->SetAttribute("present", CStr(static_cast<int>(it->IsWheelPresent())).c_str());
+            if (it->IsWheelPresent())
+            {
+                ref_ptr wheelNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Wheel");
+                wheelInfoNode->AddChild(wheelNode);
+                it->GetWheel()->SaveToXML(xmlFile, wheelNode);
+            }
+        }
     }
 
     bool Vehicle::GetHorn() const
@@ -1402,9 +1648,20 @@ namespace ai
         return price;
     }
 
-    bool Vehicle::FireFromWeaponByGunId(int, bool)
+    bool Vehicle::FireFromWeaponByGunId(int gunId, bool enable)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DCD10
+        if (gunId == -1)
+        {
+            return false;
+        }
+        Obj* const gun = theObjects->GetEntityByObjId(gunId);
+        // NOTE: the gun has to be both a Gun and a CompoundGun, which no object is, so this never fires.
+        if (gun && gun->IsKindOf(RT_CLASS_LOCAL(Gun)) && gun->IsKindOf(RT_CLASS_LOCAL(CompoundGun)))
+        {
+            return FireFromWeaponByGunPartName(static_cast<VehiclePart*>(gun)->GetPartName(), enable);
+        }
+        return false;
     }
 
     void Vehicle::SetMoveStatus(VehicleMoveStatus moveStatus)
@@ -1414,7 +1671,55 @@ namespace ai
 
     void Vehicle::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EA560 - everything the vehicle carries or tows goes along with it.
+        _SetIdleMoveStatus();
+        if (m_bIsControlledByPlayer)
+        {
+            SetHorn(false);
+        }
+        m_engineHighSoundNode = nullptr;
+        m_engineLowSoundNode = nullptr;
+        ComplexPhysicObj::SetPassedToAnotherMapStatus();
+
+        if (m_repository)
+        {
+            for (unsigned int slot = 0; slot < m_repository->GetNumItems(); ++slot)
+            {
+                if (Obj* const item = theObjects->GetEntityByObjId(m_repository->GetItem(slot).GetObjId()))
+                {
+                    item->SetPassedToAnotherMapStatus();
+                }
+            }
+        }
+        for (auto& wheelInfo : m_wheels)
+        {
+            if (Wheel* const wheel = wheelInfo.GetWheel())
+            {
+                wheel->SetPassedToAnotherMapStatus();
+            }
+        }
+        for (auto const& [slot, gadget] : m_gadgets)
+        {
+            if (gadget)
+            {
+                gadget->SetPassedToAnotherMapStatus();
+            }
+        }
+        if (Obj* const trailer = theObjects->GetEntityByObjId(m_trailerObjId))
+        {
+            trailer->SetPassedToAnotherMapStatus();
+        }
+        if (Obj* const recollection = theObjects->GetEntityByObjId(m_recollectionId))
+        {
+            recollection->SetPassedToAnotherMapStatus();
+        }
+
+        m_roleId = -1;
+        m_currentNearbyObstacles.clear();
+        m_pastNearbyObstacles.clear();
+        m_pastTakingSpherePosition = ZeroVector;
+        m_pastNumNearbyChests = 0;
+        m_currentNumNearbyChests = 0;
     }
 
     void Vehicle::SetCruisingSpeed(float cruisingSpeed)
@@ -1640,15 +1945,73 @@ namespace ai
         theProcessManager->PostMessageA(3, GetId(), radioManagerId, 0.0f, m3d::AIParam(44), {}, 1);
     }
 
-    void Vehicle::Blow(Obj*)
+    void Vehicle::Blow(Obj* partToBlow)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DA510 - besides bursting parts, a vehicle can lose a wheel in an explosion.
+        if (!partToBlow)
+        {
+            return;
+        }
+        ComplexPhysicObj::Blow(partToBlow);
+        if ((GetFlags() & 2) != 0)
+        {
+            return;
+        }
+
+        auto wheelInfo = m_wheels.begin();
+        while (wheelInfo != m_wheels.end() && wheelInfo->GetWheel() != partToBlow)
+        {
+            ++wheelInfo;
+        }
+        if (wheelInfo == m_wheels.end())
+        {
+            return;
+        }
+
+        Wheel* const wheel = wheelInfo->GetWheel();
+        Quaternion const rotation = GetRotation();
+        CVector const position = wheel->GetPosition();
+        PhysicBody::CreateEffectNode(wheel->GetPrototypeInfo()->m_blowEffectName, position, rotation, true, 1.0f);
+        wheel->DetachFromPhysicObj();
+        wheel->Remove();
+        wheel->m_parentId = -1;
+        wheelInfo->SetWheel(nullptr);
     }
 
-    void Vehicle::SetHorn(bool)
+    void Vehicle::SetHorn(bool bHorn)
     {
-        // TODO: implement Vehicle::SetHorn
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E7510
+        if (!m_bHorn && bHorn)
+        {
+            CStr const& hornSoundName = GetPrototypeInfo()->m_hornSoundName;
+            if (hornSoundName.c_str() && strlen(hornSoundName.c_str()) != 0)
+            {
+                m3d::SgNode* node = PhysicBody::CreateNode(hornSoundName, 0, CVector(1.0f, 1.0f, 1.0f), nullptr, false);
+                if (node->IsKindOf(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode))
+                {
+                    m_hornSoundNode = node;
+                    int looped = 1;
+                    node->SetProperty(9728, &looped);
+                    // NOTE: the chassis is not checked for null.
+                    GetChassis()->m_Node->AddChild(m_hornSoundNode);
+                }
+                else if (node)
+                {
+                    node->GetGraph()->RemoveNode(node);
+                }
+            }
+        }
+
+        if (m_bHorn && !bHorn)
+        {
+            thePlayer->CauseEvent(GE_PLAYER_VEHICLE_HORN, 0.0f, m3d::AIParam(), m3d::AIParam());
+            if (m_hornSoundNode)
+            {
+                m_hornSoundNode->GetGraph()->RemoveNode(m_hornSoundNode);
+                m_hornSoundNode = nullptr;
+            }
+        }
+        m_bHorn = bHorn;
     }
 
     int Vehicle::SetExternalPathByName(char const* pathName)
@@ -1771,9 +2134,23 @@ namespace ai
         return PhysicObj::GetPropertyId(name);
     }
 
-    float Vehicle::EstimateDamageAI(CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
+    float Vehicle::EstimateDamageAI(CVector const& point, retruxx::vector<int, retruxx::allocator<int>> exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DFD50 - the damage all guns would deal at the point, ignoring this vehicle.
+        exceptions.push_back(GetId());
+        float result = 0.0f;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (part->IsKindOf(RT_CLASS_LOCAL(CompoundGun)))
+            {
+                result = static_cast<CompoundGun*>(part)->EstimateDamage(point, exceptions) + result;
+            }
+            else if (part->IsKindOf(RT_CLASS_LOCAL(Gun)))
+            {
+                result = static_cast<Gun*>(part)->EstimateDamage(point, exceptions) + result;
+            }
+        }
+        return result;
     }
 
     float Vehicle::EstimateDamageAI() const
@@ -1795,9 +2172,100 @@ namespace ai
         return result;
     }
 
-    void Vehicle::PickUpNearbyObjects(bool, unsigned&, retruxx::vector<int, retruxx::allocator<int>>&)
+    void Vehicle::PickUpNearbyObjects(
+        bool bNeedCollectFromGround,
+        unsigned& originalNumItems,
+        retruxx::vector<int, retruxx::allocator<int>>& addedObjIds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EA900 - parts are fitted into empty slots, gadgets into gadget slots, and the rest goes to the cargo.
+        originalNumItems = 0;
+        addedObjIds = retruxx::vector<int>();
+        if (!m_groundRepository)
+        {
+            return;
+        }
+        VehiclePrototypeInfo const* const vehicleInfo = GetPrototypeInfo();
+        if (!vehicleInfo)
+        {
+            return;
+        }
+        if (bNeedCollectFromGround)
+        {
+            CollectNearbyObjectsToGroundRepository();
+        }
+
+        unsigned const numGroundItems = m_groundRepository->GetNumItems();
+        originalNumItems = numGroundItems;
+        for (unsigned slot = 0; slot < numGroundItems; ++slot)
+        {
+            GeomRepositoryItem item = m_groundRepository->GetItem(slot);
+            Obj* const obj = item.GetObj();
+            if (!obj)
+            {
+                continue;
+            }
+
+            if (obj->IsKindOf(RT_CLASS_LOCAL(VehiclePart)))
+            {
+                if (PrototypeInfo const* const partInfo = obj->GetPrototypeInfo())
+                {
+                    int const vpResourceId = partInfo->m_resourceId;
+                    bool attached = false;
+                    for (unsigned i = 0; i < vehicleInfo->GetAllPartNames().size(); ++i)
+                    {
+                        CStr const& partName = vehicleInfo->GetAllPartNames()[i];
+                        if (GetPartByName(partName) || !CanPartBeAttached(partName))
+                        {
+                            continue;
+                        }
+                        auto const* const description = vehicleInfo->GetPartDescriptionByName(partName);
+                        if (description &&
+                            theResourceManager->bResourceIsKindOf(vpResourceId, description->GetPartResourceId()))
+                        {
+                            m_groundRepository->GiveUpThingFromSlotUnsafe(slot, 1);
+                            SetPartByName(partName, static_cast<VehiclePart*>(obj), false);
+                            attached = true;
+                            break;
+                        }
+                    }
+                    if (attached)
+                    {
+                        addedObjIds.push_back(obj->GetId());
+                        continue;
+                    }
+                }
+            }
+            else if (obj->IsKindOf(RT_CLASS_LOCAL(Gadget)) && GetValidSlotIdForGadget(static_cast<Gadget*>(obj)) != -1)
+            {
+                m_groundRepository->GiveUpThingFromSlotUnsafe(slot, 1);
+                if (AddGadget(static_cast<Gadget*>(obj)))
+                {
+                    addedObjIds.push_back(obj->GetId());
+                    continue;
+                }
+                m_groundRepository->AddThing(item, 0);
+            }
+
+            if (!m_repository || !m_repository->CanAddThing(item))
+            {
+                continue;
+            }
+            m_groundRepository->GiveUpThingFromSlotUnsafe(slot, 1);
+            if (m_repository->AddThing(item, 0))
+            {
+                addedObjIds.push_back(obj->GetId());
+            }
+            else
+            {
+                m_groundRepository->AddThing(item, 0);
+            }
+        }
+
+        m_groundRepository->SetChanged();
+        if (bNeedCollectFromGround)
+        {
+            m_groundRepository->FlushInReferenceChests(GetPosition());
+        }
     }
 
     float Vehicle::GetFullDurability() const
@@ -2116,9 +2584,21 @@ namespace ai
         return m_repository && m_repository->CanPlaceItems(prototypeName, amount);
     }
 
-    void Vehicle::AttachTrailer(char const*)
+    void Vehicle::AttachTrailer(char const* trailerPrototypeName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DCDA0
+        CStr const prototypeName(trailerPrototypeName);
+        int const trailerId = theObjects->CreateNewObject(
+            thePrototypeManager->GetPrototypeId(prototypeName), _GetTrailerName().c_str(), -1, -1);
+        auto* const trailer = static_cast<Vehicle*>(theObjects->GetEntityByObjId(trailerId));
+        // NOTE: an existing object is attached without a type check, and a missing one is type checked through a null
+        // pointer.
+        if (trailer || static_cast<m3d::Object*>(trailer)->IsKindOf(RT_CLASS_LOCAL(Vehicle)))
+        {
+            _AttachExistingTrailer(trailer, true);
+            return;
+        }
+        M3D_LOG_ERR("Error: attaching invalid trailer to " + GetDebugDescription());
     }
 
     void Vehicle::SetTurboThrottleValue(float value)
@@ -2142,9 +2622,35 @@ namespace ai
         return m_stoppageMode != 0;
     }
 
-    void Vehicle::GetEnemiesInNeighborhood(float, retruxx::vector<int, retruxx::allocator<int>>&) const
+    void Vehicle::GetEnemiesInNeighborhood(float radius, retruxx::vector<int, retruxx::allocator<int>>& enemiesIds) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DFAE0 - living hostile vehicles and static guns within the radius.
+        enemiesIds.resize(0);
+        auto const& allObjects = theObjects->m_allObjects;
+        for (int id = allObjects.m_firstNodeId; id != -1; id = allObjects.m_records[id].m_nextId)
+        {
+            Obj* const obj = allObjects.m_records[id].m_value;
+            if (!obj->IsKindOf(RT_CLASS_LOCAL(Vehicle)) && !obj->IsKindOf(RT_CLASS_LOCAL(StaticAutoGun)))
+            {
+                continue;
+            }
+            auto* const physicObj = static_cast<PhysicObj*>(obj);
+            unsigned const flags = physicObj->GetFlags();
+            if ((flags & 8) != 0 || (flags & 2) != 0 || physicObj->GetParentRepository() ||
+                theRelationship->CheckTolerance(GetBelong(), physicObj->GetBelong()) > RS_ENEMY)
+            {
+                continue;
+            }
+            CVector const enemyPos = physicObj->GetPosition();
+            CVector const myPos = GetPosition();
+            double const dz = myPos.z - enemyPos.z;
+            double const dy = myPos.y - enemyPos.y;
+            double const dx = myPos.x - enemyPos.x;
+            if (radius > sqrt(dz * dz + dy * dy + dx * dx))
+            {
+                enemiesIds.push_back(physicObj->GetId());
+            }
+        }
     }
 
     VehicleRole* Vehicle::GetRole() const
@@ -2395,9 +2901,111 @@ namespace ai
         this->m_bCurSteeringForceValid = 0;
     }
 
-    void Vehicle::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Vehicle::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E5470
+        ComplexPhysicObj::LoadRuntimeValues(xmlFile, xmlNode);
+        m3d::SafeFloatAttrib(m_timeAfterDeath, xmlNode, "TimeAfterDeath");
+        int numBlownParts = -1;
+        if (m3d::SafeIntAttrib(numBlownParts, xmlNode, "NumBlownParts") && numBlownParts >= 0)
+        {
+            m_numBlownParts = numBlownParts;
+        }
+        m3d::SafeFloatAttrib(m_timeAfterLastBlow, xmlNode, "TimeAfterLastBlow");
+        int deathDamage = m_deathDamage;
+        m3d::SafeIntAttrib(deathDamage, xmlNode, "DeathDamage");
+        m_deathDamage = static_cast<DamageType>(deathDamage);
+        m3d::SafeIntAttrib(m_currentGear, xmlNode, "CurrentGear");
+        m3d::SafeFloatAttrib(m_throttle, xmlNode, "Throttle");
+        m3d::SafeFloatAttrib(m_realThrottle, xmlNode, "RealThrottle");
+        m3d::SafeBoolAttrib(m_bAutoBrake, xmlNode, "AutoBrake");
+        m3d::SafeBoolAttrib(m_bHandBrake, xmlNode, "HandBrake");
+        m3d::SafeFloatAttrib(m_engineRpm, xmlNode, "EngineRPM");
+        m3d::SafeIntAttrib(m_npcMotionControllerId, xmlNode, "NpcMotionControllerId");
+        m3d::SafeVectorAttrib(m_currentDestination, xmlNode, "CurrentDestination");
+        m3d::SafeIntAttrib(m_pathNum, xmlNode, "PathNum");
+        int priority = m_priority;
+        m3d::SafeIntAttrib(priority, xmlNode, "Priority");
+        m_priority = static_cast<unsigned char>(priority);
+        m3d::SafeIntAttrib(m_pathIndex, xmlNode, "PathIndex");
+        m3d::SafeBoolAttrib(m_bIsMovingAlongExternalPath, xmlNode, "IsMovingAlongExternalPath");
+        m3d::SafeBoolAttrib(m_bCanBeDistractedFromMoving, xmlNode, "CanBeDistractedFromMoving");
+        m3d::SafeIntAttrib(m_stoppageMode, xmlNode, "StoppageMode");
+        m3d::SafeIntAttrib(m_onOilMode, xmlNode, "OnOilMode");
+        m3d::SafeIntAttrib(m_inSmokeScreenMode, xmlNode, "InSmokeScreenMode");
+        m3d::SafeFloatAttrib(m_turboThrottleTime, xmlNode, "TurboThrottleTime");
+        m3d::SafeFloatAttrib(m_turboThrottleValue, xmlNode, "TurboThrottleValue");
+        m3d::SafeBoolAttrib(m_bImmortalMode, xmlNode, "ImmortalMode");
+        m3d::SafeBoolAttrib(m_bHidden, xmlNode, "Hidden");
+        int moveStatus = m_moveStatus;
+        m3d::SafeIntAttrib(moveStatus, xmlNode, "MoveStatus");
+        m_moveStatus = static_cast<VehicleMoveStatus>(moveStatus);
+        m3d::SafeFloatAttrib(m_cruisingSpeed, xmlNode, "CruisingSpeed");
+        m3d::SafeVectorAttrib(m_pastTakingSpherePosition, xmlNode, "PastTakingPos");
+        m3d::SafeBoolAttrib(m_bAllowPickUpMessage, xmlNode, "AllowInventoryMessage");
+        m3d::SafeIntAttrib(m_roleId, xmlNode, "Role");
+        m3d::SafeIntAttrib(m_recollectionId, xmlNode, "RecollectionId");
+        m3d::SafeBoolAttrib(m_bWasStuck, xmlNode, "WasStuck");
+        m3d::SafeVectorAttrib(m_prevPosToCheckStuck, xmlNode, "PrevPosToCheckStuck");
+        m3d::SafeFloatAttrib(m_timeOutToCheckStuck, xmlNode, "TimeOutToCheckStuck");
+
+        ref_ptr pathNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        xmlNode->GetFirstChild(pathNode, "Path");
+        if (!pathNode->IsEmpty())
+        {
+            delete m_pPath;
+            m_pPath = nullptr;
+            m_pPath = new Path();
+            m_pPath->LoadFromXML(xmlFile, pathNode, Map::theGlobalMap);
+        }
+
+        ref_ptr gunsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        xmlNode->GetFirstChild(gunsNode, "GunPointed");
+        // NOTE: the saved guns are only read when the map already has entries, not when the node exists.
+        if (!m_gunsPointed.empty())
+        {
+            ref_ptr gunNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            for (gunsNode->GetFirstChild(gunNode, "Gun"); !gunNode->IsEmpty(); gunNode->GetNextSibling(gunNode, "Gun"))
+            {
+                int gunId = -1;
+                m3d::SafeIntAttrib(gunId, gunNode, "Id");
+                bool pointed = false;
+                m3d::SafeBoolAttrib(pointed, gunNode, "Pointed");
+                if (gunId != -1)
+                {
+                    m_gunsPointed.insert({gunId, pointed});
+                }
+            }
+        }
+
+        bool headlights = false;
+        m3d::SafeBoolAttrib(headlights, xmlNode, "Headlights");
+        m_effectActions[1] = static_cast<ActionType>(headlights + 12);
+
+        m_wheels.clear();
+        ref_ptr wheelsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+        xmlNode->GetFirstChild(wheelsNode, "Wheels");
+        if (!wheelsNode->IsEmpty())
+        {
+            m_wheels.resize(GetPrototypeInfo()->m_wheelInfos.size(), WheelRuntimeInfo(nullptr));
+            // NOTE: a WheelInfo without an Id reuses the previous one, and the index is not range checked.
+            int wheelId = 0;
+            ref_ptr wheelInfoNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            for (wheelsNode->GetFirstChild(wheelInfoNode, "WheelInfo"); !wheelInfoNode->IsEmpty();
+                 wheelInfoNode->GetNextSibling(wheelInfoNode, "WheelInfo"))
+            {
+                m3d::SafeIntAttrib(wheelId, wheelInfoNode, "Id");
+                bool present = true;
+                m3d::SafeBoolAttrib(present, wheelInfoNode, "present");
+                if (present)
+                {
+                    ref_ptr wheelNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+                    wheelInfoNode->GetFirstChild(wheelNode, "Wheel");
+                    int const wheelObjId = gDynamicScene->ReadNewObjectFromXml(xmlFile, wheelNode, {});
+                    m_wheels[wheelId].SetWheel(static_cast<Wheel*>(theObjects->GetEntityByObjId(wheelObjId)));
+                }
+            }
+        }
     }
 
     void Vehicle::DecInSmokeScreenMode()
@@ -2618,9 +3226,17 @@ namespace ai
         return m_seenObjId;
     }
 
-    void Vehicle::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
+    void Vehicle::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>& geoms) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D5C90
+        ComplexPhysicObj::GetGeoms(geoms);
+        for (auto const& wheelInfo : m_wheels)
+        {
+            if (Wheel const* const wheel = wheelInfo.GetWheel())
+            {
+                wheel->GetPhysicBody()->GetGeoms(geoms);
+            }
+        }
     }
 
     void Vehicle::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -3317,11 +3933,25 @@ namespace ai
     }
 
     float Vehicle::EstimateDamageFromPositionAI(
-        CVector const&,
-        CVector const&,
-        retruxx::vector<int, retruxx::allocator<int>>) const
+        CVector const& position,
+        CVector const& point,
+        retruxx::vector<int, retruxx::allocator<int>> exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5DFE80 - as EstimateDamageAI, but as if the vehicle stood at position.
+        exceptions.push_back(GetId());
+        float result = 0.0f;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (part->IsKindOf(RT_CLASS_LOCAL(CompoundGun)))
+            {
+                result = static_cast<CompoundGun*>(part)->EstimateDamageFromPosition(position, point, exceptions) + result;
+            }
+            else if (part->IsKindOf(RT_CLASS_LOCAL(Gun)))
+            {
+                result = static_cast<Gun*>(part)->EstimateDamageFromPosition(position, point, exceptions) + result;
+            }
+        }
+        return result;
     }
 
     void Vehicle::SetNpcMotionControllerId(int npcMotionControllerId)
@@ -3505,9 +4135,15 @@ namespace ai
         return m_repository && m_repository->HasAmountOfItems(prototypeName, amount);
     }
 
-    void Vehicle::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void Vehicle::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED260
+        for (auto const& prop : m_propertiesMap)
+        {
+            Props.insert(prop.first);
+        }
+        // NOTE: ComplexPhysicObj is skipped.
+        PhysicObj::GetPropertiesNames(Props);
     }
 
     void Vehicle::SetTurboThrottleTime(float time)
@@ -4175,9 +4811,15 @@ namespace ai
         SetPartByName(CABIN, newCabin, false);
     }
 
-    void Vehicle::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void Vehicle::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED360
+        for (auto const& prop : m_propertiesMap)
+        {
+            Props.insert(prop.second);
+        }
+        // NOTE: ComplexPhysicObj is skipped.
+        PhysicObj::GetPropertiesIDs(Props);
     }
 
     void Vehicle::IntersectWithWorld() const
@@ -4219,7 +4861,18 @@ namespace ai
                 }
                 if (IS_KIND_OF(ownerObj, Chest))
                 {
-                    RETRUXX_NOT_IMPLEMENTED;
+                    // Chests actually touching the pick-up sphere are counted.
+                    dReal const* const takePos = dGeomGetPosition(m_takingSphere->GetGeomId());
+                    CVector const takeCenter(takePos[0], takePos[1], takePos[2]);
+                    float const takeRadius = m_takingSphere->GetRadius();
+                    float const chestRadius = ownerObj->m_intersectionObstacle
+                        ? ownerObj->m_intersectionObstacle->GetSphere()->GetRadius()
+                        : 0.0f;
+                    if (IntersectionManager::SpheresIntersect(
+                            ownerObj->GetMassCenterPosition(), chestRadius, takeCenter, takeRadius))
+                    {
+                        ++m_currentNumNearbyChests;
+                    }
                 }
             }
 
@@ -4250,9 +4903,45 @@ namespace ai
         m_maxTorqueForcedValue = forcedMaxTorque;
     }
 
-    bool Vehicle::DriveToPoint(CVector const&, CVector const&, bool, float)
+    bool Vehicle::DriveToPoint(CVector const& point, CVector const& nextPoint, bool bPrecisely, float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D59C0 - steers and throttles towards point; true once it has been passed.
+        CVector const vehiclePos = GetPosition();
+        DrivingValues dv;
+        CalcDrivingValues(*this, point, nextPoint, bPrecisely, dv);
+
+        float const dx = point.x - vehiclePos.x;
+        float const dz = point.z - vehiclePos.z;
+        float const distToPoint =
+            static_cast<float>(sqrt(static_cast<double>(dz) * dz + 0.0 * 0.0 + static_cast<double>(dx) * dx));
+        if ((!bPrecisely || dv.checkCircleRadius > distToPoint) &&
+            vehiclePos.z * dv.checkLine.normal.z + vehiclePos.x * dv.checkLine.normal.x >
+                dv.checkLine.origin.z * dv.checkLine.normal.z + dv.checkLine.origin.x * dv.checkLine.normal.x)
+        {
+            return true;
+        }
+
+        // The steering is limited to 30 degrees either way.
+        float const angle = _GetAngleTo(point);
+        float clampedAngle = angle;
+        if (fabs(angle) > 0.52359879f)
+        {
+            clampedAngle = static_cast<float>(angle < 0.0f ? -1 : 1) * 0.52359879f;
+        }
+        float const steerCoeff = clampedAngle * 1.9098593f;
+        m_steerRadians = steerCoeff * -0.78539819f;
+
+        float throttle;
+        if (fabs(dv.nextAngle) > 0.1570796370506287 && dv.brakingCircleRadius > distToPoint)
+        {
+            throttle = 0.0f;
+        }
+        else
+        {
+            throttle = static_cast<float>((4.0 - fabs(steerCoeff) * 2.7f) * 0.25f);
+        }
+        SetThrottle(throttle, true);
+        return false;
     }
 
     void Vehicle::EnableGeometry(bool changePhysicState)
@@ -4936,9 +5625,104 @@ namespace ai
         return nullptr;
     }
 
-    void Vehicle::_AttachExistingTrailer(Vehicle*, bool)
+    void Vehicle::_AttachExistingTrailer(Vehicle* trailer, bool bTrailerIsNew)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D72F0 - hooks the trailer to the basket's LP_TRAIL01 load point with a universal joint.
+        if (!trailer)
+        {
+            return;
+        }
+        if (m_trailerObjId != -1)
+        {
+            M3D_LOG_INFO("Warning: attaching trailer twice to " + GetDebugDescription());
+            return;
+        }
+
+        m_trailerObjId = trailer->GetId();
+        // The joint is built with the vehicle at the origin, then everything is put back.
+        CVector const oldPos = GetPosition();
+        Quaternion const oldRot = GetRotation();
+        CVector const oldTrailerPos = trailer->GetPosition();
+        Quaternion const oldTrailerRot = trailer->GetRotation();
+        SetPosition(ZeroVector);
+        SetRotation(IdentityQuaternion);
+        trailer->m_bIsTrailer = true;
+        trailer->LinkToParent(GetId(), HIERARCHY_CHILD);
+
+        // NOTE: neither the trailer's chassis nor this vehicle's basket is checked for null.
+        CStr const trailerChassisModelName(trailer->GetChassis()->m_modelname);
+        auto* const modelsServer = static_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
+        Basket* const basket = GetBasket();
+        CVector const basketRelPos = basket->GetNodeRelativePosition();
+        Quaternion const basketRelRot = basket->GetNodeRelativeRotation();
+
+        CMatrix res;
+        res.zero();
+        if (!modelsServer->GetBoneMatrixByNameFromModelName(
+                basket->m_modelname.c_str(), CStr("LP_TRAIL") + CStr("0") + CStr(1), res, false))
+        {
+            M3D_LOG_ERR(
+                CStr("Error: LoadPoint not found: ") + (CStr("LP_TRAIL") + CStr("0") + CStr(1)) + CStr(" on basket ") +
+                basket->m_modelname);
+        }
+        CMatrix const basketRot = basketRelRot.ToMatrix();
+        float const rotX = basketRot._31 * res._43 + basketRot._21 * res._42 + res._41 * basketRot._11;
+        float const rotY = basketRot._32 * res._43 + basketRot._22 * res._42 + basketRot._12 * res._41;
+        float const rotZ = basketRot._33 * res._43 + basketRot._23 * res._42 + basketRot._13 * res._41;
+        m_relTrailerJointPosOnMe.x = m_massCenter.x + (rotX + basketRelPos.x);
+        m_relTrailerJointPosOnMe.y = m_massCenter.y + (basketRelPos.y + rotY);
+        m_relTrailerJointPosOnMe.z = m_massCenter.z + (basketRelPos.z + rotZ);
+
+        // NOTE: the bone matrix of the basket is reused as is if the trailer has no load point.
+        if (!modelsServer->GetBoneMatrixByNameFromModelName(
+                trailerChassisModelName.c_str(), CStr("LP_TRAIL") + CStr("0") + CStr(1), res, false))
+        {
+            M3D_LOG_ERR(
+                CStr("Error: LoadPoint not found: ") + (CStr("LP_TRAIL") + CStr("0") + CStr(1)) + CStr(" on trailer ") +
+                trailerChassisModelName);
+            m_relTrailerJointPosOnTrailer = ZeroVector;
+        }
+        else
+        {
+            m_relTrailerJointPosOnTrailer = CVector(res._41, res._42, res._43);
+        }
+
+        trailer->SetPosition(CVector(
+            m_relTrailerJointPosOnMe.x - m_relTrailerJointPosOnTrailer.x,
+            m_relTrailerJointPosOnMe.y - m_relTrailerJointPosOnTrailer.y,
+            m_relTrailerJointPosOnMe.z - m_relTrailerJointPosOnTrailer.z));
+        trailer->SetRotation(IdentityQuaternion);
+
+        m_trailerJoint = dJointCreateUniversal(gGlobalWorld, nullptr);
+        dJointAttach(m_trailerJoint, m_body->id(), trailer->m_body->id());
+        dJointSetUniversalAnchor(
+            m_trailerJoint, m_relTrailerJointPosOnMe.x, m_relTrailerJointPosOnMe.y, m_relTrailerJointPosOnMe.z);
+        dJointSetUniversalAxis1(m_trailerJoint, 0.0f, 1.0f, 0.0f);
+        dJointSetUniversalAxis2(m_trailerJoint, 1.0f, 0.0f, 0.0f);
+        dJointSetUniversalParam(m_trailerJoint, dParamLoStop, -0.78539819f);
+        dJointSetUniversalParam(m_trailerJoint, dParamHiStop, 0.78539819f);
+        dJointSetUniversalParam(m_trailerJoint, dParamLoStop2, -0.78539819f);
+        dJointSetUniversalParam(m_trailerJoint, dParamHiStop2, 0.78539819f);
+        // Heavy vehicles get a stiffer joint.
+        float const cfm = GetMass() <= 100.0f ? 0.001f : 0.0000099999997f;
+        dJointSetUniversalParam(m_trailerJoint, dParamCFM, cfm);
+        dJointSetUniversalParam(m_trailerJoint, dParamBounce, 0.0f);
+        dJointSetUniversalParam(m_trailerJoint, dParamStopCFM, cfm);
+        dJointSetUniversalParam(m_trailerJoint, dParamStopERP, 0.89999998f);
+        dJointSetUniversalParam(m_trailerJoint, dParamFudgeFactor, 0.001f);
+        dJointSetUniversalParam(m_trailerJoint, dParamCFM2, cfm);
+        dJointSetUniversalParam(m_trailerJoint, dParamBounce2, 0.0f);
+        dJointSetUniversalParam(m_trailerJoint, dParamStopCFM2, cfm);
+        dJointSetUniversalParam(m_trailerJoint, dParamStopERP2, 0.89999998f);
+        dJointSetUniversalParam(m_trailerJoint, dParamFudgeFactor2, 0.001f);
+
+        SetPosition(oldPos);
+        SetRotation(oldRot);
+        if (!bTrailerIsNew)
+        {
+            trailer->SetPosition(oldTrailerPos);
+            trailer->SetRotation(oldTrailerRot);
+        }
     }
 
     void Vehicle::_InflictDamageToRepository(float damage)
@@ -5012,7 +5796,40 @@ namespace ai
         }
         if (m_deathDamage == DAMAGE_ENERGY)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // An energy kill makes the wreck shed parts and wheels one by one until 60% of them are gone.
+            unsigned const numParts = m_vehicleParts.size();
+            unsigned const numWheels = m_wheels.size();
+            if (theGlobProp.m_energyBlowDeltaTime * 2.0f <= m_timeAfterDeath &&
+                theGlobProp.m_energyBlowDeltaTime <= m_timeAfterLastBlow &&
+                static_cast<double>(m_numBlownParts) <= static_cast<double>(static_cast<int>(numWheels + numParts)) * 0.60000002f)
+            {
+                for (auto it = m_vehicleParts.begin(); it != m_vehicleParts.end();)
+                {
+                    VehiclePart* const part = (it++)->second;
+                    int const chance = theGlobProp.m_energyVpBlowProbability * static_cast<int>(numParts);
+                    if (chance * rand() / 0x8000 == 0 && !part->IsKindOf(RT_CLASS_LOCAL(Chassis)))
+                    {
+                        Blow(part);
+                        ++m_numBlownParts;
+                        m_timeAfterLastBlow = 0.0f;
+                    }
+                }
+                for (auto& wheelInfo : m_wheels)
+                {
+                    if (wheelInfo.GetWheel())
+                    {
+                        unsigned const chance = theGlobProp.m_energyWheelBlowProbability * m_wheels.size();
+                        if ((chance * rand() & 0xFFFF8000u) == 0)
+                        {
+                            Blow(wheelInfo.GetWheel());
+                            ++m_numBlownParts;
+                            m_timeAfterLastBlow = 0.0f;
+                        }
+                    }
+                }
+                FlowUnattachableParts(theGlobProp.m_flowWheelVelocity);
+                _Construct(false);
+            }
         }
         SetThrottle(0.0, 1);
         _KeepThrottle(0);
@@ -5023,7 +5840,28 @@ namespace ai
 
     void Vehicle::_OnChangeCabin()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E2EF0 - the engine sound comes from the cabin, so it is recreated.
+        Chassis* const chassis = GetChassis();
+        Cabin* const cabin = GetCabin();
+        if (m_engineHighSoundNode)
+        {
+            m3d::SgNode* toRemove = m_engineHighSoundNode;
+            m_engineHighSoundNode->GetGraph()->RemoveNode(toRemove);
+            m_engineHighSoundNode = nullptr;
+        }
+        if (cabin)
+        {
+            CStr const& soundName = cabin->GetPrototypeInfo()->m_engineHighSoundName;
+            if (soundName.c_str() && strlen(soundName.c_str()) != 0)
+            {
+                m_engineHighSoundNode = static_cast<m3d::SgSoundSourceNode*>(PhysicBody::CreateNode(
+                    cabin->GetPrototypeInfo()->m_engineHighSoundName, 0, CVector(1.0f, 1.0f, 1.0f), nullptr, false));
+                // NOTE: the chassis is not checked for null.
+                chassis->m_Node->AddChild(m_engineHighSoundNode);
+            }
+        }
+        _ValidateVehicleParts();
+        RecalcGadgets();
     }
 
     bool Vehicle::_bPassedPathPoint(CVector const& point, CVector const& nextPoint, bool bPrecisely) const
@@ -5919,7 +6757,39 @@ namespace ai
 
     void Vehicle::_GetOutOfDifficlultPlaceInternal()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5E4740 - moves a stuck or overturned vehicle to the nearest free spot on the ground.
+        _EnableIntersections(false);
+        CVector myPos = GetPosition();
+        CVector pos = ZeroVector;
+        float const radius =
+            m_intersectionObstacle ? m_intersectionObstacle->GetSphere()->GetRadius() : 0.0f;
+        bool const bValid = GetValidPosition(myPos, radius, m_priority, pos, false, true, retruxx::set<m3d::Class*>());
+
+        CVector const INITIAL_UP_DIRECTION(0.0f, 1.0f, 0.0f);
+        CMatrix const rot = GetRotation().ToMatrix();
+        CVector const up(
+            rot._31 * INITIAL_UP_DIRECTION.z + rot._21 * INITIAL_UP_DIRECTION.y + rot._11 * INITIAL_UP_DIRECTION.x,
+            rot._32 * INITIAL_UP_DIRECTION.z + rot._22 * INITIAL_UP_DIRECTION.y + rot._12 * INITIAL_UP_DIRECTION.x,
+            rot._33 * INITIAL_UP_DIRECTION.z + rot._23 * INITIAL_UP_DIRECTION.y + rot._13 * INITIAL_UP_DIRECTION.x);
+        bool const bOverturned =
+            up.z * INITIAL_UP_DIRECTION.z + up.y * INITIAL_UP_DIRECTION.y + up.x * INITIAL_UP_DIRECTION.x < -0.2f;
+
+        if (!bValid)
+        {
+            pos = myPos;
+        }
+        if (bValid || bOverturned)
+        {
+            myPos.y = 0.0f;
+            pos.y = 0.0f;
+            double const dx = myPos.x - pos.x;
+            double const dz = myPos.z - pos.z;
+            if (sqrt(dz * dz + dx * dx) > 1.0 || bOverturned)
+            {
+                SetGamePositionOnGround(pos, true, false);
+            }
+        }
+        _EnableIntersections(true);
     }
 
     float Vehicle::_GetCabinControlCoeff() const
@@ -6053,10 +6923,22 @@ namespace ai
     {
         auto const pos = GetPosition();
         auto const waterHeight =
-            m3d::pClient->GetWorld().GetLandscape().getWaterHeight(pos.x * 0.03125, pos.z * 0.03125);
+            m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
+                static_cast<int>(pos.x * 0.03125f), static_cast<int>(pos.z * 0.03125f));
         if (waterHeight > m_size.y + pos.y)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // Sunk: a splash unless the vehicle cannot be hurt, and the chassis drowns at a fifth of its health a second.
+            if (!m_bGodMode && !m_bImmortalMode)
+            {
+                PhysicBody::CreateEffectNode(
+                    CStr("ET_PS_VEH_WATERDEATH"), CVector(pos.x, waterHeight, pos.z), IdentityQuaternion, true, 1.0f);
+            }
+            DamageInfo damageInfo;
+            // NOTE: the chassis is not checked for null.
+            damageInfo.damage = GetChassis()->Health().maxValue().get() * elapsedTime * 0.2f;
+            damageInfo.damageType = DAMAGE_WATER;
+            damageInfo.damagedPartName = CHASSIS;
+            InflictDamage(damageInfo);
         }
     }
 
@@ -7136,7 +8018,9 @@ namespace ai
 
     CVector Vehicle::_GetEtalonWheelAVel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D7260 - the shipped build only asserts.
+        _assert("0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\Vehicle.cpp", 7182);
+        return ZeroVector;
     }
 
     void Vehicle::_DropChests()

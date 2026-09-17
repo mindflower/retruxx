@@ -8,6 +8,8 @@
 #include <core/kernel.h>
 #include <core/log.h>
 #include <math/matrix.h>
+#include <core/scoped_ptr.h>
+#include <server/objects/physicbodies/geoms/ray.h>
 
 namespace m3d
 {
@@ -300,14 +302,189 @@ namespace m3d
         return m_decals.size();
     }
 
-    void DecalsList::RecalcDecalsForMesh(GeometryInfo const&)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
     // The two pools every decal list shares; see the constructor.
     unsigned const IB_POOL_SIZE = 2000;
     unsigned const VB_POOL_SIZE = 1000;
+
+    namespace
+    {
+        // Scratch copies of the pools, so decals can be compacted in place.
+        unsigned short indexHelper[2000];
+        rend::VertexXYZT1I vertexHelper[1000];
+    }  // namespace
+
+    void DecalsList::RecalcDecalsForMesh(GeometryInfo const& newGeometry)
+    {
+        // RVA 0x8CF560 - a part's mesh was swapped (e.g. for a damaged model): decals on the old mesh are projected
+        // onto the new one and every decal is packed again from the start of the pools.
+        unsigned short* const buffIndices = static_cast<unsigned short*>(M3D_RENDERER->LockIbPoolField(m_IbPoolField));
+        memcpy(indexHelper, buffIndices, 2 * m_numIds);
+        auto* const buffVertices = static_cast<rend::VertexXYZT1I*>(M3D_RENDERER->LockVbPoolField(m_VbPoolField));
+        memcpy(vertexHelper, buffVertices, sizeof(rend::VertexXYZT1I) * m_numVerts);
+
+        unsigned ibOffset = 0;
+        unsigned short vbOffset = 0;
+        m_transforms.resize(0);
+        m_invBindtransforms.resize(0);
+        CMatrix* const transform = newGeometry.transform ? newGeometry.transform : &m_identityMatrix;
+        short const newMatId = GetMatrixId(transform);
+
+        for (auto it = m_decals.begin(); it != m_decals.end();)
+        {
+            DecalInfo& decal = *it;
+            if (decal.mesh == newGeometry.oldMesh)
+            {
+                // Cast a two unit ray back along the decal's normal onto the new mesh.
+                static scoped_ptr<ai::Ray> ray(ai::Ray::CreateObject(nullptr, 2.0f, nullptr));
+                dGeomSetPosition(
+                    ray->GetGeomId(),
+                    decal.source.center.x - decal.source.normal.x,
+                    decal.source.center.y - decal.source.normal.y,
+                    decal.source.center.z - decal.source.normal.z);
+                ray->SetDirection(decal.source.normal);
+
+                dContactGeom meshContacts[3];
+                int const numContacts = dCollide(
+                    ray->GetGeomId(), static_cast<ai::Geom*>(newGeometry.mesh)->GetGeomId(), 3, meshContacts,
+                    sizeof(dContactGeom));
+                if (!numContacts)
+                {
+                    it = m_decals.erase(it);
+                    continue;
+                }
+
+                // The contact closest to the old centre wins.
+                CVector pos(meshContacts[0].pos[0], meshContacts[0].pos[1], meshContacts[0].pos[2]);
+                float invLen = static_cast<float>(
+                    1.0 / sqrt(
+                              static_cast<double>(meshContacts[0].normal[1]) * meshContacts[0].normal[1] +
+                              static_cast<double>(meshContacts[0].normal[2]) * meshContacts[0].normal[2] +
+                              static_cast<double>(meshContacts[0].normal[0]) * meshContacts[0].normal[0] +
+                              0.00000011920929f));
+                CVector normal(
+                    invLen * meshContacts[0].normal[0], meshContacts[0].normal[1] * invLen,
+                    meshContacts[0].normal[2] * invLen);
+                for (int i = 1; i < numContacts; ++i)
+                {
+                    dContactGeom const& contact = meshContacts[i];
+                    float const cdx = contact.pos[0] - decal.source.center.x;
+                    float const cdz = contact.pos[2] - decal.source.center.z;
+                    float const cdy = contact.pos[1] - decal.source.center.y;
+                    float const contactDistSq = cdx * cdx + cdz * cdz + cdy * cdy;
+                    double const dx = pos.x - decal.source.center.x;
+                    double const dy = pos.y - decal.source.center.y;
+                    double const dz = pos.z - decal.source.center.z;
+                    if (sqrt(dx * dx + dz * dz + dy * dy) > sqrt(contactDistSq))
+                    {
+                        pos = CVector(contact.pos[0], contact.pos[1], contact.pos[2]);
+                        invLen = static_cast<float>(
+                            1.0 / sqrt(
+                                      static_cast<double>(contact.normal[0]) * contact.normal[0] +
+                                      static_cast<double>(contact.normal[2]) * contact.normal[2] +
+                                      static_cast<double>(contact.normal[1]) * contact.normal[1] +
+                                      0.00000011920929f));
+                        normal = CVector(invLen * contact.normal[0], contact.normal[1] * invLen, contact.normal[2] * invLen);
+                    }
+                }
+
+                // Tangent: normal x (normal + up), or the x axis when that degenerates.
+                CVector helper(
+                    normal.z * normal.y - (normal.y + 1.0f) * normal.z,
+                    normal.z * normal.x - normal.z * normal.x,
+                    (normal.y + 1.0f) * normal.x - normal.y * normal.x);
+                if (sqrt(
+                        static_cast<double>(helper.x) * helper.x + static_cast<double>(helper.z) * helper.z +
+                        static_cast<double>(helper.y) * helper.y) < 0.0000099999997f)
+                {
+                    helper = CVector(1.0f, 0.0f, 0.0f);
+                }
+                float const invTangentLen = static_cast<float>(
+                    1.0 / sqrt(
+                              static_cast<double>(helper.x) * helper.x + static_cast<double>(helper.z) * helper.z +
+                              static_cast<double>(helper.y) * helper.y + 0.00000011920929f));
+
+                decal.source.center = pos;
+                decal.source.normal = normal;
+                decal.source.tangent = CVector(invTangentLen * helper.x, helper.y * invTangentLen, helper.z * invTangentLen);
+                m_workDecal.Init(decal.source, newGeometry);
+                decal.mesh = newGeometry.mesh;
+                if (!m_workDecal.decalVertexCount || !m_workDecal.decalTriangleCount)
+                {
+                    it = m_decals.erase(it);
+                    continue;
+                }
+                if (ibOffset + 3 * m_workDecal.decalTriangleCount > IB_POOL_SIZE ||
+                    vbOffset + static_cast<unsigned>(m_workDecal.decalVertexCount) > VB_POOL_SIZE)
+                {
+                    // Out of room: this decal and everything after it are dropped.
+                    m_decals.erase(it, m_decals.end());
+                    break;
+                }
+
+                decal.ibOffset = ibOffset;
+                decal.vbOffset = vbOffset;
+                decal.sizeInIb = 3 * m_workDecal.decalTriangleCount;
+                decal.sizeInVb = m_workDecal.decalVertexCount;
+                decal.mat = transform;
+                for (unsigned t = 0; t < m_workDecal.decalTriangleCount; ++t)
+                {
+                    buffIndices[ibOffset + 3 * t] = vbOffset + m_workDecal.triangleArray[t].index[0];
+                    buffIndices[ibOffset + 3 * t + 1] = vbOffset + m_workDecal.triangleArray[t].index[1];
+                    buffIndices[ibOffset + 3 * t + 2] = vbOffset + m_workDecal.triangleArray[t].index[2];
+                }
+                ibOffset += 3 * m_workDecal.decalTriangleCount;
+                for (unsigned v = 0; v < m_workDecal.decalVertexCount; ++v)
+                {
+                    rend::VertexXYZT1I& vertex = buffVertices[vbOffset + v];
+                    vertex.x = m_workDecal.vertexArray[v].x;
+                    vertex.y = m_workDecal.vertexArray[v].y;
+                    vertex.z = m_workDecal.vertexArray[v].z;
+                    vertex.tu = m_workDecal.texcoordArray[v].x;
+                    vertex.tv = m_workDecal.texcoordArray[v].y;
+                    vertex.i1 = newMatId;
+                }
+                vbOffset += m_workDecal.decalVertexCount;
+                ++it;
+            }
+            else
+            {
+                if (ibOffset + decal.sizeInIb > IB_POOL_SIZE || vbOffset + static_cast<unsigned>(decal.sizeInVb) > VB_POOL_SIZE)
+                {
+                    m_decals.erase(it, m_decals.end());
+                    break;
+                }
+                // Other decals are copied down from the scratch copies, rebased onto the new offsets.
+                short const matId = GetMatrixId(decal.mat);
+                for (unsigned i = 0; i < decal.sizeInIb; ++i)
+                {
+                    buffIndices[ibOffset + i] = vbOffset + (indexHelper[i + decal.ibOffset] - decal.vbOffset);
+                }
+                for (unsigned v = 0; v < decal.sizeInVb; ++v)
+                {
+                    rend::VertexXYZT1I const& from = vertexHelper[v + decal.vbOffset];
+                    rend::VertexXYZT1I& to = buffVertices[vbOffset + v];
+                    to.x = from.x;
+                    to.y = from.y;
+                    to.z = from.z;
+                    to.tu = from.tu;
+                    to.tv = from.tv;
+                    to.i1 = matId;
+                }
+                decal.ibOffset = ibOffset;
+                decal.vbOffset = vbOffset;
+                ibOffset += decal.sizeInIb;
+                vbOffset += decal.sizeInVb;
+                ++it;
+            }
+        }
+
+        m_vbStart = vbOffset;
+        m_numVerts = vbOffset;
+        m_ibStart = ibOffset;
+        m_numIds = ibOffset;
+        M3D_RENDERER->UnlockVbPoolField(m_VbPoolField);
+        M3D_RENDERER->UnlockIbPoolField(m_IbPoolField);
+    }
 
     DecalsList::DecalsList()
     {

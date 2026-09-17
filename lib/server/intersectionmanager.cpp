@@ -90,9 +90,19 @@ namespace ai
         }
     }  // namespace
 
-    bool IntersectionManager::SpheresIntersect(CVector const&, float, CVector const, float)
+    bool IntersectionManager::SpheresIntersect(CVector const& center1, float radius1, CVector const center2, float radius2)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7E9960 - strictly overlapping spheres; touching ones do not count.
+        cntIntersectingObjectsChecked->IncI();
+        float const dz = center1.z - center2.z;
+        float const dy = center1.y - center2.y;
+        float const dx = center1.x - center2.x;
+        if ((radius1 + radius2) * (radius1 + radius2) <= dz * dz + dy * dy + dx * dx)
+        {
+            return false;
+        }
+        cntObjectsSatisfied->IncI();
+        return true;
     }
 
     void IntersectionManager::GetIntersectedObjects(

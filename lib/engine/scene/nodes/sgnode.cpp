@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "core/kernel.h"
+#include "core/timer.h"
 #include "core/console/cvar.h"
 #include "client.h"
 #include "world.h"
@@ -19,7 +20,10 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63F430
+    auto* const node = static_cast<m3d::SgNode*>(context->asObject(0, "SgNode"));
+    context->pushVector(node->GetOrigin());
+    return 1;
 }
 
 int cntUpdateNeededChecks = 0;
@@ -63,7 +67,8 @@ namespace m3d
 
     CVector const& SgNode::GetOrigin() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616D90
+        return m_origin;
     }
 
     CMatrix const& SgNode::GetCurrentMatrix() const
@@ -73,7 +78,8 @@ namespace m3d
 
     int SgNode::GetPrevThinkTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634460
+        return m_prevThinkTime;
     }
 
     int SgNode::SetScale(CVector const& scale)
@@ -109,9 +115,39 @@ namespace m3d
         return this->m_isXFormDirty || this->m_isOwnBoundingBoxDirty || this->m_isChildDirty;
     }
 
-    int SgNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x666B70 - only values that differ from the defaults are written.
+        if (!Object::WriteToXmlNode(file, writeTo))
+        {
+            return 1;
+        }
+        if (m_origin.x != 0.0f || m_origin.y != 0.0f || m_origin.z != 0.0f)
+        {
+            writeTo->SetAttribute("org", CStr::format_("%.3f %.3f %.3f", m_origin.x, m_origin.y, m_origin.z).c_str());
+            writeTo->SetAttribute("orgRel", CStr(static_cast<int>(m_isOriginRelative)).c_str());
+        }
+        if (m_rotation.x != 0.0f || m_rotation.y != 0.0f || m_rotation.z != 0.0f || 1.0f != m_rotation.w)
+        {
+            writeTo->SetAttribute(
+                "rot",
+                CStr::format_("%.4f %.4f %.4f %.4f", m_rotation.x, m_rotation.y, m_rotation.z, m_rotation.w).c_str());
+        }
+        if (1.0f != m_scaling.x || 1.0f != m_scaling.y || 1.0f != m_scaling.z)
+        {
+            writeTo->SetAttribute("scale", CStr::format_("%.3f %.3f %.3f", m_scaling.x, m_scaling.y, m_scaling.z).c_str());
+        }
+        if (m_srvId != -1)
+        {
+            // The server item's name when there is a server, its raw handle otherwise.
+            if (GetServer())
+            {
+                writeTo->SetAttribute("id", GetServer()->GetNameByItem(m_srvId).c_str());
+                return 1;
+            }
+            writeTo->SetAttribute("id", CStr(m_srvId).c_str());
+        }
+        return 1;
     }
 
     CVector const& SgNode::GetOriginWorldAbs() const
@@ -119,9 +155,10 @@ namespace m3d
         return m_currentWorldOrigin;
     }
 
-    void SgNode::SetPrevThinkTime(int)
+    void SgNode::SetPrevThinkTime(int t)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634470
+        m_prevThinkTime = t;
     }
 
     CVector const& SgNode::GetScale() const
@@ -134,9 +171,14 @@ namespace m3d
         return RT_CLASS_LOCAL(SgNode);
     }
 
-    int SgNode::SetServerItemProperty(unsigned, void*) const
+    int SgNode::SetServerItemProperty(unsigned propId, void* property) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x63EBE0
+        if (!GetServer() || m_srvId == -1)
+        {
+            return 0;
+        }
+        return GetServer()->SetItemProperty(m_srvId, propId, property);
     }
 
     int SgNode::Think(int, int)
@@ -147,7 +189,8 @@ namespace m3d
 
     int SgNode::GetTtl() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634440
+        return m_ttl;
     }
 
     void SgNode::CanBeFree()
@@ -156,7 +199,8 @@ namespace m3d
 
     CVector const& SgNode::GetOriginWorldAbsForSphere() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6343E0
+        return m_originWorldAbsForSphere;
     }
 
     int SgNode::RemoveChild(Object* node)
@@ -168,12 +212,14 @@ namespace m3d
 
     int SgNode::GetNextThinkTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634450
+        return m_nextThinkTime;
     }
 
     int SgNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x643C50
+        return 0;
     }
 
     Quaternion const& SgNode::GetRotation() const
@@ -303,7 +349,8 @@ namespace m3d
 
     void SgNode::SetBoundingBoxDirty()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80EAD0
+        m_isOwnBoundingBoxDirty = true;
     }
 
     void SgNode::RemoveImmediateAfterParent(bool YesOrNo)
@@ -363,7 +410,8 @@ namespace m3d
 
     float SgNode::GetBoundingRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6343F0
+        return m_boundingRadius;
     }
 
     void SgNode::GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const
@@ -924,29 +972,109 @@ namespace m3d
         return result;
     }
 
-    int SgNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>&) const
+    int SgNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>& properties) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x643870 - NOTE: of the ten 4352.. properties SetProperty accepts, only 4353 is listed.
+        int const result = Object::GetPropertiesList(properties);
+        if (!result)
+        {
+            return result;
+        }
+        for (unsigned i = 0; i < 3; ++i)
+        {
+            properties.insert(i);
+        }
+        properties.insert(4353);
+        return 1;
     }
 
     Aabb SgNode::GetOwnAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x512EA0
+        return m_ownBoundingBox;
     }
 
-    float SgNode::IntersectRay(CVector const&, CVector const&, SgNode*&, Class*)
+    float SgNode::IntersectRay(CVector const& v0, CVector const& dir, SgNode*& hitNode, Class*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x642140 - against the node's own bounds; a ray starting inside them misses (-1).
+        CVector const bbMin(m_ownBoundingBox.m_box[0], m_ownBoundingBox.m_box[1], m_ownBoundingBox.m_box[2]);
+        CVector const bbMax(m_ownBoundingBox.m_box[3], m_ownBoundingBox.m_box[4], m_ownBoundingBox.m_box[5]);
+        Obb obb;
+        obb.Create(bbMin, bbMax, m_currentXForm, true);
+
+        float const dy = v0.y - obb.m_origin.y;
+        float const dz = v0.z - obb.m_origin.z;
+        float const dx = v0.x - obb.m_origin.x;
+        float const local[3] = {
+            obb.m_basis[2].x * dz + obb.m_basis[1].x * dy + obb.m_basis[0].x * dx,
+            obb.m_basis[2].y * dz + obb.m_basis[1].y * dy + obb.m_basis[0].y * dx,
+            obb.m_basis[2].z * dz + obb.m_basis[1].z * dy + obb.m_basis[0].z * dx};
+        float const obbMin[3] = {obb.m_min.x, obb.m_min.y, obb.m_min.z};
+        float const obbMax[3] = {obb.m_max.x, obb.m_max.y, obb.m_max.z};
+        int i = 0;
+        for (; i < 3; ++i)
+        {
+            if (obbMin[i] > local[i] || local[i] > obbMax[i])
+            {
+                break;
+            }
+        }
+        if (i == 3)
+        {
+            return -1.0f;
+        }
+        hitNode = this;
+        return obb.IntersectRay(v0, dir);
     }
 
     void SgNode::Restart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B8700
     }
 
-    CMatrix SgNode::MatrixFromFlags(SgNodeRenderFlags, void*) const
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The sway applied to "wavy" server items, rebuilt once per frame.
+        int s_waveMatrixFrame = -1;
+        CMatrix s_waveMatrix;
+    }  // namespace
+
+    CMatrix SgNode::MatrixFromFlags(SgNodeRenderFlags nrf, void* data) const
+    {
+        // RVA 0x63F4A0 - the node's world matrix combined with the matrix passed in (to its right or left), swaying
+        // first if the server item is wavy.
+        int wavy = 0;
+        if (GetServer() && m_srvId != -1)
+        {
+            GetServer()->GetItemProperty(m_srvId, 1, &wavy);
+        }
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        if (wavy && s_waveMatrixFrame != curFrame)
+        {
+            // A shear of x and y by z about the plane z = 25.
+            s_waveMatrixFrame = curFrame;
+            double const time = M3D_KERNEL->GetTimer().GetFrameStartTimeSec();
+            CMatrix shear;
+            shear.identity();
+            shear._31 = static_cast<float>(sin(time) * 0.0099999998f);
+            shear._32 = static_cast<float>(cos(time) * 0.0099999998f);
+            CMatrix up;
+            up.translation(0.0f, 0.0f, 25.0f);
+            CMatrix down;
+            down.translation(0.0f, 0.0f, -25.0f);
+            s_waveMatrix = up * shear * down;
+        }
+
+        CMatrix const& other = *static_cast<CMatrix const*>(data);
+        switch (nrf & (NRF_RMUL_BY_MAT | NRF_LMUL_BY_MAT))
+        {
+        case NRF_RMUL_BY_MAT:
+            return wavy ? (s_waveMatrix * m_currentXForm) * other : m_currentXForm * other;
+        case NRF_LMUL_BY_MAT:
+            return wavy ? (other * s_waveMatrix) * m_currentXForm : other * m_currentXForm;
+        default:
+            return wavy ? s_waveMatrix * m_currentXForm : m_currentXForm;
+        }
     }
 
     void SgNode::UpdateOwnBoundingBox()
@@ -1180,6 +1308,14 @@ namespace m3d
 
     void SgNode::InternalInit()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x643940
+        m_frameVisible = 0;
+        m_frameVisible2 = 0;
+        m_onScreenSize = 0.0f;
+        m_predictIdx = 0;
+        m_isRootNode = false;
+        m_forGraph = nullptr;
+        m_isWaitingForRender = false;
+        m_initedWithRitual = RITUAL_NONE;
     }
 }  // namespace m3d

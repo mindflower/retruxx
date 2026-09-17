@@ -51,6 +51,8 @@ namespace ai
         friend class ::SavesManager;
         // DynamicQuestManager::ConsiderPlayerKill walks the updating objects directly.
         friend class DynamicQuestManager;
+        // Vehicle::GetEnemiesInNeighborhood walks all objects directly.
+        friend class Vehicle;
 
     protected:
         ObjContainer();

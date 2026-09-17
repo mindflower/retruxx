@@ -42,6 +42,9 @@ namespace ai
 
     class JointedObj : public ai::Obj
     {
+        // RopeObj::BreakOff marks the broken rope it creates as a rope.
+        friend class RopeObj;
+
     protected:
         virtual  ~JointedObj() override /* 0x00 */;
 

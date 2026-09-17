@@ -49,47 +49,74 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetRotation)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetRotation)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FB4A0
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    context->pushQuaternion(obj->GetRotation());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetDirection)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F98D0
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    obj->SetDirection(context->asVector(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetDirection)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F9900
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    context->pushVector(obj->GetDirection());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetLinearVelocity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F9940
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    context->pushVector(obj->GetLinearVelocity());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetLinearVelocity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F9980
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    obj->SetLinearVelocity(context->asVector(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetAngularVelocity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FB4E0
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    context->pushVector(obj->GetAngularVelocity());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetAngularVelocity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FB540
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    obj->SetAngularVelocity(context->asVector(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetUpdatingByODE)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F99B0
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    obj->SetUpdatingByODE(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, GetSkin)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FA090
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    context->pushInt(obj->GetSkin());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetSkin)
@@ -102,7 +129,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, SetSkin)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicObj, IsVisible)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F9A10
+    auto* obj = (ai::PhysicObj*)context->asObject(0, "PhysicObj");
+    context->pushBool(obj->IsVisible());
+    return 1;
 }
 
 namespace ai
@@ -177,9 +207,34 @@ namespace ai
         SetRotation(rotation);
     }
 
-    void PhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void PhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FB900
+        Obj::LoadRuntimeValues(xmlFile, xmlNode);
+        CVector linearVelocity = GetLinearVelocity();
+        m3d::SafeVectorAttrib(linearVelocity, xmlNode, "LinearVelocity");
+        SetLinearVelocity(linearVelocity);
+        CVector angularVelocity = GetAngularVelocity();
+        m3d::SafeVectorAttrib(angularVelocity, xmlNode, "AngularVelocity");
+        SetAngularVelocity(angularVelocity);
+
+        bool isAutoDisabling = false;
+        m3d::SafeBoolAttrib(isAutoDisabling, xmlNode, "IsAutoDisabling");
+        if (isAutoDisabling)
+        {
+            float linearThreshold = 0.1f;
+            m3d::SafeFloatAttrib(linearThreshold, xmlNode, "AutoDisableLinearThreshold");
+            float angularThreshold = 0.1f;
+            m3d::SafeFloatAttrib(angularThreshold, xmlNode, "AutoDisableAngularThreshold");
+            int steps = 5;
+            m3d::SafeIntAttrib(steps, xmlNode, "AutoDisableSteps");
+            SetAutoDisabling(true, linearThreshold, angularThreshold, steps);
+        }
+        else
+        {
+            SetAutoDisabling(false, 0.0f, 0.0f, 0);
+        }
+        m3d::SafeIntAttrib(m_skinNumber, xmlNode, "SkinNumber");
     }
 
     bool PhysicObj::GetBodyEnabledBit() const
@@ -233,12 +288,18 @@ namespace ai
 
     bool PhysicObj::IsVisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FD680
+        return false;
     }
 
     Quaternion PhysicObj::GetPostRotation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA6C0
+        if ((m_postActionFlags & 1) != 0)
+        {
+            return m_postRotation;
+        }
+        return GetRotation();
     }
 
     dxSpace* PhysicObj::GetSpaceId() const
@@ -263,7 +324,8 @@ namespace ai
 
     bool PhysicObj::CanPhysicsBeEnabled() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAB10
+        return dBodyIsEnabled(m_body->id()) || (dBodyGetAutoDisableFlag(m_body->id()) && (m_physicBehaviorFlags & 1) == 0);
     }
 
     float PhysicObj::GetMass() const
@@ -276,7 +338,9 @@ namespace ai
 
     void PhysicObj::DisablePhysicsAndGeometry()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA000
+        DisablePhysics();
+        DisableGeometry(true);
     }
 
     bool PhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -302,12 +366,16 @@ namespace ai
 
     void PhysicObj::SetPostEnablePhysicsIfPossible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FDF10
+        m_postActionFlags |= 0x20;
+        theObjects->AddObjToPostCollideList(this);
     }
 
     CVector PhysicObj::GetMassCenterPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA670
+        dReal const* const pos = dBodyGetPosition(m_body->id());
+        return CVector(pos[0], pos[1], pos[2]);
     }
 
     void PhysicObj::TransferToSpace(dxSpace* newSpace)
@@ -329,9 +397,10 @@ namespace ai
         EnablePhysics();
     }
 
-    void PhysicObj::AddTorque(CVector const&)
+    void PhysicObj::AddTorque(CVector const& torque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAA00
+        dBodyAddTorque(m_body->id(), torque.x, torque.y, torque.z);
     }
 
     void PhysicObj::CheckCollisionCells()
@@ -353,9 +422,15 @@ namespace ai
         m_countRelinksToCollisionCells->SetI(0);
     }
 
-    void PhysicObj::AddImpulseAtRelPos(CVector const&, CVector const&)
+    void PhysicObj::AddImpulseAtRelPos(CVector const& impulse, CVector const& relPos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA950 - applied as a force over the current AI tick.
+        if (theAIManager->m_elapsedTime > 0.001)
+        {
+            float const invTime = 1.0 / theAIManager->m_elapsedTime;
+            dBodyAddForceAtRelPos(
+                m_body->id(), impulse.x * invTime, impulse.y * invTime, impulse.z * invTime, relPos.x, relPos.y, relPos.z);
+        }
     }
 
     void PhysicObj::TransferToNewSpace()
@@ -378,14 +453,24 @@ namespace ai
         return m_timeFromLastCollisionEffect > 0.1 || !IsUpdating();
     }
 
-    void PhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void PhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED2E0
+        for (auto const& prop : m_propertiesMap)
+        {
+            props.insert(prop.first);
+        }
+        Obj::GetPropertiesNames(props);
     }
 
-    void PhysicObj::AddImpulse(CVector const&)
+    void PhysicObj::AddImpulse(CVector const& impulse)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA840 - applied as a force over the current AI tick.
+        if (theAIManager->m_elapsedTime > 0.001)
+        {
+            float const invTime = 1.0 / theAIManager->m_elapsedTime;
+            dBodyAddForce(m_body->id(), impulse.x * invTime, impulse.y * invTime, impulse.z * invTime);
+        }
     }
 
     void PhysicObj::SetPositionSelf(CVector const& pos)
@@ -417,14 +502,64 @@ namespace ai
         PhysicObj::SetCorrectEnabledCellsCounter();
     }
 
-    void PhysicObj::SetPostRotation(Quaternion const&)
+    void PhysicObj::SetPostRotation(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FDE70
+        m_postRotation = rot;
+        m_postActionFlags |= 1;
+        theObjects->AddObjToPostCollideList(this);
     }
 
-    void PhysicObj::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicObj::DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FCF20
+        xmlNode->SetAttribute("ClassName", CStr(GetClassNameA()).c_str());
+        xmlNode->SetAttribute("Id", CStr(GetId()).c_str());
+        if (PrototypeInfo const* const prototypeInfo = GetPrototypeInfo())
+        {
+            xmlNode->SetAttribute("Prototype", prototypeInfo->m_prototypeName.c_str());
+        }
+        xmlNode->SetAttribute("Name", m_name.c_str());
+        xmlNode->SetAttribute("IsSpaceOwner", CStr(static_cast<int>(m_bIsSpaceOwner)).c_str());
+        xmlNode->SetAttribute("Space", CStr(static_cast<unsigned>(reinterpret_cast<uintptr_t>(m_spaceId))).c_str());
+        xmlNode->SetAttribute("SpaceEnabled", CStr(static_cast<int>(dGeomIsEnabled(m_spaceId) != 0)).c_str());
+        if (!m_body)
+        {
+            return;
+        }
+
+        ref_ptr bodyNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Body");
+        xmlNode->AddChild(bodyNode);
+        bodyNode->SetAttribute("Mass", CStr(GetMass()).c_str());
+        bodyNode->SetAttribute("Pos", CStr(GetPosition()).c_str());
+        bodyNode->SetAttribute("Rot", CStr(GetRotation()).c_str());
+        bodyNode->SetAttribute("LinearVelocity", CStr(GetLinearVelocity()).c_str());
+        bodyNode->SetAttribute("AngularVelocity", CStr(GetAngularVelocity()).c_str());
+        CVector const linearVelocity = GetLinearVelocity();
+        bodyNode->SetAttribute(
+            "LinearVelocityLengthSq",
+            CStr(linearVelocity.x * linearVelocity.x + linearVelocity.y * linearVelocity.y + linearVelocity.z * linearVelocity.z)
+                .c_str());
+        dReal const* const angularVelocity = dBodyGetAngularVel(m_body->id());
+        bodyNode->SetAttribute(
+            "AngularVelocityLengthSq",
+            CStr(angularVelocity[0] * angularVelocity[0] + angularVelocity[2] * angularVelocity[2] +
+                 angularVelocity[1] * angularVelocity[1])
+                .c_str());
+        dxBody const* const body = m_body->id();
+        bodyNode->SetAttribute("Flags", CStr(body->flags).c_str());
+        bodyNode->SetAttribute("AutoDisabling", CStr(dBodyGetAutoDisableFlag(m_body->id())).c_str());
+        bodyNode->SetAttribute("BodyEnabled", CStr(static_cast<int>(dBodyIsEnabled(m_body->id()) != 0)).c_str());
+        if (dBodyGetAutoDisableFlag(m_body->id()) && dBodyIsEnabled(m_body->id()))
+        {
+            // m3d::XmlNodeSetAttribute<float> / <int>, inlined.
+            bodyNode->SetAttribute("AutoDisableLinearThreshold", CStr(body->adis.linear_threshold).c_str());
+            bodyNode->SetAttribute("AutoDisableAngularThreshold", CStr(body->adis.angular_threshold).c_str());
+            bodyNode->SetAttribute("AutoDisableIdleTime", CStr(body->adis.idle_time).c_str());
+            bodyNode->SetAttribute("AutoDisableIdleSteps", CStr(body->adis.idle_steps).c_str());
+            bodyNode->SetAttribute("AutoDisableTimeLeft", CStr(body->adis_timeleft).c_str());
+            bodyNode->SetAttribute("AutoDisableStepsLeft", CStr(body->adis_stepsleft).c_str());
+        }
     }
 
     void PhysicObj::SetAutoDisabling(bool bIsAutoDisabling, float linearThreshold, float angularThreshold, int steps)
@@ -452,9 +587,10 @@ namespace ai
         ++m_enabledCellsCount;
     }
 
-    void PhysicObj::SetTorque(CVector const&)
+    void PhysicObj::SetTorque(CVector const& torque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA9E0
+        dBodySetTorque(m_body->id(), torque.x, torque.y, torque.z);
     }
 
     unsigned PhysicObj::GetSkin() const
@@ -464,17 +600,25 @@ namespace ai
 
     void PhysicObj::EnablePhysicsIfPossible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAB50
+        if (CanPhysicsBeEnabled())
+        {
+            EnablePhysics();
+        }
     }
 
     CVector PhysicObj::GetGeometricCenter() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FC6B0
+        return GetPosition();
     }
 
     void PhysicObj::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FBD70
+        Obj::SetPassedToAnotherMapStatus();
+        UnlinkGeomsFromCollisionCells();
+        M3D_LOG_INFO(CStr(GetClassNameA()) + CStr(" '") + CStr(m_name) + CStr("' id=") + CStr(GetId()) + CStr(" passes to another map"));
     }
 
     void PhysicObj::SetCollisionEffectCreated()
@@ -517,7 +661,9 @@ namespace ai
 
     void PhysicObj::SetPostEnablePhysics()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FDEF0
+        m_postActionFlags |= 4;
+        theObjects->AddObjToPostCollideList(this);
     }
 
     dBody* PhysicObj::GetBody()
@@ -563,9 +709,10 @@ namespace ai
         }
     }
 
-    void PhysicObj::SetMassCenterPosition(CVector const&)
+    void PhysicObj::SetMassCenterPosition(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA6A0
+        dBodySetPosition(m_body->id(), pos.x, pos.y, pos.z);
     }
 
     void PhysicObj::EnablePhysics()
@@ -584,14 +731,39 @@ namespace ai
         }
     }
 
-    void PhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FBAF0 - velocities are written only when they are not negligible.
+        Obj::SaveRuntimeValues(xmlFile, xmlNode);
+        CVector const linearVelocity = GetLinearVelocity();
+        if (linearVelocity.z * linearVelocity.z + linearVelocity.y * linearVelocity.y + linearVelocity.x * linearVelocity.x >
+            0.0099999998f)
+        {
+            xmlNode->SetAttribute("LinearVelocity", CStr(linearVelocity).c_str());
+        }
+        CVector const angularVelocity = GetAngularVelocity();
+        if (angularVelocity.z * angularVelocity.z + angularVelocity.y * angularVelocity.y + angularVelocity.x * angularVelocity.x >
+            0.0099999998f)
+        {
+            xmlNode->SetAttribute("AngularVelocity", CStr(angularVelocity).c_str());
+        }
+        if (dBodyGetAutoDisableFlag(m_body->id()) != 0)
+        {
+            xmlNode->SetAttribute("IsAutoDisabling", CStr(1).c_str());
+            xmlNode->SetAttribute("AutoDisableLinearThreshold", CStr(dBodyGetAutoDisableLinearThreshold(m_body->id())).c_str());
+            xmlNode->SetAttribute("AutoDisableAngularThreshold", CStr(dBodyGetAutoDisableAngularThreshold(m_body->id())).c_str());
+            xmlNode->SetAttribute("AutoDisableSteps", CStr(dBodyGetAutoDisableSteps(m_body->id())).c_str());
+        }
+        if (m_skinNumber)
+        {
+            xmlNode->SetAttribute("SkinNumber", CStr(m_skinNumber).c_str());
+        }
     }
 
-    void PhysicObj::AddForceAtPos(CVector const&, CVector const&)
+    void PhysicObj::AddForceAtPos(CVector const& force, CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA7E0
+        dBodyAddForceAtPos(m_body->id(), force.x, force.y, force.z, pos.x, pos.y, pos.z);
     }
 
     void PhysicObj::DecEnabledCellsCount()
@@ -678,7 +850,32 @@ namespace ai
 
     void PhysicObj::PostCollide()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FCA70 - applies the actions deferred by the SetPost* calls.
+        if ((m_postActionFlags & 1) != 0)
+        {
+            SetRotation(m_postRotation);
+        }
+        if ((m_postActionFlags & 2) != 0)
+        {
+            SetPosition(m_postPosition);
+        }
+        if ((m_postActionFlags & 4) != 0)
+        {
+            EnablePhysics();
+        }
+        if ((m_postActionFlags & 0x20) != 0 && CanPhysicsBeEnabled())
+        {
+            EnablePhysics();
+        }
+        if ((m_postActionFlags & 8) != 0)
+        {
+            DisablePhysicsWithAutoEnable();
+        }
+        if ((m_postActionFlags & 0x10) != 0)
+        {
+            DisablePhysicsAndGeometry();
+        }
+        m_postActionFlags = 0;
     }
 
     void PhysicObj::DisablePhysics()
@@ -700,17 +897,24 @@ namespace ai
 
     void PhysicObj::SetDisablePhysicsWhenBodyDisabled()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F9AC0
+        m_physicBehaviorFlags |= 1;
     }
 
-    void PhysicObj::SetForce(CVector const&)
+    void PhysicObj::SetForce(CVector const& force)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA7A0
+        dBodySetForce(m_body->id(), force.x, force.y, force.z);
     }
 
     CVector PhysicObj::GetPostPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FC6D0
+        if ((m_postActionFlags & 2) != 0)
+        {
+            return m_postPosition;
+        }
+        return GetPosition();
     }
 
     void PhysicObj::SetAngularVelocity(CVector const& angularVel)
@@ -751,7 +955,9 @@ namespace ai
 
     void PhysicObj::SetPostDisablePhysics()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FDF30
+        m_postActionFlags |= 0x10;
+        theObjects->AddObjToPostCollideList(this);
     }
 
     void PhysicObj::Remove()
@@ -772,12 +978,17 @@ namespace ai
 
     void PhysicObj::RenderObstacleDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FACE0
+        if (m_intersectionObstacle)
+        {
+            m_intersectionObstacle->RenderDebugInfo();
+        }
     }
 
     bool PhysicObj::bIsStatic() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x602640
+        return (m_physicState & STATIC_BIT) != 0;
     }
 
     void PhysicObj::SetLinearVelocity(CVector const& linearVel)
@@ -790,24 +1001,33 @@ namespace ai
         dBodyAddForce(m_body->id(), force.x, force.y, force.z);
     }
 
-    void PhysicObj::AddForceAtRelPos(CVector const&, CVector const&)
+    void PhysicObj::AddForceAtRelPos(CVector const& force, CVector const& relPos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA810
+        dBodyAddForceAtRelPos(m_body->id(), force.x, force.y, force.z, relPos.x, relPos.y, relPos.z);
     }
 
-    void PhysicObj::AddImpulseAtPos(CVector const&, CVector const&)
+    void PhysicObj::AddImpulseAtPos(CVector const& impulse, CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA8C0 - applied as a force over the current AI tick.
+        if (theAIManager->m_elapsedTime > 0.001)
+        {
+            float const invTime = 1.0 / theAIManager->m_elapsedTime;
+            dBodyAddForceAtPos(m_body->id(), impulse.x * invTime, impulse.y * invTime, impulse.z * invTime, pos.x, pos.y, pos.z);
+        }
     }
 
     void PhysicObj::SetInvisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F9BB0
+        Obj::SetInvisible();
+        DisablePhysics();
     }
 
-    m3d::AIParam PhysicObj::AIGetCurPos(Obj*)
+    m3d::AIParam PhysicObj::AIGetCurPos(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FE710 - NOTE: pObj is taken to be a PhysicObj without any type check.
+        return m3d::AIParam(static_cast<PhysicObj*>(pObj)->GetPosition());
     }
 
     CVector PhysicObj::GetPositionAtRelPoint(CVector point) const
@@ -875,7 +1095,9 @@ namespace ai
 
     void PhysicObj::EnablePhysicsAndGeometry()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not emitted in the shipped binary (never called); mirrors DisablePhysicsAndGeometry (RVA 0x5FA000).
+        EnablePhysics();
+        EnableGeometry(true);
     }
 
     ai::SphereForIntersection const* PhysicObj::GetIntersectionSphere() const
@@ -885,12 +1107,18 @@ namespace ai
 
     bool PhysicObj::bIsBodyDisabledGeomEnabled() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA020
+        return (m_physicState & BODY_ENABLED_BIT) == 0 && (m_physicState & GEOM_ENABLED_BIT) != 0;
     }
 
-    void PhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void PhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED3E0
+        for (auto const& prop : m_propertiesMap)
+        {
+            props.insert(prop.second);
+        }
+        Obj::GetPropertiesIDs(props);
     }
 
     void PhysicObj::DisablePhysicsWithAutoEnable()
@@ -918,14 +1146,18 @@ namespace ai
         PhysicObj::SetPositionSelf(pos);
     }
 
-    void PhysicObj::SetPostPosition(CVector const&)
+    void PhysicObj::SetPostPosition(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FDEB0
+        m_postPosition = pos;
+        m_postActionFlags |= 2;
+        theObjects->AddObjToPostCollideList(this);
     }
 
     m3d::Class* PhysicObj::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F9A50
+        return RT_CLASS_LOCAL(PhysicObj);
     }
 
     CVector PhysicObj::GetAngularVelocity() const
@@ -943,9 +1175,16 @@ namespace ai
         m_boundSphere->RelinkToCollisionCells(GetId());
     }
 
-    void PhysicObj::AddRelativeRotation(Quaternion const&)
+    void PhysicObj::AddRelativeRotation(Quaternion const& relDeltaRot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA250 - the current rotation followed by relDeltaRot.
+        Quaternion const rot = GetRotation();
+        Quaternion newRot;
+        newRot.x = relDeltaRot.z * rot.y + rot.x * relDeltaRot.w + rot.w * relDeltaRot.x - rot.z * relDeltaRot.y;
+        newRot.y = rot.w * relDeltaRot.y + relDeltaRot.w * rot.y + rot.z * relDeltaRot.x - rot.x * relDeltaRot.z;
+        newRot.z = rot.w * relDeltaRot.z + rot.x * relDeltaRot.y + rot.z * relDeltaRot.w - relDeltaRot.x * rot.y;
+        newRot.w = rot.w * relDeltaRot.w - rot.x * relDeltaRot.x - rot.y * relDeltaRot.y - rot.z * relDeltaRot.z;
+        SetRotation(newRot);
     }
 
     CVector PhysicObj::GetDirection() const
@@ -1019,7 +1258,8 @@ namespace ai
 
     bool PhysicObj::GetGeomEnabledBit() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FA040
+        return (m_physicState & GEOM_ENABLED_BIT) != 0;
     }
 
     void PhysicObj::LinkGeomsToCollisionCells()
@@ -1027,19 +1267,38 @@ namespace ai
         m_boundSphere->LinkToCollisionCells(GetId(), nullptr);
     }
 
-    CStr PhysicObj::GetPropertyName(int) const
+    CStr PhysicObj::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED4D0
+        for (auto const& prop : m_propertiesMap)
+        {
+            if (prop.second == id)
+            {
+                return prop.first;
+            }
+        }
+        return Obj::GetPropertyName(id);
     }
 
-    eGObjPropertySaveStatus PhysicObj::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus PhysicObj::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ED070
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it == m_propertiesSaveStatesMap.end())
+        {
+            return Obj::GetPropertySaveStatus(id);
+        }
+        return it->second;
     }
 
     void PhysicObj::ZeroEnabledCellsCount()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAD70
+        m_enabledCellsCount = 0;
+        if ((m_physicState & BODY_ENABLED_BIT) == 0 && (m_physicState & GEOM_ENABLED_BIT) != 0)
+        {
+            DisableGeometry(false);
+        }
     }
 
     void PhysicObj::SetCorrectEnabledCellsCounter()
@@ -1117,7 +1376,15 @@ namespace ai
 
     void PhysicObj::_SetSimpleCollision()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FB0A0
+        for (dGeomID geom = dBodyGetFirstGeom(m_body->id()); geom; geom = dGeomGetBodyNext(geom))
+        {
+            if (dGeomGetClass(geom) == 6)
+            {
+                dGeomSetCategoryBits(geom, 0xFFFF);
+                dGeomSetCollideBits(geom, 0xFFFF);
+            }
+        }
     }
 
     void PhysicObj::_AdjustMassCenter()
@@ -1141,9 +1408,14 @@ namespace ai
         return m_lookSphere;
     }
 
-    void PhysicObj::_SetRotationToGeoms(Quaternion const&)
+    void PhysicObj::_SetRotationToGeoms(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAFE0
+        dQuaternion const dq = {rot.w, rot.x, rot.y, rot.z};
+        for (dGeomID geom = dBodyGetFirstGeom(m_body->id()); geom; geom = dGeomGetBodyNext(geom))
+        {
+            dGeomSetQuaternion(geom, dq);
+        }
     }
 
     void PhysicObj::_EnableIntersections(bool enable)
@@ -1169,9 +1441,18 @@ namespace ai
         m_boundSphere->SetRadius(radius);
     }
 
-    void PhysicObj::_SetBodyEnabledBit(bool)
+    void PhysicObj::_SetBodyEnabledBit(bool enabled)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FB470
+        if (enabled)
+        {
+            m_physicState |= BODY_ENABLED_BIT;
+        }
+        else
+        {
+            m_physicState &= ~BODY_ENABLED_BIT;
+        }
+        SetCorrectEnabledCellsCounter();
     }
 
     void PhysicObj::_CreateSpace(bool bForUntransfer)
@@ -1187,23 +1468,55 @@ namespace ai
         }
     }
 
-    bool PhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool PhysicObj::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FE5E0
+        switch (propertyId)
+        {
+        case 4:
+            retVal = GetPosition();
+            return true;
+        case 5:
+            retVal = GetRotation();
+            return true;
+        case 45:
+            retVal = m_skinNumber;
+            return true;
+        default:
+            return Obj::_GetPropertyInternal(propertyId, retVal);
+        }
     }
 
-    bool PhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool PhysicObj::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FE690
+        switch (propertyId)
+        {
+        case 4:
+            retVal = ZeroVector;
+            return true;
+        case 5:
+            retVal = IdentityQuaternion;
+            return true;
+        case 45:
+            retVal = 0;
+            return true;
+        default:
+            return Obj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
     }
 
     void PhysicObj::_UpdateOwnPhysics(float)
     {
     }
 
-    void PhysicObj::_SetPositionToGeoms(CVector const&)
+    void PhysicObj::_SetPositionToGeoms(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FAF90
+        for (dGeomID geom = dBodyGetFirstGeom(m_body->id()); geom; geom = dGeomGetBodyNext(geom))
+        {
+            dGeomSetPosition(geom, pos.x, pos.y, pos.z);
+        }
     }
 
     void PhysicObj::_UnlinkBodyFromGeoms()
@@ -1282,14 +1595,20 @@ namespace ai
         }
     }
 
-    void PhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void PhysicObj::RegisterProperty(char const* name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FE580
+        m_propertiesMap[CStr(name)] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     bool PhysicObj::_UpdateMustBeRelinked()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F9CD0
+        return true;
     }
 
     void PhysicObj::_LinkBodyToGeoms()
@@ -1300,12 +1619,16 @@ namespace ai
 
     m3d::Object* PhysicObj::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FB580
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* PhysicObj::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FB740
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     void PhysicObj::_CommonBodyChangeEnabledStateCallback(dxBody* bodyId)

@@ -6,6 +6,7 @@
 #include <ode/objects.h>
 
 #include "server/objects/base/objcontainer.h"
+#include "server/objects/base/prototypemanager.h"
 #include "core/ini.h"
 #include "core/kernel.h"
 #include "core/log.h"
@@ -22,7 +23,10 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetMass)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7F5B10
+    auto* const obj = static_cast<ai::SimplePhysicObj*>(context->asObject(0, "SimplePhysicObj"));
+    obj->SetMass(context->asFloat(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SimplePhysicObj, SetNodeAction)
@@ -82,7 +86,8 @@ namespace ai
 
     float SimplePhysicObjPrototypeInfo::GetRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x719180
+        return m_radius;
     }
 
     SimplePhysicBody* SimplePhysicObjPrototypeInfo::CreatePhysicBody() const
@@ -103,7 +108,8 @@ namespace ai
             break;
 
         case GEOM_TYPE_TRIMESH:
-            M3D_ASSERT(!"obsolete");
+            SYS_ERROR("!\"obsolete\"");
+            break;
 
         case GEOM_TYPE_FROM_MODEL:
         {
@@ -118,8 +124,13 @@ namespace ai
             break;
         }
 
-        // TODO: check this!!
-        M3D_ASSERT(body);
+        // RVA 0x7F6570 - an unsupported geometry type still gets a (disabled) box body.
+        if (!body)
+        {
+            SYS_ERROR("body");
+            body = new BoxyBody(m_collisionInfos, m_massValue);
+            body->DisableGeometry();
+        }
 
         if (body->m_pGeoms.empty())
         {
@@ -200,9 +211,11 @@ namespace ai
         m_collisionInfos.push_back(ci);
     }
 
-    eGObjPropertySaveStatus SimplePhysicObj::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus SimplePhysicObj::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EF3C0
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        return it != m_propertiesSaveStatesMap.end() ? it->second : PhysicObj::GetPropertySaveStatus(id);
     }
 
     void SimplePhysicObj::Registration()
@@ -213,7 +226,12 @@ namespace ai
 
     void SimplePhysicObj::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F5900
+        PhysicObj::SetPassedToAnotherMapStatus();
+        if (m_physicBody)
+        {
+            m_physicBody->SetPassedToAnotherMapStatus();
+        }
     }
 
     SimplePhysicObj::SimplePhysicObj(SimplePhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
@@ -230,12 +248,12 @@ namespace ai
 
     float SimplePhysicObj::GetScale()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_scale;
     }
 
     bool SimplePhysicObj::bDeadTimerActive()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_deadTimerActive;
     }
 
     int SimplePhysicObj::GetPropertyId(char const* propName) const
@@ -284,9 +302,23 @@ namespace ai
         }
     }
 
-    void SimplePhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void SimplePhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F5BD0
+        PhysicObj::SaveRuntimeValues(xmlFile, xmlNode);
+        if (m_deadTimerActive)
+        {
+            // m3d::XmlNodeSetAttribute<bool>, inlined.
+            xmlNode->SetAttribute("DeadTimeActive", CStr(static_cast<int>(m_deadTimerActive)).c_str());
+            xmlNode->SetAttribute("DeadTimer", CStr(m_deadTimer).c_str());
+            xmlNode->SetAttribute("TestVisibility", CStr(static_cast<int>(m_testVisibility)).c_str());
+        }
+        if (m_physicBody)
+        {
+            ref_ptr bodyNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "PhysicBody");
+            xmlNode->AddChild(bodyNode);
+            m_physicBody->SaveRuntimeValues(xmlFile, bodyNode);
+        }
     }
 
     bool SimplePhysicObj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -316,9 +348,13 @@ namespace ai
             this->m_physicBody->Remove();
     }
 
-    void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
+    void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& nodelist) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F57A0
+        if (m_physicBody)
+        {
+            m_physicBody->ReceiveNodesToLink(nodelist);
+        }
     }
 
     m3d::Class* SimplePhysicObj::GetBaseClass()
@@ -361,24 +397,35 @@ namespace ai
             m_physicBody->SetSkin(skin);
     }
 
-    CStr SimplePhysicObj::GetPropertyName(int) const
+    CStr SimplePhysicObj::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EF750
+        for (auto const& [name, propId] : m_propertiesMap)
+        {
+            if (propId == id)
+            {
+                return name;
+            }
+        }
+        return PhysicObj::GetPropertyName(id);
     }
 
     m3d::Class* SimplePhysicObj::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F56F0
+        return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
     SimplePhysicObjPrototypeInfo const* SimplePhysicObj::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F6540
+        return static_cast<SimplePhysicObjPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     CVector SimplePhysicObj::GetGeometricCenter() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F5750
+        return m_physicBody ? m_physicBody->GetNodeAbsolutePosition() : PhysicObj::GetGeometricCenter();
     }
 
     void SimplePhysicObj::RelinkGeomsToCollisionCells()
@@ -395,7 +442,12 @@ namespace ai
 
     void SimplePhysicObj::SetInvisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F5950
+        PhysicObj::SetInvisible();
+        if (m_physicBody)
+        {
+            m_physicBody->SetInvisible();
+        }
     }
 
     void SimplePhysicObj::Update(float elapsedTime, unsigned workTime)
@@ -414,9 +466,14 @@ namespace ai
         }
     }
 
-    void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EF690
+        for (auto const& prop : m_propertiesMap)
+        {
+            Props.insert(prop.first);
+        }
+        PhysicObj::GetPropertiesNames(Props);
     }
 
     void SimplePhysicObj::EnableGeometry(bool changePhysicState)
@@ -429,14 +486,21 @@ namespace ai
         }
     }
 
-    void SimplePhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void SimplePhysicObj::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EF6F0
+        for (auto const& prop : m_propertiesMap)
+        {
+            Props.insert(prop.second);
+        }
+        PhysicObj::GetPropertiesIDs(Props);
     }
 
     bool SimplePhysicObj::IsVisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F5E20 - drawn in the current frame.
+        return m_physicBody && m_physicBody->m_Node &&
+            m_physicBody->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame();
     }
 
     Geom::CellAabb SimplePhysicObj::GetCollisionCellAabb() const
@@ -446,68 +510,43 @@ namespace ai
 
     void SimplePhysicObj::SetScale(float scale, bool recalcMass)
     {
-        // TODO: generated code
+        // RVA 0x7F75B0 - the collision shapes, the centre of mass, optionally the mass and the model all follow the
+        // new scale.
         if (!m_physicBody || !m_physicBody->m_Node)
+        {
             return;
-
-        // Calculate scale delta from current scale
-        float currentScale = m_physicBody->m_Node->GetScale().x;
-        float deltaScale = scale / currentScale;
-
-        // Only proceed if scale change is significant
-        if (fabs(deltaScale - 1.0f) < 0.00001f)
+        }
+        float const deltaScale = scale / m_physicBody->m_Node->GetScale().x;
+        if (fabs(deltaScale - 1.0) < 0.0000099999997f)
+        {
             return;
+        }
 
-        // Scale all collision info properties
         for (auto& collisionInfo : m_collisionInfos)
         {
-            // Scale size
-            collisionInfo.m_size.x *= deltaScale;
-            collisionInfo.m_size.y *= deltaScale;
-            collisionInfo.m_size.z *= deltaScale;
-
-            // Scale offset (assuming m_offset is at p_z[1] based on decompilation)
-            collisionInfo.m_radius *= deltaScale;
-
-            // Scale relative translation
-            collisionInfo.m_relTranslation.x *= deltaScale;
-            collisionInfo.m_relTranslation.y *= deltaScale;
-            collisionInfo.m_relTranslation.z *= deltaScale;
+            collisionInfo.m_size.x = collisionInfo.m_size.x * deltaScale;
+            collisionInfo.m_size.y = deltaScale * collisionInfo.m_size.y;
+            collisionInfo.m_size.z = deltaScale * collisionInfo.m_size.z;
+            collisionInfo.m_radius = deltaScale * collisionInfo.m_radius;
+            collisionInfo.m_relTranslation.x = collisionInfo.m_relTranslation.x * deltaScale;
+            collisionInfo.m_relTranslation.y = collisionInfo.m_relTranslation.y * deltaScale;
+            collisionInfo.m_relTranslation.z = collisionInfo.m_relTranslation.z * deltaScale;
         }
+        _UpdatePhysicBodyByCollisionInfo(m_collisionInfos);
 
-        // Update physics geometry with new collision info
-        if (m_physicBody)
+        if (recalcMass)
         {
-            m_physicBody->UpdateGeomsByCollisionInfo(m_collisionInfos);
+            float const mass = GetMass();
+            if (m_physicBody)
+            {
+                m_physicBody->SetMass(mass * deltaScale * deltaScale * deltaScale);
+                _Construct();
+            }
         }
 
-        // Update mass center (using first collision info)
-        if (!m_collisionInfos.empty())
-        {
-            _SetMassCenter(m_collisionInfos[0].m_relTranslation);
-        }
-
-        // Recalculate mass if requested (mass scales with volume)
-        if (recalcMass && m_physicBody)
-        {
-            float currentMass = GetMass();
-            float newMass = currentMass * deltaScale * deltaScale * deltaScale;
-            m_physicBody->SetMass(newMass);
-            _Construct();  // Reconstruct physics object with new mass
-        }
-
-        // Update visual node scale
-        if (m_physicBody->m_Node)
-        {
-            CVector newScale(scale, scale, scale);
-
-            // Update transform and set new scale
-            m_physicBody->m_Node->UpdateXForm(true, false);
-            m_physicBody->m_Node->SetScale(newScale);
-            m_physicBody->m_Node->UpdateXForm(true, false);
-        }
-
-        // Store new scale
+        m_physicBody->m_Node->UpdateXForm(true, false);
+        m_physicBody->m_Node->SetScale(CVector(scale, scale, scale));
+        m_physicBody->m_Node->UpdateXForm(true, false);
         m_scale = scale;
     }
 
@@ -523,9 +562,26 @@ namespace ai
             this->m_physicBody->TransferPhysicParamsToSceneGraphNode();
     }
 
-    void SimplePhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void SimplePhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F6A00
+        PhysicObj::LoadRuntimeValues(xmlFile, xmlNode);
+        m3d::SafeBoolAttrib(m_deadTimerActive, xmlNode, "DeadTimeActive");
+        if (m_deadTimerActive)
+        {
+            theObjects->AddObjToUpdate(this);
+            m3d::SafeFloatAttrib(m_deadTimer, xmlNode, "DeadTimer");
+            m3d::SafeBoolAttrib(m_testVisibility, xmlNode, "TestVisibility");
+        }
+        if (m_physicBody)
+        {
+            ref_ptr bodyNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            xmlNode->GetFirstChild(bodyNode, "PhysicBody");
+            if (!bodyNode->IsEmpty())
+            {
+                m_physicBody->LoadRuntimeValues(xmlFile, bodyNode);
+            }
+        }
     }
 
     void SimplePhysicObj::SetVisible()
@@ -564,9 +620,20 @@ namespace ai
         SetScale(this->m_scale, false);
     }
 
-    bool SimplePhysicObj::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool SimplePhysicObj::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F73E0
+        switch (propertyId)
+        {
+        case 6:
+            retVal = GetPrototypeInfo()->GetMassValue();
+            return true;
+        case 7:
+            retVal = 1.0f;
+            return true;
+        default:
+            return PhysicObj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
     }
 
     void SimplePhysicObj::_UpdateCollisionInfoFromPhysicBody()
@@ -584,9 +651,10 @@ namespace ai
         this->_Construct();
     }
 
-    void SimplePhysicObj::_SetPositionToGeoms(CVector const&)
+    void SimplePhysicObj::_SetPositionToGeoms(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F59A0
+        PhysicObj::_SetPositionToGeoms(pos);
     }
 
     void SimplePhysicObj::_Construct()
@@ -629,19 +697,38 @@ namespace ai
         }
     }
 
-    void SimplePhysicObj::_SetRotationToGeoms(Quaternion const&)
+    void SimplePhysicObj::_SetRotationToGeoms(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F59B0
+        PhysicObj::_SetRotationToGeoms(rot);
     }
 
-    bool SimplePhysicObj::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool SimplePhysicObj::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F7320
+        switch (propertyId)
+        {
+        case 6:
+            retVal = GetMass();
+            return true;
+        case 7:
+            retVal = m_scale;
+            return true;
+        default:
+            return PhysicObj::_GetPropertyInternal(propertyId, retVal);
+        }
     }
 
-    void SimplePhysicObj::_UpdatePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const&)
+    void SimplePhysicObj::_UpdatePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F7470 - as _UpdateFullPhysicBodyByCollisionInfo, but the existing geoms are only resized.
+        m_collisionInfos = collisionInfos;
+        if (m_physicBody)
+        {
+            m_physicBody->UpdateGeomsByCollisionInfo(collisionInfos);
+        }
+        // NOTE: the first collision info is used without checking that there is one.
+        _SetMassCenter(collisionInfos.front().m_relTranslation);
     }
 
     void SimplePhysicObj::_LinkBodyToGeoms()
@@ -661,9 +748,14 @@ namespace ai
         _SetMassCenter(collisionInfos.front().m_relTranslation);
     }
 
-    void SimplePhysicObj::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void SimplePhysicObj::RegisterProperty(char const* name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F7050
+        m_propertiesMap[name] = id;
+        if (saveStatus != SAVE_PROP_NORMAL)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     SimplePhysicObj::~SimplePhysicObj()
@@ -679,11 +771,15 @@ namespace ai
 
     m3d::Object* SimplePhysicObj::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F5EC0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* SimplePhysicObj::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7F6080
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }  // namespace ai

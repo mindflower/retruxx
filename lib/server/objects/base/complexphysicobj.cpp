@@ -25,30 +25,57 @@
 #include "scene/scenegraph.h"
 #include "server/objects/dummyobject.h"
 #include <server/server.h>
+#include "server/dynamicscene.h"
+
+extern "C" void __cdecl _assert(char const* message, char const* file, unsigned line);
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C1A10
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    context->pushBool(obj->CanPartBeAttached(partName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetPartByName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6BC8B0
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    auto* const part = static_cast<ai::VehiclePart*>(context->asObject(2, "VehiclePart"));
+    obj->SetPartByName(partName, part, false);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetNewPart)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C1A80
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const newPartPrototypeName(context->asString(2));
+    CStr const partName(context->asString(1));
+    context->pushBool(obj->SetNewPart(partName, newPartPrototypeName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, TakeOffPart)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C0BE0
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    ai::VehiclePart* const part = obj->GetPartByName(partName);
+    obj->SetPartByName(partName, nullptr, false);
+    context->pushObject(part);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, GetPartByName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C0C60
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    context->pushObject(obj->GetPartByName(partName));
+    return 1;
 }
 
 CStr const NO_LP("NO_LP");
@@ -219,12 +246,77 @@ namespace ai
 
     Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const
     {
-        // RVA 0x6C1B20
-        // TODO(RVA 0x6C1B20): ~570 lines - walks the part-description tree, and for
-        // each slot picks a random prototype whose resource matches the slot and that
-        // CanPartBeAttached, weighting the choice by price/durability, then attaches
-        // the created parts. Left unported.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C1B20 - every slot without a fixed part gets a random prototype whose resource fits it.
+        int const objId = theObjects->CreateNewObject(m_prototypeId, "", -1, -1);
+        // NOTE: the new object is used without a null check.
+        auto* const obj = static_cast<ComplexPhysicObj*>(theObjects->GetEntityByObjId(objId));
+        int const numOfPrototypes = thePrototypeManager->GetNumOfPrototypes();
+
+        retruxx::vector<ComplexPhysicObjPartDescription const*> stack;
+        stack.push_back(m_partDescription);
+        while (!stack.empty())
+        {
+            ComplexPhysicObjPartDescription const* const desc = stack.back();
+            stack.pop_back();
+            for (auto* child = static_cast<ComplexPhysicObjPartDescription const*>(desc->GetFirstChild()); child;
+                 child = static_cast<ComplexPhysicObjPartDescription const*>(child->GetNextSibling()))
+            {
+                CStr const childName(child->GetName());
+                if (m_partPrototypeIds.find(childName) == m_partPrototypeIds.end() && obj->CanPartBeAttached(childName))
+                {
+                    int const resId = child->GetPartResourceId();
+                    retruxx::vector<PrototypeInfo const*> candidatePrototypes;
+                    for (int i = 0; i < numOfPrototypes; ++i)
+                    {
+                        PrototypeInfo const* const info = thePrototypeManager->GetPrototypeInfo(i);
+                        if (!info)
+                        {
+                            SYS_ERROR("info");
+                        }
+                        if (theResourceManager->bResourceIsKindOf(info->m_resourceId, resId))
+                        {
+                            candidatePrototypes.push_back(info);
+                        }
+                    }
+
+                    if (candidatePrototypes.empty())
+                    {
+                        // NOTE: the closing quote is missing from the message.
+                        M3D_LOG_ERR("Error: no candidates for resource '" + theResourceManager->GetResourceName(resId));
+                    }
+                    else
+                    {
+                        // A uniform pick, rounded to the nearest index.
+                        float const zero = 0.0f;
+                        float const last = static_cast<float>(static_cast<double>(candidatePrototypes.size()) - 1.0);
+                        float const lo = last >= 0.0f ? zero : last;
+                        float const hi = last <= 0.0f ? zero : last;
+                        int const index = static_cast<int>(
+                            static_cast<double>(rand()) * (hi - lo) * 0.000030518509f + lo + 0.5);
+                        PrototypeInfo const* const partInfo = candidatePrototypes[index];
+                        int const partId = theObjects->CreateNewObject(partInfo->m_prototypeId, "", -1, -1);
+                        // NOTE: a part that could not be created is type checked through a null pointer.
+                        Obj* const part = theObjects->GetEntityByObjId(partId);
+                        if (static_cast<m3d::Object*>(part)->IsKindOf(RT_CLASS_LOCAL(VehiclePart)))
+                        {
+                            obj->SetPartByName(childName, static_cast<VehiclePart*>(part), false);
+                        }
+                        else
+                        {
+                            M3D_LOG_ERR("Error: prototype '" + partInfo->m_prototypeName + "' is not prototype of VehiclePart");
+                        }
+                    }
+                }
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+
+        obj->SetRandomSkin();
+        obj->PostLoad();
+        return obj;
     }
 
     bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -332,12 +424,13 @@ namespace ai
         PhysicObj::UnlinkGeomsFromCollisionCells();
     }
 
-    void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
+    void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>& geoms) const
     {
-        // no body in the binary
-        // TODO: no standalone body survives in the shipped build - the vtable slot is
-        // only ever reached through subclass overrides (e.g. Vehicle::GetGeoms).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFC40
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            part->GetGeoms(geoms);
+        }
     }
 
     void ComplexPhysicObj::SetPassedToAnotherMapStatus()
@@ -699,9 +792,7 @@ namespace ai
 
     void ComplexPhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
     {
-        // no body in the binary
-        // TODO: no standalone body survives in the shipped build.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBEF0 - the parts link their own nodes.
     }
 
     void ComplexPhysicObj::RemoveContour()
@@ -787,12 +878,43 @@ namespace ai
         PhysicObj::LinkGeomsToCollisionCells();
     }
 
-    void ComplexPhysicObj::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ComplexPhysicObj::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        // RVA 0x6C4DA0
-        // TODO(RVA 0x6C4DA0): ~262 lines - the base save plus a <Part> node per
-        // attached part, with the save-type-dependent prototype/runtime split.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C4DA0 - a prototype's default part is written only when it differs from what loading would create;
+        // parts in other slots are always written.
+        Obj::SaveToXML(xmlFile, xmlNode);
+        ref_ptr partsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Parts");
+        xmlNode->AddChild(partsNode);
+
+        retruxx::set<CStr> savedParts;
+        for (auto const& [partName, prototypeId] : GetPrototypeInfo()->m_partPrototypeIds)
+        {
+            auto const part = m_vehicleParts.find(partName);
+            savedParts.insert(partName);
+            bool const present = part != m_vehicleParts.end();
+            if (theObjects->m_SaveType == ObjContainer::SAVE_FULL || !present ||
+                part->second->GetPrototypeInfo()->m_prototypeId != prototypeId || !part->second->bIsEqualToPrototype())
+            {
+                ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, partName.c_str());
+                partNode->SetAttribute("present", CStr(static_cast<int>(present)).c_str());
+                if (present)
+                {
+                    part->second->SaveToXML(xmlFile, partNode);
+                }
+                partsNode->AddChild(partNode);
+            }
+        }
+
+        for (auto const& [partName, part] : m_vehicleParts)
+        {
+            if (savedParts.find(partName) == savedParts.end())
+            {
+                ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, partName.c_str());
+                partNode->SetAttribute("present", "yes");
+                part->SaveToXML(xmlFile, partNode);
+                partsNode->AddChild(partNode);
+            }
+        }
     }
 
     Obj* ComplexPhysicObj::CloneObj()
@@ -968,90 +1090,91 @@ namespace ai
 
     void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: generated code
-        ai::Obj::LoadFromXML(xmlFile, xmlNode);
+        // RVA 0x6C0CD0 - each part comes from the Parts node, or from the prototype's default for that slot.
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        ComplexPhysicObjPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
 
-        // TODO: implement ComplexPhysicObj::LoadFromXML
-        auto const prototypeInfo = GetPrototypeInfo();
-
-        ref_ptr partsNode = xmlFile->CreateNode();
+        ref_ptr partsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
         xmlNode->GetFirstChild(partsNode, "Parts");
-        for (auto& partName : prototypeInfo->GetAllPartNames())
+        for (CStr const& partName : prototypeInfo->GetAllPartNames())
         {
-            // Create temporary node for this part
-            ref_ptr<m3d::cmn::XmlNode> partNode(xmlFile->CreateNode());
-
-            // Find the prototype ID for this part
-            auto partPrototypeIt = prototypeInfo->m_partPrototypeIds.find(partName);
-            bool partPresent = (partPrototypeIt != prototypeInfo->m_partPrototypeIds.end());
-
-            // Check if part is present in XML
+            ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            auto const defaultPart = prototypeInfo->m_partPrototypeIds.find(partName);
+            bool present = defaultPart != prototypeInfo->m_partPrototypeIds.end();
             if (!partsNode->IsEmpty())
             {
                 partsNode->GetFirstChild(partNode, partName.c_str());
                 if (!partNode->IsEmpty())
                 {
-                    m3d::SafeBoolAttrib(partPresent, partNode, "present");
+                    m3d::SafeBoolAttrib(present, partNode, "present");
                 }
             }
-
-            // If part doesn't exist in prototype or isn't present in XML, skip
-            if (!partPresent)
+            if (!present)
             {
                 continue;
             }
 
-            int objectId = -1;
-
+            int objId;
             if (partNode->IsEmpty())
             {
-                // Create new object if we're doing a full save
-                if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+                // A full save lists every part, so a missing one is not recreated from the prototype.
+                if (theObjects->m_SaveType == ObjContainer::SAVE_FULL)
                 {
                     continue;
                 }
-
-                objectId = theObjects->CreateNewObjectWithSuspendedPostLoad(partPrototypeIt->second, {}, -1, -1);
+                objId = theObjects->CreateNewObjectWithSuspendedPostLoad(defaultPart->second, "", -1, -1);
             }
             else
             {
-                // Read object from XML
-                objectId = gDynamicScene->ReadNewObjectFromXml(xmlFile, partNode, {});
+                objId = gDynamicScene->ReadNewObjectFromXml(xmlFile, partNode, {});
+                if (objId == -1)
+                {
+                    M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
+                }
             }
-
-            if (objectId == -1)
+            if (objId == -1)
             {
-                M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
                 continue;
             }
 
-            // Get the object from the container
-            m3d::Object* partObject = theObjects->GetEntityByObjId(objectId);
-
-            // Verify it's a VehiclePart and set it
-            if (IS_KIND_OF(partObject, VehiclePart))
+            // NOTE: a stale id leaves a null object, which is type checked through a null pointer.
+            Obj* const part = theObjects->GetEntityByObjId(objId);
+            if (static_cast<m3d::Object*>(part)->IsKindOf(RT_CLASS_LOCAL(VehiclePart)))
             {
-                SetPartByName(partName, RT_DYNCAST(partObject, VehiclePart), true);
+                SetPartByName(partName, static_cast<VehiclePart*>(part), true);
             }
             else
             {
-                CStr errorMsg = "Error: the part '" + partName + "' isn't a VehiclePart";
-                M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
+                M3D_LOG_ERR("Error: the part '" + partName + "' isn't a VehiclePart");
             }
         }
-
-        // Final construction
-        _Construct(nullptr);
+        _Construct(false);
     }
 
     void ComplexPhysicObj::Blow(Obj* partToBlow)
     {
-        // RVA 0x6C2770
-        // TODO(RVA 0x6C2770): drops the contour, finds partToBlow among m_vehicleParts,
-        // spawns its blast effect node at the part's absolute node transform, calls a
-        // VehiclePart virtual, then SetPartByName(name, nullptr, true). Blocked on two
-        // unmapped struct offsets (the effect name and the virtual slot).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C2770 - the part bursts into its blow effect and is gone.
+        if ((GetFlags() & 2) != 0 || !partToBlow)
+        {
+            return;
+        }
+        if (m_isContoured)
+        {
+            m_isContoured = false;
+            _RemoveContour();
+        }
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (part == partToBlow)
+            {
+                Quaternion const rotation = part->GetNodeAbsoluteRotation();
+                CVector const position = part->GetNodeAbsolutePosition();
+                PhysicBody::CreateEffectNode(part->GetBlowEffectName(), position, rotation, true, 1.0f);
+                part->Remove();
+                SetPartByName(part->GetPartName(), nullptr, true);
+                return;
+            }
+        }
     }
 
     void ComplexPhysicObj::Flow(Obj* partToFlow, float averageSpeed)
@@ -1076,9 +1199,9 @@ namespace ai
 
     unsigned ComplexPhysicObj::GetRepairPrice() const
     {
-        // RVA 0x6BFAB0
-        // RVA 0x6BFAB0: asserts !"not implemented" in the shipped build too.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFAB0 - the shipped build only asserts.
+        _assert("!\"not implemented\"", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\Base\\ComplexPhysicObj.cpp", 1217);
+        return 0;
     }
 
     void ComplexPhysicObj::RefreshMass()

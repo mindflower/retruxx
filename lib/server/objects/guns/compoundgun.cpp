@@ -78,10 +78,16 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float CompoundGun::EstimateDamageFromPosition(CVector const&, CVector const&,
-        std::vector<int, std::allocator<int>> const&) const
+    float CompoundGun::EstimateDamageFromPosition(CVector const& position, CVector const& pos,
+        std::vector<int, std::allocator<int>> const& exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E5190
+        float res = 0.0f;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            res = static_cast<Gun*>(part.vp)->EstimateDamageFromPosition(position, pos, exceptions) + res;
+        }
+        return res;
     }
 
     void CompoundGun::Recharge()
@@ -164,14 +170,26 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    float CompoundGun::EstimateDamage(CVector const&, std::vector<int, std::allocator<int>> const&) const
+    float CompoundGun::EstimateDamage(CVector const& pos, std::vector<int, std::allocator<int>> const& exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E5100
+        float res = 0.0f;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            res = static_cast<Gun*>(part.vp)->EstimateDamage(pos, exceptions) + res;
+        }
+        return res;
     }
 
     float CompoundGun::EstimateDamage() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E5070
+        float res = 0.0f;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            res = static_cast<Gun*>(part.vp)->EstimateDamage() + res;
+        }
+        return res;
     }
 
     bool CompoundGun::isLookAtPoint(CVector const&, float) const

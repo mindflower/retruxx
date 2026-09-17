@@ -194,6 +194,12 @@ namespace ai
     class Obj : public m3d::Object
     {
         friend class ObjContainer;
+        // Vehicle::Blow detaches a wheel from its parent directly.
+        friend class Vehicle;
+        // Settlement detaches its locations, guns and teams directly.
+        friend class Settlement;
+        // BreakableObject::RemoveChild clears a light child's parent id directly.
+        friend class BreakableObject;
 
     protected:
         Obj(PrototypeInfo const& prototypeInfo);

@@ -3,10 +3,17 @@
 #include <core/stringm3d.h>
 #include "retruxx/common.h"
 
+namespace m3d
+{
+    class SgNode;
+}
+
 namespace ai
 {
     class Path;
     class Obj;
+    class PhysicObj;
+    class CompositeObj;
 
     // Drops the victim's clan's tolerance toward the player in proportion to the
     // fraction of health the player just destroyed. If that pushes a previously
@@ -30,4 +37,5 @@ namespace ai
     CVector GetGroundPos(CVector const&, bool, bool);
     CVector GetGroundPos(CVector2 const&, bool);
     PointBase<float> clampIntoLandscape(PointBase<float> const&);
+    CompositeObj* CreateBrokenObj(PhysicObj* obj, CStr const& destroyedModelName, m3d::SgNode* toAccept);
 }

@@ -12,7 +12,9 @@
 #include "world.h"
 #include "dynamicquestmanager.h"
 #include "relationship.h"
+#include "objects/base/compositeobj.h"
 #include "objects/base/objcontainer.h"
+#include "objects/base/prototypemanager.h"
 #include "objects/player.h"
 #include "objects/town.h"
 #include "objects/vehicle.h"
@@ -266,5 +268,19 @@ namespace ai
                 return;
             }
         }
+    }
+
+    CompositeObj* CreateBrokenObj(PhysicObj* obj, CStr const& destroyedModelName, m3d::SgNode* toAccept)
+    {
+        // RVA 0x7D3C80 - spawns a "BrokenModel" composite in obj's place that removes itself after a minute.
+        // NOTE: the created object is used without checking that it exists.
+        int const objId = theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("BrokenModel")), "", -1, -1);
+        auto* const brokenObj = static_cast<CompositeObj*>(theObjects->GetEntityByObjId(objId));
+        float const mass = obj->GetMass();
+        Quaternion const rot = obj->GetRotation();
+        brokenObj->Init(destroyedModelName, obj->GetPosition(), rot, mass, toAccept);
+        theObjects->AddObjToPostCollideList(brokenObj);
+        brokenObj->SetDeadTimer(60000, true);
+        return brokenObj;
     }
 }  // namespace ai

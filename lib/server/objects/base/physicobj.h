@@ -39,6 +39,8 @@ namespace ai
         // ContextModelWnd reads the skin number of the vehicle a cabin or basket
         // is mounted on, so the preview matches the vehicle's paint job.
         friend class ::ContextModelWnd;
+        // Vehicle reads other objects' intersection obstacles to size its pick-up and rescue checks.
+        friend class Vehicle;
 
     protected:
         virtual ~PhysicObj() override /* 0x00 */;
