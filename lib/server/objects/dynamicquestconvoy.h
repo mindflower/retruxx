@@ -6,6 +6,9 @@ namespace ai
 {
     class DynamicQuestConvoyPrototypeInfo : public DynamicQuestPrototypeInfo
     {
+        // DynamicQuestConvoy::_CalcReward reads the share the reward is worked out from.
+        friend class DynamicQuestConvoy;
+
     public:
         DynamicQuestConvoyPrototypeInfo();
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);

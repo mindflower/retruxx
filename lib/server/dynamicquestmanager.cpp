@@ -3,18 +3,75 @@
 #include "retruxx/common.h"
 
 #include "server/objects/base/objcontainer.h"
+#include "server/objects/dynamicquest.h"
 #include "server/objects/dynamicquesthunt.h"
+
+#include <core/log.h>
+#include <m3dapp.h>
 
 namespace ai
 {
-    DynamicQuest* DynamicQuestManager::CreateQuest(QuestType, int, int)
+    namespace
     {
-        // TODO(RVA 0x7E66F0): generates a dynamic quest of the given type between
-        // two objects. Left unported along with the rest of DynamicQuestManager and
-        // the DynamicQuest class it builds; defined here only so that its one live
-        // caller - DecToleranceWhenDamageFromPlayerInflicted, which offers a "make
-        // peace" quest when the player turns a clan hostile - links.
-        RETRUXX_NOT_IMPLEMENTED;
+        // The prototype of each quest type is "dynamicQuest" plus its suffix.
+        CStr const SUFFIXES[DynamicQuestManager::TYPE_NUM_TYPES] = {
+            CStr("Destroy"),
+            CStr("Reach"),
+            CStr("Convoy"),
+            CStr("Peace"),
+            CStr("Hunt"),
+        };
+    }  // namespace
+
+    DynamicQuest* DynamicQuestManager::CreateQuest(QuestType questType, int targetObjId, int hirerObjId)
+    {
+        // RVA 0x7E66F0 - creates the quest object of the given type and tells it who its target and hirer are. A peace
+        // quest is made out with the target's whole clan rather than the one object.
+        Obj* const target = theObjects->GetEntityByObjId(targetObjId);
+        Obj* const hirer = theObjects->GetEntityByObjId(hirerObjId);
+        if (!target || !hirer)
+        {
+            M3D_LOG_ERR("Error: couldn't create dynamic quest");
+            return nullptr;
+        }
+
+        int const prototypeId = theObjects->GetPrototypeId((CStr("dynamicQuest") + SUFFIXES[questType]).c_str());
+        int const questObjId = theObjects->CreateNewObject(prototypeId, "", -1, -1);
+        auto* const quest = static_cast<DynamicQuest*>(theObjects->GetEntityByObjId(questObjId));
+        if (!quest)
+        {
+            M3D_LOG_ERR("Error: couldn't create dynamic quest");
+            return nullptr;
+        }
+
+        quest->m_targetObjId = targetObjId;
+        quest->m_hirerObjId = hirerObjId;
+        quest->m_targetName = target->GetName();
+        quest->m_hirerName = hirer->GetName();
+        if (questType == TYPE_PEACE)
+        {
+            quest->m_targetObjId = target->GetBelong();
+            quest->m_targetName = CStr("Belong_") + CStr(target->GetBelong());
+        }
+        quest->m_reward = quest->_CalcReward();
+        quest->_OnCreate();
+
+        M3D_LOG_INFO(quest->GetDebugDescription() + CStr(" created"));
+        M3D_LOG_INFO(
+            CStr("targetName = '") + quest->m_targetName + CStr("', hirerName = '") + quest->m_hirerName +
+            CStr("', reward = ") + CStr(quest->m_reward));
+        M3D_APP->EnqueueMessage(66546, questObjId, hirerObjId, 0, 0, CStr(), m3d::AIParam());
+        if (questType == TYPE_PEACE)
+        {
+            M3D_APP->EnqueueMessage(66564, 3, 0, 0, 0, CStr(), m3d::AIParam());
+        }
+        return quest;
+    }
+
+    DynamicQuest* DynamicQuestManager::CreateQuest(QuestType questType, CStr const& targetName, CStr const& hirerName)
+    {
+        // RVA 0x7E6E00
+        return CreateQuest(questType, theObjects->GetObjIdByObjName(targetName), theObjects->GetObjIdByObjName(hirerName));
     }
 
     void DynamicQuestManager::ConsiderPlayerKill(int belong)

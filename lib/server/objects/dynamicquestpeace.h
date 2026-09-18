@@ -6,6 +6,9 @@ namespace ai
 {
     class DynamicQuestPeacePrototypeInfo : public DynamicQuestPrototypeInfo
     {
+        // DynamicQuestPeace reads the share of the player's money that buying peace costs.
+        friend class DynamicQuestPeace;
+
     public:
         DynamicQuestPeacePrototypeInfo();
         virtual ai::DynamicQuest* CreateTargetObject() const;

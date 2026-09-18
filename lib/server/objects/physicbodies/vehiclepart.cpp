@@ -11,11 +11,15 @@
 #include <ode/collision.h>
 #include <ode/contact.h>
 #include "scene/scenegraph.h"
+#include "scene/nodes/sgnodedecals.h"
 #include "scene/servers/dataserver.h"
 #include "server/objects/basket.h"
 #include "server/objects/ware.h"
 #include "server/objects/vehicle.h"
 #include "server/objects/base/prototypemanager.h"
+
+#include <algorithm>
+#include <core/ref_ptr.h>
 
 namespace ai
 {
@@ -255,9 +259,61 @@ namespace ai
         PhysicBody::RenderDebugInfo();
     }
 
-    void VehiclePart::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void VehiclePart::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D91B0 - restores where the part's geom sits, how battered each piece of its model is, and
+        // the smoke effects hanging off the broken ones.
+        PhysicBody::LoadRuntimeValues(xmlFile, xmlNode);
+
+        ref_ptr ndGeom = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(ndGeom, "Geom");
+        // NOTE: the first geom is taken without checking that the part has one.
+        Geom* const innerGeom = m_pGeoms.front()->GetGeom();
+        if (!ndGeom->IsEmpty())
+        {
+            dReal const* const geomPos = dGeomGetPosition(innerGeom->GetGeomId());
+            CVector pos(geomPos[0], geomPos[1], geomPos[2]);
+            m3d::SafeVectorAttrib(pos, ndGeom, "Position");
+            dGeomSetPosition(innerGeom->GetGeomId(), pos.x, pos.y, pos.z);
+
+            dQuaternion geomQuat;
+            dGeomGetQuaternion(innerGeom->GetGeomId(), geomQuat);
+            // ODE stores w first, the engine's Quaternion stores it last.
+            Quaternion rot(geomQuat[1], geomQuat[2], geomQuat[3], geomQuat[0]);
+            m3d::SafeQuaternionAttrib(rot, ndGeom, "Rotation");
+            rot.Normalize();
+            dQuaternion newQuat = {rot.w, rot.x, rot.y, rot.z};
+            dGeomSetQuaternion(innerGeom->GetGeomId(), newQuat);
+        }
+
+        for (unsigned i = 0; i < m_modelParts.size(); ++i)
+        {
+            ModelPart& modelPart = m_modelParts[i];
+
+            CStr const healthName = CStr("MpHealth") + CStr(i);
+            if (!xmlNode->IsEmpty())
+            {
+                char const* const health = xmlNode->GetAttribute(healthName.c_str());
+                if (health)
+                {
+                    modelPart.health = static_cast<float>(atof(health));
+                }
+            }
+
+            ref_ptr ndJadedEffect = xmlFile->CreateNode();
+            CStr const jadedEffectName = CStr("JadedEffect") + CStr(i);
+            if (xmlNode->GetFirstChild(ndJadedEffect, jadedEffectName.c_str()))
+            {
+                CStr name;
+                m3d::SafeStrAttrib(name, ndJadedEffect, "Name");
+                CVector pos;
+                m3d::SafeVectorAttrib(pos, ndJadedEffect, "Pos");
+                modelPart.jadedEffect = PhysicBody::CreateNode(name, 0, CVector(1.0f, 1.0f, 1.0f), nullptr, false);
+                modelPart.jadedEffect->SetOriginAbs(pos);
+            }
+        }
+
+        LoadDecalsRuntime(xmlFile, xmlNode);
     }
 
     CStr const& VehiclePart::GetPartName() const
@@ -548,9 +604,47 @@ namespace ai
         m_MakeSplash = false;
     }
 
-    void VehiclePart::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void VehiclePart::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D53C0 - the counterpart of LoadRuntimeValues.
+        PhysicBody::SaveRuntimeValues(xmlFile, xmlNode);
+
+        // NOTE: the first geom is taken without checking that the part has one.
+        Geom* const innerGeom = m_pGeoms.front()->GetGeom();
+        if (innerGeom)
+        {
+            ref_ptr ndGeom = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Geom");
+            xmlNode->AddChild(ndGeom);
+
+            dReal const* const geomPos = dGeomGetPosition(innerGeom->GetGeomId());
+            CVector const pos(geomPos[0], geomPos[1], geomPos[2]);
+            ndGeom->SetAttribute("Position", CStr(pos).c_str());
+
+            dQuaternion geomQuat;
+            dGeomGetQuaternion(innerGeom->GetGeomId(), geomQuat);
+            Quaternion const rot(geomQuat[1], geomQuat[2], geomQuat[3], geomQuat[0]);
+            ndGeom->SetAttribute("Rotation", CStr(rot).c_str());
+        }
+
+        for (unsigned i = 0; i < m_modelParts.size(); ++i)
+        {
+            ModelPart const& modelPart = m_modelParts[i];
+
+            CStr const healthName = CStr("MpHealth") + CStr(i);
+            xmlNode->SetAttribute(healthName.c_str(), CStr(modelPart.health).c_str());
+
+            if (modelPart.jadedEffect)
+            {
+                CStr const jadedEffectName = CStr("JadedEffect") + CStr(i);
+                ref_ptr ndJadedEffect =
+                    xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, jadedEffectName.c_str());
+                xmlNode->AddChild(ndJadedEffect);
+                ndJadedEffect->SetAttribute("Name", modelPart.jadedEffect->GetName());
+                ndJadedEffect->SetAttribute("Pos", CStr(modelPart.jadedEffect->GetOrigin()).c_str());
+            }
+        }
+
+        SaveDecalsRuntime(xmlFile, xmlNode);
     }
 
     void VehiclePart::Remove()
@@ -622,7 +716,66 @@ namespace ai
 
     void VehiclePart::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DA3E0 - the scene nodes belong to the map being left behind, so everything that has to
+        // survive the trip is copied out into plain data first and rebuilt on the far side.
+        m_SplashEffect = nullptr;
+        m_MakeSplash = false;
+
+        if (m_passToAnotherMapData)
+        {
+            M3D_LOG_INFO("Warning: Pass to another map data already created");
+            PhysicBody::SetPassedToAnotherMapStatus();
+            return;
+        }
+
+        m_passToAnotherMapData = new PassToAnotherMapData;
+
+        for (unsigned i = 0; i < m_modelParts.size(); ++i)
+        {
+            ModelPart& modelPart = m_modelParts[i];
+            if (!modelPart.jadedEffect)
+            {
+                continue;
+            }
+            m_passToAnotherMapData->jadedEffects.push_back(JadedEffectsPassageInfo());
+            JadedEffectsPassageInfo& info = m_passToAnotherMapData->jadedEffects.back();
+            info.num = i;
+            info.name = modelPart.jadedEffect->GetName();
+            info.pos = modelPart.jadedEffect->GetOrigin();
+            modelPart.jadedEffect = nullptr;
+        }
+
+        for (auto const& decal : m_decals)
+        {
+            if (!decal.second || !decal.second->IsKindOf(&m3d::SgDecalsNode::m_classSgDecalsNode))
+            {
+                continue;
+            }
+            auto* const decalsNode = (m3d::SgDecalsNode*)decal.second;
+
+            m_passToAnotherMapData->decals.push_back(DecalsPassageInfo());
+            DecalsPassageInfo& info = m_passToAnotherMapData->decals.back();
+            info.id = decal.first;
+            info.name = decalsNode->GetServer()->GetNameByItem(decalsNode->GetServerHandle());
+
+            auto const& modelMeshes = GetPrototypeInfo()->m_modelMeshes;
+            for (unsigned i = 0; i < decalsNode->GetNumDecals(); ++i)
+            {
+                m3d::DecalInfo const& decalInfo = decalsNode->GetDecal(i);
+                auto const mesh = std::find(modelMeshes.begin(), modelMeshes.end(), decalInfo.mesh);
+                if (mesh == modelMeshes.end())
+                {
+                    continue;
+                }
+                info.poses.push_back(decalInfo.source.center);
+                info.normals.push_back(decalInfo.source.normal);
+                info.tangents.push_back(decalInfo.source.tangent);
+                info.meshNums.push_back(static_cast<int>(mesh - modelMeshes.begin()));
+            }
+        }
+        m_decals.clear();
+
+        PhysicBody::SetPassedToAnotherMapStatus();
     }
 
     void VehiclePart::Registration()
@@ -1028,10 +1181,67 @@ namespace ai
         {
             if (GetPassedToAnotherMapStatus())
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                // RVA 0x6DA860 - rebuild what SetPassedToAnotherMapStatus saved off before the old map's scene
+                // nodes went away: the smoke effects on the broken pieces, and every decal the part was wearing.
                 M3D_ASSERT(m_passToAnotherMapData);
-                for (int i = 0; i < m_passToAnotherMapData->jadedEffects.size(); ++i)
+
+                for (auto const& jadedEffect : m_passToAnotherMapData->jadedEffects)
                 {
+                    ModelPart& modelPart = m_modelParts[jadedEffect.num];
+                    modelPart.jadedEffect =
+                        PhysicBody::CreateNode(jadedEffect.name, 0, CVector(1.0f, 1.0f, 1.0f), nullptr, false);
+                    modelPart.jadedEffect->SetOriginAbs(jadedEffect.pos);
+                    m_Node->AddChild(modelPart.jadedEffect);
+                    modelPart.jadedEffect->UpdateXForm(false, true);
+                }
+
+                auto const* proto = GetPrototypeInfo();
+                for (auto const& decals : m_passToAnotherMapData->decals)
+                {
+                    auto* node = static_cast<m3d::SgNode*>(M3D_KERNEL->New("SgDecalsNode"));
+                    int modelId = M3D_APP->GetDecalsServer().GetItemByName(decals.name.c_str(), true);
+                    node->SetProperty(4360u, &modelId);
+                    m_Node->AddChild(node);
+                    node->UpdateXForm(false, true);
+                    m_decals[decals.id] = node;
+
+                    for (unsigned i = 0; i < decals.poses.size(); ++i)
+                    {
+                        unsigned const meshId = static_cast<unsigned>(decals.meshNums[i]);
+                        if (meshId >= proto->m_numsTris.size() || meshId >= proto->m_inds.size() ||
+                            meshId >= proto->m_verts.size() || meshId >= proto->m_vertsStride.size() ||
+                            meshId >= proto->m_modelMeshes.size())
+                        {
+                            M3D_LOG_INFO(
+                                "Saved decal has a wrong mesh number for model " + proto->m_engineModelName);
+                            continue;
+                        }
+
+                        m3d::DecalData decalData;
+                        decalData.pos = decals.poses[i];
+                        decalData.normal = decals.normals[i];
+                        decalData.tangent = decals.tangents[i];
+                        decalData.toPutOn.mesh = proto->m_modelMeshes[meshId];
+                        decalData.toPutOn.numIndices = proto->m_numsTris[meshId];
+                        decalData.toPutOn.indices = reinterpret_cast<m3d::Triangle*>(proto->m_inds[meshId]);
+                        decalData.toPutOn.vertices = static_cast<unsigned char*>(proto->m_verts[meshId]);
+                        decalData.toPutOn.vertexStride = proto->m_vertsStride[meshId];
+
+                        // A skinned mesh moves with its bone, so the decal has to follow that transform.
+                        m3d::AnimInfo* anim = nullptr;
+                        m_Node->GetProperty(1u, &anim);
+                        decalData.toPutOn.transform = nullptr;
+                        if (anim && !anim->IsEmpty())
+                        {
+                            auto& mesh = anim->GetMesh(meshId);
+                            if (mesh.m_meshType == 1 && mesh.m_numNode >= 0)
+                            {
+                                decalData.toPutOn.transform = &anim->GetBoneAnim(mesh.m_numNode).m_curMatrix;
+                            }
+                        }
+
+                        node->SetProperty(10497u, &decalData);
+                    }
                 }
             }
             else
@@ -1136,9 +1346,44 @@ namespace ai
         return nullptr;
     }
 
-    void VehiclePart::SaveDecalsRuntime(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void VehiclePart::SaveDecalsRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D3D90 - one <Decals> node per decal server item, with every decal written out as a
+        // numbered set of attributes. A decal sitting on a mesh the prototype does not know is dropped.
+        for (auto const& decal : m_decals)
+        {
+            if (!decal.second || !decal.second->IsKindOf(&m3d::SgDecalsNode::m_classSgDecalsNode))
+            {
+                continue;
+            }
+            auto* const decalsNode = (m3d::SgDecalsNode*)decal.second;
+
+            ref_ptr ndDecals = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Decals");
+            xmlNode->AddChild(ndDecals);
+            ndDecals->SetAttribute(
+                "Name", decalsNode->GetServer()->GetNameByItem(decalsNode->GetServerHandle()).c_str());
+            ndDecals->SetAttribute("Size", CStr(decalsNode->GetNumDecals()).c_str());
+            ndDecals->SetAttribute("Id", CStr(decal.first).c_str());
+
+            auto const& modelMeshes = GetPrototypeInfo()->m_modelMeshes;
+            for (unsigned i = 0; i < decalsNode->GetNumDecals(); ++i)
+            {
+                m3d::DecalInfo const& decalInfo = decalsNode->GetDecal(i);
+                auto const mesh = std::find(modelMeshes.begin(), modelMeshes.end(), decalInfo.mesh);
+                if (mesh == modelMeshes.end())
+                {
+                    continue;
+                }
+                int const meshNum = static_cast<int>(mesh - modelMeshes.begin());
+                ndDecals->SetAttribute(
+                    (CStr("Center") + CStr(i)).c_str(), CStr(decalInfo.source.center).c_str());
+                ndDecals->SetAttribute(
+                    (CStr("Normal") + CStr(i)).c_str(), CStr(decalInfo.source.normal).c_str());
+                ndDecals->SetAttribute(
+                    (CStr("Tangent") + CStr(i)).c_str(), CStr(decalInfo.source.tangent).c_str());
+                ndDecals->SetAttribute((CStr("Mesh") + CStr(i)).c_str(), CStr(meshNum).c_str());
+            }
+        }
     }
 
     void VehiclePart::_CalcMeshToBreak(BreakModelData& modelData)
@@ -1463,8 +1708,101 @@ namespace ai
         }
     }
 
-    void VehiclePart::LoadDecalsRuntime(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void VehiclePart::LoadDecalsRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6D8510 - the decals cannot be put back until the model exists, so they are only collected
+        // here; _InternalCreateVisualPart replays m_loadDecalsData once there is something to stick them to.
+        m_loadDecalsData.clear();
+
+        ref_ptr ndDecals = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(ndDecals, "Decals"); !ndDecals->IsEmpty();
+             ndDecals->GetNextSibling(ndDecals, "Decals"))
+        {
+            CStr name;
+            m3d::SafeStrAttrib(name, ndDecals, "Name");
+
+            unsigned size = 0;
+            if (!ndDecals->IsEmpty())
+            {
+                char const* const sizeStr = ndDecals->GetAttribute("Size");
+                if (sizeStr)
+                {
+                    int const value = atoi(sizeStr);
+                    if (value >= 0)
+                    {
+                        size = value;
+                    }
+                }
+            }
+
+            if (ndDecals->IsEmpty())
+            {
+                continue;
+            }
+            char const* const idStr = ndDecals->GetAttribute("Id");
+            if (!idStr)
+            {
+                continue;
+            }
+            int const decalId = atoi(idStr);
+            if (decalId == -1)
+            {
+                continue;
+            }
+
+            auto* const node = (m3d::SgNode*)M3D_KERNEL->New("SgDecalsNode");
+            int modelId = M3D_APP->GetDecalsServer().GetItemByName(name.c_str(), true);
+            node->SetProperty(4360u, &modelId);
+            m_decals[decalId] = node;
+
+            VehiclePartPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+            int meshNum = 0;
+            for (unsigned i = 0; i < size; ++i)
+            {
+                CVector pos;
+                CVector normal;
+                CVector tangent;
+                m3d::SafeVectorAttrib(pos, ndDecals, (CStr("Center") + CStr(i)).c_str());
+                m3d::SafeVectorAttrib(normal, ndDecals, (CStr("Normal") + CStr(i)).c_str());
+                m3d::SafeVectorAttrib(tangent, ndDecals, (CStr("Tangent") + CStr(i)).c_str());
+
+                // NOTE: a missing or negative mesh number leaves the previous decal's one in place.
+                if (!ndDecals->IsEmpty())
+                {
+                    char const* const meshStr = ndDecals->GetAttribute((CStr("Mesh") + CStr(i)).c_str());
+                    if (meshStr)
+                    {
+                        int const value = atoi(meshStr);
+                        if (value >= 0)
+                        {
+                            meshNum = value;
+                        }
+                    }
+                }
+
+                unsigned const mesh = static_cast<unsigned>(meshNum);
+                if (mesh >= prototypeInfo->m_numsTris.size() || mesh >= prototypeInfo->m_inds.size() ||
+                    mesh >= prototypeInfo->m_verts.size() || mesh >= prototypeInfo->m_vertsStride.size() ||
+                    mesh >= prototypeInfo->m_modelMeshes.size())
+                {
+                    M3D_LOG_INFO(
+                        "Saved decal has a wrong mesh number for model " + prototypeInfo->m_engineModelName);
+                    continue;
+                }
+
+                LoadDecalData ldd;
+                ldd.node = node;
+                ldd.meshNum = meshNum;
+                ldd.dd.pos = pos;
+                ldd.dd.normal = normal;
+                ldd.dd.tangent = tangent;
+                ldd.dd.toPutOn.numIndices = prototypeInfo->m_numsTris[mesh];
+                ldd.dd.toPutOn.indices = (m3d::Triangle*)prototypeInfo->m_inds[mesh];
+                ldd.dd.toPutOn.vertices = (unsigned char*)prototypeInfo->m_verts[mesh];
+                ldd.dd.toPutOn.vertexStride = prototypeInfo->m_vertsStride[mesh];
+                ldd.dd.toPutOn.mesh = prototypeInfo->m_modelMeshes[mesh];
+                m_loadDecalsData.push_back(ldd);
+            }
+        }
     }
 }  // namespace ai

@@ -191,7 +191,7 @@ namespace ai
     {
         retruxx::vector<CStr> tokens;
         m3d::Tokenize(passageAddress, tokens, "(), ;\t");
-        // TODO: check this
+        // RVA 0x71B150 - an address that is not exactly "level, location" has no level name.
         if (tokens.size() != 2)
         {
             return {};
@@ -529,7 +529,7 @@ namespace ai
 
         if (thePlayer)
         {
-            // TODO: check this
+            // Subscribes the player to this location's events.
             m3d::AIParam param(1);
             theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
         }
@@ -562,7 +562,7 @@ namespace ai
 
     void Location::_OnGameStart(Event const& evn)
     {
-        // TODO: check this
+        // RVA 0x719B80 - the next check falls due at once.
         m_timeForNextCheck.setToMin();
     }
 

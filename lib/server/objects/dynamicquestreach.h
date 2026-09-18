@@ -6,6 +6,9 @@ namespace ai
 {
     class DynamicQuestReachPrototypeInfo : public DynamicQuestPrototypeInfo
     {
+        // DynamicQuestReach::_CalcReward reads the share of the player's rating a trip is worth.
+        friend class DynamicQuestReach;
+
     public:
         DynamicQuestReachPrototypeInfo();
         virtual ai::DynamicQuest* CreateTargetObject() const;

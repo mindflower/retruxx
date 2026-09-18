@@ -1,5 +1,6 @@
 #include "workshop.h"
 #include "article.h"
+#include "base/prototypemanager.h"
 #include <stdexcept>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Workshop, GetRepositoryByType)
@@ -148,7 +149,7 @@ namespace ai
 
     WorkshopPrototypeInfo const* Workshop::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), WorkshopPrototypeInfo const);
     }
 
     unsigned Workshop::GetArticleSellPriceByObj(Obj const*) const

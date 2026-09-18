@@ -30,30 +30,60 @@
 #include "base/prototypeinfo.h"
 #include "base/objcontainer.h"
 #include "physicbodies/physicbody.h"
+#include "dynamicquestdestroy.h"
+#include "dynamicquesthunt.h"
+#include "base/globalproperties.h"
+#include "physicbodies/physichelpers.h"
+#include "player.h"
+#include "workshop.h"
+
+#include <cinematic.h>
+#include <game/m3dgame.h>
+#include <impulses/i_impulses.h>
+#include <math/random.h>
+#include <scene/servers/serveranimatedmodel.h>
+#include <server/dynamicquestmanager.h>
+#include <server/processmanager.h>
+#include <server/resourcemanager.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SpawnCaravanToLocation)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6F1570
+    auto* town = (ai::Town*)context->asObject(0, "Town");
+    context->pushObject(town->SpawnCaravanToLocation(context->asString(1)));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, GetOpenGateToPlayer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6EB110
+    auto* town = (ai::Town*)context->asObject(0, "Town");
+    context->pushBool(town->GetOpenGateToPlayer());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SetOpenGateToPlayer)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6EB140 - sets the flag directly, so it does not go through Town::SetOpenGateToPlayer.
+    auto* town = (ai::Town*)context->asObject(0, "Town");
+    town->SetOpenGateToPlayer(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, SetRuined)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6F39B0
+    auto* town = (ai::Town*)context->asObject(0, "Town");
+    town->SetRuined(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Town, IsRuined)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6EB170
+    auto* town = (ai::Town*)context->asObject(0, "Town");
+    context->pushBool(town->IsRuined());
+    return 1;
 }
 
 namespace ai
@@ -66,6 +96,30 @@ namespace ai
     RT_CLASS_EXPORT(Town, m3d::METHOD, IsRuined, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Town);
+
+    namespace
+    {
+        // RVA 0x5CCAF0 - note this is rand() scaled by RAND_MAX+1, so the top bound is exclusive.
+        int IntRandom(int highBound)
+        {
+            return highBound * rand() / 0x8000;
+        }
+
+        // RVA 0x6EFE20 - rolls each resource's price coefficient once, within its dispersion (given in percent).
+        void CreateResourceIdToCoeffMap(
+            retruxx::map<int, RandomCoeffWithDispersion> const& rndResourceIdToCoeff,
+            retruxx::map<int, float>& resourceIdToCoeff)
+        {
+            resourceIdToCoeff.clear();
+            for (auto const& [resourceId, randomCoeff] : rndResourceIdToCoeff)
+            {
+                float const dispersion = randomCoeff.baseDispersion * 0.0099999998f;
+                float const lo = 1.0f - dispersion;
+                float const hi = 1.0f + dispersion;
+                resourceIdToCoeff[resourceId] = (rand() * 0.000030518509f * (hi - lo) + lo) * randomCoeff.baseCoeff;
+            }
+        }
+    }  // namespace
 
     namespace
     {
@@ -109,8 +163,7 @@ namespace ai
     void TownPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         SimplePhysicObjPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
-        // TODO: recompute m_gateOpeningTime / m_gateClosingTime from the gate model's
-        // animation lengths (needs m3d::DataServer::GetItemByName + EngineConfig::GetAnimationLength).
+        // Not emitted in the shipped binary: this override adds nothing to the base version.
     }
 
     bool TownPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -228,10 +281,33 @@ namespace ai
         }
     }
 
-    void Town::PrepareVehicleForPath(Vehicle*, retruxx::vector<CVector2, retruxx::allocator<CVector2>> const&, bool)
+    void Town::PrepareVehicleForPath(
+        Vehicle* pVehicle,
+        retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& points,
+        bool delayed)
     {
-        // TODO: implement (drops the vehicle onto the town path start, needs Vehicle path helpers).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6EF200 - puts the vehicle on the first point of the path, facing its last point. A delayed move is
+        // carried out once the cinematic is running.
+        CVector const newPos(points.front().x, 0.0f, points.front().y);
+        CVector dir(points.back().x - newPos.x, 0.0f, points.back().y - newPos.z);
+        float const invLen = 1.0f / sqrt(dir.z * dir.z + dir.x * dir.x + 0.00000011920929f);
+        CVector const newDir(dir.x * invLen, dir.y * invLen, dir.z * invLen);
+
+        if (delayed)
+        {
+            m_NewPosForVehicle = newPos;
+            m_NewDirForVehicle = newDir;
+            m_VehicleShouldBeMoved = true;
+            m_VehicleToBeMoved = pVehicle;
+            return;
+        }
+        if (sqrt(newDir.x * newDir.x + newDir.y * newDir.y + newDir.z * newDir.z) > 0.1)
+        {
+            pVehicle->SetDirection(newDir);
+        }
+        pVehicle->SetGamePositionOnGround(newPos, true, false);
+        pVehicle->SetLinearVelocity(ZeroVector);
+        pVehicle->SetAngularVelocity(ZeroVector);
     }
 
     void Town::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -345,10 +421,43 @@ namespace ai
         m_bOpenGateToPlayer = 1;
     }
 
-    void Town::SendVehicleOff(Vehicle*, bool)
+    void Town::SendVehicleOff(Vehicle* pVehicle, bool bQuick)
     {
-        // TODO: implement (runs the exit cinematic path + restores the camera mode).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F3A90 - drives the player's vehicle out of town along the exit path, with the exit cinematic unless
+        // the caller wants it over with at once.
+        if (pVehicle)
+        {
+            auto const& vehiclePoints = m_exitPath.GetVehiclePoints();
+            if (!vehiclePoints.empty())
+            {
+                PrepareVehicleForPath(pVehicle, vehiclePoints, false);
+                m_PlayerPathIndex = pVehicle->SetExternalPath(vehiclePoints);
+                theProcessManager->PostMessageA(2, pVehicle->GetId(), GetId(), 0.0f, m3d::AIParam(51), m3d::AIParam(), 1);
+                if (bQuick)
+                {
+                    pVehicle->PlaceToEndOfPath();
+                    M3D_APP->m_player.m_cameraMode = m_OldCameraMode;
+                    m_playerEnteringTownCount = 0;
+                    return;
+                }
+
+                retruxx::vector<CVector> cameraPoints = m_exitPath.GetCameraPoints();
+                for (CVector& point : cameraPoints)
+                {
+                    CVector const pos = GetPosition();
+                    point.x += pos.x;
+                    point.y += pos.y;
+                    point.z += pos.z;
+                }
+                _StartCinematic(pVehicle, cameraPoints);
+                M3D_APP->HandleCinematic(M3D_APP->m_cinematic->m_fadePeriod.GetF());
+            }
+            else
+            {
+                M3D_APP->m_player.m_cameraMode = m_OldCameraMode;
+            }
+        }
+        m_playerEnteringTownCount = 0;
     }
 
     Team* Town::SpawnCaravanToLocation(char const* locationName)
@@ -529,10 +638,29 @@ namespace ai
         m3d::SafeBoolAttrib(m_bRuined, xmlNode, "IsRuined");
     }
 
-    void Town::SetPath(TownPath, retruxx::vector<CVector2> const&, retruxx::vector<CVector> const&)
+    void Town::SetPath(
+        TownPath path,
+        retruxx::vector<CVector2> const& vehiclePoints,
+        retruxx::vector<CVector> const& cameraPoints)
     {
-        // TODO: implement (needs the full ai::Town::TownPath enum, only forward-declared here).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6EB950 - the camera points are stored relative to the town.
+        CinematicPath* cinematicPath = nullptr;
+        switch (path)
+        {
+        case TP_ENTRY_PATH:
+            cinematicPath = &m_entryPath;
+            break;
+        case TP_EXIT_PATH:
+            cinematicPath = &m_exitPath;
+            break;
+        default:
+            SYS_ERROR("0");
+            return;
+        }
+        cinematicPath->SetCameraPoints(cameraPoints);
+        cinematicPath->SetVehiclePoints(vehiclePoints);
+        CVector const pos = GetPosition();
+        cinematicPath->ShiftCameraPoints(CVector(pos.x * -1.0f, pos.y * -1.0f, pos.z * -1.0f));
     }
 
     Workshop* Town::GetWorkshopByObject(Obj const* obj)
@@ -550,10 +678,47 @@ namespace ai
         return nullptr;
     }
 
-    void Town::SendVehicleIn(Vehicle*)
+    void Town::SendVehicleIn(Vehicle* pVehicle)
     {
-        // TODO: implement (runs the entry cinematic path or the interface fly-in camera).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F3C90 - opens the gate and either drives the vehicle in along the entry path with the cinematic, or,
+        // for a town without one, just opens the town interface and parks the camera at its point of view.
+        if (m_playerEnteringTownCount > 0)
+        {
+            return;
+        }
+        m_timeFromLastEnterTown = 0.0f;
+        _OpenGates();
+        m_OldCameraMode = M3D_APP->m_player.m_cameraMode;
+        pVehicle->SetHorn(false);
+
+        auto const& vehiclePoints = m_entryPath.GetVehiclePoints();
+        if (!vehiclePoints.empty())
+        {
+            PrepareVehicleForPath(pVehicle, m_entryPath.GetVehiclePoints(), true);
+            pVehicle->setGodMode(true);
+            m_PlayerPathIndex = pVehicle->SetExternalPath(m_entryPath.GetVehiclePoints());
+            theProcessManager->PostMessageA(2, pVehicle->GetId(), GetId(), 0.0f, m3d::AIParam(51), m3d::AIParam(), 1);
+            m_playerEnteringTownCount = 2;
+
+            retruxx::vector<CVector> cameraPoints = m_entryPath.GetCameraPoints();
+            for (CVector& point : cameraPoints)
+            {
+                CVector const pos = GetPosition();
+                point.x += pos.x;
+                point.y += pos.y;
+                point.z += pos.z;
+            }
+            _StartCinematic(pVehicle, cameraPoints);
+            return;
+        }
+
+        m_playerEnteringTownCount = 1;
+        M3D_APP->EnqueueMessage(66540, GetId(), 0, 0, 0, CStr(), m3d::AIParam());
+        CVector const pos = GetPosition();
+        M3D_APP->m_curCamera.m_worldOrigin =
+            CVector(m_PointOfViewInInterface.x + pos.x, m_PointOfViewInInterface.y + pos.y, m_PointOfViewInInterface.z + pos.z);
+        M3D_APP->m_curCamera.lookAt(pVehicle->GetPosition());
+        M3D_APP->m_player.m_cameraMode = CM_CONST;
     }
 
     bool Town::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -572,10 +737,31 @@ namespace ai
         return SimplePhysicObj::SetPropertyById(propertyId, newValue);
     }
 
-    void Town::GetPath(TownPath, retruxx::vector<CVector2>&, retruxx::vector<CVector>&) const
+    void Town::GetPath(TownPath path, retruxx::vector<CVector2>& vehiclePoints, retruxx::vector<CVector>& cameraPoints) const
     {
-        // TODO: implement (needs the full ai::Town::TownPath enum, only forward-declared here).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F2110 - the stored camera points are relative to the town, so they come back shifted into the world.
+        CinematicPath const* cinematicPath = nullptr;
+        switch (path)
+        {
+        case TP_ENTRY_PATH:
+            cinematicPath = &m_entryPath;
+            break;
+        case TP_EXIT_PATH:
+            cinematicPath = &m_exitPath;
+            break;
+        default:
+            SYS_ERROR("0");
+            return;
+        }
+        cameraPoints = cinematicPath->GetCameraPoints();
+        vehiclePoints = cinematicPath->GetVehiclePoints();
+        for (CVector& point : cameraPoints)
+        {
+            CVector const pos = GetPosition();
+            point.x += pos.x;
+            point.y += pos.y;
+            point.z += pos.z;
+        }
     }
 
     void Town::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
@@ -686,9 +872,24 @@ namespace ai
 
     retruxx::vector<int, retruxx::allocator<int>> Town::GetDynamicQuestIds() const
     {
-        // TODO: implement (walks ai::theObjects for DynamicQuest children of this town,
-        // filtering out an already-taken hunt quest; needs DynamicQuest internals).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F0760 - every quest this town gave out, less a hunt quest the player already took.
+        retruxx::vector<int> res;
+        for (Obj* obj : *theObjects)
+        {
+            if (!obj->IsKindOf(&DynamicQuest::m_classDynamicQuest))
+            {
+                continue;
+            }
+            if (obj->IsKindOf(&DynamicQuestHunt::m_classDynamicQuestHunt) && thePlayer->HuntQuestIsTaken())
+            {
+                continue;
+            }
+            if (static_cast<DynamicQuest*>(obj)->GetHirerObjId() == GetId())
+            {
+                res.push_back(obj->GetId());
+            }
+        }
+        return res;
     }
 
     Workshop* Town::GetWorkshop()
@@ -760,9 +961,22 @@ namespace ai
 
     void Town::GenerateNewDynamicQuestIfNeeded()
     {
-        // TODO: implement (scans ai::theObjects for a live DynamicQuest owned by this town and
-        // sets m_QuestsGenerated accordingly; needs DynamicQuest parent/state internals).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F1310 - despite the name this only notes whether the town still has a quest of its own running, so
+        // that _GenerateDynamicQuest may make a new one.
+        m_QuestsGenerated = false;
+        for (Obj* obj : *theObjects)
+        {
+            if (!obj->IsKindOf(&DynamicQuest::m_classDynamicQuest))
+            {
+                continue;
+            }
+            auto* const quest = static_cast<DynamicQuest*>(obj);
+            if (quest->GetHirerObjId() == GetId() && quest->GetQuestStatus() < DynamicQuest::STATUS_COMPLETE)
+            {
+                m_QuestsGenerated = true;
+                return;
+            }
+        }
     }
 
     Workshop* Town::GetWorkshopByPrototypeId(int pId)
@@ -787,9 +1001,31 @@ namespace ai
 
     void Town::_InternalCreateVisualPart()
     {
+        // RVA 0x6ECA40 - hangs the gate model on the town's own model at its LP_GATE load point.
         SimplePhysicObj::_InternalCreateVisualPart();
-        // TODO: create the gate scene-graph node from the prototype's gate model and hook up its
-        // "LP_GATE" load point (needs PhysicBody::CreateNode + AnimatedModelsServer bone matrices).
+        auto const* const proto = GetPrototypeInfo();
+        if (GetPassedToAnotherMapStatus() || proto->m_gateModelName.empty())
+        {
+            return;
+        }
+
+        m_gateNode = PhysicBody::CreateNode(proto->m_gateModelName, 0, CVector(1.0f, 1.0f, 1.0f), nullptr, false);
+        m_physicBody->m_Node->AddChild(m_gateNode);
+
+        CMatrix mat;
+        auto& server = static_cast<m3d::AnimatedModelsServer&>(M3D_APP->GetAnimatedModelsServer());
+        if (!server.GetBoneMatrixByNameFromModelName(proto->GetEngineModelName().c_str(), CStr("LP_GATE"), mat, false))
+        {
+            M3D_LOG_ERR(
+                CStr("Error: LoadPoint not found! Model = '") + proto->GetEngineModelName() + CStr("', lp = ") +
+                CStr("LP_GATE") + CStr(" for ") + GetDebugDescription());
+            mat.identity();
+        }
+        Quaternion rot;
+        rot.FromMatrix(mat);
+        m_gateNode->SetRotation(rot);
+        m_gateNode->SetOriginAbs(CVector(mat._41, mat._42, mat._43));
+        m_gateNode->SetName(CStr(m_physicBody->m_Node->GetName()) + CStr("Gate"));
     }
 
     Town::~Town() = default;
@@ -938,17 +1174,98 @@ namespace ai
         {
             return;
         }
+        // RVA 0x6F1E00 - stocks the town's shops and workshops: the prototype's own articles, every "GOODS"
+        // prototype, then the generated guns and the affixes applied to them.
         m_shouldInitializeWorkshops = 0;
-        // TODO: populate the town's shop/workshop repositories from the prototype's articles and
-        // affix generators (needs Workshop::AddArticle / GenerateGunRepository /
-        // ApplyAffixGeneratorToRepository and the resource-id-to-coeff map builder).
+        auto const* const proto = GetPrototypeInfo();
+        for (Article const& article : proto->m_Articles)
+        {
+            if (Workshop* const workshop = GetWorkshopByPrototypeId(article.getPrototypeId()))
+            {
+                workshop->AddArticle(article);
+            }
+        }
+
+        retruxx::vector<int> waresPrototypes;
+        thePrototypeManager->GetPrototypeIdsByResourceId(theResourceManager->GetResourceId(CStr("GOODS")), waresPrototypes);
+        for (int const prototypeId : waresPrototypes)
+        {
+            if (Workshop* const workshop = GetWorkshopByPrototypeId(prototypeId))
+            {
+                workshop->AddArticle(prototypeId);
+            }
+        }
+
+        retruxx::vector<Building*> bb = GetBuildingByType(SHOP);
+        retruxx::vector<Building*> const workshops = GetBuildingByType(WORKSHOP);
+        bb.insert(bb.end(), workshops.begin(), workshops.end());
+        CreateResourceIdToCoeffMap(proto->m_resourceIdToRandomCoeffMap, m_resourceIdToCoeff);
+
+        for (Building* const building : bb)
+        {
+            auto* const workshop = static_cast<Workshop*>(building);
+            if (proto->m_GunGeneratorPrototypeId != -1)
+            {
+                workshop->GenerateGunRepository(proto->m_GunGeneratorPrototypeId, proto->m_DesiredGunsInWorkshop);
+            }
+            if (proto->m_GunAffixGeneratorPrototypeId != -1)
+            {
+                workshop->ApplyAffixGeneratorToRepository(
+                    WORKSHOP_GUNS_AND_GADGETS,
+                    proto->m_GunAffixGeneratorPrototypeId,
+                    proto->m_GunAffixesCount,
+                    theResourceManager->GetResourceId(CStr("GUN")));
+            }
+            if (proto->m_CabinsAndBasketsAffixGeneratorPrototypeId != -1)
+            {
+                workshop->ApplyAffixGeneratorToRepository(
+                    WORKSHOP_CABINS_AND_BASKETS,
+                    proto->m_CabinsAndBasketsAffixGeneratorPrototypeId,
+                    proto->m_CabinsAndBasketsAffixesCount,
+                    theResourceManager->GetResourceId(CStr("VEHICLE_PART")));
+            }
+        }
     }
 
-    void Town::_OnTargetReached(Event const&)
+    void Town::_OnTargetReached(Event const& evn)
     {
-        // TODO: implement (handles caravan arrival + the player's town-path index reaching its end;
-        // needs ProcessManager messaging and the cinematic-mode change impulse).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F3170 - a caravan of this town that arrived is sent on its way again when the player is close enough
+        // to see it, and removed otherwise; the player's vehicle finishing the entry path ends the drive-in.
+        Obj* const obj = theObjects->GetEntityByObjId(evn.m_senderObjId);
+        if (!obj)
+        {
+            return;
+        }
+        if (obj->IsKindOf(&Team::m_classTeam))
+        {
+            auto* const team = static_cast<Team*>(obj);
+            if (std::find(m_caravans.begin(), m_caravans.end(), team) == m_caravans.end())
+            {
+                return;
+            }
+            Vehicle* const playerVehicle = thePlayer ? thePlayer->GetVehicle() : nullptr;
+            if (playerVehicle && team->GetDistToPhysicObj(playerVehicle) <= theGlobProp.m_distanceFromPlayerToMoveout)
+            {
+                theProcessManager->PostMessageA(51, GetId(), evn.m_senderObjId, 5.0f, m3d::AIParam(), m3d::AIParam(), 1);
+            }
+            else
+            {
+                team->Remove();
+            }
+            return;
+        }
+        if (obj->GetClass() == &Vehicle::m_classVehicle && static_cast<Vehicle*>(obj)->bIsControlledByPlayer() &&
+            m_PlayerPathIndex == evn.m_param1.GetAsID())
+        {
+            if (m_playerEnteringTownCount <= 0)
+            {
+                _CloseGates();
+            }
+            --m_playerEnteringTownCount;
+            static_cast<Vehicle*>(obj)->setGodMode(false);
+            theProcessManager->PostMessageA(3, obj->GetId(), GetId(), 0.0f, m3d::AIParam(51), m3d::AIParam(), 1);
+            M3D_APP->OnChangeMode(m3d::AuxImpulseInfo(3, true, -1, 1, 0));
+        }
     }
 
     void Town::_OnInCinematic(Event const&)
@@ -987,17 +1304,82 @@ namespace ai
         _SynchronizeGatesState();
     }
 
-    void Town::_StartCinematic(Vehicle*, retruxx::vector<CVector, retruxx::allocator<CVector>> const&)
+    void Town::_StartCinematic(Vehicle* pVehicle, retruxx::vector<CVector, retruxx::allocator<CVector>> const& points)
     {
-        // TODO: implement (kicks off the town entry/exit cinematic; needs the cinematic subsystem).
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F2920 - flies the camera along the given points while looking at the vehicle. With no points the
+        // camera simply stays where it is.
+        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(56), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(57), m3d::AIParam(), 1);
+
+        m3d::Cinematic* const cinematic = M3D_APP->m_cinematic;
+        cinematic->LoadDefaults();
+        cinematic->SetFlags(3);
+        M3D_APP->OnChangeMode(m3d::AuxImpulseInfo(2, true, -1, 0, 0));
+
+        retruxx::vector<m3d::CameraPathState> cameraStates;
+        cameraStates.resize(points.size());
+        for (unsigned i = 0; i < cameraStates.size(); ++i)
+        {
+            cameraStates[i].m_point = points[i];
+            cameraStates[i].m_rotation = IdentityQuaternion;
+            cameraStates[i].m_zoom = 1.0f;
+        }
+        if (cameraStates.empty())
+        {
+            cameraStates.resize(1, m3d::CameraPathState(ZeroVector, IdentityQuaternion, 1.0f, 1.0f, 0.0f));
+            cameraStates.front().m_point = M3D_APP->m_curCamera.m_worldOrigin;
+            cameraStates.front().m_rotation = IdentityQuaternion;
+            cameraStates.front().m_zoom = 1.0f;
+        }
+        cinematic->SetCameraStates(cameraStates);
+        cinematic->SetLookTo(true);
+        cinematic->SetAimToID(pVehicle->GetId());
+        cinematic->SetWaitWhenStop(true);
+        cinematic->Play(7.0f);
+        cinematic->StartCinematic();
     }
 
-    void Town::_OnSkipCinematic(Event const&)
+    void Town::_OnSkipCinematic(Event const& evn)
     {
-        // TODO: implement (aborts the running town cinematic, restores camera, opens the gate);
-        // needs ProcessManager messaging + camera/cinematic state.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6F33C0 - the player skipped the drive-in or drive-out: the vehicle jumps to the end of the path, and
+        // either the town interface opens or the old camera mode comes back.
+        if (!theObjects->GetEntityByObjId(evn.m_senderObjId))
+        {
+            return;
+        }
+        m_VehicleShouldBeMoved = false;
+        Vehicle* const playerVehicle = thePlayer->GetVehicle();
+        if (playerVehicle)
+        {
+            playerVehicle->PlaceToEndOfPath();
+            playerVehicle->setGodMode(false);
+        }
+        theProcessManager->PostMessageA(3, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(56), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(3, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(57), m3d::AIParam(), 1);
+
+        if (m_playerEnteringTownCount <= 0)
+        {
+            M3D_APP->m_player.m_cameraMode = m_OldCameraMode;
+            --m_playerEnteringTownCount;
+            return;
+        }
+
+        M3D_APP->EnqueueMessage(66540, GetId(), 0, 0, 0, CStr(), m3d::AIParam());
+        CVector const pos = GetPosition();
+        M3D_APP->m_curCamera.m_worldOrigin =
+            CVector(m_PointOfViewInInterface.x + pos.x, m_PointOfViewInInterface.y + pos.y, m_PointOfViewInInterface.z + pos.z);
+        if (playerVehicle)
+        {
+            M3D_APP->m_curCamera.lookAt(playerVehicle->GetPosition());
+        }
+        M3D_APP->m_player.m_cameraMode = CM_CONST;
+        if (m_gateNode)
+        {
+            m_gateState = GATE_OPEN;
+            m_gateTime.setToMin();
+            _SynchronizeGatesState();
+        }
+        --m_playerEnteringTownCount;
     }
 
     void Town::_CloseGates()
@@ -1040,9 +1422,38 @@ namespace ai
 
     void Town::_SynchronizeGatesState()
     {
-        // TODO: implement (drives the gate SgNode's open/close animation to match m_gateState);
-        // needs m3d::SgNode::SetProperty + ai::SetNodeElapsedAnimationTimeInMs.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6EB5E0 - puts the gate model on its closing or opening animation, wound forward to however much of the
+        // gate's time has already run out. Only a fully open gate lets things through.
+        auto const* const proto = GetPrototypeInfo();
+        float elapsed = 0.0f;
+        int action = 14;
+        switch (m_gateState)
+        {
+        case GATE_CLOSED:
+            action = 14;
+            elapsed = proto->m_gateClosingTime;
+            break;
+        case GATE_OPENING:
+            action = 15;
+            elapsed = proto->m_gateOpeningTime - m_gateTime.value().get();
+            break;
+        case GATE_OPEN:
+            action = 15;
+            elapsed = proto->m_gateOpeningTime;
+            break;
+        case GATE_CLOSING:
+            action = 14;
+            elapsed = proto->m_gateClosingTime - m_gateTime.value().get();
+            break;
+        default:
+            break;
+        }
+        if (m_gateState < GATE_NUM_STATES)
+        {
+            m_gateNode->SetProperty(8704, &action);
+            ai::SetNodeElapsedAnimationTimeInMs(m_gateNode, static_cast<int>(elapsed * 1000.0f));
+        }
+        pServer->GetWorld()->GetLandscape().SetNodeCollisionGeomsEnabled(m_gateNode, m_gateState != GATE_OPEN);
     }
 
     DynamicQuest* Town::_GenerateDynamicQuest()
@@ -1051,9 +1462,117 @@ namespace ai
         {
             return nullptr;
         }
-        m_QuestsGenerated = 1;
-        // TODO: implement the random dynamic-quest generation (destroy / reach / convoy / hunt);
-        // needs DynamicQuestManager + the DynamicQuest* subclasses + ai::theGlobProp.
-        return nullptr;
+        // RVA 0x6F0830 - makes up to three attempts at a quest of a random kind.
+        m_QuestsGenerated = true;
+        if (rand() * 0.000030518509f > theGlobProp.m_probabilityToGenerateDynamicQuestInTown)
+        {
+            return nullptr;
+        }
+
+        DynamicQuest* res = nullptr;
+        for (int iTrial = 0; iTrial < 3 && !res; ++iTrial)
+        {
+            switch (IntRandom(4))
+            {
+            case 0:
+                // Destroy a named enemy vehicle.
+                if (DynamicQuestDestroy::FreeNameForTargetExists())
+                {
+                    retruxx::vector<Obj*> candidates;
+                    for (Obj* obj : *theObjects)
+                    {
+                        if (obj->GetClass() != &Vehicle::m_classVehicle || !obj->IsAlive() || obj->GetParentRepository() ||
+                            !obj->IsUpdating())
+                        {
+                            continue;
+                        }
+                        if (obj->GetBelong() != 1002 && obj->GetBelong() != 1005)
+                        {
+                            continue;
+                        }
+                        if (CStr(obj->GetName()).empty() || theObjects->GetObjectFullName(CStr(obj->GetName())).empty())
+                        {
+                            continue;
+                        }
+                        candidates.push_back(obj);
+                    }
+                    if (!candidates.empty())
+                    {
+                        Obj* const target = candidates[IntRandom(static_cast<int>(candidates.size()))];
+                        theObjects->SetObjName(target->GetId(), DynamicQuestDestroy::GetRandomNameForTarget());
+                        res = DynamicQuestManager::CreateQuest(
+                            DynamicQuestManager::TYPE_DESTROY, target->GetId(), GetId());
+                    }
+                }
+                break;
+
+            case 1:
+            {
+                // Reach another town.
+                retruxx::vector<Obj*> towns;
+                for (Obj* obj : *theObjects)
+                {
+                    if (obj->GetClass() == &Town::m_classTown && obj->GetId() != GetId() && obj->IsAlive() &&
+                        !static_cast<Town*>(obj)->IsRuined() && !CStr(obj->GetName()).empty())
+                    {
+                        towns.push_back(obj);
+                    }
+                }
+                if (!towns.empty())
+                {
+                    res = DynamicQuestManager::CreateQuest(
+                        DynamicQuestManager::TYPE_REACH, towns[IntRandom(static_cast<int>(towns.size()))]->GetId(), GetId());
+                }
+                break;
+            }
+
+            case 2:
+            {
+                // Escort a caravan to this town's caravan destination.
+                if (m_caravanLocationName.empty() || !GetLocation(Location::LOCATION_DEPLOY))
+                {
+                    break;
+                }
+                Obj* const dest = theObjects->GetEntityByObjName(m_caravanLocationName);
+                if (!dest || (!dest->IsKindOf(&Location::m_classLocation) && !dest->IsKindOf(&Town::m_classTown)))
+                {
+                    M3D_LOG_ERR("Error: invalid location name for caravan: '" + m_caravanLocationName + CStr("'"));
+                    break;
+                }
+                if (!dest->IsKindOf(&Town::m_classTown))
+                {
+                    res = DynamicQuestManager::CreateQuest(DynamicQuestManager::TYPE_CONVOY, dest->GetId(), GetId());
+                    break;
+                }
+                auto* const destTown = static_cast<Town*>(dest);
+                if (!destTown->IsAlive() || destTown->IsRuined())
+                {
+                    break;
+                }
+                if (!destTown->GetLocation(Location::LOCATION_CARAVAN_ARRIVE))
+                {
+                    M3D_LOG_ERR(
+                        "Error: town for dynamic quest hasn't caravan location: '" + m_caravanLocationName + CStr("'"));
+                    break;
+                }
+                res = DynamicQuestManager::CreateQuest(DynamicQuestManager::TYPE_CONVOY, dest->GetId(), GetId());
+                break;
+            }
+
+            case 3:
+                // Hunt the player.
+                if (thePlayer && thePlayer->GetVehicle())
+                {
+                    res = DynamicQuestManager::CreateQuest(
+                        DynamicQuestManager::TYPE_HUNT, thePlayer->GetVehicle()->GetId(), GetId());
+                }
+                break;
+
+            default:
+                SYS_ERROR("0");
+                break;
+            }
+        }
+        return res;
     }
 }  // namespace ai

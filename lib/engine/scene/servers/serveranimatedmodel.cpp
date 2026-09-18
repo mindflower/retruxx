@@ -8,12 +8,29 @@
 #include <world.h>
 #include <core/log.h>
 #include <file/fileserver.h>
+#include <core/scoped_ptr.h>
+#include <file/filestream.h>
 
 #include "core/timer.h"
 #include "scene/nodes/sgnodeanimatedmodel.h"
 
 namespace m3d
 {
+    bool AnimatedModelsServer::SortModelStatPred::operator()(ModelStat const& ms1, ModelStat const& ms2) const
+    {
+        // RVA 0x76D130 - most used models first.
+        return ms1.instanceCount > ms2.instanceCount;
+    }
+
+    namespace
+    {
+        // The report pads each column out to a fixed width.
+        CStr pad(int width)
+        {
+            return width > 0 ? CStr(' ', width) : CStr();
+        }
+    }  // namespace
+
     void AnimatedModelsServer::PostLoad()
     {
         for (const auto& model : m_models)
@@ -39,17 +56,195 @@ namespace m3d
 
     int AnimatedModelsServer::AddItem(char const* params, char const* id)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x772CD0 - loads the model named id out of the models XML the "file:" parameter points at: its model file,
+        // its per-action sounds, and the effects hung on its load points.
+        int const existing = GetItemByName(id, false);
+        if (existing != -1)
+        {
+            return existing;
+        }
+
+        DataServer::Proto proto = PROTO_NONE;
+        int paramsPos = 0;
+        ParseProto(params, &proto, &paramsPos);
+        if (proto != PROTO_FILE)
+        {
+            // NOTE: the message is indexed by the protocol, so anything but PROTO_NONE prints it with the first
+            // characters cut off.
+            M3D_LOG_INFO(CStr("protocol is not supported " + static_cast<int>(proto)));
+            return -1;
+        }
+
+        char const* const fileName = params + paramsPos;
+        int shadowed = 0;
+        int winded = 0;
+        int tessellate = 0;
+        int trackland = 0;
+        CVector bBoxMin = ZeroVector;
+        CVector bBoxMax = ZeroVector;
+        bool composite = false;
+        bool passable = false;
+
+        CStr err;
+        ref_ptr xmlFile = ReadXmlFile(fileName, &err);
+        if (!xmlFile)
+        {
+            M3D_LOG_ERR("ServerAnimatedModel: " + err);
+            return -1;
+        }
+
+        ref_ptr modelNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        xmlFile->GetFirstChild(modelNode, "AnimatedModels");
+        if (modelNode->IsEmpty())
+        {
+            return -1;
+        }
+        for (modelNode->GetFirstChild(modelNode, "model"); !modelNode->IsEmpty();
+             modelNode->GetNextSibling(modelNode, "model"))
+        {
+            if (!strcmp(modelNode->GetAttribute("id"), id))
+            {
+                break;
+            }
+        }
+        if (modelNode->IsEmpty())
+        {
+            return -1;
+        }
+
+        CStr modelFileName = modelNode->GetAttribute("file");
+        SafeIntAttrib(shadowed, modelNode, "shadow");
+        SafeIntAttrib(winded, modelNode, "windwavy");
+        SafeIntAttrib(tessellate, modelNode, "tessellate");
+        SafeIntAttrib(trackland, modelNode, "trackland");
+        SafeBoolAttrib(composite, modelNode, "composite");
+        SafeBoolAttrib(passable, modelNode, "passable");
+        bool const hasBBox =
+            SafeVectorAttrib(bBoxMin, modelNode, "bBoxMin") && SafeVectorAttrib(bBoxMax, modelNode, "bBoxMax");
+
+        auto* const model = new DynamicModel;
+
+        // Per-action sounds.
+        ref_ptr soundNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        for (modelNode->GetFirstChild(soundNode, "sound"); !soundNode->IsEmpty();
+             soundNode->GetNextSibling(soundNode, "sound"))
+        {
+            char const* const action = soundNode->GetAttribute("action");
+            char const* const soundId = soundNode->GetAttribute("id");
+            char const* const loopedStr = soundNode->GetAttribute("looped");
+            int const looped = loopedStr ? atoi(loopedStr) : 0;
+
+            AnimAction const* animAction = GetAnimActions();
+            for (int actionNum = 0; animAction->m_name; ++animAction, ++actionNum)
+            {
+                if (!strcmp(animAction->m_name, action))
+                {
+                    model->m_soundIds[actionNum] = soundId;
+                    model->m_soundsLooped[actionNum] = looped;
+                    Application::g_pApp->m_cachedSoundIDs.insert(model->m_soundIds[actionNum]);
+                    break;
+                }
+            }
+        }
+
+        model->m_mdl[0] = new AnimatedModel;
+        model->m_mdl[0]->m_composite = composite;
+        model->m_mdl[0]->m_passable = passable;
+        if (!model->m_mdl[0]->Load(modelFileName, true))
+        {
+            delete model;
+            return -1;
+        }
+        if (hasBBox)
+        {
+            Aabb& box = model->m_mdl[0]->m_box;
+            box.m_box[0] = bBoxMin.x;
+            box.m_box[1] = bBoxMin.y;
+            box.m_box[2] = bBoxMin.z;
+            box.m_box[3] = bBoxMax.x;
+            box.m_box[4] = bBoxMax.y;
+            box.m_box[5] = bBoxMax.z;
+        }
+
+        // Per-action attack frames, skin and cfg, plus the effects hung on the model's load points.
+        ref_ptr lpNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        for (modelNode->GetFirstChild(soundNode, "action"); !soundNode->IsEmpty();
+             soundNode->GetNextSibling(soundNode, "action"))
+        {
+            char const* const actionName = soundNode->GetAttribute("name");
+            int startAttackFrame = -1;
+            SafeIntAttrib(startAttackFrame, soundNode, "startAttackFrame");
+            int endAttackFrame = -1;
+            SafeIntAttrib(endAttackFrame, soundNode, "endAttackFrame");
+            int skinNum = -1;
+            SafeIntAttrib(skinNum, soundNode, "skin");
+            int cfgNum = -1;
+            SafeIntAttrib(cfgNum, soundNode, "cfg");
+
+            int actionNum = 0;
+            AnimAction const* animAction = GetAnimActions();
+            for (; animAction->m_name; ++animAction, ++actionNum)
+            {
+                if (!strcmp(animAction->m_name, actionName))
+                {
+                    break;
+                }
+            }
+            if (!animAction->m_name)
+            {
+                continue;
+            }
+
+            for (soundNode->GetFirstChild(lpNode, "lp"); !lpNode->IsEmpty(); lpNode->GetNextSibling(lpNode, "lp"))
+            {
+                char const* const lpName = lpNode->GetAttribute("id");
+                char const* const effectName = lpNode->GetAttribute("effect_id");
+                int restartOnAnimChange = 0;
+                SafeIntAttrib(restartOnAnimChange, lpNode, "restartOnAnimationChange");
+                int immediateRemove = 1;
+                SafeIntAttrib(immediateRemove, lpNode, "ImmediateRemove");
+
+                // NOTE: m_effectId is left as it is; PostLoad fills it in from the effect's name.
+                DynamicModel::auxEffectDesc desc;
+                desc.m_lpId = model->m_mdl[0]->GetLoadPointIdByName(lpName);
+                desc.m_lpName = lpName;
+                desc.m_effectName = effectName;
+                desc.m_restartOnAnimChange = restartOnAnimChange == 1;
+                desc.m_immediateRemove = immediateRemove == 1;
+                model->m_effects[actionNum].lpEffects.push_back(desc);
+            }
+
+            model->m_effects[actionNum].startAttackFrame = startAttackFrame;
+            model->m_effects[actionNum].endAttackFrame = endAttackFrame;
+            model->m_effects[actionNum].skinNum = skinNum;
+            model->m_effects[actionNum].cfgNum = cfgNum;
+        }
+
+        m_models.push_back(Model(model, modelFileName.c_str(), fileName, id));
+        int const handle = m_models.size() - 1;
+        SetItemProperty(handle, PROP_MODEL_CAST_SHADOW, &shadowed);
+        SetItemProperty(handle, PROP_MODEL_WIND_WAVY, &winded);
+        SetItemProperty(handle, PROP_MODEL_TESSELLATE, &tessellate);
+        SetItemProperty(handle, PROP_MODEL_TRACK_LAND, &trackland);
+        return handle;
     }
 
     int AnimatedModelsServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76D320 - models are never removed one by one; Release frees them all.
+        return 1;
     }
 
-    bool AnimatedModelsServer::IsBonePresentsInModel(char const*, char const*)
+    bool AnimatedModelsServer::IsBonePresentsInModel(char const* modelname, char const* bonename)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76FF30
+        int const item = GetItemByName(modelname, true);
+        if (item == -1)
+        {
+            return false;
+        }
+        auto* const dynamicModel = (DynamicModel*)m_models[item].m_ptr;
+        return dynamicModel->m_mdl[0]->GetLoadPointIdByName(bonename) >= 0;
     }
 
     void AnimatedModelsServer::RenderItem(int, void*)
@@ -76,9 +271,101 @@ namespace m3d
         node->SetProperty(2, &list);
     }
 
-    bool AnimatedModelsServer::ReportServerInfo(char const*)
+    bool AnimatedModelsServer::ReportServerInfo(char const* filename)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x773B40 - writes a table of every loaded model with how many nodes in the scene graph use it, sorted by
+        // that count.
+        retruxx::vector<ModelStat> modelStats(m_models.size());
+        for (unsigned i = 0; i < modelStats.size(); ++i)
+        {
+            modelStats[i].handle = i;
+            modelStats[i].instanceCount = 0;
+        }
+
+        retruxx::vector<Object*> stack;
+        stack.push_back(pClient->GetWorld().GetGraph().GetRootNode());
+        while (!stack.empty())
+        {
+            Object* const obj = stack.back();
+            stack.pop_back();
+            for (Object* child = obj->GetFirstChild(); child; child = child->GetNextSibling())
+            {
+                auto* const node = static_cast<SgNode*>(child);
+                if (node->GetServer() == this)
+                {
+                    ++modelStats[node->GetServerHandle()].instanceCount;
+                }
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+        std::sort(modelStats.begin(), modelStats.end(), SortModelStatPred());
+
+        scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
+        if (!stream->Open(filename, fs::IStream::OPEN_WRITE))
+        {
+            return false;
+        }
+
+        *stream << "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-\n";
+        *stream << "-==\n";
+        *stream << "-== Log category  : Loaded models info\n";
+        *stream << "-== Build         : " << "retruxx - release version build v0.01" << "\n";
+        *stream << "-==\n";
+        *stream << "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-\n\n";
+        *stream << "** General stats **\n";
+
+        CStr const levelName = NameFromFileName(g_Kernel->GetEngineCfg().m_levFileName.GetS());
+        *stream << "Level name: " << levelName.substr(0, levelName.rfind('.')).c_str() << "\n";
+        *stream << "Total models count: " << static_cast<int>(m_models.size()) << "\n\n";
+        *stream << "** Models **\n";
+        *stream << "   Id                          InstanceCount   MeshCount   PolyCount   FileName\n";
+        *stream << "--------------------------------------------------------------------------------------------------\n";
+
+        unsigned totalInstanceCount = 0;
+        unsigned totalMeshCount = 0;
+        unsigned totalMeshCountPerInstance = 0;
+        for (unsigned i = 0; i < modelStats.size(); ++i)
+        {
+            AnimatedModel* mdl = nullptr;
+            GetItemProperty(modelStats[i].handle, PROP_INTERNAL_GETMODEL, &mdl);
+            CStr outStr = "   ";
+            if (!mdl)
+            {
+                continue;
+            }
+
+            unsigned facesCount = 0;
+            for (unsigned mesh = 0; mesh < mdl->m_numMeshes; ++mesh)
+            {
+                facesCount += mdl->m_meshes[mesh].m_numFaces;
+            }
+
+            outStr += m_models[modelStats[i].handle].m_name;
+            outStr += pad(31 - outStr.length());
+            outStr += CStr(modelStats[i].instanceCount);
+            outStr += pad(47 - outStr.length());
+            outStr += CStr(mdl->m_numMeshes);
+            outStr += pad(59 - outStr.length());
+            outStr += CStr(facesCount);
+            outStr += pad(72 - outStr.length());
+            outStr += m_models[modelStats[i].handle].m_fileName;
+            outStr += CStr("\n");
+            *stream << outStr.c_str();
+
+            totalMeshCount += mdl->m_numMeshes;
+            totalInstanceCount += modelStats[i].instanceCount;
+            totalMeshCountPerInstance += modelStats[i].instanceCount * mdl->m_numMeshes;
+        }
+
+        *stream << "--------------------------------------------------------------------------------------------------\n\n";
+        *stream << "Total instance count: " << totalInstanceCount << "\n";
+        *stream << "Total mesh count (for 1 instance of every model): " << totalMeshCount << "\n";
+        *stream << "Total mesh count (for each instance of every model): " << totalMeshCountPerInstance << "\n";
+        stream->Close();
+        return true;
     }
 
     int AnimatedModelsServer::Init()
@@ -133,12 +420,32 @@ namespace m3d
 
     int AnimatedModelsServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x775250 - models are only ever loaded, never written back.
+        return 1;
     }
 
     int AnimatedModelsServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x774680
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            delete (DynamicModel*)model.m_ptr;
+            model.m_ptr = nullptr;
+        }
+        m_MeshMaterialManager.Release();
+        m_models.clear();
+        if (m_impostorVs)
+        {
+            m_impostorVs->Release();
+            m_impostorVs = nullptr;
+        }
+        if (m_impostorPs)
+        {
+            m_impostorPs->Release();
+            m_impostorPs = nullptr;
+        }
+        return 1;
     }
 
     AnimatedModelsServer::AnimatedModelsServer()
@@ -264,7 +571,8 @@ namespace m3d
             return 1;
         }
         }
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x774BC0 - properties this server does not know about.
+        return 0;
     }
 
     namespace
@@ -803,14 +1111,30 @@ namespace m3d
         }
     }
 
-    int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned)
+    int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned numNodes)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8F45E0 - hands the sun direction and every mesh of at least 10 faces to the shadow manager, which draws
+        // the stencil shadows.
+        if (!M3D_KERNEL->GetEngineCfg().m_g_stencilShadows.GetB())
+        {
+            return 1;
+        }
+        m_profiler->StartCountdown();
+        if (numNodes)
+        {
+            // ShadowManager is not reimplemented yet, so the casters cannot be collected.
+            RETRUXX_NOT_IMPLEMENTED;
+        }
+        m_profiler->EndCountdown();
+        return 1;
     }
 
     AnimatedModelsServer::~AnimatedModelsServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x775200
+        delete m_ShadowMan;
+        m_ShadowMan = nullptr;
+        Release();
     }
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
@@ -982,7 +1306,8 @@ namespace m3d
             }
             return 1;
         }
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76F9F0 - properties this server does not know about.
+        return 0;
     }
 
     void AnimatedModelsServer::RegisterNode(SgNode* node)
@@ -1537,7 +1862,8 @@ namespace m3d
             M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
             break;
         }
-        default: RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8F3D60 - any other mesh type keeps the buffers the caller set up.
+        default: break;
         }
 
         if (shader)

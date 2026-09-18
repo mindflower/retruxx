@@ -6,6 +6,11 @@
 #include <math/vector2.h>
 #include <renderer/i_renderer.h>
 
+namespace ai
+{
+    class VehiclePart;
+}
+
 namespace m3d
 {
     class DecalSource
@@ -17,6 +22,8 @@ namespace m3d
         friend class Decal;
         // DecalsList measures a new decal against the last one placed.
         friend class DecalsList;
+        // VehiclePart writes the decals it carries into a save and into its map-passage data.
+        friend class ai::VehiclePart;
 
     private:
         CVector center;
@@ -31,6 +38,8 @@ namespace m3d
     {
         // DecalsList fills these in when a decal is placed in the pools.
         friend class DecalsList;
+        // VehiclePart writes the decals it carries into a save and into its map-passage data.
+        friend class ai::VehiclePart;
 
     private:
         DecalSource source;

@@ -196,6 +196,8 @@ namespace ai
         friend class ObjContainer;
         // Vehicle::Blow detaches a wheel from its parent directly.
         friend class Vehicle;
+        // Chest clears the parent id of the objects it takes in and gives up directly.
+        friend class Chest;
         // Settlement detaches its locations, guns and teams directly.
         friend class Settlement;
         // BreakableObject::RemoveChild clears a light child's parent id directly.

@@ -30,6 +30,8 @@ namespace ai
 
     class Building : public ai::Obj
     {
+        // BuildingPrototypeInfo::CreateTargetObject constructs a plain Building.
+        friend class BuildingPrototypeInfo;
     protected:
         virtual  ~Building() override /* 0x00 */;
 

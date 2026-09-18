@@ -42,6 +42,8 @@ namespace ai
     {
         // DynamicQuestHunt::ConsiderPlayerKill reads the quest state directly.
         friend class DynamicQuestHunt;
+        // DynamicQuestManager::CreateQuest fills in the new quest's target, hirer and reward.
+        friend class DynamicQuestManager;
 
     protected:
         virtual  ~DynamicQuest() override = 0 /* 0x00 */;

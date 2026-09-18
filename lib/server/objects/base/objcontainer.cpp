@@ -15,13 +15,26 @@
 
 #include "config.h"
 #include "level.h"
+#include "server/objects/player.h"
+#include "server/objects/vehicle.h"
+#include "server/relationship.h"
+#include "server/statistic/statisticmanager.h"
+
+#include <core/ref_ptr.h>
+#include <core/scoped_ptr.h>
+#include <file/fileserver.h>
+#include <file/filestream.h>
 #include "world.h"
 #include "core/timer.h"
 #include "server/passagedata.h"
 
 void ShowCurrentStack()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x75C0F0 - appends the current call stack to the exception log (falling back to stderr), by
+    // capturing a CONTEXT that points at this function and handing it to ShowStackRM together with a
+    // duplicated handle of the calling thread. ShowStackRM - the symbol-resolving stack walker itself -
+    // has not been reimplemented, so there is nothing to call and this stays empty; it is only ever used
+    // to add detail to the two fatal paths below, which log and abort on their own.
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, CreateNewObject)
@@ -43,7 +56,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjId)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, size)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    context->pushInt(objContainer->size());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetEntityByObjName)
@@ -70,7 +85,12 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetPrototypeId)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, MessageBox)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    auto* pPlayer = (ai::Obj*)context->asObject(3, "Obj");
+    auto command = context->asInt(1);
+    auto textId = context->asInt(2);
+    objContainer->MessageBoxA(command, textId, pPlayer);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetTolerance)
@@ -95,7 +115,12 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetTolerance)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IncTolerance)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    context->asObject(0, "ObjContainer");
+    auto first = context->asInt(1);
+    auto second = context->asInt(2);
+    auto increment = context->asFloat(3);
+    ai::theRelationship->IncTolerance(first, second, increment);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, SetGameTime)
@@ -123,42 +148,62 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetGameTime)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Get24HourTime)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    auto time = objContainer->getGameTime().asAIParam24Hour();
+    context->pushAIParam(time);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, PauseGameTime)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    objContainer->PauseGameTime();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, UnpauseGameTime)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    objContainer->UnpauseGameTime();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, GetHeight)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    auto x = context->asFloat(1);
+    auto z = context->asFloat(2);
+    context->pushFloat(objContainer->GetHeight(x, z));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, Dump)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    objContainer->Dump();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, DumpPhysicInfo)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    CStr fileName = context->asString(1);
+    objContainer->DumpPhysicInfo(fileName);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, AllowSave)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    objContainer->AllowSave(context->asBool(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ObjContainer, IsSaveAllowed)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* objContainer = (ai::ObjContainer*)context->asObject(0, "ObjContainer");
+    context->pushBool(objContainer->IsSaveAllowed());
+    return 1;
 }
 
 namespace ai
@@ -193,7 +238,8 @@ namespace ai
 
     long long GameTime::asInt64() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D110
+        return m_milliSeconds;
     }
 
     void GameTime::operator+=(float gameTimeSeconds)
@@ -203,7 +249,7 @@ namespace ai
 
     m3d::AIParam GameTime::asAIParam() const
     {
-        // TODO: generated code
+        // RVA 0x630F10
         // Extract time components from milliseconds
         int64_t const totalMilliseconds = m_milliSeconds;
 
@@ -244,26 +290,34 @@ namespace ai
 
     float GameTime::GameDiff(ObjContainer const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D170 - the elapsed game time expressed in real seconds.
+        // NOTE: the container argument is never used.
+        return static_cast<float>(
+            static_cast<double>(m_milliSeconds - m_milliSeconds0) / ai::theGlobProp.m_gameTimeMult * 0.001);
     }
 
-    GameTime::GameTime(int, int, int, int, int)
+    GameTime::GameTime(int hour, int minute, int day, int month, int year)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62E020
+        setExpanded(hour, minute, day, month, year);
     }
 
-    GameTime::GameTime(long long)
+    GameTime::GameTime(long long milliSeconds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62DAF0
+        m_milliSeconds = milliSeconds;
+        m_milliSeconds0 = milliSeconds;
     }
 
     GameTime::GameTime()
     {
     }
 
-    void GameTime::setInt64(long long)
+    void GameTime::setInt64(long long milliSeconds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D0F0 - setting the time also resets the point the Diff functions measure from.
+        m_milliSeconds = milliSeconds;
+        m_milliSeconds0 = milliSeconds;
     }
 
     void GameTime::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
@@ -274,9 +328,14 @@ namespace ai
 
     void GameTime::setExpanded(int hour, int minute, int day, int month, int year)
     {
-        //TODO: check this
-        uint64_t res = (uint64_t)60000 *
-            (uint64_t)(minute + 60 * (uint64_t)(hour + 24 * (uint64_t)(day + 31 * (uint64_t)(month + 12 * year) - 32)));
+        // RVA 0x62DB10 - every field is clamped into range first; a month has 30 days here and a year 12 months.
+        // The year is not clamped at all.
+        int64_t const mth = month <= 0 ? 1 : (month > 12 ? 12 : month);
+        int64_t const d = day <= 0 ? 1 : (day > 30 ? 30 : day);
+        int64_t const h = hour < 0 ? 0 : (hour > 23 ? 23 : hour);
+        int64_t const min = minute < 0 ? 0 : (minute > 59 ? 59 : minute);
+
+        int64_t const res = 60000 * (min + 60 * (h + 24 * (d + 31 * (mth + 12LL * year) - 32)));
         m_milliSeconds = res;
         m_milliSeconds0 = res;
     }
@@ -288,12 +347,32 @@ namespace ai
 
     m3d::AIParam GameTime::asAIParam24Hour() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x630D70 - the time of day alone, as hour, minute and second.
+        int64_t const MILLISECONDS_PER_YEAR = 32140800000LL;
+        int64_t const MILLISECONDS_PER_MONTH = 2678400000LL;
+        int64_t const MILLISECONDS_PER_DAY = 86400000LL;
+        int64_t const MILLISECONDS_PER_HOUR = 3600000LL;
+        int64_t const MILLISECONDS_PER_MINUTE = 60000LL;
+
+        int64_t const millisecondsInDay =
+            m_milliSeconds % MILLISECONDS_PER_YEAR % MILLISECONDS_PER_MONTH % MILLISECONDS_PER_DAY;
+
+        std::vector<int> timeComponents;
+        timeComponents.reserve(3);
+        timeComponents.push_back(static_cast<int>(millisecondsInDay / MILLISECONDS_PER_HOUR));
+        timeComponents.push_back(static_cast<int>(millisecondsInDay % MILLISECONDS_PER_HOUR / MILLISECONDS_PER_MINUTE));
+        timeComponents.push_back(
+            static_cast<int>(millisecondsInDay % MILLISECONDS_PER_HOUR % MILLISECONDS_PER_MINUTE / 1000));
+
+        return {timeComponents};
     }
 
-    void GameTime::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void GameTime::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62DCA0 - NOTE: both attributes are named after seconds but hold milliseconds, matching
+        // what LoadFromXML reads back.
+        xmlNode->SetAttribute("Seconds", CStr(m_milliSeconds).c_str());
+        xmlNode->SetAttribute("Seconds0", CStr(m_milliSeconds0).c_str());
     }
 
     ObjContainer::Node::Node()
@@ -313,6 +392,7 @@ namespace ai
 
     void ObjContainer::InnerContainer::EraseNode(Node& node, bool deleteObj)
     {
+        // RVA 0x62FE20
         if (node.m_totalObjects < MAX_OBJECTS_IN_CELL)
         {
             m_freePlaces.push_back(node.m_id);
@@ -362,7 +442,6 @@ namespace ai
         {
             if (node.m_value)
             {
-                // TODO: check this
                 delete node.m_value;
             }
         }
@@ -413,21 +492,58 @@ namespace ai
 
     bool ObjContainer::InnerContainer::AddWithOwnObjId(Obj* pObj, int id)
     {
+        // RVA 0x62E840 - puts an object back into the slot it had when it was saved. The high bits of the id
+        // carry how many objects that slot has already held, so a stale id is recognised and refused.
         M3D_ASSERT(id >= 0);
 
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const nodeId = id & MAX_OBJECTS_MASK;
+        auto const totalObjects = id >> BITS_IN_MAX_OBJECTS;
+        {
+            auto const& existing = m_records[nodeId];
+            if (totalObjects == existing.m_totalObjects && existing.m_isValid && existing.m_value)
+            {
+                return false;
+            }
+        }
+
+        auto& node = m_records[nodeId];
+        M3D_ASSERT(!node.m_isValid);
+
+        node.m_totalObjects = totalObjects;
+
+        auto const freePlace = std::find(m_freePlaces.begin(), m_freePlaces.end(), nodeId);
+        if (freePlace != m_freePlaces.end())
+        {
+            m_freePlaces.erase(freePlace);
+        }
+
+        node.m_value = pObj;
+        node.m_isValid = true;
+        if (m_size)
+        {
+            m_records[m_lastNodeId].m_nextId = nodeId;
+            node.m_prevId = m_lastNodeId;
+        }
+        else
+        {
+            m_firstNodeId = nodeId;
+        }
+        ++m_size;
+        m_lastNodeId = nodeId;
+        return true;
     }
 
     bool ObjContainer::InnerContainer::empty() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D740
+        return m_size == 0;
     }
 
     Obj* ObjContainer::InnerContainer::GetObjById(int objId)
     {
+        // RVA 0x40C350
         if (objId >= 0)
         {
-            // TODO: check this
             auto const& record = m_records[objId & MAX_OBJECTS_MASK];
             if (objId >> BITS_IN_MAX_OBJECTS == record.m_totalObjects && record.m_isValid)
             {
@@ -456,7 +572,8 @@ namespace ai
 
     unsigned ObjContainer::InnerContainer::size() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D730
+        return m_size;
     }
 
     ObjContainer::Node* ObjContainer::InnerContainer::_GetNodeById(int id)
@@ -476,22 +593,27 @@ namespace ai
 
     void ObjContainer::const_iterator::_Inc()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40BFA0
+        m_nodeId = (*m_pRecords)[m_nodeId].m_nextId;
     }
 
     Obj const* ObjContainer::const_iterator::operator*() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6067D0
+        return (*m_pRecords)[m_nodeId].m_value;
     }
 
     Obj const* ObjContainer::const_iterator::operator->() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62E780
+        return (*m_pRecords)[m_nodeId].m_value;
     }
 
-    bool ObjContainer::const_iterator::operator==(const_iterator const&) const
+    bool ObjContainer::const_iterator::operator==(const_iterator const& rhs) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40BF10 - NOTE: only the node id is compared; two iterators into different containers
+        // that happen to sit on the same slot compare equal.
+        return m_nodeId == rhs.m_nodeId;
     }
 
     bool ObjContainer::const_iterator::operator!=(const_iterator const& rhs) const
@@ -501,7 +623,9 @@ namespace ai
 
     ObjContainer::const_iterator& ObjContainer::const_iterator::operator++()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40BF80
+        m_nodeId = (*m_pRecords)[m_nodeId].m_nextId;
+        return *this;
     }
 
     ObjContainer::iterator::iterator(retruxx::vector<Node>* pRecords, int nodeId) :
@@ -516,7 +640,10 @@ namespace ai
 
     ObjContainer::iterator ObjContainer::iterator::operator++(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40BF30
+        iterator const old = *this;
+        m_nodeId = (*m_pRecords)[m_nodeId].m_nextId;
+        return old;
     }
 
     ObjContainer::iterator& ObjContainer::iterator::operator++()
@@ -547,43 +674,64 @@ namespace ai
 
     void ObjContainer::Purge()
     {
-        // TODO: check this
+        // RVA 0x630A40 - the end of a frame: everything queued for removal is unhooked from its parent, taken
+        // out of the name table and deleted, and then the objects that asked to start or stop updating are
+        // moved between the two lists.
         m_inPurge = true;
         m_numRemovalsLastFrame = 0;
 
         for (auto const objId : m_objIdsToRemove)
         {
-            auto* node = m_allObjects._GetNodeById(objId);
-            if (node && node->m_isValid && node->m_value)
+            if (static_cast<unsigned>(objId) >= m_allObjects.m_records.size())
             {
-                auto* obj = node->m_value;
+                continue;
+            }
+            auto& node = m_allObjects.m_records[objId];
+            if (!node.m_isValid)
+            {
+                continue;
+            }
 
-                ++m_numRemovalsLastFrame;
-                ;
-                auto* parent = obj->GetParent();
-                if (parent)
+            // NOTE: the object is used without a null check; a valid node is assumed to carry one.
+            auto* const obj = node.m_value;
+            ++m_numRemovalsLastFrame;
+
+            auto* const parent = obj->GetParent();
+            if (parent)
+            {
+                if (obj->m_hierarchyType)
                 {
-                    if (obj->m_hierarchyType)
-                    {
-                        parent->RemoveComponent(obj);
-                    }
-                    else
-                    {
-                        parent->RemoveChild(obj);
-                    }
+                    parent->RemoveComponent(obj);
                 }
                 else
                 {
-                    obj->SetParentInvalid();
+                    parent->RemoveChild(obj);
                 }
+            }
+            else
+            {
+                obj->SetParentInvalid();
+            }
 
-                m_nameToIdMap.erase(obj->GetName());
-                auto updatingObjId = node->m_value->m_updatingObjId;
-                m_allObjects.EraseNode(*node, true);
-                auto* updatingNode = m_updatingObjects._GetNodeById(updatingObjId & 0x3fff);
-                if (updatingNode)
+            CStr const name = obj->GetName();
+            if (!name.empty())
+            {
+                m_nameToIdMap.erase(name);
+            }
+
+            auto const updatingObjId = obj->m_updatingObjId;
+            m_allObjects.EraseNode(node, true);
+
+            if (updatingObjId != -1)
+            {
+                auto const updatingNodeId = static_cast<unsigned>(updatingObjId & MAX_OBJECTS_MASK);
+                if (updatingNodeId < m_updatingObjects.m_records.size())
                 {
-                    m_updatingObjects.EraseNode(*updatingNode, false);
+                    auto& updatingNode = m_updatingObjects.m_records[updatingNodeId];
+                    if (updatingNode.m_isValid)
+                    {
+                        m_updatingObjects.EraseNode(updatingNode, false);
+                    }
                 }
             }
         }
@@ -593,16 +741,14 @@ namespace ai
 
         for (auto const objId : m_objIdsToUpdate)
         {
-            AddObjToUpdate(GetEntityByObjId(objId));
+            _SetObjUpdating(objId);
         }
-
         m_objIdsToUpdate.clear();
 
         for (auto const objId : m_objIdsToNotUpdate)
         {
             _SetObjNotUpdating(objId);
         }
-
         m_objIdsToNotUpdate.clear();
     }
 
@@ -613,7 +759,8 @@ namespace ai
 
     ObjContainer::~ObjContainer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x632A60 - the objects go first; the bookkeeping containers clean themselves up.
+        Clear(true);
     }
 
     CStr ObjContainer::GetObjectFullName(CStr const& ObjectName) const
@@ -625,7 +772,20 @@ namespace ai
 
     void ObjContainer::RelinkGeomsToCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62F100 - dead objects, objects already queued for removal and objects sitting inside a
+        // repository keep their geoms where they are.
+        for (auto it = begin(); it != end(); ++it)
+        {
+            if (!it->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+            {
+                continue;
+            }
+            auto const flags = it->GetFlags();
+            if ((flags & 8) == 0 && (flags & 2) == 0 && !it->GetParentRepository())
+            {
+                ((PhysicObj*)*it)->RelinkGeomsToCollisionCells();
+            }
+        }
     }
 
     void ObjContainer::AddObjToUpdate(Obj* obj)
@@ -642,12 +802,15 @@ namespace ai
 
     m3d::Object* ObjContainer::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x633BE0 - NOTE: the copy constructor raises a SysError, so cloning a container never
+        // returns.
+        return new ObjContainer(*this);
     }
 
     void ObjContainer::PermitCreation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D290
+        --m_denyCreationCount;
     }
 
     int ObjContainer::CreateNewObjectWithSuspendedPostLoad(
@@ -677,9 +840,28 @@ namespace ai
         return ObjContainer::iterator(&m_updatingObjects.m_records, m_updatingObjects.m_firstNodeId);
     }
 
-    void ObjContainer::LoadNodeStatesFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*)
+    void ObjContainer::LoadNodeStatesFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62E440 - the counterpart of SaveNodeStatesToXml.
+        ref_ptr nodeXml = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(nodeXml, "Node"); !nodeXml->IsEmpty(); nodeXml->GetNextSibling(nodeXml, "Node"))
+        {
+            char const* const id = nodeXml->GetAttribute("Id");
+            if (!id)
+            {
+                continue;
+            }
+            unsigned const nodeId = atoi(id);
+            if (nodeId >= MAX_OBJECTS)
+            {
+                continue;
+            }
+            char const* const totalObjects = nodeXml->GetAttribute("TotalObjects");
+            if (totalObjects)
+            {
+                m_allObjects.m_records[nodeId].m_totalObjects = atoi(totalObjects);
+            }
+        }
     }
 
     bool ObjContainer::IsSaveAllowed() const
@@ -689,22 +871,51 @@ namespace ai
 
     void ObjContainer::PauseGameTime()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D1D0
+        m_GameTimePaused = true;
     }
 
     void ObjContainer::DeleteAll()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6317C0 - every object is asked to go; the actual deletion happens in the next Purge.
+        for (auto it = begin(); it != end(); ++it)
+        {
+            it->Remove();
+        }
+        M3D_APP->ImmediateMessage(66543, 0, 0, 0, 0, {}, {});
     }
 
-    void ObjContainer::PassToMap(CStr const&, CStr const&, int, bool)
+    void ObjContainer::PassToMap(CStr const& mapName, CStr const& locationName, int angle, bool bImmediate)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x633530 - starts the move to another map. Unless it is asked to happen at once, the
+        // player's vehicle is made invulnerable and the screen fades first; Update finishes the job.
+        // NOTE: a passage that is already in flight is overwritten and its PassageData leaked.
+        ai::thePassageData = new PassageData;
+        ai::thePassageData->m_mapName = mapName;
+        ai::thePassageData->m_locationName = locationName;
+        ai::thePassageData->m_angle = angle;
+        ai::thePassageData->m_fadingStartTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+
+        M3D_LOG_INFO(
+            "Passing to map '" + mapName + CStr("', location '") + locationName + CStr("', angle = ") + CStr(angle) +
+            CStr(", immediate = ") + CStr(bImmediate));
+
+        if (bImmediate)
+        {
+            _PassToMapAfterFading();
+            return;
+        }
+        if (ai::thePlayer && ai::thePlayer->GetVehicle())
+        {
+            ai::thePlayer->GetVehicle()->setGodMode(true);
+        }
+        M3D_APP->EnqueueMessage(66566, 0, 0, 0, 0, {}, {});
     }
 
-    float ObjContainer::GetHeight(float, float) const
+    float ObjContainer::GetHeight(float x, float z) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D260 - the landscape height, straight out of the engine config.
+        return M3D_KERNEL->GetEngineCfg().GetHeight(x, z);
     }
 
     m3d::Class* ObjContainer::GetBaseClass()
@@ -712,19 +923,36 @@ namespace ai
         return RT_CLASS_LOCAL(Object);
     }
 
-    int ObjContainer::GetPrototypeId(char const*) const
+    int ObjContainer::GetPrototypeId(char const* prototypeName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D7D0
+        return ai::thePrototypeManager->GetPrototypeId(CStr(prototypeName));
     }
 
     void ObjContainer::Dump()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62F430
+        M3D_LOG_INFO("**************** Dumping all objects *************************************");
+        M3D_LOG_INFO("Total objects count: " + CStr(m_allObjects.size()));
+        for (auto it = begin(); it != end(); ++it)
+        {
+            M3D_LOG_INFO(it->GetDebugDescription());
+        }
+        M3D_LOG_INFO("**************** End dumping all objects *********************************");
+
+        M3D_LOG_INFO("**************** Dumping updating objects ********************************");
+        M3D_LOG_INFO("Updating objects count: " + CStr(m_updatingObjects.size()));
+        for (auto it = updatingBegin(); it != updatingEnd(); ++it)
+        {
+            M3D_LOG_INFO(it->GetDebugDescription());
+        }
+        M3D_LOG_INFO("**************** End dumping updating objects ****************************");
     }
 
-    void ObjContainer::SetGameTimeInt64(long long)
+    void ObjContainer::SetGameTimeInt64(long long seconds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D1F0
+        m_GameTime.setInt64(seconds);
     }
 
     int ObjContainer::GetObjIdByObjName(CStr const& name)
@@ -742,9 +970,10 @@ namespace ai
         return -1;
     }
 
-    float ObjContainer::GetTolerance(int, int) const
+    float ObjContainer::GetTolerance(int PlayerID1, int PlayerID2) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D1B0
+        return ai::theRelationship->GetTolerance(PlayerID1, PlayerID2);
     }
 
     void ObjContainer::SetGameTime(int hour, int minute, int day, int month, int year)
@@ -759,22 +988,35 @@ namespace ai
 
     void ObjContainer::TransferPhysicParamsToSceneGraph()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62EF80
+        for (auto it = begin(); it != end(); ++it)
+        {
+            it->TransferPhysicParamsToSceneGraphNode();
+        }
     }
 
     void ObjContainer::UnpauseGameTime()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D1E0
+        m_GameTimePaused = false;
     }
 
     void ObjContainer::UnlinkGeomsFromCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62F0A0
+        for (auto it = begin(); it != end(); ++it)
+        {
+            if (it->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+            {
+                ((PhysicBody*)*it)->UnlinkGeomFromCollisionCells();
+            }
+        }
     }
 
-    void ObjContainer::SetTolerance(int, int, float)
+    void ObjContainer::SetTolerance(int PlayerID1, int PlayerID2, float Tolerance)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D1A0
+        ai::theRelationship->SetTolerance(PlayerID1, PlayerID2, Tolerance);
     }
 
     bool ObjContainer::AddWithOwnObjId(Obj* pObj)
@@ -824,24 +1066,56 @@ namespace ai
         return m_GameTime.asAIParam();
     }
 
-    void ObjContainer::AddObjToPostCollideList(Obj*)
+    void ObjContainer::AddObjToPostCollideList(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5FDDE0
+        m_objectsToPostCollide.push_back(pObj);
     }
 
-    void ObjContainer::DumpPhysicInfo(CStr const&) const
+    void ObjContainer::DumpPhysicInfo(CStr const& fileName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62F180 - writes one xml file describing every physic object and every physic body, for
+        // debugging. Both kinds land side by side under <Root>.
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!fileStream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_WRITE))
+        {
+            return;
+        }
+
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+        ref_ptr ndRoot = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Root");
+        xmlFile->AddChild(ndRoot);
+
+        for (auto it = begin(); it != end(); ++it)
+        {
+            if (it->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
+            {
+                ref_ptr ndObj = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "PhysicObj");
+                ndRoot->AddChild(ndObj);
+                ((PhysicObj const*)*it)->DumpPhysicInfo(xmlFile, ndObj);
+            }
+            if (it->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+            {
+                ref_ptr ndBody = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "PhysicBody");
+                ndRoot->AddChild(ndBody);
+                ((PhysicBody const*)*it)->DumpPhysicInfo(xmlFile, ndBody);
+            }
+        }
+
+        xmlFile->Write(*fileStream);
+        fileStream->Close();
     }
 
     long long ObjContainer::GetGameTimeInt64() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D220
+        return m_GameTime.asInt64();
     }
 
     unsigned ObjContainer::GetNumUpdatingObjects() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x41D530
+        return m_updatingObjects.size();
     }
 
     bool ObjContainer::empty() const
@@ -856,18 +1130,53 @@ namespace ai
 
     void ObjContainer::DenyCreation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D280
+        ++m_denyCreationCount;
     }
 
-    void ObjContainer::LoadObjectNamesFromXML(CStr const&)
+    void ObjContainer::LoadObjectNamesFromXML(CStr const& fileName)
     {
-        // TODO: implement ObjContainer::LoadObjectNamesFromXML
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x631C90 - reads the table that maps an object's internal name to the name shown to the
+        // player.
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!fileStream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
+        {
+            M3D_LOG_ERR("Error: cannot open " + fileName);
+            return;
+        }
+
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+        if (!xmlFile->Read(*fileStream))
+        {
+            M3D_LOG_ERR("Error: cannot parse " + fileName + CStr(" ( ") + CStr(xmlFile->GetError()) + CStr(" ) "));
+            return;
+        }
+        fileStream->Close();
+
+        ref_ptr rootNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(rootNode, "ObjectNames");
+        if (rootNode->IsEmpty())
+        {
+            M3D_LOG_ERR("Error: Tag <ObjectNames> not found in file: " + fileName);
+            return;
+        }
+
+        ref_ptr objectNode = xmlFile->CreateNode();
+        for (rootNode->GetFirstChild(objectNode, "Object"); !objectNode->IsEmpty();
+             objectNode->GetNextSibling(objectNode, "Object"))
+        {
+            CStr const name = objectNode->GetAttribute("Name");
+            CStr const cFullName = objectNode->GetAttribute("FullName");
+            CStr tFullName;
+            tFullName = cFullName;
+            m_ObjectFullNames.add(name, tFullName);
+        }
     }
 
     m3d::AIParam ObjContainer::Get24HourTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x631C70
+        return m_GameTime.asAIParam24Hour();
     }
 
     int ObjContainer::CreateEntityForLoad(int prototypeId, char const* name, int parentId, int objId)
@@ -906,9 +1215,10 @@ namespace ai
         return objId;
     }
 
-    void ObjContainer::MessageBoxA(int, int, Obj*)
+    void ObjContainer::MessageBoxA(int command, int textId, Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x631BB0 - NOTE: the player argument is ignored; the message goes to whoever listens.
+        M3D_APP->EnqueueMessage(66550, command, textId, 0, 0, {}, {});
     }
 
     void ObjContainer::AllowSave(bool allow)
@@ -928,17 +1238,19 @@ namespace ai
 
     ObjContainer::const_iterator ObjContainer::begin() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D750
+        return const_iterator(&m_allObjects.m_records, m_allObjects.m_firstNodeId);
     }
 
     int ObjContainer::GetNumRemovalsLastFrame() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x41D520
+        return m_numRemovalsLastFrame;
     }
 
     void ObjContainer::Update(float elapsedTime, unsigned workTime, bool bCinematic)
     {
-        // TODO: generated code
+        // RVA 0x632EC0
         // Reset debug counters
         PhysicBody::GetCountNodeRelinks()->SetI(0);
         PhysicObj::GetRelinksToCollisionCounter()->SetI(0);
@@ -965,18 +1277,17 @@ namespace ai
         // Update game time if not in cinematic mode and game time is not paused
         if (!bCinematic && !m_GameTimePaused)
         {
-            // TODO: check this time
             m_GameTime += ai::theGlobProp.m_gameTimeMult * elapsedTime;
 
             // Update global game time statistic
-            auto* gameTimeStat =
-                dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("GameTime", "TimeStatistic"));
+            auto* gameTimeStat = dynamic_cast<ai::TimeStatistic*>(
+                theStatisticManager->GetStatistic(ai::STATISTIC_GAME_TIME, "TimeStatistic"));
 
             gameTimeStat->m_bGlobalFlag = true;
             gameTimeStat->IncreaseByMilliseconds(ai::theGlobProp.m_gameTimeMult * elapsedTime * 1000.0);
 
             // Update level-specific game time statistic
-            auto levelStatName = "GameTime" + ai::pServer->GetWorld()->m_level->m_levelName;
+            auto levelStatName = ai::STATISTIC_GAME_TIME + ai::pServer->GetWorld()->m_level->m_levelName;
             auto* levelGameTimeStat =
                 dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic(levelStatName, "TimeStatistic"));
 
@@ -985,14 +1296,14 @@ namespace ai
         }
 
         // Update real time statistics (always updated)
-        auto* realTimeStat =
-            dynamic_cast<ai::TimeStatistic*>(theStatisticManager->GetStatistic("RealTime", "TimeStatistic"));
+        auto* realTimeStat = dynamic_cast<ai::TimeStatistic*>(
+            theStatisticManager->GetStatistic(ai::STATISTIC_REAL_TIME, "TimeStatistic"));
         realTimeStat->m_bGlobalFlag = true;
         uint64_t realTimeDelta = static_cast<uint64_t>(elapsedTime * 1000.0);
         realTimeStat->IncreaseByMilliseconds(realTimeDelta);
 
         // Update level-specific real time statistic
-        CStr levelRealTimeName("RealTime");
+        CStr levelRealTimeName(ai::STATISTIC_REAL_TIME);
         levelRealTimeName += ai::pServer->GetWorld()->m_level->m_levelName;
         TimeStatistic* levelRealTimeStat =
             dynamic_cast<ai::TimeStatistic*>(ai::theStatisticManager->GetStatistic(levelRealTimeName, "TimeStatistic"));
@@ -1062,19 +1373,61 @@ namespace ai
         return RT_CLASS_LOCAL(ObjContainer);
     }
 
-    void ObjContainer::SaveNodeStatesToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ObjContainer::SaveNodeStatesToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62E050 - records, for every slot that has ever held an object, how many it has held. That
+        // count is the high half of an object id, so a save can only be reloaded into a container whose
+        // slots agree.
+        for (auto const& node : m_allObjects.m_records)
+        {
+            if (node.m_totalObjects > 0)
+            {
+                ref_ptr nodeXml = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Node");
+                nodeXml->SetAttribute("Id", CStr(node.m_id).c_str());
+                nodeXml->SetAttribute("TotalObjects", CStr(node.m_totalObjects).c_str());
+                xmlNode->AddChild(nodeXml);
+            }
+        }
     }
 
-    void ObjContainer::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ObjContainer::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62ECF0 - only the roots are written out: an object that has a parent, sits in a repository
+        // or has already travelled to another map is saved by whoever owns it, or not at all.
+        if (m_SaveType == SAVE_FULL)
+        {
+            ref_ptr runtimeNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "ObjContainerRuntime");
+            SaveNodeStatesToXml(xmlFile, runtimeNode);
+            if (runtimeNode->HasChildOrAttribute())
+            {
+                xmlNode->AddChild(runtimeNode);
+            }
+        }
+
+        for (auto it = begin(); it != end(); ++it)
+        {
+            const_cast<Obj*>(*it)->m_bIsAlreadySaved = false;
+        }
+
+        for (auto it = begin(); it != end(); ++it)
+        {
+            if (it->m_parentId != -1 || it->GetParentRepository() || it->GetPassedToAnotherMapStatus())
+            {
+                continue;
+            }
+            ref_ptr objNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Object");
+            it->SaveToXML(xmlFile, objNode);
+            if (objNode->HasChildOrAttribute())
+            {
+                xmlNode->AddChild(objNode);
+            }
+        }
     }
 
     ObjContainer::const_iterator ObjContainer::end() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D770
+        return const_iterator(&m_allObjects.m_records, -1);
     }
 
     ObjContainer::iterator ObjContainer::end()
@@ -1084,7 +1437,14 @@ namespace ai
 
     void ObjContainer::LinkGeomsToCollisionCells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62F040
+        for (auto it = begin(); it != end(); ++it)
+        {
+            if (it->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+            {
+                ((PhysicBody*)*it)->LinkGeomToCollisionCells();
+            }
+        }
     }
 
     void ObjContainer::RelinkSceneGraphNodes()
@@ -1109,17 +1469,21 @@ namespace ai
 
     unsigned ObjContainer::size() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x41D540
+        return m_allObjects.size();
     }
 
     m3d::AIParam ObjContainer::GetObjList(char const*, CVector const&, float) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x631B80 - NOTE: never implemented in the shipped game. It ignores the class name, the
+        // position and the radius and hands back an empty AIParam.
+        return m3d::AIParam();
     }
 
-    void ObjContainer::IncTolerance(int, int, float)
+    void ObjContainer::IncTolerance(int PlayerID1, int PlayerID2, float IncTolerance)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D1C0
+        ai::theRelationship->IncTolerance(PlayerID1, PlayerID2, IncTolerance);
     }
 
     void ObjContainer::AddObjToNotUpdate(Obj* obj)
@@ -1166,12 +1530,14 @@ namespace ai
 
     ObjContainer::ObjContainer(ObjContainer const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x632C10 - the members are all default-constructed and then the copy is refused; nothing
+        // of the source container is ever read.
+        SYS_ERROR("!\"Not implemented\"");
     }
 
     void ObjContainer::_SetObjNotUpdating(int objId)
     {
-        // TODO: check this
+        // RVA 0x630520
         if (objId >= 0)
         {
             auto const& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
@@ -1223,17 +1589,47 @@ namespace ai
 
     void ObjContainer::_PassToMapAfterFading()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6326F0 - the fade is over: take the objects that travel with the player out of this
+        // container and tell the game to load the next map.
+        if (!ai::thePassageData->m_fadingStartTime)
+        {
+            return;
+        }
+        if (ai::thePlayer && ai::thePlayer->GetVehicle())
+        {
+            ai::thePlayer->GetVehicle()->setGodMode(false);
+        }
+        ai::thePassageData->TakeNeededObjectsFromObjContainer();
+        ai::theQuestStateManager->OnPlayerPassToMap(ai::thePassageData->m_mapName);
+        ai::thePassageData->m_fadingStartTime = 0;
+        M3D_APP->EnqueueMessage(66549, 0, 0, 0, 0, {}, {});
     }
 
-    void ObjContainer::_SetObjUpdating(int)
+    void ObjContainer::_SetObjUpdating(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6304D0
+        if (objId < 0)
+        {
+            return;
+        }
+        auto const& node = m_allObjects.m_records[objId & MAX_OBJECTS_MASK];
+        if (objId >> BITS_IN_MAX_OBJECTS != node.m_totalObjects || !node.m_isValid)
+        {
+            return;
+        }
+        auto* const value = node.m_value;
+        if (value && value->m_bMustBeUpdating && value->m_updatingObjId == -1)
+        {
+            value->m_updatingObjId = m_updatingObjects.Add(value);
+            value->m_bIsUpdating = true;
+        }
     }
 
-    void ObjContainer::_DeleteObj(Obj*&)
+    void ObjContainer::_DeleteObj(Obj*& pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62D820
+        delete pObj;
+        pObj = nullptr;
     }
 
     void SetObjects(ObjContainer* objects)

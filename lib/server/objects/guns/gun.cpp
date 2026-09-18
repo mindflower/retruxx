@@ -32,32 +32,44 @@ extern "C"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInCurrentCharge)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    context->pushInt(gun->GetShellsInCurrentCharge());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetShellsInCurrentCharge)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    gun->SetShellsInCurrentCharge(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInPool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    context->pushInt(gun->GetShellsInPool());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetShellsInPool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    gun->SetShellsInPool(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetChargeState)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    context->pushInt(gun->GetChargeState());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetChargeState)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    gun->SetChargeState(context->asInt(1));
+    return 1;
 }
 
 namespace ai
@@ -235,9 +247,17 @@ namespace ai
         }
     }
 
-    CStr GunPrototypeInfo::DamageType2Str(DamageType)
+    CStr GunPrototypeInfo::DamageType2Str(DamageType damageType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E0C20
+        for (auto const& entry : l_damageType2Str)
+        {
+            if (entry.m_type == damageType)
+            {
+                return entry.m_name;
+            }
+        }
+        return {};
     }
 
     GunPrototypeInfo::GunPrototypeInfo()
@@ -376,7 +396,8 @@ namespace ai
 
     float GunPrototypeInfo::GetDamageForOneShell() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3330 - guns that fire several shells at once override this.
+        return m_damage;
     }
 
     void GunPrototypeInfo::PostLoad()
@@ -401,12 +422,14 @@ namespace ai
 
     short GunPrototypeInfo::GetExplosionType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x601110
+        return m_explosionType;
     }
 
     bool GunPrototypeInfo::_bIsRapidFiring() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDCA0 - anything faster than 300 rounds a minute is drawn as a continuous stream.
+        return m_firingRate > 299.89999;
     }
 
     m3d::SgNode* Gun::GetBarrelNode() const
@@ -438,12 +461,20 @@ namespace ai
 
     void Gun::RenderGunDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2B10 - a green line five metres down the barrel.
+        CVector const from = _CalcRoughPosForNextShot();
+        CMatrix const shotMatrix = GetMatrixForShot(m_curBarrelIndex);
+        CVector to;
+        to.x = shotMatrix._21 * 5.0 + from.x;
+        to.y = shotMatrix._22 * 5.0 + from.y;
+        to.z = shotMatrix._23 * 5.0 + from.z;
+        M3D_APP->DrawLine(from, to, 0xFF00FF00);
     }
 
-    float Gun::EstimateDamage(CVector const&, retruxx::vector<int, retruxx::allocator<int>> const&) const
+    float Gun::EstimateDamage(CVector const& pos, retruxx::vector<int, retruxx::allocator<int>> const& exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2D70 - a shot is worth its full damage if it can get there at all.
+        return PointIsReachable(pos, exceptions) ? m_damage : 0.0f;
     }
 
     float Gun::EstimateDamage() const
@@ -453,12 +484,21 @@ namespace ai
 
     bool Gun::bIs360DegreesHoriz() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDC50
+        return m_rightStopAngle - m_leftStopAngle > 6.283184482025146;
     }
 
-    CStr Gun::GetPropertyName(int) const
+    CStr Gun::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E30B0
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return VehiclePart::GetPropertyName(id);
     }
 
     bool Gun::CanLookAtTarget() const
@@ -475,7 +515,8 @@ namespace ai
 
     m3d::Class* Gun::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDC90
+        return RT_CLASS_LOCAL(Gun);
     }
 
     bool Gun::isLookAtPoint(CVector const& lookAt, float eps) const
@@ -558,9 +599,14 @@ namespace ai
         _UpdateNodeFiringAction();
     }
 
-    void Gun::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void Gun::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2FB0
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        VehiclePart::GetPropertiesNames(Props);
     }
 
     void Gun::Update(float elapsedTime, unsigned workTime)
@@ -599,30 +645,171 @@ namespace ai
 
     float Gun::GetDamageForOneShell() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFB0
+        return m_damage;
     }
 
-    bool Gun::CanShotToTarget(int) const
+    bool Gun::CanShotToTarget(int targetId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E1FD0 - fire a trace ray down the barrel and see whether the first thing it meets
+        // belongs to the object being aimed at. A wheel answers for the vehicle it is fitted to.
+        if (targetId == -1)
+        {
+            return false;
+        }
+
+        static scoped_ptr<Ray> shotRay(ai::Ray::CreateObject(nullptr, 1000.0, nullptr));
+
+        CVector const gunPos = _CalcRoughPosForNextShot();
+        dGeomSetPosition(shotRay->GetGeomId(), gunPos.x, gunPos.y, gunPos.z);
+
+        CMatrix const shotMatrix = GetMatrixForShot(m_curBarrelIndex);
+        CVector fireDir;
+        fireDir.x = shotMatrix._21;
+        fireDir.y = shotMatrix._22;
+        fireDir.z = shotMatrix._23;
+        float const invLength =
+            1.0 / sqrt(fireDir.z * fireDir.z + fireDir.y * fireDir.y + fireDir.x * fireDir.x + 0.00000011920929);
+        fireDir.x = fireDir.x * invLength;
+        fireDir.y = fireDir.y * invLength;
+        fireDir.z = fireDir.z * invLength;
+        shotRay->SetDirection(fireDir);
+        shotRay->SetLength(m_firingRange);
+
+        dContact closestContact;
+        if (!ai::TraceLine(*shotRay, closestContact, 0, 0, 1, 1, nullptr, 1, 0))
+        {
+            return false;
+        }
+
+        auto* const hit = (m3d::Object*)dGeomGetData(closestContact.geom.g2);
+        if (!hit || !hit->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+        {
+            return false;
+        }
+        PhysicObj* const owner = ((PhysicBody*)hit)->GetOwner();
+        if (!owner)
+        {
+            return false;
+        }
+        if (!owner->IsKindOf(&ai::Wheel::m_classWheel))
+        {
+            return owner->GetId() == targetId;
+        }
+        Vehicle const* const vehicle = ((Wheel*)owner)->GetVehicle();
+        return vehicle && vehicle->GetId() == targetId;
     }
 
-    void Gun::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void Gun::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3030
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        VehiclePart::GetPropertiesIDs(Props);
     }
 
     bool Gun::PointIsReachableFromPosition(
-        CVector const&,
-        CVector const&,
-        retruxx::vector<int, retruxx::allocator<int>>) const
+        CVector const& newPosition,
+        CVector const& target,
+        retruxx::vector<int, retruxx::allocator<int>> exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2DB0 - the same test as PointIsReachable, but asking whether the gun could hit the
+        // target from somewhere it is not standing yet.
+        for (Obj const* obj = this; obj; obj = obj->GetParent())
+        {
+            exceptions.push_back(obj->GetId());
+        }
+
+        CVector const direction = target - newPosition;
+        float const distance =
+            sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        if (distance > m_firingRange)
+        {
+            return false;
+        }
+        return ai::PointIsReachable(newPosition, direction, target, exceptions);
     }
 
-    void Gun::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Gun::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E0CB0
+        VehiclePart::LoadRuntimeValues(xmlFile, xmlNode);
+
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const targetId = xmlNode->GetAttribute("TargetId");
+            if (targetId)
+            {
+                m_targetObjId = atoi(targetId);
+            }
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const curBarrelNum = xmlNode->GetAttribute("CurBarrelNum");
+            if (curBarrelNum)
+            {
+                int const value = atoi(curBarrelNum);
+                if (value >= 0)
+                {
+                    m_curBarrelIndex = value;
+                }
+            }
+        }
+        if (m_barrelNode)
+        {
+            Quaternion barrelNodeRotation = m_barrelNode->GetRotation();
+            m3d::SafeQuaternionAttrib(barrelNodeRotation, xmlNode, "BarrelNodeRotation");
+            m_barrelNode->SetRotation(barrelNodeRotation);
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const chargeState = xmlNode->GetAttribute("ChargeState");
+            if (chargeState)
+            {
+                m_ChargeState = static_cast<ChargeState>(atoi(chargeState));
+            }
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const currentReChargingTime = xmlNode->GetAttribute("CurrentReChargingTime");
+            if (currentReChargingTime)
+            {
+                m_CurrentReChargingTime = static_cast<float>(atof(currentReChargingTime));
+            }
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const shellsInCurrentCharge = xmlNode->GetAttribute("ShellsInCurrentCharge");
+            if (shellsInCurrentCharge)
+            {
+                int const value = atoi(shellsInCurrentCharge);
+                if (value >= 0)
+                {
+                    m_ShellsInCurrentCharge = value;
+                }
+            }
+        }
+        if (m_ShellsInCurrentCharge > m_ChargeSize)
+        {
+            m_ShellsInCurrentCharge = m_ChargeSize;
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const shellsInPool = xmlNode->GetAttribute("ShellsInPool");
+            if (shellsInPool)
+            {
+                int const value = atoi(shellsInPool);
+                if (value >= 0)
+                {
+                    m_ShellsInPool = value;
+                }
+            }
+        }
+        m3d::SafeBoolAttrib(m_bIsFiring, xmlNode, "IsFiring");
+        m3d::SafeBoolAttrib(m_bWasShot, xmlNode, "WasShot");
+        m3d::SafeBoolAttrib(m_bJustShot, xmlNode, "JustShot");
     }
 
     unsigned Gun::GetShellsInPool() const
@@ -770,11 +957,12 @@ namespace ai
     }
 
     float Gun::EstimateDamageFromPosition(
-        CVector const&,
-        CVector const&,
-        retruxx::vector<int, retruxx::allocator<int>> const&)
+        CVector const& position,
+        CVector const& pos,
+        retruxx::vector<int, retruxx::allocator<int>> const& exceptions)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2EC0
+        return PointIsReachableFromPosition(position, pos, exceptions) ? m_damage : 0.0f;
     }
 
     bool Gun::PointIsReachable(CVector const& pos, retruxx::vector<int, retruxx::allocator<int>> exceptions) const
@@ -878,9 +1066,15 @@ namespace ai
         return VehiclePart::GetPropertyId(propName);
     }
 
-    eGObjPropertySaveStatus Gun::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Gun::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2840
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return VehiclePart::GetPropertySaveStatus(id);
     }
 
     void Gun::Registration()
@@ -895,12 +1089,15 @@ namespace ai
 
     void Gun::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDE90 - the barrel node belongs to the map being left behind.
+        VehiclePart::SetPassedToAnotherMapStatus();
+        m_barrelNode = nullptr;
     }
 
     float Gun::GetDamage() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFA0
+        return m_damage;
     }
 
     void Gun::SetInitialHorizAngle(float angle)
@@ -921,7 +1118,8 @@ namespace ai
 
     float Gun::GetTurningSpeed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDF90
+        return m_turningSpeed;
     }
 
     bool Gun::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -978,7 +1176,8 @@ namespace ai
 
     DamageType Gun::GetDamageType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFC0
+        return m_damageType;
     }
 
     bool Gun::IsDurabilityEnoughForFiring() const
@@ -998,9 +1197,23 @@ namespace ai
         return GetPrototypeInfo()->m_WithShellsPoolLimit;
     }
 
-    void Gun::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Gun::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E0E70
+        VehiclePart::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("TargetId", CStr(m_targetObjId).c_str());
+        xmlNode->SetAttribute("CurBarrelNum", CStr(m_curBarrelIndex).c_str());
+        if (m_barrelNode)
+        {
+            xmlNode->SetAttribute("BarrelNodeRotation", CStr(m_barrelNode->GetRotation()).c_str());
+        }
+        xmlNode->SetAttribute("ChargeState", CStr(m_ChargeState).c_str());
+        xmlNode->SetAttribute("CurrentReChargingTime", CStr(m_CurrentReChargingTime).c_str());
+        xmlNode->SetAttribute("ShellsInCurrentCharge", CStr(m_ShellsInCurrentCharge).c_str());
+        xmlNode->SetAttribute("ShellsInPool", CStr(m_ShellsInPool).c_str());
+        xmlNode->SetAttribute("IsFiring", CStr(m_bIsFiring).c_str());
+        xmlNode->SetAttribute("WasShot", CStr(m_bWasShot).c_str());
+        xmlNode->SetAttribute("JustShot", CStr(m_bJustShot).c_str());
     }
 
     bool Gun::CanFire() const
@@ -1009,9 +1222,26 @@ namespace ai
             (GetPrototypeInfo()->m_ignoreStopAnglesWhenFire || CanLookAtTarget()) && IsDurabilityEnoughForFiring();
     }
 
-    unsigned Gun::GetPrice(IPriceCoeffProvider const*) const
+    unsigned Gun::GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E1E50 - a gun with a magazine is worth its own price plus whatever ammunition it is
+        // carrying.
+        unsigned price = VehiclePart::GetPrice(priceCoeffProvider);
+        float const priceCoeff = GetPriceCoeff(priceCoeffProvider);
+
+        GunPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+        if (prototypeInfo->m_WithCharging && prototypeInfo->m_WithShellsPoolLimit &&
+            prototypeInfo->m_shellPrototypeId != -1)
+        {
+            // NOTE: the shell prototype is used without a null check.
+            PrototypeInfo const* const shellPrototypeInfo =
+                thePrototypeManager->GetPrototypeInfo(prototypeInfo->m_shellPrototypeId);
+            price += static_cast<int>(
+                static_cast<double>((m_ShellsInPool + m_ShellsInCurrentCharge) *
+                                    shellPrototypeInfo->GetBasePrice()) *
+                priceCoeff);
+        }
+        return price;
     }
 
     Gun::Gun(GunPrototypeInfo const& prototypeInfo) : VehiclePart(prototypeInfo)
@@ -1047,7 +1277,8 @@ namespace ai
 
     float Gun::GetInitialHorizAngle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFF0
+        return m_initialHorizAngle;
     }
 
     void Gun::SetChargeState(int Value)
@@ -1121,9 +1352,14 @@ namespace ai
         }
     }
 
-    void Gun::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Gun::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E35D0 - SAVE_PROP_NORMAL is the default and is not recorded.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     bool Gun::_DoFire()
@@ -1155,14 +1391,45 @@ namespace ai
         return true;
     }
 
-    bool Gun::_IsDirVerticallyReachable(CVector const&) const
+    bool Gun::_IsDirVerticallyReachable(CVector const& dir) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DF790 - turn the direction into the owner's frame and check it against the gun's
+        // elevation limits.
+        Quaternion const ownerRotation = GetOwner()->GetRotation();
+        CMatrix const ownerMatrix = ownerRotation.getInversed().ToMatrix();
+
+        float const desiredBeta =
+            asin(ownerMatrix._12 * dir.x + ownerMatrix._22 * dir.y + ownerMatrix._32 * dir.z);
+        return desiredBeta >= m_lowStopAngle && m_highStopAngle >= desiredBeta;
     }
 
-    bool Gun::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Gun::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3CC0 - the defaults are whatever the prototype says.
+        GunPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+        switch (propertyId)
+        {
+            case 28:
+                retVal = prototypeInfo->m_damage;
+                return true;
+            case 29:
+                retVal = prototypeInfo->m_firingRate;
+                return true;
+            case 30:
+                retVal = prototypeInfo->m_firingRange;
+                return true;
+            case 34:
+                retVal = prototypeInfo->m_ChargeSize;
+                return true;
+            case 35:
+                retVal = prototypeInfo->m_ReChargingTime;
+                return true;
+            case 36:
+                retVal = prototypeInfo->m_ShellsPoolSize;
+                return true;
+            default:
+                return VehiclePart::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
     }
 
     void Gun::_InternalCreateVisualPart()
@@ -1260,7 +1527,13 @@ namespace ai
 
     CVector Gun::_CalcRoughPosForNextShot() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DF740 - the barrel's own origin when it has one, otherwise the gun's.
+        m3d::SgNode* const node = m_barrelNode ? m_barrelNode : m_Node;
+        if (node)
+        {
+            return node->GetOriginWorldAbs();
+        }
+        return PhysicBody::GetPosition();
     }
 
     bool Gun::_bIsVolleyFiring() const
@@ -1277,9 +1550,32 @@ namespace ai
         return mat.getOrg();
     }
 
-    bool Gun::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Gun::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3BF0
+        switch (propertyId)
+        {
+            case 28:
+                retVal = m_damage;
+                return true;
+            case 29:
+                retVal = m_firingRate;
+                return true;
+            case 30:
+                retVal = m_firingRange;
+                return true;
+            case 34:
+                retVal = m_ChargeSize;
+                return true;
+            case 35:
+                retVal = m_ReChargingTime;
+                return true;
+            case 36:
+                retVal = m_ShellsInPool;
+                return true;
+            default:
+                return VehiclePart::_GetPropertyInternal(propertyId, retVal);
+        }
     }
 
     void Gun::_CreateBarrelNode()
@@ -1321,29 +1617,70 @@ namespace ai
 
             if (fabs(prototypeInfo->m_highStopAngle - prototypeInfo->m_lowStopAngle) < 0.0099999998)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                // A barrel that cannot elevate never moves relative to the gun, so its collision shapes are
+                // baked into the gun's own hull at the barrel's fixed place instead of being simulated apart.
+                retruxx::vector<CollisionInfo> barrelCollisionInfos;
+                int sh = -1;
+                m_barrelNode->GetProperty(4360u, &sh);
+                ai::GetCollisionInfoByServerHandle(sh, barrelCollisionInfos, m_bCollisionTrimeshAllowed);
+
+                CMatrix const rotMatrix = rot.ToMatrix();
+                for (auto& collisionInfo : barrelCollisionInfos)
+                {
+                    Quaternion relRotation = rot;
+                    relRotation *= collisionInfo.m_relRotation;
+                    collisionInfo.m_relRotation = relRotation;
+                    collisionInfo.m_relTranslation = rotMatrix.vecRot(collisionInfo.m_relTranslation) + origin;
+                }
+
+                m_collisionInfos.insert(
+                    m_collisionInfos.end(), barrelCollisionInfos.begin(), barrelCollisionInfos.end());
+                ChangePhysicBodyByCollisionInfo(m_collisionInfos);
             }
         }
     }
 
     void Gun::_OnCinematic(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DE160 - a gun caught mid-burst when a cutscene starts is told to stop.
+        if (!m_Node)
+        {
+            return;
+        }
+        int action = 0;
+        m_Node->GetProperty(8704u, &action);
+        if (action)
+        {
+            SetNodeAction(0, true);
+            m_bIsFiring = false;
+        }
     }
 
     m3d::Object* Gun::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DFE60
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
-    void Gun::_GetCurrentOffsetAngles(float&, float&) const
+    void Gun::_GetCurrentOffsetAngles(float& alpha, float& beta) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DE7F0 - where the gun is pointing right now: beta from the barrel node's own
+        // rotation, alpha from the whole gun's direction in its owner's frame.
+        CMatrix const barrelMatrix = m_barrelNode->GetRotation().ToMatrix();
+
+        float dummy = 0.0f;
+        barrelMatrix.getYPR(dummy, beta, dummy);
+        beta = -beta;
+
+        CVector const oldRelDir = GetNodeRelativeDirection();
+        alpha = atan2(oldRelDir.x, oldRelDir.z);
     }
 
     CMatrix Gun::_CalcMatrixForNextShot() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E1D40
+        return GetMatrixForShot(m_curBarrelIndex);
     }
 
     void Gun::BeginReCharge()
@@ -1770,6 +2107,8 @@ namespace ai
 
     m3d::Object* Gun::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DFCA0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

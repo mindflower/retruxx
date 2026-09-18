@@ -4715,7 +4715,7 @@ namespace m3d
         {
             outputFile << "All\n";
         }
-        outputFile << "-== Build         : " << "ExMachina - release version release build v1.02 (Dec 21 2005 12:15:14)" << "\n";
+        outputFile << "-== Build         : " << "retruxx - release version build v0.01" << "\n";
         outputFile << "-==\n";
         outputFile << "-== Note, this is a run-time info, so some functions and classes might\n";
         outputFile << "-== be unavailable if, for instance, server is not loaded yet...\n";

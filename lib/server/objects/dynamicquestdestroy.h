@@ -6,6 +6,9 @@ namespace ai
 {
     class DynamicQuestDestroyPrototypeInfo : public DynamicQuestPrototypeInfo
     {
+        // DynamicQuestDestroy::_CalcReward reads the share the reward is worked out from.
+        friend class DynamicQuestDestroy;
+
     public:
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         DynamicQuestDestroyPrototypeInfo();
@@ -42,5 +45,9 @@ namespace ai
 
     public:
         RT_CLASS_DECLARE(DynamicQuestDestroy);
+
+    private:
+        // The pool of names still free for a bandit leader; saved with the level.
+        static inline retruxx::vector<CStr, retruxx::allocator<CStr> > m_namesForTargets;
     };
 }

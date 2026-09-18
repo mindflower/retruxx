@@ -17,6 +17,8 @@ namespace ai
     class Npc : public ai::Obj
     {
         friend class NpcPrototypeInfo;
+        // Bar::CreateBarman stamps the npc type onto the barman it has just created.
+        friend class Bar;
     protected:
         virtual  ~Npc() override /* 0x00 */;
 

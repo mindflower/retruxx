@@ -120,7 +120,12 @@ namespace ai
         ai::Workshop* GetWorkshopByObject(const ai::Obj* obj);
         ai::Workshop* GetWorkshopByPrototypeId(int pId);
 
-        enum TownPath;
+        enum TownPath
+        {
+            TP_ENTRY_PATH = 0,
+            TP_EXIT_PATH = 1,
+            TP_NUM_PATH = 2,
+        };
 
     public:
         void GetPath(ai::Town::TownPath path, retruxx::vector<CVector2, retruxx::allocator<CVector2> >& vehiclePoints, retruxx::vector<CVector, retruxx::allocator<CVector> >& cameraPoints) const;
