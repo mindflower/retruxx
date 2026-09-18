@@ -95,7 +95,9 @@ namespace ai
 
     private:
         /* 0x00d0 */ retruxx::map<enum ai::WorkshopRepositoryType, ai::GeomRepository*, retruxx::less<enum ai::WorkshopRepositoryType>, retruxx::allocator<retruxx::pair<enum ai::WorkshopRepositoryType const, ai::GeomRepository*> > > m_repositories;
-        /* 0x00dc */ retruxx::map<int, ai::Article, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Article> > > m_articles;
+        // The two AddArticle overloads are const but put a missing article on the books, as the shipped
+        // code does, so the map has to be mutable.
+        /* 0x00dc */ mutable retruxx::map<int, ai::Article, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Article> > > m_articles;
         /* 0x00e8 */ ai::WorkshopPriceCoeffProvider* m_priceCoeffProvider;
         float _GetRealObjectResourceCoeff(const ai::Obj* obj) const;
         unsigned int _GetRealObjectBuyPrice(const ai::Obj* obj) const;

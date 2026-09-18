@@ -6,6 +6,12 @@
 #include <math/vector.h>
 #include "retruxx/common.h"
 
+namespace ai
+{
+    class CompositeObj;
+}
+
+
 enum ActionType
 {
     AT_STAND1 = 0x0,
@@ -95,6 +101,8 @@ namespace m3d
     class AnimatedModel
     {
         friend class AnimatedModelsServer;
+        // ai::CompositeObj takes a model apart into one physical piece per hierarchy geom.
+        friend class ai::CompositeObj;
         friend class AnimInfo;
     public:
         struct HierarchyChange

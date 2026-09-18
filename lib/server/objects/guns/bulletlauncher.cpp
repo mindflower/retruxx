@@ -25,7 +25,8 @@ namespace ai
 
     float BulletLauncherPrototypeInfo::GetDamageForOneShell() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7467B0 - the listed damage is for the whole shot, shared out over its bullets.
+        return m_damage / m_numBulletsInShot;
     }
 
     bool BulletLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -60,17 +61,42 @@ namespace ai
 
     float BulletLauncher::GetAccuracyClamped() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7459E0
+        float const accuracy = GetAccuracy();
+        if (accuracy < 0.0f)
+        {
+            return 0.0f;
+        }
+        if (accuracy > 100.0f)
+        {
+            return 100.0f;
+        }
+        return accuracy;
     }
 
-    CStr BulletLauncher::GetPropertyName(int) const
+    CStr BulletLauncher::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x746680
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return Gun::GetPropertyName(id);
     }
 
-    eGObjPropertySaveStatus BulletLauncher::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus BulletLauncher::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7464D0 - NOTE: Registration only ever fills m_propertiesMap, so this class's
+        // save-status map is always empty and every id falls through to the base class.
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return Gun::GetPropertySaveStatus(id);
     }
 
     BulletLauncher::BulletLauncher(BulletLauncherPrototypeInfo const& prototypeInfo) : Gun(prototypeInfo)
@@ -80,14 +106,16 @@ namespace ai
         m_numBulletsToTracer = 0;
     }
 
-    float BulletLauncher::Accuracy2GroupingAngle(float)
+    float BulletLauncher::Accuracy2GroupingAngle(float accuracy)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7459A0 - the inverse of GroupingAngle2Accuracy: 100% accuracy is a zero spread.
+        return -theGlobProp.m_maxGroupingAngle * accuracy * 0.0099999998f + theGlobProp.m_maxGroupingAngle;
     }
 
     float BulletLauncher::GetGroupingAngle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x745890
+        return m_groupingAngle;
     }
 
     float BulletLauncher::GetDamageForOneShell() const
@@ -97,7 +125,8 @@ namespace ai
 
     float BulletLauncher::GetAccuracy() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7459C0
+        return 100.0f - m_groupingAngle / theGlobProp.m_maxGroupingAngle * 100.0f;
     }
 
     m3d::Class* BulletLauncher::GetClass() const
@@ -105,9 +134,14 @@ namespace ai
         return RT_CLASS_LOCAL(BulletLauncher);
     }
 
-    void BulletLauncher::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void BulletLauncher::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x746600
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        Gun::GetPropertiesIDs(Props);
     }
 
     void BulletLauncher::Registration()
@@ -141,14 +175,20 @@ namespace ai
         return Gun::GetPropertyId(propName);
     }
 
-    void BulletLauncher::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void BulletLauncher::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x746580
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        Gun::GetPropertiesNames(Props);
     }
 
-    float BulletLauncher::GroupingAngle2Accuracy(float)
+    float BulletLauncher::GroupingAngle2Accuracy(float groupingAngle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x745980 - accuracy is the spread expressed as a percentage of the worst allowed.
+        return 100.0f - groupingAngle / theGlobProp.m_maxGroupingAngle * 100.0f;
     }
 
     m3d::Class* BulletLauncher::GetBaseClass()
@@ -158,21 +198,42 @@ namespace ai
 
     float BulletLauncher::GetGroupingAngleClamped() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x745940
+        if (m_groupingAngle < 0.0f)
+        {
+            return 0.0f;
+        }
+        if (m_groupingAngle > theGlobProp.m_maxGroupingAngle)
+        {
+            return theGlobProp.m_maxGroupingAngle;
+        }
+        return m_groupingAngle;
     }
 
-    void BulletLauncher::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void BulletLauncher::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7466F0 - SAVE_PROP_NORMAL is the default and is not recorded.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
-    bool BulletLauncher::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool BulletLauncher::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x746840 - accuracy is not stored; it is derived from the current spread.
+        if (propertyId != 31)
+        {
+            return Gun::_GetPropertyInternal(propertyId, retVal);
+        }
+        retVal = 100.0f - m_groupingAngle / theGlobProp.m_maxGroupingAngle * 100.0f;
+        return true;
     }
 
     void BulletLauncher::_LaunchShells()
     {
+        // RVA 0x746070
         Gun::_LaunchShells();
         for (int i = 0; i < m_numBulletsInShot; ++i)
         {
@@ -208,8 +269,7 @@ namespace ai
 
             auto const* protoInfo = GetPrototypeInfo();
 
-            // TODO: generated code BulletLauncher::_LaunchShells
-            // Check if tracer is enabled
+            // Only every m_tracerRange'th bullet gets a visible tracer.
             if (protoInfo->m_tracerRange > 0 && !protoInfo->m_tracerEffectName.empty())
             {
                 // Check if we have a valid barrel node
@@ -276,18 +336,29 @@ namespace ai
 
     BulletLauncher::~BulletLauncher() = default;
 
-    bool BulletLauncher::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool BulletLauncher::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7468C0 - the default accuracy is the one the prototype's spread gives.
+        BulletLauncherPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+        if (propertyId != 31)
+        {
+            return Gun::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        retVal = 100.0f - prototypeInfo->m_groupingAngle / theGlobProp.m_maxGroupingAngle * 100.0f;
+        return true;
     }
 
     m3d::Object* BulletLauncher::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x745A30
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* BulletLauncher::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x745BF0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }  // namespace ai

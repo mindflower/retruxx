@@ -6,6 +6,12 @@
 #include <math/point2d.h>
 #include <renderer/i_renderer.h>
 
+namespace ai
+{
+    class CompositeObj;
+}
+
+
 class CClipper;
 
 namespace m3d
@@ -61,6 +67,8 @@ namespace m3d
     class SceneGraph
     {
         friend class CWorld;
+        // ai::CompositeObj takes its node off the think list once the pieces drive it.
+        friend class ai::CompositeObj;
         friend class LightsServer;
 
     public:

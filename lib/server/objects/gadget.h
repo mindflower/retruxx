@@ -67,6 +67,9 @@ namespace ai
 
     class Gadget : public Obj
     {
+        // GadgetPrototypeInfo::CreateTargetObject constructs the Gadget.
+        friend class GadgetPrototypeInfo;
+
     protected:
         virtual ~Gadget() override;
 

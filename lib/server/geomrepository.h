@@ -32,13 +32,14 @@ namespace ai
         /* 0x0050 */ std::set<int, std::less<int>, std::allocator<int> > m_referenceChests;
         /* 0x005c */ int m_vehicleId;
 
+    public:
+        // Public because SetSortStyle below is: a caller cannot name the argument otherwise.
         enum SortStyle
         {
             SORT_NONE = 0,
             SORT_BY_RESOURCE = 1,
         };
 
-    public:
         ai::GeomRepository::SortStyle GetSortStyle() const;
         bool SetSortStyle(ai::GeomRepository::SortStyle sortStyle, bool bRepackImmediate);
         bool Sort(ai::GeomRepository::SortStyle sortStyle);

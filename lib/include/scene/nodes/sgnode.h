@@ -14,6 +14,7 @@ namespace ai
 {
     class DummyObject;
     class RopeObj;
+    class CompositeObj;
 }
 
 namespace m3d
@@ -61,6 +62,8 @@ namespace m3d
         friend class ::ComplexModelWnd;
         // DummyObject::SetSgNodeAndCollision sizes a box collision from the node's own bounds.
         friend class ::ai::DummyObject;
+        // ai::CompositeObj drives its node's box from the pieces the wreck broke into.
+        friend class ::ai::CompositeObj;
         // RopeObj matches its tie positions against nodes' world origins and load points.
         friend class ::ai::RopeObj;
 

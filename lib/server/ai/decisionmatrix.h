@@ -68,6 +68,9 @@ namespace ai
         void ClearTemporaryParams();
         void AddTemporaryParam(char const* functionName);
 
+        // AI reads the state and signal tables directly when naming the state it is in.
+        friend class AI;
+
     private:
         /* 0x0034 */ std::vector<ai::AIParamRef, std::allocator<ai::AIParamRef>> m_tmpParamRefList;
         ai::DecisionMatrixElement& _GetElement(int signalNum, int stateNum);

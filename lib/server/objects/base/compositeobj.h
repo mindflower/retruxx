@@ -19,6 +19,9 @@ namespace ai
 
     class GoDataForLoad
     {
+        // CompositeObj fills these in from a save and plays them back onto its pieces.
+        friend class CompositeObj;
+
     private:
         CVector pos;
         Quaternion rot;

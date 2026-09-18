@@ -22,6 +22,9 @@ namespace ai
 
     class SgNodeObj : public ai::Obj
     {
+        // SgNodeObjPrototypeInfo::CreateTargetObject builds the object from its prototype.
+        friend class SgNodeObjPrototypeInfo;
+
     protected:
         virtual  ~SgNodeObj() override /* 0x00 */;
 

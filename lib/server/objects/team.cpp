@@ -1,4 +1,6 @@
 #include "team.h"
+#include <core/kernel.h>
+#include <core/log.h>
 #include <stdexcept>
 #include <core/aiparam.h>
 #include <server/ai/aimessage.h>
@@ -24,22 +26,34 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, AdjustBehaviour)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x659CF0
+    auto* team = (ai::Team*)context->asObject(0, "Team");
+    team->_AdjustBehaviour();
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, HoldFire)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x657AF0
+    auto* team = (ai::Team*)context->asObject(0, "Team");
+    team->HoldFire(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, GetNumVehicles)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x656110
+    auto* team = (ai::Team*)context->asObject(0, "Team");
+    context->pushInt(team->GetNumVehicles());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Team, GetVehicle)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6573C0
+    auto* team = (ai::Team*)context->asObject(0, "Team");
+    context->pushObject(team->GetVehicle(context->asInt(1)));
+    return 1;
 }
 
 namespace ai
@@ -137,17 +151,49 @@ namespace ai
 
     CVector Team::_GetAggregatedTargetsPos() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x658800
+        retruxx::vector<CVector> targetsPositions;
+        _GetTargetsPositions(targetsPositions);
+
+        CVector res = ZeroVector;
+        for (auto const& pos : targetsPositions)
+        {
+            res += pos;
+        }
+        if (!targetsPositions.empty())
+        {
+            res *= 1.0f / targetsPositions.size();
+        }
+        return res;
     }
 
-    void Team::_GetTargetsPositions(retruxx::vector<CVector>&) const
+    void Team::_GetTargetsPositions(retruxx::vector<CVector>& positions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x658780 - without a tactic there are no assigned targets, so the list comes back
+        // empty rather than stale.
+        if (theObjects->GetEntityByObjId(m_TeamTacticId))
+        {
+            TeamRoleManager::GetTargetsPositions(this, positions);
+        }
+        else
+        {
+            positions.clear();
+        }
     }
 
     CVector Team::_GetAggregatedPos() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656F50 - the team's position is the centre of its vehicles.
+        CVector res = ZeroVector;
+        for (auto const* vehicle : m_vehicles)
+        {
+            res += vehicle->GetPosition();
+        }
+        if (!m_vehicles.empty())
+        {
+            res *= 1.0f / m_vehicles.size();
+        }
+        return res;
     }
 
     bool Team::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -177,14 +223,36 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnMoveFinished(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659C90 - the move has already been wound up by whatever finished it.
+        return m3d::AIParam(0);
     }
 
-    m3d::AIParam Team::TeamAIOnStartSearch(Obj*)
+    m3d::AIParam Team::TeamAIOnStartSearch(Obj* pObj)
     {
-        // TODO: implement Team::TeamAIOnStartSearch
-        // RETRUXX_NOT_IMPLEMENTED;
-        return m3d::AIParam(0);
+        // RVA 0x659770 - starts an asynchronous path search from the formation's position to the
+        // destination the AI was given.
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (team->m_vehicles.empty())
+        {
+            return m3d::AIParam(2);
+        }
+
+        CVector const destination = Obj::AIGetState1Param1(pObj).GetAsVector();
+
+        // NOTE: the formation is re-seated on the middle vehicle of the team, not on the first.
+        team->m_formation->SetPosition(
+            team->m_vehicles[(team->m_vehicles.size() - 1) / 2]->GetPosition());
+        CVector const startPos = team->m_formation->GetPosition();
+
+        if (team->m_formation)
+        {
+            team->m_formation->SetPath(nullptr, true);
+        }
+        delete team->m_pPath;
+        team->m_pPath = new Path;
+        team->m_pPath->StartSearch(Map::theGlobalMap, CVector2(startPos.x, startPos.z),
+            CVector2(destination.x, destination.z), 10.0f, 0xFA);
+        return m3d::AIParam(1);
     }
 
     m3d::AIParam Team::TeamAIOnAttack(Obj*)
@@ -194,14 +262,55 @@ namespace ai
 
     void Team::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        // RVA 0x6580C0 - a team saved mid-mission carries its AI state, its path and its
+        // formation; a team read straight from a map has only the formation, which is then
+        // created as a fresh child object.
         Obj::LoadFromXML(xmlFile, xmlNode);
-        // TODO: implement Team::LoadFromXML
-        // RETRUXX_NOT_IMPLEMENTED;;
+
+        ref_ptr aiNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(aiNode, "AI");
+        if (!aiNode->IsEmpty())
+        {
+            m_AI.LoadAIFromXML(xmlFile, aiNode);
+        }
+
+        ref_ptr pathNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(pathNode, "Path");
+        if (!pathNode->IsEmpty())
+        {
+            delete m_pPath;
+            m_pPath = new Path;
+            m_pPath->LoadFromXML(xmlFile, pathNode, Map::theGlobalMap);
+        }
+
+        ref_ptr formationNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(formationNode, "Formation");
+        if (formationNode->IsEmpty())
+        {
+            return;
+        }
+        if (m_formation)
+        {
+            m_formation->LoadFromXML(xmlFile, formationNode);
+            return;
+        }
+
+        retruxx::vector<m3d::Class*> allowedClasses;
+        int const formationId =
+            gDynamicScene->ReadNewObjectFromXml(xmlFile, formationNode, allowedClasses);
+        m_formation = static_cast<Formation*>(theObjects->GetEntityByObjId(formationId));
+        m_formation->LinkToParent(GetId(), HIERARCHY_COMPONENT);
     }
 
-    eGObjPropertySaveStatus Team::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Team::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x654A20
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return Obj::GetPropertySaveStatus(id);
     }
 
     Team::Team(TeamPrototypeInfo const& prototypeInfo) : ai::Obj(prototypeInfo)
@@ -267,7 +376,8 @@ namespace ai
 
     bool Team::bIsEqualToPrototype() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656670 - a team that has picked up vehicles is no longer its bare prototype.
+        return Obj::bIsEqualToPrototype() && m_vehicles.empty();
     }
 
     m3d::AIParam Team::TeamAIOnIdle(Obj*)
@@ -299,9 +409,18 @@ namespace ai
         return m_vehicles;
     }
 
-    void Team::SetTeamFrozen(bool)
+    void Team::SetTeamFrozen(bool bFrozen)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x657460 - a frozen team is hidden as well as stopped.
+        if (m_bFrozen == bFrozen)
+        {
+            return;
+        }
+        for (auto* vehicle : m_vehicles)
+        {
+            vehicle->ShowVehicle(!bFrozen);
+        }
+        m_bFrozen = bFrozen;
     }
 
     Vehicle* Team::GetVehicle(unsigned index) const
@@ -365,19 +484,32 @@ namespace ai
         }
     }
 
-    void Team::GetPropertiesNames(retruxx::set<CStr>&) const
+    void Team::GetPropertiesNames(retruxx::set<CStr>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x654A60
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        Obj::GetPropertiesNames(Props);
     }
 
     m3d::AIParam Team::TeamAIOnEnemyDestroyed(Obj*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659740 - nothing to do; the team falls back to its idle behaviour on its own.
+        return m3d::AIParam(0);
     }
 
-    m3d::AIParam Team::TeamAIGetCurAngle(Obj*)
+    m3d::AIParam Team::TeamAIGetCurAngle(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659240 - the team faces wherever its lead vehicle faces.
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (team->m_vehicles.empty())
+        {
+            return m3d::AIParam(0.0f);
+        }
+        CVector const direction = team->m_vehicles.front()->GetDirection();
+        return m3d::AIParam(atan2f(direction.z, direction.x));
     }
 
     int Team::OnEvent(Event const& evn)
@@ -411,24 +543,59 @@ namespace ai
         return result;
     }
 
-    void Team::HoldFire(int)
+    void Team::HoldFire(int msc)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x657430
+        for (auto* vehicle : m_vehicles)
+        {
+            vehicle->HoldFire(msc);
+        }
     }
 
-    m3d::AIParam Team::TeamAIOnTargetReached(Obj*)
+    m3d::AIParam Team::TeamAIOnTargetReached(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659B00
+        auto* team = RT_DYNCAST(pObj, Team);
+        if (team->m_formation)
+        {
+            team->m_formation->SetPath(nullptr, true);
+        }
+        delete team->m_pPath;
+        team->m_pPath = nullptr;
+        pObj->CauseEvent(GE_TARGET_REACHED, 0.0f, {}, {});
+        return m3d::AIParam(1);
     }
 
-    void Team::GetPropertiesIDs(retruxx::set<int>&) const
+    void Team::GetPropertiesIDs(retruxx::set<int>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x654AC0
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        Obj::GetPropertiesIDs(Props);
     }
 
-    void Team::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Team::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656460 - the AI state and the path are only written when the team is actually
+        // following one; the formation always is.
+        Obj::SaveToXML(xmlFile, xmlNode);
+
+        if (m_pPath)
+        {
+            ref_ptr aiNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "AI");
+            xmlNode->AddChild(aiNode);
+            m_AI.SaveAIToXML(xmlFile, aiNode);
+
+            ref_ptr pathNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Path");
+            xmlNode->AddChild(pathNode);
+            m_pPath->SaveToXML(xmlFile, pathNode);
+        }
+
+        ref_ptr formationNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Formation");
+        xmlNode->AddChild(formationNode);
+        m_formation->SaveToXML(xmlFile, formationNode);
     }
 
     unsigned Team::GetNumVehicles() const
@@ -438,12 +605,16 @@ namespace ai
 
     bool Team::GetTeamFrozen() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x655BC0
+        return m_bFrozen;
     }
 
-    void Team::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Team::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6565E0
+        Obj::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("TeamTacticId", CStr(m_TeamTacticId).c_str());
+        xmlNode->SetAttribute("Frozen", CStr(m_bFrozen).c_str());
     }
 
     TeamTactic* Team::GetTeamTactic() const
@@ -465,9 +636,27 @@ namespace ai
         }
     }
 
-    float Team::GetDistToPhysicObj(PhysicObj const*) const
+    float Team::GetDistToPhysicObj(PhysicObj const* obj) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656D50 - the distance to the nearest of the team's vehicles.
+        if (!obj)
+        {
+            M3D_LOG_ERR(CStr("Error: NULL object passed to GetDistToPhysicObj of ") +
+                GetDebugDescription());
+            return 1.0e10f;
+        }
+
+        CVector const objPos = obj->GetPosition();
+        float res = 1.0e10f;
+        for (auto const* vehicle : m_vehicles)
+        {
+            float const dist = (vehicle->GetPosition() - objPos).length();
+            if (dist < res)
+            {
+                res = dist;
+            }
+        }
+        return res;
     }
 
     TeamPrototypeInfo const* Team::GetPrototypeInfo() const
@@ -475,14 +664,51 @@ namespace ai
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), TeamPrototypeInfo const);
     }
 
-    CStr Team::GetPropertyName(int) const
+    CStr Team::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x654B20
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return Obj::GetPropertyName(id);
     }
 
-    m3d::AIParam Team::TeamAIOnMoveAlongPath(Obj*)
+    m3d::AIParam Team::TeamAIOnMoveAlongPath(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6599C0 - keeps every vehicle steering at the slot the formation assigns it, and
+        // reports done once nothing is moving any more.
+        auto* team = RT_DYNCAST(pObj, Team);
+
+        bool anyMoving = false;
+        for (auto* vehicle : team->m_vehicles)
+        {
+            if (vehicle->GetMoveStatus())
+            {
+                anyMoving = true;
+                break;
+            }
+        }
+        if (!anyMoving && !team->m_formation->bIsMoving())
+        {
+            return m3d::AIParam(1);
+        }
+
+        for (unsigned i = 0; i < team->m_vehicles.size(); ++i)
+        {
+            CVector destination;
+            CVector direction;
+            team->m_formation->GetPositionAndDirectionForVehicle(
+                i, team->m_vehicles.size(), destination, direction);
+            // NOTE: the height is flattened to zero on both sides, so the vehicles steer in the
+            // horizontal plane only.
+            destination.y = 0.0f;
+            team->m_vehicles[i]->SetExternalDestination(destination);
+        }
+        return m3d::AIParam(0);
     }
 
     m3d::AIParam Team::TeamAIOnDefend(Obj* pObj)
@@ -507,19 +733,44 @@ namespace ai
         return m3d::AIParam(ZeroVector);
     }
 
-    m3d::AIParam Team::TeamAIOnTargetUnreachable(Obj*)
+    m3d::AIParam Team::TeamAIOnTargetUnreachable(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659BE0
+        pObj->CauseEvent(GE_TARGET_UNREACHED, 0.0f, {}, {});
+        return m3d::AIParam(1);
     }
 
-    void Team::SetRemoveWhenChilrenDead(bool)
+    void Team::SetRemoveWhenChilrenDead(bool bRemoveWhenChildrenDead)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x655BB0
+        m_bRemoveWhenChildrenDead = bRemoveWhenChildrenDead;
     }
 
-    m3d::AIParam Team::TeamAIOnPathFind(Obj*)
+    m3d::AIParam Team::TeamAIOnPathFind(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659900 - the search is spread over frames, and the whole game shares one budget
+        // of path-finding quanta per frame.
+        auto* team = RT_DYNCAST(pObj, Team);
+        Path* const path = team->m_pPath;
+        if (path)
+        {
+            if (path->GetSearchStatus())
+            {
+                if (Path::QuantAmount <= Path::QuantMax)
+                {
+                    ++Path::QuantAmount;
+                    path->ProceedSearchDijkstraStraightment(2u);
+                }
+                return m3d::AIParam(0);
+            }
+            if (path->m_SearchResult == PATH_OK)
+            {
+                team->m_formation->SetPath(path, true);
+                return m3d::AIParam(1);
+            }
+        }
+        team->_DoPosUnreachable();
+        return m3d::AIParam(3);
     }
 
     void Team::AddChild(Obj* pObj)
@@ -542,9 +793,22 @@ namespace ai
         }
     }
 
-    void Team::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Team::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656330
+        Obj::LoadRuntimeValues(xmlFile, xmlNode);
+
+        ref_ptr pathNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(pathNode, "Path");
+        if (!pathNode->IsEmpty())
+        {
+            delete m_pPath;
+            m_pPath = new Path;
+            m_pPath->LoadFromXML(xmlFile, pathNode, Map::theGlobalMap);
+        }
+
+        m3d::SafeIntAttrib(m_TeamTacticId, xmlNode, "TeamTacticId");
+        m3d::SafeBoolAttrib(m_bFrozen, xmlNode, "Frozen");
     }
 
     bool Team::CanChildBeAdded(m3d::Class* pClass) const
@@ -579,9 +843,56 @@ namespace ai
         return RT_CLASS_LOCAL(Obj);
     }
 
-    m3d::AIParam Team::TeamAIOnAttackOrder(Obj*)
+    m3d::AIParam Team::TeamAIOnAttackOrder(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659590 - holds the team in its attack state while any vehicle is still engaged,
+        // and keeps them from shooting through each other while they are.
+        auto* team = RT_DYNCAST(pObj, Team);
+
+        bool allIdle = true;
+        bool anyIdle = false;
+        for (auto const* vehicle : team->m_vehicles)
+        {
+            bool const idle = vehicle->GetAttackStatus() == Vehicle::ATTACK_IDLE;
+            allIdle &= idle;
+            anyIdle |= idle;
+        }
+        if (allIdle)
+        {
+            return m3d::AIParam(1);
+        }
+
+        if (anyIdle && !theObjects->GetEntityByObjId(team->m_TeamTacticId))
+        {
+            team->m_needAdjustBehaviour = true;
+        }
+
+        if (!theObjects->GetEntityByObjId(team->m_TeamTacticId))
+        {
+            team->m_needAdjustBehaviour = true;
+        }
+        else if (team->_IsTooFarFromTargets())
+        {
+            // Closing the distance is only this team's business if nothing else is driving it.
+            bool driven = false;
+            for (auto const* vehicle : team->m_vehicles)
+            {
+                if (vehicle->GetNpcMotionControllerId() != -1 ||
+                    vehicle->bIsMovingAlongExternalPath())
+                {
+                    driven = true;
+                    break;
+                }
+            }
+            if (!driven)
+            {
+                team->m_bMustMoveToTarget = true;
+            }
+            return m3d::AIParam(0);
+        }
+
+        team->m_combatMastermind->GenerateLineOfFireAvoidanceSteeringForces(team->m_steeringForceMap);
+        return m3d::AIParam(0);
     }
 
     void Team::Remove()
@@ -618,12 +929,25 @@ namespace ai
 
     void Team::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6566B0 - NOTE: the formation is not null-checked.
+        m_formation->RenderDebugInfo();
     }
 
     void Team::Stop()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x658A30 - every vehicle is told to stand where it is, the path is thrown away and
+        // the AI is dropped back into its idle state.
+        for (auto* vehicle : m_vehicles)
+        {
+            vehicle->SetExternalDestination(vehicle->GetPosition());
+        }
+        if (m_formation)
+        {
+            m_formation->SetPath(nullptr, true);
+        }
+        delete m_pPath;
+        m_pPath = nullptr;
+        m_AI.PutCommand(3, {}, {}, {});
     }
 
     m3d::AIParam Team::TeamAIOnMove(Obj* pObj)
@@ -642,12 +966,30 @@ namespace ai
 
     void Team::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x658C10 - NOTE: the formation is not null-checked.
+        Obj::SetPassedToAnotherMapStatus();
+        m_formation->SetPassedToAnotherMapStatus();
+        for (auto* vehicle : m_vehicles)
+        {
+            vehicle->SetPassedToAnotherMapStatus();
+        }
+        if (Obj* const teamTactic = theObjects->GetEntityByObjId(m_TeamTacticId))
+        {
+            teamTactic->SetPassedToAnotherMapStatus();
+        }
+        m_AI.PutCommand(3, {}, {}, {});
+        m_AI.AIUpdate(this);
+        m_needAdjustBehaviour = true;
     }
 
-    void Team::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Team::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x658900 - SAVE_PROP_NORMAL is the default and is not recorded.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     void Team::_InternalPostLoad()
@@ -682,12 +1024,18 @@ namespace ai
 
     void Team::_DoPosUnreachable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x655BD0 - a team that cannot reach its destination simply gives up quietly;
+        // subclasses override this to react.
     }
 
     void Team::_RemoveVehicles()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6574B0 - NOTE: Vehicle::Remove calls back into Team::RemoveChild, which erases
+        // from m_vehicles while this loop is walking it.
+        for (auto* vehicle : m_vehicles)
+        {
+            vehicle->Remove();
+        }
     }
 
     AI* Team::GetAIPtr()
@@ -705,14 +1053,34 @@ namespace ai
         m_needAdjustBehaviour = true;
     }
 
-    bool Team::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Team::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6590D0
+        switch (propertyId)
+        {
+            case PROPERTY_REMOVE_WHEN_CHILDREN_DEAD:
+                retVal = static_cast<unsigned>(GetPrototypeInfo()->m_bRemoveWhenChildrenDead);
+                return true;
+            case PROPERTY_TEAMTACTIC_PROTOTYPE: retVal = CStr(""); return true;
+            case PROPERTY_TEAMTACTIC_SHOULD_BE_ASSIGNED: retVal = 1u; return true;
+            default: return Obj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
     }
 
-    bool Team::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Team::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x659040
+        switch (propertyId)
+        {
+            case PROPERTY_REMOVE_WHEN_CHILDREN_DEAD:
+                retVal = static_cast<unsigned>(m_bRemoveWhenChildrenDead);
+                return true;
+            case PROPERTY_TEAMTACTIC_PROTOTYPE: retVal = m_TeamTacticName; return true;
+            case PROPERTY_TEAMTACTIC_SHOULD_BE_ASSIGNED:
+                retVal = static_cast<unsigned>(m_TeamTacticShouldBeAssigned);
+                return true;
+            default: return Obj::_GetPropertyInternal(propertyId, retVal);
+        }
     }
 
     void Team::_DoUnderAttack(int attackerId)
@@ -749,25 +1117,36 @@ namespace ai
 
     Team::~Team()
     {
-        // TODO: check formation
+        // RVA 0x65A1D0 - the mastermind and the path belong to the team; the formation and
+        // the vehicles are objects in their own right and are not deleted here.
         delete m_combatMastermind;
+        m_combatMastermind = nullptr;
 
         if (m_formation)
         {
-            m_formation->SetPath(0, 1);
+            m_formation->SetPath(nullptr, true);
         }
 
         delete m_pPath;
+        m_pPath = nullptr;
+        m_formation = nullptr;
     }
 
     void Team::_OnPlayerVehicleChanged(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x655C30 - who the player is driving changes who this team should be fighting.
+        m_needAdjustBehaviour = true;
     }
 
-    void Team::_OnObjectDie(Event const&)
+    void Team::_OnObjectDie(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x657E00
+        Obj* const sender = theObjects->GetEntityByObjId(evn.m_senderObjId);
+        if (sender)
+        {
+            RemoveChild(sender);
+        }
+        m_needAdjustBehaviour = true;
     }
 
     void Team::_CreateFormation()
@@ -803,7 +1182,8 @@ namespace ai
 
     bool Team::_IsTooFarFromTargets() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x658860
+        return (_GetAggregatedPos() - _GetAggregatedTargetsPos()).length() > 250.0f;
     }
 
     float Team::_GetTeamVelocity() const
@@ -822,17 +1202,23 @@ namespace ai
 
     void Team::_TuneFormation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x655BE0 - NOTE: these are fixed values, not derived from the team's vehicles, so
+        // the linear velocity set here is immediately overwritten wherever _GetTeamVelocity is
+        // applied.
+        m_formation->SetAngularVelocity(0.5f);
+        m_formation->SetLinearVelocity(100.0f);
     }
 
     m3d::Object* Team::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656990
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     void Team::_AdjustRoles(int targetId)
     {
-        // TODO: generated code Team::_AdjustRoles
+        // RVA 0x657C30
         if (!m_TeamTacticShouldBeAssigned)
         {
             SetTeamTactic(nullptr);
@@ -897,13 +1283,16 @@ namespace ai
         }
     }
 
-    void Team::_OnNoticeEnemy(Event const&)
+    void Team::_OnNoticeEnemy(Event const& evn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x655C10
+        _DoNoticeEnemy(evn.m_param1.GetAsID());
     }
 
     m3d::Object* Team::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x656B50
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }  // namespace ai

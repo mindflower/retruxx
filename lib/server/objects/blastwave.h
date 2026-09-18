@@ -21,6 +21,9 @@ namespace ai
 
     class BlastWave : public ai::SimplePhysicObj
     {
+        // BlastWavePrototypeInfo::CreateTargetObject constructs the BlastWave.
+        friend class BlastWavePrototypeInfo;
+
     protected:
         virtual  ~BlastWave() override /* 0x00 */;
 

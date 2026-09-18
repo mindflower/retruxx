@@ -4,6 +4,10 @@
 
 namespace ai
 {
+    RT_CLASS_EXPORTS_BEGIN(SmokeScreenLocation)
+    RT_CLASS_EXPORTS_END;
+    RT_CLASS_DEFINE(SmokeScreenLocation);
+
     SmokeScreenLocationPrototypeInfo::SmokeScreenLocationPrototypeInfo() = default;
 
     ai::Obj* SmokeScreenLocationPrototypeInfo::CreateTargetObject() const

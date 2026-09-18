@@ -253,9 +253,15 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    AIParam& AIParam::operator=(CVector const&)
+    AIParam& AIParam::operator=(CVector const& PPos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Detach();
+        x = PPos.x;
+        y = PPos.y;
+        z = PPos.z;
+        w = 0;
+        Type = AIPARAM_VECTOR;
+        return *this;
     }
 
     AIParam& AIParam::operator=(CStr const& str)

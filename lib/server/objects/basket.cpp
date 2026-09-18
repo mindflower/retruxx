@@ -7,6 +7,8 @@
 #include "base/globalproperties.h"
 #include "core/log.h"
 
+#include <core/kernel.h>
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Basket)
@@ -144,9 +146,10 @@ namespace ai
         return new Basket(*this);
     }
 
-    void BasketPrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
+    void BasketPrototypeInfo::_InternalCopyFrom(PrototypeInfo const& rhs)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBEC0 - a plain assignment from another prototype of the same class.
+        *this = static_cast<BasketPrototypeInfo const&>(rhs);
     }
 
     m3d::Class* Basket::GetClass() const
@@ -174,11 +177,15 @@ namespace ai
 
     m3d::Object* Basket::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6B9DC0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* Basket::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6B9C00
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

@@ -48,6 +48,13 @@ namespace ai
         AffixType GetAffixType() const;
         CStr GetLocalizedName(unsigned int) const;
 
+        // AffixGeneratorPrototypeInfo::GenerateAffixesForObj reads the group of an affix it has
+        // just applied directly, to strike that group's other affixes off its candidate list.
+        friend class AffixGeneratorPrototypeInfo;
+        // The manager hands out affix ids and matches affixes by name; the group creates them.
+        friend class AffixManager;
+        friend class AffixGroup;
+
     private:
         int m_affixId;
         AffixGroup* m_pAffixGroup;
@@ -86,6 +93,12 @@ namespace ai
         ~AffixGroup();
         bool LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         int GetTargetResourceId() const;
+
+        friend class AffixGeneratorPrototypeInfo;
+        // The manager stamps a group with its id, resource and type after loading it; an affix
+        // reads its own type from the group it belongs to.
+        friend class AffixManager;
+        friend class Affix;
 
     private:
         AffixManager* m_pAffixManager;

@@ -23,6 +23,9 @@ namespace ai
 
     class Rocket : public Shell
     {
+        // MinePusher::_LaunchShells stores the direction a mine was dropped in directly.
+        friend class MinePusher;
+
     public:
         virtual RocketPrototypeInfo const * GetPrototypeInfo() const ;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);

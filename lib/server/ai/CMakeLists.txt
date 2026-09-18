@@ -7,6 +7,7 @@ target_sources(retruxx_lib PRIVATE
     aimatrix.cpp
     aimessage.cpp
     aipassagecommand.cpp
+    aipassagestate.cpp
     aisignal.cpp
     aistate.cpp
     decisionmatrix.cpp)

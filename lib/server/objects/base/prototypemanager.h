@@ -41,6 +41,9 @@ namespace ai
         void _LoadFromFolder(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,CStr const &,bool (*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
         static bool _ReadNewPrototype(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
 
+        // CServer::LoadPrototypeNamesFromXML fills the display-name tables directly.
+        friend class CServer;
+
     private:
         m3d::CStrHash<CStr> m_prototypeFullNames;
         m3d::CStrHash<unsigned int> m_prototypeFullNamesLocalizedForms;

@@ -15,6 +15,9 @@ namespace ai
 
     class Mine : public Rocket
     {
+        // MinePrototypeInfo::CreateTargetObject builds a mine from its prototype.
+        friend class MinePrototypeInfo;
+
     protected:
         virtual  ~Mine() override /* 0x00 */;
 

@@ -37,6 +37,9 @@ namespace ai
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
 
+        // GadgetPrototypeInfo::ApplyToVp passes a modification on to every part of a compound gun.
+        friend class GadgetPrototypeInfo;
+
     public:
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override /* 0x00 */;

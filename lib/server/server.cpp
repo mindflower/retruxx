@@ -1,4 +1,6 @@
 #include "server.h"
+
+#include <client.h>
 #include "affix.h"
 #include "quest.h"
 #include "resourcemanager.h"
@@ -146,32 +148,102 @@ namespace ai
 
     int n_AddToCinematic(m3d::sArgStack& scriptStack)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F3440 - the object may be named by id, by name or handed over directly; the
+        // optional second argument says whether its children come along.
+        if (scriptStack.m_numInArgs == 0 || scriptStack.m_numInArgs > 2)
+        {
+            return -1;
+        }
+
+        m3d::sArg* const objArg = scriptStack.popIn();
+        bool withChildren = true;
+        if (scriptStack.m_numInArgs == 2)
+        {
+            m3d::sArg* const flagArg = scriptStack.popIn();
+            switch (flagArg->m_type)
+            {
+                case m3d::sArg::ARGTYPE_INT: withChildren = flagArg->GetI() != 0; break;
+                case m3d::sArg::ARGTYPE_FLOAT: withChildren = flagArg->GetF() > 0.0f; break;
+                case m3d::sArg::ARGTYPE_BOOL: withChildren = flagArg->GetB(); break;
+                default: break;
+            }
+        }
+
+        Obj* obj = nullptr;
+        switch (objArg->m_type)
+        {
+            case m3d::sArg::ARGTYPE_INT: obj = theObjects->GetEntityByObjId(objArg->GetI()); break;
+            case m3d::sArg::ARGTYPE_FLOAT:
+                obj = theObjects->GetEntityByObjId(static_cast<int>(objArg->GetF()));
+                break;
+            case m3d::sArg::ARGTYPE_STRING: obj = theObjects->GetEntityByObjName(CStr(objArg->GetS())); break;
+            case m3d::sArg::ARGTYPE_OBJECT: obj = static_cast<Obj*>(objArg->GetO()); break;
+            default: return 1;
+        }
+        if (obj)
+        {
+            pServer->AddToCinematic(obj, withChildren);
+        }
+        return 1;
     }
 
     int n_EndCinematic(m3d::sArgStack& scriptStack)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F1910 - NOTE: this clears the flag directly and does not reset the objects that
+        // were marked, unlike CServer::EndCinematic.
+        if (pServer)
+        {
+            pServer->m_InCinematic = false;
+        }
+        return 1;
     }
 
     int n_CreateObjectByClassName(m3d::sArgStack& scriptStack)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F1930 - builds an engine object straight from its RTTI class name.
+        if (scriptStack.m_numInArgs != 1)
+        {
+            return -1;
+        }
+        m3d::sArg* const classNameArg = scriptStack.popIn();
+        if (classNameArg->m_type != m3d::sArg::ARGTYPE_STRING)
+        {
+            return -1;
+        }
+
+        CStr const className(classNameArg->GetS());
+        m3d::Object* const newObject = m3d::g_Kernel->New(className.c_str());
+        scriptStack.newOut()->SetO(newObject);
+        return newObject != nullptr;
     }
 
-    void CServer::AddToCinematic(Obj*, bool)
+    void CServer::AddToCinematic(Obj* obj, bool withChildren)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F1780 - NOTE: a null object is accepted and quietly ignored.
+        if (!obj)
+        {
+            return;
+        }
+        obj->m_flags |= 0x10u;
+        if (withChildren)
+        {
+            for (int i = 0; Obj* const child = obj->GetChild(i); ++i)
+            {
+                AddToCinematic(child, true);
+            }
+        }
     }
 
-    void CServer::AddToCinematic(int, bool)
+    void CServer::AddToCinematic(int id, bool withChildren)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F33F0
+        AddToCinematic(theObjects->GetEntityByObjId(id), withChildren);
     }
 
-    void CServer::SetPause(bool)
+    void CServer::SetPause(bool pause)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x406E30
+        fPause = pause;
     }
 
     m3d::Profiler* CServer::GetTmpProfiler()
@@ -191,7 +263,8 @@ namespace ai
 
     m3d::Profiler* CServer::GetObjectsUpdateProfiler()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F1320
+        return m_objectsUpdateProfiler;
     }
 
     ExternalPaths const* CServer::GetExternalPaths() const
@@ -201,7 +274,8 @@ namespace ai
 
     PlayerPassMap const* CServer::GetPlayerPassMap() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x602680
+        return m_pPlayerPassMap;
     }
 
     void CServer::SetLastId(int id)
@@ -306,12 +380,14 @@ namespace ai
 
     bool CServer::GetPause() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x406E20
+        return fPause;
     }
 
-    int CServer::GetPrototypeId(CStr const&)
+    int CServer::GetPrototypeId(CStr const& prototypeName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EFA60
+        return thePrototypeManager->GetPrototypeId(prototypeName);
     }
 
     PrototypeInfo* CServer::CreatePrototypeInfoByClassName(CStr const& className)
@@ -519,9 +595,36 @@ namespace ai
         return m_pWorld;
     }
 
-    void CServer::LoadVisitedMap(CStr const&, bool)
+    void CServer::LoadVisitedMap(CStr const& mapFileName, bool bContiniousMap)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F6710 - the saved scene supplies everything except the barricades, which are
+        // dropped and re-read from the level's own dynamic scene so that they stay where the
+        // level author put them.
+        CStr err;
+        ref_ptr xmlFile = m3d::ReadXmlFile(mapFileName.c_str(), &err);
+        if (!xmlFile)
+        {
+            M3D_LOG_ERR(CStr("Error: cannot open DynamicScene file: ") + mapFileName + err);
+            Load(LOCAL_GAME, nullptr, nullptr, bContiniousMap, ObjContainer::SAVE_LEVEL);
+            return;
+        }
+
+        ref_ptr sceneNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(sceneNode, "DynamicScene");
+        Load(LOCAL_GAME, xmlFile, sceneNode, bContiniousMap, ObjContainer::SAVE_LEVEL);
+
+        for (auto* obj : *theObjects)
+        {
+            if (IS_KIND_OF(obj, Barricade))
+            {
+                obj->Remove();
+            }
+        }
+
+        retruxx::vector<m3d::Class*> allowedClasses;
+        allowedClasses.push_back(RT_CLASS_LOCAL(Barricade));
+        m_pDynamicScene->LoadSceneFromFile(
+            m_level->GetFullPathNameA(m_level->m_dsSrvName).c_str(), allowedClasses);
     }
 
     void CServer::Register()
@@ -736,6 +839,7 @@ namespace ai
 
     void CServer::LoadTriggersFromXML(CStr const& fileName)
     {
+        // RVA 0x5F2D90
         scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
         if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
         {
@@ -762,7 +866,6 @@ namespace ai
                     continue;
                 }
 
-                // TODO: check this
                 auto* entity = ai::theObjects->GetEntityByObjName(name);
                 if (ai::theObjects->m_SaveType == ai::ObjContainer::eSAVE_TYPES::SAVE_LEVEL && entity)
                 {
@@ -799,14 +902,16 @@ namespace ai
         return m_lastId;
     }
 
-    CStr CServer::GetPrototypeFullName(int)
+    CStr CServer::GetPrototypeFullName(int prototypeId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EFAA0
+        return thePrototypeManager->GetPrototypeFullName(prototypeId);
     }
 
-    CStr CServer::GetPrototypeFullName(CStr const&)
+    CStr CServer::GetPrototypeFullName(CStr const& modelName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EFA80
+        return thePrototypeManager->GetPrototypeFullName(modelName);
     }
 
     void CServer::Update(float elapsedTime)
@@ -968,9 +1073,10 @@ namespace ai
         m_serverUpdateProfiler->EndCountdown();
     }
 
-    void CServer::LoadGlobalMapFromRawFile(char const*)
+    void CServer::LoadGlobalMapFromRawFile(char const* fileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F0370
+        pGlobalMap->LoadFromRawFile(fileName);
     }
 
     void CServer::ClearOnce()
@@ -1024,17 +1130,19 @@ namespace ai
 
     void CServer::GetControlData()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F0330 - a leftover from the networked build; the shipped game does nothing here.
     }
 
-    unsigned CServer::GetGlobalMapValue(long, long)
+    unsigned CServer::GetGlobalMapValue(long xIndex, long yIndex)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F0350
+        return pGlobalMap->GetValue(xIndex, yIndex);
     }
 
     int CServer::GetPathFindQuant()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EFAC0
+        return Path::QuantAmount;
     }
 
     CStr CServer::GetFullNameByObjID(int objId)
@@ -1074,12 +1182,17 @@ namespace ai
 
     void CServer::ResetCinematicObjects()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F3CC0 - clears the cinematic mark from every object in the world.
+        for (auto* obj : *theObjects)
+        {
+            obj->m_flags &= ~0x10u;
+        }
     }
 
-    PrototypeInfo const* CServer::GetPrototypeInfo(int)
+    PrototypeInfo const* CServer::GetPrototypeInfo(int prototypeId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F2D60
+        return thePrototypeManager->GetPrototypeInfo(prototypeId);
     }
 
     void CServer::InitOnce()
@@ -1115,10 +1228,51 @@ namespace ai
         return ai::theRelationship->CheckTolerance(PlayerID1, PlayerID2);
     }
 
-    void CServer::LoadPrototypeNamesFromXML(CStr const&)
+    void CServer::LoadPrototypeNamesFromXML(CStr const& fileName)
     {
-        // TODO: implement CServer::LoadPrototypeNamesFromXML
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F5430 - maps each prototype name to the display name the UI shows, plus which
+        // grammatical form that display name takes.
+        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
+        {
+            M3D_LOG_ERR("Error: cannot open " + fileName);
+            return;
+        }
+
+        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        if (!xmlFile->Read(*stream))
+        {
+            M3D_LOG_ERR("Error: cannot parse " + fileName + CStr(" ( ") + CStr(xmlFile->GetError()) +
+                CStr(" ) "));
+            return;
+        }
+        stream->Close();
+
+        ref_ptr rootNode = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(rootNode, "ModelNames");
+        if (rootNode->IsEmpty())
+        {
+            // NOTE: the message names <models> although the tag actually looked for is
+            // <ModelNames>.
+            M3D_LOG_ERR(CStr("Error: Tag <models> not found in file: ") + fileName);
+            return;
+        }
+
+        ref_ptr itemNode = xmlFile->CreateNode();
+        for (rootNode->GetFirstChild(itemNode, "Item"); !itemNode->IsEmpty();
+             itemNode->GetNextSibling(itemNode, "Item"))
+        {
+            CStr const name(itemNode->GetAttribute("id"));
+            CStr const fullName(itemNode->GetAttribute("value"));
+            int locForm = 0;
+            m3d::SafeIntAttrib(locForm, itemNode, "locForm");
+            if (locForm < 0)
+            {
+                locForm = 0;
+            }
+            thePrototypeManager->m_prototypeFullNames.add(name, fullName);
+            thePrototypeManager->m_prototypeFullNamesLocalizedForms.add(name, locForm);
+        }
     }
 
     void CServer::LoadGlobalPropertiesFromXML(CStr const& fileName)
@@ -1143,7 +1297,8 @@ namespace ai
 
     AffixManager* CServer::GetAffixManager() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x4D98B0
+        return m_pAffixManager;
     }
 
     void CServer::StartCinematic()
@@ -1224,52 +1379,92 @@ namespace ai
 
     void CServer::PutGameData()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F0340 - a leftover from the networked build; the shipped game does nothing here.
     }
 
-    void CServer::HandleCommand(int, m3d::CConsoleParams const&)
+    void CServer::HandleCommand(int cmdID, m3d::CConsoleParams const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F4070 - console commands are queued and acted on at the top of the next update,
+        // so that they never run in the middle of a physics step.
+        m_consoleCommandsToPostProcess.push(cmdID);
     }
 
     CServer::~CServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F3AA0 - the object container is reference counted; everything else the server
+        // owns outlives it or is freed elsewhere.
+        if (m_pObjects)
+        {
+            m_pObjects->DecRef();
+        }
+        m_pObjects = nullptr;
+        SetObjects(nullptr);
     }
 
     bool CServer::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EFA50 - the server registers no cvars of its own.
+        return false;
     }
 
-    void CServer::SaveVisitedMap(CStr const&)
+    void CServer::SaveVisitedMap(CStr const& mapFileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F3B40 - everything transient is thrown away before the map is written, so that
+        // a revisited map does not come back littered with debris and shells in flight.
+        theObjects->m_SaveType = ObjContainer::SAVE_LEVEL;
+        for (auto* obj : *theObjects)
+        {
+            if (IS_KIND_OF(obj, ParticleSplinter) || IS_KIND_OF(obj, VehicleSplinter) ||
+                IS_KIND_OF(obj, CompositeObj) || IS_KIND_OF(obj, JointedObj) || IS_KIND_OF(obj, Shell) ||
+                IS_KIND_OF(obj, Thunderbolt) || IS_KIND_OF(obj, EngineOilLocation) ||
+                IS_KIND_OF(obj, SmokeScreenLocation) || IS_KIND_OF(obj, InfectionTeam))
+            {
+                obj->Remove();
+            }
+            else if (IS_KIND_OF(obj, Workshop))
+            {
+                static_cast<Workshop*>(obj)->OnSaveVisitedMap();
+            }
+        }
+        m_pDynamicScene->PurgeBodies();
+        m_pDynamicScene->SaveSceneToFile(mapFileName.c_str());
     }
 
     void CServer::_PostProcessConsoleCommands()
     {
+        // RVA 0x5F3CF0 - command 0 is ai_switch_player_physics, which toggles whether the
+        // player's own truck is simulated by ODE.
         while (!m_consoleCommandsToPostProcess.empty())
         {
-            auto command = m_consoleCommandsToPostProcess.front();
+            auto const command = m_consoleCommandsToPostProcess.front();
+            if (command == 0)
+            {
+                Vehicle* const playerVehicle = gDynamicScene->GetVehicleControlledByPlayer();
+                if (playerVehicle)
+                {
+                    playerVehicle->SetUpdatingByODE(!playerVehicle->bIsUpdatingByODE());
+                }
+            }
             m_consoleCommandsToPostProcess.pop();
-            RETRUXX_NOT_IMPLEMENTED;
         }
     }
 
     void CServer::_RegisterConsoleCommands()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F0380 - NOTE: the shipped build hands a table of commands and a count to an
+        // IConsole::RegisterCommand overload this port does not expose, and that count is zero,
+        // so nothing is registered here. The one command the server actually handles,
+        // ai_switch_player_physics, is registered by name in InitOnce.
     }
 
     void CServer::RestorePrevCinematicState()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F1340 - the shipped build saves and restores nothing.
     }
 
     void CServer::SavePrevCinematicState()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5F1330 - the shipped build saves and restores nothing.
     }
 
     void CServer::_SetLevel(m3d::Level* newLevel)
@@ -1291,7 +1486,23 @@ namespace ai
 
     void UpdateLights()
     {
-        // TODO: implement UpdateLights
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x82EB40 - weather that hides the shadows hides the lights that cast them, so each
+        // light object drops or recreates its scene graph node as the sky changes.
+        bool const shadowsHidden = m3d::pClient->GetWorld().GetWeatherManager().GetShadowVisibilityFromWeather();
+        for (auto* obj : *theObjects)
+        {
+            if (IS_KIND_OF(obj, LightObj))
+            {
+                auto* const lightObj = static_cast<SgNodeObj*>(obj);
+                if (shadowsHidden)
+                {
+                    lightObj->DeleteSgNode();
+                }
+                else
+                {
+                    lightObj->SetSgNode();
+                }
+            }
+        }
     }
 }  // namespace ai
