@@ -709,113 +709,151 @@ namespace m3d
             return m_wndKbdCapture;
         }
 
-        int WndStation::ProcessEvent(Event const& ev)
+        int WndStation::ProcessEvent(Event const& event)
         {
-            int v3;                    // ebx
-            m3d::ui::ModalWnd* v6;     // ebx
-            m3d::ui::Wnd* v7;          // ebp
-            m3d::ui::Wnd* v8;          // ebp
-            m3d::ui::WndStation* v9;   // eax
-            m3d::ui::WndStation* v10;  // eax
-            m3d::ui::Wnd* v11;         // [esp-4h] [ebp-34h]
-            void* msg;                 // [esp+10h] [ebp-20h]
-            m3d::ui::Wnd* eventa;      // [esp+34h] [ebp+4h]
+            // RVA 0x593DD0 - the station's event entry point. Raw input is handed to the
+            // dispatchers, which route it to the focused or hovered window; everything else is
+            // the UI talking to itself about modal windows, tooltips, animations and combos.
+            int handled = 0;
 
-            AIParam data = ev.m_aiParamEv;
-
-            v3 = 0;
-            switch (ev.m_eventType)
+            switch (event.m_eventType)
             {
-            case 4:
+            case EV_DISPLAY_CHANGED:
                 ForEachChild(this, &Wnd::OnDisplayChanged);
-                goto LABEL_3;
-            case 5:
-            case 6:
-                goto $L118755;
-            case 7:
-            case 8:
-                v3 = DispatchKey(ev);
+                // NOTE: reported as unhandled even though every window was just notified, so
+                // the event carries on to the rest of the application.
                 break;
-            case 9:
-            case 0xA:
-            case 0xB:
-            case 0xC:
-            case 0xF:
-                v3 = DispatchMouse(ev);
+
+            case EV_LOOSING_FOCUS:
+            case EV_OBTAINED_FOCUS:
+                // Swallowed without doing anything: the station keeps its focus across an
+                // application focus change.
+                handled = 1;
                 break;
-            case 0x10:
-            case 0x11:
-            case 0x12:
-            case 0x13:
-            case 0x14:
-            case 0x15:
-            case 0x16:
-            case 0x17:
-            case 0x18:
-            case 0x19:
-                v3 = DispatchJoystick(ev);
+
+            case EV_KEY_DOWN:
+            case EV_KEY_UP:
+                handled = DispatchKey(event);
                 break;
-            case 0x27:
-                v6 = reinterpret_cast<ModalWnd*>(ev.m_void[0]);
-                if (v6->CanClose())
-                    EndModal(v6, ev.m_uintEv[1]);
-            $L118755:
-                v3 = 1;
+
+            case EV_MOUSE_MOVE:
+            case EV_MOUSE_LBTN:
+            case EV_MOUSE_RBTN:
+            case EV_MOUSE_MBTN:
+            case EV_MOUSE_WHEEL:
+                // EV_MOUSE_DBLCLICK and EV_MOUSE_CLICK are deliberately absent: the station
+                // produces those itself out of the button events and posts them outwards, so
+                // they are results of dispatching rather than input to it.
+                handled = DispatchMouse(event);
                 break;
-            case 0x28:
-                v7 = reinterpret_cast<Wnd*>(ev.m_void[0]);
-                eventa = reinterpret_cast<Wnd*>(ev.m_void[1]);
-                if (IsWndAlive(v7, -1) && IsWndAlive(eventa, -1))
+
+            case EV_JOYSTICK_BTN0:
+            case EV_JOYSTICK_BTN1:
+            case EV_JOYSTICK_BTN2:
+            case EV_JOYSTICK_BTN3:
+            case EV_JOYSTICK_BTN4:
+            case EV_JOYSTICK_BTN5:
+            case EV_JOYSTICK_BTN6:
+            case EV_JOYSTICK_BTN7:
+            case EV_JOYSTICK_BTN8:
+            case EV_JOYSTICK_BTN9:
+                // NOTE: only the ten buttons reach the UI - the axis events fall through to
+                // the default case and are dropped, so the joystick cannot move the cursor.
+                handled = DispatchJoystick(event);
+                break;
+
+            case EV_UI_CLOSE_MODAL_WND:
+            {
+                auto* modalWnd = static_cast<ModalWnd*>(event.m_void[0]);
+                if (modalWnd->CanClose())
                 {
-                    eventa->OnWndNotify(v7, v7->m_id, ev.m_uintEv[2], data);
-                    v3 = 1;
+                    EndModal(modalWnd, event.m_uintEv[1]);
+                }
+                // NOTE: counted as handled even when the window refused to close.
+                handled = 1;
+                break;
+            }
+
+            case EV_UI_NOTIFY_WND:
+            {
+                auto* sender = static_cast<Wnd*>(event.m_void[0]);
+                auto* receiver = static_cast<Wnd*>(event.m_void[1]);
+                auto msg = event.m_uintEv[2];
+
+                // The notification takes its own copy of the parameter, released again on the
+                // way out of this case (the shipped build calls AIParam::Detach here).
+                AIParam data(event.m_aiParamEv);
+
+                // Either window may have been destroyed between posting and now.
+                if (IsWndAlive(sender, -1) && IsWndAlive(receiver, -1))
+                {
+                    receiver->OnWndNotify(sender, sender->m_id, msg, data);
+                    handled = 1;
                 }
                 break;
-            case 0x29:
-            case 0x2E:
-                goto $L118771;
-            case 0x2A:
-                m3d::ui::WndStation::OnEndAnimation(reinterpret_cast<Wnd*>(ev.m_void[0]));
-            $L118771:
-                v3 = this->OnEvent(ev);
+            }
+
+            case EV_UI_END_WND_ANIMATION:
+                OnEndAnimation(static_cast<Wnd*>(event.m_void[0]));
+                handled = OnEvent(event);
                 break;
-            case 0x2B:
-                v3 = 0;
-                m3d::ui::WndStation::StopAllAnimations();
+
+            case EV_UI_MODAL_WND_IS_CLOSED:
+            case EV_KEYBINDINGS_CHANGED:
+                // Nothing for the station to do; passed straight out to the listeners.
+                handled = OnEvent(event);
                 break;
-            case 0x2C:
-                m3d::ui::WndStation::RemoveCurrentTooltip();
-                v8 = reinterpret_cast<Wnd*>(ev.m_void[0]);
-                if (m3d::ui::WndStation::IsWndAlive(v8, -1))
+
+            case EV_UI_STOP_ALL_WND_ANIMATIONS:
+                StopAllAnimations();
+                handled = 0;
+                break;
+
+            case EV_INSERT_CREATED_TOOLTIP:
+            {
+                RemoveCurrentTooltip();
+
+                auto* wnd = static_cast<Wnd*>(event.m_void[0]);
+                if (IsWndAlive(wnd, -1))
                 {
-                    this->m_wndForTooltip = v8;
-                    if (v8->m_toolTipWnd)
+                    m_wndForTooltip = wnd;
+                    if (wnd->m_toolTipWnd)
                     {
-                        GetStation()->AddChild(this->m_wndForTooltip->m_toolTipWnd);
-                        v11 = this->m_wndForTooltip->m_toolTipWnd;
-                        GetStation()->MoveChildToFirstPosition(v11);
+                        // Re-parented to the station and lifted to the front so that it draws
+                        // over everything else.
+                        GetStation()->AddChild(m_wndForTooltip->m_toolTipWnd);
+                        GetStation()->MoveChildToFirstPosition(m_wndForTooltip->m_toolTipWnd);
                     }
                 }
                 break;
-            case 0x2D:
-                m3d::ui::WndStation::RemoveCurrentTooltip();
+            }
+
+            case EV_REMOVE_TOOLTIP:
+                RemoveCurrentTooltip();
                 break;
-            case 0x2F:
-                v3 = 1;
-                m3d::ui::WndStation::OnOpenComboBox(reinterpret_cast<ComboBoxWnd*>(ev.m_void[0]));
+
+            case EV_UI_COMBO_OPENED:
+                OnOpenComboBox(static_cast<ComboBoxWnd*>(event.m_void[0]));
+                handled = 1;
                 break;
-            case 0x30:
-                v3 = 1;
-                m3d::ui::WndStation::OnCloseComboBox(reinterpret_cast<ComboBoxWnd*>(ev.m_void[0]));
+
+            case EV_UI_COMBO_CLOSED:
+                OnCloseComboBox(static_cast<ComboBoxWnd*>(event.m_void[0]));
+                handled = 1;
                 break;
+
             default:
-            LABEL_3:
-                v3 = 0;
                 break;
             }
-            if (ev.m_eventType >= 0x10000)
-                this->OnEvent(ev);
-            return v3;
+
+            // NOTE: EV_USER and above is far past every label above, so a user event always
+            // lands in the default case. Its OnEvent result is dropped on the floor here and
+            // ProcessEvent reports every user event as unhandled.
+            if (event.m_eventType >= EV_USER)
+            {
+                OnEvent(event);
+            }
+            return handled;
         }
 
         Wnd* WndStation::GetWndByUniqueId(int uniqueId) const

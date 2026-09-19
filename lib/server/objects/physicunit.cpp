@@ -10,15 +10,35 @@
 #include <server/utils.h>
 #include <server/server.h>
 #include <server/externalpaths.h>
+#include <server/objects/base/jointedobj.h>
+#include <server/objects/base/objcontainer.h>
+#include <server/objects/player.h>
+#include <server/statistic/intstatistic.h>
+#include <server/statistic/statisticmanager.h>
+#include <server/objects/physicbodies/simplephysicbody.h>
+
+#include <core/ini.h>
+#include <core/kernel.h>
+#include <core/timer.h>
+#include <scene/nodes/sgnode.h>
+#include <server/objects/vehicle.h>
+#include <level.h>
+#include <world.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicUnit, AddWalkPathByName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* physicUnit = (ai::PhysicUnit*)context->asObject(0, "PhysicUnit");
+    // RVA 0x80D520
+    context->pushBool(physicUnit->AddWalkPathByName(context->asString(1)));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(PhysicUnit, SetWalkPathByName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* physicUnit = (ai::PhysicUnit*)context->asObject(0, "PhysicUnit");
+    // RVA 0x80D560
+    context->pushBool(physicUnit->SetWalkPathByName(context->asString(1)));
+    return 1;
 }
 
 namespace ai
@@ -55,9 +75,10 @@ namespace ai
         m_maxStandTime = 1.0f;
     }
 
-    void PhysicUnit::SetCauseForce(float)
+    void PhysicUnit::SetCauseForce(float force)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7DEFF0
+        m_causeForce = force;
     }
 
     void PhysicUnit::OnCollideWithStandingVehicle()
@@ -71,9 +92,11 @@ namespace ai
         }
     }
 
-    eGObjPropertySaveStatus PhysicUnit::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus PhysicUnit::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80D820
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        return it != m_propertiesSaveStatesMap.end() ? it->second : SimplePhysicObj::GetPropertySaveStatus(id);
     }
 
     PhysicUnit::PhysicUnit(PhysicUnitPrototypeInfo const& prototype) :
@@ -134,14 +157,68 @@ namespace ai
         DisablePhysics();
     }
 
-    CStr PhysicUnit::GetPropertyName(int) const
+    CStr PhysicUnit::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80D9D0
+        for (auto const& [name, propId] : m_propertiesMap)
+        {
+            if (propId == id)
+            {
+                return name;
+            }
+        }
+        return SimplePhysicObj::GetPropertyName(id);
     }
 
-    void PhysicUnit::SetState(States)
+    void PhysicUnit::SetState(States newState)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80AD00 - dying swaps the animated unit for a RagDoll object that inherits its
+        // model, pose and mass, and the unit itself is removed.
+        if (newState == m_State)
+            return;
+
+        m_State = newState;
+        if (newState != DEAD || !m_physicBody->m_Node)
+            return;
+
+        // Only kills the player is credited with are counted.
+        auto* playerVehicle = thePlayer ? thePlayer->GetVehicle() : nullptr;
+        if (playerVehicle && GetLastDamageSource() == playerVehicle->GetId())
+        {
+            auto* globalStatistic =
+                static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_PEOPLES_KILLED, "IntStatistic"));
+            globalStatistic->m_bGlobalFlag = true;
+            globalStatistic->Increase(1);
+
+            auto* levelStatistic = static_cast<IntStatistic*>(theStatisticManager->GetStatistic(
+                STATISTIC_PEOPLES_KILLED + pServer->GetWorld()->m_level->m_levelName, CStr("IntStatistic")));
+            levelStatistic->m_bGlobalFlag = false;
+            levelStatistic->Increase(1);
+        }
+
+        SetPostDisablePhysics();
+
+        int const ragDollPrototypeId = theObjects->GetPrototypeId("RagDoll");
+        int const ragDollObjId = theObjects->CreateNewObject(ragDollPrototypeId, "", -1, -1);
+        auto* ragDoll = static_cast<JointedObj*>(theObjects->GetEntityByObjId(ragDollObjId));
+
+        auto* node = m_physicBody->m_Node;
+        CStr const modelName = node->GetServer()->GetNameByItem(node->GetServerHandle());
+        CVector const pos = node->GetOriginWorldAbs();
+        Quaternion const rot = node->GetRotation();
+        ragDoll->Init(modelName, pos, rot, GetMass(), m_physicBody->m_Node, 1.0f);
+        theObjects->AddObjToPostCollideList(ragDoll);
+
+        // The node now belongs to the ragdoll, so the unit drops its reference before removing
+        // itself - otherwise the model would be destroyed along with it.
+        m_physicBody->m_Node = nullptr;
+
+        if (m_initVelocities)
+        {
+            ragDoll->InitImpulses(m_causePos, m_causeForce);
+        }
+        ragDoll->SetDeadTimer(60000, true);
+        Remove();
     }
 
     void PhysicUnit::Registration()
@@ -149,15 +226,56 @@ namespace ai
         m_propertiesMap["PathsNames"] = 77;
     }
 
-    void PhysicUnit::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void PhysicUnit::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80D950
+        for (auto const& prop : m_propertiesMap)
+        {
+            Props.insert(prop.second);
+        }
+        SimplePhysicObj::GetPropertiesIDs(Props);
     }
 
     void PhysicUnit::RenderDebugInfo() const
     {
-        // TODO: implement PhysicUnit::RenderDebugInfo
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80A850 - a unit with no visual node at all still draws; one that has a node
+        // only draws on the frames that node was rendered in.
+        if (m_physicBody->m_Node && m_physicBody->m_Node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame())
+            return;
+
+        SimplePhysicObj::RenderDebugInfo();
+
+        // Lifted clear of the model so the lines are not buried inside it.
+        CVector pos = GetPosition();
+        pos.y += 5.0f;
+
+        if (m_walkState == TURN)
+        {
+            CVector const& wayPoint = (*m_curPath)[m_curWayPointNum];
+            CVector const leg = wayPoint - m_prevWayPoint;
+            float const invLegLen =
+                1.0f / sqrt(leg.z * leg.z + leg.y * leg.y + leg.x * leg.x + 0.00000011920929f);
+
+            CVector const dir = GetDirection();
+
+            // NOTE: the desired heading keeps only x and z from the leg and borrows y from the
+            // direction the unit is currently facing, so the red line is not the leg direction.
+            float const needX = invLegLen * leg.x;
+            float const needZ = leg.z * invLegLen;
+            float const invNeedLen = 1.0f / sqrt(needZ * needZ + needX * needX + dir.y * dir.y + 0.00000011920929f);
+
+            CVector const to(pos.x + needX * invNeedLen * 10.0f, pos.y + invNeedLen * dir.y * 10.0f,
+                pos.z + needZ * invNeedLen * 10.0f);
+            M3D_APP->DrawLine(pos, to, 0xFFFF0000);
+
+            M3D_APP->DrawLine(pos, pos + dir * 10.0f, 0xFF00FF00);
+        }
+        else if (m_walkState == WALK)
+        {
+            CVector wp = (*m_curPath)[m_curWayPointNum];
+            wp.y = pos.y;
+            M3D_APP->DrawLine(pos, wp, 0xFF0000FF);
+        }
     }
 
     m3d::Class* PhysicUnit::GetClass() const
@@ -165,14 +283,29 @@ namespace ai
         return RT_CLASS_LOCAL(PhysicUnit);
     }
 
-    void PhysicUnit::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicUnit::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8098F0
+        // NOTE: chains straight to Obj, skipping SimplePhysicObj, so none of the physics setup
+        // is written out - a unit is rebuilt from its prototype on load. LoadFromXML above
+        // skips the same way.
+        Obj::SaveToXML(xmlFile, xmlNode);
     }
 
-    void PhysicUnit::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicUnit::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80A450
+        SimplePhysicObj::SaveRuntimeValues(xmlFile, xmlNode);
+
+        xmlNode->SetAttribute("State", CStr(static_cast<int>(m_State)).c_str());
+        xmlNode->SetAttribute("CurWayPointNum", CStr(m_curWayPointNum).c_str());
+        xmlNode->SetAttribute("CurPathName", m_curPathName.c_str());
+        xmlNode->SetAttribute("WalkState", CStr(static_cast<int>(m_walkState)).c_str());
+        xmlNode->SetAttribute("StandTtl", CStr(m_standTtl.value().get()).c_str());
+        xmlNode->SetAttribute("WalkTtl", CStr(m_walkTtl.value().get()).c_str());
+        xmlNode->SetAttribute("MustWalk", CStr(static_cast<int>(m_bMustWalk)).c_str());
+        xmlNode->SetAttribute("MustChangePath", CStr(static_cast<int>(m_bMustChangePath)).c_str());
+        xmlNode->SetAttribute("PrevWayPoint", CStr(m_prevWayPoint).c_str());
     }
 
     int PhysicUnit::GetPropertyId(char const* propName) const
@@ -186,15 +319,37 @@ namespace ai
         return SimplePhysicObj::GetPropertyId(propName);
     }
 
-    void PhysicUnit::SetCausePos(CVector const&)
+    void PhysicUnit::SetCausePos(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7DEFD0
+        m_causePos = pos;
     }
 
-    bool PhysicUnit::SetWalkPathByName(char const*)
+    bool PhysicUnit::SetWalkPathByName(char const* pathName)
     {
-        // TODO: implement PhysicUnit::SetWalkPathByName
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80D140
+        if (!pathName || !*pathName)
+        {
+            M3D_LOG_ERR("Error: path name is empty for " + GetDebugDescription());
+            m_curPathName = CStr("");
+            m_curPath = nullptr;
+            return false;
+        }
+
+        auto it = m_pathsMap.find(CStr(pathName));
+        if (it == m_pathsMap.end())
+        {
+            // Not registered yet, so pull it out of the level's external paths now.
+            if (!AddWalkPathByName(pathName))
+            {
+                M3D_CRITICAL_ERROR("path name '" + CStr(pathName) + "' is not found for " + GetDebugDescription());
+            }
+            it = m_pathsMap.find(CStr(pathName));
+        }
+
+        m_curPathName = it->first;
+        m_curPath = &it->second;
+        m_curWayPointNum = 0;
         return true;
     }
 
@@ -235,9 +390,46 @@ namespace ai
         return res;
     }
 
-    void PhysicUnit::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void PhysicUnit::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80DA40
+        SimplePhysicObj::LoadRuntimeValues(xmlFile, xmlNode);
+
+        m3d::SafeStrAttrib(m_curPathName, xmlNode, "CurPathName");
+        // Everything below describes a position along that path, so without it there is
+        // nothing left worth restoring.
+        if (!SetWalkPathByName(m_curPathName.c_str()))
+            return;
+
+        m3d::SafeEnumAttrib(m_State, xmlNode, "State");
+
+        int curWayPointNum = 0;
+        if (m3d::SafeIntAttrib(curWayPointNum, xmlNode, "CurWayPointNum") && curWayPointNum >= 0)
+        {
+            m_curWayPointNum = curWayPointNum;
+        }
+
+        m3d::SafeEnumAttrib(m_walkState, xmlNode, "WalkState");
+        m3d::SafeVectorAttrib(m_prevWayPoint, xmlNode, "PrevWayPoint");
+        m3d::SafeBoolAttrib(m_bMustChangePath, xmlNode, "MustChangePath");
+        m3d::SafeBoolAttrib(m_bMustWalk, xmlNode, "MustWalk");
+
+        float standTtl = 0.0f;
+        m3d::SafeFloatAttrib(standTtl, xmlNode, "StandTtl");
+        m_standTtl.value().set(standTtl);
+
+        // The walk timer regenerates at the rate that carries the unit over the leg it is
+        // currently on, so it has to be recomputed from the restored waypoint.
+        m_curPath = &m_pathsMap[m_curPathName];
+        CVector const& wayPoint = (*m_curPath)[m_curWayPointNum];
+        float const dx = wayPoint.x - m_prevWayPoint.x;
+        float const dz = wayPoint.z - m_prevWayPoint.z;
+        float const legLength = sqrt(dz * dz + dx * dx);
+        m_walkTtl.regeneration().set(legLength > 0.001 ? m_walkSpeed / legLength : 1.0f);
+
+        float walkTtl = 0.0f;
+        m3d::SafeFloatAttrib(walkTtl, xmlNode, "WalkTtl");
+        m_walkTtl.value().set(walkTtl);
     }
 
     PhysicUnitPrototypeInfo const* PhysicUnit::GetPrototypeInfo() const
@@ -277,9 +469,10 @@ namespace ai
         return RT_CLASS_LOCAL(SimplePhysicObj);
     }
 
-    void PhysicUnit::SetInitVelocities(bool)
+    void PhysicUnit::SetInitVelocities(bool initVelocities)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7DF010
+        m_initVelocities = initVelocities;
     }
 
     void PhysicUnit::Update(float, unsigned)
@@ -288,45 +481,106 @@ namespace ai
         // RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicUnit::SetDirection(CVector const&)
+    void PhysicUnit::SetDirection(CVector const& direction)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x809D70 - a unit stays upright, so only the horizontal part of the direction is
+        // kept and renormalised; the epsilon keeps a zero vector from dividing by zero.
+        float const invLen = 1.0f / sqrt(direction.z * direction.z + direction.x * direction.x + 0.00000011920929f);
+        PhysicObj::SetDirection(CVector(invLen * direction.x, 0.0f, direction.z * invLen));
     }
 
-    void PhysicUnit::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void PhysicUnit::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80D8D0
+        for (auto const& prop : m_propertiesMap)
+        {
+            Props.insert(prop.first);
+        }
+        SimplePhysicObj::GetPropertiesNames(Props);
     }
 
-    void PhysicUnit::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void PhysicUnit::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80B130
+        m_propertiesMap[CStr(Name)] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
-    bool PhysicUnit::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool PhysicUnit::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80B6A0 - "PathsNames" reads back as the space separated list of walk paths.
+        if (propertyId != 77)
+        {
+            return SimplePhysicObj::_GetPropertyInternal(propertyId, retVal);
+        }
+
+        CStr value("");
+        for (auto const& path : m_pathsMap)
+        {
+            if (!path.first.empty())
+            {
+                value += path.first + CStr(" ");
+            }
+        }
+
+        // Drop the separator the last name left behind.
+        if (!value.empty())
+        {
+            value.del(value.length() - 1, 1);
+        }
+
+        retVal = value;
+        return true;
     }
 
     PhysicUnit::~PhysicUnit() = default;
 
-    bool PhysicUnit::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool PhysicUnit::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80B850 - a unit starts out with no walk paths at all.
+        if (propertyId != 77)
+        {
+            return SimplePhysicObj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+
+        retVal = CStr("");
+        return true;
     }
 
-    void PhysicUnit::_SetWalkState(WalkState)
+    void PhysicUnit::_SetWalkState(WalkState newWalkState)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80A650
+        if (m_walkState == newWalkState)
+            return;
+
+        m_walkState = newWalkState;
+        if (newWalkState == STAND)
+        {
+            // Stand for a random slice of the maximum, so a crowd does not move in lockstep.
+            m_standTtl.value().set(CVector2(0.0f, m_standTtl.maxValue().get()).randomValue());
+            m_physicBody->SetNodeAction(0, true);
+        }
+        else
+        {
+            // NOTE: TURN and WALK share one animation - there is no separate turn action.
+            m_physicBody->SetNodeAction(2, true);
+        }
     }
 
     m3d::Object* PhysicUnit::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80A0D0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* PhysicUnit::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80A290
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }  // namespace ai

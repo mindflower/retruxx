@@ -28,9 +28,15 @@ namespace ai
         m_prototypes.clear();
     }
 
-    unsigned PrototypeManager::GetPrototypeFullNameLocalizedForm(int) const
+    unsigned PrototypeManager::GetPrototypeFullNameLocalizedForm(int prototypeId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E7B50
+        unsigned localizedForm = 0;
+        if (m_prototypeFullNamesLocalizedForms.get(GetPrototypeName(prototypeId), localizedForm))
+        {
+            return localizedForm;
+        }
+        return 0;
     }
 
     void PrototypeManager::LoadFromXmlFile(CStr const& fileName)
@@ -46,7 +52,10 @@ namespace ai
 
     int PrototypeManager::GetMatrixNum(int) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E6500
+        // NOTE: the shipped build never looks at the prototype id - the whole body is
+        // "mov eax, 0FFFFh; retn 4", so every prototype reports the same matrix number.
+        return 0xFFFF;
     }
 
     void PrototypeManager::RefreshFromXmlFile(CStr const& fileName)
@@ -61,14 +70,28 @@ namespace ai
         return res;
     }
 
-    CStr PrototypeManager::GetPrototypeFullName(int) const
+    CStr PrototypeManager::GetPrototypeFullName(int prototypeId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E7BB0 - falls back to the bare prototype name when no display name was
+        // registered, or when the registered one is blank.
+        CStr prototypeName = GetPrototypeName(prototypeId);
+
+        CStr fullName;
+        if (!m_prototypeFullNames.get(prototypeName, fullName) || fullName.empty())
+        {
+            fullName = prototypeName;
+        }
+        return fullName;
     }
 
-    CStr PrototypeManager::GetPrototypeName(int) const
+    CStr PrototypeManager::GetPrototypeName(int prototypeId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E72D0
+        if (prototypeId < 0 || prototypeId >= static_cast<int>(m_prototypes.size()))
+        {
+            return CStr("Unknown");
+        }
+        return m_prototypes[prototypeId]->m_prototypeName;
     }
 
     int PrototypeManager::GetPrototypeId(CStr const& prototypeName) const
@@ -104,9 +127,16 @@ namespace ai
         }
     }
 
-    PrototypeInfo const* PrototypeManager::GetPrototypeInfo(CStr const&) const
+    PrototypeInfo const* PrototypeManager::GetPrototypeInfo(CStr const& prototypeName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x568430 - the bounds check is unsigned, so the -1 that GetPrototypeId returns
+        // for an unknown name wraps to a huge value and falls out as nullptr.
+        unsigned prototypeId = GetPrototypeId(prototypeName);
+        if (prototypeId < m_prototypes.size())
+        {
+            return m_prototypes[prototypeId];
+        }
+        return nullptr;
     }
 
     PrototypeInfo const* PrototypeManager::GetPrototypeInfo(int id) const

@@ -85,6 +85,9 @@ namespace ai
         static inline Map* theGlobalMap = nullptr;
 
     private:
+        // Path walks the cell grid directly when searching.
+        friend class Path;
+
         // Shared helpers - not in the original, which repeats each of these
         // inline at every call site.
         bool InBounds(int xIndex, int yIndex) const;

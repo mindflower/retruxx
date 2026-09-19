@@ -9,6 +9,7 @@
 namespace ai
 {
     class CompositeObj;
+    class JointedObj;
 }
 
 
@@ -69,6 +70,7 @@ namespace m3d
         friend class CWorld;
         // ai::CompositeObj takes its node off the think list once the pieces drive it.
         friend class ai::CompositeObj;
+        friend class ai::JointedObj;
         friend class LightsServer;
 
     public:

@@ -33,6 +33,7 @@ namespace ai
     bool GetCollisionInfoByModelName(CStr const&, retruxx::vector<ai::CollisionInfo>&, bool);
     bool GetCollisionInfoByServerHandle(int, retruxx::vector<CollisionInfo>&, bool);
     void CommonGeomMovedCallback(dxGeom*);
+    void SetUniversalJointParams(dxJoint* joint);
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
     CVector ProjectVectorOntoPlane(CVector const&, CVector const&);
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);

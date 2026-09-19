@@ -15,6 +15,7 @@ namespace ai
     class DummyObject;
     class RopeObj;
     class CompositeObj;
+    class JointedObj;
 }
 
 namespace m3d
@@ -64,6 +65,7 @@ namespace m3d
         friend class ::ai::DummyObject;
         // ai::CompositeObj drives its node's box from the pieces the wreck broke into.
         friend class ::ai::CompositeObj;
+        friend class ::ai::JointedObj;
         // RopeObj matches its tie positions against nodes' world origins and load points.
         friend class ::ai::RopeObj;
 

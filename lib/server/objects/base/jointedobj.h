@@ -44,6 +44,8 @@ namespace ai
     {
         // RopeObj::BreakOff marks the broken rope it creates as a rope.
         friend class RopeObj;
+        // CreateTargetObject builds one of these.
+        friend class JointedObjPrototypeInfo;
 
     protected:
         virtual  ~JointedObj() override /* 0x00 */;

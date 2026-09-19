@@ -107,7 +107,7 @@ namespace ai
             }
             else
             {
-                g_collidersMap->emplace(mergedRev, ColliderEntry{fn, 0});
+                g_collidersMap->emplace(mergedRev, ColliderEntry{fn, 1});
             }
 		}
 

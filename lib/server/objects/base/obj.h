@@ -208,6 +208,8 @@ namespace ai
         friend class AffixGeneratorPrototypeInfo;
         // CServer sets and clears the cinematic flag on objects directly.
         friend class CServer;
+        // ObjPrefab::RemoveChild clears a detached child's parent id directly.
+        friend class ObjPrefab;
 
     protected:
         Obj(PrototypeInfo const& prototypeInfo);

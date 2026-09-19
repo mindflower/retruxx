@@ -9,6 +9,7 @@
 namespace ai
 {
     class CompositeObj;
+    class JointedObj;
 }
 
 
@@ -357,6 +358,7 @@ namespace m3d
     {
         friend class AnimatedModelsServer;
         friend class AnimatedModel;
+        friend class ::ai::JointedObj;
 
     public:
         AnimInfo(const m3d::AnimInfo&);

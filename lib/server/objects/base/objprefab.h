@@ -36,6 +36,9 @@ namespace ai
 
     class ObjPrefab : public ai::SimplePhysicObj
     {
+        // CreateTargetObject builds one of these.
+        friend class ObjPrefabPrototypeInfo;
+
     protected:
         virtual  ~ObjPrefab() override /* 0x00 */;
 

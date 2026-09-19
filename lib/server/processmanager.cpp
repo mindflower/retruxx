@@ -1,4 +1,6 @@
 #include "processmanager.h"
+#include <core/ini.h>
+#include <core/ref_ptr.h>
 #include <stdexcept>
 #include <core/aiparam.h>
 #include "event.h"
@@ -15,12 +17,13 @@ namespace ai
 
     int ProcessManager::GetNumProcessedEvents() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A0DE0
+        return m_numProcessedEvents;
     }
 
     void ProcessManager::Update(float elapsedTime, unsigned framesPassed, unsigned workTime)
     {
-        // TODO: generated code
+        // RVA 0x6A3670
         for (auto it = m_eventQueue.begin(); it != m_eventQueue.end(); ++it)
         {
             it->m_timeOut -= elapsedTime;
@@ -84,21 +87,45 @@ namespace ai
         return STR_UNKNOWN;
     }
 
-    void ProcessManager::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void ProcessManager::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A3930
+        m3d::SafeIntAttrib(m_numProcessedEvents, xmlNode, "NumProcessedEvents");
+        m3d::SafeIntAttrib(m_eventDebugNum, xmlNode, "EventDebugNum");
+
+        ref_ptr eventNode = xmlFile->CreateNode();
+        for (xmlNode->GetFirstChild(eventNode, "Event"); !eventNode->IsEmpty();
+             eventNode->GetNextSibling(eventNode, "Event"))
+        {
+            Event ev;
+            ev.LoadFromXML(xmlFile, eventNode);
+            m_eventQueue.push_back(ev);
+        }
     }
 
     void ProcessManager::Clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A34B0 - NOTE: only the queue is emptied; the processed counter keeps running.
+        m_eventQueue.clear();
     }
 
     ProcessManager::~ProcessManager() = default;
 
-    void ProcessManager::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ProcessManager::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A1930
+        xmlNode->SetAttribute("NumProcessedEvents", CStr(m_numProcessedEvents).c_str());
+        // NOTE: EventDebugNum is written twice - first from the wrong member, then corrected
+        // on the very next line. The first write is dead but the shipped build makes it.
+        xmlNode->SetAttribute("EventDebugNum", CStr(m_numProcessedEvents).c_str());
+        xmlNode->SetAttribute("EventDebugNum", CStr(m_eventDebugNum).c_str());
+
+        for (auto const& ev : m_eventQueue)
+        {
+            ref_ptr eventNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Event");
+            xmlNode->AddChild(eventNode);
+            ev.SaveToXML(xmlFile, eventNode);
+        }
     }
 
     eGameEvent ProcessManager::GetEventId(CStr const& eventName) const
@@ -115,12 +142,41 @@ namespace ai
 
     int ProcessManager::GetNumEventsInQueue() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A1100
+        return static_cast<int>(m_eventQueue.size());
     }
 
     void ProcessManager::UpdateDieEvents()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A3830 - death events cannot wait for their timeout: an object about to be
+        // removed has to hear about it this frame, so they are delivered and dropped early.
+        auto it = m_eventQueue.begin();
+        while (it != m_eventQueue.end())
+        {
+            if (it->m_eventId != GE_OBJECT_DIE)
+            {
+                ++it;
+                continue;
+            }
+
+            if (it->m_recipientObjId == -10)
+            {
+                for (auto* obj : *theObjects)
+                {
+                    obj->OnEvent(*it);
+                }
+            }
+            else if (it->m_recipientObjId >= 0)
+            {
+                if (auto* obj = theObjects->GetEntityByObjId(it->m_recipientObjId))
+                {
+                    obj->OnEvent(*it);
+                }
+            }
+
+            // NOTE: unlike Update, this does not count what it delivers.
+            it = m_eventQueue.erase(it);
+        }
     }
 
     void ProcessManager::PostMessageA(ai::Event const& evn)

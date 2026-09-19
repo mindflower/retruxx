@@ -922,6 +922,20 @@ namespace ai
         }
     }
 
+    void SetUniversalJointParams(dxJoint* joint)
+    {
+        // RVA 0x815AC0 - the same soft stop applied to all three axis groups of a universal
+        // joint, so a ragdoll limb settles against its limit instead of snapping to it.
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            int const group = axis * 0x100;
+            dJointSetUniversalParam(joint, dParamBounce + group, 0.0f);
+            dJointSetUniversalParam(joint, dParamCFM + group, 0.0f);
+            dJointSetUniversalParam(joint, dParamStopERP + group, 0.89999998f);
+            dJointSetUniversalParam(joint, dParamStopCFM + group, 0.0f);
+        }
+    }
+
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const* node)
     {
         if (!node)

@@ -102,6 +102,8 @@ namespace ai
         void _Init();
         void StartSearchInternal();
         void ClearHelpers();
+        // Not in the shipped build, which repeats this inline at the end of each search.
+        void _BuildPathFromParents(unsigned int endNode, bool fTarget);
         unsigned int MapIndexToId(const ai::MapIndex& v) const;
         void IdToMapIndex(unsigned int id, ai::MapIndex& res) const;
         void StraightenPath(bool bForDijkstra);
