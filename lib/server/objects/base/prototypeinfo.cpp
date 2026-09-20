@@ -79,7 +79,9 @@ namespace ai
 
 	CStr PrototypeInfo::GetDebugDescription() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x729DB0 - the class name leads, so this reads as e.g.
+		// "WheelPrototypeInfo name = 'wheelBig'".
+		return m_className + CStr("PrototypeInfo name = '") + m_prototypeName + CStr("'");
 	}
 
 	PrototypeInfo::~PrototypeInfo()
@@ -98,6 +100,8 @@ namespace ai
 
 	void PrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x729F40 - copying is opt-in: a prototype class that wants to inherit from
+		// another overrides this, so reaching the base means one that does not was asked to.
+		M3D_CRITICAL_ERROR(CStr("copying for ") + m_className + CStr("PrototypeInfo is not implemented."));
 	}
 }

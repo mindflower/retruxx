@@ -212,8 +212,8 @@ void NavPointButton::UpdateTooltip()
     // RVA 0x4F5B90 - clicking the button toggles the nav point, so the tooltip
     // says which way it will go.
     CStr const& stringId = GetNavPoint() ? m_aif.m_strIdDeleteNavPoint : m_aif.m_strIdAddNavPoint;
-    CStr const tooltip = M3D_APP->GetStringByStringId0(stringId);
-    SetProperty(PROP_WND_TOOLTIP, const_cast<char*>(tooltip.c_str()));
+    CStr tooltip = M3D_APP->GetStringByStringId0(stringId);
+    SetProperty(PROP_WND_TOOLTIP, &tooltip);
 }
 
 void NavPointButton::OnNcPaint(m3d::ui::DrawInfo const& di, unsigned clr)

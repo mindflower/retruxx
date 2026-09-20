@@ -727,312 +727,284 @@ namespace m3d
         CStr const& paneName,
         PaneFlagBg bgFlags)
     {
-        //TODO: check and refactor all this shit!!!
+        // RVA 0x67E690 - draws a window frame as a nine-slice: a background quad, four edge
+        // bars and four corners. A skin only has to supply a left bar, a top bar and the
+        // top-left corner; the opposite pieces are drawn from those with the texture
+        // coordinates reversed, so the art mirrors rather than repeating.
         Pane* pane = nullptr;
         m_panes.get(paneName, pane);
         if (!pane)
         {
             m_panes.get("defaultWnd", pane);
         }
-        if (pane)
+        if (!pane)
         {
-            M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-            M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-            M3D_APP->m_renderer->PushBlend(rend::BM_ALPHA);
-            M3D_APP->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
-            M3D_APP->m_renderer->PushZbState(rend::ZB_DISABLE);
-            auto frame = pane->m_frame[bgFlags];
-            auto cornerSize = 0;
-            if (frame)
+            return;
+        }
+
+        auto* renderer = M3D_APP->m_renderer;
+        renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        renderer->PushBlend(rend::BM_ALPHA);
+        renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        renderer->PushZbState(rend::ZB_DISABLE);
+
+        // The corner size comes from the frame for the requested state, falling back to the
+        // default one.
+        int cornerSize = 0;
+        {
+            Frame const* cornerFrame = pane->m_frame[bgFlags];
+            if (!cornerFrame)
             {
-                cornerSize = frame->m_cornerSize;
+                cornerFrame = pane->m_frame[PANE_FLAG_BG_OUT];
             }
-            else
+            if (cornerFrame)
             {
-                if (pane->m_frame[0])
-                {
-                    cornerSize = pane->m_frame[0]->m_cornerSize;
-                }
+                cornerSize = cornerFrame->m_cornerSize;
             }
-            int drawComplexCorners = 0;
-            if (rect.width > cornerSize && rect.height > cornerSize && (drawFlags & 4) != 0)
+        }
+
+        // Corners are only drawn when the pane is bigger than they are; otherwise the edges run
+        // the whole way and nothing is held back for them.
+        bool const drawComplexCorners =
+            rect.width > cornerSize && rect.height > cornerSize && (drawFlags & 4) != 0;
+        if (!drawComplexCorners)
+        {
+            cornerSize = 0;
+        }
+
+        if ((drawFlags & 1) != 0)
+        {
+            // The background of the requested state, or the default one if that state has none.
+            PaneFlagBg bgIndex = bgFlags;
+            rend::TexHandle texture;
+            if (pane->m_bg[bgFlags])
             {
-                drawComplexCorners = 1;
+                texture = pane->m_bg[bgFlags]->m_texture;
             }
-            else
+            if (!texture.IsValid())
             {
-                drawComplexCorners = 0;
-                cornerSize = 0;
-            }
-            if ((drawFlags & 1) != 0)
-            {
-                rend::TexHandle texture;
-                auto flag = bgFlags;
-                if (pane->m_bg[bgFlags] && pane->m_bg[bgFlags]->m_texture.IsValid())
-                {
-                    texture = pane->m_bg[bgFlags]->m_texture;
-                }
-                else
-                {
-                    flag = PANE_FLAG_BG_OUT;
-                }
-                if (!texture.IsValid() && pane->m_bg[PANE_FLAG_BG_OUT])
+                bgIndex = PANE_FLAG_BG_OUT;
+                if (pane->m_bg[PANE_FLAG_BG_OUT])
                 {
                     texture = pane->m_bg[PANE_FLAG_BG_OUT]->m_texture;
                 }
-                if (texture.IsValid())
-                {
-                    //TODO: check this!!!!!!!!!
-                    int sx = 0;
-                    int sy = 0;
-                    M3D_APP->m_renderer->GetDims(texture, sx, sy);
-                    float fsx = sx;
-                    float fsy = sy;
-                    M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-
-                    auto tu1 = 1.0;
-                    auto tv1 = 1.0;
-                    if (pane->m_bg[flag]->m_repeatU)
-                    {
-                        tu1 = rect.width / fsx;
-                    }
-                    if (pane->m_bg[flag]->m_repeatV)
-                    {
-                        tv1 = rect.height / fsy;
-                    }
-                    auto bgRect = rect;
-                    if (pane->m_bInnerBg && (drawFlags & 6) != 0)
-                    {
-                        auto barTexWidth = 0.0;
-                        if (pane->m_frame[flag])
-                        {
-                            barTexWidth = pane->m_frame[flag]->m_barTexWidth;
-                        }
-                        bgRect.x0 = rect.x0 - (0.0 - barTexWidth);
-                        bgRect.y0 = rect.y0 - (0.0 - barTexWidth);
-                        bgRect.width = ((0.0 - barTexWidth) * 2.0) + rect.width;
-                        bgRect.height = ((0.0 - barTexWidth) * 2.0) + rect.height;
-                    }
-                    M3D_APP->m_renderer->SetTexture(0, texture, -1.0);
-                    AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tu1, tv1);
-                }
             }
 
-            if (pane->m_frame[bgFlags] || pane->m_frame[PANE_FLAG_BG_OUT])
+            if (texture.IsValid())
             {
-                auto flag = bgFlags;
-                if (!pane->m_frame[bgFlags])
+                int sx = 0;
+                int sy = 0;
+                renderer->GetDims(texture, sx, sy);
+                float texWidth = static_cast<float>(sx);
+                float texHeight = static_cast<float>(sy);
+                renderer->AbsToRel(texWidth, texHeight);
+
+                // A background that does not repeat is stretched over the pane instead.
+                BackGround const* bg = pane->m_bg[bgIndex];
+                float tu = 1.0f;
+                float tv = 1.0f;
+                if (bg->m_repeatU)
                 {
-                    flag = PANE_FLAG_BG_OUT;
+                    tu = rect.width / texWidth;
                 }
-                if ((drawFlags & 2) != 0)
+                if (bg->m_repeatV)
                 {
-                    if (pane->m_frame[flag]->m_textures[0].IsValid())
+                    tv = rect.height / texHeight;
+                }
+
+                auto bgRect = rect;
+                if (pane->m_bInnerBg && (drawFlags & 6) != 0)
+                {
+                    // Inset by the bar width so the background does not show through under the
+                    // border. The frame is chosen independently of whichever background won.
+                    Frame const* insetFrame = pane->m_frame[bgFlags];
+                    if (!insetFrame)
                     {
-                        auto bgRect = rect;
-                        bgRect.x0 = rect.x0;
-                        bgRect.width = (bgRect.x0 + pane->m_frame[flag]->m_barTexWidth) - bgRect.x0;
-                        bgRect.y0 = rect.y0 + cornerSize;
-                        bgRect.height = (rect.y0 + rect.height - cornerSize) - bgRect.y0;
-
-                        auto tv1 = rect.height;
-                        auto scale = rect.height;
-                        if (pane->m_frame[flag]->m_barRepeat)
-                        {
-                            //RETRUXX_NOT_IMPLEMENTED;
-                            int sx = 0;
-                            int sy = 0;
-                            M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
-                            float fsx = sx;
-                            float fsy = sy;
-                            M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                            tv1 = bgRect.height;
-                            scale = fsy;
-                        }
-                        M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[0], -1.0);
-                        AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
-
-                        bgRect.x0 = rect.x0 + rect.width - cornerSize;
-                        bgRect.height = (rect.y0 + rect.height - cornerSize) - (rect.y0 + cornerSize);
-                        bgRect.y0 = rect.y0 + cornerSize;
-                        bgRect.width = cornerSize;
-                        if (pane->m_frame[flag]->m_textures[2].IsValid())
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[2], -1.0);
-
-                            if (pane->m_frame[flag]->m_barRepeat)
-                            {
-                                int sx = 0;
-                                int sy = 0;
-                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
-                                float fsx = sx;
-                                float fsy = sy;
-                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                                tv1 = bgRect.height;
-                                scale = fsy;
-                                //RETRUXX_NOT_IMPLEMENTED;
-                            }
-                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, tv1 / scale);
-                        }
-                        else
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[2], -1.0);
-                            if (pane->m_frame[flag]->m_barRepeat)
-                            {
-                                int sx = 0;
-                                int sy = 0;
-                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[2], sx, sy);
-                                float fsx = sx;
-                                float fsy = sy;
-                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                                tv1 = bgRect.height;
-                                scale = fsy;
-                            }
-                            //RETRUXX_NOT_IMPLEMENTED;
-                            AddFlatAxialQuad(di, bgRect, clr, 1.0, 0.0, 0.0, tv1 / scale);
-                        }
+                        insetFrame = pane->m_frame[PANE_FLAG_BG_OUT];
                     }
 
-                    if (pane->m_frame[flag]->m_textures[1].IsValid())
+                    float const inset = insetFrame ? static_cast<float>(insetFrame->m_barTexWidth) : 0.0f;
+                    bgRect.x0 = rect.x0 + inset;
+                    bgRect.y0 = rect.y0 + inset;
+                    bgRect.width = rect.width - inset * 2.0f;
+                    bgRect.height = rect.height - inset * 2.0f;
+                }
+
+                renderer->SetTexture(0, texture, -1.0);
+                AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tu, tv);
+            }
+        }
+
+        Frame const* frame = pane->m_frame[bgFlags];
+        if (!frame)
+        {
+            frame = pane->m_frame[PANE_FLAG_BG_OUT];
+        }
+
+        if (frame)
+        {
+            // Every edge is the same thickness: the width of the bar artwork. cornerSize only
+            // says where along an edge the bar starts and stops.
+            float const barW = static_cast<float>(frame->m_barTexWidth);
+
+            // A bar that repeats is tiled by its own size; one that does not is stretched, which
+            // is the same as a single span of the texture.
+            auto repeatAlong = [&](rend::TexHandle tex, float span, bool vertical) -> float
+            {
+                if (!frame->m_barRepeat)
+                {
+                    return 1.0f;
+                }
+
+                int sx = 0;
+                int sy = 0;
+                renderer->GetDims(tex, sx, sy);
+                float texWidth = static_cast<float>(sx);
+                float texHeight = static_cast<float>(sy);
+                renderer->AbsToRel(texWidth, texHeight);
+                return span / (vertical ? texHeight : texWidth);
+            };
+
+            if ((drawFlags & 2) != 0)
+            {
+                if (frame->m_textures[0].IsValid())
+                {
+                    float const barY = rect.y0 + cornerSize;
+                    float const barH = (rect.y0 + rect.height - cornerSize) - barY;
+
+                    renderer->SetTexture(0, frame->m_textures[0], -1.0);
+
+                    BoundsBase<float> bar;
+                    bar.x0 = rect.x0;
+                    bar.y0 = barY;
+                    bar.width = barW;
+                    bar.height = barH;
+                    AddFlatAxialQuad(
+                        di, bar, clr, 0.0, 0.0, 1.0, repeatAlong(frame->m_textures[0], barH, true));
+
+                    bar.x0 = (rect.x0 + rect.width) - barW;
+                    if (!frame->m_textures[2].IsValid())
                     {
-                        auto bgRect = rect;
-                        bgRect.x0 = rect.x0 + cornerSize;
-                        bgRect.width = (rect.x0 + rect.width) - cornerSize - bgRect.x0;
-                        bgRect.height = cornerSize;
-                        bgRect.y0 = rect.y0;
-
-                        auto tv0 = rect.width;
-                        auto scale = rect.width;
-                        if (pane->m_frame[flag]->m_barRepeat)
-                        {
-                            //RETRUXX_NOT_IMPLEMENTED;
-                            int sx = 0;
-                            int sy = 0;
-                            M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
-                            float fsx = sx;
-                            float fsy = sy;
-                            M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                            tv0 = bgRect.width;
-                            scale = fsx;
-                        }
-                        M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[1], -1.0);
-                        AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
-
-                        bgRect.x0 = rect.x0 + cornerSize;
-                        bgRect.height = cornerSize;
-                        bgRect.y0 = rect.height + rect.y0 - cornerSize;
-                        bgRect.width = (rect.x0 + rect.width - cornerSize) - bgRect.x0;
-                        if (pane->m_frame[flag]->m_textures[3].IsValid())
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[3], -1.0);
-
-                            if (pane->m_frame[flag]->m_barRepeat)
-                            {
-                                //RETRUXX_NOT_IMPLEMENTED;
-                                int sx = 0;
-                                int sy = 0;
-                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[0], sx, sy);
-                                float fsx = sx;
-                                float fsy = sy;
-                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                                tv0 = bgRect.width;
-                                scale = fsx;
-                            }
-                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, tv0 / scale, 1.0);
-                        }
-                        else
-                        {
-                            // No dedicated bottom-bar texture: reuse the top-bar texture (still
-                            // bound above) drawn with the V coordinate flipped (1 -> 0).
-                            if (pane->m_frame[flag]->m_barRepeat)
-                            {
-                                int sx = 0;
-                                int sy = 0;
-                                M3D_APP->m_renderer->GetDims(pane->m_frame[flag]->m_textures[1], sx, sy);
-                                float fsx = sx;
-                                float fsy = sy;
-                                M3D_APP->m_renderer->AbsToRel(fsx, fsy);
-                                tv0 = bgRect.width;
-                                scale = fsx;
-                            }
-                            AddFlatAxialQuad(di, bgRect, clr, 0.0, 1.0, tv0 / scale, 0.0);
-                        }
+                        // No right bar of its own, so the left one - still bound - is drawn with
+                        // U running backwards.
+                        AddFlatAxialQuad(
+                            di, bar, clr, 1.0, 0.0, 0.0, repeatAlong(frame->m_textures[0], barH, true));
+                    }
+                    else
+                    {
+                        renderer->SetTexture(0, frame->m_textures[2], -1.0);
+                        AddFlatAxialQuad(
+                            di, bar, clr, 0.0, 0.0, 1.0, repeatAlong(frame->m_textures[2], barH, true));
                     }
                 }
-                if (drawComplexCorners)
+
+                if (frame->m_textures[1].IsValid())
                 {
-                    if (pane->m_frame[flag]->m_textures[4].IsValid())
+                    float const barX = rect.x0 + cornerSize;
+                    float const barWidth = (rect.x0 + rect.width - cornerSize) - barX;
+
+                    renderer->SetTexture(0, frame->m_textures[1], -1.0);
+
+                    BoundsBase<float> bar;
+                    bar.x0 = barX;
+                    bar.y0 = rect.y0;
+                    bar.width = barWidth;
+                    bar.height = barW;
+                    AddFlatAxialQuad(
+                        di, bar, clr, 0.0, 0.0, repeatAlong(frame->m_textures[1], barWidth, false), 1.0);
+
+                    bar.y0 = (rect.y0 + rect.height) - barW;
+                    if (!frame->m_textures[3].IsValid())
                     {
-                        //TODO: check this!!
-                        M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[4], -1.0);
-                        auto bgRect = rect;
-                        bgRect.width = cornerSize;
-                        bgRect.height = cornerSize;
-                        AddFlatAxialQuad(di, bgRect, clr, 0.0, 0.0, 1.0, 1.0);
-                        float tu0 = 0.0;
-                        float tv0 = 0.0;
-                        float tu1 = 0.0;
-                        float tv1 = 0.0;
-                        if (!pane->m_frame[flag]->m_textures[7].IsValid())
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[4], -1.0);
-                            tu0 = 1.0;
-                            tv0 = 1.0;
-                        }
-                        else
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[7], -1.0);
-                            tu1 = 1.0;
-                            tv1 = 1.0;
-                        }
-                        bgRect.x0 = rect.x0 + rect.width - cornerSize;
-                        bgRect.y0 = rect.y0 + rect.height - cornerSize;
-                        AddFlatAxialQuad(di, bgRect, clr, tu0, tv0, tu1, tv1);
-
-                        tu0 = 0.0;
-                        tv0 = 0.0;
-                        tu1 = 0.0;
-                        tv1 = 0.0;
-                        if (!pane->m_frame[flag]->m_textures[6].IsValid())
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[4], -1.0);
-                            tv0 = 1.0;
-                        }
-                        else
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[6], -1.0);
-                            tv1 = 1.0;
-                        }
-
-                        bgRect.x0 = rect.x0;
-                        bgRect.y0 = rect.y0 + rect.height - cornerSize;
-                        bgRect.width = cornerSize;
-                        bgRect.height = cornerSize;
-                        AddFlatAxialQuad(di, bgRect, clr, 0.0, tv0, 1.0, tv1);
-
-                        if (!pane->m_frame[flag]->m_textures[5].IsValid())
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[6], -1.0);
-                            tu0 = 1.0;
-                        }
-                        else
-                        {
-                            M3D_APP->m_renderer->SetTexture(0, pane->m_frame[flag]->m_textures[5], -1.0);
-                            tu1 = 1.0;
-                        }
-
-                        bgRect.x0 = rect.x0 + rect.width - cornerSize;
-                        bgRect.y0 = rect.y0;
-                        bgRect.width = cornerSize;
-                        bgRect.height = cornerSize;
-                        AddFlatAxialQuad(di, bgRect, clr, tu0, 0.0, tu1, 1.0);
+                        // Likewise the top bar drawn with V running backwards.
+                        AddFlatAxialQuad(
+                            di, bar, clr, 0.0, 1.0, repeatAlong(frame->m_textures[1], barWidth, false), 0.0);
+                    }
+                    else
+                    {
+                        renderer->SetTexture(0, frame->m_textures[3], -1.0);
+                        AddFlatAxialQuad(
+                            di, bar, clr, 0.0, 0.0, repeatAlong(frame->m_textures[3], barWidth, false), 1.0);
                     }
                 }
             }
-            M3D_RENDERER->PopBlend();
-            M3D_RENDERER->PopZbState();
-            M3D_RENDERER->SetAlphaTest(0);
+
+            // The top-left corner is the one a skin must supply; the other three fall back to it
+            // mirrored into place.
+            if (drawComplexCorners && frame->m_textures[4].IsValid())
+            {
+                float const cs = static_cast<float>(cornerSize);
+
+                BoundsBase<float> corner;
+                corner.x0 = rect.x0;
+                corner.y0 = rect.y0;
+                corner.width = cs;
+                corner.height = cs;
+
+                renderer->SetTexture(0, frame->m_textures[4], -1.0);
+                AddFlatAxialQuad(di, corner, clr, 0.0, 0.0, 1.0, 1.0);
+
+                float tu0 = 0.0f;
+                float tv0 = 0.0f;
+                float tu1 = 1.0f;
+                float tv1 = 1.0f;
+                if (!frame->m_textures[7].IsValid())
+                {
+                    // Bottom right: the top-left corner turned through both axes.
+                    renderer->SetTexture(0, frame->m_textures[4], -1.0);
+                    tu0 = 1.0f;
+                    tv0 = 1.0f;
+                    tu1 = 0.0f;
+                    tv1 = 0.0f;
+                }
+                else
+                {
+                    renderer->SetTexture(0, frame->m_textures[7], -1.0);
+                }
+                corner.x0 = (rect.x0 + rect.width) - cs;
+                corner.y0 = (rect.y0 + rect.height) - cs;
+                AddFlatAxialQuad(di, corner, clr, tu0, tv0, tu1, tv1);
+
+                if (!frame->m_textures[6].IsValid())
+                {
+                    // Bottom left: flipped vertically.
+                    renderer->SetTexture(0, frame->m_textures[4], -1.0);
+                    tv0 = 1.0f;
+                    tv1 = 0.0f;
+                }
+                else
+                {
+                    renderer->SetTexture(0, frame->m_textures[6], -1.0);
+                    tv0 = 0.0f;
+                    tv1 = 1.0f;
+                }
+                corner.x0 = rect.x0;
+                corner.y0 = (rect.y0 + rect.height) - cs;
+                AddFlatAxialQuad(di, corner, clr, 0.0, tv0, 1.0, tv1);
+
+                if (!frame->m_textures[5].IsValid())
+                {
+                    // Top right: flipped horizontally.
+                    renderer->SetTexture(0, frame->m_textures[4], -1.0);
+                    tu0 = 1.0f;
+                    tu1 = 0.0f;
+                }
+                else
+                {
+                    renderer->SetTexture(0, frame->m_textures[5], -1.0);
+                    tu0 = 0.0f;
+                    tu1 = 1.0f;
+                }
+                corner.x0 = (rect.x0 + rect.width) - cs;
+                corner.y0 = rect.y0;
+                AddFlatAxialQuad(di, corner, clr, tu0, 0.0, tu1, 1.0);
+            }
         }
+
+        renderer->PopBlend();
+        renderer->PopZbState();
+        renderer->SetAlphaTest(0);
     }
 
     void ui::GfxServer::AddText(
@@ -1115,27 +1087,37 @@ namespace m3d
         return m_btnWidth;
     }
 
+    // A value with no alpha byte that fits in a byte is a palette index rather than a colour.
+    unsigned ui::GfxServer::_ResolveColor(unsigned clr) const
+    {
+        if ((clr & 0xFF000000) == 0 && clr < 0xFF)
+        {
+            return m_colors[clr];
+        }
+        return clr;
+    }
+
     void ui::GfxServer::AddFlatAxialQuad(DrawInfo const& di, BoundsBase<float> const& rect, unsigned clr)
     {
-        M3D_RENDERER->PushBlend();
-        M3D_RENDERER->PushZbState(m3d::rend::ZbState::ZB_DISABLE);
-        M3D_RENDERER->SetWhiteTexture(0);
-        M3D_RENDERER->DisableTextureStages(1);
-        M3D_RENDERER->SetStageState(0, m3d::rend::BlendMode::BM_COLOR, m3d::rend::TextureState::TS_MODULATE);
-        M3D_RENDERER->SetStageState(0, m3d::rend::BlendMode::BM_ALPHA, m3d::rend::TextureState::TS_MODULATE);
+        // RVA 0x67B830 - an untextured fill: a white texture modulated by the colour, with the
+        // depth buffer off so it always lands on top.
+        auto* renderer = M3D_RENDERER;
+        renderer->PushBlend();
+        renderer->PushZbState(rend::ZB_DISABLE);
+        renderer->SetWhiteTexture(0);
+        renderer->DisableTextureStages(1);
+        renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
 
-        auto v5 = clr;
-        if ((clr & 0xFF000000) == 0 && clr < 0xFF)
-            v5 = this->m_colors[clr];
+        // Blending is only worth paying for when the colour actually has an alpha channel.
+        renderer->SetBlend((_ResolveColor(clr) & 0xFF000000) != 0 ? rend::BM_ALPHA : rend::BM_NONE, 0);
 
-        if ((v5 & 0xFF000000) != 0)
-            M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_ALPHA, 0);
-        else
-            M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_NONE, 0);
-
+        // NOTE: the raw colour is passed on, not the resolved one - the overload below resolves
+        // it again for itself.
         AddFlatAxialQuad(di, rect, clr, 0.0, 0.0, 1.0, 1.0);
-        M3D_RENDERER->PopZbState();
-        M3D_RENDERER->PopBlend();
+
+        renderer->PopZbState();
+        renderer->PopBlend();
     }
 
     int ui::GfxServer::SetFont(int& fontId)
@@ -1204,11 +1186,11 @@ namespace m3d
         if (u1 >= 0.0)
             s.x = u1;
         else
-            s.x = 0.0 - (u1 / sx);
+            s.x = 0.0 - (u1 / (float)sx);
         if (v1 >= 0.0)
             s.y = v1;
         else
-            s.y = 0.0 - (v1 / sy);
+            s.y = 0.0 - (v1 / (float)sy);
         AddFlatAxialQuad(di, rect, clr, u0, v0, s.x, s.y);
         M3D_RENDERER->PopBlend();
         M3D_RENDERER->PopZbState();
@@ -1341,72 +1323,72 @@ namespace m3d
         float tu1,
         float tv1)
     {
-        //TODO: check this and recator
-        auto v8 = rc.width;
-        auto v9 = rc.height;
-        auto actual_4 = di.m_originalRect.y0 + rc.y0;
-        auto v10 = di.m_originalRect.x0 + rc.x0;
-        auto v11 = di.m_clippedRect.x0;
-        auto v12 = v8 + v10;
-        auto actual_8 = v8;
-        auto actual_12 = v9;
-        auto v13 = di.m_clippedRect.width + v11;
-        auto v14 = v9 + actual_4;
+        // RVA 0x67B510 - draws one axis-aligned quad of a widget, clipped to whatever part of
+        // it is still visible. Cutting a quad down also has to cut its texture coordinates
+        // down, or the artwork would slide as the clip moves.
 
-        auto v15 = 0.0;
-        auto clipped_4 = 0.0;
-        auto v17 = 0.0;
-        auto clipped_12 = 0.0;
-        if (v11 > (v8 + v10) || v10 > v13 || di.m_clippedRect.y0 > (v9 + actual_4) ||
-            actual_4 > (di.m_clippedRect.height + di.m_clippedRect.y0))
+        // Where the quad lands, in the window's own space.
+        float const left = di.m_originalRect.x0 + rc.x0;
+        float const top = di.m_originalRect.y0 + rc.y0;
+        float const right = left + rc.width;
+        float const bottom = top + rc.height;
+
+        float const clipLeft = di.m_clippedRect.x0;
+        float const clipTop = di.m_clippedRect.y0;
+        float const clipRight = clipLeft + di.m_clippedRect.width;
+        float const clipBottom = clipTop + di.m_clippedRect.height;
+
+        float visibleX = 0.0f;
+        float visibleY = 0.0f;
+        float visibleWidth = 0.0f;
+        float visibleHeight = 0.0f;
+
+        // NOTE: nothing visible leaves the quad collapsed at the origin rather than skipping
+        // it, so a fully clipped widget still submits a degenerate sprite at (0, 0).
+        if (clipLeft <= right && left <= clipRight && clipTop <= bottom && top <= clipBottom)
         {
-            v15 = 0.0;
-            clipped_4 = 0.0;
-            v17 = 0.0;
-            clipped_12 = 0.0;
+            visibleX = clipLeft > left ? clipLeft : left;
+            visibleY = clipTop > top ? clipTop : top;
+            visibleWidth = (right <= clipRight ? right : clipRight) - visibleX;
+            visibleHeight = (bottom <= clipBottom ? bottom : clipBottom) - visibleY;
         }
-        else
+
+        // NOTE: a quad is dropped only when both dimensions are zero, so one that is flat
+        // in a single direction is still handed to the renderer.
+        if (rc.width == 0.0f && rc.height == 0.0f)
         {
-            v15 = di.m_clippedRect.x0;
-            if (v15 <= v10)
-                v15 = di.m_originalRect.x0 + rc.x0;
-            if (v12 <= v13)
-                v13 = v8 + v10;
-            auto v16 = di.m_originalRect.y0 + rc.y0;
-            if (di.m_clippedRect.y0 > actual_4)
-                v16 = di.m_clippedRect.y0;
-            if (v14 > (di.m_clippedRect.height + di.m_clippedRect.y0))
-                v14 = di.m_clippedRect.height + di.m_clippedRect.y0;
-            clipped_4 = v16;
-            v17 = v13 - v15;
-            clipped_12 = v14 - v16;
+            return;
         }
-        if ((v12 - v10) != 0.0 || (actual_4 - (actual_12 + actual_4)) != 0.0)
+
+        float const visibleRight = visibleX + visibleWidth;
+        float const visibleBottom = visibleY + visibleHeight;
+
+        // Each edge that was cut moves its texture coordinate in by the same fraction, so the
+        // texture stays pinned to the untrimmed corners.
+        float u0 = tu0;
+        float u1 = tu1;
+        float v0 = tv0;
+        float v1 = tv1;
+
+        if (visibleX > left)
         {
-            auto v18 = tu0;
-            auto v19 = tv1;
-            auto u0 = tu0;
-            auto tu0a = tv0;
-            auto tu2 = tu1;
-            auto u1 = tv1;
-            if (v15 > v10)
-            {
-                v19 = tv1;
-                u0 = (((tu1 - v18) / actual_8) * (v15 - v10)) + v18;
-            }
-            auto v20 = v17 + v15;
-            if (v12 > v20)
-                tu2 = (((v18 - tu1) / actual_8) * (v12 - v20)) + tu1;
-            if (clipped_4 > actual_4)
-                tu0a = (((v19 - tv0) / actual_12) * (clipped_4 - actual_4)) + tv0;
-            if ((actual_12 + actual_4) > (clipped_12 + clipped_4))
-                u1 = (((tv0 - v19) / actual_12) * ((actual_12 + actual_4) - (clipped_12 + clipped_4))) + v19;
-            auto v21 = clr;
-            if ((clr & 0xFF000000) == 0 && clr < 0xFF)
-                v21 = this->m_colors[clr];
-            m3d::Application::g_pApp->PutSprite2Rel(
-                v15, clipped_4, u0, tu0a, v20, clipped_12 + clipped_4, tu2, u1, v21);
+            u0 = tu0 + (tu1 - tu0) / rc.width * (visibleX - left);
         }
+        if (right > visibleRight)
+        {
+            u1 = tu1 + (tu0 - tu1) / rc.width * (right - visibleRight);
+        }
+        if (visibleY > top)
+        {
+            v0 = tv0 + (tv1 - tv0) / rc.height * (visibleY - top);
+        }
+        if (bottom > visibleBottom)
+        {
+            v1 = tv1 + (tv0 - tv1) / rc.height * (bottom - visibleBottom);
+        }
+
+        M3D_APP->PutSprite2Rel(
+            visibleX, visibleY, u0, v0, visibleRight, visibleBottom, u1, v1, _ResolveColor(clr));
     }
 
     void ui::GfxServer::FlushWindow(Wnd* wnd)

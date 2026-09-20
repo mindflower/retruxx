@@ -54,6 +54,8 @@ namespace ai
         // The manager hands out affix ids and matches affixes by name; the group creates them.
         friend class AffixManager;
         friend class AffixGroup;
+        // Obj::ApplyAffix records the id of each affix it applies.
+        friend class Obj;
 
     private:
         int m_affixId;

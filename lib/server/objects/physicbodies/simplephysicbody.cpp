@@ -10,19 +10,21 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(SimplePhysicBody);
 
-    bool SimplePhysicBodyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    bool SimplePhysicBodyPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851030 - adds nothing of its own to what the base reads.
+        return PhysicBodyPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     SimplePhysicBodyPrototypeInfo::SimplePhysicBodyPrototypeInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8510D0 - nothing of its own; the base does all the setup.
     }
 
-    SimplePhysicBody::SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const&)
+    SimplePhysicBody::SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const& prototypeInfo)
+        : PhysicBody(prototypeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851080 - nothing of its own.
     }
 
     SimplePhysicBody::~SimplePhysicBody() = default;

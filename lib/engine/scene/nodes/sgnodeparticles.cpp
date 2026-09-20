@@ -27,9 +27,16 @@ namespace m3d
         return RT_CLASS_LOCAL(SgNode);
     }
 
-    int SgParticlesNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgParticlesNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6671C0
+        if (!SgNode::WriteToXmlNode(file, writeTo))
+        {
+            return 0;
+        }
+
+        writeTo->SetAttribute("psNumEmitterMesh", CStr(m_numMesh).c_str());
+        return 1;
     }
 
     int SgParticlesNode::Think(int dt, int curTime)
@@ -116,9 +123,17 @@ namespace m3d
         return 0;
     }
 
-    int SgParticlesNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>>&) const
+    int SgParticlesNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>>& properties) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x79D8D0
+        if (!SgNode::GetPropertiesList(properties))
+        {
+            return 0;
+        }
+
+        properties.insert(PROP_NODE_HANDLE);
+        properties.insert(PROP_PS_NUM_EMITTER_MESH);
+        return 1;
     }
 
     int SgParticlesNode::SetProperty(unsigned propId, void* property)
@@ -165,7 +180,9 @@ namespace m3d
 
     void SgParticlesNode::Restart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x79D760 - throws away the live particles so the effect plays again from
+        // the beginning.
+        static_cast<ParticlesServer*>(GetServer())->ResetItem(this);
     }
 
     DataServer* SgParticlesNode::GetServer() const
@@ -175,7 +192,27 @@ namespace m3d
 
     int SgParticlesNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x79D690 - a node with no server entry has no particle system behind it, so
+        // there is nothing to draw.
+        if (m_srvId == -1)
+        {
+            return 0;
+        }
+
+        // What the particles server wants is the node's transform plus the node itself, so
+        // it can reach the node's ParticlesList.
+        struct ParticlesNodeParams
+        {
+            /* 0x0000 */ CMatrix* m_localXForm;
+            /* 0x0004 */ SgNode* m_node;
+        };
+
+        ParticlesNodeParams ri;
+        ri.m_localXForm = &m_currentXForm;
+        ri.m_node = this;
+
+        GetServer()->RenderItem(m_srvId, &ri);
+        return 1;
     }
 
     void SgParticlesNode::CanBeFree()

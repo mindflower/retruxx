@@ -6,6 +6,7 @@
 #include <ode/objects.h>
 
 #include "base/prototypemanager.h"
+#include "physicbodies/sphericbody.h"
 #include "core/log.h"
 #include "ode/odecpp.h"
 #include "scene/scenegraph.h"
@@ -135,7 +136,8 @@ namespace ai
 
     SphericBody const* Wheel::_SphericBody() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE7D0 - a wheel's body is always a SphericBody.
+        return static_cast<SphericBody const*>(m_physicBody);
     }
 
     m3d::Class* Wheel::GetClass() const
@@ -348,14 +350,18 @@ namespace ai
         }
     }
 
-    void Wheel::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Wheel::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EEBA0
+        SimplePhysicObj::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("CurAngle", CStr(m_curAngle).c_str());
+        xmlNode->SetAttribute("Broken", CStr(static_cast<int>(m_bModelBroken)).c_str());
     }
 
     bool Wheel::CanChildBeAdded(m3d::Class*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EDFA0 - a wheel never takes children of any kind.
+        return false;
     }
 
     Vehicle* Wheel::GetVehicle() const
@@ -425,7 +431,32 @@ namespace ai
 
     void Wheel::HealModel()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EE350 - puts a blown tyre back to its intact mesh by winding the model's
+        // configuration back to variant 0.
+        m_bModelBroken = false;
+
+        auto* node = m_physicBody->m_Node;
+        if (!node)
+            return;
+
+        m3d::Configuration* cfg = nullptr;
+        node->GetProperty(m3d::PROP_DM_CFG, &cfg);
+
+        m3d::AnimatedModel* mdl = nullptr;
+        node->GetServer()->GetItemProperty(node->GetServerHandle(), m3d::PROP_INTERNAL_GETMODEL, &mdl);
+        if (!mdl)
+            return;
+
+        // A model with a single variant has no intact/broken pair to switch between.
+        if (mdl->GetCfgSize() == 1)
+            return;
+
+        if (cfg->m_num)
+        {
+            cfg->m_num = 0;
+            mdl->FromCfgNum(*cfg);
+            mdl->CalculateMeshes(*cfg);
+        }
     }
 
     void Wheel::DetachFromPhysicObj()
@@ -440,12 +471,20 @@ namespace ai
 
     void Wheel::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EDDE0 - the splash and suspension nodes belong to the map being left, so
+        // the wheel drops them rather than carrying dangling pointers across.
+        SimplePhysicObj::SetPassedToAnotherMapStatus();
+        m_SplashEffect = nullptr;
+        m_MakeSplash = false;
+        m_suspensionNode = nullptr;
     }
 
-    void Wheel::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Wheel::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EDFB0
+        SimplePhysicObj::LoadRuntimeValues(xmlFile, xmlNode);
+        m3d::SafeFloatAttrib(m_curAngle, xmlNode, "CurAngle");
+        m3d::SafeBoolAttrib(m_bModelBroken, xmlNode, "Broken");
     }
 
     void Wheel::UnlinkGeomsFromCollisionCells()
@@ -512,11 +551,15 @@ namespace ai
 
     m3d::Object* Wheel::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EE5B0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* Wheel::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5EE3F0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }

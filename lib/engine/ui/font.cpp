@@ -838,49 +838,119 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
+        // A derived font shares its prototype's glyph texture and only rescales the metrics,
+        // so the prototype's rasterised size decides how the text actually looks. Prefer one
+        // at least as large as the target - shrinking a glyph keeps far more detail than
+        // stretching one does - and among those on the same side of it, the closest.
+        static bool IsBetterPrototype(float candidate, float current, float target)
+        {
+            if (candidate > target)
+            {
+                if (target > current)
+                {
+                    // The one we have is too small and this one is not.
+                    return true;
+                }
+                if (current > target)
+                {
+                    return (current - target) > (candidate - target);
+                }
+            }
+            if (target > candidate && target > current)
+            {
+                return (target - current) > (target - candidate);
+            }
+            return false;
+        }
+
         int FontManager::FindMatchFont(CStr const& name, float heightUnscaled, bool strictName, bool strictHeight)
         {
+            // RVA 0x8B7760 - finds a font already built at this size, or failing that the best
+            // prototype to derive one from.
             if (name.empty() || heightUnscaled <= 0.0)
             {
                 return -1;
             }
-            auto fontId = -1;
-            Font* font = nullptr;
-            auto viewport = Application::g_pApp->m_renderer->GetViewport();
-            //TODO: check this and recreate logic with foundProtoEqualUSize
-            auto heightScaled = (viewport.m_width * heightUnscaled) * 0.0009765625;
-            for (int i = 0; i<m_fonts.size();++i)
+
+            auto const viewport = Application::g_pApp->m_renderer->GetViewport();
+            // Fonts are rasterised for the current viewport; 1/1024 is the reference width the
+            // unscaled heights are quoted against.
+            float const heightScaled = (viewport.m_width * heightUnscaled) * 0.0009765625;
+
+            Font* prototype = nullptr;
+            bool foundProtoEqualUSize = false;
+
+            for (int i = 0; i < m_fonts.size(); ++i)
             {
-                if (!m_fonts[i] || m_fonts[i]->m_nameFull != name && strictName)
+                Font* const font = m_fonts[i];
+                if (!font || (strictName && font->m_nameFull != name))
                 {
                     continue;
                 }
-                auto heightThreshold = fabs(m_fonts[i]->m_heightScaled - heightScaled);
-                if (heightThreshold > 0.001 && strictHeight)
+
+                float const deltaScaled = fabs(font->m_heightScaled - heightScaled);
+                if (deltaScaled > 0.001 && strictHeight)
                 {
                     continue;
                 }
-                if (heightThreshold > 0.001)
+
+                bool const sameLogicalSize = fabs(font->m_heightUnscaled - heightUnscaled) <= 0.001;
+
+                if (deltaScaled <= 0.001)
                 {
-                    font = m_fonts[i];
+                    if (sameLogicalSize)
+                    {
+                        // Already built for exactly this request.
+                        return i;
+                    }
+
+                    // The same pixels under a different logical size: nothing can beat it, so
+                    // derive from it and stop looking.
+                    prototype = font;
+                    break;
                 }
-                else
+
+                if (!foundProtoEqualUSize)
                 {
-                    return i;
+                    if (sameLogicalSize)
+                    {
+                        // The same logical size built for another viewport. That is the right
+                        // family, so from here only fonts of that size are considered.
+                        prototype = font;
+                        foundProtoEqualUSize = true;
+                        continue;
+                    }
+                }
+                else if (!sameLogicalSize)
+                {
+                    continue;
+                }
+
+                if (!prototype)
+                {
+                    prototype = font;
+                    continue;
+                }
+                if (IsBetterPrototype(font->m_heightScaled, prototype->m_heightScaled, heightScaled))
+                {
+                    prototype = font;
                 }
             }
-            if (!font)
+
+            if (!prototype)
             {
-                return fontId;
+                return -1;
             }
-            auto newFont = new Font;
-            if (newFont->CreateFromPrototype(font, heightUnscaled))
+
+            auto* newFont = new Font;
+            if (newFont->CreateFromPrototype(prototype, heightUnscaled))
             {
                 m_fonts.push_back(newFont);
                 return m_fonts.size() - 1;
             }
+
             delete newFont;
-            return fontId;
+            return -1;
         }
     }
 }

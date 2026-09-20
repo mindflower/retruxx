@@ -6,6 +6,7 @@
 #include <ode/collision.h>
 
 #include "core/debugcounter.h"
+#include "server/objects/physicbodies/physichelpers.h"
 #include "core/log.h"
 #include "server/objects/base/physicobj.h"
 #include <server/server.h>
@@ -38,14 +39,16 @@ namespace ai
         return result;
     }
 
-    void Geom::SetBody(dxBody* const)
+    void Geom::SetBody(dxBody* const body)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE1A0
+        dGeomSetBody(m_geomId, body);
     }
 
     dxSpace* Geom::GetSpace() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6025C0
+        return dGeomGetSpace(m_geomId);
     }
 
     void Geom::UnlinkFromCollisionCells(int physicObjId)
@@ -65,9 +68,15 @@ namespace ai
         }
     }
 
-    void Geom::RelinkToSpace(dxSpace*)
+    void Geom::RelinkToSpace(dxSpace* newSpace)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616E10 - ODE will not move a geom between spaces on its own, so it has to
+        // be taken out of the old one first.
+        if (dGeomGetSpace(m_geomId))
+        {
+            dSpaceRemove(dGeomGetSpace(m_geomId), m_geomId);
+        }
+        dSpaceAdd(newSpace, m_geomId);
     }
 
     void Geom::SetRotation(Quaternion const& q)
@@ -92,7 +101,8 @@ namespace ai
 
     void Geom::Disable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE1B0
+        dGeomDisable(m_geomId);
     }
 
     void Geom::LinkToCollisionCells(int physicObjId, CellAabb* newAabb)
@@ -138,17 +148,20 @@ namespace ai
 
     Geom::CellAabb Geom::GetCollisionCellAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x756BB0 - the cells this geom was last linked into, not a fresh count.
+        return m_curAabb;
     }
 
     void* Geom::GetData() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6025A0
+        return dGeomGetData(m_geomId);
     }
 
     int Geom::GetGeomClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616E60
+        return dGeomGetClass(m_geomId);
     }
 
     Geom::CellAabb Geom::CountCellAabb() const
@@ -233,9 +246,10 @@ namespace ai
         dGeomUnlinkFromBody(this->m_geomId);
     }
 
-    void Geom::SetData(void*)
+    void Geom::SetData(void* ptr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6025B0
+        dGeomSetData(m_geomId, ptr);
     }
 
     void Geom::SetPosition(CVector const& vec)
@@ -245,7 +259,8 @@ namespace ai
 
     void Geom::Enable()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616E50
+        dGeomEnable(m_geomId);
     }
 
     void Geom::RelinkToCollisionCells(int physicObjId)
@@ -263,7 +278,8 @@ namespace ai
 
     bool Geom::IsEnabled() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x756BE0
+        return dGeomIsEnabled(m_geomId) != 0;
     }
 
     void Geom::CheckCollisionCells()
@@ -282,14 +298,29 @@ namespace ai
         }
     }
 
-    void Geom::SetDirection(CVector const&)
+    void Geom::SetDirection(CVector const& direction)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5D3FE0
+        SetDirectionToObject(*this, direction);
     }
 
-    void Geom::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Geom::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x756CA0 - a debug dump of what ODE currently holds for this geom.
+        dReal const* const posArray = dGeomGetPosition(m_geomId);
+        xmlNode->SetAttribute(
+            "Position", CStr(CVector(posArray[0], posArray[1], posArray[2])).c_str());
+
+        // ODE stores a quaternion as w, x, y, z.
+        float dq[4];
+        dGeomGetQuaternion(m_geomId, dq);
+        xmlNode->SetAttribute("Rotation", CStr(Quaternion(dq[1], dq[2], dq[3], dq[0])).c_str());
+
+        xmlNode->SetAttribute("Enabled", CStr(static_cast<int>(dGeomIsEnabled(m_geomId) != 0)).c_str());
+        // NOTE: the space is dumped as the raw pointer value, which is only good for
+        // telling two dumps apart within one run.
+        xmlNode->SetAttribute(
+            "Space", CStr(reinterpret_cast<unsigned>(dGeomGetSpace(m_geomId))).c_str());
     }
 
     Geom::Geom(dxGeom* const geomId, void(* movedCallback)(dxGeom*))

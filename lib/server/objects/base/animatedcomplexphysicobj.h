@@ -14,6 +14,9 @@ namespace ai
 
     class AnimatedComplexPhysicObj : public ai::ComplexPhysicObj
     {
+        // CreateTargetObject builds one of these.
+        friend class AnimatedComplexPhysicObjPrototypeInfo;
+
     protected:
         virtual  ~AnimatedComplexPhysicObj() override /* 0x00 */;
 

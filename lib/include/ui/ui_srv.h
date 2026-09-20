@@ -100,6 +100,8 @@ namespace m3d
             int GetFontId(CStr const&, float, FontType, union FontParams) const;
             int GetBtnWidth();
             void AddFlatAxialQuad(DrawInfo const&, BoundsBase<float> const&, unsigned int);
+            // Resolves a palette index to a colour; a real colour passes through.
+            unsigned int _ResolveColor(unsigned int clr) const;
             int SetFont(int&);
             int SetFont(Font*);
             int SetFont(CStr const&, float, FontType, union FontParams);

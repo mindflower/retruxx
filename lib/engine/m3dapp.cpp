@@ -2671,6 +2671,17 @@ namespace m3d
             return result;
         }
 
+        // RVA 0x686F10 (inlined) - words are joined with a space, except where that would
+        // double one up: at the start of a line, or when either side is itself a space.
+        CStr FormatTextSeparator(CStr const& line, CStr const& prevWord, CStr const& word)
+        {
+            if (!line.c_str() || !strlen(line.c_str()) || prevWord == " " || word == " ")
+            {
+                return CStr("");
+            }
+            return CStr(" ");
+        }
+
         void GetWord(CStr const& src, int i, m3d::TextWrapFlags wrapFlags, CStr& word, int& nextWordPos)
         {
             // TODO: generated code
@@ -3152,17 +3163,21 @@ namespace m3d
         CStr* leftInvisibleSubstr,
         CStr* rightInvisibleSubstr)
     {
-        // Initialize output parameters if provided
-        if (leftInvisibleSubstr && !leftInvisibleSubstr->empty())
+        // RVA 0x685610 - measures a string in the markup the UI uses, where '#' escapes the
+        // next control character, '@' introduces an eight digit colour code, and '&' opens a
+        // span that '|' closes. Only the characters that actually get drawn are counted.
+        //
+        // With a clip rect it also reports which character first falls outside it on each side,
+        // so a caller can scroll a field without measuring it twice.
+        if (leftInvisibleSubstr)
         {
-            *leftInvisibleSubstr = {};
+            *leftInvisibleSubstr = CStr("");
         }
-        if (rightInvisibleSubstr && !rightInvisibleSubstr->empty())
+        if (rightInvisibleSubstr)
         {
-            *rightInvisibleSubstr = {};
+            *rightInvisibleSubstr = CStr("");
         }
 
-        // Handle empty string case
         if (str.empty())
         {
             size.x = 0.0f;
@@ -3170,144 +3185,122 @@ namespace m3d
             return 0;
         }
 
-        // Get font
-        ui::Font* font = nullptr;
-        if (fid == 0xFFFFFFFF)
-        {  // NAN check (decompiler interpreted as NAN)
-            font = ui::Wnd::m_gfx->GetCurFont();
-        }
-        else
-        {
-            font = ui::Wnd::m_gfx->GetFontById(fid);
-        }
-
+        ui::Font* const font = fid == -1 ? ui::Wnd::m_gfx->GetCurFont() : ui::Wnd::m_gfx->GetFontById(fid);
         if (!font)
         {
             return 0;
         }
 
-        char const* text = str.c_str();
-        int textLength = strlen(text);
+        // Glyph metrics are held at the font's unscaled size, so everything is measured in
+        // those units and divided down once at the end.
+        float const scale = font->m_heightScaled / font->m_heightUnscaled;
 
-        float totalWidth = 0.0f;
-        float maxHeight = 0.0f;
-        int visibleCharCount = 0;
+        char const* const text = str.c_str();
+        int const len = text ? static_cast<int>(strlen(text)) : 0;
 
-        bool inHashMode = false;       // For '#' escape sequences
-        bool inAmpersandMode = false;  // For '&' sequences
+        float width = 0.0f;
+        float maxGlyphHeight = 0.0f;
+        int numChars = 0;
 
-        // Process each character
-        for (int i = 0; i < textLength; ++i)
+        bool escaped = false;
+        bool inSpan = false;
+
+        for (int i = 0; i < len; ++i)
         {
-            unsigned char currentChar = text[i];
-
-            if (!currentChar)
+            unsigned char const c = text[i];
+            if (!c)
             {
                 break;
             }
 
-            // Handle escape sequences
-            if (!inHashMode)
+            // A control character cannot be escaped and is never drawn.
+            if (c < ' ')
             {
-                switch (currentChar)
-                {
-                case '#':
-                    inHashMode = true;
-                    continue;
-                case '&':
-                    inAmpersandMode = true;
-                    continue;
-                case '|':
-                    if (inAmpersandMode)
-                    {
-                        inAmpersandMode = false;
-                    }
-                    continue;
-                case '@':
-                    // Skip 8 characters (probably a special code)
-                    i += 8;
-                    continue;
-                case '$':
-                    continue;  // Skip '$' character
-                }
-            }
-            else
-            {
-                inHashMode = false;
-            }
-
-            // Skip control characters
-            if (currentChar < ' ')
-            {
-                inHashMode = false;
+                escaped = false;
                 continue;
             }
 
-            // Check if text exceeds right clip boundary
-            if (csz && maxc)
+            if (!escaped)
             {
-                float scaledWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
-                if (scaledWidth > (csz->width + csz->x0))
+                if (c == '#')
                 {
-                    *maxc = i;
-                    if (rightInvisibleSubstr)
+                    escaped = true;
+                    continue;
+                }
+                if (c == '&')
+                {
+                    inSpan = true;
+                    continue;
+                }
+                if (c == '|')
+                {
+                    // A bar outside a span is markup; the one that closes a span is drawn.
+                    if (!inSpan)
                     {
-                        CStr temp(&text[i], 1);
-                        *rightInvisibleSubstr += temp;
+                        continue;
                     }
-                    break;
+                    inSpan = false;
+                }
+                else if (c == '@')
+                {
+                    // '@' plus eight digits of colour.
+                    i += 8;
+                    continue;
+                }
+                else if (c == '$')
+                {
+                    continue;
+                }
+            }
+            escaped = false;
+
+            // Past the right edge of the clip rect: report where it happened and stop.
+            if (csz && maxc && width / scale > csz->width + csz->x0)
+            {
+                *maxc = i;
+                if (rightInvisibleSubstr)
+                {
+                    // NOTE: only the one character is recorded before the loop stops, so this
+                    // is the first character off the right edge rather than all of them.
+                    *rightInvisibleSubstr += CStr(&text[i], 1);
+                }
+                break;
+            }
+
+            width += font->GetCharWidthAdvanced(c);
+
+            float const glyphHeight = font->GetGlyphSz(c).y;
+            if (glyphHeight > maxGlyphHeight)
+            {
+                maxGlyphHeight = glyphHeight;
+            }
+
+            // Still short of the left edge, so this character is scrolled out of view.
+            if (csz && minc && csz->x0 > width / scale)
+            {
+                *minc = i;
+                if (leftInvisibleSubstr)
+                {
+                    *leftInvisibleSubstr += CStr(&text[i], 1);
                 }
             }
 
-            // Get character metrics
-            float charWidth = font->GetCharWidthAdvanced(currentChar);
-            totalWidth += charWidth;
-
-            PointBase<float> glyphSize = font->GetGlyphSz(currentChar);
-
-            if (glyphSize.y > maxHeight)
-            {
-                maxHeight = glyphSize.y;
-            }
-
-            // Check if text starts after left clip boundary
-            if (csz && minc)
-            {
-                float scaledCurrentWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
-                if (csz->x0 > scaledCurrentWidth)
-                {
-                    *minc = i + 1;
-                    if (leftInvisibleSubstr)
-                    {
-                        CStr temp(&text[i], 1);
-                        *leftInvisibleSubstr += temp;
-                    }
-                }
-            }
-
-            ++visibleCharCount;
+            ++numChars;
         }
 
-        // Handle case with no visible characters
-        if (visibleCharCount == 0)
+        // A line of pure markup still has to report a height, so it borrows the one from 'A'.
+        if (!numChars)
         {
-            // Use 'A' glyph height as default if available
+            maxGlyphHeight = 0.0f;
             if (font->m_symbols.size() > 'A' && font->m_symbols['A'])
             {
-                maxHeight = font->m_symbols['A']->m_precalcedGlyphSz.y;
-            }
-            else
-            {
-                maxHeight = 0.0f;
+                maxGlyphHeight = font->m_symbols['A']->m_precalcedGlyphSz.y;
             }
         }
 
-        // Apply scaling and return results
-        float scaleFactor = font->m_heightScaled / font->m_heightUnscaled;
-        size.x = totalWidth / scaleFactor;
-        size.y = maxHeight / scaleFactor;
-
-        return visibleCharCount;
+        size.x = width / scale;
+        size.y = maxGlyphHeight / scale;
+        return numChars;
     }
 
     int Application::DrawTextRelT(float x, float y, unsigned dwColor, CStr const& strText, unsigned dwFlags, int fid)
@@ -3325,233 +3318,186 @@ namespace m3d
         TextWrapFlags wrapFlags,
         TextFormatFlags formatFlags)
     {
-        // TODO: generated code
+        // RVA 0x686F10 - breaks the text into lines that fit the client rect, honouring the
+        // explicit '|' breaks the strings carry and remembering the colour each line starts in.
         CStr src = textIn;
         CStr line;
-        CStr prevWord;
 
         int wordsInLine = 0;
-        float lineWidth = 0.0f;
-        float lineHeight = 0.0f;
-        float availableWidth = 0.0f;
+        float width = 0.0f;
+        float height = 0.0f;
 
-        PointBase<float> origin = at;
-        int prevWordPos = -1;
-        int lineColor = -1;
-
-        // Calculate available width based on text format
+        // How much room a line has depends on which edge the text is anchored to.
+        float available = 0.0f;
         switch (formatFlags)
         {
         case TF_CENTER:
-            availableWidth = di.m_clientRect.width;
+            available = di.m_clientRect.width;
             break;
 
         case TF_LEFT:
         case TF_FULL:
-            availableWidth = di.m_clientRect.width - (at.x - di.m_clientRect.x0);
+            available = di.m_clientRect.width - (at.x - di.m_clientRect.x0);
             break;
 
         case TF_RIGHT:
-            availableWidth = at.x - di.m_clientRect.x0;
+            available = at.x - di.m_clientRect.x0;
             break;
 
         default:
-            availableWidth = di.m_clientRect.width;
+            // NOTE: any other format leaves no room at all, so every word wraps onto its own
+            // line rather than falling back to the full width.
             break;
         }
 
-        // Add small epsilon to avoid floating point precision issues
-        float maxWidth = availableWidth + 0.01f;
+        PointBase<float> org = at;
+        int prevPos = -1;
+        int lineColor = -1;
+        CStr prevWord;
 
-        // Get source text length
-        char const* srcText = src.c_str();
-        int textLen = srcText ? strlen(srcText) : 0;
-        int currentPos = 0;
+        int const len = src.c_str() ? static_cast<int>(strlen(src.c_str())) : 0;
+        int i = 0;
 
-        if (textLen <= 0)
+        if (len > 0)
         {
-            if (line.c_str()[0] != '\0')
+            // The epsilon keeps a word that measures exactly the full width from wrapping.
+            float const maxWidth = available + 0.01f;
+
+            do
             {
-                m3d::ui::FormattedLine formattedLine;
-                formattedLine.m_origin = origin;
-                formattedLine.m_text = line;
-                formattedLine.m_color = lineColor;
-                formattedLine.m_isHieroglyphic = false;
-                formattedLine.m_format = (formatFlags != TF_FULL) ? formatFlags : TF_LEFT;
+                int const wordStart = i;
 
-                linesOfText.push_back(formattedLine);
-            }
+                CStr word;
+                int pos = -1;
+                GetWord(src, i, wrapFlags, word, pos);
 
-            return 1;
-        }
-
-        // Process text word by word
-        do
-        {
-            CStr word;
-            int wordLen;
-            bool forceBreak = false;
-
-            // Get next word
-            GetWord(src, currentPos, wrapFlags, word, wordLen);
-
-            // Check for forced line break (pipe character)
-            if (prevWordPos != -1)
-            {
-                int prevCharPos = currentPos - 1;
-                if (prevCharPos < textLen && prevCharPos > 0 && srcText[prevCharPos] == '|')
+                // A '|' immediately before this word ends the previous line, unless it was
+                // escaped and so meant literally.
+                bool forceBreak = false;
+                if (prevPos != -1)
                 {
-                    forceBreak = !IsEscSymbolBeforeSymbol(src, prevCharPos);
+                    int const barPos = wordStart - 1;
+                    if (barPos < len && barPos > 0 && src.c_str()[barPos] == '|')
+                    {
+                        forceBreak = !IsEscSymbolBeforeSymbol(src, barPos);
+                    }
                 }
-            }
 
-            // Update current position
-            if (wordLen == -1)
-            {
-                currentPos = textLen;
-            }
-            else
-            {
-                int newPos = currentPos + wordLen;
-                if (newPos < textLen && srcText[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                prevPos = pos;
+                if (pos == -1)
                 {
-                    currentPos = newPos + 1;
+                    // Nothing left to read.
+                    i = len;
                 }
                 else
                 {
-                    currentPos = newPos;
-                }
-            }
-
-            prevWordPos = wordLen;
-
-            PointBase<float> wordSize;
-
-            if (wrapFlags == TW_CHAR_WRAP)
-            {
-                // Character-based wrapping - measure word directly
-                GetTextExtent(word, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-            else
-            {
-                // Word-based wrapping - measure word with potential space
-                CStr tempWord = word;
-                if (line.c_str()[0] != '\0' && !(prevWord == " ") && !(word == " "))
-                {
-                    tempWord += " ";
-                }
-                GetTextExtent(tempWord, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-
-            // Check if we need to break the line
-            if (wordSize.x + lineWidth > maxWidth || forceBreak)
-            {
-                // Create formatted line
-                m3d::ui::FormattedLine formattedLine;
-                formattedLine.m_origin = origin;
-
-                if (wordsInLine > 0)
-                {
-                    formattedLine.m_text = line;
-                }
-                else
-                {
-                    formattedLine.m_text = word;
+                    int const next = pos + i;
+                    if (next < 0 || next >= len || src.c_str()[next] != '|' ||
+                        IsEscSymbolBeforeSymbol(src, next))
+                    {
+                        // A zero-length word would leave the position where it was, so it is
+                        // stepped over by hand to keep the loop moving.
+                        i = pos ? next : i + 1;
+                    }
+                    else
+                    {
+                        // Step past the bar itself; the break is noticed on the next word.
+                        i = next + 1;
+                    }
                 }
 
-                formattedLine.m_color = lineColor;
-
-                // Update color tracking
-                float foundColor = FindLastColorInStr(line);
-                if (foundColor != 0.0f)
-                {
-                    lineColor = static_cast<int>(foundColor);
-                }
-
-                formattedLine.m_isHieroglyphic = false;
-
-                // Set format - special handling for TF_FULL with forced breaks
-                if (formatFlags != TF_FULL || !forceBreak)
-                {
-                    formattedLine.m_format = formatFlags;
-                }
-                else
-                {
-                    formattedLine.m_format = TF_LEFT;
-                }
-
-                // Add to lines vector
-                linesOfText.push_back(formattedLine);
-
-                // Update line height if this is the first line
-                if (lineHeight == 0.0f)
-                {
-                    lineHeight = wordSize.y;
-                }
-
-                // Move origin down for next line
-                origin.y += lineHeight;
-
-                // Reset line buffer
-                if (wordsInLine > 0)
-                {
-                    line = word;
-                    wordsInLine = 1;
-                }
-                else
-                {
-                    line = "";
-                    wordsInLine = 0;
-                }
-
-                // Measure new line
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                lineWidth = wordSize.x;
-                lineHeight = wordSize.y;
-            }
-            else
-            {
-                // Add word to current line
+                // Character wrapping measures the character alone; word wrapping has to include
+                // the space that joining the word to the line would add.
+                PointBase<float> sz;
                 if (wrapFlags == TW_CHAR_WRAP)
                 {
-                    line += word;
+                    GetTextExtent(word, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
                 }
                 else
                 {
-                    // Add space between words if appropriate
-                    if (line.c_str()[0] != '\0' && !(prevWord == " ") && !(word == " "))
-                    {
-                        line += " ";
-                    }
-                    line += word;
+                    CStr const separator = FormatTextSeparator(line, prevWord, word);
+                    GetTextExtent(word + separator, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
                 }
-                wordsInLine++;
 
-                // Measure updated line
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                lineWidth = wordSize.x;
-
-                // Update line height if this word is taller
-                if (wordSize.y > lineHeight)
+                if (sz.x + width > maxWidth || forceBreak)
                 {
-                    lineHeight = wordSize.y;
+                    int const hadWords = wordsInLine;
+
+                    ui::FormattedLine formattedLine;
+                    formattedLine.m_origin = org;
+                    // With nothing on the line yet it is this word itself that overflows, so it
+                    // goes out on its own rather than being held back.
+                    formattedLine.m_text = hadWords ? line : word;
+                    formattedLine.m_color = lineColor;
+
+                    // Colour carries across the break into the line that follows.
+                    int const lastColor = FindLastColorInStr(line);
+                    if (lastColor)
+                    {
+                        lineColor = lastColor;
+                    }
+
+                    formattedLine.m_isHieroglyphic = false;
+                    // A line broken by an explicit '|' is the end of its paragraph, so it is not
+                    // stretched even in justified text.
+                    formattedLine.m_format = (formatFlags == TF_FULL && forceBreak) ? TF_LEFT : formatFlags;
+                    linesOfText.push_back(formattedLine);
+
+                    if (height == 0.0f)
+                    {
+                        height = sz.y;
+                    }
+                    org.y += height;
+
+                    if (hadWords)
+                    {
+                        line = word;
+                        wordsInLine = 1;
+                    }
+                    else
+                    {
+                        line = CStr("");
+                    }
+
+                    GetTextExtent(line, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+                    width = sz.x;
+                    height = sz.y;
                 }
+                else
+                {
+                    if (wrapFlags == TW_CHAR_WRAP)
+                    {
+                        line += word;
+                    }
+                    else
+                    {
+                        line += FormatTextSeparator(line, prevWord, word) + word;
+                    }
+                    ++wordsInLine;
+
+                    GetTextExtent(line, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+                    width = sz.x;
+                    if (sz.y > height)
+                    {
+                        height = sz.y;
+                    }
+                }
+
+                prevWord = word;
             }
+            while (i < len);
+        }
 
-            prevWord = word;
-
-        } while (currentPos < textLen);
-
-        // Handle any remaining text in the line buffer
-        if (line.c_str()[0] != '\0')
+        // Whatever is still in hand becomes the last line.
+        if (line.c_str() && strlen(line.c_str()))
         {
-            m3d::ui::FormattedLine formattedLine;
-            formattedLine.m_origin = origin;
+            ui::FormattedLine formattedLine;
+            formattedLine.m_origin = org;
             formattedLine.m_text = line;
             formattedLine.m_color = lineColor;
             formattedLine.m_isHieroglyphic = false;
-            formattedLine.m_format = (formatFlags != TF_FULL) ? formatFlags : TF_LEFT;
-
+            // The last line of justified text is never stretched.
+            formattedLine.m_format = (formatFlags == TF_FULL) ? TF_LEFT : formatFlags;
             linesOfText.push_back(formattedLine);
         }
 
@@ -3775,9 +3721,11 @@ namespace m3d
         float tv2,
         unsigned c)
     {
-        this->m_renderer->RelToAbs(x1, y1);
-        this->m_renderer->RelToAbs(x2, y2);
-        m3d::Application::PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
+        // RVA 0x41CFD0 - the corners arrive in relative coordinates; everything below this
+        // works in absolute ones.
+        m_renderer->RelToAbs(x1, y1);
+        m_renderer->RelToAbs(x2, y2);
+        PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
     }
 
     void Application::SetKeyboardFocus(IEventHandler* entity)
@@ -4486,44 +4434,45 @@ namespace m3d
         float zval,
         unsigned c)
     {
-        //TODO: check this and refactor!!!
+        auto const handle = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZWCT1);  
         int vofs = 0;
-        auto vbs = g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
-        auto mem = static_cast<float*>(g_pApp->m_renderer->LockVbStreaming(vbs, rend::VERTEX_XYZWCT1, vofs, nullptr));
+        auto* vertex = static_cast<m3d::rend::VertexXYZWCT1*>(M3D_RENDERER->LockVbStreaming(handle, rend::VERTEX_XYZWCT1, vofs, nullptr));
 
-        auto* memInt = reinterpret_cast<unsigned*>(mem);
-        mem[5] = tu1;
-        mem[6] = tv1;
-        mem[0] = x1;
-        mem[1] = y1;
-        mem[2] = zval;
-        mem[3] = 0.1;
-        memInt[4] = c;
-        mem[7] = x2;
-        mem[8] = y2;
-        mem[12] = tu2;
-        mem[13] = tv2;
-        mem[9] = zval;
-        mem[10] = 0.1;
-        memInt[11] = c;
-        mem[14] = x3;
-        mem[15] = y3;
-        mem[19] = tu3;
-        mem[16] = zval;
-        mem[20] = tv3;
-        mem[17] = 0.1;
-        memInt[18] = c;
-        mem[23] = zval;
-        mem[21] = x4;
-        mem[26] = tu4;
-        mem[22] = y4;
-        mem[24] = 0.1;
-        memInt[25] = c;
-        mem[27] = tv4;
+        vertex[0].x = x1;
+        vertex[0].y = y1;
+        vertex[0].z = zval;
+        vertex[0].w = 0.1f;
+        vertex[0].c = c;
+        vertex[0].tu = tu1;
+        vertex[0].tv = tv1;
 
-        g_pApp->m_renderer->UnlockVb(vbs);
-        g_pApp->m_renderer->SetToStream0(vbs);
-        g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2);
+        vertex[1].x = x2;
+        vertex[1].y = y2;
+        vertex[1].z = zval;
+        vertex[1].w = 0.1f;
+        vertex[1].c = c;
+        vertex[1].tu = tu2;
+        vertex[1].tv = tv2;
+
+        vertex[2].x = x3;
+        vertex[2].y = y3;
+        vertex[2].z = zval;
+        vertex[2].w = 0.1f;
+        vertex[2].c = c;
+        vertex[2].tu = tu3;
+        vertex[2].tv = tv3;
+
+        vertex[3].x = x4;
+        vertex[3].y = y4;
+        vertex[3].z = zval;
+        vertex[3].w = 0.1f;
+        vertex[3].c = c;
+        vertex[3].tu = tu4;
+        vertex[3].tv = tv4;
+
+        M3D_RENDERER->UnlockVb(handle);
+        M3D_RENDERER->SetToStream0(handle);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2u);
     }
 
     void Application::PutSprite2Abs(

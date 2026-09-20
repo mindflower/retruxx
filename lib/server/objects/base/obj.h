@@ -380,7 +380,7 @@ namespace ai
         /* 0x0058 */ int m_parentId;
         /* 0x005c */ GeomRepository* m_parentRepository;
         /* 0x0060 */ int m_LastDamageSource;
-        /* 0x0064 */ bool m_bIsAlreadySaved;
+        /* 0x0064 */ mutable bool m_bIsAlreadySaved;
         /* 0x0065 */ char Padding_15[3];
         /* 0x0068 */ Obj::HierarchyType m_hierarchyType;
         /* 0x006c */ int m_prototypeId;
