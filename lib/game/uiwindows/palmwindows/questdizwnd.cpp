@@ -493,8 +493,8 @@ void QuestDizWnd::OnNavPoint(void* data)
     // data is the m3d::Event broadcast for UM_NAVPOINT_ADDED/DELETED: m_intEv[0] = quest id,
     // m_intEv[1] = NavPoint::ObjectType (see ExMachina 1.02 NoCD, QuestDizWnd::OnNavPoint @ 0x4F8600).
     auto const* ev = static_cast<m3d::Event*>(data);
-    int const questId = ev->m_intEv[0];
-    int const objectType = ev->m_intEv[1];
+    int const questId = ev->m_intEv[1];
+    int const objectType = ev->m_intEv[2];
 
     help::QuestType questType;
     if (objectType == NavPoint::OBJECT_TYPE_STATIC_QUEST)

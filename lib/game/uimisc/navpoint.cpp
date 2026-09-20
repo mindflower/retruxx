@@ -300,7 +300,7 @@ int NavPointManager::AddNavPoint(NavPoint* np)
     ++m_nextNavPointId;
 
     m3d::AIParam param5;
-    M3D_APP->ImmediateMessage(65666, id, np->m_objectId, np->m_objectType, np->m_navPointType, np->m_levelName, param5);
+    M3D_APP->ImmediateMessage(UM_NAVPOINT_ADDED, id, np->m_objectId, np->m_objectType, np->m_navPointType, np->m_levelName, param5);
     return id;
 }
 
@@ -522,7 +522,7 @@ int NavPointManager::RemoveNavPointById(int id)
     m_navPoints.erase(it);
 
     m3d::AIParam param5;
-    M3D_APP->ImmediateMessage(65667, id, objectId, objectType, npType, levelName, param5);
+    M3D_APP->ImmediateMessage(UM_NAVPOINT_DELETED, id, objectId, objectType, npType, levelName, param5);
     return 1;
 }
 

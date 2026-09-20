@@ -567,8 +567,8 @@ void QuestItemList::OnNavPoint(void* data)
         return;
     }
 
-    int const questId = ev->m_intEv[0];
-    int const objectType = ev->m_intEv[1];
+    int const questId = ev->m_intEv[1];
+    int const objectType = ev->m_intEv[2];
 
     help::QuestType questType = help::QUESTTYPE_NUM_QUEST_TYPES;
     if (objectType == NavPoint::OBJECT_TYPE_STATIC_QUEST)

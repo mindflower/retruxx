@@ -1209,27 +1209,7 @@ namespace m3d
         }
         else
         {
-            CVector x, y, z;
-            n->m_currentXForm.GetInvBasis(x, y, z);
-
-            CMatrix invMat;
-            invMat.identity();
-            invMat._11 = x.x;
-            invMat._12 = x.y;
-            invMat._13 = x.z;
-            invMat._21 = y.x;
-            invMat._22 = y.y;
-            invMat._23 = y.z;
-            invMat._31 = z.x;
-            invMat._32 = z.y;
-            invMat._33 = z.z;
-
-            CVector pos = n->m_currentXForm.getOrg();
-            invMat._41 = -(pos.x * x.x + pos.y * y.x + pos.z * z.x);
-            invMat._42 = -(pos.x * x.y + pos.y * y.y + pos.z * z.y);
-            invMat._43 = -(pos.x * x.z + pos.y * y.z + pos.z * z.z);
-            invMat._44 = 1.0f;
-
+            CMatrix invMat = n->m_currentXForm.getInverseRotTranslate();
             vv = invMat * curMatr;
         }
 

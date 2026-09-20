@@ -579,7 +579,7 @@ void ComplexModelWnd::UpdateCamera()
         tr._43 = (2.0f / maxSize) + (maxSize * 2.0f);
     }
 
-    CMatrix const res = rotX * rotY * tr;
+    CMatrix const res = (rotY * rotX) * tr;
     Rotation().FromMatrix(res);
     Translation() = CVector(res._41, res._42, res._43);
 }

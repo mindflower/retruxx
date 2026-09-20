@@ -242,8 +242,8 @@ namespace m3d
             float const projScale = static_cast<float>(1.0 / std::tan(0.3926990926265717));  // cot(PI/8)
             matProj._11 = projScale;
             matProj._22 = projScale;
-            matProj._33 = 1.001001f;
-            matProj._34 = 1.0f;
+            matProj._33 = 1.0;
+            matProj._34 = 1.001001f;
             matProj._43 = -1.001001f;
             M3D_RENDERER->MatSetProj(matProj);
 

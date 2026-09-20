@@ -1173,14 +1173,14 @@ void MotherPanel::OnInventory()
     if ((m_gameDataFlags & 1) != 0)
     {
         std::vector<std::pair<MotherPanel::ChildPanelId, int>> panels;
-        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(4))
+        if (M3D_APP->m_pInterfaceManager->GetCurrentTown() && !IsPanelPresent(IW_DLG_TOWN))
         {
-            panels.push_back({PANEL_TOWN, 4});
+            panels.push_back({PANEL_TOWN, IW_DLG_TOWN});
         }
 
-        panels.push_back({PANEL_RIGHT, 63});
-        panels.push_back({PANEL_LEFT, 64});
-        panels.push_back({PANEL_VIDEO, 77});
+        panels.push_back({PANEL_RIGHT, IW_WND_GROUND});
+        panels.push_back({PANEL_LEFT, IW_WND_PLAYER_INVENTORY});
+        panels.push_back({PANEL_VIDEO, IW_WND_VIDEO});
 
         // TODO: check this
         ai::pServer->PostPlayerEvent(ai::GE_TUTORIAL_INVENTORY);
@@ -1297,8 +1297,7 @@ void MotherPanel::AdjustChildOrder()
 {
     // TODO: generated code MotherPanel::AdjustChildOrder
     // Only adjust order when a specific game data flag is set
-    uint32_t const REORDER_FLAG = 1;  // Bit 0
-    if (!(m_gameDataFlags & REORDER_FLAG))
+    if ((m_gameDataFlags & 1) == 0)
     {
         return;  // No reordering needed
     }
@@ -1310,10 +1309,7 @@ void MotherPanel::AdjustChildOrder()
     MoveChildToFirstPosition(m_wndTopPanel);
 
     // 2. Move player money display to front
-    if (m_wndPlayerMoney)
-    {
-        MoveChildToFirstPosition(m_wndPlayerMoney.get());
-    }
+    MoveChildToFirstPosition(m_wndPlayerMoney);
 
     // 3. Move exit button to front
     MoveChildToFirstPosition(m_btnExit);
@@ -1335,12 +1331,11 @@ void MotherPanel::AdjustChildOrder()
 
     // 6. Special case: If panel with ID 88 (0x58) is present,
     // also move window ID 88 to front
-    ChildPanelId const SPECIAL_PANEL_ID = static_cast<ChildPanelId>(0x58);  // 88 decimal
 
-    if (IsPanelPresent(SPECIAL_PANEL_ID))
+    if (IsPanelPresent(IW_DLG_TALK_WITH_NPC))
     {
         // Get the window from the interface manager
-        ref_ptr<Wnd> specialWindow = M3D_APP->m_pInterfaceManager->GetWindow(88);
+        ref_ptr<Wnd> specialWindow = M3D_APP->m_pInterfaceManager->GetWindow(IW_DLG_TALK_WITH_NPC);
         if (specialWindow)
         {
             MoveChildToFirstPosition(specialWindow.get());
@@ -1431,9 +1426,10 @@ int MotherPanel::GameDataSetup()
         }
 
         ref_ptr<Wnd> moneyWnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_PLAYER_MONEY);
-        if (moneyWnd && moneyWnd->IsKindOf(RT_CLASS_LOCAL(PlayerMoneyWnd)))
+        if (auto playerMoneyWnd = RT_DYNCAST(moneyWnd.get(), PlayerMoneyWnd))
         {
-            AddChild(moneyWnd);
+            m_wndPlayerMoney = playerMoneyWnd;
+            AddChild(m_wndPlayerMoney);
             if (res)
             {
                 m_gameDataFlags |= 1u;
