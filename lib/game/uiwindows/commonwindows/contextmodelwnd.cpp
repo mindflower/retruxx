@@ -262,9 +262,9 @@ int ContextModelWnd::ShowImageByObjId0(int objId, bool bDestroyObjToShow)
         // A cabin or basket is drawn as a plain model, painted to match whatever
         // vehicle it is mounted on (or the player's, when it is loose).
         m3d::Object* parent = obj->GetParent();
-        ai::Vehicle* vehicle = (parent && parent->IsKindOf(&ai::Vehicle::m_classVehicle))
-                                   ? static_cast<ai::Vehicle*>(parent)
-                                   : (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr);
+        ai::Vehicle* vehicle = (parent && parent->IsKindOf(&ai::Vehicle::m_classVehicle)) ?
+            static_cast<ai::Vehicle*>(parent) :
+            (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr);
         auto const* prototype = static_cast<ai::PhysicBodyPrototypeInfo const*>(obj->GetPrototypeInfo());
         if (!prototype)
         {
@@ -287,7 +287,8 @@ ref_ptr<m3d::ui::Wnd> ContextModelWnd::CreateModelWnd(CStr const& className)
     {
         return nullptr;
     }
-    ref_ptr<m3d::ui::Wnd> modelWnd(wnd);
+
+    ref_ptr<m3d::ui::Wnd> registeredCopy = wnd;
 
     BoundsBase<float> const bounds = GetBounds();
     BoundsBase<float> rc;
@@ -297,37 +298,46 @@ ref_ptr<m3d::ui::Wnd> ContextModelWnd::CreateModelWnd(CStr const& className)
     rc.height = bounds.height;
 
     std::vector<int> events;
-    if (wnd->IsKindOf(&ItemModelWnd::m_classItemModelWnd))
+    if (auto* itemModelWnd = RT_DYNCAST(wnd, ItemModelWnd))
     {
         events.push_back(89);
+
+        if (itemModelWnd->CreateModelWnd(
+                m3d::rend::TexHandle{}, m3d::ui::WS_IS_VISIBLE, rc, 0, m3d::rend::TexHandle{}) == 0)
+        {
+            return nullptr;
+        }
     }
-    else if (wnd->IsKindOf(&ComplexModelWnd::m_classComplexModelWnd))
+    else if (auto* complexModelWnd = RT_DYNCAST(wnd, ComplexModelWnd))
     {
         events.push_back(89);
         events.push_back(65);
+        if (complexModelWnd->CreateSgNodeArrayWnd(
+                m3d::rend::TexHandle{}, m3d::ui::WS_IS_VISIBLE, rc, 0, m3d::rend::TexHandle{}) == 0)
+        {
+            return nullptr;
+        }
     }
-    else if (wnd->IsKindOf(&m3d::ui::ImageWnd::m_classImageWnd))
+    else if (auto* imageWnd = RT_DYNCAST(wnd, m3d::ui::ImageWnd))
     {
         events.push_back(89);
+        if (imageWnd->CreateImageWnd(rc, m3d::rend::TexHandle{}) == 0)
+        {
+            return nullptr;
+        }
     }
     else
     {
         return nullptr;
     }
 
-    if (wnd->Create(CStr(), m3d::ui::WS_IS_VISIBLE, rc, static_cast<unsigned>(-1)) == 0)
-    {
-        return nullptr;
-    }
-
     int guiId = -1;
-    ref_ptr<m3d::ui::Wnd> registeredCopy = modelWnd;
     if (!M3D_APP->m_pInterfaceManager->AddWindow(registeredCopy, guiId, true, false))
     {
         return nullptr;
     }
     M3D_APP->m_pInterfaceManager->SetEventsForWindow(guiId, events);
-    return modelWnd;
+    return registeredCopy;
 }
 
 ai::Obj* ContextModelWnd::GetObjToShow() const

@@ -323,10 +323,11 @@ int SaveButton::CreateFromPattern()
         // code passes a fresh handle rather than the pattern's own.
         m3d::rend::TexHandle disabled;
         disabled.SetInvalid();
-        SetImaged(m_aif.m_wndPattern->GetImageRegular(),
-                  m_aif.m_wndPattern->GetImageDown(),
-                  m_aif.m_wndPattern->GetImageIn(),
-                  disabled);
+        SetImaged(
+            m_aif.m_wndPattern->GetImageRegular(),
+            m_aif.m_wndPattern->GetImageDown(),
+            m_aif.m_wndPattern->GetImageIn(),
+            disabled);
     }
     else
     {
@@ -356,8 +357,7 @@ int SaveButton::CreateChildren()
     {
         return 0;
     }
-    if (!m_aif.m_wndPatternTime || !M3D_APP->IsWndAlive(m_aif.m_wndPatternTime, -1) ||
-        !m_aif.m_wndPatternTime->Valid())
+    if (!m_aif.m_wndPatternTime || !M3D_APP->IsWndAlive(m_aif.m_wndPatternTime, -1) || !m_aif.m_wndPatternTime->Valid())
     {
         return 0;
     }
@@ -697,9 +697,10 @@ int SaveList::CreateItems()
         if (newSaveBtn)
         {
             auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
-            if (!newSaveBtn->SetupForNewSave(savesManager->GetNewSaveDefaultName(),
-                                             help::GetCurrentLevelName(),
-                                             ai::theObjects->GetGameTime()) ||
+            if (!newSaveBtn->SetupForNewSave(
+                    savesManager->GetNewSaveDefaultName(),
+                    help::GetCurrentLevelName(),
+                    ai::theObjects->GetGameTime()) ||
                 !AddButton(newSaveBtn))
             {
                 delete newSaveBtn;
@@ -1053,8 +1054,8 @@ int LSWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndSortByNameArrowName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndSortByNameArrowName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -1065,8 +1066,8 @@ int LSWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndSortByTimeArrowName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndSortByTimeArrowName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -1085,14 +1086,15 @@ int LSWnd::GameDataSetup()
                 }
                 else
                 {
-                    M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndSaveListName +
-                                 " from pattern class");
+                    M3D_LOG_INFO(
+                        "Make control error: cannot create " + m_aif.m_wndSaveListName + " from pattern class");
                 }
             }
             else
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndSaveListName +
-                             " - cannot find rtti class " + "SaveList");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndSaveListName + " - cannot find rtti class " +
+                    "SaveList");
             }
         }
         else
@@ -1322,18 +1324,20 @@ int LSWnd::SetScreenshotForSave(int saveIdx)
     }
 
     auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
-    CStr const screenshotFile = M3D_APP->GetStartupFolder() + "\\" +
-                                savesManager->GetSaveFolderPathByFolderName(btn->GetSaveFolderName()) + "\\" +
-                                savesManager->GetConstatntSaveInfo().m_screenshotFileName;
 
-    auto const attribs = GetFileAttributesA(screenshotFile.c_str());
+    // TODO: check original logic
+    CStr const localScreenshotFile = savesManager->GetSaveFolderPathByFolderName(btn->GetSaveFolderName()) + "\\" +
+        savesManager->GetConstatntSaveInfo().m_screenshotFileName;
+    CStr const absoluteScreenshotFile = M3D_APP->GetStartupFolder() + "\\" + localScreenshotFile;
+
+    auto const attribs = GetFileAttributesA(absoluteScreenshotFile.c_str());
     if (attribs == INVALID_FILE_ATTRIBUTES || (attribs & FILE_ATTRIBUTE_DIRECTORY) != 0)
     {
         return 0;
     }
 
     m_wndScreenshot->ShowWindow(true);
-    m_wndScreenshot->SetImage(screenshotFile);
+    m_wndScreenshot->SetImage(localScreenshotFile);
     return 1;
 }
 
@@ -1402,8 +1406,8 @@ void LSWnd::UpdateSortArrowsState()
 
         if (wndSort)
         {
-            auto const icoHandle = M3D_APP->m_pInterfaceManager->GetIcoByName(m_aif.m_texIdSortArrow,
-                                                                             curSortDir != SaveList::DIR_INCREASE);
+            auto const icoHandle = M3D_APP->m_pInterfaceManager->GetIcoByName(
+                m_aif.m_texIdSortArrow, curSortDir != SaveList::DIR_INCREASE);
             wndSort->SetImage(icoHandle);
         }
     }
