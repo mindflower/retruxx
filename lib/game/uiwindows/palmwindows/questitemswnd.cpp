@@ -118,6 +118,11 @@ int QuestItemsWnd::GameDataSetup()
         res = 0;
     }
 
+    if (m_wndItemsList)
+    {
+        MoveChildToFirstPosition(m_wndItemsList);
+    }
+
     if (res)
     {
         m_gameDataFlags |= 1u;

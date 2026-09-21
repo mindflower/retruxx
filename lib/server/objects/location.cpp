@@ -596,8 +596,7 @@ namespace ai
         return false;
     }
 
-    void Location::_CheckIncomingOutgoingObjects(
-        std::set<ref_ptr<Obstacle>, std::less<ref_ptr<Obstacle>>, std::allocator<ref_ptr<Obstacle>>>& seenObstacles)
+    void Location::_CheckIncomingOutgoingObjects(std::set<ref_ptr<Obstacle>>& seenObstacles)
     {
         IntersectionManager::GetIntersectedObjects(seenObstacles, _GetLookSphere(), m_targetClasses, false, false);
         for (auto& obstacle : seenObstacles)
@@ -623,7 +622,7 @@ namespace ai
                         continue;
                     }
 
-                    CauseEvent(GE_OBJECT_ENTERS_LOCATION, 0.0, {obj->GetId()}, {});
+                    CauseEvent(GE_OBJECT_ENTERS_LOCATION, 0.0, {obj->GetId()}, {static_cast<int>(m_locationType)});
                     OnObjectIn(obj);
 
                     if (!m_npcs.empty() && obj == thePlayer->GetVehicle())
@@ -676,7 +675,7 @@ namespace ai
             {
                 if (_MustCheckObject(obj))
                 {
-                    CauseEvent(GE_OBJECT_LEAVES_LOCATION, 0.0, {obj->GetId()}, {});
+                    CauseEvent(GE_OBJECT_LEAVES_LOCATION, 0.0, {obj->GetId()}, {static_cast<int>(m_locationType)});
                     OnObjectOut(obj);
                 }
             }

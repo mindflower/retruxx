@@ -10,6 +10,7 @@
 #include <server/objects/bar.h>
 #include <server/objects/npc.h>
 #include <server/objects/base/objcontainer.h>
+#include <server/event.h>
 
 RT_CLASS_EXPORTS_BEGIN(BarDlg)
 RT_CLASS_EXPORTS_END;
@@ -181,6 +182,6 @@ int BarDlg::OnAfterAddToWndStation()
 
 int BarDlg::OnBeforeAddToWndStation()
 {
-    M3D_APP->m_pInterfaceManager->LaunchEvent(104, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(m_barId));
+    M3D_APP->m_pInterfaceManager->LaunchEvent(IE_CUST_ENTER_BAR, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(m_barId));
     return Wnd::OnBeforeAddToWndStation();
 }

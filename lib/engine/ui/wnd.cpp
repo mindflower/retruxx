@@ -1040,6 +1040,8 @@ namespace m3d
             if (!m_bgTextureName.empty())
             {
                 m_bgTexture = Application::g_pApp->m_renderer->AddTexture(m_bgTextureName, 4);
+                Application::g_pApp->m_renderer->SetTextureParameter(m_bgTexture, rend::TM_WRAP_S, 3u);
+                Application::g_pApp->m_renderer->SetTextureParameter(m_bgTexture, rend::TM_WRAP_T, 3u);
             }
             else
             {
@@ -1392,7 +1394,6 @@ namespace m3d
             res.height = height;
             return res;
         }
-
 
         int Wnd::OnBeforeRemoveFromWndStation()
         {

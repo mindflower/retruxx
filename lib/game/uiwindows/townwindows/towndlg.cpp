@@ -14,6 +14,7 @@
 #include <server/objects/bar.h>
 #include <server/objects/town.h>
 #include <server/objects/base/objcontainer.h>
+#include <server/event.h>
 
 RT_CLASS_EXPORT_METHOD_DEFINE(TownDlg, SetConditionalClosingForTown)
 {
@@ -181,16 +182,16 @@ int TownDlg::GameDataUpdate(void* data, int dataType)
     // RVA 0xA3B00
     switch (dataType)
     {
-    case '9':  // 57
+    case IE_EV_SM_TOWN:  // 57
         if (data)
         {
             ShowForTown(reinterpret_cast<int*>(data)[13]);
         }
         break;
-    case 'h':  // 104
-        OnEnterBar(reinterpret_cast<int*>(data)[13]);
+    case IE_CUST_ENTER_BAR:  // 104
+        OnEnterBar(reinterpret_cast<int>(data));
         return 1;
-    case 'i':  // 105
+    case IE_CUST_LEAVE_BAR:  // 105
         OnLeaveBar();
         return 1;
     }

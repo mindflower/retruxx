@@ -1308,8 +1308,8 @@ namespace ai
     {
         // RVA 0x6F2920 - flies the camera along the given points while looking at the vehicle. With no points the
         // camera simply stays where it is.
-        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(56), m3d::AIParam(), 1);
-        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(57), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(IE_EV_UM_HELP), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(IE_EV_SM_TOWN), m3d::AIParam(), 1);
 
         m3d::Cinematic* const cinematic = M3D_APP->m_cinematic;
         cinematic->LoadDefaults();

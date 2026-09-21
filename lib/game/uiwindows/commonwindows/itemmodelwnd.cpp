@@ -271,31 +271,22 @@ void ItemModelWnd::UpdateCamera()
 
     // Rotation about the X axis by m_rotationAngle.x.
     CMatrix rotX;
-    rotX.identity();
-    float const cx = std::cos(m_rotationAngle.x);
-    float const sx = std::sin(m_rotationAngle.x);
-    rotX._22 = cx;
-    rotX._23 = sx;
-    rotX._32 = -sx;
-    rotX._33 = cx;
+    rotX.rotX(m_rotationAngle.x);
 
     // Rotation about the Y axis by m_rotationAngle.y.
     CMatrix rotY;
-    rotY.identity();
-    float const cy = std::cos(m_rotationAngle.y);
-    float const sy = std::sin(m_rotationAngle.y);
-    rotY._11 = cy;
-    rotY._13 = -sy;
-    rotY._31 = sy;
-    rotY._33 = cy;
+    rotY.rotY(m_rotationAngle.y);
 
     // The shipped code composes res = (rotX * rotY) * translate(translation) and
     // then splits res back into m_Rotation / m_Translation. rotX * rotY is a pure
     // rotation, so the trailing translate leaves the 3x3 (hence the quaternion)
     // untouched and simply copies translation into the 4th row.
-    CMatrix const rot = rotX * rotY;
-    m_Rotation.FromMatrix(rot);
-    m_Translation = translation;
+    CMatrix tr;
+    tr.translation(translation);
+
+    CMatrix const res = (rotY * rotX) * tr;
+    Rotation().FromMatrix(res);
+    Translation() = CVector(res._41, res._42, res._43);
 }
 
 bool ItemModelWnd::IsDisabled() const
