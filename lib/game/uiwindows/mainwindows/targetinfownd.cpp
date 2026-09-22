@@ -131,7 +131,7 @@ int TargetInfoWnd::GameDataSetup()
 {
     using namespace m3d::ui;
 
-    if ((m_gameDataFlags & 2) != 0)
+    if ((m_gameDataFlags & 2) == 0)
     {
         int res = 1;
 

@@ -1705,7 +1705,14 @@ int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
 
     int res = 1;
 
-    m3d::Object* wareListPattern = pattern->GetChildByName(m_aif.m_wndWareListName);
+    auto* parent = RT_DYNCAST(pattern->GetParent(), Wnd);
+    if (!parent)
+    {
+        M3D_LOG_INFO("WareWnd::CreateFromPattern error - cannot create ware list");
+        return 0;
+    }
+
+    m3d::Object* wareListPattern = parent->GetChildByName(m_aif.m_wndWareListName);
     if (wareListPattern && wareListPattern->IsKindOf(&m3d::ui::Wnd::m_classWnd))
     {
         auto* wareList = RT_DYNCAST(M3D_KERNEL->New("WareList"), WareList);
@@ -1726,11 +1733,11 @@ int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
         res = 0;
     }
 
-    m3d::Object* btnMode = pattern->GetChildByName(m_aif.m_btnModeName);
+    m3d::Object* btnMode = parent->GetChildByName(m_aif.m_btnModeName);
     if (btnMode && btnMode->IsKindOf(&m3d::ui::ButtonWnd::m_classButtonWnd))
     {
         m_btnMode = static_cast<m3d::ui::ButtonWnd*>(btnMode);
-        pattern->RemoveChild(m_btnMode);
+        parent->RemoveChild(m_btnMode);
         AddChild(m_btnMode);
     }
     else

@@ -129,7 +129,9 @@ int ReputationButton::LoadPattern(m3d::ui::Wnd* pattern)
         M3D_LOG_INFO("ReputationButton::LoadPattern error - cannot find " + m_aif.m_wndPatternName);
         return 0;
     }
+
     m_aif.m_wndPattern = static_cast<m3d::ui::Wnd*>(patternWnd);
+    pattern->RemoveChild(patternWnd);
 
     m3d::Object* clanIco = pattern->GetChildByName(m_aif.m_wndClanIcoName);
     if (!clanIco || !clanIco->IsKindOf(&m3d::ui::ImageWnd::m_classImageWnd))
@@ -138,6 +140,8 @@ int ReputationButton::LoadPattern(m3d::ui::Wnd* pattern)
         return 0;
     }
     m_aif.m_wndPatternClanIco = static_cast<m3d::ui::ImageWnd*>(clanIco);
+    pattern->RemoveChild(clanIco);
+
     RebaseOntoPattern(m_aif.m_wndPatternClanIco, m_aif.m_wndPattern);
 
     m3d::Object* clanName = pattern->GetChildByName(m_aif.m_lblClanNameName);
@@ -147,6 +151,8 @@ int ReputationButton::LoadPattern(m3d::ui::Wnd* pattern)
         return 0;
     }
     m_aif.m_lblPatternClanName = static_cast<m3d::ui::Wnd*>(clanName);
+    pattern->RemoveChild(clanName);
+
     RebaseOntoPattern(m_aif.m_lblPatternClanName, m_aif.m_wndPattern);
 
     m3d::Object* toleranceName = pattern->GetChildByName(m_aif.m_wndToleranceNameName);
@@ -156,6 +162,8 @@ int ReputationButton::LoadPattern(m3d::ui::Wnd* pattern)
         return 0;
     }
     m_aif.m_wndPatternToleranceName = static_cast<m3d::ui::Wnd*>(toleranceName);
+    pattern->RemoveChild(toleranceName);
+
     RebaseOntoPattern(m_aif.m_wndPatternToleranceName, m_aif.m_wndPattern);
 
     BoundsBase<float> patternB = m_aif.m_wndPattern->GetBounds();
@@ -506,23 +514,28 @@ int ReputationList::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
     SetPane(patternWnd->GetPaneName());
     SetPaneFlags(patternWnd->GetPaneFlags());
 
-    m3d::Object* parent = patternWnd->GetParent();
-    if (!parent || !parent->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+    auto* parent = RT_DYNCAST(patternWnd->GetParent(), Wnd);
+    if (!parent)
     {
         M3D_LOG_INFO("ReputationList::CreateFromPattern error - null parent for paternWnd");
         return 0;
     }
 
-    if (!ReputationButton::LoadPattern(patternWnd))
+    parent->AddChild(this);
+    parent->MoveChildToFirstPosition(this);
+    if (!ReputationButton::LoadPattern(parent))
     {
+        M3D_LOG_INFO("ReputationList::CreateFromPattern error - cannot load pattern for ReputationButton");
         return 0;
     }
-    parent->AddChild(this);
+
     if (deleteSrc)
     {
         parent->RemoveChild(patternWnd);
         patternWnd->DecRef();
     }
+
+    m_gameDataFlags |= 1u;
     return 1;
 }
 

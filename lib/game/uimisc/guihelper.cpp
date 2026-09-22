@@ -160,8 +160,8 @@ namespace help
         }
 
         QuestInfoManager* qim = M3D_APP->m_pInterfaceManager->GetQuestInfoManager();
-        QuestInfo const* qi = (questType == QUESTTYPE_STATIC) ? qim->GetQuestInfoForStaticQuest(questId)
-                                                              : qim->GetQuestInfoForDynamicQuest(questId);
+        QuestInfo const* qi = (questType == QUESTTYPE_STATIC) ? qim->GetQuestInfoForStaticQuest(questId) :
+                                                                qim->GetQuestInfoForDynamicQuest(questId);
         // Without a coordinate on this level there is nowhere for the point to go.
         return qi && qi->GetCoordinateForMap(GetCurrentLevelName()) != nullptr;
     }
@@ -174,9 +174,8 @@ namespace help
             return false;
         }
 
-        std::set<int> const* peaceQuests =
-            M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(
-                &ai::DynamicQuestPeace::m_classDynamicQuestPeace);
+        std::set<int> const* peaceQuests = M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(
+            &ai::DynamicQuestPeace::m_classDynamicQuestPeace);
         if (!peaceQuests)
         {
             return false;
@@ -554,8 +553,7 @@ namespace help
             return -1;
         }
         auto* townObj = ai::theObjects->GetEntityByObjId(townId);
-        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj)
-                                                                           : nullptr;
+        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj) : nullptr;
         auto* obj = ai::theObjects->GetEntityByObjId(objId);
         if (obj && !obj->IsKindOf(&ai::Obj::m_classObj))
         {
@@ -582,7 +580,8 @@ namespace help
     {
         // RVA 0x553320
         vpNames.clear();
-        auto* vehicle = vehicleId == -1 ? nullptr : RT_DYNCAST(ai::theObjects->GetEntityByObjId(vehicleId), ai::Vehicle);
+        auto* vehicle =
+            vehicleId == -1 ? nullptr : RT_DYNCAST(ai::theObjects->GetEntityByObjId(vehicleId), ai::Vehicle);
         if (!vehicle)
         {
             return;
@@ -681,8 +680,7 @@ namespace help
             return -1;
         }
         auto* townObj = ai::theObjects->GetEntityByObjId(townId);
-        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj)
-                                                                           : nullptr;
+        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj) : nullptr;
         auto* obj = ai::theObjects->GetEntityByObjId(objId);
         if (obj && !obj->IsKindOf(&ai::Obj::m_classObj))
         {
@@ -755,14 +753,14 @@ namespace help
         }
 
         ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
-        ai::Vehicle* vehicle = (vehicleObj && vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle))
-                                   ? static_cast<ai::Vehicle*>(vehicleObj)
-                                   : nullptr;
+        ai::Vehicle* vehicle = (vehicleObj && vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle)) ?
+            static_cast<ai::Vehicle*>(vehicleObj) :
+            nullptr;
 
         ai::Obj* vpObj = ai::theObjects->GetEntityByObjId(vpId);
-        ai::VehiclePart* vp = (vpObj && vpObj->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
-                                  ? static_cast<ai::VehiclePart*>(vpObj)
-                                  : nullptr;
+        ai::VehiclePart* vp = (vpObj && vpObj->IsKindOf(&ai::VehiclePart::m_classVehiclePart)) ?
+            static_cast<ai::VehiclePart*>(vpObj) :
+            nullptr;
 
         if (!vehicle || !vp)
         {
@@ -933,7 +931,10 @@ namespace help
         return std::find(begin(standAnimations), end(standAnimations), action) != end(standAnimations);
     }
 
-    void RandomizeCurAnimationOnFinish(m3d::AnimatedModel* model, m3d::AnimInfo* animInfo, help::_ActionType nextActionType)
+    void RandomizeCurAnimationOnFinish(
+        m3d::AnimatedModel* model,
+        m3d::AnimInfo* animInfo,
+        help::_ActionType nextActionType)
     {
         // RVA 0x5561E0
         if (!model || !animInfo)
@@ -990,14 +991,14 @@ namespace help
     int GetScaledFontId(int patternFontId, float wantedFontSz)
     {
         auto* gfx = m3d::ui::Wnd::GetGfxServer();
-        const m3d::ui::Font* patternFont = gfx->GetFontById(patternFontId);
+        m3d::ui::Font const* patternFont = gfx->GetFontById(patternFontId);
         if (!patternFont)
         {
             return -1;
         }
 
-        const CStr fontName = patternFont->m_nameShort;
-        const m3d::ui::FontType type = patternFont->m_type;
+        CStr const fontName = patternFont->m_nameShort;
+        m3d::ui::FontType const type = patternFont->m_type;
 
         m3d::ui::FontParams params;
         if (type == m3d::ui::FONT_TYPE_SELFMAKING)
@@ -1017,18 +1018,22 @@ namespace help
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
     CStr GetClanAbbreviationByName(CStr const& clanName)
     {
-        return clanName + "_abb";
+        return M3D_APP->GetStringByStringId0(clanName + "_abb");
     }
+
     CStr GetClanFullNameByName(CStr const&)
     {
         RETRUXX_NOT_IMPLEMENTED;
     }
+
     CStr GetClanNameByBelong(int clanBelong)
     {
         return "Belong_" + CStr(clanBelong);
     }
+
     CStr GetKeysForImpulse(int impulseId)
     {
         // RVA 0x555980 - renders every key combination bound to `impulseId` as
