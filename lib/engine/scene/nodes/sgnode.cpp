@@ -135,7 +135,8 @@ namespace m3d
         }
         if (1.0f != m_scaling.x || 1.0f != m_scaling.y || 1.0f != m_scaling.z)
         {
-            writeTo->SetAttribute("scale", CStr::format_("%.3f %.3f %.3f", m_scaling.x, m_scaling.y, m_scaling.z).c_str());
+            writeTo->SetAttribute(
+                "scale", CStr::format_("%.3f %.3f %.3f", m_scaling.x, m_scaling.y, m_scaling.z).c_str());
         }
         if (m_srvId != -1)
         {
@@ -325,7 +326,6 @@ namespace m3d
             return 1;
         }
 
-        // TODO: check this 0 models
         auto item = server->GetItemByName(idAttr, true);
         if (item == -1)
         {
@@ -972,7 +972,8 @@ namespace m3d
         return result;
     }
 
-    int SgNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>& properties) const
+    int SgNode::GetPropertiesList(
+        retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>& properties) const
     {
         // RVA 0x643870 - NOTE: of the ten 4352.. properties SetProperty accepts, only 4353 is listed.
         int const result = Object::GetPropertiesList(properties);

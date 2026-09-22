@@ -1294,12 +1294,9 @@ int SubjectList::AddButtonByNameAndId(CStr const& name, int id)
         return -1;
     }
 
-    // NOTE: the shipped build feeds the client bounds through oddly - the button
-    // origin becomes (clientBounds.y0, clientBounds.width) and its "width" is
-    // clientBounds.height. RenderItem re-positions every row anyway.
     BoundsBase<float> const clientB = GetClientBounds();
-    PointBase<float> const origin{clientB.y0, clientB.width};
-    if (!btn->SetUp(name, origin, clientB.height, m_theme, id))
+    PointBase<float> const origin{clientB.x0, clientB.y0};
+    if (!btn->SetUp(name, origin, clientB.width, m_theme, id))
     {
         delete btn;
         return -1;

@@ -1534,6 +1534,8 @@ namespace ai
                         auto it = m_vehicleParts.find(parentPartDescription->GetName());
                         if (it == m_vehicleParts.end())
                         {
+                            M3D_LOG_INFO(
+                                "Warning: parent part for child does not exist in object '" + GetDebugDescription() + "'");
                             break;
                         }
 
@@ -1644,11 +1646,6 @@ namespace ai
                         partDesc = parentPartDescription;
                         parentPartDescription = parentPartDescription->GetParent();
                     }
-                }
-                else
-                {
-                    M3D_LOG_INFO(
-                        "Warning: parent part for child does not exist in object '" + GetDebugDescription() + "'");
                 }
 
                 CVector resVector = res.getOrg();

@@ -198,7 +198,12 @@ int StatsButton::SetUpForStats(CStr const& statsName, PointBase<float> const& or
     // Hex-Rays output leaves the height field reading uninitialised stack (a
     // decompiler artifact of the __userpurge frame). retruxx uses the twin
     // CheckButton layout: spaceY padding above and below a single text row.
-    BoundsBase<float> const selfB{origin.x, origin.y, width, m_aif.m_spaceY * 2.0f + textSz.y};
+    BoundsBase<float> selfB;
+    selfB.x0 = origin.x;
+    selfB.y0 = origin.y;
+    selfB.width = width;
+    selfB.height = m_aif.m_spaceY * 2.0f + textSz.y;
+
     SetBounds(selfB, true);
 
     m_gameDataFlags |= 1u;
@@ -549,12 +554,9 @@ int StatsList::AddButtonByStatsName(CStr const& statsName)
         return -1;
     }
 
-    // NOTE: the shipped build feeds the client bounds through oddly - the button
-    // origin becomes (clientBounds.y0, clientBounds.width) and its "width" is
-    // clientBounds.height. RenderItem re-positions every row anyway.
     BoundsBase<float> const clientB = GetClientBounds();
-    PointBase<float> const origin{clientB.y0, clientB.width};
-    if (!btn->SetUpForStats(statsName, origin, clientB.height))
+    PointBase<float> const origin{clientB.x0, clientB.y0};
+    if (!btn->SetUpForStats(statsName, origin, clientB.width))
     {
         delete btn;
         return -1;
@@ -893,15 +895,9 @@ void StatsWnd::UpdatePlayerPortraitAnmation()
     {
         return;
     }
-    if (m_wndPlayerPortrait->GetModel() && m_wndPlayerPortrait->Animation())
-    {
-        // TODO(RVA 0x107290): calls help::RandomizeCurAnimationOnFinish (RVA
-        // 0x1561E0) - a guihelper animation routine not yet ported to retruxx.
-        // It swaps the portrait's current animation for a fresh random stand
-        // pose once the running clip is within two frames of its end.
-        // help::RandomizeCurAnimationOnFinish(m_wndPlayerPortrait->GetModel(),
-        //                                     m_wndPlayerPortrait->Animation(), help::_AT_STAND);
-    }
+
+    help::RandomizeCurAnimationOnFinish(
+        m_wndPlayerPortrait->GetModel(), m_wndPlayerPortrait->Animation(), help::_AT_STAND);
 }
 
 void StatsWnd::UpdatePlayerDiz()
@@ -912,18 +908,22 @@ void StatsWnd::UpdatePlayerDiz()
         return;
     }
 
-    // TODO(RVA 0x107340): the "with player" branch needs ai::Obj::GetText() (a
-    // virtual absent from retruxx). The shipped code takes the player's text
-    // record, appends "_diz" to its id, resolves the result through
-    // GetStringByStringId0 and shows it. The no-player / no-text branches (and
-    // this fallback) just clear the description.
-    m_wndPlayerDiz->SetText(CStr{});
+    CStr text;
+    if (ai::thePlayer)
+    {
+        if (auto const* prototype = ai::thePlayer->GetPrototypeInfo())
+        {
+            text = M3D_APP->GetStringByStringId0(prototype->m_prototypeName + "_diz");
+        }
+    }
+
+    m_wndPlayerDiz->SetText(text);
 }
 
 int StatsWnd::OnAfterAddToWndStation()
 {
     // RVA 0x107490
     int const r = m3d::ui::Wnd::OnAfterAddToWndStation();
-    M3D_APP->EnqueueMessage(65691, 0, 0, 0, 0, CStr{}, m3d::AIParam{});
+    M3D_APP->EnqueueMessage(UM_HELP, 0, 0, 0, 0, CStr{}, m3d::AIParam{});
     return r;
 }

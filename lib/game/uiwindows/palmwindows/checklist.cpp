@@ -129,13 +129,9 @@ int CheckList::AddButtonByName(CStr const& name, CStr const& fullName)
         return -1;
     }
 
-    // NOTE: the shipped build feeds the client bounds through oddly - the button
-    // origin becomes (clientBounds.y0, clientBounds.width) and its "width" is
-    // clientBounds.height. The list re-positions every row in RenderItem, so the
-    // initial placement is irrelevant.
     BoundsBase<float> const clientB = GetClientBounds();
-    PointBase<float> const origin{clientB.y0, clientB.width};
-    if (!btn->SetUp(name, origin, clientB.height, fullName))
+    PointBase<float> const origin{clientB.x0, clientB.y0};
+    if (!btn->SetUp(name, origin, clientB.width, fullName))
     {
         delete btn;
         return -1;
@@ -443,7 +439,12 @@ int CheckButton::SetUp(CStr const& name, PointBase<float> const& origin, float w
     AddChild(m_lbl);
 
     float const contentH = (lblB.height <= icoB.height) ? icoB.height : lblB.height;
-    BoundsBase<float> const selfB{origin.x, origin.y, width, m_aif.m_spaceY * 2.0f + contentH};
+    BoundsBase<float> selfB;
+    selfB.x0 = origin.x;
+    selfB.y0 = origin.y;
+    selfB.width = width;
+    selfB.height = m_aif.m_spaceY * 2.0f + contentH;
+
     SetBounds(selfB, true);
 
     m_gameDataFlags |= 1u;

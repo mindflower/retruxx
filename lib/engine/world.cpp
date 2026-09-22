@@ -122,7 +122,7 @@ namespace m3d
             return 0;
         }
 
-        if (!CreatePrefabsFromFile("prefabs.xml") && !CreatePrefabsFromFile("data\\models\\prefabs.xml"))
+        if (!CreatePrefabsFromFile(m_level->GetFullPathNameA("prefabs.xml").c_str()) && !CreatePrefabsFromFile("data\\models\\prefabs.xml"))
         {
             M3D_LOG_INFO("Could not find prefabs.xml");
         }

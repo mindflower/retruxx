@@ -615,10 +615,10 @@ QuestLabel::AuxInfo QuestLabel::m_aif;
 QuestLabel::AuxInfo::AuxInfo()
 {
     // RVA 0x4F9C40
-    m_selColor = 0xFF400000;
+    m_selColor = 0xFF404040;
     m_unselColor = 0xFF7F7F7F;
-    m_selFailColor = 0xFFD34331;
-    m_unselFailColor = 0xFF752663;
+    m_selFailColor = 0xFFD34931;
+    m_unselFailColor = 0xFF753423;
     m_crossTexName = "QuestCrossLine";
     m_crossLineH = 2.0f;
 }
