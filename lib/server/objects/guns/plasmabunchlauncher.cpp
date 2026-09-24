@@ -3,6 +3,11 @@
 #include <math/matrix.h>
 #include <stdexcept>
 
+#include "core/kernel.h"
+#include "plasmabunch.h"
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/base/prototypemanager.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(PlasmaBunchLauncher)
@@ -17,7 +22,8 @@ namespace ai
 
     Obj* PlasmaBunchLauncherPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B160
+        return new PlasmaBunchLauncher(*this);
     }
 
     bool PlasmaBunchLauncherPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -27,22 +33,26 @@ namespace ai
 
     void PlasmaBunchLauncherPrototypeInfo::PostLoad()
     {
-        // TODO: implement ::PostLoad
+        // RVA 0x84B120 - NOTE: m_bunchPrototypeName is never loaded or used; the bunch comes from
+        // the gun's own shell prototype.
+        GunPrototypeInfo::PostLoad();
     }
 
     m3d::Class* PlasmaBunchLauncher::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B0F0
+        return RT_CLASS_LOCAL(PlasmaBunchLauncher);
     }
 
     PlasmaBunchLauncherPrototypeInfo const* PlasmaBunchLauncher::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B5C0 - NOTE: the prototype is cast without a type check.
+        return static_cast<PlasmaBunchLauncherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     PlasmaBunchLauncher::PlasmaBunchLauncher(PlasmaBunchLauncherPrototypeInfo const& prototype) : Gun(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B130
     }
 
     m3d::Class* PlasmaBunchLauncher::GetBaseClass()
@@ -52,21 +62,43 @@ namespace ai
 
     void PlasmaBunchLauncher::_LaunchShells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B5F0 - a plasma bunch starts at the speed of the vehicle that fires it and then
+        // accelerates on its own (see PlasmaBunch::Update).
+        Gun::_LaunchShells();
+
+        int const bunchId = theObjects->CreateNewObject(GetShellPrototypeId(), "", -1, -1);
+        PlasmaBunch* bunch = static_cast<PlasmaBunch*>(theObjects->GetEntityByObjId(bunchId));
+        // NOTE: neither the bunch nor the owner is checked for null before use.
+        bunch->SetGunObjId(GetId());
+        PhysicObj* owner = GetOwner();
+        if (owner)
+        {
+            bunch->SetBelong(owner->GetBelong());
+        }
+
+        CVector const ownerVel = owner->GetLinearVelocity();
+        bunch->SetVelocity(static_cast<float>(
+            std::sqrt(double(ownerVel.x) * ownerVel.x + double(ownerVel.y) * ownerVel.y + double(ownerVel.z) * ownerVel.z)));
+        bunch->SetPosition(_CalcPosForNextShot());
+        bunch->SetDirection(_CalcDirForNextShot());
+        bunch->SetDeadTimer(100000, false);
+        bunch->RelinkToSpace(owner->GetSpaceId());
     }
 
-    PlasmaBunchLauncher::~PlasmaBunchLauncher()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    // RVA 0x84B150
+    PlasmaBunchLauncher::~PlasmaBunchLauncher() = default;
 
     m3d::Object* PlasmaBunchLauncher::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B400
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* PlasmaBunchLauncher::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x84B240
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

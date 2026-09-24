@@ -226,9 +226,19 @@ namespace m3d
 {
     CameraPath const CameraPath::m_emptyPath;
 
-    void CameraPath::insert(int, CameraPathState const&)
+    void CameraPath::insert(int pointNum, CameraPathState const& state)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62ADB0 - the guard points are dropped while editing and rebuilt afterwards.
+        _DeFix();
+        if (pointNum < 0 || pointNum > static_cast<int>(m_cameraPathStates.size()))
+        {
+            M3D_ENGINE_CFG.m_console->PrintF(CStr("Error: invalid point number"));
+        }
+        else
+        {
+            m_cameraPathStates.insert(m_cameraPathStates.begin() + pointNum, state);
+        }
+        _Fix();
     }
 
     unsigned CameraPath::size() const
@@ -409,9 +419,18 @@ namespace m3d
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void CameraPath::SaveToXmlRuntime(cmn::XmlFile*, cmn::XmlNode*) const
+    void CameraPath::SaveToXmlRuntime(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6268A0 - only the real points are written, not the guard points _Fix adds at
+        // either end.
+        xmlNode->SetAttribute("FullTime", CStr(m_fullTime).c_str());
+        xmlNode->SetAttribute("FullLength", CStr(m_fullLength).c_str());
+        for (int i = 1; i < static_cast<int>(m_cameraPathStates.size()) - 1; ++i)
+        {
+            ref_ptr pointNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Point");
+            xmlNode->AddChild(pointNode);
+            m_cameraPathStates[i].SaveToXmlRuntime(xmlFile, pointNode);
+        }
     }
 
     void CameraPath::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
@@ -469,7 +488,12 @@ namespace m3d
 
     void CameraPathState::SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x625BE0
+        xmlNode->SetAttribute("coord", CStr(m_point).c_str());
+        xmlNode->SetAttribute("rotation", CStr(m_rotation).c_str());
+        xmlNode->SetAttribute("zoom", CStr(m_zoom).c_str());
+        xmlNode->SetAttribute("speed", CStr(m_speed).c_str());
+        xmlNode->SetAttribute("flyTime", CStr(m_flyTime).c_str());
     }
 
     CameraPath::CameraPath(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const&)
@@ -596,7 +620,15 @@ namespace m3d
 
     void CameraPath::_DeFix()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x629E90 - drops the first and the last point.
+        if (!m_cameraPathStates.empty())
+        {
+            m_cameraPathStates.erase(m_cameraPathStates.begin());
+        }
+        if (!m_cameraPathStates.empty())
+        {
+            m_cameraPathStates.erase(m_cameraPathStates.end() - 1);
+        }
     }
 
     void CameraPath::_Fix()

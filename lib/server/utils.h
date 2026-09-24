@@ -1,4 +1,5 @@
 #include "math/point2d.h"
+#include "math/vector.h"
 
 #include <core/stringm3d.h>
 #include "retruxx/common.h"
@@ -14,6 +15,19 @@ namespace m3d
 namespace ai
 {
     Quaternion GetRotationByDirection(CVector const& direction);
+
+    // Orders object ids by the distance of their PhysicObj from m_Org, nearest first.
+    class cmpByDistToOrg
+    {
+    private:
+        /* 0x0000 */ CVector m_Org;
+
+    public:
+        cmpByDistToOrg(const CVector& Org);
+        bool operator()(const int& objId1, const int& objId2) const;
+    }; /* size: 0x000c */
+
+    void sortPhysicObjsByDistance(retruxx::vector<int>& vct, CVector const& org);
     class Path;
     class Obj;
     class PhysicObj;

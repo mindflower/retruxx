@@ -4,61 +4,73 @@
 
 namespace ai
 {
-    class CompoundGunPrototypeInfo : public CompoundVehiclePartPrototypeInfo
+    class CompoundGunPrototypeInfo : public ai::CompoundVehiclePartPrototypeInfo
     {
     public:
-        FiringTypes GetFiringType() const;
+        ai::FiringTypes GetFiringType() const;
 
     protected:
-        virtual Obj* CreateTargetObject() const;
-    };
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x011c */
 
-    class CompoundGun : public CompoundVehiclePart
+    static_assert(sizeof(CompoundGunPrototypeInfo) == 0x011c);
+
+    // A gun made of several guns (for example twin barrels). Commands go to every part; the
+    // charging and ammunition queries answer for the first part only.
+    class CompoundGun : public ai::CompoundVehiclePart
     {
-    public:
-        virtual bool CanFire() const;
-        virtual unsigned int GetPrice(IPriceCoeffProvider const*) const;
-        void SetProperTargetId(int, int);
-        static m3d::Class* GetBaseClass();
-        void SetChargeState(Gun::ChargeState);
-        bool IsDurabilityEnoughForFiring() const;
-        DamageType GetDamageType() const;
-        void SetShellsInCurrentCharge(unsigned int);
-        bool IsWithShellsPoolLimit() const;
-        float GetDamage() const;
-        Gun::ChargeState GetChargeState() const;
-        int GetShellPrototypeId() const;
-        float EstimateDamageFromPosition(CVector const&, CVector const&, std::vector<int, std::allocator<int> > const&) const;
-        void Recharge();
-        void LookAtPoint(CVector const&, float);
-        bool PointIsReachable(CVector const&, std::vector<int, std::allocator<int> > const&) const;
-        unsigned int GetShellsInCurrentCharge() const;
-        float GetCurrentRechargingTime() const;
-        unsigned int GetShellsPoolSize() const;
-        float GetFiringRange() const;
-        unsigned int GetChargeSize() const;
-        unsigned int GetShellsInPool() const;
-        bool IsWithCharging() const;
-        float GetFiringRate() const;
-        CompoundGun(CompoundGunPrototypeInfo const&);
-        bool CanShotToTarget(int) const;
-        bool Fire(bool);
-        void SetShellsInPool(unsigned int);
-        virtual CompoundGunPrototypeInfo const* GetPrototypeInfo() const;
-        float EstimateDamage(CVector const&, std::vector<int, std::allocator<int> > const&) const;
-        float EstimateDamage() const;
-        bool isLookAtPoint(CVector const&, float) const;
-        virtual m3d::Class* GetClass() const;
-        float GetRechargingTime() const;
+        friend class CompoundGunPrototypeInfo;
 
     protected:
-        virtual ~CompoundGun();
+        virtual ~CompoundGun() override /* 0x00 */;
 
     private:
-        virtual m3d::Object* Clone();
-        static m3d::Object* CreateObject();
+        CompoundGun(const ai::CompoundGunPrototypeInfo& prototypeInfo);
+        CompoundGun(const ai::CompoundGun&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
         RT_CLASS_DECLARE(CompoundGun);
-    };
+        virtual const ai::CompoundGunPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        void SetProperTargetId(int targetObjId, int lockedObjIdForRockets);
+        bool Fire(bool enable);
+        void LookAtPoint(const CVector& lookAt, float elapsedTime);
+        bool isLookAtPoint(const CVector& lookAt, float eps) const;
+        bool PointIsReachable(const CVector& pos, const std::vector<int, std::allocator<int> >& exceptions) const;
+        bool CanShotToTarget(int targetObjId) const;
+        float EstimateDamage(const CVector& pos, const std::vector<int, std::allocator<int> >& exceptions) const;
+        float EstimateDamage() const;
+        float EstimateDamageFromPosition(const CVector& position, const CVector& pos, const std::vector<int, std::allocator<int> >& exceptions) const;
+        float GetDamage() const;
+        ai::DamageType GetDamageType() const;
+        float GetFiringRate() const;
+        float GetFiringRange() const;
+        float GetRechargingTime() const;
+        unsigned int GetChargeSize() const;
+        void SetChargeState(ai::Gun::ChargeState Value);
+        unsigned int GetShellsInPool() const;
+        unsigned int GetShellsPoolSize() const;
+        unsigned int GetShellsInCurrentCharge() const;
+        bool IsWithCharging() const;
+        bool IsWithShellsPoolLimit() const;
+        void SetShellsInCurrentCharge(unsigned int value);
+        void SetShellsInPool(unsigned int Shells);
+        int GetShellPrototypeId() const;
+        ai::Gun::ChargeState GetChargeState() const;
+        float GetCurrentRechargingTime() const;
+        void Recharge();
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0x00 */;
+        bool IsDurabilityEnoughForFiring() const;
+        virtual bool CanFire() const /* 0x168 */;
+
+    private:
+        // The first part answers the queries that are not summed over all parts. NOTE: the
+        // shipped code does not check that there is one.
+        Gun* _GetFirstGun() const;
+    }; /* size: 0x02d4 */
+
+    static_assert(sizeof(CompoundGun) == 0x02d4);
 }

@@ -715,6 +715,8 @@ int const MAX_VISIBLE_GRASS_INSTANCES = 2000;
 extern m3d::Landscape::GrassInstance* visGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
 extern int visModelsForGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
 
+bool intersectTriangle(CVector const& orig, CVector const& dir, CVector const& a, CVector const& b, CVector const& c, float& t, float& u, float& v);
+
 struct GrassModelInfo
 {
     /* 0x0000 */ m3d::rend::VbHandle vb;

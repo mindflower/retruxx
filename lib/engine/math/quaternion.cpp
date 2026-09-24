@@ -372,3 +372,17 @@ void Quaternion::operator*=(Quaternion const& b)
     this->z = v3;
     this->w = v4;
 }
+
+Quaternion operator*(Quaternion const& a, Quaternion const& b)
+{
+    // RVA 0x9CC590
+    Quaternion result;
+    float const y = a.w * b.y + b.w * a.y + a.z * b.x - b.z * a.x;
+    float const z = a.w * b.z + a.x * b.y + a.z * b.w - b.x * a.y;
+    float const w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
+    result.x = b.w * a.x + b.z * a.y + a.w * b.x - a.z * b.y;
+    result.y = y;
+    result.z = z;
+    result.w = w;
+    return result;
+}

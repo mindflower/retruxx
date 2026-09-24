@@ -25,6 +25,12 @@ m3d::Class* NpcModelWnd::GetClass() const
 
 NpcModelWnd::NpcModelWnd()
 {
+    m_bAllowRotate = false;
+    m_bAllowRotateByHandY = false;
+    m_defaultRotationAngleX = 0.0;
+    m_rotationAngle.x = 0.0;
+    m_rotationAngle.y = 0.0;
+    m_bAutosized = false;
     m_npcId = -1;
 }
 
@@ -123,7 +129,7 @@ void NpcModelWnd::OnNpcReplyShown(void* data)
         return;
     }
 
-    int replyNpcId = reinterpret_cast<const int*>(data)[13];
+    int replyNpcId = reinterpret_cast<int const*>(data)[13];
     if (replyNpcId != m_npcId)
     {
         return;
@@ -161,7 +167,7 @@ void NpcModelWnd::UpdateAnimation()
         return;
     }
 
-    const m3d::AnimatedModel::Animation* curAnim = m_Animation->GetCurAnimation();
+    m3d::AnimatedModel::Animation const* curAnim = m_Animation->GetCurAnimation();
     if (!curAnim)
     {
         return;

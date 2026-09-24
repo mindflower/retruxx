@@ -2,6 +2,8 @@
 
 namespace m3d
 {
+    class Landscape;
+
     namespace rend
     {
         struct BANDWIDTHTIMINGS
@@ -53,6 +55,9 @@ namespace m3d
 
         class QueryReturnValue
         {
+            // Landscape::QueryWaterVisibility reads the result directly.
+            friend class m3d::Landscape;
+
             enum Type
             {
                 NotValid = 0,

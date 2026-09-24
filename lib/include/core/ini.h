@@ -116,6 +116,7 @@ namespace m3d
     }
 
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
+    int WriteXmlFile(char const* filename, cmn::XmlFile* xmlFile, CStr* errorStr);
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
     bool SafeClrAttrib(unsigned int&, m3d::cmn::XmlNode const*, char const*);
     bool SafeIntAttrib(int&, m3d::cmn::XmlNode const*, char const*);

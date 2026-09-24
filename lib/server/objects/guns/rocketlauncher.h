@@ -17,6 +17,8 @@ namespace ai
 
     class RocketLauncher : public ai::Gun
     {
+        friend class RocketLauncherPrototypeInfo;
+
     protected:
         virtual  ~RocketLauncher() override /* 0x00 */;
 

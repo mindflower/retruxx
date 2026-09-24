@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "path.h"
+#include <algorithm>
 #include <sstream>
 
 #include "landscape.h"
@@ -282,6 +283,33 @@ namespace ai
         theObjects->AddObjToPostCollideList(brokenObj);
         brokenObj->SetDeadTimer(60000, true);
         return brokenObj;
+    }
+
+    cmpByDistToOrg::cmpByDistToOrg(CVector const& Org) : m_Org(Org)
+    {
+    }
+
+    bool cmpByDistToOrg::operator()(int const& objId1, int const& objId2) const
+    {
+        // RVA 0x9FD8C0 - NOTE: neither object is checked for null or for being a PhysicObj.
+        PhysicObj* obj1 = static_cast<PhysicObj*>(theObjects->GetEntityByObjId(objId1));
+        PhysicObj* obj2 = static_cast<PhysicObj*>(theObjects->GetEntityByObjId(objId2));
+        CVector const pos1 = obj1->GetPosition();
+        CVector const pos2 = obj2->GetPosition();
+        double const x1 = double(pos1.x) - m_Org.x;
+        double const y1 = double(pos1.y) - m_Org.y;
+        double const z1 = double(pos1.z) - m_Org.z;
+        float const x2 = pos2.x - m_Org.x;
+        float const y2 = pos2.y - m_Org.y;
+        float const z2 = pos2.z - m_Org.z;
+        return std::sqrt(double(z2) * z2 + double(y2) * y2 + double(x2) * x2) > std::sqrt(z1 * z1 + y1 * y1 + x1 * x1);
+    }
+
+    void sortPhysicObjsByDistance(retruxx::vector<int>& vct, CVector const& org)
+    {
+        // RVA 0x9FEA80 - NOTE: std::sort is not stable, so the order of equally distant objects
+        // may differ from the shipped STL's.
+        std::sort(vct.begin(), vct.end(), cmpByDistToOrg(org));
     }
 
     Quaternion GetRotationByDirection(CVector const& direction)

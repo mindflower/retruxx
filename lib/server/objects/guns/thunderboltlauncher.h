@@ -3,39 +3,43 @@
 
 namespace ai
 {
-    class ThunderboltLauncherPrototypeInfo : public GunPrototypeInfo
+    class ThunderboltLauncherPrototypeInfo : public ai::GunPrototypeInfo
     {
     public:
-        virtual Obj* CreateTargetObject() const;
         ThunderboltLauncherPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual void PostLoad();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        /* 0x0198 */ float m_ActionDist;
+    }; /* size: 0x019c */
 
-    private:
-        float m_ActionDist;
-    };
+    static_assert(sizeof(ThunderboltLauncherPrototypeInfo) == 0x019c);
 
-    class ThunderboltLauncher : public Gun
+    // Throws a branching lightning bolt at every enemy in range on its side of the vehicle.
+    class ThunderboltLauncher : public ai::Gun
     {
-    public:
-        virtual m3d::Class* GetClass() const;
-        virtual ThunderboltLauncherPrototypeInfo const* GetPrototypeInfo() const;
-        static m3d::Class* GetBaseClass();
-        virtual bool CanFire() const;
-        ThunderboltLauncher(ThunderboltLauncherPrototypeInfo const&);
+        friend class ThunderboltLauncherPrototypeInfo;
 
     protected:
-        virtual void _LaunchShells();
-        virtual ~ThunderboltLauncher();
+        virtual ~ThunderboltLauncher() override /* 0x00 */;
 
     private:
-        static m3d::Object* CreateObject();
-        virtual m3d::Object* Clone();
+        ThunderboltLauncher(const ai::ThunderboltLauncherPrototypeInfo& prototypeInfo);
+        ThunderboltLauncher(const ai::ThunderboltLauncher&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
         RT_CLASS_DECLARE(ThunderboltLauncher);
+        virtual const ai::ThunderboltLauncherPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual bool CanFire() const override /* 0x190 */;
 
-    private:
-        std::vector<int> m_enemies;
-    };
+    protected:
+        /* 0x0330 */ std::vector<int, std::allocator<int> > m_enemies;
+        virtual void _LaunchShells() override /* 0x198 */;
+    }; /* size: 0x0340 */
+
+    static_assert(sizeof(ThunderboltLauncher) == 0x0340);
 }

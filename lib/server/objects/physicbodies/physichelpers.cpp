@@ -11,6 +11,8 @@
 #include "core/kernel.h"
 #include "core/timer.h"
 #include "core/log.h"
+#include "core/scoped_ptr.h"
+#include "math/segment.h"
 #include "math/coremath.h"
 #include "ode/odecpp.h"
 #include "server/server.h"
@@ -355,9 +357,51 @@ namespace ai
         return result;
     }
 
-    int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*)
+    int TraceLine(ai::Ray const& ray, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0xA04F30 - the index of the geom whose contact with the ray is nearest the ray's
+        // start, or -1; that contact is copied to closestContact.
+        float minDistFromContact = 1.0e30f;
+        dReal const* start = dGeomGetPosition(ray.GetGeomId());
+        float const realStartX = start[0];
+        float const realStartY = start[1];
+        float const realStartZ = start[2];
+        int contactGeom = -1;
+        for (unsigned i = 0; i < Geoms.size(); ++i)
+        {
+            dContact contact;
+            if (dCollide(ray.GetGeomId(), Geoms[i]->GetGeomId(), 1, &contact.geom, sizeof(dContact)))
+            {
+                float const dy = (realStartY - contact.geom.pos[1]) * (realStartY - contact.geom.pos[1]);
+                float const dx = (realStartX - contact.geom.pos[0]) * (realStartX - contact.geom.pos[0]);
+                float const distSq = (realStartZ - contact.geom.pos[2]) * (realStartZ - contact.geom.pos[2]) + dy + dx;
+                if (minDistFromContact > distSq)
+                {
+                    minDistFromContact = distSq;
+                    contactGeom = static_cast<int>(i);
+                    if (closestContact)
+                    {
+                        *closestContact = contact;
+                    }
+                }
+            }
+        }
+        return contactGeom;
+    }
+
+    int TraceSegment(Segment const& segment, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact)
+    {
+        // RVA 0xA05040 - TraceLine along a segment, with one ray shared by every call.
+        static scoped_ptr<ai::Ray> ray(ai::Ray::CreateObject(nullptr, 0.0f, nullptr));
+        CVector const& begin = segment.begin();
+        CVector const& end = segment.end();
+        dGeomSetPosition(ray->GetGeomId(), begin.x, begin.y, begin.z);
+        ray->SetDirection(CVector(end.x - begin.x, end.y - begin.y, end.z - begin.z));
+        float const dz = end.z - begin.z;
+        float const dy = end.y - begin.y;
+        float const dx = end.x - begin.x;
+        ray->SetLength(std::sqrt(dz * dz + dy * dy + dx * dx));
+        return TraceLine(*ray, Geoms, closestContact);
     }
 
     namespace

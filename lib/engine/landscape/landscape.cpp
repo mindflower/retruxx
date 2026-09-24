@@ -34,6 +34,7 @@
 extern "C" {
 #include <ode/collision.h>
 #include <ode/collision_trimesh.h>
+#include <ode/objects.h>
 }
 
 namespace
@@ -180,6 +181,55 @@ GrassModelInfo m_grassModels[MAX_GRASS_MODELS];
 m3d::Landscape::GrassInstance* visGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
 int visModelsForGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
 
+// RVA 0x5AB810 - Moller-Trumbore ray/triangle test, one sided: a triangle seen from
+// behind (or edge on) is missed. u and v are written before they are range checked.
+bool intersectTriangle(
+    CVector const& orig,
+    CVector const& dir,
+    CVector const& a,
+    CVector const& b,
+    CVector const& c,
+    float& t,
+    float& u,
+    float& v)
+{
+    float const e1x = b.x - a.x;
+    float const e1y = b.y - a.y;
+    float const e1z = b.z - a.z;
+    float const e2x = c.x - a.x;
+    float const e2y = c.y - a.y;
+    float const e2z = c.z - a.z;
+    float const px = dir.y * e2z - dir.z * e2y;
+    float const py = dir.z * e2x - dir.x * e2z;
+    float const pz = dir.x * e2y - dir.y * e2x;
+    float const det = (e1z * pz + px * e1x) + py * e1y;
+    if (det < 0.0001f)
+    {
+        return false;
+    }
+    float const tx = orig.x - a.x;
+    float const ty = orig.y - a.y;
+    float const tz = orig.z - a.z;
+    u = (tz * pz + ty * py) + tx * px;
+    if (u < 0.0f || u > det)
+    {
+        return false;
+    }
+    float const qx = ty * e1z - tz * e1y;
+    float const qy = tz * e1x - e1z * tx;
+    float const qz = tx * e1y - ty * e1x;
+    v = (dir.z * qz + dir.y * qy) + dir.x * qx;
+    if (v < 0.0f || v + u > det)
+    {
+        return false;
+    }
+    float const inv = 1.0f / det;
+    t = ((e2z * qz + e2y * qy) + qx * e2x) * inv;
+    u = u * inv;
+    v = v * inv;
+    return true;
+}
+
 namespace m3d
 {
     extern CClient* pClient;
@@ -235,9 +285,42 @@ namespace m3d
         }
     }
 
-    bool Landscape::SaveShoreLine(CStr const&)
+    bool Landscape::SaveShoreLine(CStr const& FileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B1A40
+        fs::auxTaggedFile file;
+        if (file.Open(FileName.c_str(), fs::auxTaggedFile::CREATE_IGNORE_CRC))
+        {
+            M3D_LOG_INFO(CStr("Couldn't save shore line to file ") + FileName);
+            return false;
+        }
+
+        file.setFormatTitle("SFF");
+        file.setFormatVersion(1u);
+        file.addChunk(1u);
+        unsigned const numShores = static_cast<unsigned>(m_shoreLines.size());
+        file.addChunkDataCopy(1u, 4u, &numShores);
+        for (unsigned i = 0; i < numShores; ++i)
+        {
+            auto const& line = m_shoreLines[i];
+            unsigned const numPoints = static_cast<unsigned>(line.size());
+            file.addChunkDataCopy(1u, 4u, &numPoints);
+            file.addChunkDataCopy(1u, sizeof(CVector) * numPoints, line.data());
+        }
+
+        // The water cells whose shores were switched off in the editor.
+        if (!m_noShoresSet.empty())
+        {
+            file.addChunk(2u);
+            unsigned const num = static_cast<unsigned>(m_noShoresSet.size());
+            file.addChunkDataCopy(2u, 4u, &num);
+            for (unsigned const& key : m_noShoresSet)
+            {
+                file.addChunkDataCopy(2u, 4u, &key);
+            }
+        }
+        file.Close();
+        return true;
     }
 
     int Landscape::GetTileSize() const
@@ -245,9 +328,10 @@ namespace m3d
         return 4 * this->m_owner->m_level->land_size;
     }
 
-    void Landscape::SetOverlayShader(rend::IEffect*)
+    void Landscape::SetOverlayShader(rend::IEffect* os)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8DF0B0
+        overlayShader = os;
     }
 
     void Landscape::LinkNodeAndChildrenCollisionGeomsToCell(SgNode* node)
@@ -486,9 +570,10 @@ namespace m3d
         m_matScale._44 = 1.0f;
     }
 
-    void Landscape::SetAllTexturesLoading(bool)
+    void Landscape::SetAllTexturesLoading(bool value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAC00
+        m_loadAllTextures = value;
     }
 
     void Landscape::FreeShoresStuff()
@@ -840,7 +925,8 @@ namespace m3d
             break;
         }
         default:
-            RETRUXX_NOT_IMPLEMENTED;
+            // Any other mode falls through to the common tail.
+            break;
         }
 
         M3D_RENDERER->SetToStream0(m_solidVb);
@@ -905,14 +991,143 @@ namespace m3d
 
     }
 
-    void Landscape::RemoveGrassInstance(unsigned)
+    void Landscape::RemoveGrassInstance(unsigned instance)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6B0080
+        unsigned const tileIdx = instance >> 16;
+        unsigned const modelSlot = (instance >> 8) & 0xFF;
+        unsigned const instanceSlot = instance & 0xFF;
+
+        TileGrass* tile = m_grassArray[tileIdx];
+        if (!tile)
+        {
+            return;
+        }
+        GrassInstancesForModel* perModel = tile->instancesPerModel[modelSlot];
+        if (!perModel)
+        {
+            return;
+        }
+        delete perModel->grass[instanceSlot];
+        perModel->grass[instanceSlot] = nullptr;
+        // NOTE: the tile's numInstances is not decremented, and neither the handle nor the
+        // slot is checked (removing an empty slot still counts the model down).
+        if (perModel->numInstances-- == 1)
+        {
+            delete tile->instancesPerModel[modelSlot];
+            tile->instancesPerModel[modelSlot] = nullptr;
+            --tile->numDiffModels;
+        }
+        if (!tile->numDiffModels)
+        {
+            delete m_grassArray[tileIdx];
+            m_grassArray[tileIdx] = nullptr;
+        }
     }
 
     void Landscape::QueryWaterVisibility()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C36A0
+        // Runs an occlusion query over the water tiles in view with a cheap shader. The
+        // results come in a few frames late, so the oldest of the three queries is read.
+        if (m_waterQueries[(m_currWaterQuery + 1) % 3]->GetData().d)
+        {
+            m_isWaterVisible = true;
+            return;
+        }
+        // NOTE: when the water just stopped passing, it is marked hidden and no new query is
+        // issued this frame.
+        if (m_isWaterVisible)
+        {
+            m_isWaterVisible = false;
+            return;
+        }
+
+        m_currWaterQuery = (m_currWaterQuery + 1) % 3;
+        m_waterQueries[m_currWaterQuery]->Begin();
+
+        CellsToDraw().swap(waterCellsToDraw[0]);
+        int const waterSide = 4 * m_owner->m_level->land_size;
+        SceneGraph& graph = m_owner->GetGraph();
+        for (int x = 0; x < waterSide; ++x)
+        {
+            for (int z = 0; z < waterSide; ++z)
+            {
+                if (!graph.IsCellEnabled(x / 4, z / 4))
+                {
+                    // The visibility cell is off: skip the rest of its tiles in z.
+                    z += 3;
+                    continue;
+                }
+                if (m_waterMap[4 * z * m_owner->m_level->land_size + x])
+                {
+                    waterCellsToDraw[0].push_back(std::pair<unsigned, float>(x + 256 * z, getWaterHeight(x, z)));
+                }
+            }
+        }
+
+        M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+        M3D_RENDERER->PushBlend(rend::BM_NONE);
+        M3D_RENDERER->PushFog(M3D_ENGINE_CFG.m_r_enableFog.GetB());
+        M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
+        M3D_RENDERER->DisableTextureStages(0);
+        m_waterDumbVs->Apply();
+        m_waterDumbPs->Apply();
+        CMatrix const viewMatrix = M3D_RENDERER->MatGet();
+        CMatrix const viewProjMatrix = viewMatrix * M3D_RENDERER->MatGetProj();
+        m_waterDumbVs->SetMatrix(m_waterDumbVs->GetParamHandleByName("mViewProj"), viewProjMatrix);
+
+        float s;
+        float e;
+        GetFogStartAndEnd(s, e);
+        float const reduceFactor = m_owner->GetWeatherManager().GetFogReduceFactorFromWeather();
+        CVector fogTerm;
+        fogTerm.x = reduceFactor * e;
+        fogTerm.z = reduceFactor * s;
+        fogTerm.y = static_cast<float>(1.0 / (reduceFactor * e - reduceFactor * s));
+        m_waterDumbVs->SetVector3(m_waterDumbVs->GetParamHandleByName("g_FogTerm"), fogTerm);
+
+        float const distBetwVert = 4.0f;
+        M3D_RENDERER->SetVsFloatConst(17u, &distBetwVert, 1u);
+        M3D_RENDERER->SetToStream0(m_waterVb);
+        M3D_RENDERER->SetIndices(m_waterIb[3], 0);
+
+        // Tiles are instanced through vertex shader constants, m_maxWaterCellPerPass at a time.
+        // NOTE: one draw is issued even when no water tile is in view.
+        unsigned numWaterTris = 0;
+        unsigned waterDips = 0;
+        auto it = waterCellsToDraw[0].begin();
+        auto const end = waterCellsToDraw[0].end();
+        do
+        {
+            int numInPass = 0;
+            if (it != end)
+            {
+                do
+                {
+                    unsigned const key = it->first;
+                    waterTileInfo[numInPass].x = static_cast<float>(key & 0xFF) * 32.0f;
+                    waterTileInfo[numInPass].y = it->second;
+                    waterTileInfo[numInPass].z = static_cast<float>((key >> 8) & 0xFF) * 32.0f;
+                    waterTileInfo[numInPass].w = 0.0f;
+                    ++numInPass;
+                    ++it;
+                } while (numInPass != m_maxWaterCellPerPass && it != end);
+            }
+            M3D_RENDERER->SetVsFloatConst(20u, reinterpret_cast<float const*>(waterTileInfo), numInPass);
+            ++waterDips;
+            M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, 81 * numInPass, 0, numInPass * m_wtNumTris[3] - 4);
+            numWaterTris = numWaterTris + numInPass * m_wtNumTris[3] - 4;
+        } while (it != end);
+
+        M3D_APP->GetDbgCounterStack().DrawStringThisFrame((CStr("waterTris = ") + CStr(numWaterTris)).c_str());
+        M3D_APP->GetDbgCounterStack().DrawStringThisFrame((CStr("waterDip = ") + CStr(waterDips)).c_str());
+
+        M3D_RENDERER->PopZbState();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopCull();
+        m_waterQueries[m_currWaterQuery]->End();
     }
 
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
@@ -982,7 +1197,8 @@ namespace m3d
                             {
                                 for (int texIndex = 0; texIndex < tileInfo.m_numTexs; texIndex++)
                                 {
-                                    cmn::vector<unsigned int>* cellsPerTex = &this->m_cellsPerTex.m_data[tileInfo.m_texFlags[texIndex]];
+                                    // The list is picked by the texture index; the flags only go into the key.
+                                    cmn::vector<unsigned int>* cellsPerTex = &this->m_cellsPerTex.m_data[tileInfo.m_texIndices[texIndex]];
                                     cellsPerTex->push_back(worldX + ((worldY + ((tileInfo.m_angle + (tileInfo.m_texFlags[texIndex] << 8)) << 8)) << 8));
                                 }
                             }
@@ -1111,7 +1327,16 @@ namespace m3d
                 M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
                 if (m3d::Landscape::m_renderMode != RM_GAME)
                 {
-                    RETRUXX_NOT_IMPLEMENTED;
+                    // The editor streams the tiles itself (DrawCells0), except for the
+                    // road map.
+                    if (m3d::Landscape::m_renderMode == RM_EDITOR && !roadMap)
+                    {
+                        M3D_RENDERER->SetZbState(rend::ZB_ENABLE, false);
+                        DrawCells0(m_cellsPerTex[i], RT_FIRSTPASSLIGHT);
+                        M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
+                        M3D_RENDERER->SetZbState(rend::ZB_NOWRITE, false);
+                        DrawCells0(m_cellsPerTex[i], RT_OTHERPASSES);
+                    }
                 }
                 else
                 {
@@ -1160,9 +1385,73 @@ namespace m3d
         return m_texLightmap;
     }
 
-    void Landscape::RemoveGrassRectangle(CVector2 const&, CVector2 const&)
+    void Landscape::RemoveGrassRectangle(CVector2 const& Min, CVector2 const& Max)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AF800
+        if (!m_grassArray)
+        {
+            return;
+        }
+
+        // The upper bounds are exclusive and one past the tile holding the edge.
+        int tileMinX = static_cast<int>(Min.x * (1.0f / 32.0f));
+        int tileMinY = static_cast<int>(Min.y * (1.0f / 32.0f));
+        int tileMaxX = static_cast<int>(Max.x * (1.0f / 32.0f)) + 1;
+        int tileMaxY = static_cast<int>(Max.y * (1.0f / 32.0f)) + 1;
+        tileMinX = std::clamp(tileMinX, 0, 256);
+        tileMinY = std::clamp(tileMinY, 0, 256);
+        tileMaxX = std::clamp(tileMaxX, 0, 256);
+        tileMaxY = std::clamp(tileMaxY, 0, 256);
+
+        for (int x = tileMinX; x < tileMaxX; ++x)
+        {
+            for (int y = tileMinY; y < tileMaxY; ++y)
+            {
+                TileGrass*& tile = m_grassArray[x + (y << 8)];
+                if (!tile)
+                {
+                    continue;
+                }
+                for (unsigned i = 0; tile && i < tile->instancesPerModel.size(); ++i)
+                {
+                    GrassInstancesForModel* perModel = tile->instancesPerModel[i];
+                    if (!perModel)
+                    {
+                        continue;
+                    }
+                    for (unsigned k = 0; k < perModel->grass.size(); ++k)
+                    {
+                        GrassInstance* gi = perModel->grass[k];
+                        if (!gi || !(gi->pos.x > Min.x && Max.x > gi->pos.x && gi->pos.z > Min.y && Max.y > gi->pos.z))
+                        {
+                            continue;
+                        }
+                        delete gi;
+                        perModel->grass[k] = nullptr;
+                        // NOTE: the tile's numInstances is not decremented.
+                        bool modelDeleted = false;
+                        if (perModel->numInstances-- == 1)
+                        {
+                            delete tile->instancesPerModel[i];
+                            tile->instancesPerModel[i] = nullptr;
+                            --tile->numDiffModels;
+                            modelDeleted = true;
+                        }
+                        if (!tile->numDiffModels)
+                        {
+                            delete tile;
+                            tile = nullptr;
+                        }
+                        // NOTE: the original goes on reading the freed model and tile; their
+                        // destructors have just nulled the vectors, so its loops end here.
+                        if (modelDeleted)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void Landscape::ChangedNumberOfUsedTextures(unsigned numTexs)
@@ -1311,7 +1600,8 @@ namespace m3d
 
     Class* Landscape::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AADD0
+        return RT_CLASS_LOCAL(Landscape);
     }
 
     Landscape::CollisionCellItem::CollisionCellItem()
@@ -1338,24 +1628,35 @@ namespace m3d
 
     void Landscape::CollisionCellItem::InsertObstacle(ai::Obstacle* ob)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x64C4B0
+        m_obstacles->insert(ref_ptr<ai::Obstacle>(ob));
     }
 
     void Landscape::CollisionCellItem::EraseObstacle(ai::Obstacle* ob)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x64E6A0
+        m_obstacles->erase(ref_ptr<ai::Obstacle>(ob));
     }
 
     const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Landscape::CollisionCellItem::
     GetPhysicObjIds() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6024E0
+        return m_physicObjIds;
     }
 
     const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::
     Obstacle>>>& Landscape::CollisionCellItem::GetObstacles() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6024F0
+        return *m_obstacles;
+    }
+
+    Landscape::CollisionInfo::CollisionInfo() :
+        m_verts(nullptr),
+        m_tris(nullptr)
+    {
+        // RVA 0x646110
     }
 
     Landscape::CollisionInfo::~CollisionInfo()
@@ -1364,14 +1665,67 @@ namespace m3d
         delete[] m_tris;
     }
 
+    float Landscape::CollisionInfo::TraceRay(CVector const& org, CVector const& dir)
+    {
+        // RVA 0x646120 - the first triangle hit, in index order, not the nearest.
+        for (int i = 0; i < m_numTris; ++i)
+        {
+            unsigned short const* tri = &m_tris[3 * i];
+            CVector const v0 = m_verts[tri[0]];
+            CVector const v1 = m_verts[tri[1]];
+            CVector const v2 = m_verts[tri[2]];
+            float t;
+            float u;
+            float v;
+            if (intersectTriangle(org, dir, v2, v1, v0, t, u, v))
+            {
+                return t;
+            }
+        }
+        return -1.0f;
+    }
+
+    void Landscape::CollisionInfo::Create(int numVerts, CVector* verts, int numTris, unsigned short* tris, CMatrix const& toWorld)
+    {
+        // RVA 0x647CC0 - keeps a world space copy of the mesh, with a box around the
+        // local vertices placed by toWorld and an axis aligned box around the world ones.
+        m_verts = new CVector[numVerts];
+        m_tris = new unsigned short[3 * numTris];
+        m_numTris = numTris;
+        m_numVerts = numVerts;
+        memcpy(m_tris, tris, 3 * sizeof(unsigned short) * numTris);
+
+        m_box.StartEmbracing();
+        for (int i = 0; i < numVerts; ++i)
+        {
+            m_box.EmbracePoint(verts[i]);
+        }
+        CVector const max(m_box.m_box[3], m_box.m_box[4], m_box.m_box[5]);
+        CVector const min(m_box.m_box[0], m_box.m_box[1], m_box.m_box[2]);
+        m_obb.Create(min, max, toWorld, false);
+
+        m_box.StartEmbracing();
+        for (int i = 0; i < numVerts; ++i)
+        {
+            CVector const& v = verts[i];
+            CVector& w = m_verts[i];
+            w.x = toWorld._21 * v.y + toWorld._11 * v.x + v.z * toWorld._31 + toWorld._41;
+            w.y = toWorld._12 * v.x + toWorld._32 * v.z + toWorld._22 * v.y + toWorld._42;
+            w.z = v.y * toWorld._23 + toWorld._13 * v.x + v.z * toWorld._33 + toWorld._43;
+            m_box.EmbracePoint(w);
+        }
+    }
+
     CStr const& Landscape::GetPathToTiles() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAC10
+        return m_pathTile;
     }
 
     void Landscape::SetEditorRenderMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AADF0
+        m_renderMode = RM_EDITOR;
     }
 
     void Landscape::LinkNodeObstacleToCells(SgNode* node)
@@ -1530,58 +1884,224 @@ namespace m3d
 
     void Landscape::_dbgGenerateGrass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AFD90
+        ReadGrassFromXmlFile("data/testGrass.xml");
     }
 
-    void Landscape::DrawJoint(dxJoint*)
+    void Landscape::DrawJoint(dxJoint* joint)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644D50
+        // Treats the joint as a universal joint: lines from both bodies to the anchor, then
+        // both axes from the anchor.
+        dxBody* body0 = dJointGetBody(joint, 0);
+        dxBody* body1 = dJointGetBody(joint, 1);
+        CVector const* pos0 = body0 ? reinterpret_cast<CVector const*>(dBodyGetPosition(body0)) : nullptr;
+        CVector const* pos1 = body1 ? reinterpret_cast<CVector const*>(dBodyGetPosition(body1)) : nullptr;
+
+        dVector3 anchor;
+        dJointGetUniversalAnchor(joint, anchor);
+        CVector const Anchor(anchor[0], anchor[1], anchor[2]);
+        // The first body's address doubles as the line colour.
+        unsigned const color = reinterpret_cast<unsigned>(body0) | 0xFF000000;
+        if (pos0)
+        {
+            CVector const from = *pos0;
+            M3D_APP->DrawLine(from, Anchor, color);
+        }
+        if (pos1)
+        {
+            CVector const from = *pos1;
+            M3D_APP->DrawLine(from, Anchor, color);
+        }
+
+        dVector3 axis1;
+        dJointGetUniversalAxis1(joint, axis1);
+        M3D_APP->DrawLine(Anchor, CVector(axis1[0] + Anchor.x, axis1[1] + Anchor.y, axis1[2] + Anchor.z), 0xFF000000);
+        dVector3 axis2;
+        dJointGetUniversalAxis2(joint, axis2);
+        M3D_APP->DrawLine(Anchor, CVector(Anchor.x + axis2[0], axis2[1] + Anchor.y, axis2[2] + Anchor.z), 0xFF000000);
     }
 
     Landscape::~Landscape()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BACB0
+        Release();
+        for (int i = 0; i < 3; ++i)
+        {
+            m_waterQueries[i]->Release();
+        }
+        // NOTE: waterTileInfo is freed but not nulled.
+        delete[] waterTileInfo;
+
+        for (auto& alphaSet : m_AlphaSets)
+        {
+            for (auto& masks : alphaSet.m_texMasks)
+            {
+                for (auto& tex : masks)
+                {
+                    M3D_RENDERER->ReleaseTexture(tex);
+                }
+            }
+        }
+        // NOTE: only the first 4 of the 16 water index buffers are released.
+        for (int i = 0; i < 4; ++i)
+        {
+            M3D_RENDERER->ReleaseIb(m_waterIb[i]);
+        }
+        for (auto& cells : waterCellsToDraw)
+        {
+            CellsToDraw().swap(cells);
+        }
+        for (auto& ib : m_landIbConst)
+        {
+            M3D_RENDERER->ReleaseIb(ib);
+        }
+        M3D_RENDERER->ReleaseVb(m_waterVb);
+        M3D_RENDERER->ReleaseVb(m_landUVVb);
+        M3D_RENDERER->ReleaseVb(m_landVb);
+        delete[] m_dummyVB;
+        m_dummyVB = nullptr;
+        M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_lockVis);
+
+        auto const releaseShader = [](auto*& shader) {
+            if (shader)
+            {
+                shader->Release();
+                shader = nullptr;
+            }
+        };
+        releaseShader(m_shoresShader);
+        releaseShader(m_solidVs);
+        releaseShader(m_solidPs);
+        releaseShader(m_solidBindVs);
+        releaseShader(m_solidBindPs);
+        releaseShader(m_landscapeVs);
+        releaseShader(m_landscapePsFP);
+        releaseShader(m_landscapePsSP);
     }
 
     void Landscape::UnlinkNodeCollisionGeomsFromCell(SgNode* node, int x, int y, bool deleteList)
     {
+        // RVA 0x64C560
+        int const numCells = m_owner->m_level->land_size;
         std::set<m3d::GeomObject*>* t = nullptr;
         node->GetProperty(4357u, &t);
-        if (t)
+        if (!t)
         {
-            if (m_oCollisionitems)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-            }
+            return;
+        }
 
-            if (deleteList)
+        if (m_oCollisionitems)
+        {
+            CollisionCellItem* item = m_oCollisionitems[x + y * m_owner->m_level->land_size];
+            for (GeomObject* geomObj : *t)
             {
-                for (auto& elem : *t)
+                item->m_geomsList.erase(geomObj);
+            }
+        }
+
+        if (deleteList)
+        {
+            // Every geom also leaves the other cells it was linked into, then is deleted.
+            for (GeomObject* geomObj : *t)
+            {
+                PointBase<int> const startCell = geomObj->GetStartCell();
+                PointBase<int> const endCell = geomObj->GetEndCell();
+                if (m_oCollisionitems)
                 {
-                    if (m_oCollisionitems)
+                    for (int cx = startCell.x; cx <= endCell.x; ++cx)
                     {
-                        RETRUXX_NOT_IMPLEMENTED;
+                        for (int cy = startCell.y; cy <= endCell.y; ++cy)
+                        {
+                            m_oCollisionitems[cx + numCells * cy]->m_geomsList.erase(geomObj);
+                        }
                     }
-                    elem->Release();
-                    delete elem;
                 }
-
-                t->clear();
-                delete t;
-                t = nullptr;
-                node->SetProperty(4357u, &t);
+                geomObj->Release();
+                delete geomObj;
             }
+
+            t->clear();
+            delete t;
+            t = nullptr;
+            node->SetProperty(4357u, &t);
         }
     }
 
-    int Landscape::New(float)
+    int Landscape::New(float heightLevel)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BF7B0
+        // Starts an empty landscape for the editor: a flat height map at heightLevel, a
+        // grey colour map, no water and every tile on texture 0.
+        m_mapSize = 16 * m_owner->m_level->land_size;
+        m_pathTile = CStr("data\\tiles\\");
+        int const numPoints = (m_mapSize + 1) * (m_mapSize + 1);
+
+        delete[] m_heightMap;
+        m_heightMap = nullptr;
+        m_heightMap = new float[numPoints];
+        for (int i = 0; i < numPoints; ++i)
+        {
+            m_heightMap[i] = heightLevel;
+        }
+
+        delete[] m_cliffHeightMap;
+        m_cliffHeightMap = nullptr;
+        m_cliffHeightMap = new unsigned char[numPoints];
+
+        delete[] m_colormap;
+        m_colormap = nullptr;
+        m_colormap = new unsigned[numPoints];
+        for (int i = 0; i < (m_mapSize + 1) * (m_mapSize + 1); ++i)
+        {
+            m_colormap[i] = 0xFF7F7F7F;
+        }
+
+        delete[] m_texSetsmap;
+        m_texSetsmap = nullptr;
+        m_texSetsmap = new std::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size];
+
+        int const waterSide = 4 * m_owner->m_level->land_size;
+        int const numTiles = waterSide * waterSide;
+        delete[] m_waterMap;
+        m_waterMap = nullptr;
+        m_waterMap = new short[numTiles];
+        memset(m_waterMap, 0, 2 * numTiles);
+
+        CreateLod();
+
+        delete[] m_tiles;
+        m_tiles = nullptr;
+        m_tiles = new TileInfo[numTiles];
+        for (int i = 0; i < numTiles; ++i)
+        {
+            m_tiles[i].m_texIndex0 = 0;
+            m_tiles[i].m_numTexs = 1;
+        }
+
+        // NOTE: a previous normal map is leaked.
+        m_vnormal = new CVector[(m_mapSize + 1) * (m_mapSize + 1)];
+        RecalcNormalMap(0, 0, m_mapSize, m_mapSize);
+
+        delete[] m_passedCells;
+        m_passedCells = nullptr;
+        m_passedCells = new char[numTiles];
+
+        ReleaseReflectionRefractionTextures();
+        InitReflectionRefractionTextures();
+        RecalcUV();
+        CreateHelperStructures();
+        m_loadAllTextures = true;
+        ReadTileInfo(1);
+        CreateHelperStructures();
+        InitGrass();
+        return 1;
     }
 
     bool Landscape::HandleCVar(CVar const*, CConsoleParams const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ABB80
+        return false;
     }
 
     int Landscape::AddOneTexture(CStr const& name)
@@ -1607,17 +2127,34 @@ namespace m3d
 
     void Landscape::HandleCommand(int, CConsoleParams const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ABB70
+
     }
 
-    void Landscape::AddCollisionTris(int, int, CVector*, int, unsigned short*, CMatrix const&)
+    void Landscape::AddCollisionTris(int tag, int numVerts, CVector* verts, int numTris, unsigned short* tris, CMatrix const& toWorld)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x64CCD0
+        auto* ci = new CollisionInfo();
+        ci->Create(numVerts, verts, numTris, tris, toWorld);
+        ci->m_tag = tag;
+        m_collisions.push_back(ci);
     }
 
     void Landscape::DrawShoreLine()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C2B30
+        M3D_RENDERER->SetWhiteTexture(0);
+        for (auto const& line : m_shoreLines)
+        {
+            if (line.size() < 2)
+            {
+                continue;
+            }
+            for (unsigned i = 0; i < line.size() - 1; ++i)
+            {
+                M3D_APP->DrawLine(line[i], line[i + 1], 0xFFFF0000);
+            }
+        }
     }
 
     void Landscape::ReloadWaterTextures()
@@ -1665,19 +2202,76 @@ namespace m3d
         m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpSmTex, rend::TM_TEX_FILTER, 5u);
     }
 
-    bool Landscape::SaveNormalMap(CStr const&)
+    bool Landscape::SaveNormalMap(CStr const& FileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AD920
+        fs::auxTaggedFile File;
+        if (File.Open(FileName.c_str(), fs::auxTaggedFile::CREATE_IGNORE_CRC))
+        {
+            M3D_LOG_INFO(CStr("Couldn't save normal map to file ") + FileName);
+            return false;
+        }
+
+        File.setFormatTitle("RIV");
+        File.setFormatVersion(1u);
+        File.addChunk(0xBADF00Du);
+        // Only x and y of each normal are stored, as 16 bit fixed point.
+        unsigned const sizeOfMap = 4 * (m_mapSize + 1) * (m_mapSize + 1);
+        // NOTE: twice the buffer that is written is allocated.
+        auto* data = new short[sizeOfMap];
+        short* out = data;
+        for (int i = 0; i < (m_mapSize + 1) * (m_mapSize + 1); ++i)
+        {
+            // These conversions round to nearest (a bare fistp) rather than truncate.
+            *out++ = static_cast<short>(lrintf(m_vnormal[i].x * 32767.0f));
+            *out++ = static_cast<short>(lrintf(m_vnormal[i].y * 32767.0f));
+        }
+        File.addChunkDataCopy(0xBADF00Du, 4u, &sizeOfMap);
+        File.addChunkDataCopy(0xBADF00Du, sizeOfMap, data);
+        delete[] data;
+        File.Close();
+        return true;
     }
 
-    bool Landscape::SaveColorMap(CStr const&, int)
+    bool Landscape::SaveColorMap(CStr const& Name, int stripe)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AD270
+        // Writes the colour map framed by a 16 * stripe texel border on every side; the
+        // border repeats the map's first texel.
+        scoped_ptr stream(M3D_KERNEL->GetFileServer().CreateFileStream());
+        if (!stream->Open(Name.c_str(), fs::IStream::OPEN_WRITE))
+        {
+            M3D_LOG_ERR(CStr("Couldn't save colormap to file:") + Name);
+            return false;
+        }
+
+        int const border = 16 * stripe;
+        for (int row = 0; row < m_mapSize + 2 * border; ++row)
+        {
+            for (int col = 0; col < m_mapSize + 2 * border; ++col)
+            {
+                unsigned v = m_colormap[0];
+                if (col >= border && col < m_mapSize + border && row >= border && row < m_mapSize + border)
+                {
+                    v = m_colormap[col + (row - border) * (m_mapSize + 1) - border];
+                }
+                stream->WriteBytes(&v, 4);
+            }
+        }
+        stream->Close();
+        return true;
     }
 
-    void Landscape::SetLsHeight(float, float, float)
+    void Landscape::SetLsHeight(float x, float y, float h)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AB610
+        // NOTE: the last row and column of height samples can't be set this way.
+        int const ix = static_cast<int>(x * 0.125f);
+        int const iy = static_cast<int>(y * 0.125f);
+        if (ix >= 0 && iy >= 0 && ix < m_mapSize - 1 && iy < m_mapSize - 1)
+        {
+            m_heightMap[ix + iy * (m_mapSize + 1)] = h;
+        }
     }
 
     float Landscape::GetLsHeight(float x, float y) const
@@ -1712,12 +2306,14 @@ namespace m3d
 
     unsigned Landscape::GetNumGrassModels() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AB660
+        return m_numGrassModels;
     }
 
-    void Landscape::setHgtAtHfPoint(int, int, float)
+    void Landscape::setHgtAtHfPoint(int x, int y, float h)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAC60
+        m_heightMap[x + y * (m_mapSize + 1)] = h;
     }
 
     float Landscape::getHgtAtHfPoint(int x, int y) const
@@ -1739,7 +2335,70 @@ namespace m3d
 
     void Landscape::SaveTileInfo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B1D10
+        // Writes the alpha mask sets and land types back to TileInfo.xml in the tile folder.
+        CStr err;
+        CStr const name = m_pathTile + CStr("TileInfo.xml");
+
+        ref_ptr xmlFileW = M3D_KERNEL->CreateXmlFile();
+        ref_ptr rootW = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "TileSetName");
+        ref_ptr AlphaSetsNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "AlphaSets");
+        ref_ptr LandSetsNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "LandTypes");
+        // cp1251 for "alpha mask sets" and "soil types".
+        AlphaSetsNode->SetAttribute("name", "\xcd\xe0\xe1\xee\xf0\xfb \xe0\xeb\xfc\xf4\xe0 \xec\xe0\xf1\xee\xea");
+        LandSetsNode->SetAttribute("name", "\xd2\xe8\xef\xfb \xef\xee\xf7\xe2\xfb");
+
+        for (unsigned k = 0; k < m_AlphaSets.size(); ++k)
+        {
+            ref_ptr node2 = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "Set");
+            node2->SetAttribute("name", m_AlphaSets[k].m_name.c_str());
+            for (int j = 0; j < 4; ++j)
+            {
+                for (unsigned typez = 0; typez < m_AlphaSets[k].m_texMasks[j].size(); ++typez)
+                {
+                    ref_ptr maskNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, (CStr("mask") + CStr(j + 1)).c_str());
+                    CStr texname;
+                    bool const res = M3D_RENDERER->GetTextureName(m_AlphaSets[k].m_texMasks[j][typez], texname) != 0;
+                    assert(res);
+                    maskNode->SetAttribute("name", NameFromFileName(texname).c_str());
+                    node2->AddChild(maskNode);
+                }
+            }
+            AlphaSetsNode->AddChild(node2);
+        }
+
+        for (unsigned m = 0; m < m_Lands.size(); ++m)
+        {
+            LandType const& land = m_Lands[m];
+            ref_ptr typeNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "type");
+            typeNode->SetAttribute("name", land.m_name.c_str());
+            typeNode->SetAttribute("passmask", CStr(land.m_passmask).c_str());
+            typeNode->SetAttribute("alphaset", m_AlphaSets[land.m_alphaset].m_name.c_str());
+            typeNode->SetAttribute("priority", CStr(land.m_priority).c_str());
+            for (unsigned i = 0; i < land.m_texIndices.size(); ++i)
+            {
+                ref_ptr tileNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "tile");
+                CStr filename;
+                bool const res = M3D_RENDERER->GetTextureName(m_tilesTextures[land.m_texIndices[i]]->m_texHandle, filename) != 0;
+                assert(res);
+                // The tile folder prefix is cut out of the texture path.
+                // NOTE: when the folder is not found the position passed on is -1.
+                int const pathLen = m_pathTile.c_str() ? static_cast<int>(strlen(m_pathTile.c_str())) : 0;
+                char const* found = strstr(filename.c_str(), m_pathTile.c_str());
+                filename.del(found ? static_cast<int>(found - filename.c_str()) : -1, pathLen);
+                tileNode->SetAttribute("file", filename.c_str());
+                typeNode->AddChild(tileNode);
+            }
+            LandSetsNode->AddChild(typeNode);
+        }
+
+        rootW->AddChild(AlphaSetsNode);
+        rootW->AddChild(LandSetsNode);
+        xmlFileW->AddChild(rootW);
+        if (!WriteXmlFile(name.c_str(), xmlFileW, &err))
+        {
+            M3D_LOG_INFO(err);
+        }
     }
 
     int Landscape::Load()
@@ -1908,26 +2567,26 @@ namespace m3d
             }
             else
             {
-                RETRUXX_NOT_IMPLEMENTED;
-                // Process water data with conversion
+                // An old style byte mask: 0xFF marks water at the
+                // level's water height, anything else stays dry.
+                // NOTE: landSize * landSize entries are read whatever the file size, so
+                // a short file is read past its end.
                 unsigned char* tempData = new unsigned char[waterDataSize];
                 stream->ReadBytes(tempData, waterDataSize);
-
-                float waterLevel = m_owner->m_level->waterlevel * 8.333334f;
                 for (int i = 0; i < landSize * landSize; i++)
                 {
                     if (tempData[i] == 0xFF)
-                        m_waterMap[i] = (short)waterLevel;
-                    else
-                        m_waterMap[i] = 0;
+                    {
+                        m_waterMap[i] = static_cast<short>(static_cast<int>(m_owner->m_level->waterlevel * 8.333334f));
+                    }
                 }
-
                 delete[] tempData;
             }
+            stream->Close();
         }
         else
         {
-            M3D_LOG_INFO("Cannot open watermap: using empty waterfield", LOG_INFO);
+            M3D_LOG_INFO(CStr("Cannot open watermap: ") + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_waterName) + CStr(" using empty waterfield"));
             memset(m_waterMap, 0, landSize * landSize * sizeof(short));
         }
 
@@ -2196,7 +2855,8 @@ namespace m3d
 
     int Landscape::GetLsSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C0440
+        return m_mapSize + 1;
     }
 
     void Landscape::RecalcUV()
@@ -2364,9 +3024,57 @@ namespace m3d
         }
     }
 
-    void Landscape::ScaleGrassRadius(CVector const&, float, float)
+    void Landscape::ScaleGrassRadius(CVector const& pos, float radius, float coeff)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AE370
+        if (!m_grassArray)
+        {
+            return;
+        }
+
+        // The upper bounds are exclusive and one past the tile holding the edge.
+        int tileMinX = static_cast<int>((pos.x - radius) * (1.0f / 32.0f));
+        int tileMinY = static_cast<int>((pos.z - radius) * (1.0f / 32.0f));
+        int tileMaxX = static_cast<int>((pos.x + radius) * (1.0f / 32.0f)) + 1;
+        int tileMaxY = static_cast<int>((pos.z + radius) * (1.0f / 32.0f)) + 1;
+        tileMinX = std::clamp(tileMinX, 0, 256);
+        tileMinY = std::clamp(tileMinY, 0, 256);
+        tileMaxX = std::clamp(tileMaxX, 0, 256);
+        tileMaxY = std::clamp(tileMaxY, 0, 256);
+
+        for (int x = tileMinX; x < tileMaxX; ++x)
+        {
+            for (int y = tileMinY; y < tileMaxY; ++y)
+            {
+                TileGrass* tile = m_grassArray[x + (y << 8)];
+                if (!tile)
+                {
+                    continue;
+                }
+                for (unsigned i = 0; i < tile->instancesPerModel.size(); ++i)
+                {
+                    GrassInstancesForModel* perModel = tile->instancesPerModel[i];
+                    if (!perModel)
+                    {
+                        continue;
+                    }
+                    for (unsigned k = 0; k < perModel->grass.size(); ++k)
+                    {
+                        GrassInstance* gi = perModel->grass[k];
+                        if (!gi)
+                        {
+                            continue;
+                        }
+                        double const dx = gi->pos.x - pos.x;
+                        double const dz = gi->pos.z - pos.z;
+                        if (radius > sqrt(dx * dx + dz * dz))
+                        {
+                            gi->scale = coeff * gi->scale;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //static std::set<CStr> nen;
@@ -2543,7 +3251,95 @@ namespace m3d
 
     void Landscape::DrawShoresLayer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C2640
+        if (!m_shoresVb.IsValid())
+        {
+            return;
+        }
+
+        M3D_RENDERER->SetToStream0(m_shoresVb);
+        M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
+        M3D_RENDERER->SetCull(rend::M3DCULL_NONE, false);
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
+        M3D_RENDERER->SetAlphaTest(1);
+        M3D_RENDERER->PushFog(M3D_ENGINE_CFG.m_r_enableFog.GetB());
+        M3D_RENDERER->SetWhiteTexture(1);
+        M3D_RENDERER->DisableTextureStages(1);
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        pClient->GetWorld().GetGraph().LightSetupSunForWorld();
+
+        unsigned const ambient = m_owner->GetWeatherAmbientColor();
+        CVector const colorAmbient(
+            static_cast<float>((ambient >> 16) & 0xFF) * 0.0039215689f,
+            static_cast<float>((ambient >> 8) & 0xFF) * 0.0039215689f,
+            static_cast<float>(ambient & 0xFF) * 0.0039215689f);
+        m_shoresShader->SetVector3(rend::IEffect::LightAmbient, colorAmbient);
+        unsigned const diffuse = m_owner->GetWeatherDiffuseColor();
+        CVector const colorDiffuse(
+            static_cast<float>((diffuse >> 16) & 0xFF) * 0.0039215689f,
+            static_cast<float>((diffuse >> 8) & 0xFF) * 0.0039215689f,
+            static_cast<float>(diffuse & 0xFF) * 0.0039215689f);
+        m_shoresShader->SetVector3(rend::IEffect::LightDiffuse, colorDiffuse);
+
+        float s;
+        float e;
+        GetFogStartAndEnd(s, e);
+        float const fogReduceFactor = m_owner->GetWeatherManager().GetFogReduceFactorFromWeather();
+        CVector fogTerm;
+        fogTerm.x = fogReduceFactor * e;
+        fogTerm.z = fogReduceFactor * s;
+        fogTerm.y = static_cast<float>(1.0 / (fogReduceFactor * e - fogReduceFactor * s));
+        m_shoresShader->SetVector3(rend::IEffect::FogTerm, fogTerm);
+
+        // One pass per wave layer, each sliding and stretching the surf texture on its own
+        // clock.
+        for (auto& wave : m_waves)
+        {
+            int const shiftPeriod = static_cast<int>(static_cast<float>(1000.0 / wave.m_tfreq));
+            int const shiftTime = static_cast<int>(M3D_KERNEL->GetTimer().GetCurTime()) % shiftPeriod;
+            float shift = wave.m_tcomp;
+            if (wave.m_tcomp < 0.0f)
+            {
+                shift = static_cast<float>(sin(static_cast<double>(shiftTime) * 6.2831855f / static_cast<double>(shiftPeriod) + wave.m_tphase) * wave.m_tamplitude + wave.m_tlevel);
+            }
+            int const scalePeriod = static_cast<int>(static_cast<float>(1000.0 / wave.m_sfreq));
+            int const curTime = static_cast<int>(M3D_KERNEL->GetTimer().GetCurTime());
+            float scale = wave.m_scomp;
+            if (scale < 0.0f)
+            {
+                // NOTE: the scale oscillation uses m_tphase, not m_sphase.
+                scale = static_cast<float>(sin(static_cast<double>(curTime % scalePeriod) * 6.2831855f / static_cast<double>(scalePeriod) + wave.m_tphase) * wave.m_samplitude + wave.m_slevel);
+            }
+
+            CMatrix mat;
+            memset(&mat, 0, sizeof(mat));
+            mat._11 = 1.0f;
+            mat._22 = scale;
+            mat._32 = scale * shift;
+            mat._33 = 1.0f;
+            mat._44 = 1.0f;
+            m_shoresShader->SetMatrix(rend::IEffect::User_float4x4_param, mat);
+            M3D_RENDERER->SetTexture(0, wave.m_texHandle, -1.0);
+
+            // The strips sit back to back in the vertex buffer; lines too short for a strip
+            // were given no vertices.
+            int baseVertex = 0;
+            for (auto const& line : m_shoreLines)
+            {
+                int const numPoints = static_cast<int>(line.size());
+                if (numPoints - 1 > 0)
+                {
+                    M3D_RENDERER->SetIndices(m_shoresIb, baseVertex);
+                    M3D_RENDERER->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLESTRIP, m_shoresShader, 0, 2 * numPoints, 0, 2 * numPoints - 2);
+                    baseVertex += 2 * numPoints;
+                }
+            }
+        }
+
+        M3D_RENDERER->PopFog();
+        M3D_RENDERER->PopBlend();
+        M3D_RENDERER->PopZbState();
     }
 
     void Landscape::drawCellOverlayedShader(int x, int z, rend::IEffect* shader)
@@ -2601,27 +3397,143 @@ namespace m3d
 
     void Landscape::Invalidate()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AB480
+
     }
 
-    unsigned Landscape::AddGrassInstance(int, CVector const&, float, float, bool)
+    unsigned Landscape::AddGrassInstance(int modelId, CVector const& pos, float yaw, float scale, bool placeOnTerrain)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AF4F0
+        unsigned const tileIdx = static_cast<int>(pos.x * (1.0f / 32.0f)) + (static_cast<int>(pos.z * (1.0f / 32.0f)) << 8);
+        if (!m_grassArray[tileIdx])
+        {
+            m_grassArray[tileIdx] = new TileGrass;
+            m_grassArray[tileIdx]->numDiffModels = 0;
+            m_grassArray[tileIdx]->numInstances = 0;
+        }
+        TileGrass* tile = m_grassArray[tileIdx];
+
+        // Find this model's list in the tile, remembering the first free slot on the way.
+        GrassInstancesForModel* perModel = nullptr;
+        int modelSlot = -1;
+        for (unsigned i = 0; i < tile->instancesPerModel.size(); ++i)
+        {
+            if (modelSlot == -1 && !tile->instancesPerModel[i])
+            {
+                modelSlot = static_cast<int>(i);
+            }
+            if (tile->instancesPerModel[i] && tile->instancesPerModel[i]->modelId == modelId)
+            {
+                perModel = tile->instancesPerModel[i];
+                // NOTE: modelSlot keeps the first free slot seen before the match, if any, so
+                // the returned handle can point at the wrong model.
+                break;
+            }
+        }
+        if (!perModel)
+        {
+            perModel = new GrassInstancesForModel;
+            if (modelSlot == -1)
+            {
+                tile->instancesPerModel.push_back(perModel);
+                modelSlot = static_cast<int>(tile->instancesPerModel.size()) - 1;
+            }
+            else
+            {
+                tile->instancesPerModel[modelSlot] = perModel;
+            }
+            perModel->modelId = modelId;
+            perModel->numInstances = 0;
+            ++tile->numDiffModels;
+        }
+
+        auto* gi = new GrassInstance;
+        gi->pos = pos;
+        gi->scale = scale;
+        gi->cosYaw = cosf(yaw);
+        gi->sinYaw = sinf(yaw);
+        if (placeOnTerrain)
+        {
+            gi->pos.y = GetLsHeight(pos.x, pos.z);
+        }
+
+        unsigned slot = 0;
+        while (slot < perModel->grass.size() && perModel->grass[slot])
+        {
+            ++slot;
+        }
+        if (slot == static_cast<unsigned>(perModel->numInstances))
+        {
+            perModel->grass.push_back(nullptr);
+        }
+        // NOTE: the tile's numInstances is not incremented.
+        ++perModel->numInstances;
+        perModel->grass[slot] = gi;
+        return slot + ((modelSlot + (tileIdx << 8)) << 8);
     }
 
     void Landscape::EndWaterQuery()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C05B0
+        m_waterQueries[m_currWaterQuery]->End();
     }
 
-    void Landscape::SetNodeCollisionGeomsEnabled(SgNode*, bool)
+    void Landscape::SetNodeCollisionGeomsEnabled(SgNode* node, bool enabled)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x64A210
+        std::set<GeomObject*>* t = nullptr;
+        node->GetProperty(4357u, &t);
+        if (!t)
+        {
+            return;
+        }
+        for (GeomObject* geomObj : *t)
+        {
+            // The flag is raised while the geom is switched, then set to the new state.
+            geomObj->m_bMayBeEnabled = true;
+            if (enabled)
+            {
+                dGeomEnable(geomObj->m_geom);
+            }
+            else
+            {
+                dGeomDisable(geomObj->m_geom);
+            }
+            geomObj->m_bMayBeEnabled = enabled;
+        }
     }
 
-    bool Landscape::Save16bitDisplace(CStr const&, int)
+    bool Landscape::Save16bitDisplace(CStr const& Name, int stripe)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B4BF0
+        // NOTE: despite the name, the heights are written as 32 bit floats. Like
+        // SaveColorMap, the map gets a 16 * stripe border repeating its first sample.
+        scoped_ptr stream(M3D_KERNEL->GetFileServer().CreateFileStream());
+        if (!stream->Open(Name.c_str(), fs::IStream::OPEN_WRITE))
+        {
+            M3D_LOG_ERR(CStr("Couldn't save height map to file:") + Name);
+            return false;
+        }
+
+        int const border = 16 * stripe;
+        int const side = m_mapSize + 32 * stripe;
+        std::vector<float> tempBuf;
+        tempBuf.resize(side * side, 0.0f);
+        for (int row = 0; row < m_mapSize + 32 * stripe; ++row)
+        {
+            for (int col = 0; col < m_mapSize + 32 * stripe; ++col)
+            {
+                float h = m_heightMap[0];
+                if (col >= border && col < m_mapSize + border && row >= border && row < m_mapSize + border)
+                {
+                    h = m_heightMap[col + (row - border) * (m_mapSize + 1) - border];
+                }
+                tempBuf[col + row * (m_mapSize + 32 * stripe)] = h;
+            }
+        }
+        stream->WriteBytes(tempBuf.data(), 4 * static_cast<unsigned>(tempBuf.size()));
+        stream->Close();
+        return true;
     }
 
     void Landscape::DrawCollisionGeoms(bool allGeoms)
@@ -2667,7 +3579,8 @@ namespace m3d
 
     void Landscape::ClearCollisionCellsMap()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644D10
+        M3D_ASSERT(!"obsolete");
     }
 
     bool Landscape::AddGrassModel(char const* modelFileName)
@@ -2704,12 +3617,14 @@ namespace m3d
 
     void Landscape::GenerateOneDPVSCellMesh(int, int, CVector*, int*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644C70
+
     }
 
     float Landscape::GetFloatToShortScale() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAD10
+        return 0.12f;
     }
 
     void Landscape::drawSpriteOverlayed2(float cx, float cz, float hsx, float hsz, unsigned clr, bool all)
@@ -2789,14 +3704,34 @@ namespace m3d
         M3D_RENDERER->PopCull();
     }
 
-    int Landscape::RecalcNormalMap(int, int, int, int)
+    int Landscape::RecalcNormalMap(int x, int y, int sizex, int sizey)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AE6D0
+        for (int row = y; row < y + sizey; ++row)
+        {
+            for (int col = x; col < x + sizex; ++col)
+            {
+                if (col >= 0 && row >= 0 && col < m_mapSize && row < m_mapSize)
+                {
+                    m_vnormal[row * (m_mapSize + 1) + col] = getNormal(static_cast<float>(col) * 8.0f, static_cast<float>(row) * 8.0f);
+                }
+            }
+        }
+        return 1;
     }
 
-    void Landscape::ChangeShoreState(int, int, bool)
+    void Landscape::ChangeShoreState(int x, int z, bool enable)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C3580
+        unsigned const key = x + (z << 16);
+        if (enable)
+        {
+            m_noShoresSet.erase(key);
+        }
+        else
+        {
+            m_noShoresSet.insert(key);
+        }
     }
 
     float Landscape::GetHeight(float x, float y, int excludeTag, bool notForCamera)
@@ -2810,9 +3745,25 @@ namespace m3d
         return height;
     }
 
-    void Landscape::CheckLandscapeCollisionTriMeshesForObjId(int)
+    void Landscape::CheckLandscapeCollisionTriMeshesForObjId(int objId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x64A280
+        // A debug check that no collision cell still lists an object that has died.
+        int const size = m_owner->m_level->land_size;
+        for (int y = 0; y < size; ++y)
+        {
+            for (int x = 0; x < size; ++x)
+            {
+                for (int id : m_oCollisionitems[x + y * size]->m_physicObjIds)
+                {
+                    if (id == objId)
+                    {
+                        M3D_LOG_INFO(CStr("Error: Dead objId: ") + CStr(objId) + CStr(" in cell (") + CStr(x) + CStr(", ") + CStr(y) + CStr(")"));
+                        SYS_ERROR("!\"Error in checking for dead obj ids, see log\"");
+                    }
+                }
+            }
+        }
     }
 
     GeomObject* Landscape::GetTerrainGeomObject() const
@@ -2820,19 +3771,97 @@ namespace m3d
         return this->m_terrainObject;
     }
 
-    void Landscape::GetDPVSCollisionInfo(int, int, int&, int&)
+    void Landscape::GetDPVSCollisionInfo(int, int, int& numVertices, int& numIndices)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644C40
+        // A fixed 4x4 block of 4x4-quad patches: 25 vertices and 96 indices each.
+        for (int i = 0; i < 16; ++i)
+        {
+            numVertices += 25;
+            numIndices += 96;
+        }
     }
 
-    void Landscape::RemoveGrassRadius(CVector const&, float)
+    void Landscape::RemoveGrassRadius(CVector const& pos, float radius)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AFAB0
+        if (!m_grassArray)
+        {
+            return;
+        }
+
+        // The upper bounds are exclusive and one past the tile holding the edge.
+        int tileMinX = static_cast<int>((pos.x - radius) * (1.0f / 32.0f));
+        int tileMinY = static_cast<int>((pos.z - radius) * (1.0f / 32.0f));
+        int tileMaxX = static_cast<int>((pos.x + radius) * (1.0f / 32.0f)) + 1;
+        int tileMaxY = static_cast<int>((pos.z + radius) * (1.0f / 32.0f)) + 1;
+        tileMinX = std::clamp(tileMinX, 0, 256);
+        tileMinY = std::clamp(tileMinY, 0, 256);
+        tileMaxX = std::clamp(tileMaxX, 0, 256);
+        tileMaxY = std::clamp(tileMaxY, 0, 256);
+
+        auto const inRadius = [&](GrassInstance const* gi) {
+            double const dx = gi->pos.x - pos.x;
+            double const dz = gi->pos.z - pos.z;
+            return radius > sqrt(dx * dx + dz * dz);
+        };
+        for (int x = tileMinX; x < tileMaxX; ++x)
+        {
+            for (int y = tileMinY; y < tileMaxY; ++y)
+            {
+                TileGrass*& tile = m_grassArray[x + (y << 8)];
+                if (!tile)
+                {
+                    continue;
+                }
+                for (unsigned i = 0; tile && i < tile->instancesPerModel.size(); ++i)
+                {
+                    GrassInstancesForModel* perModel = tile->instancesPerModel[i];
+                    if (!perModel)
+                    {
+                        continue;
+                    }
+                    for (unsigned k = 0; k < perModel->grass.size(); ++k)
+                    {
+                        GrassInstance* gi = perModel->grass[k];
+                        if (!gi || !(inRadius(gi)))
+                        {
+                            continue;
+                        }
+                        delete gi;
+                        perModel->grass[k] = nullptr;
+                        // NOTE: the tile's numInstances is not decremented.
+                        bool modelDeleted = false;
+                        if (perModel->numInstances-- == 1)
+                        {
+                            delete tile->instancesPerModel[i];
+                            tile->instancesPerModel[i] = nullptr;
+                            --tile->numDiffModels;
+                            modelDeleted = true;
+                        }
+                        if (!tile->numDiffModels)
+                        {
+                            delete tile;
+                            tile = nullptr;
+                        }
+                        // NOTE: the original goes on reading the freed model and tile; their
+                        // destructors have just nulled the vectors, so its loops end here.
+                        if (modelDeleted)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    void Landscape::DisableShoreRegion(int, int)
+    void Landscape::DisableShoreRegion(int x, int z)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C3510
+        int const side = 4 * m_owner->m_level->land_size;
+        std::vector<unsigned char> visited(side * side, 0);
+        RecursiveDisableShore(visited.data(), x, z);
     }
 
     void Landscape::UpdateVis(bool vp)
@@ -2965,7 +3994,262 @@ namespace m3d
 
     int Landscape::GenerateShoreLine()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C5FE0
+        // Traces where the water plane cuts the terrain, marching squares style: in every
+        // 8x8 height cell the plane crosses, it enters through one edge and leaves through
+        // another, and the crossings are chained into lines. Edges are numbered 1 (z1),
+        // 2 (x2), 3 (z2), 4 (x1).
+        float const LAND_SCALE = 8.0f;
+        std::set<unsigned> checked;
+        m_shoreLines.clear();
+        int const wsize = 4 * m_owner->m_level->land_size;
+        int const lsSize = m_mapSize + 1;
+
+        auto const waterHeightAt = [&](int cx, int cz) -> float {
+            int const wx = cx / 4;
+            int const wz = cz / 4;
+            int const side = 4 * m_owner->m_level->land_size;
+            if (wx < 0 || wx >= side || wz < 0 || wz >= side)
+            {
+                return 0.0f;
+            }
+            return static_cast<float>(m_waterMap[wx + wz * side]) * 0.12f;
+        };
+        // Where the edge o->e crosses the plane y = waterH, strictly between its ends.
+        auto const crossWater = [](CVector const& o, CVector const& e, float waterH, CVector& hit) -> bool {
+            float const dx = e.x - o.x;
+            float const dy = e.y - o.y;
+            float const dz = e.z - o.z;
+            float const lenSq = dx * dx + dy * dy + dz * dz;
+            float const inv = static_cast<float>(1.0 / sqrt(lenSq + 1.1920929e-7));
+            CVector const dir(dx * inv, dy * inv, dz * inv);
+            float const len = static_cast<float>(sqrt(lenSq));
+            float const num = waterH - o.y;
+            float const den = dir.y;
+            if (fabs(num) < 1e-5f || fabs(den) < 1e-5f)
+            {
+                return false;
+            }
+            float const t = num / den;
+            if (!(t > 0.0f && len > t))
+            {
+                return false;
+            }
+            hit = CVector(dir.x * t + o.x, dir.y * t + o.y, dir.z * t + o.z);
+            return true;
+        };
+        // The edge a neighbour is entered through when it is left through the given one.
+        auto const opposite = [](int edge, int& to) {
+            switch (edge)
+            {
+            case 1: to = 3; break;
+            case 2: to = 4; break;
+            case 3: to = 1; break;
+            case 4: to = 2; break;
+            default: break;
+            }
+        };
+
+        for (int z = 0; z < lsSize; ++z)
+        {
+            float const z1 = static_cast<float>(z) * 8.0f;
+            float const z2 = z1 + 8.0f;
+            for (int x = 0; x < lsSize; ++x)
+            {
+                float const x1 = static_cast<float>(x) * LAND_SCALE;
+                float const x2 = x1 + LAND_SCALE;
+                float const h00 = GetLsHeight(x1, z1);
+                float const h10 = GetLsHeight(x2, z1);
+                float const h01 = GetLsHeight(x1, z2);
+                float const h11 = GetLsHeight(x2, z2);
+                float const waterH = waterHeightAt(x, z);
+                // NOTE: the last test reads the water map without a bounds check, past its
+                // end on the last row and column.
+                if ((h00 >= waterH && h10 >= waterH && h01 >= waterH && h11 >= waterH)
+                    || (waterH >= h00 && waterH >= h10 && waterH >= h01 && waterH >= h11)
+                    || !m_waterMap[x / 4 + wsize * (z / 4)])
+                {
+                    continue;
+                }
+
+                // Follow the line from this cell; when it ends (edge of the map, a visited
+                // cell, a switched-off shore) go back to the start and follow it the other
+                // way, prepending.
+                std::vector<CVector> shoreline;
+                int curx = x;
+                int curz = z;
+                int from = 0;
+                int firstfrom = 0;
+                bool secondpart = false;
+                auto const restart = [&] {
+                    secondpart = true;
+                    curx = x;
+                    curz = z;
+                    opposite(firstfrom, from);
+                };
+                while (true)
+                {
+                    if (!(curx >= 0 && curx < lsSize && curz >= 0 && curz < lsSize))
+                    {
+                        if (secondpart)
+                        {
+                            break;
+                        }
+                        restart();
+                    }
+                    if (checked.count(curx + (curz << 16)))
+                    {
+                        if (secondpart)
+                        {
+                            if (curx != x || curz != z)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            restart();
+                        }
+                    }
+                    if (m_noShoresSet.count(curx / 4 + ((curz / 4) << 16)))
+                    {
+                        if (secondpart)
+                        {
+                            break;
+                        }
+                        restart();
+                    }
+
+                    float const cx1 = static_cast<float>(curx) * 8.0f;
+                    float const cz1 = static_cast<float>(curz) * 8.0f;
+                    float const cx2 = cx1 + 8.0f;
+                    float const cz2 = cz1 + 8.0f;
+                    float const c00 = GetLsHeight(cx1, cz1);
+                    float const c10 = GetLsHeight(cx2, cz1);
+                    float const c01 = GetLsHeight(cx1, cz2);
+                    float const c11 = GetLsHeight(cx2, cz2);
+                    float const cellWaterH = waterHeightAt(curx, curz);
+
+                    int to1 = 0;
+                    int to2 = 0;
+                    CVector hp1;
+                    CVector hp2;
+                    auto const tryEdge = [&](int edge, CVector const& o, CVector const& e) {
+                        CVector hit;
+                        if (!crossWater(o, e, cellWaterH, hit))
+                        {
+                            return;
+                        }
+                        if (!to1)
+                        {
+                            to1 = edge;
+                            hp1 = hit;
+                        }
+                        else if (!to2)
+                        {
+                            to2 = edge;
+                            hp2 = hit;
+                        }
+                    };
+                    tryEdge(1, CVector(cx1, c00, cz1), CVector(cx2, c10, cz1));
+                    tryEdge(2, CVector(cx2, c10, cz1), CVector(cx2, c11, cz2));
+                    tryEdge(3, CVector(cx2, c11, cz2), CVector(cx1, c01, cz2));
+                    tryEdge(4, CVector(cx1, c01, cz2), CVector(cx1, c00, cz1));
+                    if (!to1)
+                    {
+                        break;
+                    }
+
+                    // Leave through the crossing we did not come in by.
+                    int exitEdge;
+                    CVector p;
+                    CVector pp;
+                    if (from == to1)
+                    {
+                        exitEdge = to2;
+                        p = hp2;
+                        pp = hp1;
+                    }
+                    else
+                    {
+                        exitEdge = to1;
+                        p = hp1;
+                        pp = hp2;
+                    }
+                    if (!from)
+                    {
+                        shoreline.push_back(pp);
+                        opposite(exitEdge, firstfrom);
+                    }
+
+                    unsigned const key = curx + (curz << 16);
+                    CVector const first = shoreline.front();
+                    // NOTE: the loop is taken as closed when x and y match; z is not compared.
+                    if (first.x == p.x && first.y == p.y)
+                    {
+                        if (!secondpart)
+                        {
+                            shoreline.push_back(p);
+                            checked.insert(key);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // Points closer than 10 units to the last one are dropped.
+                        // NOTE: the second half prepends, but still measures against the back.
+                        CVector const& ep = shoreline.back();
+                        double const ex = ep.x - p.x;
+                        double const ey = ep.y - p.y;
+                        double const ez = ep.z - p.z;
+                        if (sqrt(ez * ez + ey * ey + ex * ex) > 10.0)
+                        {
+                            if (secondpart)
+                            {
+                                shoreline.insert(shoreline.begin(), p);
+                            }
+                            else
+                            {
+                                shoreline.push_back(p);
+                            }
+                        }
+                    }
+                    checked.insert(key);
+
+                    // NOTE: a cell with a single crossing leaves exitEdge 0 and is processed
+                    // again in place.
+                    switch (exitEdge)
+                    {
+                    case 1:
+                        --curz;
+                        from = 3;
+                        break;
+                    case 2:
+                        ++curx;
+                        from = 4;
+                        break;
+                    case 3:
+                        ++curz;
+                        from = 1;
+                        break;
+                    case 4:
+                        --curx;
+                        from = 2;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                if (shoreline.size() > 2)
+                {
+                    m_shoreLines.push_back(shoreline);
+                }
+            }
+        }
+
+        ReBuildShoresVb();
+        return 1;
     }
 
     void Landscape::ReleaseOdeCollisionData()
@@ -3065,36 +4349,54 @@ namespace m3d
 
     float Landscape::GetScaleForTile() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AB5A0
+        return 32.0f;
     }
 
     void Landscape::SwitchDrawMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AFC10
+        // Toggles the wireframe cvar, respecting its read only flag.
+        CVar& wireframe = M3D_ENGINE_CFG.m_lsWireframe;
+        bool const isWireframe = wireframe.GetB();
+        char Buffer[4];
+        sprintf(Buffer, "%d", !isWireframe);
+        wireframe.Set(Buffer, false);
     }
 
     void Landscape::RemoveCollisionTris(int tag)
     {
+        // RVA 0x64BE70
+        // A negative tag removes everything; otherwise only the first mesh with that tag.
         if (tag >= 0)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            for (auto it = m_collisions.begin(); it != m_collisions.end(); ++it)
+            {
+                // NOTE: the entries are not checked for null.
+                if ((*it)->m_tag == tag)
+                {
+                    delete *it;
+                    *it = nullptr;
+                    m_collisions.erase(it);
+                    return;
+                }
+            }
         }
         else
         {
             for (auto& collision : m_collisions)
             {
-                if (collision)
-                {
-                    delete collision;
-                }
+                delete collision;
+                collision = nullptr;
             }
-            m_collisions.clear();
+            CollInfoVec().swap(m_collisions);
         }
     }
 
     Object* Landscape::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BCF20
+        return new Landscape();
     }
 
     void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
@@ -3148,7 +4450,8 @@ namespace m3d
 
     void Landscape::SetGameRenderMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AADE0
+        m_renderMode = RM_GAME;
     }
 
     void Landscape::CollectGrassCell(
@@ -3360,10 +4663,31 @@ namespace m3d
         switch (m_waterShaderVersion)
         {
         case 14:
-            RETRUXX_NOT_IMPLEMENTED;
+            // ps1.4: the wave bump map twice, then reflection and refraction.
+            M3D_RENDERER->SetTexture(0, m_waveBumpTex, -1.0);
+            M3D_RENDERER->SetTexture(1, m_waveBumpTex, -1.0);
+            M3D_RENDERER->SetTexture(2, m_texRtReflection, -1.0);
+            M3D_RENDERER->SetTexture(3, m_texRtRefraction, -1.0);
+            M3D_RENDERER->DisableTextureStages(4);
+            break;
 
         case 11:
-            RETRUXX_NOT_IMPLEMENTED;
+        {
+            // ps1.1: as ps1.4, with the bump strength scaled by the cvars.
+            M3D_RENDERER->SetTexture(0, m_waveBumpTex, -1.0);
+            M3D_RENDERER->SetTexture(1, m_waveBumpTex, -1.0);
+            M3D_RENDERER->SetTexture(2, m_texRtReflection, -1.0);
+            M3D_RENDERER->SetTexture(3, m_texRtRefraction, -1.0);
+            M3D_RENDERER->DisableTextureStages(4);
+            auto const cvarF = [](CVar const& cvar) {
+                return cvar.GetType() == CVar::CVAR_FLOAT ? cvar.GetF() : static_cast<float>(cvar.GetI());
+            };
+            float const reflectionAmount = cvarF(M3D_ENGINE_CFG.m_g_ps11_water_reflection_amount);
+            float const refractionAmount = cvarF(M3D_ENGINE_CFG.m_g_ps11_water_refraction_amount);
+            M3D_RENDERER->Set2x2BumpMatrix(2, reflectionAmount, 0.0f, 0.0f, reflectionAmount);
+            M3D_RENDERER->Set2x2BumpMatrix(3, refractionAmount, 0.0f, 0.0f, refractionAmount);
+            break;
+        }
 
         case 20:
             M3D_RENDERER->SetTexture(0, m_waveBumpTex, -1.0);
@@ -3374,8 +4698,8 @@ namespace m3d
             break;
 
         default:
-            RETRUXX_NOT_IMPLEMENTED;
-
+            // No other version binds anything.
+            break;
         }
 
         CMatrix const mat = M3D_RENDERER->MatGet();
@@ -3429,24 +4753,16 @@ namespace m3d
         }
         else
         {
-            /* // Standard shader parameters for versions 11/14
-            waterVs->SetFloat("fresnelBias", 0.0f);
-            waterVs->SetFloat("fresnelScale", 1.0f);
-            waterVs->SetFloat("fresnelPower", 4.0f);
-            
-            // Set view position
-            CMatrix invView = viewMatrix->getInverse();
-            CVector viewPos = invView.getTranslation();
-            waterVs->SetVector3("ViewPos", &viewPos);
-            
-            // Set reflection and refraction tints
-            unsigned int constRegister = (this->m_waterShaderVersion == 14) ? 5 : 0;
-            unsigned int constRegister2 = (this->m_waterShaderVersion == 14) ? 6 : 1;
-            
-            renderer->SetPsFloatConst(constRegister, reinterpret_cast<const float*>(&reflectionTint), 1);
-            renderer->SetPsFloatConst(constRegister2, reinterpret_cast<const float*>(&refractionTint), 1);
-            */
-            RETRUXX_NOT_IMPLEMENTED;
+            // The ps1.x shaders take a fixed fresnel curve and the level's tints.
+            m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("fresnelBias"), 0.25f);
+            m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("fresnelScale"), 1.0f);
+            m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("fresnelPower"), 4.0f);
+            CVector const viewPos = mat.getInverse().getOrg();
+            m_waterVs->SetVector3(m_waterVs->GetParamHandleByName("ViewPos"), viewPos);
+            unsigned const reflectionRegister = m_waterShaderVersion == 14 ? 5 : 0;
+            unsigned const refractionRegister = m_waterShaderVersion == 14 ? 6 : 1;
+            M3D_RENDERER->SetPsFloatConst(reflectionRegister, reinterpret_cast<float const*>(&reflectionTint), 1);
+            M3D_RENDERER->SetPsFloatConst(refractionRegister, reinterpret_cast<float const*>(&refractionTint), 1);
         }
 
          // Set fog parameters
@@ -3658,23 +4974,20 @@ namespace m3d
             }
         }
 
-        // Set time-based parameters
-        // TODO: water flow coeff
-        float const currentTime = static_cast<float>(M3D_KERNEL->GetTimer().GetCurTime()) * 0.0001;
-
+        // Wave animation time; the timer's current time is read as is, without
+        // advancing it.
         if (this->m_waterShaderVersion == 20)
         {
-            unsigned const timeValHandle = m_waterVs->GetParamHandleByName("timeVal");
-            m_waterVs->SetFloat(timeValHandle, currentTime);
+            // Scaled by the weather's water speed.
+            float const waterSpeed = m_owner->GetWeatherManager().GetActiveWeather()->m_waterSpeed;
+            float const timeVal = static_cast<float>(static_cast<double>(M3D_KERNEL->GetTimer().m_curTime) * waterSpeed * 0.001f);
+            m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("timeVal"), timeVal);
         }
         else
         {
-            unsigned const timeValHandle = m_waterVs->GetParamHandleByName("timeVal");
-            m_waterVs->SetFloat(timeValHandle, currentTime);
-
-            
-            unsigned const numVertsInWaterTileEdgeRecHandle = m_waterVs->GetParamHandleByName("numVertsInWaterTileEdgeRec");
-            m_waterVs->SetFloat(numVertsInWaterTileEdgeRecHandle, 4.0f);
+            float const timeVal = static_cast<float>(static_cast<double>(M3D_KERNEL->GetTimer().m_curTime) * 0.00025f);
+            m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("timeVal"), timeVal);
+            m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("numVertsInWaterTileEdgeRec"), 0.125f);
         }
 
         // Setup rendering
@@ -3687,9 +5000,8 @@ namespace m3d
         }
         else
         {
-            // Apply appropriate pixel shader for older versions
-            // (Note: 'waterPs' variable was not properly defined in decompiled code)
-            RETRUXX_NOT_IMPLEMENTED;
+            // The ps1.x water pixel shader is an assembly one, kept in a global.
+            waterPs->Apply();
         }
 
         // Render water cells by LOD
@@ -4005,9 +5317,50 @@ namespace m3d
         }
     }
 
-    void Landscape::drawSpriteOverlayed2Projected(float, float, float, float, unsigned, bool, CClipper const&)
+    void Landscape::drawSpriteOverlayed2Projected(float cx, float cz, float hsx, float hsz, unsigned clr, bool all, CClipper const& clipper)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8DFC80
+        // Like drawSpriteOverlayed2, but only the 32 unit tiles whose bounding sphere is
+        // inside the projector's clipper are drawn.
+        // NOTE: 'all' is unused: there is no collision check and no editor path here.
+        float const TILE_SIZE_INV = 0.03125f;
+        int const maxIdx = 4 * m_owner->m_level->land_size - 1;
+        int const x0 = std::clamp(static_cast<int>((cx - hsx) * TILE_SIZE_INV), 0, maxIdx);
+        int const x1 = std::clamp(static_cast<int>((cx + hsx) * TILE_SIZE_INV), 0, maxIdx);
+        int const z0 = std::clamp(static_cast<int>((cz - hsz) * TILE_SIZE_INV), 0, maxIdx);
+        int const z1 = std::clamp(static_cast<int>((cz + hsz) * TILE_SIZE_INV), 0, maxIdx);
+
+        int const numZ = z1 - z0 + 1;
+        int const count = (x1 - x0 + 1) * numZ;
+        float const startCenterZ = (static_cast<float>(z0) + 0.5f) * 32.0f;
+        cmn::vector<unsigned> cells;
+        cells.Allocate(count);
+        // NOTE: as in drawSpriteOverlayed2, a second buffer is allocated and never used.
+        cmn::vector<unsigned> unused;
+        unused.Allocate(count);
+
+        float centerX = (static_cast<float>(x0) + 0.5f) * 32.0f;
+        for (int x = x0; x <= x1; ++x, centerX += 32.0f)
+        {
+            float centerZ = startCenterZ;
+            unsigned key = x + (z0 << 8);
+            for (int z = z0; z <= z1; ++z, centerZ += 32.0f, key += 0x100u)
+            {
+                CVector o;
+                o.y = GetLsHeight(centerX, centerZ);
+                o.x = centerX;
+                o.z = centerZ;
+                if (clipper.testSphere(o, 41.025642f))
+                {
+                    cells.push_back(key);
+                }
+            }
+        }
+
+        DrawCells(cells, clr);
+        // NOTE: a push immediately followed by its pop, as in drawSpriteOverlayed2.
+        M3D_RENDERER->PushCull(rend::M3DCULL_CCW);
+        M3D_RENDERER->PopCull();
     }
 
     Class* Landscape::GetBaseClass()
@@ -4021,9 +5374,29 @@ namespace m3d
         ConstructCollisionData();
     }
 
-    void Landscape::RemoveGrassTile(int, int)
+    void Landscape::RemoveGrassTile(int x, int z)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6B0160
+        if (!m_grassArray)
+        {
+            return;
+        }
+        int const tileIdx = x + (z << 8);
+        TileGrass* tile = m_grassArray[tileIdx];
+        if (!tile)
+        {
+            return;
+        }
+        for (unsigned i = 0; i < tile->instancesPerModel.size(); ++i)
+        {
+            if (GrassInstancesForModel* perModel = tile->instancesPerModel[i])
+            {
+                emptyPtrContainer(perModel->grass);
+            }
+        }
+        emptyPtrContainer(tile->instancesPerModel);
+        delete tile;
+        m_grassArray[tileIdx] = nullptr;
     }
 
     void Landscape::DrawCells(cmn::vector<unsigned> const& cellsPerTex, unsigned clr)
@@ -4102,14 +5475,33 @@ namespace m3d
         }
     }
 
-    void Landscape::GetVisCellHeights(float&, float&, int, int) const
+    void Landscape::GetVisCellHeights(float& h0, float& h1, int x, int y) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AACD0
+        CellParams const& cell = m_cellParams[x + y * m_owner->m_level->land_size];
+        h0 = cell.m_h0;
+        h1 = cell.m_h1;
     }
 
-    void Landscape::CreateIndicesTriLists(int*, int, int)
+    void Landscape::CreateIndicesTriLists(int* indices, int BaseVertex, int sz)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ABA90
+        // Two triangles per quad of an (sz + 1)-wide vertex grid.
+        for (int row = 0; row < sz; ++row)
+        {
+            for (int col = 0; col < sz; ++col)
+            {
+                indices[0] = BaseVertex + sz + 1;
+                indices[1] = BaseVertex + sz + 2;
+                indices[2] = BaseVertex;
+                indices[3] = BaseVertex + sz + 2;
+                indices[4] = BaseVertex + 1;
+                indices[5] = BaseVertex;
+                indices += 6;
+                ++BaseVertex;
+            }
+            ++BaseVertex;
+        }
     }
 
     void Landscape::UpdateNodeCollisionGeoms(SgNode* node)
@@ -4198,7 +5590,11 @@ namespace m3d
 
     void Landscape::ReleaseLod()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ABA20
+        delete[] m_cellParams;
+        m_cellParams = nullptr;
+        delete[] m_drawedCellParams;
+        m_drawedCellParams = nullptr;
     }
 
     void Landscape::DrawMassBox(dMass* mass, CVector const& pos, Quaternion const& rot)
@@ -4256,12 +5652,57 @@ namespace m3d
 
     void Landscape::StartWaterQuery()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C0580
+        m_currWaterQuery = (m_currWaterQuery + 1) % 3;
+        m_waterQueries[m_currWaterQuery]->Begin();
     }
 
-    void Landscape::PutGrassToLandscape(CVector2 const&, CVector2 const&)
+    void Landscape::PutGrassToLandscape(CVector2 const& Min, CVector2 const& Max)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AE550
+        // Drops every instance in the tiles touching the rectangle (not just those inside
+        // it) onto the terrain.
+        if (!m_grassArray)
+        {
+            return;
+        }
+
+        // The upper bounds are exclusive and one past the tile holding the edge.
+        int tileMinX = static_cast<int>(Min.x * (1.0f / 32.0f));
+        int tileMinY = static_cast<int>(Min.y * (1.0f / 32.0f));
+        int tileMaxX = static_cast<int>(Max.x * (1.0f / 32.0f)) + 1;
+        int tileMaxY = static_cast<int>(Max.y * (1.0f / 32.0f)) + 1;
+        tileMinX = std::clamp(tileMinX, 0, 256);
+        tileMinY = std::clamp(tileMinY, 0, 256);
+        tileMaxX = std::clamp(tileMaxX, 0, 256);
+        tileMaxY = std::clamp(tileMaxY, 0, 256);
+
+        for (int x = tileMinX; x < tileMaxX; ++x)
+        {
+            for (int y = tileMinY; y < tileMaxY; ++y)
+            {
+                TileGrass* tile = m_grassArray[x + (y << 8)];
+                if (!tile)
+                {
+                    continue;
+                }
+                for (unsigned i = 0; i < tile->instancesPerModel.size(); ++i)
+                {
+                    GrassInstancesForModel* perModel = tile->instancesPerModel[i];
+                    if (!perModel)
+                    {
+                        continue;
+                    }
+                    for (unsigned k = 0; k < perModel->grass.size(); ++k)
+                    {
+                        if (GrassInstance* gi = perModel->grass[k])
+                        {
+                            gi->pos.y = GetLsHeight(gi->pos.x, gi->pos.z);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     int Landscape::GetNumTiles() const
@@ -4269,19 +5710,76 @@ namespace m3d
         return m_tilesTextures.size();
     }
 
-    void Landscape::setDrawRadius(int, int, int)
+    void Landscape::setDrawRadius(int clip0, int clip1, int clip2)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A43C0
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        float const clip1z = static_cast<float>(clip1) * VISCELL_EDGE_LENGTH;
+        float const clip0z = static_cast<float>(clip0) * VISCELL_EDGE_LENGTH;
+        float const clip2z = static_cast<float>(clip2) * VISCELL_EDGE_LENGTH;
+        m_landscapeClip0 = clip0;
+        m_landscapeClip1 = clip1;
+        m_landscapeClip2 = clip2;
+        m_drawRadius = clip2;
+        m_landscapeClip0z = clip0z;
+        m_landscapeClip1z = clip1z;
+        m_landscapeClip2z = clip2z;
+        m_landscapeClip0zSq = clip0z * clip0z;
+        m_landscapeClip1zSq = clip1z * clip1z;
+        m_landscapeClip2zSq = clip2z * clip2z;
     }
 
-    void Landscape::GetDrawedCellHeights(float&, float&, int, int) const
+    void Landscape::GetDrawedCellHeights(float& h0, float& h1, int x, int y) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A4480
+        CellParams const& cell = m_drawedCellParams[x + 4 * y * m_owner->m_level->land_size];
+        h0 = cell.m_h0;
+        h1 = cell.m_h1;
     }
 
-    unsigned Landscape::GetNearestGrassInstance(CVector const&) const
+    unsigned Landscape::GetNearestGrassInstance(CVector const& point) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AE1F0
+        // Only the tile under the point is searched, for instances within 8 units.
+        int const tileIdx = static_cast<int>(point.x * (1.0f / 32.0f)) + (static_cast<int>(point.z * (1.0f / 32.0f)) << 8);
+        TileGrass const* tile = m_grassArray[tileIdx];
+        if (!tile)
+        {
+            return static_cast<unsigned>(-1);
+        }
+
+        float bestDistSq = 102400.0f;
+        int bestModel = -1;
+        int bestInstance = -1;
+        for (unsigned m = 0; m < tile->instancesPerModel.size(); ++m)
+        {
+            GrassInstancesForModel const* perModel = tile->instancesPerModel[m];
+            if (!perModel)
+            {
+                continue;
+            }
+            for (unsigned i = 0; i < perModel->grass.size(); ++i)
+            {
+                GrassInstance const* gi = perModel->grass[i];
+                if (!gi)
+                {
+                    continue;
+                }
+                float const dy = point.y - gi->pos.y;
+                float const distSq = (point.z - gi->pos.z) * (point.z - gi->pos.z) + (point.x - gi->pos.x) * (point.x - gi->pos.x) + dy * dy;
+                if (distSq <= 64.0f && bestDistSq > distSq)
+                {
+                    bestDistSq = distSq;
+                    bestModel = static_cast<int>(m);
+                    bestInstance = static_cast<int>(i);
+                }
+            }
+        }
+        if (bestModel != -1)
+        {
+            return bestInstance + ((bestModel + (tileIdx << 8)) << 8);
+        }
+        return static_cast<unsigned>(-1);
     }
 
     void Landscape::DoneGrass()
@@ -4338,7 +5836,8 @@ namespace m3d
 
     float Landscape::getCameraHeight(float, float) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AB050
+        return -99999.0f;
     }
 
     int Landscape::getGrassModelIdByName(char const* modelFileName) const
@@ -4359,7 +5858,8 @@ namespace m3d
 
     int Landscape::SaveCameraMap(CStr const&, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AB040
+        return 1;
     }
 
     void Landscape::Release()
@@ -4418,9 +5918,12 @@ namespace m3d
         m_vnormal = nullptr;
     }
 
-    void Landscape::EnableShoreRegion(int, int)
+    void Landscape::EnableShoreRegion(int x, int z)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C5DE0
+        int const side = 4 * m_owner->m_level->land_size;
+        std::vector<unsigned char> visited(side * side, 0);
+        RecursiveEnableShore(visited.data(), x, z);
     }
 
     unsigned int frame = 0;
@@ -4940,9 +6443,70 @@ namespace m3d
         }
     }
 
-    bool Landscape::WriteGrassToXmlFile(char const*)
+    bool Landscape::WriteGrassToXmlFile(char const* fileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6ADED0
+        // Writes the tagged binary format that ReadGrassFromXmlFile reads, version 2.
+        fs::auxTaggedFile file;
+        if (file.Open(fileName, fs::auxTaggedFile::CREATE_IGNORE_CRC))
+        {
+            M3D_LOG_INFO(CStr("Grass::Save - could not create file ") + CStr(fileName));
+            return false;
+        }
+
+        file.setFormatTitle("Grass");
+        file.setFormatVersion(2u);
+        file.addChunk(1u);
+        file.addChunkData(1u, 4u, &m_numGrassModels);
+        unsigned numTilesWithGrass = 0;
+        for (int i = 0; i < GRASS_TILE_ARRAY_SIZE; ++i)
+        {
+            if (m_grassArray[i])
+            {
+                ++numTilesWithGrass;
+            }
+        }
+        file.addChunkData(1u, 4u, &numTilesWithGrass);
+
+        file.addChunk(2u);
+        for (unsigned i = 0; i < m_numGrassModels; ++i)
+        {
+            CStr const& name = m_grassModels[i].modelName;
+            file.addChunkData(2u, name.c_str() ? static_cast<unsigned>(strlen(name.c_str())) + 1 : 1u, name.c_str());
+        }
+
+        file.addChunk(3u);
+        for (unsigned tileIdx = 0; tileIdx < GRASS_TILE_ARRAY_SIZE; ++tileIdx)
+        {
+            TileGrass const* tile = m_grassArray[tileIdx];
+            if (!tile)
+            {
+                continue;
+            }
+            file.addChunkDataCopy(3u, 4u, &tileIdx);
+            file.addChunkData(3u, 4u, &tile->numDiffModels);
+            // NOTE: the tile's numInstances is stale, as the grass editors never update it.
+            file.addChunkData(3u, 4u, &tile->numInstances);
+            for (unsigned i = 0; i < tile->instancesPerModel.size(); ++i)
+            {
+                GrassInstancesForModel const* perModel = tile->instancesPerModel[i];
+                if (!perModel)
+                {
+                    continue;
+                }
+                file.addChunkData(3u, 4u, &perModel->modelId);
+                file.addChunkData(3u, 4u, &perModel->numInstances);
+                for (unsigned k = 0; k < perModel->grass.size(); ++k)
+                {
+                    if (perModel->grass[k])
+                    {
+                        file.addChunkData(3u, sizeof(GrassInstance), perModel->grass[k]);
+                    }
+                }
+            }
+        }
+        file.Close();
+        return true;
     }
 
     CVector Landscape::getNormal(float worldX, float worldZ)
@@ -5036,22 +6600,30 @@ namespace m3d
 
     unsigned char Landscape::GetColor(float, float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5ABA80
+        return 0xFF;
     }
 
     void Landscape::SetPresenceOnCollisionMap(int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644D30
+        M3D_ASSERT(!"obsolete");
     }
 
-    bool Landscape::IsThisVisCellHasWater(int, int) const
+    bool Landscape::IsThisVisCellHasWater(int x, int z) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAD70
+        // NOTE: the bounds test uses || where && was meant, so it never rejects a cell.
+        int const landSize = m_owner->m_level->land_size;
+        return (x >= 0 || z >= 0 || x < landSize || z < landSize) && m_cellParams[x + z * landSize].m_iswatercell;
     }
 
-    void Landscape::drawSpriteOverlayed(unsigned, CVector const&, CVector const&, float)
+    void Landscape::drawSpriteOverlayed(unsigned clr, CVector const& o, CVector const& scale, float rotZ)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8E0330
+        M3D_RENDERER->TgEnableSetLinearSt(0, scale.x, scale.y, o.x, o.z, rotZ, false, 0.0f, 0.0f, 1.0f, 1.0f);
+        drawSpriteOverlayed2(o.x, o.z, 0.5f / scale.x, 0.5f / scale.y, clr, false);
+        M3D_RENDERER->TgDisable(0);
     }
 
     void Landscape::ReloadLightmapTexture(CStr const& fileName)
@@ -5077,13 +6649,67 @@ namespace m3d
 
     Object* Landscape::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BCEF0
+        return new Landscape(*this);
     }
 
-    bool Landscape::LoadShoreLine(CStr const&)
+    bool Landscape::LoadShoreLine(CStr const& FileName)
     {
-        // TODO: implement Landscape::LoadShoreLine
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BB670
+        fs::auxTaggedFile file;
+        if (file.Open(FileName.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC))
+        {
+            M3D_LOG_INFO(CStr("Couldn't load shore line from file ") + FileName);
+            return false;
+        }
+
+        char* formatTitle = nullptr;
+        file.getFormatTitle(&formatTitle);
+        if (strcmp(formatTitle, "SFF"))
+        {
+            M3D_LOG_ERR(CStr("Error Wrong shore line file format: '") + CStr(formatTitle) + CStr("'"));
+            return false;
+        }
+
+        unsigned formatVersion = 0;
+        file.getFormatVersion(formatVersion);
+        if (formatVersion != 1)
+        {
+            M3D_LOG_ERR(CStr("Error: Wrong shore line file format version: ") + CStr(formatVersion));
+            return false;
+        }
+
+        if (!file.isChunkPresent(1u))
+        {
+            SYS_ERROR("File.isChunkPresent( SHORES_CHUNK )");
+        }
+        unsigned char* data = nullptr;
+        file.getChunkData(1u, reinterpret_cast<void**>(&data));
+        unsigned const numShores = *reinterpret_cast<unsigned*>(data);
+        data += 4;
+        m_shoreLines.resize(numShores);
+        for (unsigned i = 0; i < numShores; ++i)
+        {
+            unsigned const numPoints = *reinterpret_cast<unsigned*>(data);
+            data += 4;
+            m_shoreLines[i].resize(numPoints);
+            memcpy(m_shoreLines[i].data(), data, sizeof(CVector) * numPoints);
+            data += sizeof(CVector) * numPoints;
+        }
+        ReBuildShoresVb();
+
+        // Only the editor needs to know which shores were switched off.
+        if (m_renderMode == RM_EDITOR && file.isChunkPresent(2u))
+        {
+            unsigned* keys = nullptr;
+            file.getChunkData(2u, reinterpret_cast<void**>(&keys));
+            unsigned const num = *keys++;
+            for (unsigned i = 0; i < num; ++i)
+            {
+                m_noShoresSet.insert(keys[i]);
+            }
+        }
+        file.Close();
         return true;
     }
 
@@ -5121,7 +6747,8 @@ namespace m3d
 
     int Landscape::GetNumAlphas() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AD220
+        return static_cast<int>(m_AlphaSets.size());
     }
 
     void Landscape::CreateLod()
@@ -5138,9 +6765,13 @@ namespace m3d
         CreateHeights(m_drawedCellParams, drawedCellSize, 4);
     }
 
-    void Landscape::drawSpriteOverlayedProjected(unsigned, CVector const&, CMatrix const&, CClipper const&)
+    void Landscape::drawSpriteOverlayedProjected(unsigned clr, CVector const& o, CMatrix const& projectorMatrix, CClipper const& clipper)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8E03D0
+        M3D_RENDERER->TgEnableSetMatrixStr(0, &projectorMatrix, true);
+        M3D_RENDERER->TgSetTransformMode(0, rend::TG_PROJ_3);
+        drawSpriteOverlayed2Projected(o.x, o.z, 128.0f, 128.0f, clr, false, clipper);
+        M3D_RENDERER->TgDisable(0);
     }
 
     void Landscape::CreateHeights(CellParams* dest, int ls, int cellSize)
@@ -5228,14 +6859,16 @@ namespace m3d
         m_owner->m_level->waterlevel = heightCandidate * 0.12;
     }
 
-    int Landscape::isWaterCell(int, int) const
+    int Landscape::isWaterCell(int x, int y) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAC90
+        return m_waterMap[4 * y * m_owner->m_level->land_size + x] != 0;
     }
 
     void Landscape::Restore()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AB470
+        m_dirtyReflection = true;
     }
 
     float Landscape::getWaterHeight(int x, int z) const
@@ -5304,9 +6937,10 @@ namespace m3d
 
     }
 
-    char const* Landscape::GetGrassModelName(unsigned) const
+    char const* Landscape::GetGrassModelName(unsigned modelIdx) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AB670
+        return m_grassModels[modelIdx].modelName.c_str();
     }
 
     void Landscape::renderZGuard()
@@ -5511,9 +7145,12 @@ namespace m3d
         M3D_RENDERER->SetColorWriteMask(15u, false);
     }
 
-    void Landscape::GetWaterCellHeights(float&, float&, int, int) const
+    void Landscape::GetWaterCellHeights(float& h0, float& h1, int x, int z) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AAD20
+        CellParams const& cell = m_cellParams[x + z * m_owner->m_level->land_size];
+        h0 = cell.m_minwater;
+        h1 = cell.m_maxwater;
     }
 
     void Landscape::ManageLandScapeCollisionTriMeshes()
@@ -5603,26 +7240,174 @@ namespace m3d
 
     void Landscape::LinkPassMapCellToCollisionCell(const PointBase<int>& cellPos)
     {
-        // TODO: implement Landscape::LinkPassMapCellToCollisionCell
-        // RETRUXX_NOT_IMPLEMENTED;
-        //const auto landSize = m_owner->m_level->land_size;
-        //const auto v7 = ((landSize * 128.0) / (4 * landSize)) * 0.5;
-        //const auto x = (cellPos.x + 0.5) * v7;
-        //const auto z = (cellPos.y + 0.5) * v7;
-        //const auto lsHeight = GetLsHeight(x, z);
-        //
-        //const float VISCELL_EDGE_LENGTH = 128.0;
-        //auto v8 = (int)((z - (v7 * 0.5)) * (1.0 / VISCELL_EDGE_LENGTH));
-        //v8 = std::clamp(v8, 0, landSize - 1);
-        //
-        //auto* passCell = M3D_KERNEL->New("GeomObjectPassCell");
-        //auto* odeSpace = m_owner->GetOdeSpace();
-        //auto* box = dCreateBox(odeSpace, lsHeight, 50.0, lsHeight);
+        // RVA 0x64C960
+        // Puts a 50 unit tall box over a pass map cell and links it into every collision
+        // cell it overlaps.
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        int const landSize = m_owner->m_level->land_size;
+        float const passCellEdgeLen = static_cast<float>(landSize) * 128.0f / static_cast<float>(4 * landSize) * 0.5f;
+
+        CVector passGeomPos;
+        passGeomPos.x = (static_cast<float>(cellPos.x) + 0.5f) * passCellEdgeLen;
+        passGeomPos.z = (static_cast<float>(cellPos.y) + 0.5f) * passCellEdgeLen;
+        passGeomPos.y = GetLsHeight(passGeomPos.x, passGeomPos.z);
+
+        float const half = passCellEdgeLen * 0.5f;
+        float const inv = 1.0f / VISCELL_EDGE_LENGTH;
+        int const x0 = std::clamp(static_cast<int>((passGeomPos.x - half) * inv), 0, landSize - 1);
+        int const z0 = std::clamp(static_cast<int>((passGeomPos.z - half) * inv), 0, landSize - 1);
+        int const x1 = std::clamp(static_cast<int>((half + passGeomPos.x) * inv), 0, landSize - 1);
+        int const z1 = std::clamp(static_cast<int>((half + passGeomPos.z) * inv), 0, landSize - 1);
+
+        auto* geomObject = static_cast<GeomObject*>(M3D_KERNEL->New("GeomObjectPassCell"));
+        dxGeom* box = dCreateBox(m_owner->GetOdeSpace(), passCellEdgeLen, 50.0f, passCellEdgeLen);
+        dGeomSetPosition(box, passGeomPos.x, passGeomPos.y, passGeomPos.z);
+        geomObject->m_translation = ZeroVector;
+        geomObject->m_rotation = IdentityQuaternion;
+        geomObject->SetGeom(box);
+        geomObject->m_needToDeleteInUnlink = false;
+        // NOTE: the bounds are passed as (x0, x1) and (z0, z1) rather than as the corners
+        // (x0, z0) and (x1, z1), so the cells recorded on the geom are wrong.
+        geomObject->SetBounds(PointBase<int>(x0, x1), PointBase<int>(z0, z1));
+
+        for (int z = z0; z <= z1; ++z)
+        {
+            for (int x = x0; x <= x1; ++x)
+            {
+                GetCollisionCellItem(x, z)->m_geomsList.insert(geomObject);
+            }
+        }
     }
 
     void Landscape::ReBuildShoresVb()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C1BD0
+        // Every shore line becomes a triangle strip, two vertices per point: one on the
+        // beach side, opaque and clamped under the terrain, and one out over the water,
+        // fully transparent.
+        unsigned numVerts = 0;
+        for (auto const& line : m_shoreLines)
+        {
+            numVerts += 2 * static_cast<unsigned>(line.size());
+        }
+
+        if (m_shoresVb.IsValid())
+        {
+            M3D_RENDERER->ReleaseVb(m_shoresVb);
+        }
+        if (m_shoresIb.IsValid())
+        {
+            M3D_RENDERER->ReleaseIb(m_shoresIb);
+        }
+        if (!numVerts)
+        {
+            return;
+        }
+
+        m_shoresVb = M3D_RENDERER->AddVb(rend::VERTEX_XYZCT1, numVerts, CStr("Shores"), 0);
+        m_shoresIb = M3D_RENDERER->AddIb(numVerts, false);
+        auto* indices = static_cast<unsigned short*>(M3D_RENDERER->LockIb(m_shoresIb, 0, 0, 0));
+        // NOTE: the counter is 16 bit, so more than 65535 shore vertices hang here.
+        unsigned short index = 0;
+        do
+        {
+            indices[index] = index;
+            ++index;
+        } while (index < numVerts);
+        M3D_RENDERER->UnlockIb(m_shoresIb);
+
+        auto* v = static_cast<rend::VertexXYZCT1*>(M3D_RENDERER->LockVb(m_shoresVb, 0, 0, 0));
+        auto const cvarF = [](CVar const& cvar) {
+            return cvar.GetType() == CVar::CVAR_FLOAT ? cvar.GetF() : static_cast<float>(cvar.GetI());
+        };
+        float const SHORE_LENGTH = cvarF(M3D_ENGINE_CFG.m_g_shoresWidth);
+        float const SHORE_PENETRATION = cvarF(M3D_ENGINE_CFG.m_g_shoresDeep);
+        float const SHORE_ELEVATION = cvarF(M3D_ENGINE_CFG.m_g_shoresElevation);
+        unsigned const SHORE_ALPHA = M3D_ENGINE_CFG.m_g_shoresOpaque.GetI() << 24;
+        unsigned const beachColor = SHORE_ALPHA | 0xFFFFFF;
+
+        // Writes the vertex pair for point p, with the strip running along the given side.
+        auto const emitPair = [&](rend::VertexXYZCT1* out, CVector const& p, CVector const& side, CVector const& otherSide, float tu) {
+            CVector water = p + side * SHORE_LENGTH;
+            CVector beach = p + otherSide * SHORE_PENETRATION;
+            // If that side runs into the terrain, the strip is flipped over.
+            if (GetLsHeight(water.x, water.z) > water.y)
+            {
+                water = p + otherSide * SHORE_LENGTH;
+                beach = p + side * SHORE_PENETRATION;
+            }
+            float beachY = beach.y + SHORE_ELEVATION;
+            float const groundY = GetLsHeight(beach.x, beach.z);
+            if (beachY > groundY)
+            {
+                beachY = groundY;
+            }
+            out[0].x = beach.x;
+            out[0].y = beachY;
+            out[0].z = beach.z;
+            out[0].c = beachColor;
+            out[0].tu = tu;
+            out[0].tv = 1.0f;
+            out[1].x = water.x;
+            out[1].y = water.y;
+            out[1].z = water.z;
+            out[1].c = 0xFFFFFF;
+            out[1].tu = tu;
+            out[1].tv = 0.0f;
+        };
+
+        for (auto const& line : m_shoreLines)
+        {
+            int const numSegments = static_cast<int>(line.size()) - 1;
+            if (numSegments <= 0)
+            {
+                continue;
+            }
+            rend::VertexXYZCT1* const lineStart = v;
+            for (int i = 0; i < numSegments; ++i)
+            {
+                CVector const& p1 = line[i];
+                CVector const& p2 = line[i + 1];
+                float const dx = p1.x - p2.x;
+                float const dy = p1.y - p2.y;
+                float const dz = p1.z - p2.z;
+                float const inv = static_cast<float>(1.0 / sqrt(dx * dx + dz * dz + dy * dy + 1.1920929e-7));
+                float const nx = inv * dx;
+                float const nz = dz * inv;
+                // The horizontal perpendicular to the segment, up x dir, and its opposite.
+                CVector const side(nz, 0.0f, -nx);
+                CVector const otherSide(-nz, 0.0f, nx);
+
+                emitPair(v, p1, side, otherSide, (i & 1) ? 1.0f : 0.0f);
+                v += 2;
+
+                if (i == numSegments - 1)
+                {
+                    double const cx = line.front().x - line.back().x;
+                    double const cy = line.front().y - line.back().y;
+                    double const cz = line.front().z - line.back().z;
+                    if (sqrt(cz * cz + cy * cy + cx * cx) >= 0.1)
+                    {
+                        // An open line gets a closing pair at its last point, along the last
+                        // segment's sides.
+                        emitPair(v, p2, side, otherSide, ((i + 1) & 1) ? 1.0f : 0.0f);
+                    }
+                    else
+                    {
+                        // A closed loop repeats its first pair.
+                        float const tu = (line.size() & 1) == 0 ? 1.0f : 0.0f;
+                        v[0] = lineStart[0];
+                        v[0].tu = tu;
+                        v[0].tv = 1.0f;
+                        v[1] = lineStart[1];
+                        v[1].tu = tu;
+                        v[1].tv = 0.0f;
+                    }
+                    v += 2;
+                }
+            }
+        }
+        M3D_RENDERER->UnlockVb(m_shoresVb);
     }
 
     int Landscape::LoadTiles(CStr const& filename)
@@ -5760,19 +7545,72 @@ namespace m3d
         return 1;
     }
 
-    bool Landscape::traceLineThruCellLs(float&, int, int, CVector const&, CVector const&, bool)
+    bool Landscape::traceLineThruCellLs(float& ttt, int cellX, int cellZ, CVector const& start, CVector const& dir, bool allowColInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B0FA0
+        // The nearest of the terrain hit in this cell and, if allowed, any collision mesh
+        // hit anywhere.
+        float t0 = 0.0f;
+        bool const hitTerrain = traceLineThruCellLs0(t0, cellX, cellZ, start, dir);
+        float best = 10000.0f;
+        bool hitCollision = false;
+        if (allowColInfo)
+        {
+            for (auto* ci : m_collisions)
+            {
+                float const t = ci->TraceRay(start, dir);
+                if (t != -1.0f && best > t)
+                {
+                    best = t;
+                    hitCollision = true;
+                }
+            }
+        }
+        if (hitCollision)
+        {
+            ttt = (hitTerrain && t0 <= best) ? t0 : best;
+            return true;
+        }
+        if (hitTerrain)
+        {
+            ttt = t0;
+            return true;
+        }
+        return false;
     }
 
-    void Landscape::RecursiveDisableShore(unsigned char*, int, int)
+    void Landscape::RecursiveDisableShore(unsigned char* marks, int x, int z)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C2F00
+        // Flood fills the connected water cells from (x, z); the step to z + 1 is a loop,
+        // the other three neighbours recurse.
+        for (;; ++z)
+        {
+            M3D_ASSERT(m_waterMap);
+            int const side = 4 * m_owner->m_level->land_size;
+            if (x < 0 || x >= side || z < 0 || z >= side)
+            {
+                return;
+            }
+            unsigned char& mark = marks[z * side + x];
+            if (mark || !m_waterMap[x + z * side])
+            {
+                return;
+            }
+            unsigned const key = x + (z << 16);
+            m_noShoresSet.insert(key);
+            mark = 1;
+            RecursiveDisableShore(marks, x - 1, z);
+            RecursiveDisableShore(marks, x + 1, z);
+            RecursiveDisableShore(marks, x, z - 1);
+        }
     }
 
-    Landscape::Landscape(Landscape const&)
+    Landscape::Landscape(Landscape const&) :
+        SgNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B8340 - NOTE: nothing is copied from the source; the members are only
+        // default constructed, so Clone yields an empty landscape.
     }
 
     int CreateIndices(uint16_t* idxes, int szindex, int szvertex, int step)
@@ -6702,24 +8540,295 @@ namespace m3d
         }
     }
 
-    void Landscape::RecursiveEnableShore(unsigned char*, int, int)
+    void Landscape::RecursiveEnableShore(unsigned char* marks, int x, int z)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C3270
+        // Flood fills the connected water cells from (x, z); the step to z + 1 is a loop,
+        // the other three neighbours recurse.
+        for (;; ++z)
+        {
+            M3D_ASSERT(m_waterMap);
+            int const side = 4 * m_owner->m_level->land_size;
+            if (x < 0 || x >= side || z < 0 || z >= side)
+            {
+                return;
+            }
+            unsigned char& mark = marks[z * side + x];
+            if (mark || !m_waterMap[x + z * side])
+            {
+                return;
+            }
+            unsigned const key = x + (z << 16);
+            m_noShoresSet.erase(key);
+            mark = 1;
+            RecursiveEnableShore(marks, x - 1, z);
+            RecursiveEnableShore(marks, x + 1, z);
+            RecursiveEnableShore(marks, x, z - 1);
+        }
     }
 
-    bool Landscape::traceLineThruCellLs0(float&, int, int, CVector const&, CVector const&)
+    bool Landscape::traceLineThruCellLs0(float& ttt, int cellX, int cellZ, CVector const& start, CVector const& dir)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AE7C0
+        // Tests the ray against the height map quads of visibility cell (cellX, cellZ), in
+        // scan order.
+        // NOTE: the loops run 17 times a side, so the row and column just past the cell are
+        // tested as well, and the first hit in scan order wins, not the nearest.
+        ttt = -1.0f;
+        int const n = m_mapSize;
+        auto const heightAt = [&](int x, int z) {
+            return (x < 0 || x > n || z < 0 || z > n) ? 0.0f : m_heightMap[x + z * (n + 1)];
+        };
+        for (int zi = 0; zi <= 16; ++zi)
+        {
+            int const z = 16 * cellZ + zi;
+            float const zNear = static_cast<float>(z) * 8.0f;
+            float const zFar = static_cast<float>(z + 1) * 8.0f;
+            for (int xi = 0; xi <= 16; ++xi)
+            {
+                int const x = 16 * cellX + xi;
+                CVector v[4];
+                v[0] = CVector(static_cast<float>(x) * 8.0f, heightAt(x, z), zNear);
+                v[1] = CVector(static_cast<float>(x + 1) * 8.0f, heightAt(x + 1, z), zNear);
+                v[2] = CVector(static_cast<float>(x + 1) * 8.0f, heightAt(x + 1, z + 1), zFar);
+                v[3] = CVector(static_cast<float>(x) * 8.0f, heightAt(x, z + 1), zFar);
+                float tt;
+                float tu;
+                float tv;
+                if (intersectTriangle(start, dir, v[3], v[1], v[0], tt, tu, tv) || intersectTriangle(start, dir, v[3], v[2], v[1], tt, tu, tv))
+                {
+                    ttt = tt;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    void Landscape::DrawCells0(cmn::vector<unsigned> const&, RenderTypes)
+    void Landscape::DrawCells0(cmn::vector<unsigned> const& cellsPerTex, RenderTypes RenderType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A7160
+        // The editor's terrain path: every tile's 5x5 vertices are built on the CPU into
+        // m_dummyVB and streamed out, up to m_clampCells tiles per draw.
+        float const LAND_SCALE = 8.0f;
+        rend::VbHandle vb = m_landVb;
+        int const colorAdd = m_mapSize + 1;
+        if (m_lastState != RenderType)
+        {
+            if (RenderType == RT_FIRSTPASSLIGHT || RenderType == RT_OTHERPASSES)
+            {
+                rend::TextureState colorOp;
+                if (RenderType == RT_OTHERPASSES)
+                {
+                    M3D_RENDERER->SetBlend(rend::BM_ALPHA, false);
+                    M3D_RENDERER->SetAlphaTest(1);
+                    colorOp = rend::TS_TEXTURE;
+                }
+                else
+                {
+                    M3D_RENDERER->SetBlend(rend::BM_NONE, false);
+                    M3D_RENDERER->SetAlphaTest(0);
+                    colorOp = rend::TS_DIFFUSE;
+                }
+                M3D_RENDERER->SetStageState(0, rend::BM_COLOR, colorOp);
+                M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+                M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_TEXTURE);
+                M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_PREV);
+            }
+            m_lastState = RenderType;
+        }
+
+        unsigned const* curCell = cellsPerTex.m_data;
+        int numCells = cellsPerTex.m_numItems;
+        int const ls = 4 * m_owner->m_level->land_size;
+        // NOTE: the UV tables are read as [angle][25][2] (200 bytes an angle), not as the
+        // [2][25][4] the header declares.
+        float const* const uvBase = &m_uvForAngles[0][0][0];
+        float const* const alphaUvBase = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][0];
+        // NOTE: a m_clampCells of 0 or less never finishes.
+        while (numCells)
+        {
+            int numCellsToDraw = numCells;
+            int const clampCells = M3D_ENGINE_CFG.m_clampCells.GetI();
+            if (numCells < 0)
+            {
+                numCellsToDraw = 0;
+            }
+            if (numCellsToDraw > clampCells)
+            {
+                numCellsToDraw = clampCells;
+            }
+
+            rend::VertexXYZNCT2* vert = m_dummyVB;
+            int vofs = 0;
+            int realCellsToDraw = numCellsToDraw;
+            for (int i = 0; i < numCellsToDraw; ++i, ++curCell)
+            {
+                unsigned const cell = *curCell;
+                int const tx = cell & 0xFF;
+                int const tz = (cell >> 8) & 0xFF;
+                int const corner = (static_cast<int>(cell) >> 24) & 0xF;
+                bool const alphaCorner = corner && specialMapper[corner].m_maskindex;
+                // The first pass takes the plain tiles, the others only the alpha corners.
+                if (RenderType == RT_FIRSTPASSLIGHT)
+                {
+                    if (alphaCorner)
+                    {
+                        --realCellsToDraw;
+                        continue;
+                    }
+                    ++m_firstpasscounter;
+                }
+                else
+                {
+                    m_passedCells[ls * tz + tx] = 1;
+                    if (!alphaCorner)
+                    {
+                        --realCellsToDraw;
+                        continue;
+                    }
+                    if (RenderType == RT_OTHERPASSES)
+                    {
+                        ++m_otherpasscounter;
+                    }
+                    else
+                    {
+                        ++m_firstpasscounter;
+                    }
+                }
+
+                float const* srcUv = uvBase;
+                float const* srcUv2 = nullptr;
+                if (RenderType == RT_OTHERPASSES)
+                {
+                    srcUv2 = alphaUvBase + 200 * (m_CurAlphaSet * 5 + specialMapper[corner].m_maskindex) + 50 * specialMapper[corner].m_rotate;
+                }
+
+                int const idx0 = 4 * tx + 4 * tz * (m_mapSize + 1);
+                float const* srcHeight = &m_heightMap[idx0];
+                unsigned const* srcColor = &m_colormap[idx0];
+                CVector const* srcNormal = &m_vnormal[idx0];
+                float xs[5];
+                xs[0] = static_cast<float>(4 * tx) * LAND_SCALE;
+                for (int k = 1; k < 5; ++k)
+                {
+                    xs[k] = xs[k - 1] + LAND_SCALE;
+                }
+                float z = static_cast<float>(4 * tz) * LAND_SCALE;
+
+                for (int row = 0; row < 5; ++row)
+                {
+                    // NOTE: the light pass writes no vertices, yet still draws whatever
+                    // m_dummyVB holds.
+                    if (RenderType != RT_LIGHTPASS)
+                    {
+                        for (int col = 0; col < 5; ++col)
+                        {
+                            rend::VertexXYZNCT2& v = vert[col];
+                            v.x = xs[col];
+                            v.y = srcHeight[col];
+                            v.z = z;
+                            // The normal goes out with y and z swapped.
+                            v.nx = srcNormal[col].x;
+                            v.ny = srcNormal[col].z;
+                            v.nz = srcNormal[col].y;
+                            v.c = srcColor[col];
+                            if (RenderType == RT_OTHERPASSES)
+                            {
+                                // Stage 0 samples the alpha mask, stage 1 the tile.
+                                v.tu0 = srcUv2[2 * col];
+                                v.tv0 = srcUv2[2 * col + 1];
+                                v.tu1 = srcUv[2 * col];
+                                v.tv1 = srcUv[2 * col + 1];
+                            }
+                            else
+                            {
+                                v.tu0 = srcUv[2 * col];
+                                v.tv0 = srcUv[2 * col + 1];
+                            }
+                        }
+                        vert += 5;
+                    }
+                    srcHeight += colorAdd;
+                    srcNormal += colorAdd;
+                    srcColor += colorAdd;
+                    srcUv += 10;
+                    if (srcUv2)
+                    {
+                        srcUv2 += 10;
+                    }
+                    z += LAND_SCALE;
+                }
+            }
+
+            int const numIndices = realCellsToDraw * m_lsNumIndices[0] - 3;
+            if (numIndices > 0)
+            {
+                void* dst = M3D_RENDERER->LockVbStreaming(vb, 25 * realCellsToDraw, vofs, nullptr);
+                memcpy(dst, m_dummyVB, sizeof(rend::VertexXYZNCT2) * 25 * realCellsToDraw);
+                M3D_RENDERER->UnlockVb(vb);
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(m_landIbConst[0], vofs);
+                M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, 25 * realCellsToDraw, 0, numIndices);
+            }
+            numCells -= numCellsToDraw;
+        }
     }
 
-    int Landscape::IsBackfaced(int, int, rend::Cull)
+    int Landscape::IsBackfaced(int xx, int yy, rend::Cull cull)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A5560
+        // Projects the 5x5 height samples of the 32 unit tile (xx, yy) and reports whether
+        // it faces away from the camera under the given cull mode.
+        CMatrix const mat = M3D_RENDERER->MatGet() * M3D_RENDERER->MatGetProj();
+        int const stride = m_mapSize + 1;
+        CVector cellVertsScr[25];
+        CVector* out = cellVertsScr;
+        for (int row = 0; row < 5; ++row)
+        {
+            float const* heights = &m_heightMap[(4 * yy + row) * stride + 4 * xx];
+            float const z = static_cast<float>(4 * yy + row) * 8.0f;
+            float x = static_cast<float>(4 * xx) * 8.0f;
+            for (int col = 0; col < 5; ++col, x += 8.0f)
+            {
+                float const h = heights[col];
+                // NOTE: the sample goes through the matrix as (x, z, height) rather than
+                // (x, height, z).
+                float const X = ((mat._31 * h + mat._11 * x) + mat._21 * z) + mat._41;
+                float const Y = ((mat._32 * h + mat._12 * x) + mat._22 * z) + mat._42;
+                float const Z = ((mat._33 * h + mat._13 * x) + mat._23 * z) + mat._43;
+                float const W = ((mat._34 * h + mat._14 * x) + mat._24 * z) + mat._44;
+                float const inv = 1.0f / W;
+                *out++ = CVector(X * inv, Y * inv, Z * inv);
+            }
+        }
+
+        // NOTE: only one triangle of each quad is tested.
+        for (int row = 0; row < 4; ++row)
+        {
+            for (int col = 0; col < 4; ++col)
+            {
+                CVector const& a = cellVertsScr[5 * row + col];
+                CVector const& b = cellVertsScr[5 * row + col + 1];
+                CVector const& c = cellVertsScr[5 * (row + 1) + col + 1];
+                float const area = (((a.y - b.y) * c.x + (b.y - c.y) * a.x) + (c.y - a.y) * b.x) * 0.5f;
+                if (cull == rend::M3DCULL_CW)
+                {
+                    if (!(area <= 0.0f))
+                    {
+                        return 0;
+                    }
+                }
+                else if (cull == rend::M3DCULL_CCW)
+                {
+                    if (!(area >= 0.0f))
+                    {
+                        return 0;
+                    }
+                }
+            }
+        }
+        return 1;
     }
 
     void Landscape::FreeTiles()
@@ -6787,12 +8896,14 @@ namespace m3d
 
     Landscape::VisibilityMode Landscape::GetCurVisMode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A4460
+        return m_curVisMode;
     }
 
-    void Landscape::SetCurVisMode(VisibilityMode)
+    void Landscape::SetCurVisMode(VisibilityMode visMode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A4450
+        m_curVisMode = visMode;
     }
 
     void Landscape::DrawNonTransformGeom(dxGeom* geom)

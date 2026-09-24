@@ -963,54 +963,38 @@ namespace m3d
 
         int Wnd::RemoveChildForce(Object* obj)
         {
-            // TODO: generated code
-            auto* w = dynamic_cast<Wnd*>(obj);
-            // Reset suspension flags
+            // RVA 0xA12590 - RemoveChild without the veto.
+            // Sets m_bSuspendedParentUnlink on every window below root (not on root itself). The
+            // shipped code treats every child as a Wnd without checking.
+            auto const setSuspendedParentUnlinkOnSubtree = [](Wnd* root, bool value)
+            {
+                std::vector<Object*> stack;
+                stack.push_back(root);
+                while (!stack.empty())
+                {
+                    Object* current = stack.back();
+                    stack.pop_back();
+                    for (Object* child = current->GetFirstChild(); child; child = child->GetNextSibling())
+                    {
+                        static_cast<Wnd*>(child)->m_bSuspendedParentUnlink = value;
+                        if (child->GetFirstChild())
+                        {
+                            stack.push_back(child);
+                        }
+                    }
+                }
+            };
+
+            Wnd* const w = static_cast<Wnd*>(obj);
             w->m_bSuspendedUnlink = false;
             w->m_bSuspendedParentUnlink = false;
-
-            // Create a stack for depth-first traversal of child hierarchy
-            std::vector<ui::Wnd*> childStack;
-            childStack.push_back(w);
-
-            // Process all children in depth-first order
-            while (!childStack.empty())
-            {
-                // Get the next window from stack
-                ui::Wnd* currentWnd = childStack.back();
-                childStack.pop_back();
-
-                // Traverse all siblings of current window
-                ui::Wnd* child = dynamic_cast<Wnd*>(currentWnd->GetFirstChild());
-                while (child != nullptr)
-                {
-                    // Reset parent unlink suspension flag
-                    child->m_bSuspendedParentUnlink = false;
-
-                    // If this child has children, add it to stack for processing
-                    if (child->GetFirstChild() != nullptr)
-                    {
-                        childStack.push_back(child);
-                    }
-
-                    // Move to next sibling
-                    child = dynamic_cast<Wnd*>(child->GetNextSibling());
-                }
-            }
-
-            // Notify window station about removal
+            setSuspendedParentUnlinkOnSubtree(w, false);
             m_wndStation->OnRemoveWnd(this, w);
-
-            // Actually unlink the child from parent
             UnlinkChild(w);
-
-            // If this window is part of the window station hierarchy,
-            // notify the removed window about being removed from station
             if (this == m_wndStation || IsChildOf(m_wndStation))
             {
                 w->OnAfterRemoveFromWndStation();
             }
-
             return 1;
         }
 
@@ -1510,102 +1494,50 @@ namespace m3d
 
         int Wnd::RemoveChild(Object* w)
         {
-            // TODO: generated code
-            ui::Wnd* targetWnd = (ui::Wnd*)w;
-            bool canRemove = false;
+            // RVA 0xA12370 - a window in the station may veto its removal (typically to play its
+            // hide animation first). It then stays linked, marked as suspended, and its subtree
+            // is marked as having a suspended parent; the station unlinks it later.
 
-            // Check if we can remove from WndStation
-            if (this != GetStation() && !IsChildOf(GetStation()))
+            // Sets m_bSuspendedParentUnlink on every window below root (not on root itself). The
+            // shipped code treats every child as a Wnd without checking.
+            auto const setSuspendedParentUnlinkOnSubtree = [](Wnd* root, bool value)
             {
-                canRemove = true;
-            }
-            else
-            {
-                // Call virtual function to check if removal is allowed
-                if ((targetWnd->OnBeforeRemoveFromWndStation() & 1) != 0)
-                {
-                    canRemove = true;
-                }
-                else
-                {
-                    // Removal not allowed - suspend unlinking for this window and its children
-                    targetWnd->m_bSuspendedUnlink = true;
-
-                    std::vector<ui::Wnd*> stack;
-                    stack.push_back(targetWnd);
-
-                    // Traverse children and mark them as suspended
-                    while (!stack.empty())
-                    {
-                        ui::Wnd* current = stack.back();
-                        stack.pop_back();
-
-                        // Process all children
-                        ui::Wnd* child = (ui::Wnd*)current->GetFirstChild();
-                        while (child != nullptr)
-                        {
-                            child->m_bSuspendedParentUnlink = true;
-
-                            // If child has children, add to stack
-                            if (child->GetFirstChild() != nullptr)
-                            {
-                                stack.push_back(child);
-                            }
-
-                            child = (ui::Wnd*)child->GetNextSibling();
-                        }
-                    }
-                    return 0;
-                }
-            }
-
-            // Proceed with removal
-            if (canRemove)
-            {
-                targetWnd->m_bSuspendedUnlink = false;
-                targetWnd->m_bSuspendedParentUnlink = false;
-
-                std::vector<ui::Wnd*> stack;
-                stack.push_back(targetWnd);
-
-                // Traverse and process all descendants
+                std::vector<Object*> stack;
+                stack.push_back(root);
                 while (!stack.empty())
                 {
-                    ui::Wnd* current = stack.back();
+                    Object* current = stack.back();
                     stack.pop_back();
-
-                    // Process all children of current node
-                    ui::Wnd* child = (ui::Wnd*)current->GetFirstChild();
-                    while (child != nullptr)
+                    for (Object* child = current->GetFirstChild(); child; child = child->GetNextSibling())
                     {
-                        // Clear some flag (based on the original BYTE1(i[10].m_name.m_charPtr) = 0)
-                        // This appears to be resetting a flag on the child
-                        child->m_bSuspendedUnlink = false;  // Simplified interpretation
-
-                        // If child has children, add to stack
-                        if (child->GetFirstChild() != nullptr)
+                        static_cast<Wnd*>(child)->m_bSuspendedParentUnlink = value;
+                        if (child->GetFirstChild())
                         {
                             stack.push_back(child);
                         }
-
-                        child = (ui::Wnd*)child->GetNextSibling();
                     }
                 }
+            };
 
-                // Notify WndStation and perform actual unlinking
-                GetStation()->OnRemoveWnd(this, targetWnd);
-                Object::UnlinkChild(targetWnd);
-
-                // Call post-removal callback if needed
-                if (canRemove)
-                {
-                    targetWnd->OnAfterRemoveFromWndStation();
-                }
-
-                return 1;
+            Wnd* const targetWnd = static_cast<Wnd*>(w);
+            bool const inStation = this == m_wndStation || IsChildOf(m_wndStation);
+            if (inStation && (targetWnd->OnBeforeRemoveFromWndStation() & 1) == 0)
+            {
+                targetWnd->m_bSuspendedUnlink = true;
+                setSuspendedParentUnlinkOnSubtree(targetWnd, true);
+                return 0;
             }
 
-            return 0;
+            targetWnd->m_bSuspendedUnlink = false;
+            targetWnd->m_bSuspendedParentUnlink = false;
+            setSuspendedParentUnlinkOnSubtree(targetWnd, false);
+            m_wndStation->OnRemoveWnd(this, targetWnd);
+            UnlinkChild(targetWnd);
+            if (inStation)
+            {
+                targetWnd->OnAfterRemoveFromWndStation();
+            }
+            return 1;
         }
 
         TextFormatFlags Wnd::GetFormatMode() const

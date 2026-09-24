@@ -3627,7 +3627,7 @@ namespace ai
 
     void Vehicle::SetGamePositionOnGround(CVector const& pos, bool bWithCollisions, bool bWithWater)
     {
-        // TODO: generated code
+        // RVA 0x5E09D0
         CVector normal = {0.0, 1.0, 0.0};  // Default up vector
         CVector hoverOffset = {0.0, 0.0, 0.0};
 
@@ -3657,39 +3657,23 @@ namespace ai
         // Step 3: Get current vehicle rotation for reference
         Quaternion currentRotation = GetRotation();
 
-        // Step 4: Calculate hover height based on wheel geometry
-        // Find the first valid wheel to determine appropriate hover height
-        float hoverHeight = 0.0f;
-        bool foundValidWheel = false;
-
-        for (auto const& wheelInfo : m_wheels)
+        // Step 4: the hover height comes from the first wheel slot that holds a wheel: its radius
+        // below the wheel's mount point, plus 0.1. Without wheels, half the vehicle's height.
+        float hoverHeight;
+        auto wheelInfo = m_wheels.begin();
+        while (wheelInfo != m_wheels.end() && !wheelInfo->GetWheel())
         {
-            // Check if this wheel has all required components
-            if (wheelInfo.GetWheel() && wheelInfo.GetWheel()->GetPhysicBody() &&
-                !wheelInfo.GetWheel()->GetPhysicBody()->m_pGeoms.empty() &&
-                wheelInfo.GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom())
-            {
-                // Get the wheel's sphere geometry to determine radius
-                ai::Sphere* wheelSphere =
-                    dynamic_cast<ai::Sphere*>(wheelInfo.GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom());
-
-                if (wheelSphere)
-                {
-                    float wheelRadius = wheelSphere->GetRadius();
-
-                    // Calculate hover height: wheel radius minus initial Y position plus small offset
-                    // This positions the vehicle so wheels touch the ground at their initial positions
-                    hoverHeight = wheelRadius - wheelInfo.m_initialPos.y + 0.1f;
-                    foundValidWheel = true;
-                    break;
-                }
-            }
+            ++wheelInfo;
         }
-
-        // Fallback: if no valid wheels found, use vehicle size
-        if (!foundValidWheel)
+        if (wheelInfo != m_wheels.end())
         {
-            hoverHeight = m_size.y * 0.5f;  // Use half vehicle height as reasonable default
+            // NOTE: the geometry is assumed to be a sphere without a type check.
+            auto* wheelSphere = static_cast<ai::Sphere*>(wheelInfo->GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom());
+            hoverHeight = static_cast<float>(double(wheelSphere->GetRadius()) - wheelInfo->m_initialPos.y + double(0.1f));
+        }
+        else
+        {
+            hoverHeight = m_size.y * 0.5f;
         }
 
         hoverOffset.y = hoverHeight;
@@ -3697,8 +3681,11 @@ namespace ai
         // Step 5: Get terrain surface normal (unless on water)
         if (!isOnWater)
         {
-            CVector terrainNormal = ai::pServer->GetWorld()->GetLandscape().getNormal(groundPos.x, groundPos.z);
-            normal = terrainNormal;
+            // The landscape reports its normal with "up" in z; swap it into the world's y-up frame.
+            // NOTE: getNormal's out-of-range fallback (0, 1, 0) is already y-up, so after the swap
+            // it lies flat, (0, 0, 1), as in the shipped code.
+            CVector const terrainNormal = ai::pServer->GetWorld()->GetLandscape().getNormal(groundPos.x, groundPos.z);
+            normal = CVector(terrainNormal.x, terrainNormal.z, terrainNormal.y);
         }
 
         // Step 6: Calculate vehicle orientation based on ground surface
@@ -3706,8 +3693,6 @@ namespace ai
 
         // Project the forward direction onto the ground plane defined by the surface normal
         CVector projectedForwardDir = ai::ProjectVectorOntoPlane(normal, vehicleForwardDir);
-
-        // TODO: check this!!!!
 
         // Only update orientation if the projected direction is significant
         float projectedDirLengthSq =

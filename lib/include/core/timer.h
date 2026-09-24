@@ -3,6 +3,7 @@
 namespace m3d
 {
     class Application;
+    class Landscape;
 
     namespace cmn
     {
@@ -10,6 +11,8 @@ namespace m3d
         {
             // Application::OneFrame reads the frame statistics directly.
             friend class m3d::Application;
+            // Landscape::DrawWaterLayer reads the current time without notching it.
+            friend class m3d::Landscape;
 
         public:
             Timer();

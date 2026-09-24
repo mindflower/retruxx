@@ -332,7 +332,8 @@ int TalkWithNpcDlg::GameDataSetup()
                 ref_ptr<m3d::ui::Wnd>(static_cast<m3d::ui::Wnd*>(m_wndConversation.get())), 37, true, false);
             M3D_APP->m_pInterfaceManager->AddWindowById(
                 ref_ptr<m3d::ui::Wnd>(static_cast<m3d::ui::Wnd*>(m_wndNpcImage.get())), 87, true, false);
-            m_wndConversation->SetStyle(m_wndConversation->GetStyle() | 0x100000u);
+            m_wndTopPanel->SetStyle(m_wndTopPanel->GetStyle() | 0x100000u);
+            m_wndBottomPanel->SetStyle(m_wndBottomPanel->GetStyle() | 0x100000u);
             FillPanels();
             m_gameDataFlags |= 1u;
         }
@@ -572,11 +573,14 @@ void TalkWithNpcDlg::FillPanels()
             dst->AddChild(child);
             dst->MoveChildToFirstPosition(child);
 
+            // Re-express the child's origin relative to its new panel. NOTE: the shipped code
+            // adjusts m_bounds only; m_baseOrigin (the rest position the show/hide slide
+            // animations return to) keeps the old dialog-relative value.
             BoundsBase<float> b = child->GetBounds();
             BoundsBase<float> const dstB = dst->GetBounds();
             b.x0 -= dstB.x0;
             b.y0 -= dstB.y0;
-            child->SetBounds(b, true);
+            child->SetBounds(b, false);
         }
         raw = next;
     }

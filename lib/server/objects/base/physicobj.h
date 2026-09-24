@@ -41,6 +41,10 @@ namespace ai
         friend class ::ContextModelWnd;
         // Vehicle reads other objects' intersection obstacles to size its pick-up and rescue checks.
         friend class Vehicle;
+        // PlasmaBunch's and Rocket's constructors mark themselves as physically enabled while their
+        // body stays off.
+        friend class PlasmaBunch;
+        friend class Rocket;
 
     protected:
         virtual ~PhysicObj() override /* 0x00 */;

@@ -4,62 +4,73 @@
 
 namespace ai
 {
-    class RocketPrototypeInfo : public ShellPrototypeInfo
+    class RocketPrototypeInfo : public ai::ShellPrototypeInfo
     {
     public:
-        virtual Obj* CreateTargetObject() const;
+        /* 0x0080 */ float m_velocity;
+        /* 0x0084 */ float m_acceleration;
+        /* 0x0088 */ float m_minTurningRadius;
+        /* 0x008c */ float m_flyTime;
+        /* 0x0090 */ int m_BlastWavePrototypeId;
         RocketPrototypeInfo();
-        virtual void PostLoad();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual void PostLoad() override /* 0x00 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
 
     private:
-        float m_velocity;
-        float m_acceleration;
-        float m_minTurningRadius;
-        float m_flyTime;
-        int m_BlastWavePrototypeId;
-        CStr m_BlastWavePrototypeName;
-    };
+        /* 0x0094 */ CStr m_BlastWavePrototypeName;
+    }; /* size: 0x00a0 */
 
-    class Rocket : public Shell
+    static_assert(sizeof(RocketPrototypeInfo) == 0x00a0);
+
+    // A homing shell: it accelerates up to its top speed and, while it has a target, turns towards
+    // it along a circle no tighter than its minimum turning radius.
+    class Rocket : public ai::Shell
     {
+        friend class RocketPrototypeInfo;
         // MinePusher::_LaunchShells stores the direction a mine was dropped in directly.
         friend class MinePusher;
-
-    public:
-        virtual RocketPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        float GetVelocity() const ;
-        void SetInitialVelocity(CVector const &);
-        Rocket(RocketPrototypeInfo const &);
-        virtual void Update(float,unsigned int);
-        static m3d::Class * GetBaseClass();
-        void CreateBlastWave() const ;
-        virtual void Remove();
-        void setWithAngleLimit(bool);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        void SetInitialDirection(CVector const &);
-        virtual m3d::Class * GetClass() const ;
+        // RocketLauncher::_LaunchShells sets the target, direction and angle limit directly.
+        friend class RocketLauncher;
 
     protected:
-        virtual ~Rocket();
+        virtual ~Rocket() override /* 0x00 */;
 
     protected:
-        virtual m3d::Object * Clone();
-        static m3d::Object * CreateObject();
+        // NOTE: private in the PDB; protected here because Mine derives from Rocket.
+        Rocket(const ai::RocketPrototypeInfo& prototypeInfo);
+        Rocket(const ai::Rocket&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
         RT_CLASS_DECLARE(Rocket);
+        virtual const ai::RocketPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        /* 0x0150 */ int m_targetObjId;
+        float GetVelocity() const;
+        virtual void Remove() override /* 0x00 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        void SetInitialDirection(const CVector& direction);
+        void SetInitialVelocity(const CVector& initVel);
+        void CreateBlastWave() const;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        bool getWithAngleLimit() const;
+        void setWithAngleLimit(bool value);
 
     private:
-        int m_targetObjId;
-        //NumericInRangeRegenerating<float> m_velocity;
-        //NumericInRangeRegenerating<float> m_lifeTime;
-        float m_minTurningRadius;
-        CVector m_initialDirection;
-        CVector m_initVelDir;
-        float m_initVelValue;
-        bool m_withAngleLimit;
-        int m_numCircles;
-    };
+        /* 0x0154 */ ai::NumericInRangeRegenerating<float> m_velocity;
+        /* 0x022c */ ai::NumericInRangeRegenerating<float> m_lifeTime;
+        /* 0x0304 */ float m_minTurningRadius;
+        /* 0x0308 */ CVector m_initialDirection;
+        /* 0x0314 */ CVector m_initVelDir;
+        /* 0x0320 */ float m_initVelValue;
+        /* 0x0324 */ bool m_withAngleLimit;
+        /* 0x0325 */ char Padding_336[3];
+        /* 0x0328 */ int m_numCircles;
+    }; /* size: 0x032c */
+
+    static_assert(sizeof(Rocket) == 0x032c);
 }

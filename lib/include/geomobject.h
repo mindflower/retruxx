@@ -39,6 +39,8 @@ namespace m3d
 
     class GeomObject : public m3d::Object
     {
+        friend class Landscape;
+
     protected:
         GeomObject();
         GeomObject(const m3d::GeomObject& rhs);

@@ -8,6 +8,8 @@
 
 #include "skelmodel.h"
 #include "geoms/ray.h"
+
+class Segment;
 #include "scene/nodes/sgnode.h"
 #include "server/dynamicscene.h"
 
@@ -37,6 +39,7 @@ namespace ai
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
     CVector ProjectVectorOntoPlane(CVector const&, CVector const&);
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);
+    int TraceSegment(Segment const& segment, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact);
     bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
     bool CollideGeom(ai::Geom const& testGeom, bool dontCollideWithLittle, bool dontCollideWithPlayer,
                      bool dontCollideWithWater, bool dontCollideWithShells);

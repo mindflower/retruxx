@@ -5,6 +5,7 @@ target_sources(retruxx_lib PRIVATE
     camera.cpp
     coremath.cpp
     geom2d.cpp
+    segment.cpp
     matrix.cpp
     obb.cpp
     plane.cpp

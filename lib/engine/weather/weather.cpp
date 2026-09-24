@@ -6,6 +6,8 @@
 #include "core/timer.h"
 #include "math/matrix.h"
 
+#include <cmath>
+
 CVector fullColor(255.0, 255.0, 255.0);
 CVector halfColor(128.0, 128.0, 128.0);
 CVector quarterColor(64.0, 64.0, 64.0);
@@ -27,9 +29,13 @@ namespace m3d
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Weather);
 
-    void WindInfo::Write(ref_ptr<cmn::XmlNode>)
+    void WindInfo::Write(ref_ptr<cmn::XmlNode> node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B1A30
+        node->SetAttribute("windMaxVel", CStr(m_maxVel).c_str());
+        node->SetAttribute("windMinVel", CStr(m_minVel).c_str());
+        node->SetAttribute("windChangeVelTime", CStr(m_changeVelTime).c_str());
+        node->SetAttribute("windChangeDirTime", CStr(m_changeDirTime).c_str());
     }
 
     void WindInfo::Read(ref_ptr<cmn::XmlNode> node)
@@ -61,77 +67,71 @@ namespace m3d
 
     CVector const& WindInfo::GetCurWind() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9500D0
+        return m_curValue;
     }
 
     CVector const& WindInfo::GetDeltaVel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9500E0
+        return m_deltaValue;
     }
 
     void WindInfo::CalculateCurWind(float dt)
     {
-        // TODO: check this
-        auto prevVel = this->m_prevValue;
-        auto p_m_curValue = &this->m_curValue;
-        auto y = this->m_curValue.y;
-        auto z = this->m_curValue.z;
-        this->m_prevValue.x = this->m_curValue.x;
-        auto v8 = m_DeltaVelChanged + dt;
-        auto v9 = v8 <= this->m_changeVelTime;
-        this->m_prevValue.y = y;
-        this->m_prevValue.z = z;
-        this->m_DeltaVelChanged = v8;
-        this->m_DeltaDirChanged = m_DeltaDirChanged + dt;
-        if (!v9)
-        {
-            this->m_DeltaVelChanged = v8 - this->m_changeVelTime;
-            auto v10 = rand();
-            auto v11 = p_m_curValue->z;
-            auto v12 = (((this->m_maxVel - this->m_minVel) * (10000 * v10 / 0x8000)) * 0.000099999997) + this->m_minVel;
-            auto dta = 1.0
-                / sqrt(p_m_curValue->x * p_m_curValue->x + p_m_curValue->y * p_m_curValue->y + v11 * v11 + 0.00000011920929);
-            auto v13 = (p_m_curValue->y * dta) * v12;
-            p_m_curValue->x = (dta * p_m_curValue->x) * v12;
-            p_m_curValue->y = v13;
-            p_m_curValue->z = (v11 * dta) * v12;
-        }
-        auto v14 = this->m_DeltaDirChanged;
-        if (v14 > this->m_changeDirTime)
-        {
-            this->m_DeltaDirChanged = v14 - this->m_changeDirTime;
-            auto v15 = rand();
-            auto x = p_m_curValue->x;
+        // RVA 0x7B1C10
+        CVector const prevVel = m_prevValue;
+        m_prevValue = m_curValue;
+        m_DeltaVelChanged = m_DeltaVelChanged + dt;
+        m_DeltaDirChanged = m_DeltaDirChanged + dt;
 
-            CMatrix rot;
-            rot.zero();
-            auto v17 = (10000 * v15 / 0x8000) * 0.00031415926 - 1.5707964;
-            auto dtb = sin(v17);
-            auto v25 = cos(v17);
-            auto v18 = v25 * p_m_curValue->z;
-            auto v19 = ((p_m_curValue->x * rot._12) + (rot._32 * p_m_curValue->z)) + p_m_curValue->y;
-            auto v20 = p_m_curValue->x * (0.0 - dtb);
-            auto v21 = rot._23 * p_m_curValue->y;
-            p_m_curValue->x = ((x * v25) + (rot._21 * p_m_curValue->y)) + (dtb * p_m_curValue->z);
-            p_m_curValue->y = v19;
-            p_m_curValue->z = (v20 + v21) + v18;
+        if (m_DeltaVelChanged > m_changeVelTime)
+        {
+            // A new speed in [min, max] in 1/10000 steps; the direction is kept.
+            m_DeltaVelChanged = m_DeltaVelChanged - m_changeVelTime;
+            int const r = 10000 * rand() / 0x8000;
+            float const speed = (m_maxVel - m_minVel) * static_cast<float>(r) * 0.000099999997f + m_minVel;
+
+            // The length is taken on the x87 stack; FLT_EPSILON keeps a zero vector from dividing by zero.
+            double const lenSq = double(m_curValue.x) * m_curValue.x + double(m_curValue.y) * m_curValue.y +
+                double(m_curValue.z) * m_curValue.z + double(1.1920929e-7f);
+            float const invLen = static_cast<float>(1.0 / std::sqrt(lenSq));
+            m_curValue.x = invLen * m_curValue.x * speed;
+            m_curValue.y = m_curValue.y * invLen * speed;
+            m_curValue.z = m_curValue.z * invLen * speed;
         }
-        auto v22 = p_m_curValue->z - prevVel.z;
-        auto v23 = p_m_curValue->y - prevVel.y;
-        auto p_m_deltaValue = &this->m_deltaValue;
-        p_m_deltaValue->x = p_m_curValue->x - prevVel.x;
-        p_m_deltaValue->y = v23;
-        p_m_deltaValue->z = v22;
+
+        if (m_DeltaDirChanged > m_changeDirTime)
+        {
+            // Turns the wind about the vertical axis by a random angle in [-pi/2, pi/2). The shipped
+            // code multiplies by a memset-zeroed CMatrix whose off-axis entries stay zero, so only the
+            // yaw terms below survive.
+            m_DeltaDirChanged = m_DeltaDirChanged - m_changeDirTime;
+            int const r = 10000 * rand() / 0x8000;
+            double const angle = r * double(0.00031415926f) - double(1.5707964f);
+            float const s = static_cast<float>(std::sin(angle));
+            float const c = static_cast<float>(std::cos(angle));
+
+            CVector const v = m_curValue;
+            m_curValue.x = v.x * c + s * v.z;
+            m_curValue.z = v.x * (0.0f - s) + c * v.z;
+        }
+
+        m_deltaValue.x = m_curValue.x - prevVel.x;
+        m_deltaValue.y = m_curValue.y - prevVel.y;
+        m_deltaValue.z = m_curValue.z - prevVel.z;
     }
 
     CStr const& Weather::GetWeatherName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D5F0
+        return m_Name;
     }
 
-    bool Weather::GetShadowVisibility(unsigned) const
+    bool Weather::GetShadowVisibility(unsigned curDayTime) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D610
+        return m_shadowVisibility[curDayTime];
     }
 
     Class* Weather::GetBaseClass()
@@ -139,32 +139,36 @@ namespace m3d
         return RT_CLASS_LOCAL(Object);
     }
 
-    CVector const& Weather::CurrentColor(unsigned) const
+    CVector const& Weather::CurrentColor(unsigned Item) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C0470
+        return m_currentColors[Item];
     }
 
-    // TODO: check this
+    // RVA 0x7B1310
     Weather::~Weather() = default;
 
     float Weather::GetWaveHBig() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C04B0
+        return m_waterHeightBig;
     }
 
-    char const* Weather::ColorTypeName(unsigned) const
+    char const* Weather::ColorTypeName(unsigned i) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B12F0
+        return m_colorTypesNames[i];
     }
 
     void Weather::ChangeCloudTexture(CStr&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B1300 - an empty stub in the shipped build.
     }
 
     Object* Weather::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B3560
+        return new Weather();
     }
 
     int Weather::UpdateColors(ColorItems colorItem, ColorTypes curTime)
@@ -177,14 +181,71 @@ namespace m3d
         return 1;
     }
 
-    void Weather::SetWeatherName(CStr const&)
+    void Weather::SetWeatherName(CStr const& Name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65DA20
+        m_Name = Name;
     }
 
-    int Weather::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int Weather::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B2D50 - the mirror of ReadFromXmlNode.
+        node->SetAttribute("name", m_Name.c_str());
+
+        for (int i = 0; i < CI_NUM_COLORITEMS; ++i)
+        {
+            ref_ptr<cmn::XmlNode> itemNode = file->CreateNode(cmn::XML_NODE_ELEMENT, CStr(m_colorItemsNames[i]).c_str());
+            for (int j = 0; j < CT_NUM_COLORTYPES; ++j)
+            {
+                CStr const typeName = CStr(m_colorTypesNames[j]) + CStr("Color");
+                itemNode->SetAttribute(typeName.c_str(), CStr(m_colorSets[i][j]).c_str());
+            }
+            node->AddChild(itemNode);
+        }
+
+        ref_ptr<cmn::XmlNode> postEffectsNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "PostEffect");
+        for (unsigned i = 0; i < CT_NUM_COLORTYPES; ++i)
+        {
+            postEffectsNode->SetAttribute(m_colorTypesNames[i], m_PostEffectName[i].c_str());
+        }
+        node->AddChild(postEffectsNode);
+
+        ref_ptr<cmn::XmlNode> shadowVisibilityNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "ShadowVisibility");
+        for (unsigned i = 0; i < CT_NUM_COLORTYPES; ++i)
+        {
+            shadowVisibilityNode->SetAttribute(m_colorTypesNames[i], CStr(static_cast<int>(m_shadowVisibility[i])).c_str());
+        }
+        node->AddChild(shadowVisibilityNode);
+
+        ref_ptr<cmn::XmlNode> shadowTransparencyNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "ShadowTransparency");
+        for (unsigned i = 0; i < CT_NUM_COLORTYPES; ++i)
+        {
+            shadowTransparencyNode->SetAttribute(m_colorTypesNames[i], CStr(m_shadowTransparency[i]).c_str());
+        }
+        node->AddChild(shadowTransparencyNode);
+
+        ref_ptr<cmn::XmlNode> cloudsSpeedNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "cloudsSpeed");
+        for (unsigned i = 0; i < CT_NUM_COLORTYPES; ++i)
+        {
+            cloudsSpeedNode->SetAttribute(m_colorTypesNames[i], CStr(m_cloudsSpeed[i]).c_str());
+        }
+        node->AddChild(cloudsSpeedNode);
+
+        node->SetAttribute("skyDomeFactor", CStr(m_weatherSkyDomeFactor).c_str());
+        node->SetAttribute("waterSpeed", CStr(m_waterSpeed).c_str());
+        node->SetAttribute("waterWaveHBig", CStr(m_waterHeightBig).c_str());
+        node->SetAttribute("waterWaveHSmall", CStr(m_waterHeightSmall).c_str());
+        node->SetAttribute("waterWaveSizeBig", CStr(m_waterSizeBig).c_str());
+        node->SetAttribute("waterWaveSizeSmall", CStr(m_waterSizeSmall).c_str());
+        node->SetAttribute("waterCourseAngle", CStr(m_waterCourseAng).c_str());
+        node->SetAttribute("waterSpecularM", CStr(m_waterSpecularM).c_str());
+        node->SetAttribute("waterSpecularS", CStr(m_waterSpecularS).c_str());
+
+        // The wind attributes are written after the node is already attached.
+        ref_ptr<cmn::XmlNode> windInfoNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "WindInfo");
+        node->AddChild(windInfoNode);
+        m_wind.Write(windInfoNode);
+        return 1;
     }
 
     int Weather::TurnOffEffects()
@@ -192,14 +253,24 @@ namespace m3d
         return 1;
     }
 
-    int Weather::WriteDetailToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int Weather::WriteDetailToXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B18E0 - the mirror of ReadDetailFromXmlNode: one ColorType per time of day.
+        for (unsigned i = 0; i < CT_NUM_COLORTYPES; ++i)
+        {
+            ref_ptr<cmn::XmlNode> colorTypeNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "ColorType");
+            colorTypeNode->SetAttribute("name", m_colorTypesNames[i]);
+            colorTypeNode->SetAttribute("LightmapTexture", m_lightmapTextureName[i].c_str());
+            colorTypeNode->SetAttribute("CloudsTexture", m_cloudsTextureName[i].c_str());
+            node->AddChild(colorTypeNode);
+        }
+        return 1;
     }
 
     float Weather::GetWaveSizeBig() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C04D0
+        return m_waterSizeBig;
     }
 
     int Weather::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -285,22 +356,26 @@ namespace m3d
 
     float Weather::GetWaterSpecularS() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C0500
+        return m_waterSpecularS;
     }
 
     float Weather::GetWaterSpecularM() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C04F0
+        return m_waterSpecularM;
     }
 
-    CStr const& Weather::GetLightmapTexName(unsigned) const
+    CStr const& Weather::GetLightmapTexName(unsigned curDayTime) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D620
+        return m_lightmapTextureName[curDayTime];
     }
 
     Object* Weather::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B3530
+        return new Weather(*this);
     }
 
     void Weather::SetUp()
@@ -328,17 +403,20 @@ namespace m3d
 
     WindInfo const& Weather::GetWindInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9500F0
+        return m_wind;
     }
 
     float Weather::GetWaterSpeed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C0490
+        return m_waterSpeed;
     }
 
     float Weather::GetWaterCourseAngle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C04E0
+        return m_waterCourseAng;
     }
 
     int Weather::Update(float amount, int)
@@ -388,24 +466,28 @@ namespace m3d
         }
     }
 
-    char const* Weather::ColorItemName(unsigned) const
+    char const* Weather::ColorItemName(unsigned i) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B12E0
+        return m_colorItemsNames[i];
     }
 
     Class* Weather::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B1230
+        return RT_CLASS_LOCAL(Weather);
     }
 
     float Weather::GetWaveHSmall() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C04A0
+        return m_waterHeightSmall;
     }
 
-    CStr const& Weather::GetCloudsTexName(unsigned) const
+    CStr const& Weather::GetCloudsTexName(unsigned curDayTime) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D640
+        return m_cloudsTextureName[curDayTime];
     }
 
     void Weather::Release()
@@ -418,19 +500,23 @@ namespace m3d
         return 1;
     }
 
-    float Weather::GetShadowTransparency(unsigned) const
+    float Weather::GetShadowTransparency(unsigned curDayTime) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D600
+        return m_shadowTransparency[curDayTime];
     }
 
     float Weather::GetWaveSizeSmall() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C04C0
+        return m_waterSizeSmall;
     }
 
-    Weather::Weather(Weather const&)
+    Weather::Weather(Weather const&) : Object()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B1EC0 - NOTE: the copy constructor copies nothing. It only default-constructs the
+        // members, exactly like Weather(), so Clone() returns a blank weather with uninitialized
+        // floats and colours.
     }
 
     Weather::Weather()

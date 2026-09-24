@@ -421,8 +421,64 @@ namespace ai
         return 1;
     }
 
-    int CollideWheelAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
+    int CollideWheelAndWater(
+        m3d::Object* obj1,
+        m3d::Object* objWater,
+        dContact* contacts,
+        unsigned& numContacts,
+        bool reverse)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x892730 - the wheel keeps its normal ground contact; while it moves at 1 m/s or more
+        // it also gets a force and a water splash that follows it.
+        Wheel* objWheel = static_cast<Wheel*>(obj1);
+        CollideWheelDefault(objWheel, objWater, contacts, numContacts, reverse);
+
+        CVector const vel = objWheel->GetLinearVelocity();
+        if (1.0 > std::sqrt(double(vel.z) * vel.z + double(vel.y) * vel.y + double(vel.x) * vel.x))
+        {
+            return 0;
+        }
+
+        // NOTE: the force is the velocity scaled by the squared wheel radius and points along the
+        // motion, so the water pushes the wheel on rather than dragging it back.
+        double const radiusSq = double(objWheel->GetRadius()) * objWheel->GetRadius();
+        CVector const friction(
+            static_cast<float>(vel.x * radiusSq), static_cast<float>(vel.y * radiusSq), static_cast<float>(vel.z * radiusSq));
+        objWheel->AddForce(friction);
+
+        // Water uses splash type 2000; a splash left over from another surface is retired first.
+        if (objWheel->m_SplashType != 2000 && objWheel->m_SplashEffect)
+        {
+            std::vector<m3d::Object*> stack;
+            stack.push_back(objWheel->m_SplashEffect);
+            while (!stack.empty())
+            {
+                m3d::Object* current = stack.back();
+                stack.pop_back();
+                for (m3d::Object* child = current->GetFirstChild(); child; child = child->GetNextSibling())
+                {
+                    static_cast<m3d::SgNode*>(child)->CanBeFree();
+                    if (child->GetFirstChild())
+                    {
+                        stack.push_back(child);
+                    }
+                }
+            }
+            objWheel->m_SplashEffect->GetGraph()->InsertInRemoveIfFree(objWheel->m_SplashEffect);
+            objWheel->m_SplashEffect = nullptr;
+        }
+
+        CVector const contactPos(contacts->geom.pos[0], contacts->geom.pos[1], contacts->geom.pos[2]);
+        if (!objWheel->m_SplashEffect)
+        {
+            objWheel->m_SplashEffect = PhysicBody::CreateEffectNode(
+                CStr("ET_PS_WATERSPLASH"), contactPos, objWheel->GetRotation(), false, 1.0f);
+        }
+
+        objWheel->m_SplashEffect->SetOriginAbs(contactPos);
+        objWheel->m_SplashEffect->SetRotation(objWheel->GetRotation());
+        objWheel->m_SplashType = 2000;
+        objWheel->m_MakeSplash = true;
+        return 0;
     }
 }  // namespace ai

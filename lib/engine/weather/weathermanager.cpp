@@ -16,46 +16,101 @@
 
 namespace m3d
 {
-    int WeatherManager::DeleteWeather(unsigned)
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const char* m_globalTimeParamsNames[4] = { "sunriseTime", "dayTime", "sunsetTime", "nightTime" };
+    }
+
+    int WeatherManager::DeleteWeather(unsigned iWeatherIdx)
+    {
+        // RVA 0x65F5F0 - editor only; the last remaining weather cannot be deleted.
+        if (!m_bEdit)
+        {
+            return 1;
+        }
+        if (m_weatherStorage.empty())
+        {
+            return 0;
+        }
+        unsigned const count = m_weatherStorage.size();
+        if (iWeatherIdx >= count || count <= 1)
+        {
+            return 0;
+        }
+
+        unsigned const newActive = iWeatherIdx ? iWeatherIdx - 1 : 0;
+        // NOTE: the weather is only Release()d, never destroyed, and m_curWeatherStorage keeps its
+        // pointer. The next weather is activated while the deleted one is still in the storage.
+        m_weatherStorage[iWeatherIdx]->Release();
+        SetActiveWeather(newActive);
+        m_weatherStorage.erase(m_weatherStorage.begin() + iWeatherIdx);
+        return 1;
     }
 
     int WeatherManager::CreateSky()
     {
-        m_vbSky = M3D_APP->m_renderer->AddVb(rend::VERTEX_XYZCT2, 400, "Sky", 0);
-        m_ibSky = M3D_APP->m_renderer->AddIb(2166, false);
+        // RVA 0x65E740 - the sky dome is a 20x20 vertex grid (filled in by SetupSkyParams), drawn as
+        // 19x19 quads of two triangles each: 19 * 19 * 6 = 2166 indices.
+        int const GRID = 20;
+        m_vbSky = M3D_APP->m_renderer->AddVb(rend::VERTEX_XYZCT2, GRID * GRID, "Sky", 0);
+        m_ibSky = M3D_APP->m_renderer->AddIb((GRID - 1) * (GRID - 1) * 6, false);
         auto mem = static_cast<WORD*>(M3D_APP->m_renderer->LockIb(m_ibSky, 0, 0, 0));
-        //TODO: check this and refactor
-        auto v3 = 0;
-        auto v7 = 19;
-        do
+        for (int row = 0; row < GRID - 1; ++row)
         {
-            auto v4 = v3 + 21;
-            auto v5 = 19;
-            do
+            for (int col = 0; col < GRID - 1; ++col)
             {
-                *mem = v3;
-                mem[1] = v4;
-                mem[3] = v3;
-                mem[5] = v4;
-                mem[2] = v4 - 20 + 19;
-                mem[4] = v4 - 20;
+                WORD const base = static_cast<WORD>(row * GRID + col);
+                mem[0] = base;
+                mem[1] = base + GRID + 1;
+                mem[2] = base + GRID;
+                mem[3] = base;
+                mem[4] = base + 1;
+                mem[5] = base + GRID + 1;
                 mem += 6;
-                ++v3;
-                ++v4;
-                --v5;
-            } while (v5);
-            ++v3;
-            --v7;
-        } while (v7);
+            }
+        }
         M3D_APP->m_renderer->UnlockIb(m_ibSky);
         return 1;
     }
 
-    int WeatherManager::WriteToXmlFile(char const*)
+    int WeatherManager::WriteToXmlFile(char const* name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65EDE0 - the mirror of the Weather.xml half of ReadFromXmlFile. The per-level
+        // WeatherDetail.xml data (WriteDetailToXmlNode) is not written here.
+        ref_ptr<cmn::XmlFile> xmlFile = g_Kernel->CreateXmlFile();
+        ref_ptr<cmn::XmlNode> rootNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Weather");
+        ref_ptr<cmn::XmlNode> weatherCommonNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "WeatherCommonSets");
+
+        for (unsigned i = 0; i < GTP_NUM_PARAMS; ++i)
+        {
+            // The times are kept in seconds and written in hours.
+            weatherCommonNode->SetAttribute(
+                m_globalTimeParamsNames[i], CStr(GetGlobalTimeParam(i) * 0.00027777778f).c_str());
+        }
+        weatherCommonNode->SetAttribute("starsTexture", m_StarsTextureName.c_str());
+        rootNode->AddChild(weatherCommonNode);
+
+        for (unsigned i = 0; i < m_weatherStorage.size(); ++i)
+        {
+            ref_ptr<cmn::XmlNode> itemNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "WeatherItem");
+            itemNode->SetAttribute("class", m_weatherStorage[i]->GetClassNameA());
+            m_weatherStorage[i]->WriteToXmlNode(xmlFile, itemNode);
+            rootNode->AddChild(itemNode);
+        }
+        xmlFile->AddChild(rootNode);
+
+        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        if (fileStream->Open(name, fs::IStream::OPEN_WRITE))
+        {
+            xmlFile->Write(*fileStream);
+            fileStream->Close();
+        }
+        else
+        {
+            M3D_LOG_INFO("Could not save Weather.xml into file " + CStr(name));
+        }
+        // NOTE: returns 1 even when the file could not be opened.
+        return 1;
     }
 
     void WeatherManager::ChangeCloudsTexture()
@@ -70,9 +125,15 @@ namespace m3d
         M3D_RENDERER->SetTextureParameter(m_cloudTextureHandle, rend::TM_WRAP_T, 1);
     }
 
-    float WeatherManager::SetGlobalTimeParam(unsigned, float)
+    float WeatherManager::SetGlobalTimeParam(unsigned iParamIdx, float fValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D5B0 - returns the previous value, or 0 for an index out of range.
+        float const oldValue = GetGlobalTimeParam(iParamIdx);
+        if (iParamIdx < GTP_NUM_PARAMS)
+        {
+            m_globalTimeParams[iParamIdx] = fValue;
+        }
+        return oldValue;
     }
 
     m3d::rend::VertexXYZCT2 tmp_0[400];
@@ -207,9 +268,36 @@ namespace m3d
         return m_globalTimeParams[iParamIdx];
     }
 
-    int WeatherManager::LoadWeatherStateFromXMLNode(cmn::XmlFile*, cmn::XmlNode*)
+    int WeatherManager::LoadWeatherStateFromXMLNode(cmn::XmlFile*, cmn::XmlNode* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65FBC0 - restores the state SaveWeatherStateToXMLNode wrote into a save game.
+        CStr newWeatherName;
+        m3d::SafeStrAttrib(newWeatherName, xmlNode, "WeatherName");
+        SetActiveWeatherByName(newWeatherName);
+
+        int dayTime = GTP_SUNRISE_TIME;
+        m3d::SafeIntAttrib(dayTime, xmlNode, "DayTime");
+
+        GlobalTimeParams const oldDayTime = m_curDayTime;
+        m_curDayTime = static_cast<GlobalTimeParams>(dayTime);
+        for (int i = CI_SKY; i < CI_NUM_COLORITEMS; ++i)
+        {
+            m_currentWeather->UpdateColors(static_cast<ColorItems>(i), static_cast<ColorTypes>(m_curDayTime));
+        }
+
+        m_owner->UpdateSun();
+        ai::UpdateLights();
+
+        m_owner->m_isWeatherActual = m_owner->m_isWeatherActual && oldDayTime == m_curDayTime;
+        if (!m_owner->m_isWeatherActual)
+        {
+            ChangeLightmapTexture();
+            ChangeCloudsTexture();
+        }
+
+        M3D_APP->ReloadPostEffects();
+        M3D_APP->AddPostEffect(m_currentWeather->m_PostEffectName[m_curDayTime], 0.0f);
+        return 1;
     }
 
     int WeatherManager::UpdateDayTime()
@@ -422,9 +510,12 @@ namespace m3d
         m_owner = world;
     }
 
-    int WeatherManager::SaveWeatherStateToXMLNode(cmn::XmlFile*, cmn::XmlNode*)
+    int WeatherManager::SaveWeatherStateToXMLNode(cmn::XmlFile*, cmn::XmlNode* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D680
+        xmlNode->SetAttribute("WeatherName", m_currentWeather->m_Name.c_str());
+        xmlNode->SetAttribute("DayTime", CStr(static_cast<int>(m_curDayTime)).c_str());
+        return 1;
     }
 
     bool WeatherManager::GetShadowVisibilityFromWeather() const
@@ -439,11 +530,6 @@ namespace m3d
         for (int i = CI_SKY; i < CI_NUM_COLORITEMS; ++i)
             this->m_currentWeather->UpdateColors((ColorItems)i, (m3d::ColorTypes)this->m_curDayTime);
         return 1;
-    }
-
-    namespace
-    {
-        const char* m_globalTimeParamsNames[4] = { "sunriseTime", "dayTime", "sunsetTime", "nightTime" };
     }
 
     int WeatherManager::ReadFromXmlFile(char const* name)
@@ -607,9 +693,17 @@ namespace m3d
         M3D_RENDERER->ReleaseTexture(m_starsTexture);
     }
 
-    void WeatherManager::AddWeather(CStr const&, CStr const&)
+    void WeatherManager::AddWeather(CStr const& Name, CStr const& ClassName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65FFA0 - editor only.
+        if (m_bEdit)
+        {
+            // NOTE: an unknown class name makes New return null, which is dereferenced unchecked.
+            Weather* weather = static_cast<Weather*>(M3D_KERNEL->New(ClassName.c_str()));
+            weather->DefaultInitialize();
+            weather->m_Name = Name;
+            m_weatherStorage.push_back(weather);
+        }
     }
 
     unsigned WeatherManager::GetNumWeathers() const
@@ -621,28 +715,78 @@ namespace m3d
         return m_curWeatherStorage.size();
     }
 
-    char const* WeatherManager::GetGlobalTimeParamName(unsigned) const
+    char const* WeatherManager::GetGlobalTimeParamName(unsigned i) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65D740
+        return m_globalTimeParamsNames[i];
     }
 
-    void WeatherManager::SetActiveWeatherByName(CStr const&)
+    void WeatherManager::SetActiveWeatherByName(CStr const& name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65FA00
+        Weather* weather = GetWeatherByName(name);
+        if (weather)
+        {
+            if (m_currentWeather)
+            {
+                m_currentWeather->TurnOffEffects();
+            }
+            m_owner->m_isWeatherActual = m_currentWeather == weather;
+            m_currentWeather = weather;
+            weather->SetUp();
+        }
+        else
+        {
+            // NOTE: GetWeatherByName has already logged the same message.
+            M3D_LOG_INFO("Weather with name '" + name + CStr("' doesn't exists!!!"));
+        }
     }
 
-    void WeatherManager::ChangeStarsTexture(CStr&)
+    void WeatherManager::ChangeStarsTexture(CStr& Name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65E9F0
+        if (Name.c_str() && strlen(Name.c_str()))
+        {
+            M3D_RENDERER->ReleaseTexture(m_starsTexture);
+            m_StarsTextureName = Name;
+
+            CStr pathToTex = M3D_ENGINE_CFG.m_weather_PathToTextures.GetS();
+            pathToTex += Name;
+
+            m_starsTexture = M3D_RENDERER->AddTexture(pathToTex, 0);
+            M3D_RENDERER->SetTextureParameter(m_starsTexture, rend::TM_WRAP_S, 1);
+            M3D_RENDERER->SetTextureParameter(m_starsTexture, rend::TM_WRAP_T, 1);
+        }
     }
 
-    Weather* WeatherManager::GetWeather(unsigned)
+    Weather* WeatherManager::GetWeather(unsigned N)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65ED40
+        if (m_bEdit)
+        {
+            return m_weatherStorage[N];
+        }
+        return m_curWeatherStorage[N];
     }
 
-    Weather* WeatherManager::GetWeatherByName(CStr const&)
+    Weather* WeatherManager::GetWeatherByName(CStr const& name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x65F830
+        // NOTE: in edit mode the lookup overwrites the level's weather list with the full storage.
+        if (m_bEdit)
+        {
+            m_curWeatherStorage = m_weatherStorage;
+        }
+
+        for (Weather* weather : m_curWeatherStorage)
+        {
+            if (name == weather->m_Name)
+            {
+                return weather;
+            }
+        }
+
+        M3D_LOG_INFO("Weather with name '" + name + CStr("' doesn't exists!!!"));
+        return nullptr;
     }
 }

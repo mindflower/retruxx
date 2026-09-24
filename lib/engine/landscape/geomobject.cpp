@@ -49,17 +49,22 @@ namespace m3d
 
     Object* GeomObject::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E660
+        // NOTE: the copy constructor copies nothing, so the clone's members are left
+        // uninitialised.
+        return new GeomObject(*this);
     }
 
     PointBase<int> const& GeomObject::GetEndCell()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644C10
+        return m_endCell;
     }
 
     PointBase<int> const& GeomObject::GetStartCell()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644C00
+        return m_startCell;
     }
 
     Class* GeomObject::GetBaseClass()
@@ -71,12 +76,14 @@ namespace m3d
 
     Class* GeomObject::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E040
+        return RT_CLASS_LOCAL(GeomObject);
     }
 
     Object* GeomObject::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E870
+        return new GeomObject();
     }
 
     void GeomObject::SetGeom(dxGeom* geom)
@@ -90,9 +97,21 @@ namespace m3d
             dGeomDisable(this->m_geom);
     }
 
-    void GeomObject::SetEnabled(bool)
+    void GeomObject::SetEnabled(bool enabled)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E000
+        // Enabling is only honoured while the geom may be enabled; disabling always is.
+        if (enabled)
+        {
+            if (m_bMayBeEnabled)
+            {
+                dGeomEnable(m_geom);
+            }
+        }
+        else
+        {
+            dGeomDisable(m_geom);
+        }
     }
 
     void GeomObject::DecEnabledCellsCount()
@@ -126,9 +145,10 @@ namespace m3d
         return this->m_geom;
     }
 
-    void GeomObject::SetMayBeEnabled(bool)
+    void GeomObject::SetMayBeEnabled(bool bMayBeEbabled)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x644BF0
+        m_bMayBeEnabled = bMayBeEbabled;
     }
 
     GeomObject::GeomObject()
@@ -146,9 +166,10 @@ namespace m3d
         this->m_bMayBeEnabled = 1;
     }
 
-    GeomObject::GeomObject(GeomObject const&)
+    GeomObject::GeomObject(GeomObject const&) : Object()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E1D0 - NOTE: only the Object base is constructed; no member is copied
+        // or initialised.
     }
 
     GeomObjectLandscape::~GeomObjectLandscape() = default;

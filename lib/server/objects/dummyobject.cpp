@@ -8,6 +8,7 @@
 #include "base/prototypemanager.h"
 #include "ode/odecpp.h"
 #include "core/aiparam.h"
+#include "core/kernel.h"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(DummyObject, SetModelName)
 {
@@ -55,9 +56,15 @@ namespace ai
         m_propertiesMap["ModelName"] = 44;
     }
 
-    eGObjPropertySaveStatus DummyObject::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus DummyObject::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x803120
+        auto it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return SimplePhysicObj::GetPropertySaveStatus(id);
     }
 
     int DummyObject::GetPropertyId(char const* propName) const
@@ -111,9 +118,17 @@ namespace ai
         return RT_CLASS_LOCAL(DummyObject);
     }
 
-    CStr DummyObject::GetPropertyName(int) const
+    CStr DummyObject::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8034F0 - a linear search, since the map is keyed by name.
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return SimplePhysicObj::GetPropertyName(id);
     }
 
     DummyObjectPrototypeInfo const* DummyObject::GetPrototypeInfo() const
@@ -169,14 +184,24 @@ namespace ai
         SetScale(m_scale, true);
     }
 
-    void DummyObject::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void DummyObject::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x803400
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        SimplePhysicObj::GetPropertiesIDs(Props);
     }
 
-    void DummyObject::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void DummyObject::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x803300
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        SimplePhysicObj::GetPropertiesNames(Props);
     }
 
     DummyObject::DummyObject(DummyObjectPrototypeInfo const& prototypeInfo) : SimplePhysicObj(prototypeInfo)
@@ -196,33 +221,56 @@ namespace ai
 
     bool DummyObject::CanChildBeAdded(m3d::Class*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8030D0
+        return false;
     }
 
-    bool DummyObject::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool DummyObject::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x852C20 - the default model is the prototype's.
+        if (propertyId != 44)
+        {
+            return SimplePhysicObj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        retVal = GetPrototypeInfo()->GetEngineModelName();
+        return true;
     }
 
-    bool DummyObject::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool DummyObject::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x852BF0
+        if (propertyId != 44)
+        {
+            return SimplePhysicObj::_GetPropertyInternal(propertyId, retVal);
+        }
+        retVal = m_modelName;
+        return true;
     }
 
-    void DummyObject::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void DummyObject::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8528D0 - the default save status is not stored.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
+    // RVA 0x852210
     DummyObject::~DummyObject() = default;
 
     m3d::Object* DummyObject::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x852490
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* DummyObject::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x852650
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }  // namespace ai

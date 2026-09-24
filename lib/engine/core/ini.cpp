@@ -37,6 +37,41 @@ namespace m3d
         return nullptr;
     }
 
+    int WriteXmlFile(char const* filename, cmn::XmlFile* xmlFile, CStr* errorStr)
+    {
+        // RVA 0x5AEAC0 - writes to a temp file first and only then replaces the target.
+        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        char path[MAX_PATH];
+        if (!GetTempFileNameA(".", "temp", 0, path))
+        {
+            *errorStr = CStr("WriteXmlFile: Cannot create temp file name, cant save cfg");
+            return 0;
+        }
+        if (!fileStream->Open(path, fs::IStream::OPEN_WRITE))
+        {
+            *errorStr = CStr("WriteXmlFile: Cannot save config because cannot open temp file ") + CStr(path);
+            return 0;
+        }
+        if (!xmlFile->Write(*fileStream))
+        {
+            *errorStr = CStr("WriteXmlFile: Error occured while saving config in ") + CStr(path);
+            fileStream->Close();
+            return 0;
+        }
+        fileStream->Close();
+        if (GetFileAttributesA(filename) != INVALID_FILE_ATTRIBUTES && !DeleteFileA(filename))
+        {
+            *errorStr = CStr("WriteXmlFile: Could not delete original file ") + CStr(filename);
+            return 0;
+        }
+        if (!MoveFileA(path, filename))
+        {
+            *errorStr = CStr("WriteXmlFile: Cannot rename temp file ") + CStr(path) + CStr(" to ") + CStr(filename);
+            return 0;
+        }
+        return 1;
+    }
+
     int SafeStrAttrib(CStr& v, cmn::XmlNode const* node, char const* attrName)
     {
         if (node->IsEmpty())

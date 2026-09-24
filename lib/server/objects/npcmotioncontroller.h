@@ -68,5 +68,7 @@ namespace ai
         CVector m_lastDesiredPosition;
         float m_characteristicDist;
         float m_characteristicPeriod;
-    };
+    }; /* size: 0x00e4 */
+
+    static_assert(sizeof(NPCMotionController) == 0x00e4);
 }
