@@ -27,6 +27,8 @@ namespace m3d
 
     class CameraPath
     {
+        // Cinematic's point editing re-fixes the path around its own changes.
+        friend class Cinematic;
     public:
         static const m3d::CameraPath m_emptyPath;
         CameraPath(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >&);

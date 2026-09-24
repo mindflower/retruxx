@@ -18,7 +18,9 @@ namespace ai
 
     int CollideGeomObjAndLandscape(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // TODO: implement CollideGeomObjAndLandscape
+        // RETRUXX_NOT_IMPLEMENTED;
+        return 1;
     }
 
     int CollideBreakableObjectAndGeomObject(m3d::Object*, m3d::Object*, dContact*, unsigned&, bool)

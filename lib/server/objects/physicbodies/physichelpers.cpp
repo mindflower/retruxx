@@ -9,6 +9,7 @@
 #include "physicbody.h"
 #include "world.h"
 #include "core/kernel.h"
+#include "core/timer.h"
 #include "core/log.h"
 #include "math/coremath.h"
 #include "ode/odecpp.h"
@@ -290,9 +291,50 @@ namespace ai
         }
     }
 
-    void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int)
+    void SetNodeElapsedAnimationTimeInMs(m3d::SgNode* node, int ms)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D3070 - advances the node's animation so that ms milliseconds of it have played,
+        // by updating its model server item with the missing time.
+        if (!node)
+        {
+            return;
+        }
+
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(node);
+        if (!animInfo || !animInfo->GetCurAnimation())
+        {
+            return;
+        }
+
+        // NOTE: the time already played is taken as the current frame times the frame rate, not
+        // divided by it, so the units do not match the milliseconds it is subtracted from.
+        int const dt = ms - animInfo->CurAnimFrame() * animInfo->GetCurAnimation()->m_fps;
+        if (dt <= 0)
+        {
+            return;
+        }
+
+        int serverHandle = -1;
+        node->GetProperty(m3d::PROP_NODE_HANDLE, &serverHandle);
+        if (serverHandle == -1)
+        {
+            return;
+        }
+
+        // The parameters AnimatedModelsServer::UpdateItem expects.
+        struct RenderInfo
+        {
+            /* 0x0000 */ m3d::SgNode* m_node = nullptr;
+            /* 0x0004 */ unsigned int m_dt = 0;
+            /* 0x0008 */ unsigned int m_fps = 0;
+        }; /* size: 0x000c */
+
+        RenderInfo ri;
+        ri.m_node = node;
+        ri.m_dt = dt;
+        ri.m_fps = 0;
+        node->GetServer()->UpdateItem(serverHandle, &ri);
+        node->SetPrevThinkTime(M3D_KERNEL->GetTimer().GetFrameStartTime());
     }
 
     CVector ProjectVectorOntoPlane(CVector const& normal, CVector const& v)

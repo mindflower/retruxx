@@ -231,4 +231,6 @@ namespace ai
 
     
     CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const*);
+    CVector getPhysicObjOrPhysicBodyLinearVelocity(ai::Obj const*);
+    CVector getPhysicObjOrPhysicBodyDirection(ai::Obj const*);
 }

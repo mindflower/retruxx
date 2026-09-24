@@ -84,7 +84,7 @@ namespace ai
         /* 0x00d4 */ unsigned int m_CfgNumber;
         /* 0x00d8 */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_helloReplyNames;
         /* 0x00e8 */ int m_spokenCount;
-        static ai::Npc* theCurrentNpc;
+        static inline ai::Npc* theCurrentNpc = nullptr;
 
     public:
         static void __fastcall SetCurrentNpc(ai::Npc* npc);

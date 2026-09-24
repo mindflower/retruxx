@@ -2,13 +2,40 @@
 #include "base/objcontainer.h"
 #include <stdexcept>
 #include <algorithm>
+#include <core/ini.h>
+#include <core/kernel.h>
+#include <m3dapp.h>
+#include <math/geom2d.h>
 #include "base/globalproperties.h"
+#include "base/prototypemanager.h"
 #include "vehicle.h"
 
 namespace ai
 {
+    namespace
+    {
+        // How far back, in game time units, the recollection reaches.
+        float const RECOLLECTION_HORIZONT = 3.0f;
+
+        // The position on the line through two recollections at the given time. Used both to
+        // interpolate between them and to extrapolate beyond them.
+        CVector LerpRecollections(
+            VehicleRecollection::ReollectionItem const& a,
+            VehicleRecollection::ReollectionItem const& b,
+            float time)
+        {
+            float const t = time - a.time;
+            float const invDuration = 1.0f / (b.time - a.time);
+            CVector result;
+            result.x = a.pos.x + (b.pos.x - a.pos.x) * invDuration * t;
+            result.y = a.pos.y + (b.pos.y - a.pos.y) * invDuration * t;
+            result.z = a.pos.z + (b.pos.z - a.pos.z) * invDuration * t;
+            return result;
+        }
+    }  // namespace
+
     RT_CLASS_EXPORTS_BEGIN(VehicleRecollection)
-        RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehicleRecollection);
 
     ai::Obj* VehicleRecollectionPrototypeInfo::CreateTargetObject() const
@@ -29,82 +56,101 @@ namespace ai
         time = _time;
     }
 
-    void VehicleRecollection::ReollectionItem::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void VehicleRecollection::ReollectionItem::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D57F0
+        xmlNode->SetAttribute("Position", CStr(pos).c_str());
+        xmlNode->SetAttribute("Time", CStr(time).c_str());
     }
 
-    void VehicleRecollection::ReollectionItem::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void VehicleRecollection::ReollectionItem::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D5170
+        m3d::SafeVectorAttrib(pos, xmlNode, "Position");
+        m3d::SafeFloatAttrib(time, xmlNode, "Time");
     }
 
-    void VehicleRecollection::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void VehicleRecollection::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D6AF0 - NOTE: the loaded items are appended to whatever is already recorded.
+        Obj::LoadRuntimeValues(xmlFile, xmlNode);
+        m3d::SafeIntAttrib(m_vehicleId, xmlNode, "VehicleId");
+
+        ref_ptr itemsNode = xmlFile->CreateNode();
+        xmlNode->GetFirstChild(itemsNode, "Items");
+        if (itemsNode->IsEmpty())
+        {
+            return;
+        }
+
+        ref_ptr itemNode = xmlFile->CreateNode();
+        for (itemsNode->GetFirstChild(itemNode, "Item"); !itemNode->IsEmpty();
+             itemNode->GetNextSibling(itemNode, "Item"))
+        {
+            ReollectionItem newRecollection(ZeroVector, 0.0f);
+            newRecollection.LoadFromXML(xmlFile, itemNode);
+            m_recollectionItems.push_back(newRecollection);
+        }
     }
 
     void VehicleRecollection::RenderDebugInfo() const
     {
-        // TODO: implement VehicleRecollection::RenderDebugInfo
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D61D0 - the recorded track in red and green, and in yellow the position enemies
+        // currently aim at.
+        for (auto const& item : m_recollectionItems)
+        {
+            M3D_APP->DrawBoundingRadius(item.pos, 1.5f, 0xFFFF0000);
+        }
+        for (size_t i = 1; i < m_recollectionItems.size(); ++i)
+        {
+            M3D_APP->DrawLine(m_recollectionItems[i - 1].pos, m_recollectionItems[i].pos, 0xFF00FF00);
+        }
+
+        float const time = theObjects->GetGameTimeDiff() -
+            theGlobProp.m_gameTimeMult * theGlobProp.GetCoeffsForCurrentDifficultyLevel().m_enemiesShootingDelay;
+        M3D_APP->DrawBoundingRadius(GetRecollectionPosition(time), 2.5f, 0xFFFFFF00);
     }
 
     void VehicleRecollection::Update(float, unsigned)
     {
-        const float currentTime = theObjects->GetGameTimeDiff();
-        const float removalThreshold = currentTime - (theGlobProp.m_gameTimeMult * 3.0f);
+        // RVA 0x7D6950 - drops recollections older than the horizon, records the vehicle's centre
+        // about every 0.3 game time units and removes itself once the vehicle is gone.
+        float const time = theObjects->GetGameTimeDiff();
 
-        if (!m_recollectionItems.empty() && m_recollectionItems.back().time > currentTime)
+        while (!m_recollectionItems.empty() &&
+               time - theGlobProp.m_gameTimeMult * RECOLLECTION_HORIZONT > m_recollectionItems.front().time)
         {
-            m_recollectionItems.clear();
-        }
-
-        // Remove old entries that exceed the time threshold
-        while (!m_recollectionItems.empty())
-        {
-            const auto& oldestItem = m_recollectionItems.front();
-            if (removalThreshold <= oldestItem.time)
-            {
-                break;
-            }
-
-            // Remove the oldest item
             m_recollectionItems.erase(m_recollectionItems.begin());
         }
 
-        // Check if we should add a new recollection entry
-        const bool shouldAddNewEntry =
-            m_recollectionItems.empty() || (currentTime > (m_recollectionItems.back().time + theGlobProp.m_gameTimeMult * 0.3f));
-
-        if (shouldAddNewEntry)
+        if (m_recollectionItems.empty() ||
+            time > theGlobProp.m_gameTimeMult * 0.30000001f + m_recollectionItems.back().time)
         {
-            if (m_vehicleId >= 0)
+            // NOTE: the object is not type-checked; GetGeometricCenter is reached through the
+            // PhysicObj vtable.
+            auto* vehicle = static_cast<PhysicObj*>(theObjects->GetEntityByObjId(m_vehicleId));
+            if (vehicle)
             {
-                // Get the object record for the vehicle
-                auto* vehicleObj = RT_DYNCAST(theObjects->GetEntityByObjId(m_vehicleId), Vehicle);
-                if (vehicleObj != nullptr)
-                {
-                    // Create new recollection item with current position
-                    ReollectionItem newItem(vehicleObj->GetGeometricCenter(), currentTime);
-                    m_recollectionItems.push_back(std::move(newItem));
-                    return;
-                }
+                m_recollectionItems.push_back(ReollectionItem(vehicle->GetGeometricCenter(), time));
             }
-
-            // If we get here, the vehicle is no longer valid - remove this recollection
-            Remove();
+            else
+            {
+                Remove();
+            }
         }
     }
 
     void VehicleRecollection::Clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D6710 - releases the storage as well.
+        std::vector<ReollectionItem>().swap(m_recollectionItems);
     }
 
     ai::VehicleRecollectionPrototypeInfo const* VehicleRecollection::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D5CA0 - NOTE: the prototype is cast without a type check.
+        return static_cast<VehicleRecollectionPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Class* VehicleRecollection::GetClass() const
@@ -112,163 +158,57 @@ namespace ai
         return RT_CLASS_LOCAL(VehicleRecollection);
     }
 
-    VehicleRecollection::VehicleRecollection(ai::VehicleRecollectionPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
+    VehicleRecollection::VehicleRecollection(ai::VehicleRecollectionPrototypeInfo const& prototypeInfo) :
+        Obj(prototypeInfo)
     {
         m_vehicleId = -1;
     }
 
-    // Helper function to check if time is within an interval (with epsilon tolerance)
-    bool IsTimeInInterval(float time, float startTime, float endTime, float epsilon)
-    {
-        if (endTime <= startTime)
-        {
-            return (time >= (endTime - epsilon)) && (time <= (startTime + epsilon));
-        }
-        else
-        {
-            return (time >= (startTime - epsilon)) && (time <= (endTime + epsilon));
-        }
-    }
-
     CVector VehicleRecollection::GetRecollectionPosition(float time) const
     {
-        // TODO: generated code VehicleRecollection::GetRecollectionPosition
+        // RVA 0x7D5D10 - where the vehicle was at the given game time: interpolated between the two
+        // recollections around it, or extrapolated along the first or last pair.
         if (m_recollectionItems.empty())
         {
-            auto* physObj = RT_DYNCAST(theObjects->GetEntityByObjId(m_vehicleId), PhysicObj);
-            if (physObj)
+            // NOTE: the object is used as a PhysicObj without a type check.
+            auto* physicObj = static_cast<PhysicObj*>(theObjects->GetEntityByObjId(m_vehicleId));
+            if (physicObj)
             {
-                return physObj->GetPosition();
+                return physicObj->GetPosition();
             }
             return ZeroVector;
         }
 
-        // Get recollection items array info
-        ai::VehicleRecollection::ReollectionItem const* firstItem = &this->m_recollectionItems.front();
-        int itemCount = this->m_recollectionItems.size();
-
-        // Handle single item case
-        if (itemCount == 1)
+        size_t const count = m_recollectionItems.size();
+        if (count == 1)
         {
-            return firstItem->pos;
+            return m_recollectionItems.front().pos;
         }
 
-        // Search for the appropriate time interval
-        unsigned int foundIndex = 1;
-        float const epsilon = 0.0001f;  // 0.000099999997
-
-        // Optimized search through recollection items
-        if (itemCount >= 4)
+        size_t found = 1;
+        for (; found < count; ++found)
         {
-            float const* timePtr = &firstItem[1].time;
-
-            for (unsigned int i = 1; i <= itemCount - 4; i += 4)
-            {
-                // Check first interval in this block
-                float time1 = timePtr[0];
-                float prevTime1 = timePtr[-5];
-
-                if (!IsTimeInInterval(time, prevTime1, time1, epsilon))
-                {
-                    // Check second interval
-                    float time2 = timePtr[5];
-                    float prevTime2 = timePtr[0];
-
-                    if (!IsTimeInInterval(time, prevTime2, time2, epsilon))
-                    {
-                        // Check third interval
-                        float time3 = timePtr[10];
-                        float prevTime3 = timePtr[5];
-
-                        if (!IsTimeInInterval(time, prevTime3, time3, epsilon))
-                        {
-                            // Check fourth interval
-                            float time4 = timePtr[15];
-                            float prevTime4 = timePtr[10];
-
-                            if (!IsTimeInInterval(time, prevTime4, time4, epsilon))
-                            {
-                                timePtr += 20;
-                                foundIndex += 4;
-                                continue;
-                            }
-                            foundIndex += 3;
-                            break;
-                        }
-                        foundIndex += 2;
-                        break;
-                    }
-                    foundIndex += 1;
-                    break;
-                }
-                break;
-            }
-        }
-
-        // Linear search for remaining items
-        for (; foundIndex < (unsigned int)itemCount; foundIndex++)
-        {
-            float currentTime = firstItem[foundIndex].time;
-            float prevTime = firstItem[foundIndex - 1].time;
-
-            if (IsTimeInInterval(time, prevTime, currentTime, epsilon))
+            geom1d::Segment1<float> const interval(
+                m_recollectionItems[found - 1].time, m_recollectionItems[found].time);
+            if (interval.isPointOn(time))
             {
                 break;
             }
         }
 
-        CVector result;
-
-        // Handle different interpolation cases
-        if (foundIndex == (unsigned int)itemCount)
+        if (found != count)
         {
-            // Time is before first item or after last item
-            if (time < firstItem->time)
-            {
-                // Extrapolate backwards from first interval
-                float timeDiff = time - firstItem->time;
-                float intervalDuration = firstItem[1].time - firstItem->time;
-                float invDuration = 1.0f / intervalDuration;
-
-                result.x = firstItem->pos.x + ((firstItem[1].pos.x - firstItem->pos.x) * invDuration * timeDiff);
-                result.y = firstItem->pos.y + ((firstItem[1].pos.y - firstItem->pos.y) * invDuration * timeDiff);
-                result.z = firstItem->pos.z + ((firstItem[1].pos.z - firstItem->pos.z) * invDuration * timeDiff);
-            }
-            else if (time > firstItem[itemCount - 1].time)
-            {
-                // Extrapolate forwards from last interval
-                float timeDiff = time - firstItem[itemCount - 1].time;
-                float intervalDuration = firstItem[itemCount - 1].time - firstItem[itemCount - 2].time;
-                float invDuration = 1.0f / intervalDuration;
-
-                result.x = firstItem[itemCount - 1].pos.x + ((firstItem[itemCount - 1].pos.x - firstItem[itemCount - 2].pos.x) * invDuration * timeDiff);
-                result.y = firstItem[itemCount - 1].pos.y + ((firstItem[itemCount - 1].pos.y - firstItem[itemCount - 2].pos.y) * invDuration * timeDiff);
-                result.z = firstItem[itemCount - 1].pos.z + ((firstItem[itemCount - 1].pos.z - firstItem[itemCount - 2].pos.z) * invDuration * timeDiff);
-            }
-            else
-            {
-                // Should not happen if search is correct
-                result = ZeroVector;
-            }
+            return LerpRecollections(m_recollectionItems[found - 1], m_recollectionItems[found], time);
         }
-        else
+        if (m_recollectionItems.front().time > time)
         {
-            // Normal interpolation between two recollection items
-            ai::VehicleRecollection::ReollectionItem const* prevItem = &firstItem[foundIndex - 1];
-            ai::VehicleRecollection::ReollectionItem const* currItem = &firstItem[foundIndex];
-
-            float timeDiff = time - prevItem->time;
-            float intervalDuration = currItem->time - prevItem->time;
-            float invDuration = 1.0f / intervalDuration;
-            float t = timeDiff * invDuration;
-
-            // Linear interpolation
-            result.x = prevItem->pos.x + (currItem->pos.x - prevItem->pos.x) * t;
-            result.y = prevItem->pos.y + (currItem->pos.y - prevItem->pos.y) * t;
-            result.z = prevItem->pos.z + (currItem->pos.z - prevItem->pos.z) * t;
+            return LerpRecollections(m_recollectionItems[0], m_recollectionItems[1], time);
         }
-
-        return result;
+        if (time > m_recollectionItems.back().time)
+        {
+            return LerpRecollections(m_recollectionItems[count - 2], m_recollectionItems[count - 1], time);
+        }
+        return ZeroVector;
     }
 
     m3d::Class* VehicleRecollection::GetBaseClass()
@@ -278,12 +218,28 @@ namespace ai
 
     Vehicle* VehicleRecollection::GetVehicle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D5CD0 - NOTE: the object is cast without a type check.
+        return static_cast<Vehicle*>(theObjects->GetEntityByObjId(m_vehicleId));
     }
 
-    void VehicleRecollection::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void VehicleRecollection::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D5A10
+        Obj::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("VehicleId", CStr(m_vehicleId).c_str());
+        if (m_recollectionItems.empty())
+        {
+            return;
+        }
+
+        ref_ptr itemsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Items");
+        xmlNode->AddChild(itemsNode);
+        for (auto const& item : m_recollectionItems)
+        {
+            ref_ptr itemNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Item");
+            itemsNode->AddChild(itemNode);
+            item.SaveToXML(xmlFile, itemNode);
+        }
     }
 
     void VehicleRecollection::SetVehicle(Vehicle const* vehicle)
@@ -295,16 +251,21 @@ namespace ai
 
     void VehicleRecollection::_InternalCreateVisualPart()
     {
-        m_recollectionItems.clear();
+        // RVA 0x7D6880
+        Clear();
     }
 
     m3d::Object* VehicleRecollection::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D5630
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* VehicleRecollection::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D5470
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
-}
+}  // namespace ai

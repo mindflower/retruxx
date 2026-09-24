@@ -32,7 +32,7 @@ namespace m3d
             }
             CStr fullFilename;
             DecryptFileName(filename, fullFilename);
-            
+
             auto const it = m_Files.find(fullFilename);
             if (it != m_Files.end())
             {
@@ -122,9 +122,18 @@ namespace m3d
             RETRUXX_NOT_IMPLEMENTED;
         }
 
-        int FileServer::AddFile(char const*)
+        int FileServer::AddFile(char const* FileName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            CStr fullFileName;
+            DecryptFileName(FileName, fullFileName);
+            UnifyFileName(fullFileName);
+            if (GetFileAttributesA(fullFileName.c_str()) == -1)
+            {
+                return 2;
+            }
+            UnifyFileName0(fullFileName);
+            m_Files.insert(fullFileName);
+            return 0;
         }
 
         int FileServer::RemoveFolder(char const*)
@@ -136,7 +145,7 @@ namespace m3d
         {
             if (m_Initialized)
             {
-                return - 1;
+                return -1;
             }
 
             auto file = std::make_unique<RawFile>(dataSource, IStream::OPEN_READ, m_EnableMapping);
@@ -144,7 +153,7 @@ namespace m3d
             {
                 auto const res = file->Error();
                 return res;
-            } 
+            }
 
             auto const size = file->GetSize();
             retruxx::vector<char> buffer(size + 1, 0);
@@ -248,12 +257,12 @@ namespace m3d
         void FileServer::GetOpenFilesList(retruxx::vector<CStr>& fileList) const
         {
             fileList.clear();
-            for (const auto& package : m_Packages)
+            for (auto const& package : m_Packages)
             {
                 retruxx::vector<CStr> tmpList;
                 package->GetOpenFilesList(tmpList);
                 fileList.insert(fileList.end(), tmpList.begin(), tmpList.end());
             }
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

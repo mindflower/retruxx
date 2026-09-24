@@ -2,6 +2,8 @@
 
 #include "m3dapp.h"
 
+#include <algorithm>
+#include <cmath>
 #include <stdexcept>
 
 #include "math/vector.h"
@@ -19,32 +21,53 @@ void Aabb::Create(const CVector& min, const CVector& max)
 
 void Aabb::Offset(const CVector& ofs)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512420
+    m_box[0] = ofs.x + m_box[0];
+    m_box[1] = m_box[1] + ofs.y;
+    m_box[2] = m_box[2] + ofs.z;
+    m_box[3] = m_box[3] + ofs.x;
+    m_box[4] = m_box[4] + ofs.y;
+    m_box[5] = m_box[5] + ofs.z;
 }
 
 void Aabb::Scale(const CVector& sc)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63F220 - scales about the world origin, not the box's centre.
+    m_box[0] = sc.x * m_box[0];
+    m_box[3] = m_box[3] * sc.x;
+    m_box[1] = m_box[1] * sc.y;
+    m_box[4] = sc.y * m_box[4];
+    m_box[2] = m_box[2] * sc.z;
+    m_box[5] = sc.z * m_box[5];
 }
 
 float Aabb::GetSz() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512E70
+    return m_box[5] - m_box[2];
 }
 
 float Aabb::GetSy() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512E50
+    return m_box[4] - m_box[1];
 }
 
 float Aabb::GetSx() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512E60
+    return m_box[3] - m_box[0];
 }
 
 void Aabb::Inflate(float sz)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x633FD0
+    m_box[0] = m_box[0] - sz;
+    m_box[1] = m_box[1] - sz;
+    m_box[2] = m_box[2] - sz;
+    m_box[3] = m_box[3] + sz;
+    m_box[4] = m_box[4] + sz;
+    m_box[5] = m_box[5] + sz;
 }
 
 void Aabb::StartEmbracing()
@@ -62,7 +85,19 @@ void Aabb::StartEmbracing()
 
 void Aabb::EmbracePoint(const CVector& v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x644F10
+    if (m_box[0] > v.x)
+        m_box[0] = v.x;
+    if (v.x > m_box[3])
+        m_box[3] = v.x;
+    if (m_box[1] > v.y)
+        m_box[1] = v.y;
+    if (v.y > m_box[4])
+        m_box[4] = v.y;
+    if (m_box[2] > v.z)
+        m_box[2] = v.z;
+    if (v.z > m_box[5])
+        m_box[5] = v.z;
 }
 
 void Aabb::EmbraceBox(const Aabb& box)
@@ -95,27 +130,44 @@ void Aabb::EmbraceBox(const Aabb& box)
 
 CVector Aabb::Min() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512E80
+    return CVector(m_box[0], m_box[1], m_box[2]);
 }
 
 CVector Aabb::Max() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x512EE0
+    return CVector(m_box[3], m_box[4], m_box[5]);
 }
 
 float Aabb::MaximumComponent() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: declared in the PDB but never instantiated in the shipped binary, so this body does not
+    // come from it: the largest absolute coordinate of the box.
+    float result = 0.0f;
+    for (float component : m_box)
+    {
+        float const magnitude = std::fabs(component);
+        if (magnitude > result)
+        {
+            result = magnitude;
+        }
+    }
+    return result;
 }
 
-bool Aabb::IsPtInside(const CVector&) const
+bool Aabb::IsPtInside(const CVector& pt) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: declared in the PDB but never instantiated in the shipped binary, so this body does not
+    // come from it: the full 3D version of IsPtInside2.
+    return m_box[0] <= pt.x && pt.x <= m_box[3] && m_box[1] <= pt.y && pt.y <= m_box[4] && m_box[2] <= pt.z &&
+        pt.z <= m_box[5];
 }
 
 bool Aabb::IsPtInside2(const CVector& pt) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x645660 - only x and y are tested.
+    return m_box[0] <= pt.x && pt.x <= m_box[3] && m_box[1] <= pt.y && pt.y <= m_box[4];
 }
 
 void Aabb::Draw(unsigned int clr)

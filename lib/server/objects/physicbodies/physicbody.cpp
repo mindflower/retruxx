@@ -108,7 +108,7 @@ namespace ai
             if (forceRestartAction || nodeAnimInfo)
             {
                 auto curAnimAction = -1;
-                if (!nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
+                if (nodeAnimInfo && !nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
                 {
                     curAnimAction = nodeAnimInfo->GetCurAnimation()->m_action;
                 }
@@ -484,9 +484,23 @@ namespace ai
         RETRUXX_NOT_IMPLEMENTED;
     }
 
-    void PhysicBody::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void PhysicBody::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadRuntimeValues(xmlFile, xmlNode);
+
+        m3d::SafeIntAttrib(m_animAction, xmlNode, "AnimAction");
+        SetNodeAnimAction(m_animAction, true);
+
+        m3d::SafeIntAttrib(m_effectAction, xmlNode, "EffectAction");
+        SetNodeEffectAction(m_effectAction);
+
+        m3d::SafeStrAttrib(m_modelname, xmlNode, "ModelName");
+
+        m3d::SafeIntAttrib(m_cfgNum, xmlNode, "Cfg");
+        SetNodeCfgNum(m_cfgNum);
+
+        m3d::SafeBoolAttrib(m_bAnimationIsStopped, xmlNode, "AnimationIsStopped");
+        m3d::SafeIntAttrib(m_loadedAnimTime, xmlNode, "CurAnimTime");
     }
 
     m3d::SgNode* PhysicBody::CreateEffectNode(

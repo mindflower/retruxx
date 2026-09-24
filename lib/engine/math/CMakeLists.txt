@@ -4,6 +4,7 @@ target_sources(retruxx_lib PRIVATE
     aabb.cpp
     camera.cpp
     coremath.cpp
+    geom2d.cpp
     matrix.cpp
     obb.cpp
     plane.cpp

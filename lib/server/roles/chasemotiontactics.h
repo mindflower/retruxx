@@ -8,44 +8,43 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
     class Vehicle;
     class PhysicObj;
 
-    class ChaseMotionData
+    struct ChaseMotionData
     {
-    public:
-        ChaseMotionData(int, int);
-        Vehicle* GetChaser() const;
-        PhysicObj* GetTarget() const;
+        ChaseMotionData(ai::ChaseMotionData const&);
+        ChaseMotionData(int targetId, int chaserId);
+        ai::PhysicObj* GetTarget() const;
+        ai::Vehicle* GetChaser() const;
+        /* 0x0000 */ int m_targetId;
+        /* 0x0004 */ int m_chaserId;
+        /* 0x0008 */ float m_chaseMotionTime;
+        /* 0x000c */ CVector m_initTargetPos;
+        /* 0x0018 */ Quaternion m_initTargetRot;
+        /* 0x0028 */ CVector m_initPos;
+        /* 0x0034 */ Quaternion m_initRot;
+    }; /* size: 0x0044 */
 
-    private:
-        int m_targetId;
-        int m_chaserId;
-        float m_chaseMotionTime;
-        CVector m_initTargetPos;
-        Quaternion m_initTargetRot;
-        CVector m_initPos;
-        Quaternion m_initRot;
-
-    };
     class ChaseMotionTactics
     {
     public:
-        ChaseMotionTactics(int,int);
-        virtual void SaveToXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual ~ChaseMotionTactics();
-        virtual void LoadFromXML(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        ChaseMotionData const & GetChaseMotionData() const ;
-        void SetTargetAndChaser(int,int);
-        void Update(float);
+        ChaseMotionTactics(ai::ChaseMotionTactics const&);
+        ChaseMotionTactics(int targetId, int chaserId);
+        virtual ~ChaseMotionTactics() /* 0x00 */;
+        void SetTargetAndChaser(int targetId, int chaserId);
+        void Update(float elapsedTime);
+        virtual CVector EvaluateCurrentChasePoint(float) = 0 /* 0x04 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) /* 0x08 */;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x0c */;
+        ai::ChaseMotionData const& GetChaseMotionData() const;
 
     private:
-        //ChaseMotionTactics_vtbl *__vftable /*VFT*/;
-        ChaseMotionData m_chaseMotionData;
-    };
-}
+        /* 0x0004 */ ai::ChaseMotionData m_chaseMotionData;
+    }; /* size: 0x0048 */
+}  // namespace ai

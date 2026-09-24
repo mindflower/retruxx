@@ -283,4 +283,24 @@ namespace ai
         brokenObj->SetDeadTimer(60000, true);
         return brokenObj;
     }
+
+    Quaternion GetRotationByDirection(CVector const& direction)
+    {
+        // RVA 0x625840 - the rotation that turns +z towards direction: a heading about y followed
+        // by an elevation about x. The zero terms of the quaternion product are kept so the result
+        // matches the original to the bit.
+        double const halfHeading = std::atan2(direction.x, direction.z) * 0.5;
+        float const headingSin = static_cast<float>(std::sin(halfHeading));
+        float const headingCos = static_cast<float>(std::cos(halfHeading));
+        double const halfElevation = -std::asin(direction.y) * 0.5;
+        float const elevationSin = static_cast<float>(std::sin(halfElevation));
+        float const elevationCos = static_cast<float>(std::cos(halfElevation));
+
+        Quaternion result;
+        result.x = headingCos * elevationSin + elevationCos * 0.0f + headingSin * 0.0f;
+        result.y = elevationCos * headingSin + elevationSin * 0.0f + headingCos * 0.0f;
+        result.z = headingCos * 0.0f + elevationCos * 0.0f - headingSin * elevationSin;
+        result.w = elevationCos * headingCos - elevationSin * 0.0f - headingSin * 0.0f;
+        return result;
+    }
 }  // namespace ai

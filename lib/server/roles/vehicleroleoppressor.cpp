@@ -1,9 +1,13 @@
 #include "vehicleroleoppressor.h"
 
+#include <cmath>
 #include <stdexcept>
 
 #include "core/ini.h"
+#include <core/kernel.h>
+#include "server/objects/team.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/base/prototypemanager.h"
 
 namespace ai
 {
@@ -11,14 +15,20 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehicleRoleOppressor);
 
-    float VehicleRoleOppressorPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
+    float VehicleRoleOppressorPrototypeInfo::FitAgainstTeam(
+        Vehicle const* v,
+        Team const* target,
+        Vehicle** targetVehicle) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE190
+        *targetVehicle = getBestOpponentFromTeam(v, target);
+        return FitAgainstVehicle(v, *targetVehicle);
     }
 
-    float VehicleRoleOppressorPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
+    float VehicleRoleOppressorPrototypeInfo::FitAgainstObj(Vehicle const* v, Obj const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE1C0 - the target plays no part in the fit.
+        return FitAgainstVehicle(v, nullptr);
     }
 
     bool VehicleRoleOppressorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -46,17 +56,21 @@ namespace ai
 
     Obj* VehicleRoleOppressorPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE2E0
+        return new VehicleRoleOppressor(*this);
     }
 
-    VehicleRoleOppressor::VehicleRoleOppressor(VehicleRoleOppressorPrototypeInfo const& prototype) : VehicleRole(prototype)
+    VehicleRoleOppressor::VehicleRoleOppressor(VehicleRoleOppressorPrototypeInfo const& prototype) :
+        VehicleRole(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE1D0
     }
 
-    void VehicleRoleOppressor::setTargetVehicle(Vehicle const*)
+    void VehicleRoleOppressor::setTargetVehicle(Vehicle const* vehicle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE200 - the vehicle is also what the oppressor rides alongside.
+        VehicleRole::setTargetVehicle(vehicle);
+        setTargetObj(vehicle);
     }
 
     m3d::Class* VehicleRoleOppressor::GetBaseClass()
@@ -64,48 +78,102 @@ namespace ai
         return RT_CLASS_LOCAL(VehicleRole);
     }
 
-    bool VehicleRoleOppressor::UpdateVehicle(float, Vehicle*)
+    bool VehicleRoleOppressor::UpdateVehicle(float elapsedTime, Vehicle* v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE870 - keeps the vehicle at its post beside the target and shooting at it.
+        if (!VehicleRole::UpdateVehicle(elapsedTime, v))
+        {
+            return false;
+        }
+        v->SetExternalDestination(getOppressorPosition(v));
+        _LookAndFireToEnemy(v, elapsedTime);
+        return true;
     }
 
-    void VehicleRoleOppressor::setTargetObj(Obj const*)
+    void VehicleRoleOppressor::setTargetObj(Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE240
+        VehicleRole::setTargetObj(obj);
     }
 
-    void VehicleRoleOppressor::setTargetTeam(Team const*)
+    void VehicleRoleOppressor::setTargetTeam(Team const* team)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE220
+        VehicleRole::setTargetTeam(team);
+        setTargetObj(team);
     }
 
     VehicleRoleOppressorPrototypeInfo const* VehicleRoleOppressor::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE8C0 - NOTE: the prototype is cast without a type check.
+        return static_cast<VehicleRoleOppressorPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Class* VehicleRoleOppressor::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE150
+        return RT_CLASS_LOCAL(VehicleRoleOppressor);
     }
 
-    VehicleRoleOppressor::~VehicleRoleOppressor()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    VehicleRoleOppressor::~VehicleRoleOppressor() = default;
 
     m3d::Object* VehicleRoleOppressor::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE6B0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* VehicleRoleOppressor::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE4F0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
-    CVector VehicleRoleOppressor::getOppressorPosition(Vehicle*)
+    CVector VehicleRoleOppressor::getOppressorPosition(Vehicle* v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FE350 - the post is m_oppressionShift in the target's frame: x across and y along
+        // the direction the target is heading (or facing, when it is nearly still).
+        VehicleRoleOppressorPrototypeInfo const* prototype = GetPrototypeInfo();
+        Obj const* target = getTargetObj();
+        if (!target)
+        {
+            return v->GetPosition();
+        }
+
+        CVector const targetPos = getPhysicObjOrPhysicBodyPosition(target);
+        CVector heading = getPhysicObjOrPhysicBodyLinearVelocity(target);
+        // The original evaluates the lengths on the x87 stack.
+        if (5.0 >
+            std::sqrt(double(heading.y) * heading.y + double(heading.x) * heading.x + double(heading.z) * heading.z))
+        {
+            heading = getPhysicObjOrPhysicBodyDirection(target);
+        }
+
+        // The heading flattened onto the ground and normalized.
+        float forwardX = 0.0f;
+        float forwardZ = 0.0f;
+        float const lenSq = heading.x * heading.x + heading.z * heading.z;
+        if (lenSq > 0.0000099999997f)
+        {
+            double const invLen = 1.0 / std::sqrt(double(lenSq));
+            forwardX = static_cast<float>(heading.x * invLen);
+            forwardZ = static_cast<float>(invLen * heading.z);
+        }
+        if (0.0099999998 > std::sqrt(double(forwardZ) * forwardZ + double(forwardX) * forwardX))
+        {
+            // No usable heading: fall back to +x.
+            forwardX = 1.0f;
+            forwardZ = 0.0f;
+        }
+
+        CVector2 const& shift = prototype->m_oppressionShift;
+        CVector result;
+        result.x = (shift.x * forwardX - shift.y * forwardZ) + targetPos.x;
+        result.y = targetPos.y;
+        result.z = (shift.x * forwardZ + shift.y * forwardX) + targetPos.z;
+        return result;
     }
-}
+}  // namespace ai

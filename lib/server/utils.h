@@ -3,6 +3,9 @@
 #include <core/stringm3d.h>
 #include "retruxx/common.h"
 
+struct CVector;
+struct Quaternion;
+
 namespace m3d
 {
     class SgNode;
@@ -10,6 +13,7 @@ namespace m3d
 
 namespace ai
 {
+    Quaternion GetRotationByDirection(CVector const& direction);
     class Path;
     class Obj;
     class PhysicObj;

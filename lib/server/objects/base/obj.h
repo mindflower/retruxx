@@ -210,6 +210,8 @@ namespace ai
         friend class CServer;
         // ObjPrefab::RemoveChild clears a detached child's parent id directly.
         friend class ObjPrefab;
+        // StaticAutoGun::RemoveChild clears a released bullet's parent id directly.
+        friend class StaticAutoGun;
 
     protected:
         Obj(PrototypeInfo const& prototypeInfo);

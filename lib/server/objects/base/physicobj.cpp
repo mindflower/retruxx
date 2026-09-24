@@ -1684,4 +1684,28 @@ namespace ai
         }
         return ZeroVector;
     }
+
+    CVector getPhysicObjOrPhysicBodyLinearVelocity(ai::Obj const* obj)
+    {
+        // RVA 0x9FB250 - NOTE: the original also tests for a PhysicBody, but a body still reports no velocity.
+        if (IS_KIND_OF(obj, PhysicObj))
+        {
+            return static_cast<PhysicObj const*>(obj)->GetLinearVelocity();
+        }
+        return ZeroVector;
+    }
+
+    CVector getPhysicObjOrPhysicBodyDirection(ai::Obj const* obj)
+    {
+        // RVA 0x9FB2B0 - anything that is neither faces the default +z direction.
+        if (IS_KIND_OF(obj, PhysicBody))
+        {
+            return static_cast<PhysicBody const*>(obj)->GetDirection();
+        }
+        if (IS_KIND_OF(obj, PhysicObj))
+        {
+            return static_cast<PhysicObj const*>(obj)->GetDirection();
+        }
+        return CVector(0.0f, 0.0f, 1.0f);
+    }
 }  // namespace ai

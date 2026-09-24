@@ -675,6 +675,11 @@ class TiXmlDeclaration : public TiXmlNode
 	const std::string& Encoding() const		{ return encoding; }
 	/// Is this a standalone document? 
 	const std::string& Standalone() const		{ return standalone; }
+	// retruxx: XmlFileImpl::SetHeader writes the declaration fields directly, as the shipped
+	// (modified) TinyXML allowed.
+	void SetVersion( const std::string& _version )		{ version = _version; }
+	void SetEncoding( const std::string& _encoding )	{ encoding = _encoding; }
+	void SetStandalone( const std::string& _standalone )	{ standalone = _standalone; }
 
 	// [internal use] Creates a new Element and returs it.
 	virtual TiXmlNode* Clone() const;

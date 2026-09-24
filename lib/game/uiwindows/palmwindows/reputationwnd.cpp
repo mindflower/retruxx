@@ -33,8 +33,8 @@ ReputationButton::AuxInfo::AuxInfo()
     m_wndPatternClanIco = nullptr;
     m_lblPatternClanName = nullptr;
     m_wndPatternToleranceName = nullptr;
-    m_friendToleranceColor = 0xFF237A9B;
-    m_enemyToleranceColor = 0xFF9C2FE1;
+    m_friendToleranceColor = 0xFF23781B;
+    m_enemyToleranceColor = 0xFF9C2621;
     m_strIdToleranceFriend1 = "FriendlyRelation";
     m_strIdToleranceEnemy1 = "EnemyRelation";
     m_strIdToleranceFriend2 = "Peace";
@@ -208,7 +208,12 @@ int ReputationButton::CreateFromPattern()
 
     SetPane(m_aif.m_wndPattern->GetPaneName());
     SetPaneFlags(m_aif.m_wndPattern->GetPaneFlags());
-    return CreateChildren();
+    if (CreateChildren())
+    {
+        m_gameDataFlags |= 1u;
+        return 1;
+    }
+    return 0;
 }
 
 int ReputationButton::CreateChildren()
@@ -366,8 +371,9 @@ void ReputationButton::UpdateToleranceIndicator(help::BlackWightTolerance bwTole
     }
     unsigned const clr =
         (bwTolerance == help::BW_TOLERANCE_ENEMY) ? m_aif.m_enemyToleranceColor : m_aif.m_friendToleranceColor;
-    m_wndClanIco->SetColor(clr);
-    m_wndToleranceName->SetColor(clr);
+
+    m_wndToleranceName->SetTextColor(clr);
+    m_lblClanName->SetTextColor(clr);
     m_wndToleranceName->SetText(M3D_APP->GetStringByStringId0(BWTolerance2StrId2(bwTolerance)));
 }
 
@@ -382,10 +388,10 @@ void ReputationButton::UpdateTooltip(help::BlackWightTolerance bwTolerance)
         if (bwTolerance == help::BW_TOLERANCE_ENEMY && help::IsPeaceWithEnemyAvailable(m_clanBelong))
         {
             tip += CStr("|") + help::Color2Str(m_aif.m_peaceAvailableColor) +
-                   M3D_APP->GetStringByStringId0(m_aif.m_strIdPeaceAvailable);
+                M3D_APP->GetStringByStringId0(m_aif.m_strIdPeaceAvailable);
         }
     }
-    SetProperty(PROP_WND_TOOLTIP, const_cast<char*>(tip.c_str()));
+    SetProperty(PROP_WND_TOOLTIP, &tip);
 }
 
 // ---------------------------------------------------------------------------
