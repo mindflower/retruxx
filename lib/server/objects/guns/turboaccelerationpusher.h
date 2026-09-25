@@ -5,16 +5,19 @@ namespace ai
 {
     class TurboAccelerationPusherPrototypeInfo : public GunPrototypeInfo
     {
+        friend class TurboAccelerationPusher;
+
     public:
         TurboAccelerationPusherPrototypeInfo();
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         virtual Obj* CreateTargetObject() const;
 
     private:
-        float m_AccelerationValue;
-        float m_AccelerationTime;
+        /* 0x0198 */ float m_AccelerationValue;
+        /* 0x019c */ float m_AccelerationTime;
+    }; /* size: 0x01a0 */
 
-    };
+    static_assert(sizeof(TurboAccelerationPusherPrototypeInfo) == 0x1a0);
 
     class TurboAccelerationPusher : public Gun
     {

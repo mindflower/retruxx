@@ -31,7 +31,8 @@
 #include "server/objects/physicbodies/geoms/ray.h"
 #include <server/objects/base/objcontainer.h>
 
-extern "C" {
+extern "C"
+{
 #include <ode/collision.h>
 #include <ode/collision_trimesh.h>
 #include <ode/objects.h>
@@ -76,8 +77,7 @@ namespace
         bool const fromGam = M3D_ENGINE_CFG.m_loadFromGAM.GetB();
         newFileName[dotPos + 1] = fromGam ? 'g' : 's';
 
-        bool const loaded =
-            fromGam ? animModel.LoadGAM(newFileName, false) : animModel.LoadSAM(newFileName, false);
+        bool const loaded = fromGam ? animModel.LoadGAM(newFileName, false) : animModel.LoadSAM(newFileName, false);
         if (!loaded)
         {
             return false;
@@ -91,11 +91,8 @@ namespace
         modelInfo.tex = animModel.GetTexHandle(0, 0, 0);
         M3D_RENDERER->ReferenceTexture(modelInfo.tex);
 
-        modelInfo.vb = M3D_RENDERER->AddVb(
-            m3d::rend::VERTEX_GRASSTEST,
-            maxInstancePerPass * modelInfo.numVerts,
-            "Grass",
-            0);
+        modelInfo.vb =
+            M3D_RENDERER->AddVb(m3d::rend::VERTEX_GRASSTEST, maxInstancePerPass * modelInfo.numVerts, "Grass", 0);
 
         // Source vertices are 8 floats (position, normal, uv); the grass vertex
         // keeps position, the constant index and the uv.
@@ -240,9 +237,26 @@ namespace m3d
     {
         /* 0x0000 */ int m_maskindex;
         /* 0x0004 */ int m_rotate;
-    }; /* size: 0x0008 */;
+    }; /* size: 0x0008 */
+    ;
 
-    AlphaSpecial specialMapper[16] = { {0, 0}, {3, 0}, {3, 1}, {1, 1}, {3, 3}, {1, 0}, {4, 1}, {2, 0}, {3, 2}, {4, 0}, {1, 2}, {2, 1}, {1, 3}, {2, 3}, {2, 2}, {0, 0} };
+    AlphaSpecial specialMapper[16] = {
+        {0, 0},
+        {3, 0},
+        {3, 1},
+        {1, 1},
+        {3, 3},
+        {1, 0},
+        {4, 1},
+        {2, 0},
+        {3, 2},
+        {4, 0},
+        {1, 2},
+        {2, 1},
+        {1, 3},
+        {2, 3},
+        {2, 2},
+        {0, 0}};
 
     RT_CLASS_EXPORTS_BEGIN(Landscape)
     RT_CLASS_EXPORTS_END;
@@ -254,10 +268,10 @@ namespace m3d
         // Get the obstacle's bounding box
         Aabb box = obstacle->GetAabb();
 
-        const float VISCELL_EDGE_LENGTH_8 = 128.0;
+        float const VISCELL_EDGE_LENGTH_8 = 128.0;
 
         // Convert world coordinates to grid coordinates
-        const float cellSizeInv = 1.0f / VISCELL_EDGE_LENGTH_8;
+        float const cellSizeInv = 1.0f / VISCELL_EDGE_LENGTH_8;
         int x0 = static_cast<int>(box.m_box[0] * cellSizeInv);
         int x1 = static_cast<int>(box.m_box[3] * cellSizeInv);
         int z0 = static_cast<int>(box.m_box[2] * cellSizeInv);
@@ -337,7 +351,7 @@ namespace m3d
     void Landscape::LinkNodeAndChildrenCollisionGeomsToCell(SgNode* node)
     {
         // TODO: generated code
-    
+
         // Get OBB and convert to AABB bounds
         auto obb = node->GetObb();
         // Assuming Obb::GetBounds converts OBB to AABB
@@ -388,7 +402,8 @@ namespace m3d
                     UpdateNodeCollisionGeoms(sibling);
 
                     // If this sibling has children, add to stack for processing
-                    if (sibling->GetFirstChild()) {
+                    if (sibling->GetFirstChild())
+                    {
                         stack.push_back(sibling->GetFirstChild());
                     }
 
@@ -402,13 +417,13 @@ namespace m3d
     float Landscape::GetHeightWithCollisions(float x, float y, bool forVehicle) const
     {
         static scoped_ptr viewRay = ai::Ray::CreateObject(nullptr, 10000.0, nullptr);
-        static const CVector down{ 0.0, -1.0, 0.0 };
+        static CVector const down{0.0, -1.0, 0.0};
         static dContact contact;
 
         viewRay->SetDirection(down);
         dGeomSetPosition(viewRay->GetGeomId(), x, 3000.0, y);
 
-        const auto aabb = viewRay->GetAabb();
+        auto const aabb = viewRay->GetAabb();
         if (ai::TraceLine(*viewRay, contact, 1, 0, 0, 1, 0, 1, forVehicle))
         {
             return contact.geom.pos[1];
@@ -478,13 +493,15 @@ namespace m3d
         case 11:
             // PS1.1 shaders
             waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps11.asm", rend::IAsmShader::PIXEL_SHADER);
-            m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", rend::IHlslShader::VS_1_1);
+            m_waterVs =
+                M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps11.vs", "WaterVS", rend::IHlslShader::VS_1_1);
             break;
 
         case 14:
             // PS1.4 shaders
             waterPs = M3D_RENDERER->NewAsmShader("data/shaders/waterTest_ps14.asm", rend::IAsmShader::PIXEL_SHADER);
-            m_waterVs = M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps14.vs", "WaterVS", rend::IHlslShader::VS_1_1);
+            m_waterVs =
+                M3D_RENDERER->NewHlslShader("data/shaders/waterTest_ps14.vs", "WaterVS", rend::IHlslShader::VS_1_1);
             break;
 
         case 20:
@@ -495,13 +512,17 @@ namespace m3d
             switch (waterQualityLevel)
             {
             case 0:  // Medium quality
-                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestMed_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
-                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestMed_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
+                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                    "data/shaders/waterTestMed_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
+                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                    "data/shaders/waterTestMed_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
                 break;
 
             case 1:  // High quality
-                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTest_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
-                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTest_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
+                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                    "data/shaders/waterTest_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
+                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                    "data/shaders/waterTest_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
                 break;
 
             default:  // Low quality
@@ -517,14 +538,18 @@ namespace m3d
                     m_solidDeepPs = nullptr;
                 }
 
-                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestLow_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
-                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/waterTestLow_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
+                m_waterVs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                    "data/shaders/waterTestLow_ps20.vs", "WaterVS", rend::IHlslShader::VS_2_0);
+                m_waterPs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                    "data/shaders/waterTestLow_ps20.ps", "WaterPS", rend::IHlslShader::PS_2_0);
                 break;
             }
 
             // Load deep water shaders for PS2.0
-            m_solidDeepVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", rend::IHlslShader::VS_2_0);
-            m_solidDeepPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/landscapeDeep_ps20.ps", "LandscapePS", rend::IHlslShader::PS_2_0);
+            m_solidDeepVs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                "data/shaders/landscapeDeep_ps20.vs", "LandscapeVS", rend::IHlslShader::VS_2_0);
+            m_solidDeepPs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+                "data/shaders/landscapeDeep_ps20.ps", "LandscapePS", rend::IHlslShader::PS_2_0);
 
             // Load water textures and fresnel map
             ReloadWaterTextures();
@@ -546,8 +571,10 @@ namespace m3d
         }
 
         // Load simple water shaders
-        m_waterDumbPs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/water_dumb.ps", "WaterPS", rend::IHlslShader::PS_1_1);
-        m_waterDumbVs = m3d::Application::g_pApp->m_renderer->NewHlslShader("data/shaders/water_dumb.vs", "WaterVS", rend::IHlslShader::VS_1_1);
+        m_waterDumbPs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+            "data/shaders/water_dumb.ps", "WaterPS", rend::IHlslShader::PS_1_1);
+        m_waterDumbVs = m3d::Application::g_pApp->m_renderer->NewHlslShader(
+            "data/shaders/water_dumb.vs", "WaterVS", rend::IHlslShader::VS_1_1);
 
         // Initialize scale matrix
         m_matScale._12 = 0.0;
@@ -578,15 +605,15 @@ namespace m3d
 
     void Landscape::FreeShoresStuff()
     {
-       if (m_shoresVb.IsValid())
-       {
-           M3D_RENDERER->ReleaseVb(m_shoresVb);
-       }
+        if (m_shoresVb.IsValid())
+        {
+            M3D_RENDERER->ReleaseVb(m_shoresVb);
+        }
 
-       if (m_shoresIb.IsValid())
-       {
-           M3D_RENDERER->ReleaseIb(m_shoresIb);
-       }
+        if (m_shoresIb.IsValid())
+        {
+            M3D_RENDERER->ReleaseIb(m_shoresIb);
+        }
     }
 
     void Landscape::BuildSolidLandscape()
@@ -630,9 +657,12 @@ namespace m3d
                             *((unsigned short*)v10 + 2) = v15 + v14;
                             *v10 = this->m_heightMap[v16];
                             v16 *= 12;
-                            *((unsigned short*)v10 + 3) = (int)(float)(*(float*)((char*)&this->m_vnormal->x + v16) * 1024.0);
-                            *((unsigned short*)v10 + 4) = (int)(float)(*(float*)((char*)&this->m_vnormal->z + v16) * 1024.0);
-                            *((unsigned short*)v10 + 5) = (int)(float)(*(float*)((char*)&this->m_vnormal->y + v16) * 1024.0);
+                            *((unsigned short*)v10 + 3) =
+                                (int)(float)(*(float*)((char*)&this->m_vnormal->x + v16) * 1024.0);
+                            *((unsigned short*)v10 + 4) =
+                                (int)(float)(*(float*)((char*)&this->m_vnormal->z + v16) * 1024.0);
+                            *((unsigned short*)v10 + 5) =
+                                (int)(float)(*(float*)((char*)&this->m_vnormal->y + v16) * 1024.0);
                             ++v14;
                             v10 += 3;
                         } while (v14 <= 0x10);
@@ -654,13 +684,9 @@ namespace m3d
                 M3D_RENDERER->ReleaseIb(m_solidIb[ia]);
             int v19 = 1 << v17;
             int v20 = (unsigned __int16)(1 << v17);
-            m_solidIb[ia] = M3D_RENDERER->AddIb(32 * (16 / v20 + 2) / v20,
-                0);
+            m_solidIb[ia] = M3D_RENDERER->AddIb(32 * (16 / v20 + 2) / v20, 0);
             auto asd = 32 * (16 / v20 + 2) / v20;
-            short* v21 = (short*)M3D_RENDERER->LockIb(m_solidIb[ia],
-                32 * (16 / v20 + 2) / v20,
-                0,
-                0);
+            short* v21 = (short*)M3D_RENDERER->LockIb(m_solidIb[ia], 32 * (16 / v20 + 2) / v20, 0, 0);
             M3D_RENDERER->GetLastErrorStr();
             int v22 = 0;
             unsigned nna = 0;
@@ -751,12 +777,7 @@ namespace m3d
                 if (overlayShader)
                 {
                     M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                        rend::M3DPT_TRIANGLESTRIP,
-                        overlayShader,
-                        0,
-                        numVerts,
-                        0,
-                        numPrims);
+                        rend::M3DPT_TRIANGLESTRIP, overlayShader, 0, numVerts, 0, numPrims);
                 }
                 else
                 {
@@ -777,7 +798,7 @@ namespace m3d
     {
         M3D_RENDERER->SetAlphaTest(0);
 
-        const auto fogColor = m_owner->GetWeatherFogColor();
+        auto const fogColor = m_owner->GetWeatherFogColor();
         M3D_RENDERER->SetFogColor(fogColor, false);
         M3D_RENDERER->PushFog(M3D_ENGINE_CFG.m_r_enableFog.GetB());
 
@@ -785,22 +806,22 @@ namespace m3d
         float fogEnd = 0.0;
         GetFogStartAndEnd(fogStart, fogEnd);
 
-        const auto fogReduceFactor = m_owner->GetWeatherManager().GetFogReduceFactorFromWeather();
+        auto const fogReduceFactor = m_owner->GetWeatherManager().GetFogReduceFactorFromWeather();
 
-        float vsFloat[4] = { 0 };
+        float vsFloat[4] = {0};
         vsFloat[0] = fogReduceFactor * fogEnd;
         vsFloat[1] = 1.0 / ((fogReduceFactor * fogEnd) - (fogReduceFactor * fogStart));
         vsFloat[2] = fogReduceFactor * fogStart;
         vsFloat[3] = m_owner->m_level->waterlevel;
-        M3D_RENDERER->SetVsFloatConst(4u, vsFloat , 1u);
+        M3D_RENDERER->SetVsFloatConst(4u, vsFloat, 1u);
 
         auto projMat = M3D_RENDERER->MatGetProj();
         auto mat = M3D_RENDERER->MatGet();
 
         CMatrix du;
         auto v14 = projMat._42 * mat._14;
-        du._11 = (((mat._13 * projMat._31) + (projMat._21 * mat._12)) + (mat._11 * projMat._11))
-            + (mat._14 * projMat._41);
+        du._11 =
+            (((mat._13 * projMat._31) + (projMat._21 * mat._12)) + (mat._11 * projMat._11)) + (mat._14 * projMat._41);
         auto v15 = (((projMat._22 * mat._12) + v14) + (mat._11 * projMat._12)) + (projMat._32 * mat._13);
         auto v16 = projMat._13;
         du._12 = v15;
@@ -824,8 +845,8 @@ namespace m3d
         du._24 = v27;
         du._31 = (((projMat._11 * mat._31) + v28) + (projMat._21 * mat._32)) + (mat._34 * projMat._41);
         auto v29 = projMat._13 * mat._31;
-        du._32 = (((mat._34 * projMat._42) + (mat._33 * projMat._32)) + (projMat._22 * mat._32))
-            + (mat._31 * projMat._12);
+        du._32 =
+            (((mat._34 * projMat._42) + (mat._33 * projMat._32)) + (projMat._22 * mat._32)) + (mat._31 * projMat._12);
         auto v30 = (((projMat._23 * mat._32) + v29) + (mat._34 * projMat._43)) + (mat._33 * projMat._33);
         auto v31 = mat._33 * projMat._34;
         du._33 = v30;
@@ -847,7 +868,7 @@ namespace m3d
         {
         case LRM_DIRECT:
         {
-            const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+            auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
             m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
             m_solidPs->Apply();
             m_solidVs->Apply();
@@ -874,8 +895,9 @@ namespace m3d
         }
         case LRM_BIND:
         {
-            const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            m_owner->GetGraph().SortedCellsStartFetching(transitionDivider * m_drawRadius - 1, transitionDivider * m_drawRadius + 1);
+            auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+            m_owner->GetGraph().SortedCellsStartFetching(
+                transitionDivider * m_drawRadius - 1, transitionDivider * m_drawRadius + 1);
             m_solidBindPs->Apply();
             m_solidBindVs->Apply();
 
@@ -885,9 +907,10 @@ namespace m3d
             unsigned viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
             m_solidBindVs->SetVector3(viewPosHandle, du.getOrgInv());
 
-            const auto transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
-            const auto viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
-            float vsConst = ((this->m_drawRadius * transitionDivider) - (viewDistanceDivider * transitionCFatror)) * 128.0;
+            auto const transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
+            auto const viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
+            float vsConst =
+                ((this->m_drawRadius * transitionDivider) - (viewDistanceDivider * transitionCFatror)) * 128.0;
             M3D_RENDERER->SetVsFloatConst(7u, &vsConst, 1u);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -960,7 +983,7 @@ namespace m3d
                 minY = std::min(minY, y);
                 minVis = std::min(minVis, vis);
                 minRadius = std::min(minRadius, radius);
-                float buff[3] = { 0 };
+                float buff[3] = {0};
 
                 buff[0] = x * 128.0;
                 buff[1] = y * 128.0;
@@ -976,11 +999,8 @@ namespace m3d
                 ++landDips;
 
                 M3D_RENDERER->SetIndices(m_solidIb[lod], vertsPerCell * (y + sizeinCells * x));
-                M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP,
-                                                  0,
-                                                  this->vertsPerCell,
-                                                  0,
-                                                  this->trisPerCell[lod]);
+                M3D_RENDERER->DrawIndexedPrimitiveShader(
+                    rend::M3DPT_TRIANGLESTRIP, 0, this->vertsPerCell, 0, this->trisPerCell[lod]);
             }
         }
 
@@ -988,7 +1008,6 @@ namespace m3d
         M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeTris = " + CStr(v)).c_str());
 
         M3D_RENDERER->PopFog();
-
     }
 
     void Landscape::RemoveGrassInstance(unsigned instance)
@@ -1116,7 +1135,8 @@ namespace m3d
             }
             M3D_RENDERER->SetVsFloatConst(20u, reinterpret_cast<float const*>(waterTileInfo), numInPass);
             ++waterDips;
-            M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, 81 * numInPass, 0, numInPass * m_wtNumTris[3] - 4);
+            M3D_RENDERER->DrawIndexedPrimitiveShader(
+                rend::M3DPT_TRIANGLESTRIP, 0, 81 * numInPass, 0, numInPass * m_wtNumTris[3] - 4);
             numWaterTris = numWaterTris + numInPass * m_wtNumTris[3] - 4;
         } while (it != end);
 
@@ -1133,7 +1153,7 @@ namespace m3d
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
     {
         auto& sceneGraph = m_owner->m_sceneGraph;
-        const auto transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
+        auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
         sceneGraph.SortedCellsStartFetching(0, m_drawRadius * transitionDivider + 1);
 
         float fogStart = 0.0;
@@ -1142,7 +1162,7 @@ namespace m3d
 
         M3D_RENDERER->SetFogStart(fogStart, false);
         M3D_RENDERER->SetFogEnd(fogEnd, false);
-        
+
         if (drawMinimap)
         {
             RETRUXX_NOT_IMPLEMENTED;
@@ -1172,7 +1192,8 @@ namespace m3d
                         // Check water status
                         if (this->m_waterMap[worldX + worldY * landSize])
                         {
-                            const Landscape::CellParams& cellParams = this->m_drawedCellParams[worldX + worldY * landSize];
+                            Landscape::CellParams const& cellParams =
+                                this->m_drawedCellParams[worldX + worldY * landSize];
                             float waterHeight = m3d::Landscape::getWaterHeight(worldX, worldY);
 
                             if (cellParams.m_h1 > waterHeight)
@@ -1192,14 +1213,18 @@ namespace m3d
                         // In editor mode, collect cells per texture
                         if (m3d::Landscape::m_renderMode == RM_EDITOR)
                         {
-                            const Landscape::TileInfo& tileInfo = m3d::Landscape::GetTileInfo(worldX, worldY);
+                            Landscape::TileInfo const& tileInfo = m3d::Landscape::GetTileInfo(worldX, worldY);
                             if (tileInfo.m_numTexs > 0)
                             {
                                 for (int texIndex = 0; texIndex < tileInfo.m_numTexs; texIndex++)
                                 {
                                     // The list is picked by the texture index; the flags only go into the key.
-                                    cmn::vector<unsigned int>* cellsPerTex = &this->m_cellsPerTex.m_data[tileInfo.m_texIndices[texIndex]];
-                                    cellsPerTex->push_back(worldX + ((worldY + ((tileInfo.m_angle + (tileInfo.m_texFlags[texIndex] << 8)) << 8)) << 8));
+                                    cmn::vector<unsigned int>* cellsPerTex =
+                                        &this->m_cellsPerTex.m_data[tileInfo.m_texIndices[texIndex]];
+                                    cellsPerTex->push_back(
+                                        worldX +
+                                        ((worldY + ((tileInfo.m_angle + (tileInfo.m_texFlags[texIndex] << 8)) << 8))
+                                         << 8));
                                 }
                             }
                         }
@@ -1248,7 +1273,7 @@ namespace m3d
         M3D_RENDERER->LightEnable(0, 1);
 
         m3d::rend::Material material;
-        material.init({ 1.0, 1.0, 1.0, 1.0 });
+        material.init({1.0, 1.0, 1.0, 1.0});
         M3D_RENDERER->MaterialSet(material);
 
         m_firstpasscounter = 0;
@@ -1264,7 +1289,7 @@ namespace m3d
 
             auto lightmapTexture = GetLightmapTexture();
             M3D_RENDERER->SetTexture(2, lightmapTexture, -1.0);
-            const auto weatherFogColor = m_owner->GetWeatherFogColor();
+            auto const weatherFogColor = m_owner->GetWeatherFogColor();
             M3D_RENDERER->SetFogColor(weatherFogColor, false);
             M3D_RENDERER->SetFogMode(rend::M3DFOG_LINEAR, false);
             if (m3d::Landscape::m_renderMode == RM_EDITOR)
@@ -1280,28 +1305,29 @@ namespace m3d
                 fogTerm.z = fogStart;
                 fogTerm.y = 1.0 / (fogEnd - fogStart);
 
-                const auto fogTermHandle = m_landscapeVs->GetParamHandleByName("g_FogTerm");
+                auto const fogTermHandle = m_landscapeVs->GetParamHandleByName("g_FogTerm");
                 m_landscapeVs->SetVector3(fogTermHandle, fogTerm);
 
-                const auto mat = M3D_RENDERER->MatGet();
-                const auto projMat = M3D_RENDERER->MatGetProj();
-                const auto matWorld = M3D_RENDERER->MatGetWorld();
+                auto const mat = M3D_RENDERER->MatGet();
+                auto const projMat = M3D_RENDERER->MatGetProj();
+                auto const matWorld = M3D_RENDERER->MatGetWorld();
 
                 auto resultMat = mat * projMat;
 
-                const auto viewProjHandle = m_landscapeVs->GetParamHandleByName("mViewProj");
+                auto const viewProjHandle = m_landscapeVs->GetParamHandleByName("mViewProj");
                 m_landscapeVs->SetMatrix(viewProjHandle, resultMat);
 
-                const float VISCELL_EDGE_LENGTH_24 = 128.0;
+                float const VISCELL_EDGE_LENGTH_24 = 128.0;
 
                 CVector lightmapScale;
                 lightmapScale.x = 1.0 / (this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24);
-                lightmapScale.y = 0.0 - (1.0 / (this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24));;
+                lightmapScale.y = 0.0 - (1.0 / (this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24));
+                ;
                 lightmapScale.z = 0.0;
-                const auto lightmapScaleHandle = m_landscapeVs->GetParamHandleByName("lightmapScale");
+                auto const lightmapScaleHandle = m_landscapeVs->GetParamHandleByName("lightmapScale");
                 m_landscapeVs->SetVector3(lightmapScaleHandle, lightmapScale);
 
-                const auto worldMatHandle = m_landscapeVs->GetParamHandleByName("mWorld");
+                auto const worldMatHandle = m_landscapeVs->GetParamHandleByName("mWorld");
                 m_landscapeVs->SetMatrix(worldMatHandle, matWorld);
             }
 
@@ -1503,13 +1529,17 @@ namespace m3d
                             auto* waterObj = RT_DYNCAST(M3D_KERNEL->New("GeomObjectWater"), GeomObjectWater);
 
                             // Allocate vertices and indices
-                            waterObj->m_Vertices = new CVector[4]; // 4 vertices for the quad
-                            waterObj->m_Indices = new int[6];     // 6 indices for two triangles
+                            waterObj->m_Vertices = new CVector[4];  // 4 vertices for the quad
+                            waterObj->m_Indices = new int[6];       // 6 indices for two triangles
 
                             // Set up indices for two triangles forming a quad
                             int* indices = waterObj->m_Indices;
-                            indices[0] = 2; indices[1] = 1; indices[2] = 0; // First triangle
-                            indices[3] = 3; indices[4] = 1; indices[5] = 2; // Second triangle
+                            indices[0] = 2;
+                            indices[1] = 1;
+                            indices[2] = 0;  // First triangle
+                            indices[3] = 3;
+                            indices[4] = 1;
+                            indices[5] = 2;  // Second triangle
 
                             // Create vertices for water quad
                             int vertexCounter = 0;
@@ -1539,8 +1569,8 @@ namespace m3d
                                 sizeof(CVector),  // vertex stride
                                 4,                // vertex count
                                 waterObj->m_Indices,
-                                6,                // index count
-                                3 * sizeof(int)   // triangle stride
+                                6,               // index count
+                                3 * sizeof(int)  // triangle stride
                             );
 
                             // Create ODE geometry
@@ -1581,7 +1611,7 @@ namespace m3d
             heightData,
             this->m_mapSize * 8.0f,  // terrain width
             this->m_mapSize,         // grid size
-            1,                    // vertical scale
+            1,                       // vertical scale
             0                        // flags
         );
 
@@ -1606,7 +1636,8 @@ namespace m3d
 
     Landscape::CollisionCellItem::CollisionCellItem()
     {
-        m_obstacles = new retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >;
+        m_obstacles = new retruxx::
+            set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::Obstacle>>>;
     }
 
     Landscape::CollisionCellItem::~CollisionCellItem()
@@ -1638,23 +1669,24 @@ namespace m3d
         m_obstacles->erase(ref_ptr<ai::Obstacle>(ob));
     }
 
-    const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Landscape::CollisionCellItem::
-    GetPhysicObjIds() const
+    retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>> const&
+        Landscape::CollisionCellItem::GetPhysicObjIds() const
     {
         // RVA 0x6024E0
         return m_physicObjIds;
     }
 
-    const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::
-    Obstacle>>>& Landscape::CollisionCellItem::GetObstacles() const
+    retruxx::set<
+        ref_ptr<ai::Obstacle>,
+        retruxx::less<ref_ptr<ai::Obstacle>>,
+        retruxx::allocator<ref_ptr<ai::Obstacle>>> const&
+        Landscape::CollisionCellItem::GetObstacles() const
     {
         // RVA 0x6024F0
         return *m_obstacles;
     }
 
-    Landscape::CollisionInfo::CollisionInfo() :
-        m_verts(nullptr),
-        m_tris(nullptr)
+    Landscape::CollisionInfo::CollisionInfo() : m_verts(nullptr), m_tris(nullptr)
     {
         // RVA 0x646110
     }
@@ -1685,7 +1717,12 @@ namespace m3d
         return -1.0f;
     }
 
-    void Landscape::CollisionInfo::Create(int numVerts, CVector* verts, int numTris, unsigned short* tris, CMatrix const& toWorld)
+    void Landscape::CollisionInfo::Create(
+        int numVerts,
+        CVector* verts,
+        int numTris,
+        unsigned short* tris,
+        CMatrix const& toWorld)
     {
         // RVA 0x647CC0 - keeps a world space copy of the mesh, with a box around the
         // local vertices placed by toWorld and an axis aligned box around the world ones.
@@ -1792,7 +1829,7 @@ namespace m3d
 
                 while (!maskNode->IsEmpty())
                 {
-                    const char* textureName = maskNode->GetAttribute("name");
+                    char const* textureName = maskNode->GetAttribute("name");
                     CStr fullTexturePath = m_pathTile + textureName;
 
                     // Add texture and set parameters
@@ -1838,13 +1875,13 @@ namespace m3d
                     landType.m_priority = typePriority;
 
                     // Get basic attributes
-                    const char* nameAttr = typeNode->GetAttribute("name");
+                    char const* nameAttr = typeNode->GetAttribute("name");
                     landType.m_name = nameAttr;
 
-                    const char* passmaskAttr = typeNode->GetAttribute("passmask");
+                    char const* passmaskAttr = typeNode->GetAttribute("passmask");
                     landType.m_passmask = passmaskAttr ? atoi(passmaskAttr) : 0;
 
-                    const char* alphasetAttr = typeNode->GetAttribute("alphaset");
+                    char const* alphasetAttr = typeNode->GetAttribute("alphaset");
                     landType.m_alphaset = 0;
                     m_hashAlphaToLand.add(alphasetAttr, landType.m_alphaset);
 
@@ -1854,7 +1891,7 @@ namespace m3d
 
                     while (!tileNode->IsEmpty())
                     {
-                        const char* tileFile = tileNode->GetAttribute("file");
+                        char const* tileFile = tileNode->GetAttribute("file");
 
                         if (loadExtraTextures &&
                             (m_loadAllTextures || m_usedTexturesList.find(tileFile) != m_usedTexturesList.end()))
@@ -1963,7 +2000,8 @@ namespace m3d
         m_dummyVB = nullptr;
         M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_lockVis);
 
-        auto const releaseShader = [](auto*& shader) {
+        auto const releaseShader = [](auto*& shader)
+        {
             if (shader)
             {
                 shader->Release();
@@ -2128,10 +2166,15 @@ namespace m3d
     void Landscape::HandleCommand(int, CConsoleParams const&)
     {
         // RVA 0x5ABB70
-
     }
 
-    void Landscape::AddCollisionTris(int tag, int numVerts, CVector* verts, int numTris, unsigned short* tris, CMatrix const& toWorld)
+    void Landscape::AddCollisionTris(
+        int tag,
+        int numVerts,
+        CVector* verts,
+        int numTris,
+        unsigned short* tris,
+        CMatrix const& toWorld)
     {
         // RVA 0x64CCD0
         auto* ci = new CollisionInfo();
@@ -2297,9 +2340,9 @@ namespace m3d
         auto v9 = (y - (double)(int)(float)(y * 0.125) * 8.0) * 0.125;
         auto xa = v9;
         if (fabs(v9) + fabs(*(float*)&ox) > 1.0)
-            return (float)((float)((float)((float)(z2 - z4) * (float)(1.0 - xa))
-                + (float)((float)(z3 - z4) * (float)(1.0 - *(float*)&ox)))
-                + z4);
+            return (float)((float)((float)((float)(z2 - z4) * (float)(1.0 - xa)) +
+                                   (float)((float)(z3 - z4) * (float)(1.0 - *(float*)&ox))) +
+                           z4);
         else
             return (float)((float)((float)((float)(z3 - z1) * xa) + (float)((float)(z2 - z1) * *(float*)&ox)) + z1);
     }
@@ -2356,7 +2399,8 @@ namespace m3d
             {
                 for (unsigned typez = 0; typez < m_AlphaSets[k].m_texMasks[j].size(); ++typez)
                 {
-                    ref_ptr maskNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, (CStr("mask") + CStr(j + 1)).c_str());
+                    ref_ptr maskNode =
+                        xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, (CStr("mask") + CStr(j + 1)).c_str());
                     CStr texname;
                     bool const res = M3D_RENDERER->GetTextureName(m_AlphaSets[k].m_texMasks[j][typez], texname) != 0;
                     assert(res);
@@ -2379,7 +2423,8 @@ namespace m3d
             {
                 ref_ptr tileNode = xmlFileW->CreateNode(cmn::XML_NODE_ELEMENT, "tile");
                 CStr filename;
-                bool const res = M3D_RENDERER->GetTextureName(m_tilesTextures[land.m_texIndices[i]]->m_texHandle, filename) != 0;
+                bool const res =
+                    M3D_RENDERER->GetTextureName(m_tilesTextures[land.m_texIndices[i]]->m_texHandle, filename) != 0;
                 assert(res);
                 // The tile folder prefix is cut out of the texture path.
                 // NOTE: when the folder is not found the position passed on is -1.
@@ -2445,7 +2490,8 @@ namespace m3d
                 {
                     M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_S, 3u);
                     M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3u);
-                    M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_MIP_LOD_BIAS, M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF());
+                    M3D_APP->m_renderer->SetTextureParameter(
+                        texHandle, rend::TM_MIP_LOD_BIAS, M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF());
                     ws.m_texHandle = texHandle;
                 }
                 m_waves.push_back(ws);
@@ -2459,24 +2505,24 @@ namespace m3d
         delete[] m_colormap;
         //TODO: check size
         m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
-        
+
         delete[] m_texSetsmap;
         m_texSetsmap = new retruxx::set<unsigned>[m_owner->m_level->land_size * m_owner->m_level->land_size + 1];
-        
-        
-        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
+
+        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream(); stream->Open(
+                m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName).c_str(), fs::IStream::OPEN_READ))
         {
-            //TODO: check this!!!!
+            // The file holds m_mapSize x m_mapSize texels; the map has one extra
+            // column (and row), filled by repeating the last one.
             auto const streamSize = stream->GetSize();
-            auto* data = new unsigned[streamSize / sizeof(unsigned)];
+            auto* data = new unsigned[streamSize / sizeof(unsigned) + 1];
             stream->ReadBytes(data, streamSize);
+            stream->Close();
             for (int i = 0; i < m_mapSize; ++i)
             {
                 for (int j = 0; j < m_mapSize; ++j)
                 {
-                    auto idx = j + i * (m_mapSize + 1);
-                    m_colormap[idx] = data[idx];
+                    m_colormap[j + i * (m_mapSize + 1)] = data[j + i * m_mapSize];
                 }
                 m_colormap[m_mapSize + i * (m_mapSize + 1)] = m_colormap[m_mapSize + i * (m_mapSize + 1) - 1];
             }
@@ -2484,34 +2530,33 @@ namespace m3d
         }
         else
         {
-            M3D_LOG_INFO("Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) + "using default values");
+            M3D_LOG_INFO(
+                "Cannot read colormap: " + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_colormapName) +
+                "using default values");
             for (int i = 0; i < (this->m_mapSize + 1) * (this->m_mapSize + 1); ++i)
-                this->m_colormap[i] = 0xFF808080; // Default gray color
+                this->m_colormap[i] = 0xFF7F7F7F;  // Default grey
         }
-        
+
         delete[] m_heightMap;
         m_heightMap = new float[(m_mapSize + 1) * (m_mapSize + 1)];
-        
+
         delete[] m_cliffHeightMap;
         m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
 
-
         // TODO: check this
-        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
+        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream(); stream->Open(
+                m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
         {
             auto const streamSize = stream->GetSize();
-            if (streamSize == 2 * m_mapSize * m_mapSize) // 16-bit heightfield
+            if (streamSize == 2 * m_mapSize * m_mapSize)  // 16-bit heightfield
             {
-                //TODO: check this
                 auto* data = new unsigned short[streamSize];
                 stream->ReadBytes(data, streamSize);
                 for (int i = 0; i < m_mapSize; ++i)
                 {
                     for (int j = 0; j < m_mapSize; ++j)
                     {
-                        auto idx = j + i * (m_mapSize + 1);
-                        m_heightMap[idx] = data[idx] * 0.12;
+                        m_heightMap[j + i * (m_mapSize + 1)] = static_cast<float>(data[j + i * m_mapSize] * 0.12);
                     }
                     m_heightMap[m_mapSize + i * (m_mapSize + 1)] = m_heightMap[m_mapSize + i * (m_mapSize + 1) - 1];
                 }
@@ -2525,9 +2570,7 @@ namespace m3d
                 // Process 32-bit height data with border expansion
                 for (int j = 0; j < m_mapSize; j++)
                 {
-                    memcpy(&m_heightMap[j * (m_mapSize + 1)],
-                        &data[j * m_mapSize],
-                        m_mapSize * sizeof(float));
+                    memcpy(&m_heightMap[j * (m_mapSize + 1)], &data[j * m_mapSize], m_mapSize * sizeof(float));
                     // Expand last column
                     m_heightMap[m_mapSize + j * (m_mapSize + 1)] = m_heightMap[(m_mapSize - 1) + j * (m_mapSize + 1)];
                 }
@@ -2541,23 +2584,41 @@ namespace m3d
             return 0;
         }
 
-        memcpy(&m_heightMap[(m_mapSize + 1) * (m_mapSize - 2)], &m_heightMap[(m_mapSize + 1) * (m_mapSize - 3)], 4 * m_mapSize + 4);
-        memcpy((char*)m_heightMap + (m_mapSize + 1) * (4 * m_mapSize - 4), &m_heightMap[(m_mapSize + 1) * (m_mapSize - 2)], 4 * m_mapSize + 4);
-        memcpy(&this->m_heightMap[m_mapSize * (m_mapSize + 1)], (char*)this->m_heightMap + (m_mapSize + 1) * (4 * m_mapSize - 4), 4 * m_mapSize + 4);
-        memcpy(&this->m_colormap[(m_mapSize + 1) * (m_mapSize - 2)], &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 3)], 4 * m_mapSize + 4);
-        memcpy((char*)this->m_colormap + (m_mapSize + 1) * (4 * m_mapSize - 4), &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 2)], 4 * m_mapSize + 4);
-        memcpy(&this->m_colormap[m_mapSize * (m_mapSize + 1)], (char*)this->m_colormap + (m_mapSize + 1) * (4 * m_mapSize - 4), 4 * m_mapSize + 4);
+        memcpy(
+            &m_heightMap[(m_mapSize + 1) * (m_mapSize - 2)],
+            &m_heightMap[(m_mapSize + 1) * (m_mapSize - 3)],
+            4 * m_mapSize + 4);
+        memcpy(
+            (char*)m_heightMap + (m_mapSize + 1) * (4 * m_mapSize - 4),
+            &m_heightMap[(m_mapSize + 1) * (m_mapSize - 2)],
+            4 * m_mapSize + 4);
+        memcpy(
+            &this->m_heightMap[m_mapSize * (m_mapSize + 1)],
+            (char*)this->m_heightMap + (m_mapSize + 1) * (4 * m_mapSize - 4),
+            4 * m_mapSize + 4);
+        memcpy(
+            &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 2)],
+            &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 3)],
+            4 * m_mapSize + 4);
+        memcpy(
+            (char*)this->m_colormap + (m_mapSize + 1) * (4 * m_mapSize - 4),
+            &this->m_colormap[(m_mapSize + 1) * (m_mapSize - 2)],
+            4 * m_mapSize + 4);
+        memcpy(
+            &this->m_colormap[m_mapSize * (m_mapSize + 1)],
+            (char*)this->m_colormap + (m_mapSize + 1) * (4 * m_mapSize - 4),
+            4 * m_mapSize + 4);
 
         delete[] m_waterMap;
 
-        const auto landSize = 4 * this->m_owner->m_level->land_size;
-        const auto waterMapSize = landSize * landSize * sizeof(short);
+        auto const landSize = 4 * this->m_owner->m_level->land_size;
+        auto const waterMapSize = landSize * landSize * sizeof(short);
         m_waterMap = new short[landSize * landSize];
         memset(m_waterMap, 0, waterMapSize);
 
         // TODO check this!!
-        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
-            stream->Open(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_waterName).c_str(), fs::IStream::OPEN_READ))
+        if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream(); stream->Open(
+                m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_waterName).c_str(), fs::IStream::OPEN_READ))
         {
             unsigned int waterDataSize = stream->GetSize();
             if (waterDataSize == waterMapSize)
@@ -2586,7 +2647,9 @@ namespace m3d
         }
         else
         {
-            M3D_LOG_INFO(CStr("Cannot open watermap: ") + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_waterName) + CStr(" using empty waterfield"));
+            M3D_LOG_INFO(
+                CStr("Cannot open watermap: ") + m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_waterName) +
+                CStr(" using empty waterfield"));
             memset(m_waterMap, 0, landSize * landSize * sizeof(short));
         }
 
@@ -2602,12 +2665,12 @@ namespace m3d
         {
             RecalcNormalMap(0, 0, m_mapSize, m_mapSize);
         }
-        
+
         unsigned int loadTime = M3D_KERNEL->GetTimer().GetCurTime() - startTime;
         M3D_LOG_INFO("Normal map loaded in: " + CStr(loadTime));
 
         // Load tiles
-        startTime =  M3D_KERNEL->GetTimer().GetCurTime();
+        startTime = M3D_KERNEL->GetTimer().GetCurTime();
         if (!LoadTiles(m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_tilesFileName)))
         {
             return 0;
@@ -2684,10 +2747,7 @@ namespace m3d
             {
                 sorted[i] = i;
             }
-            std::sort(
-                sorted,
-                sorted + numVisibleInstances,
-                GrassInstanceSortPred(visGrassInstancesArr, cameraPos));
+            std::sort(sorted, sorted + numVisibleInstances, GrassInstanceSortPred(visGrassInstancesArr, cameraPos));
 
             float constants[8 * MAX_GRASS_INSTANCES_PER_BATCH];
 
@@ -2753,11 +2813,7 @@ namespace m3d
 
                     M3D_RENDERER->SetVsFloatConst(20u, constants, 2 * batch);
                     M3D_RENDERER->DrawIndexedPrimitiveShader(
-                        rend::M3DPT_TRIANGLELIST,
-                        0,
-                        batch * info->numVerts,
-                        0,
-                        batch * info->numTris);
+                        rend::M3DPT_TRIANGLELIST, 0, batch * info->numVerts, 0, batch * info->numTris);
                     ++numDips;
 
                     run -= batch;
@@ -2886,59 +2942,88 @@ namespace m3d
                     auto v27 = sin(v3);
                     auto v26 = cos(v3);
                     auto v47 = v26;
-                    auto v4 = (float)((float)((float)(mat._41 * shiftHalf0._14) + (float)(mat._31 * shiftHalf0._13))
-                                 + (float)(shiftHalf0._12 * (float)(0.0 - v27)))
-                        + v26;
-                    auto v5 = (float)((float)((float)(mat._43 * shiftHalf0._14) + (float)(mat._23 * shiftHalf0._12)) + mat._13)
-                        + shiftHalf0._13;
+                    auto v4 = (float)((float)((float)(mat._41 * shiftHalf0._14) + (float)(mat._31 * shiftHalf0._13)) +
+                                      (float)(shiftHalf0._12 * (float)(0.0 - v27))) +
+                        v26;
+                    auto v5 = (float)((float)((float)(mat._43 * shiftHalf0._14) + (float)(mat._23 * shiftHalf0._12)) +
+                                      mat._13) +
+                        shiftHalf0._13;
                     auto v36 = shiftHalf0._12 * v26 + mat._42 * shiftHalf0._14 + mat._32 * shiftHalf0._13 + v27;
-                    auto v37 = (float)((float)((float)(mat._34 * shiftHalf0._13) + (float)(mat._24 * shiftHalf0._12)) + mat._14)
-                        + shiftHalf0._14;
-                    auto v6 = (float)((float)((float)(shiftHalf0._21 * v26) + (float)(shiftHalf0._24 * mat._41))
-                                 + (float)(shiftHalf0._23 * mat._31))
-                        + (float)(0.0 - v27);
-                    auto v38 = (float)((float)((float)(shiftHalf0._23 * mat._34) + (float)(shiftHalf0._21 * mat._14)) + shiftHalf0._24)
-                        + mat._24;
-                    auto v39 = (float)((float)((float)(shiftHalf0._32 * v26) + (float)(shiftHalf0._31 * v27))
-                                  + (float)(shiftHalf0._34 * mat._42))
-                        + mat._32;
-                    auto v40 = (float)((float)((float)(shiftHalf0._34 * mat._43) + (float)(shiftHalf0._32 * mat._23))
-                                  + (float)(shiftHalf0._31 * mat._13))
-                        + 1.0;
-                    auto v7 = (float)((float)((float)(shiftHalf0._21 * v27) + (float)(shiftHalf0._24 * mat._42))
-                                 + (float)(shiftHalf0._23 * mat._32))
-                        + v26;
-                    auto v8 = (float)((float)((float)(shiftHalf0._24 * mat._43) + (float)(shiftHalf0._21 * mat._13)) + shiftHalf0._23)
-                        + mat._23;
-                    auto v9 = (float)((float)((float)(shiftHalf0._31 * v26) + (float)(shiftHalf0._34 * mat._41))
-                                 + (float)(shiftHalf0._32 * (float)(0.0 - v27)))
-                        + mat._31;
-                    auto v41 = (float)((float)((float)(shiftHalf0._32 * mat._24) + (float)(shiftHalf0._31 * mat._14)) + shiftHalf0._34)
-                        + mat._34;
+                    auto v37 = (float)((float)((float)(mat._34 * shiftHalf0._13) + (float)(mat._24 * shiftHalf0._12)) +
+                                       mat._14) +
+                        shiftHalf0._14;
+                    auto v6 = (float)((float)((float)(shiftHalf0._21 * v26) + (float)(shiftHalf0._24 * mat._41)) +
+                                      (float)(shiftHalf0._23 * mat._31)) +
+                        (float)(0.0 - v27);
+                    auto v38 = (float)((float)((float)(shiftHalf0._23 * mat._34) + (float)(shiftHalf0._21 * mat._14)) +
+                                       shiftHalf0._24) +
+                        mat._24;
+                    auto v39 = (float)((float)((float)(shiftHalf0._32 * v26) + (float)(shiftHalf0._31 * v27)) +
+                                       (float)(shiftHalf0._34 * mat._42)) +
+                        mat._32;
+                    auto v40 = (float)((float)((float)(shiftHalf0._34 * mat._43) + (float)(shiftHalf0._32 * mat._23)) +
+                                       (float)(shiftHalf0._31 * mat._13)) +
+                        1.0;
+                    auto v7 = (float)((float)((float)(shiftHalf0._21 * v27) + (float)(shiftHalf0._24 * mat._42)) +
+                                      (float)(shiftHalf0._23 * mat._32)) +
+                        v26;
+                    auto v8 = (float)((float)((float)(shiftHalf0._24 * mat._43) + (float)(shiftHalf0._21 * mat._13)) +
+                                      shiftHalf0._23) +
+                        mat._23;
+                    auto v9 = (float)((float)((float)(shiftHalf0._31 * v26) + (float)(shiftHalf0._34 * mat._41)) +
+                                      (float)(shiftHalf0._32 * (float)(0.0 - v27))) +
+                        mat._31;
+                    auto v41 = (float)((float)((float)(shiftHalf0._32 * mat._24) + (float)(shiftHalf0._31 * mat._14)) +
+                                       shiftHalf0._34) +
+                        mat._34;
                     auto v33 = v26 * -0.5;
-                    auto v42 = (float)((float)((float)(mat._31 * 0.0) - (float)((float)(0.0 - v27) * 0.5)) + (float)(v26 * -0.5))
-                        + mat._41;
-                    auto v43 = (float)((float)((float)(mat._32 * 0.0) - (float)(v27 * 0.5)) + (float)(v26 * -0.5)) + mat._42;
+                    auto v42 = (float)((float)((float)(mat._31 * 0.0) - (float)((float)(0.0 - v27) * 0.5)) +
+                                       (float)(v26 * -0.5)) +
+                        mat._41;
+                    auto v43 =
+                        (float)((float)((float)(mat._32 * 0.0) - (float)(v27 * 0.5)) + (float)(v26 * -0.5)) + mat._42;
                     auto v44 = mat._43 - (float)((float)(mat._23 + mat._13) * 0.5);
                     auto v35 = v37 * 0.5;
                     auto v45 = (float)((float)(mat._34 * 0.0) - (float)((float)(mat._24 + mat._14) * 0.5)) + 1.0;
-                    auto v52 = (float)((float)((float)(shiftHalf1._31 * v5) + (float)(shiftHalf1._21 * v36)) + (float)(v37 * 0.5)) + v4;
-                    auto v53 = (float)((float)((float)(shiftHalf1._32 * v5) + (float)(shiftHalf1._12 * v4)) + (float)(v37 * 0.5)) + v36;
-                    auto v54 = (float)((float)((float)(shiftHalf1._23 * v36) + (float)(shiftHalf1._13 * v4)) + (float)(v37 * 0.0)) + v5;
-                    auto v55 = (float)((float)((float)(shiftHalf1._34 * v5) + (float)(shiftHalf1._24 * v36))
-                                  + (float)(shiftHalf1._14 * v4))
-                        + v37;
+                    auto v52 = (float)((float)((float)(shiftHalf1._31 * v5) + (float)(shiftHalf1._21 * v36)) +
+                                       (float)(v37 * 0.5)) +
+                        v4;
+                    auto v53 = (float)((float)((float)(shiftHalf1._32 * v5) + (float)(shiftHalf1._12 * v4)) +
+                                       (float)(v37 * 0.5)) +
+                        v36;
+                    auto v54 = (float)((float)((float)(shiftHalf1._23 * v36) + (float)(shiftHalf1._13 * v4)) +
+                                       (float)(v37 * 0.0)) +
+                        v5;
+                    auto v55 = (float)((float)((float)(shiftHalf1._34 * v5) + (float)(shiftHalf1._24 * v36)) +
+                                       (float)(shiftHalf1._14 * v4)) +
+                        v37;
                     auto v49 = v38 * 0.5;
-                    auto v56 = (float)((float)((float)(shiftHalf1._31 * v8) + (float)(shiftHalf1._21 * v7)) + (float)(v38 * 0.5)) + v6;
-                    auto v57 = (float)((float)((float)(shiftHalf1._32 * v8) + (float)(shiftHalf1._12 * v6)) + (float)(v38 * 0.5)) + v7;
-                    auto v58 = (float)((float)((float)(shiftHalf1._23 * v7) + (float)(shiftHalf1._13 * v6)) + (float)(v38 * 0.0)) + v8;
+                    auto v56 = (float)((float)((float)(shiftHalf1._31 * v8) + (float)(shiftHalf1._21 * v7)) +
+                                       (float)(v38 * 0.5)) +
+                        v6;
+                    auto v57 = (float)((float)((float)(shiftHalf1._32 * v8) + (float)(shiftHalf1._12 * v6)) +
+                                       (float)(v38 * 0.5)) +
+                        v7;
+                    auto v58 = (float)((float)((float)(shiftHalf1._23 * v7) + (float)(shiftHalf1._13 * v6)) +
+                                       (float)(v38 * 0.0)) +
+                        v8;
                     auto v34 = v41 * 0.5;
-                    auto v59 = (float)((float)((float)(shiftHalf1._31 * v40) + (float)(shiftHalf1._21 * v39)) + (float)(v41 * 0.5)) + v9;
-                    auto v60 = (float)((float)((float)(shiftHalf1._32 * v40) + (float)(shiftHalf1._12 * v9)) + (float)(v41 * 0.5)) + v39;
-                    auto v61 = (float)((float)((float)(shiftHalf1._23 * v39) + (float)(shiftHalf1._13 * v9)) + (float)(v41 * 0.0)) + v40;
+                    auto v59 = (float)((float)((float)(shiftHalf1._31 * v40) + (float)(shiftHalf1._21 * v39)) +
+                                       (float)(v41 * 0.5)) +
+                        v9;
+                    auto v60 = (float)((float)((float)(shiftHalf1._32 * v40) + (float)(shiftHalf1._12 * v9)) +
+                                       (float)(v41 * 0.5)) +
+                        v39;
+                    auto v61 = (float)((float)((float)(shiftHalf1._23 * v39) + (float)(shiftHalf1._13 * v9)) +
+                                       (float)(v41 * 0.0)) +
+                        v40;
                     auto v32 = v45 * 0.5;
-                    auto v62 = (float)((float)((float)(shiftHalf1._31 * v44) + (float)(shiftHalf1._21 * v43)) + (float)(v45 * 0.5)) + v42;
-                    auto v63 = (float)((float)((float)(shiftHalf1._32 * v44) + (float)(shiftHalf1._12 * v42)) + (float)(v45 * 0.5)) + v43;
+                    auto v62 = (float)((float)((float)(shiftHalf1._31 * v44) + (float)(shiftHalf1._21 * v43)) +
+                                       (float)(v45 * 0.5)) +
+                        v42;
+                    auto v63 = (float)((float)((float)(shiftHalf1._32 * v44) + (float)(shiftHalf1._12 * v42)) +
+                                       (float)(v45 * 0.5)) +
+                        v43;
                     float v64[16];
                     v64[0] = v52;
                     v64[1] = v53;
@@ -2951,19 +3036,20 @@ namespace m3d
                     v64[9] = v60;
                     v64[10] = v61;
                     v64[12] = v62;
-                    v64[11] = (float)((float)((float)(shiftHalf1._34 * v40) + (float)(shiftHalf1._24 * v39))
-                                      + (float)(shiftHalf1._14 * v9))
-                        + v41;
-                    v64[7] = (float)((float)((float)(shiftHalf1._34 * v8) + (float)(shiftHalf1._24 * v7))
-                                     + (float)(shiftHalf1._14 * v6))
-                        + v38;
+                    v64[11] = (float)((float)((float)(shiftHalf1._34 * v40) + (float)(shiftHalf1._24 * v39)) +
+                                      (float)(shiftHalf1._14 * v9)) +
+                        v41;
+                    v64[7] = (float)((float)((float)(shiftHalf1._34 * v8) + (float)(shiftHalf1._24 * v7)) +
+                                     (float)(shiftHalf1._14 * v6)) +
+                        v38;
                     auto v10 = 0.5;
                     v64[13] = v63;
-                    v64[14] = (float)((float)((float)(shiftHalf1._23 * v43) + (float)(shiftHalf1._13 * v42)) + (float)(v45 * 0.0))
-                        + v44;
-                    v64[15] = (float)((float)((float)(shiftHalf1._34 * v44) + (float)(shiftHalf1._24 * v43))
-                                      + (float)(shiftHalf1._14 * v42))
-                        + v45;
+                    v64[14] = (float)((float)((float)(shiftHalf1._23 * v43) + (float)(shiftHalf1._13 * v42)) +
+                                      (float)(v45 * 0.0)) +
+                        v44;
+                    v64[15] = (float)((float)((float)(shiftHalf1._34 * v44) + (float)(shiftHalf1._24 * v43)) +
+                                      (float)(shiftHalf1._14 * v42)) +
+                        v45;
                     memcpy(&mat, v64, sizeof(mat));
                     auto yy = 0;
                     auto v11 = mat._31 * 0.0;
@@ -3012,14 +3098,15 @@ namespace m3d
 
     void Landscape::UpdateTexturesFilters()
     {
-        const auto color = M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetC();
+        auto const color = M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetC();
         for (auto& tile : m_tilesTextures)
         {
             M3D_RENDERER->SetTextureParameter(tile->m_texHandle, m3d::rend::TexParam::TM_TEX_FILTER, color);
             if (color == 3)
             {
-                const auto maxAnisotropy = M3D_RENDERER->GetMaxAnisotropy();
-                M3D_RENDERER->SetTextureParameter(tile->m_texHandle, m3d::rend::TexParam::TM_MAX_ANISOTROPY, maxAnisotropy);
+                auto const maxAnisotropy = M3D_RENDERER->GetMaxAnisotropy();
+                M3D_RENDERER->SetTextureParameter(
+                    tile->m_texHandle, m3d::rend::TexParam::TM_MAX_ANISOTROPY, maxAnisotropy);
             }
         }
     }
@@ -3082,7 +3169,7 @@ namespace m3d
     void Landscape::LinkNodeCollisionGeomsToCell(SgNode* node, int startX, int endX, int startY, int endY)
     {
         // TODO: generated code
-        const auto landSize = m_owner->m_level->land_size;
+        auto const landSize = m_owner->m_level->land_size;
 
         m3d::AnimatedModel* mdl = nullptr;
         int srvId = 0;
@@ -3106,10 +3193,10 @@ namespace m3d
             auto* geomStatic = RT_DYNCAST(M3D_KERNEL->New("GeomObjectStatics"), GeomObjectStatics);
 
             // Allocate and copy points
-            const auto pointsCount = mdl->GetCollisionTrimesh().Points.size();
+            auto const pointsCount = mdl->GetCollisionTrimesh().Points.size();
             geomStatic->m_Vertices = new CVector[pointsCount];
 
-            const auto scale = node->GetScale().x;
+            auto const scale = node->GetScale().x;
             for (size_t i = 0; i < pointsCount; i++)
             {
                 geomStatic->m_Vertices[i].x = mdl->GetCollisionTrimesh().Points[i].x * scale;
@@ -3118,7 +3205,7 @@ namespace m3d
             }
 
             // Allocate and copy triangles
-            const auto trisCount = mdl->GetCollisionTrimesh().Triangles.size();
+            auto const trisCount = mdl->GetCollisionTrimesh().Triangles.size();
             geomStatic->m_Indices = new int[trisCount * 3];
 
             for (size_t i = 0; i < trisCount; ++i)
@@ -3128,20 +3215,24 @@ namespace m3d
                 geomStatic->m_Indices[i * 3 + 2] = mdl->GetCollisionTrimesh().Triangles[i].I[2];
             }
 
-
             // Create ODE trimesh
             geomStatic->m_TriData = dGeomTriMeshDataCreate();
 
-            dGeomTriMeshDataBuildSingle(geomStatic->m_TriData,
-                geomStatic->m_Vertices, sizeof(CVector), pointsCount,
-                geomStatic->m_Indices, trisCount * 3, 12);
+            dGeomTriMeshDataBuildSingle(
+                geomStatic->m_TriData,
+                geomStatic->m_Vertices,
+                sizeof(CVector),
+                pointsCount,
+                geomStatic->m_Indices,
+                trisCount * 3,
+                12);
 
             dxSpace* odeSpace = m_owner->GetOdeSpace();
             dxGeom* triMesh = dCreateTriMesh(odeSpace, geomStatic->m_TriData, 0, 0, 0);
             geomStatic->SetGeom(triMesh);
 
-            geomStatic->m_rotation = { 0.0, 0.0, 0.0, 1.0 };
-            geomStatic->m_translation = { 0.0, 0.0, 0.0 };
+            geomStatic->m_rotation = {0.0, 0.0, 0.0, 1.0};
+            geomStatic->m_translation = {0.0, 0.0, 0.0};
 
             // Set bounds
             PointBase<int> startCell(startX, startY);
@@ -3171,7 +3262,7 @@ namespace m3d
         for (size_t i = 0; i < mdl->GetNumGeoms(); i++)
         {
             auto* geom = mdl->GetGeom(i);
-            const auto scale = node->GetScale().x;
+            auto const scale = node->GetScale().x;
 
             auto* geomStatic = RT_DYNCAST(M3D_KERNEL->New("GeomObjectStatics"), GeomObjectStatics);
 
@@ -3179,32 +3270,31 @@ namespace m3d
 
             switch (geom->Type)
             {
-            case 0: // Box
+            case 0:  // Box
             {
-                const auto lx = geom->Sizes.BoxSizes.x * scale;
-                const auto ly = geom->Sizes.BoxSizes.y * scale;
-                const auto lz = geom->Sizes.BoxSizes.z * scale;
+                auto const lx = geom->Sizes.BoxSizes.x * scale;
+                auto const ly = geom->Sizes.BoxSizes.y * scale;
+                auto const lz = geom->Sizes.BoxSizes.z * scale;
                 dxSpace* odeSpace = m_owner->GetOdeSpace();
                 odeGeom = dCreateBox(odeSpace, lx, ly, lz);
                 break;
             }
-            case 1: // Sphere
+            case 1:  // Sphere
             {
                 float radius = geom->Sizes.BoxSizes.x * scale;
                 dxSpace* odeSpace = m_owner->GetOdeSpace();
                 odeGeom = dCreateSphere(odeSpace, radius);
                 break;
             }
-            case 2: // Cylinder/Capsule
+            case 2:  // Cylinder/Capsule
             {
                 float radius = geom->Sizes.BoxSizes.x * scale;
                 float length = geom->Sizes.BoxSizes.y * scale;
                 dxSpace* odeSpace = m_owner->GetOdeSpace();
 
                 // Apply rotation for cylinder (45 degrees around some axis)
-                Quaternion rot(geom->Rotation[0], geom->Rotation[1],
-                    geom->Rotation[2], geom->Rotation[3]);
-                Quaternion addRot(0.7071f, 0.0f, 0.0f, 0.7071f); // 45 degrees
+                Quaternion rot(geom->Rotation[0], geom->Rotation[1], geom->Rotation[2], geom->Rotation[3]);
+                Quaternion addRot(0.7071f, 0.0f, 0.0f, 0.7071f);  // 45 degrees
                 rot *= addRot;
 
                 geomStatic->m_rotation = rot;
@@ -3301,7 +3391,11 @@ namespace m3d
             float shift = wave.m_tcomp;
             if (wave.m_tcomp < 0.0f)
             {
-                shift = static_cast<float>(sin(static_cast<double>(shiftTime) * 6.2831855f / static_cast<double>(shiftPeriod) + wave.m_tphase) * wave.m_tamplitude + wave.m_tlevel);
+                shift = static_cast<float>(
+                    sin(static_cast<double>(shiftTime) * 6.2831855f / static_cast<double>(shiftPeriod) +
+                        wave.m_tphase) *
+                        wave.m_tamplitude +
+                    wave.m_tlevel);
             }
             int const scalePeriod = static_cast<int>(static_cast<float>(1000.0 / wave.m_sfreq));
             int const curTime = static_cast<int>(M3D_KERNEL->GetTimer().GetCurTime());
@@ -3309,7 +3403,11 @@ namespace m3d
             if (scale < 0.0f)
             {
                 // NOTE: the scale oscillation uses m_tphase, not m_sphase.
-                scale = static_cast<float>(sin(static_cast<double>(curTime % scalePeriod) * 6.2831855f / static_cast<double>(scalePeriod) + wave.m_tphase) * wave.m_samplitude + wave.m_slevel);
+                scale = static_cast<float>(
+                    sin(static_cast<double>(curTime % scalePeriod) * 6.2831855f / static_cast<double>(scalePeriod) +
+                        wave.m_tphase) *
+                        wave.m_samplitude +
+                    wave.m_slevel);
             }
 
             CMatrix mat;
@@ -3331,7 +3429,8 @@ namespace m3d
                 if (numPoints - 1 > 0)
                 {
                     M3D_RENDERER->SetIndices(m_shoresIb, baseVertex);
-                    M3D_RENDERER->DrawIndexedPrimitiveEffect(rend::M3DPT_TRIANGLESTRIP, m_shoresShader, 0, 2 * numPoints, 0, 2 * numPoints - 2);
+                    M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                        rend::M3DPT_TRIANGLESTRIP, m_shoresShader, 0, 2 * numPoints, 0, 2 * numPoints - 2);
                     baseVertex += 2 * numPoints;
                 }
             }
@@ -3380,12 +3479,7 @@ namespace m3d
             M3D_RENDERER->SetToStream0(m_solidVb);
             M3D_RENDERER->SetIndices(m_solidIb[0], vertsPerCell * (z + x * m_owner->m_level->land_size));
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                rend::M3DPT_TRIANGLESTRIP,
-                shader,
-                0,
-                vertsPerCell,
-                0,
-                trisPerCell[0]);
+                rend::M3DPT_TRIANGLESTRIP, shader, 0, vertsPerCell, 0, trisPerCell[0]);
             M3D_RENDERER->PopZbState();
         }
     }
@@ -3398,13 +3492,13 @@ namespace m3d
     void Landscape::Invalidate()
     {
         // RVA 0x5AB480
-
     }
 
     unsigned Landscape::AddGrassInstance(int modelId, CVector const& pos, float yaw, float scale, bool placeOnTerrain)
     {
         // RVA 0x6AF4F0
-        unsigned const tileIdx = static_cast<int>(pos.x * (1.0f / 32.0f)) + (static_cast<int>(pos.z * (1.0f / 32.0f)) << 8);
+        unsigned const tileIdx =
+            static_cast<int>(pos.x * (1.0f / 32.0f)) + (static_cast<int>(pos.z * (1.0f / 32.0f)) << 8);
         if (!m_grassArray[tileIdx])
         {
             m_grassArray[tileIdx] = new TileGrass;
@@ -3538,7 +3632,7 @@ namespace m3d
 
     void Landscape::DrawCollisionGeoms(bool allGeoms)
     {
-        const bool cgDraw = M3D_ENGINE_CFG.m_cgDraw.GetB();
+        bool const cgDraw = M3D_ENGINE_CFG.m_cgDraw.GetB();
         if (cgDraw)
         {
             CMatrix ident;
@@ -3618,7 +3712,6 @@ namespace m3d
     void Landscape::GenerateOneDPVSCellMesh(int, int, CVector*, int*)
     {
         // RVA 0x644C70
-
     }
 
     float Landscape::GetFloatToShortScale() const
@@ -3713,7 +3806,8 @@ namespace m3d
             {
                 if (col >= 0 && row >= 0 && col < m_mapSize && row < m_mapSize)
                 {
-                    m_vnormal[row * (m_mapSize + 1) + col] = getNormal(static_cast<float>(col) * 8.0f, static_cast<float>(row) * 8.0f);
+                    m_vnormal[row * (m_mapSize + 1) + col] =
+                        getNormal(static_cast<float>(col) * 8.0f, static_cast<float>(row) * 8.0f);
                 }
             }
         }
@@ -3758,7 +3852,9 @@ namespace m3d
                 {
                     if (id == objId)
                     {
-                        M3D_LOG_INFO(CStr("Error: Dead objId: ") + CStr(objId) + CStr(" in cell (") + CStr(x) + CStr(", ") + CStr(y) + CStr(")"));
+                        M3D_LOG_INFO(
+                            CStr("Error: Dead objId: ") + CStr(objId) + CStr(" in cell (") + CStr(x) + CStr(", ") +
+                            CStr(y) + CStr(")"));
                         SYS_ERROR("!\"Error in checking for dead obj ids, see log\"");
                     }
                 }
@@ -3800,7 +3896,8 @@ namespace m3d
         tileMaxX = std::clamp(tileMaxX, 0, 256);
         tileMaxY = std::clamp(tileMaxY, 0, 256);
 
-        auto const inRadius = [&](GrassInstance const* gi) {
+        auto const inRadius = [&](GrassInstance const* gi)
+        {
             double const dx = gi->pos.x - pos.x;
             double const dz = gi->pos.z - pos.z;
             return radius > sqrt(dx * dx + dz * dz);
@@ -3938,7 +4035,6 @@ namespace m3d
                 CMatrix viewMatrix = M3D_RENDERER->MatGet();
                 CMatrix im = mirror * viewMatrix;
 
-
                 // Get viewport dimensions
                 m3d::rend::Viewport viewport = M3D_RENDERER->GetViewport();
                 float width = static_cast<float>(viewport.m_width);
@@ -3969,7 +4065,8 @@ namespace m3d
 
                 float const VISCELL_EDGE_LENGTH_24 = 128.0f;
 
-                m_reflectedFrustum.createScreenFrustums(origin, im, fovX, fovY, 1.0f, reflectionDistance * VISCELL_EDGE_LENGTH_24);
+                m_reflectedFrustum.createScreenFrustums(
+                    origin, im, fovX, fovY, 1.0f, reflectionDistance * VISCELL_EDGE_LENGTH_24);
 
                 // Enable visible cells for reflection
                 m_owner->m_sceneGraph.EnableVisibleCells(m_reflectedFrustum, 2);
@@ -4005,7 +4102,8 @@ namespace m3d
         int const wsize = 4 * m_owner->m_level->land_size;
         int const lsSize = m_mapSize + 1;
 
-        auto const waterHeightAt = [&](int cx, int cz) -> float {
+        auto const waterHeightAt = [&](int cx, int cz) -> float
+        {
             int const wx = cx / 4;
             int const wz = cz / 4;
             int const side = 4 * m_owner->m_level->land_size;
@@ -4016,7 +4114,8 @@ namespace m3d
             return static_cast<float>(m_waterMap[wx + wz * side]) * 0.12f;
         };
         // Where the edge o->e crosses the plane y = waterH, strictly between its ends.
-        auto const crossWater = [](CVector const& o, CVector const& e, float waterH, CVector& hit) -> bool {
+        auto const crossWater = [](CVector const& o, CVector const& e, float waterH, CVector& hit) -> bool
+        {
             float const dx = e.x - o.x;
             float const dy = e.y - o.y;
             float const dz = e.z - o.z;
@@ -4039,14 +4138,24 @@ namespace m3d
             return true;
         };
         // The edge a neighbour is entered through when it is left through the given one.
-        auto const opposite = [](int edge, int& to) {
+        auto const opposite = [](int edge, int& to)
+        {
             switch (edge)
             {
-            case 1: to = 3; break;
-            case 2: to = 4; break;
-            case 3: to = 1; break;
-            case 4: to = 2; break;
-            default: break;
+            case 1:
+                to = 3;
+                break;
+            case 2:
+                to = 4;
+                break;
+            case 3:
+                to = 1;
+                break;
+            case 4:
+                to = 2;
+                break;
+            default:
+                break;
             }
         };
 
@@ -4065,9 +4174,9 @@ namespace m3d
                 float const waterH = waterHeightAt(x, z);
                 // NOTE: the last test reads the water map without a bounds check, past its
                 // end on the last row and column.
-                if ((h00 >= waterH && h10 >= waterH && h01 >= waterH && h11 >= waterH)
-                    || (waterH >= h00 && waterH >= h10 && waterH >= h01 && waterH >= h11)
-                    || !m_waterMap[x / 4 + wsize * (z / 4)])
+                if ((h00 >= waterH && h10 >= waterH && h01 >= waterH && h11 >= waterH) ||
+                    (waterH >= h00 && waterH >= h10 && waterH >= h01 && waterH >= h11) ||
+                    !m_waterMap[x / 4 + wsize * (z / 4)])
                 {
                     continue;
                 }
@@ -4081,7 +4190,8 @@ namespace m3d
                 int from = 0;
                 int firstfrom = 0;
                 bool secondpart = false;
-                auto const restart = [&] {
+                auto const restart = [&]
+                {
                     secondpart = true;
                     curx = x;
                     curz = z;
@@ -4134,7 +4244,8 @@ namespace m3d
                     int to2 = 0;
                     CVector hp1;
                     CVector hp2;
-                    auto const tryEdge = [&](int edge, CVector const& o, CVector const& e) {
+                    auto const tryEdge = [&](int edge, CVector const& o, CVector const& e)
+                    {
                         CVector hit;
                         if (!crossWater(o, e, cellWaterH, hit))
                         {
@@ -4259,7 +4370,7 @@ namespace m3d
         {
             m_owner->m_roadManager.ReleaseCollision();
 
-            const auto landSize = m_owner->m_level->land_size;
+            auto const landSize = m_owner->m_level->land_size;
             for (int y = 0; y < landSize; ++y)
             {
                 for (int x = 0; x < landSize; ++x)
@@ -4402,16 +4513,16 @@ namespace m3d
     void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
     {
         // TODO: generated code
-        constexpr float VISCELL_EDGE_LENGTH = 128.0f;
-        const float invCellSize = 1.0f / VISCELL_EDGE_LENGTH;
+        float constexpr VISCELL_EDGE_LENGTH = 128.0f;
+        float const invCellSize = 1.0f / VISCELL_EDGE_LENGTH;
 
         // Calculate grid indices for bounding box
-        const unsigned minGridX = static_cast<unsigned>(box[0] * invCellSize);
-        const unsigned minGridZ = static_cast<unsigned>(box[2] * invCellSize);
-        const float maxGridX = box[3] * invCellSize;
-        const float maxGridZ = box[5] * invCellSize;
+        unsigned const minGridX = static_cast<unsigned>(box[0] * invCellSize);
+        unsigned const minGridZ = static_cast<unsigned>(box[2] * invCellSize);
+        float const maxGridX = box[3] * invCellSize;
+        float const maxGridZ = box[5] * invCellSize;
 
-        const unsigned landSize = m_owner->m_level->land_size;
+        unsigned const landSize = m_owner->m_level->land_size;
 
         box[1] = 999999.0;
         box[4] = -999999.0;
@@ -4425,7 +4536,7 @@ namespace m3d
                 if (gridX >= landSize || gridZ >= landSize)
                     continue;
 
-                const auto& cell = m_cellParams[gridX + gridZ * landSize];
+                auto const& cell = m_cellParams[gridX + gridZ * landSize];
 
                 if (box[1] > cell.m_h0)
                     box[1] = cell.m_h0;
@@ -4527,8 +4638,8 @@ namespace m3d
                         // Dot the camera-to-blade vector against the view
                         // direction; anything behind the eye is dropped before
                         // the more expensive frustum test.
-                        float const behind = ((cameraPos.y - gi->pos.y) * viewMatrix._23 +
-                                                 (cameraPos.z - gi->pos.z) * viewMatrix._33) +
+                        float const behind =
+                            ((cameraPos.y - gi->pos.y) * viewMatrix._23 + (cameraPos.z - gi->pos.z) * viewMatrix._33) +
                             (cameraPos.x - gi->pos.x) * viewMatrix._13;
                         if (behind > 0.0f)
                         {
@@ -4575,8 +4686,8 @@ namespace m3d
                 CMatrix mat2;
                 mat2.setOrg(pos);
 
-                CMatrix const worldMatrix = (mat1 * mat2)  + mat1;
-                
+                CMatrix const worldMatrix = (mat1 * mat2) + mat1;
+
                 m3d::Application::g_pApp->m_renderer->MatPushWorld();
                 m3d::Application::g_pApp->m_renderer->MatSetWorld(worldMatrix);
             }
@@ -4601,9 +4712,10 @@ namespace m3d
                 // Now get the encapsulated geometry
                 currentGeom = dGeomTransformGetGeom(geom);
 
-               // Get position
+                // Get position
                 float const* transformPositionData = dGeomGetPosition(currentGeom);
-                CVector const transformPos(transformPositionData[0], transformPositionData[1], transformPositionData[2]);
+                CVector const transformPos(
+                    transformPositionData[0], transformPositionData[1], transformPositionData[2]);
 
                 // Get quaternion orientation
                 dGeomGetQuaternion(currentGeom, quat);
@@ -4679,7 +4791,8 @@ namespace m3d
             M3D_RENDERER->SetTexture(2, m_texRtReflection, -1.0);
             M3D_RENDERER->SetTexture(3, m_texRtRefraction, -1.0);
             M3D_RENDERER->DisableTextureStages(4);
-            auto const cvarF = [](CVar const& cvar) {
+            auto const cvarF = [](CVar const& cvar)
+            {
                 return cvar.GetType() == CVar::CVAR_FLOAT ? cvar.GetF() : static_cast<float>(cvar.GetI());
             };
             float const reflectionAmount = cvarF(M3D_ENGINE_CFG.m_g_ps11_water_reflection_amount);
@@ -4713,7 +4826,6 @@ namespace m3d
         unsigned const textureHandle = m_waterVs->GetParamHandleByName("mTexture");
         m_waterVs->SetMatrix(textureHandle, textureMat);
 
-        
         rend::Colorf const reflectionTint = m_owner->m_level->m_reflectionTint;
         rend::Colorf const refractionTint = m_owner->m_level->m_refractionTint;
 
@@ -4731,7 +4843,7 @@ namespace m3d
             unsigned const waveHeightSpecularHandle = m_waterPs->GetParamHandleByName("waveHeightSpecular");
             m_waterPs->SetVector4(waveHeightSpecularHandle, waveHeightSpecular);
 
-             // Set view position
+            // Set view position
             CMatrix invView = mat.getInverse();
             CVector viewPos = invView.getOrg();
 
@@ -4740,7 +4852,10 @@ namespace m3d
 
             // Set wave parameters
             CVector4 waveSize(
-                currentWeather->m_waterSizeSmall, currentWeather->m_waterSizeBig, cos(currentWeather->m_waterCourseAng), sin(currentWeather->m_waterCourseAng));
+                currentWeather->m_waterSizeSmall,
+                currentWeather->m_waterSizeBig,
+                cos(currentWeather->m_waterCourseAng),
+                sin(currentWeather->m_waterCourseAng));
             unsigned const waveSizeHandle = m_waterVs->GetParamHandleByName("waveSize");
             m_waterVs->SetVector4(waveSizeHandle, waveSize);
 
@@ -4749,7 +4864,6 @@ namespace m3d
             M3D_RENDERER->SetVsFloatConst(15, reinterpret_cast<float const*>(&sunDir), 1);
 
             M3D_RENDERER->SetPsFloatConst(4, &currentWeather->m_currentColors[4][0], 1);
-
         }
         else
         {
@@ -4765,14 +4879,16 @@ namespace m3d
             M3D_RENDERER->SetPsFloatConst(refractionRegister, reinterpret_cast<float const*>(&refractionTint), 1);
         }
 
-         // Set fog parameters
+        // Set fog parameters
         float fogStart, fogEnd;
         GetFogStartAndEnd(fogStart, fogEnd);
 
         float fogReduceFactor = m_owner->GetFogReduceFactorFromWeather();
-        CVector fogTerm(fogReduceFactor * fogEnd, 1.0f / (fogReduceFactor * fogEnd - fogReduceFactor * fogStart), fogReduceFactor * fogStart);
+        CVector fogTerm(
+            fogReduceFactor * fogEnd,
+            1.0f / (fogReduceFactor * fogEnd - fogReduceFactor * fogStart),
+            fogReduceFactor * fogStart);
 
-        
         unsigned const gFogTermHandle = m_waterVs->GetParamHandleByName("g_FogTerm");
         m_waterVs->SetVector3(gFogTermHandle, fogTerm);
 
@@ -4805,7 +4921,7 @@ namespace m3d
                     {
                         int waterMapX = subX + 4 * x;
 
-                         // Check if this cell has water
+                        // Check if this cell has water
                         if (m_waterMap[4 * waterMapY * landSize + waterMapX])
                         {
                             int waterMapStride = 4 * landSize;
@@ -4815,9 +4931,11 @@ namespace m3d
 
                             // Get water height with bounds checking
                             float waterHeight = 0.0f;
-                            if (waterMapX >= 0 && waterMapX < waterMapStride && waterMapY >= 0 && waterMapY < waterMapStride)
+                            if (waterMapX >= 0 && waterMapX < waterMapStride && waterMapY >= 0 &&
+                                waterMapY < waterMapStride)
                             {
-                                waterHeight = static_cast<float>(m_waterMap[waterMapX + waterMapStride * waterMapY]) * 0.12f;
+                                waterHeight =
+                                    static_cast<float>(m_waterMap[waterMapX + waterMapStride * waterMapY]) * 0.12f;
                             }
 
                             bool isShaderVersion14 = (this->m_waterShaderVersion == 14);
@@ -4875,7 +4993,8 @@ namespace m3d
                                 float neighborDeltaY = neighborPos.y - invView._43;
                                 float neighborDistX = std::abs(neighborDeltaX);
                                 float neighborDistY = std::abs(neighborDeltaY);
-                                float distanceToNeighbor = (neighborDistY <= neighborDistX) ? neighborDistX : neighborDistY;
+                                float distanceToNeighbor =
+                                    (neighborDistY <= neighborDistX) ? neighborDistX : neighborDistY;
 
                                 // Determine LOD level based on shader version and distances
                                 if (this->m_waterShaderVersion == 20)
@@ -4961,7 +5080,8 @@ namespace m3d
                             }
 
                             // Add cell to appropriate LOD bucket
-                            unsigned int encodedCoords = static_cast<unsigned int>((waterMapY & 0xFF) << 8) | (waterMapX & 0xFF);
+                            unsigned int encodedCoords =
+                                static_cast<unsigned int>((waterMapY & 0xFF) << 8) | (waterMapX & 0xFF);
                             std::pair<unsigned int, float> cellData(encodedCoords, waterHeight);
 
                             // Add to the water cells vector for this LOD level
@@ -4970,7 +5090,6 @@ namespace m3d
                         }
                     }
                 }
-
             }
         }
 
@@ -4980,7 +5099,8 @@ namespace m3d
         {
             // Scaled by the weather's water speed.
             float const waterSpeed = m_owner->GetWeatherManager().GetActiveWeather()->m_waterSpeed;
-            float const timeVal = static_cast<float>(static_cast<double>(M3D_KERNEL->GetTimer().m_curTime) * waterSpeed * 0.001f);
+            float const timeVal =
+                static_cast<float>(static_cast<double>(M3D_KERNEL->GetTimer().m_curTime) * waterSpeed * 0.001f);
             m_waterVs->SetFloat(m_waterVs->GetParamHandleByName("timeVal"), timeVal);
         }
         else
@@ -5045,10 +5165,12 @@ namespace m3d
                     }
 
                     // Render batch
-                    M3D_RENDERER->SetVsFloatConst(20, reinterpret_cast<float const*>(this->waterTileInfo), cellsThisBatch);
+                    M3D_RENDERER->SetVsFloatConst(
+                        20, reinterpret_cast<float const*>(this->waterTileInfo), cellsThisBatch);
 
                     int trisThisBatch = cellsThisBatch * this->m_wtNumTris[lod];
-                    M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, 81 * cellsThisBatch, 0, trisThisBatch - 4);
+                    M3D_RENDERER->DrawIndexedPrimitiveShader(
+                        rend::M3DPT_TRIANGLESTRIP, 0, 81 * cellsThisBatch, 0, trisThisBatch - 4);
 
                     totalTris += trisThisBatch - 4;
                     totalDrawCalls++;
@@ -5061,7 +5183,6 @@ namespace m3d
         CStr dipCountStr = "waterDip = " + CStr(totalDrawCalls);
         M3D_APP->GetDbgCounterStack().DrawStringThisFrame(triCountStr.c_str());
         M3D_APP->GetDbgCounterStack().DrawStringThisFrame(dipCountStr.c_str());
-
 
         // Cleanup render states
         M3D_RENDERER->SetWhiteTexture(0);
@@ -5082,9 +5203,9 @@ namespace m3d
     void Landscape::CreateHelperStructures()
     {
         // TODO: generated code Landscape::CreateHelperStructures
-        const int landSize = this->m_owner->m_level->land_size;
-        const int sizeInCells = landSize;
-        const int stride = 4 * landSize;
+        int const landSize = this->m_owner->m_level->land_size;
+        int const sizeInCells = landSize;
+        int const stride = 4 * landSize;
 
         // Initialize flags for the four corners of a tile
         int cornerFlags[4] = {1, 2, 4, 8};
@@ -5097,31 +5218,36 @@ namespace m3d
         {
             for (int xOffset = 0; xOffset < landSize; ++xOffset)
             {
-                const unsigned int baseOffset = 4 * stride * y;
+                unsigned int const baseOffset = 4 * stride * y;
 
                 // Process 4x4 subtile grid
                 for (int subY = 0; subY < 4; ++subY)
                 {
-                    const int globalY = subY + 4 * y;
+                    int const globalY = subY + 4 * y;
                     unsigned int currentOffset = baseOffset;
 
                     for (int subX = 0; subX < 4; ++subX)
                     {
-                        const int globalX = 4 * xOffset + subX;
+                        int const globalX = 4 * xOffset + subX;
 
                         // Get the current tile info
                         m3d::Landscape::TileInfo* currentTile = &m_tiles[currentOffset + globalX];
 
                         // Clamp coordinates to valid range
-                        const int clampedX = std::clamp(globalX, 0, stride - 1);
-                        const int clampedY = std::clamp(globalY, 0, stride - 1);
+                        int const clampedX = std::clamp(globalX, 0, stride - 1);
+                        int const clampedY = std::clamp(globalY, 0, stride - 1);
 
                         // Get texture indices for the four corners of this subtile
                         int textureIndices[4];
                         textureIndices[0] = m_tiles[clampedX + stride * clampedY].m_texIndex0;
-                        textureIndices[1] = m_tiles[std::clamp(globalX + 1, 0, stride - 1) + stride * clampedY].m_texIndex0;
-                        textureIndices[2] = m_tiles[clampedX + stride * std::clamp(globalY + 1, 0, stride - 1)].m_texIndex0;
-                        textureIndices[3] = m_tiles[std::clamp(globalX + 1, 0, stride - 1) + stride * std::clamp(globalY + 1, 0, stride - 1)].m_texIndex0;
+                        textureIndices[1] =
+                            m_tiles[std::clamp(globalX + 1, 0, stride - 1) + stride * clampedY].m_texIndex0;
+                        textureIndices[2] =
+                            m_tiles[clampedX + stride * std::clamp(globalY + 1, 0, stride - 1)].m_texIndex0;
+                        textureIndices[3] = m_tiles
+                                                [std::clamp(globalX + 1, 0, stride - 1) +
+                                                 stride * std::clamp(globalY + 1, 0, stride - 1)]
+                                                    .m_texIndex0;
 
                         // Reset tile texture count
                         currentTile->m_numTexs = 0;
@@ -5137,7 +5263,8 @@ namespace m3d
                                 // Check if other corners share the same texture
                                 for (int otherCorner = corner + 1; otherCorner < 4; ++otherCorner)
                                 {
-                                    if (!processedCorners[otherCorner] && textureIndices[corner] == textureIndices[otherCorner])
+                                    if (!processedCorners[otherCorner] &&
+                                        textureIndices[corner] == textureIndices[otherCorner])
                                     {
                                         coverageFlags |= cornerFlags[otherCorner];
                                         processedCorners[otherCorner] = 1;
@@ -5224,7 +5351,10 @@ namespace m3d
                                 {
                                     // Encode tile position and properties
                                     unsigned int encodedPos =
-                                        (globalX + ((globalY + ((currentTile->m_angle + (currentTile->m_texFlags[texIdx] << 8)) << 8)) << 8));
+                                        (globalX +
+                                         ((globalY +
+                                           ((currentTile->m_angle + (currentTile->m_texFlags[texIdx] << 8)) << 8))
+                                          << 8));
                                     cells.push_back(encodedPos);
                                 }
 
@@ -5256,8 +5386,7 @@ namespace m3d
 
             if (maxCells > 0)
             {
-                m3d::rend::VertexLandscape* v46 =
-                    new rend::VertexLandscape[25 * maxCells];
+                m3d::rend::VertexLandscape* v46 = new rend::VertexLandscape[25 * maxCells];
 
                 for (size_t textureIndex = 0; textureIndex < this->m_tilesTextures.size(); ++textureIndex)
                 {
@@ -5276,10 +5405,16 @@ namespace m3d
                         std::vector<int> bankSwitchingMap;
 
                         // Build cells for different render types
-                       BuildCells0(v46, *v48, vofs, this->m_cellsPerTex[textureIndex], RT_FIRSTPASSLIGHT, bankSwitchingMap);
+                        BuildCells0(
+                            v46, *v48, vofs, this->m_cellsPerTex[textureIndex], RT_FIRSTPASSLIGHT, bankSwitchingMap);
 
                         BuildCells0(
-                            &v46[v48->iotherPassOffset], *v48, vofs, this->m_cellsPerTex[textureIndex], RT_OTHERPASSES, bankSwitchingMap);
+                            &v46[v48->iotherPassOffset],
+                            *v48,
+                            vofs,
+                            this->m_cellsPerTex[textureIndex],
+                            RT_OTHERPASSES,
+                            bankSwitchingMap);
 
                         // Reset cell count
                         this->m_cellsPerTex[textureIndex].clear();
@@ -5294,7 +5429,8 @@ namespace m3d
                             int vertexCount = bankSwitchingMap[bufferIndex];
 
                             // Create vertex buffer
-                            m3d::rend::VbHandle vb = M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT1_UV2_S1, vertexCount, "Landscape", 0);
+                            m3d::rend::VbHandle vb =
+                                M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT1_UV2_S1, vertexCount, "Landscape", 0);
 
                             // Copy vertex data
                             void* lockedBuffer = M3D_RENDERER->LockVb(vb, vertexCount, 0, 0);
@@ -5312,12 +5448,19 @@ namespace m3d
                 delete[] v46;
 
                 // Build UV set
-               BuildUVSet();
+                BuildUVSet();
             }
         }
     }
 
-    void Landscape::drawSpriteOverlayed2Projected(float cx, float cz, float hsx, float hsz, unsigned clr, bool all, CClipper const& clipper)
+    void Landscape::drawSpriteOverlayed2Projected(
+        float cx,
+        float cz,
+        float hsx,
+        float hsz,
+        unsigned clr,
+        bool all,
+        CClipper const& clipper)
     {
         // RVA 0x8DFC80
         // Like drawSpriteOverlayed2, but only the 32 unit tiles whose bounding sphere is
@@ -5453,12 +5596,7 @@ namespace m3d
                 if (overlayShader)
                 {
                     M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                        rend::M3DPT_TRIANGLESTRIP,
-                        overlayShader,
-                        0,
-                        numVerts,
-                        0,
-                        numPrims);
+                        rend::M3DPT_TRIANGLESTRIP, overlayShader, 0, numVerts, 0, numPrims);
                 }
                 else
                 {
@@ -5525,54 +5663,70 @@ namespace m3d
                 parentMat.rotTranslate(node->GetRotationWorldAbs(), node->GetOriginWorldAbs());
 
                 CMatrix vv;
-                vv._11 = (float)((float)((float)(parentMat._41 * childMat._14) + (float)(parentMat._31 * childMat._13))
-                    + (float)(parentMat._21 * childMat._12))
-                    + (float)(parentMat._11 * childMat._11);
-                vv._12 = (float)((float)((float)(parentMat._42 * childMat._14) + (float)(parentMat._32 * childMat._13))
-                    + (float)(parentMat._22 * childMat._12))
-                    + (float)(parentMat._12 * childMat._11);
-                vv._13 = (float)((float)((float)(parentMat._43 * childMat._14) + (float)(parentMat._33 * childMat._13))
-                    + (float)(parentMat._23 * childMat._12))
-                    + (float)(parentMat._13 * childMat._11);
-                vv._14 = (float)((float)((float)(parentMat._44 * childMat._14) + (float)(parentMat._34 * childMat._13))
-                    + (float)(parentMat._24 * childMat._12))
-                    + (float)(parentMat._14 * childMat._11);
-                vv._21 = (float)((float)((float)(childMat._24 * parentMat._41) + (float)(childMat._23 * parentMat._31))
-                    + (float)(childMat._22 * parentMat._21))
-                    + (float)(childMat._21 * parentMat._11);
-                vv._22 = (float)((float)((float)(childMat._24 * parentMat._42) + (float)(childMat._23 * parentMat._32))
-                    + (float)(childMat._22 * parentMat._22))
-                    + (float)(childMat._21 * parentMat._12);
-                vv._23 = (float)((float)((float)(childMat._24 * parentMat._43) + (float)(childMat._23 * parentMat._33))
-                    + (float)(childMat._22 * parentMat._23))
-                    + (float)(childMat._21 * parentMat._13);
-                vv._24 = (float)((float)((float)(childMat._24 * parentMat._44) + (float)(childMat._23 * parentMat._34))
-                    + (float)(childMat._22 * parentMat._24))
-                    + (float)(childMat._21 * parentMat._14);
-                vv._31 = (float)((float)((float)(childMat._34 * parentMat._41) + (float)(childMat._33 * parentMat._31))
-                    + (float)(childMat._32 * parentMat._21))
-                    + (float)(childMat._31 * parentMat._11);
-                vv._32 = (float)((float)((float)(childMat._34 * parentMat._42) + (float)(childMat._33 * parentMat._32))
-                    + (float)(childMat._32 * parentMat._22))
-                    + (float)(childMat._31 * parentMat._12);
-                vv._33 = (float)((float)((float)(childMat._34 * parentMat._43) + (float)(childMat._33 * parentMat._33))
-                    + (float)(childMat._32 * parentMat._23))
-                    + (float)(childMat._31 * parentMat._13);
-                vv._34 = (float)((float)((float)(childMat._34 * parentMat._44) + (float)(childMat._33 * parentMat._34))
-                    + (float)(childMat._32 * parentMat._24))
-                    + (float)(childMat._31 * parentMat._14);
-                vv._41 = (float)((float)((float)(childMat._44 * parentMat._41) + (float)(childMat._43 * parentMat._31))
-                    + (float)(childMat._42 * parentMat._21))
-                    + (float)(childMat._41 * parentMat._11);
-                vv._42 = (float)((float)((float)(childMat._44 * parentMat._42) + (float)(childMat._43 * parentMat._32))
-                    + (float)(childMat._42 * parentMat._22))
-                    + (float)(childMat._41 * parentMat._12);
-                vv._43 = (float)((float)((float)(childMat._44 * parentMat._43) + (float)(childMat._43 * parentMat._33))
-                    + (float)(childMat._42 * parentMat._23))
-                    + (float)(childMat._41 * parentMat._13);
-                vv._44 = (float)((float)((float)(childMat._44 * parentMat._44) + (float)(childMat._43 * parentMat._34))
-                    + (float)(childMat._42 * parentMat._24))
-                    + (float)(childMat._41 * parentMat._14);
+                vv._11 =
+                    (float)((float)((float)(parentMat._41 * childMat._14) + (float)(parentMat._31 * childMat._13)) +
+                            (float)(parentMat._21 * childMat._12)) +
+                    (float)(parentMat._11 * childMat._11);
+                vv._12 =
+                    (float)((float)((float)(parentMat._42 * childMat._14) + (float)(parentMat._32 * childMat._13)) +
+                            (float)(parentMat._22 * childMat._12)) +
+                    (float)(parentMat._12 * childMat._11);
+                vv._13 =
+                    (float)((float)((float)(parentMat._43 * childMat._14) + (float)(parentMat._33 * childMat._13)) +
+                            (float)(parentMat._23 * childMat._12)) +
+                    (float)(parentMat._13 * childMat._11);
+                vv._14 =
+                    (float)((float)((float)(parentMat._44 * childMat._14) + (float)(parentMat._34 * childMat._13)) +
+                            (float)(parentMat._24 * childMat._12)) +
+                    (float)(parentMat._14 * childMat._11);
+                vv._21 =
+                    (float)((float)((float)(childMat._24 * parentMat._41) + (float)(childMat._23 * parentMat._31)) +
+                            (float)(childMat._22 * parentMat._21)) +
+                    (float)(childMat._21 * parentMat._11);
+                vv._22 =
+                    (float)((float)((float)(childMat._24 * parentMat._42) + (float)(childMat._23 * parentMat._32)) +
+                            (float)(childMat._22 * parentMat._22)) +
+                    (float)(childMat._21 * parentMat._12);
+                vv._23 =
+                    (float)((float)((float)(childMat._24 * parentMat._43) + (float)(childMat._23 * parentMat._33)) +
+                            (float)(childMat._22 * parentMat._23)) +
+                    (float)(childMat._21 * parentMat._13);
+                vv._24 =
+                    (float)((float)((float)(childMat._24 * parentMat._44) + (float)(childMat._23 * parentMat._34)) +
+                            (float)(childMat._22 * parentMat._24)) +
+                    (float)(childMat._21 * parentMat._14);
+                vv._31 =
+                    (float)((float)((float)(childMat._34 * parentMat._41) + (float)(childMat._33 * parentMat._31)) +
+                            (float)(childMat._32 * parentMat._21)) +
+                    (float)(childMat._31 * parentMat._11);
+                vv._32 =
+                    (float)((float)((float)(childMat._34 * parentMat._42) + (float)(childMat._33 * parentMat._32)) +
+                            (float)(childMat._32 * parentMat._22)) +
+                    (float)(childMat._31 * parentMat._12);
+                vv._33 =
+                    (float)((float)((float)(childMat._34 * parentMat._43) + (float)(childMat._33 * parentMat._33)) +
+                            (float)(childMat._32 * parentMat._23)) +
+                    (float)(childMat._31 * parentMat._13);
+                vv._34 =
+                    (float)((float)((float)(childMat._34 * parentMat._44) + (float)(childMat._33 * parentMat._34)) +
+                            (float)(childMat._32 * parentMat._24)) +
+                    (float)(childMat._31 * parentMat._14);
+                vv._41 =
+                    (float)((float)((float)(childMat._44 * parentMat._41) + (float)(childMat._43 * parentMat._31)) +
+                            (float)(childMat._42 * parentMat._21)) +
+                    (float)(childMat._41 * parentMat._11);
+                vv._42 =
+                    (float)((float)((float)(childMat._44 * parentMat._42) + (float)(childMat._43 * parentMat._32)) +
+                            (float)(childMat._42 * parentMat._22)) +
+                    (float)(childMat._41 * parentMat._12);
+                vv._43 =
+                    (float)((float)((float)(childMat._44 * parentMat._43) + (float)(childMat._43 * parentMat._33)) +
+                            (float)(childMat._42 * parentMat._23)) +
+                    (float)(childMat._41 * parentMat._13);
+                vv._44 =
+                    (float)((float)((float)(childMat._44 * parentMat._44) + (float)(childMat._43 * parentMat._34)) +
+                            (float)(childMat._42 * parentMat._24)) +
+                    (float)(childMat._41 * parentMat._14);
 
                 Quaternion quat;
                 quat.FromMatrix(vv);
@@ -5741,7 +5895,8 @@ namespace m3d
     {
         // RVA 0x6AE1F0
         // Only the tile under the point is searched, for instances within 8 units.
-        int const tileIdx = static_cast<int>(point.x * (1.0f / 32.0f)) + (static_cast<int>(point.z * (1.0f / 32.0f)) << 8);
+        int const tileIdx =
+            static_cast<int>(point.x * (1.0f / 32.0f)) + (static_cast<int>(point.z * (1.0f / 32.0f)) << 8);
         TileGrass const* tile = m_grassArray[tileIdx];
         if (!tile)
         {
@@ -5766,7 +5921,8 @@ namespace m3d
                     continue;
                 }
                 float const dy = point.y - gi->pos.y;
-                float const distSq = (point.z - gi->pos.z) * (point.z - gi->pos.z) + (point.x - gi->pos.x) * (point.x - gi->pos.x) + dy * dy;
+                float const distSq = (point.z - gi->pos.z) * (point.z - gi->pos.z) +
+                    (point.x - gi->pos.x) * (point.x - gi->pos.x) + dy * dy;
                 if (distSq <= 64.0f && bestDistSq > distSq)
                 {
                     bestDistSq = distSq;
@@ -5927,7 +6083,7 @@ namespace m3d
     }
 
     unsigned int frame = 0;
-    const float VISCELL_EDGE_LENGTH_24 = 128.0;
+    float const VISCELL_EDGE_LENGTH_24 = 128.0;
 
     void Landscape::Render()
     {
@@ -6157,7 +6313,6 @@ namespace m3d
             m_flares.Render(FlareMode::FLARE_SUN, m_owner->m_sunDir, 1.0, 1.0);
         }
 
-
         auto v55 = VISCELL_EDGE_LENGTH_24;
         auto v56 = (float)(saveDistDivider - 4) * VISCELL_EDGE_LENGTH_24;
         auto v57 = (float)(saveDistDivider - 8) * VISCELL_EDGE_LENGTH_24;
@@ -6229,7 +6384,8 @@ namespace m3d
         m_owner->m_sceneGraph.Render(SGRF_SHADOWS);
 
         M3D_RENDERER->SetFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB(), false);
-        if (!M3D_KERNEL->GetEngineCfg().m_dsShadows.GetB() || !pClient->GetWorld().GetWeatherManager().GetShadowVisibilityFromWeather())
+        if (!M3D_KERNEL->GetEngineCfg().m_dsShadows.GetB() ||
+            !pClient->GetWorld().GetWeatherManager().GetShadowVisibilityFromWeather())
         {
             RenderGrass({});
         }
@@ -6239,7 +6395,7 @@ namespace m3d
             m_profilerDrawWater->StartCountdown();
 
             int const waterQ = M3D_ENGINE_CFG.m_r_waterQuality.GetI();
-            if (m_waterShaderVersion == 20  &&  (waterQ == 3 || waterQ == 2))
+            if (m_waterShaderVersion == 20 && (waterQ == 3 || waterQ == 2))
             {
                 auto fullFrameTexture = M3D_RENDERER->GetFullFrameFrameBufferTexture();
                 M3D_RENDERER->CopyRenderTargetToTexture(fullFrameTexture);
@@ -6252,7 +6408,7 @@ namespace m3d
                 M3D_RENDERER->PushBlend(rend::BM_NONE);
 
                 DrawSolidLandscape(LRM_DEEPMAP, 0);
-   
+
                 M3D_RENDERER->PopBlend();
                 M3D_RENDERER->PopZbState();
                 M3D_RENDERER->PopCull();
@@ -6263,7 +6419,6 @@ namespace m3d
                 M3D_RENDERER->CopyRenderTargetToTexture(m_texRtRefraction);
             }
 
-            
             M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
             M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
 
@@ -6512,18 +6667,16 @@ namespace m3d
     CVector Landscape::getNormal(float worldX, float worldZ)
     {
         // TODO: generated code
-         // Convert world coordinates to heightmap coordinates (scale factor 0.125 = 1/8)
+        // Convert world coordinates to heightmap coordinates (scale factor 0.125 = 1/8)
         int mapX = static_cast<int>(worldX * 0.125f);
         int mapZ = static_cast<int>(worldZ * 0.125f);
 
         int mapSize = this->m_mapSize;
         int mapSizePlusOne = mapSize + 1;
 
-
         // Check if coordinates are out of bounds
-        if (mapX < 0 || mapZ < 0 ||
-            mapX + 2 >= mapSizePlusOne ||
-            mapZ + 2 >= mapSizePlusOne) {
+        if (mapX < 0 || mapZ < 0 || mapX + 2 >= mapSizePlusOne || mapZ + 2 >= mapSizePlusOne)
+        {
             // Return default up vector for out-of-bounds coordinates
 
             CVector result;
@@ -6534,10 +6687,12 @@ namespace m3d
         }
 
         // Clamp coordinates to map boundaries
-        if (mapX == mapSizePlusOne) {
+        if (mapX == mapSizePlusOne)
+        {
             mapX = mapSize;
         }
-        if (mapZ == mapSizePlusOne) {
+        if (mapZ == mapSizePlusOne)
+        {
             mapZ = mapSize;
         }
 
@@ -6547,15 +6702,18 @@ namespace m3d
         float normalZ[8];
 
         // Initialize normal arrays
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 8; i++)
+        {
             normalZ[i] = 64.0f;  // Constant Z component
             normalY[i] = 64.0f;  // Constant Y component
         }
 
         // Calculate normals for the 2x2 quad around the point
         int index = 0;
-        for (int z = mapZ; z <= mapZ + 1; z++) {
-            for (int x = mapX; x <= mapX + 1; x++) {
+        for (int z = mapZ; z <= mapZ + 1; z++)
+        {
+            for (int x = mapX; x <= mapX + 1; x++)
+            {
                 // Get height values for the current quad
                 int currentIndex = z * (mapSize + 1) + x;
                 int rightIndex = z * (mapSize + 1) + ((x + 1) % (mapSize + 1));
@@ -6572,7 +6730,7 @@ namespace m3d
                 normalX[index] = (0.0f - (rightHeight - currentHeight)) * 8.0f;
                 normalX[index + 1] = (0.0f - (rightHeight - currentHeight)) * 8.0f;
 
-                // Calculate Y component of normal (derivative in Z direction)  
+                // Calculate Y component of normal (derivative in Z direction)
                 // Based on height differences between bottom and current points
                 normalY[index] = (bottomHeight - currentHeight) * 8.0f;
                 normalY[index + 1] = (bottomRightHeight - rightHeight) * 8.0f;
@@ -6753,19 +6911,23 @@ namespace m3d
 
     void Landscape::CreateLod()
     {
-        const auto land_size = m_owner->m_level->land_size;
+        auto const land_size = m_owner->m_level->land_size;
 
         delete[] m_cellParams;
         m_cellParams = new CellParams[land_size * land_size];
         CreateHeights(m_cellParams, land_size, 16);
 
-        const auto drawedCellSize = 4 * m_owner->m_level->land_size;
+        auto const drawedCellSize = 4 * m_owner->m_level->land_size;
         delete[] m_drawedCellParams;
         m_drawedCellParams = new CellParams[drawedCellSize * drawedCellSize];
         CreateHeights(m_drawedCellParams, drawedCellSize, 4);
     }
 
-    void Landscape::drawSpriteOverlayedProjected(unsigned clr, CVector const& o, CMatrix const& projectorMatrix, CClipper const& clipper)
+    void Landscape::drawSpriteOverlayedProjected(
+        unsigned clr,
+        CVector const& o,
+        CMatrix const& projectorMatrix,
+        CClipper const& clipper)
     {
         // RVA 0x8E03D0
         M3D_RENDERER->TgEnableSetMatrixStr(0, &projectorMatrix, true);
@@ -6779,7 +6941,7 @@ namespace m3d
         std::unordered_map<int, int> counterForHeights;
         std::set<int> usedHeights;
         float maxCounts = 999999.0;
-        for (int z =0; z < ls; ++z)
+        for (int z = 0; z < ls; ++z)
         {
             for (int x = 0; x < ls; ++x)
             {
@@ -6823,7 +6985,6 @@ namespace m3d
                             auto v5 = v9 / 4 + m_owner->m_level->land_size * (v6 / 4);
                             m_cellParams[v5].m_iswatercell = true;
                         }
-
                     }
                 }
                 if (maxCounts > wmin)
@@ -6934,7 +7095,6 @@ namespace m3d
             m_solidDeepPs->Release();
             this->m_solidDeepPs = 0;
         }
-
     }
 
     char const* Landscape::GetGrassModelName(unsigned modelIdx) const
@@ -6984,8 +7144,10 @@ namespace m3d
             f.z = f.z * v37;
             org = M3D_RENDERER->MatGetOrgInv();
             auto v10 = (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.y;
-            auto v11 = org.x + (float)((float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.x);
-            auto v12 = org.z + (float)(f.z * (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24));
+            auto v11 = org.x +
+                (float)((float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.x);
+            auto v12 = org.z +
+                (float)(f.z * (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24));
             r.z = f.x - (float)(f.y * 0.0);
             auto v41 = r.z * 10000.0;
             r.x = (float)(f.y * 0.0) - f.z;
@@ -7009,7 +7171,7 @@ namespace m3d
             stream += 64;
         }
 
-        const auto land_scale_27 = 8.0;
+        auto const land_scale_27 = 8.0;
         CVector v[4];
 
         auto v14 = (float)((float)this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24) - 8.0;
@@ -7118,27 +7280,15 @@ namespace m3d
         auto v33 = 0;
         if (fabs(f.y) < 0.89999998)
         {
-            M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
-                vofs,
-                2u);
+            M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, vofs, 2u);
             v33 = 4;
         }
 
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
-            v33 + vofs,
-            2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
-            v33 + vofs + 4,
-            2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
-            v33 + vofs + 8,
-            2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
-            v33 + vofs + 12,
-            2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN,
-            v33 + vofs + 16,
-            2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs, 2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 4, 2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 8, 2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 12, 2u);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 16, 2u);
         M3D_RENDERER->PopCull();
         M3D_RENDERER->PopZbState();
         M3D_RENDERER->PopBlend();
@@ -7157,7 +7307,7 @@ namespace m3d
     {
         using namespace ai;
 
-        const auto landSize = m_owner->m_level->land_size;
+        auto const landSize = m_owner->m_level->land_size;
         retruxx::set<ai::PhysicObj*> allPhysicObjs;
 
         // TODO: check this
@@ -7166,12 +7316,12 @@ namespace m3d
             for (int x = 0; x < landSize; ++x)
             {
                 auto* collisionItem = m_oCollisionitems[x + y * landSize];
-                const auto mustCheck = collisionItem->m_bMustCheck;
+                auto const mustCheck = collisionItem->m_bMustCheck;
                 collisionItem->m_bMustCheck = false;
                 if (mustCheck)
                 {
                     bool isCellEnabled = false;
-                    for (const auto objId : collisionItem->m_physicObjIds)
+                    for (auto const objId : collisionItem->m_physicObjIds)
                     {
                         auto* obj = theObjects->GetEntityByObjId(objId);
                         if (obj)
@@ -7188,7 +7338,9 @@ namespace m3d
                             }
                             else
                             {
-                                M3D_LOG_INFO("Error: not PhysicObj is linked to collision cell x = " + CStr(x) + ", y = " + CStr(y) + ", id = " + CStr(objId));
+                                M3D_LOG_INFO(
+                                    "Error: not PhysicObj is linked to collision cell x = " + CStr(x) +
+                                    ", y = " + CStr(y) + ", id = " + CStr(objId));
                             }
                         }
                     }
@@ -7202,10 +7354,10 @@ namespace m3d
                                 geom->IncEnabledCellsCount();
                             }
 
-                            for (const auto objId : collisionItem->m_physicObjIds)
+                            for (auto const objId : collisionItem->m_physicObjIds)
                             {
                                 auto* physObj = RT_DYNCAST(theObjects->GetEntityByObjId(objId), PhysicObj);
-                                const auto physicState = physObj->GetPhysicState();
+                                auto const physicState = physObj->GetPhysicState();
                                 if ((physicState & 1) == 0 && (physicState & 2) != 0)
                                 {
                                     physObj->IncEnabledCellsCount();
@@ -7219,10 +7371,10 @@ namespace m3d
                                 geom->DecEnabledCellsCount();
                             }
 
-                            for (const auto objId : collisionItem->m_physicObjIds)
+                            for (auto const objId : collisionItem->m_physicObjIds)
                             {
                                 auto* physObj = RT_DYNCAST(theObjects->GetEntityByObjId(objId), PhysicObj);
-                                const auto physicState = physObj->GetPhysicState();
+                                auto const physicState = physObj->GetPhysicState();
                                 if ((physicState & 1) == 0 && (physicState & 2) != 0)
                                 {
                                     physObj->DecEnabledCellsCount();
@@ -7238,7 +7390,7 @@ namespace m3d
         m_countPhysicObjsInCells->SetI(allPhysicObjs.size());
     }
 
-    void Landscape::LinkPassMapCellToCollisionCell(const PointBase<int>& cellPos)
+    void Landscape::LinkPassMapCellToCollisionCell(PointBase<int> const& cellPos)
     {
         // RVA 0x64C960
         // Puts a 50 unit tall box over a pass map cell and links it into every collision
@@ -7317,7 +7469,8 @@ namespace m3d
         M3D_RENDERER->UnlockIb(m_shoresIb);
 
         auto* v = static_cast<rend::VertexXYZCT1*>(M3D_RENDERER->LockVb(m_shoresVb, 0, 0, 0));
-        auto const cvarF = [](CVar const& cvar) {
+        auto const cvarF = [](CVar const& cvar)
+        {
             return cvar.GetType() == CVar::CVAR_FLOAT ? cvar.GetF() : static_cast<float>(cvar.GetI());
         };
         float const SHORE_LENGTH = cvarF(M3D_ENGINE_CFG.m_g_shoresWidth);
@@ -7327,7 +7480,9 @@ namespace m3d
         unsigned const beachColor = SHORE_ALPHA | 0xFFFFFF;
 
         // Writes the vertex pair for point p, with the strip running along the given side.
-        auto const emitPair = [&](rend::VertexXYZCT1* out, CVector const& p, CVector const& side, CVector const& otherSide, float tu) {
+        auto const emitPair =
+            [&](rend::VertexXYZCT1* out, CVector const& p, CVector const& side, CVector const& otherSide, float tu)
+        {
             CVector water = p + side * SHORE_LENGTH;
             CVector beach = p + otherSide * SHORE_PENETRATION;
             // If that side runs into the terrain, the strip is flipped over.
@@ -7417,8 +7572,8 @@ namespace m3d
         FreeTiles();
 
         // Calculate land size and allocate memory for tiles
-        const int landSize = 4 * m_owner->m_level->land_size;
-        const int totalTiles = landSize * landSize;
+        int const landSize = 4 * m_owner->m_level->land_size;
+        int const totalTiles = landSize * landSize;
 
         // Allocate memory for tile info
         m_tiles = new TileInfo[totalTiles];
@@ -7473,7 +7628,9 @@ namespace m3d
 
         if (fileLandSize != landSize)
         {
-            M3D_LOG_ERR("Error: Bad tilemap file, landsize = " + CStr(landSize) + ", tilemap size in file = " + CStr(fileLandSize));
+            M3D_LOG_ERR(
+                "Error: Bad tilemap file, landsize = " + CStr(landSize) +
+                ", tilemap size in file = " + CStr(fileLandSize));
             return 0;
         }
 
@@ -7509,7 +7666,7 @@ namespace m3d
         }
 
         // Read tile info
-        ReadTileInfo(1); // Initialize tile info
+        ReadTileInfo(1);  // Initialize tile info
 
         // Process each tile
         for (int y = 0; y < landSize; ++y)
@@ -7524,7 +7681,8 @@ namespace m3d
                 data += 4;
 
                 // Clamp angle
-                if (tileAngle > 4) tileAngle = 4;
+                if (tileAngle > 4)
+                    tileAngle = 4;
                 tile.m_angle = tileAngle;
 
                 // Create full texture path and add texture
@@ -7537,7 +7695,7 @@ namespace m3d
         file.Close();
 
         // Update texture information
-        const size_t textureCount = m_tilesTextures.size();
+        size_t const textureCount = m_tilesTextures.size();
         ChangedNumberOfUsedTextures(textureCount);
         RecalcUV();
         UpdateTexturesFilters();
@@ -7545,7 +7703,13 @@ namespace m3d
         return 1;
     }
 
-    bool Landscape::traceLineThruCellLs(float& ttt, int cellX, int cellZ, CVector const& start, CVector const& dir, bool allowColInfo)
+    bool Landscape::traceLineThruCellLs(
+        float& ttt,
+        int cellX,
+        int cellZ,
+        CVector const& start,
+        CVector const& dir,
+        bool allowColInfo)
     {
         // RVA 0x5B0FA0
         // The nearest of the terrain hit in this cell and, if allowed, any collision mesh
@@ -7606,8 +7770,7 @@ namespace m3d
         }
     }
 
-    Landscape::Landscape(Landscape const&) :
-        SgNode()
+    Landscape::Landscape(Landscape const&) : SgNode()
     {
         // RVA 0x5B8340 - NOTE: nothing is copied from the source; the members are only
         // default constructed, so Clone yields an empty landscape.
@@ -7705,7 +7868,7 @@ namespace m3d
         // Create water queries
         for (int i = 0; i < 3; i++)
         {
-            m_waterQueries[i] = M3D_RENDERER->NewQuery(rend::IQuery::Type::QUERY_OCCLUSION); // OCCLUSION query type
+            m_waterQueries[i] = M3D_RENDERER->NewQuery(rend::IQuery::Type::QUERY_OCCLUSION);  // OCCLUSION query type
         }
 
         // Initialize water state
@@ -7750,12 +7913,13 @@ namespace m3d
         m_maxWaterCellPerPass = M3D_RENDERER->GetMaxVertexShaderConst() - 20;
 
         // Create water vertex buffer
-        m_waterVb = M3D_RENDERER->AddVb(m3d::rend::VertexType::VERTEX_WATERTEST, 81 * m_maxWaterCellPerPass, "Water", 0);
+        m_waterVb =
+            M3D_RENDERER->AddVb(m3d::rend::VertexType::VERTEX_WATERTEST, 81 * m_maxWaterCellPerPass, "Water", 0);
 
         // Initialize water vertices
         // looks ok
         VertexWaterTest* waterVertices = static_cast<VertexWaterTest*>(M3D_RENDERER->LockVb(m_waterVb, 0, 0, 0));
-        constexpr uint8_t gridSize = 9;  // Since loops go up to 8 (0-8 inclusive)
+        uint8_t constexpr gridSize = 9;  // Since loops go up to 8 (0-8 inclusive)
         for (uint8_t zCoord = 0; zCoord < m_maxWaterCellPerPass; ++zCoord)
         {
             for (uint8_t yCoord = 0; yCoord < gridSize; ++yCoord)
@@ -8082,14 +8246,14 @@ namespace m3d
         curIbIdx = 7;
         do
         {
-            int v102 = 1 <<i;
+            int v102 = 1 << i;
             auto v103 = (unsigned __int16)(1 << i);
             int v105 = (16 * (8 / v103 + 2) / v103 + 16 / v103) * this->m_maxWaterCellPerPass;
             int v208 = 16 * (8 / v103 + 2) / v103 + 16 / v103;
 
             m_waterIb[curIbIdx] = M3D_RENDERER->AddIb(v105, 0);
             unsigned short* v108 = (unsigned short*)M3D_RENDERER->LockIb(m_waterIb[curIbIdx], v105, 0, 0);
-           
+
             int v109 = 0;
             int v40 = this->m_maxWaterCellPerPass <= 0;
             auto v110 = v108;
@@ -8146,13 +8310,18 @@ namespace m3d
         } while (v46);
 
         // Setup profilers
-        m_profilerUpdateVis = M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls update vis", 30));
-        m_profilerDraw = M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls render", 30));
-        m_profilerDrawGrass = M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls grass", 30));
-        m_profilerDrawWater = M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls water", 30));
+        m_profilerUpdateVis =
+            M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls update vis", 30));
+        m_profilerDraw =
+            M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls render", 30));
+        m_profilerDrawGrass =
+            M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls grass", 30));
+        m_profilerDrawWater =
+            M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("ls water", 30));
 
         // Setup debug counter
-        m_countPhysicObjsInCells = M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("PhysicObjs in cells"));
+        m_countPhysicObjsInCells =
+            M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("PhysicObjs in cells"));
 
         // Initialize shaders to null
         m_solidDeepPs = nullptr;
@@ -8168,31 +8337,38 @@ namespace m3d
         m_shoresShader->SetDefaultTechnique(true);
 
         // Load solid VS
-        m_solidVs = M3D_RENDERER->NewHlslShader("data/shaders/landscapeSolid_ps11.vs", "LandscapeVS", rend::IHlslShader::Profile::VS_1_1);
+        m_solidVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscapeSolid_ps11.vs", "LandscapeVS", rend::IHlslShader::Profile::VS_1_1);
         M3D_ASSERT(m_solidVs);
 
         // Load solid PS
-        m_solidPs = M3D_RENDERER->NewHlslShader("data/shaders/landscapeSolid_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
+        m_solidPs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscapeSolid_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
         M3D_ASSERT(m_solidPs);
 
         // Load solid bind VS
-        m_solidBindVs = M3D_RENDERER->NewHlslShader("data/shaders/landscapeSolidBind_ps11.vs", "LandscapeVS", rend::IHlslShader::Profile::VS_1_1);
+        m_solidBindVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscapeSolidBind_ps11.vs", "LandscapeVS", rend::IHlslShader::Profile::VS_1_1);
         M3D_ASSERT(m_solidBindVs);
 
         // Load solid bind PS
-        m_solidBindPs = M3D_RENDERER->NewHlslShader("data/shaders/landscapeSolidBind_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
+        m_solidBindPs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscapeSolidBind_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
         M3D_ASSERT(m_solidBindPs);
 
         // Load landscape VS
-        m_landscapeVs = M3D_RENDERER->NewHlslShader("data/shaders/landscape_ps11.vs", "LandscapeVS", rend::IHlslShader::Profile::VS_1_1);
+        m_landscapeVs = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscape_ps11.vs", "LandscapeVS", rend::IHlslShader::Profile::VS_1_1);
         M3D_ASSERT(m_landscapeVs);
 
         // Load landscape FP PS
-        m_landscapePsFP = M3D_RENDERER->NewHlslShader("data/shaders/landscapeFP_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
+        m_landscapePsFP = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscapeFP_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
         M3D_ASSERT(m_landscapePsFP);
 
         // Load landscape SP PS
-        m_landscapePsSP = M3D_RENDERER->NewHlslShader("data/shaders/landscapeSP_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
+        m_landscapePsSP = M3D_RENDERER->NewHlslShader(
+            "data/shaders/landscapeSP_ps11.ps", "LandscapePS", rend::IHlslShader::Profile::PS_1_1);
         M3D_ASSERT(m_landscapePsSP);
 
         // Final null initializations
@@ -8210,8 +8386,8 @@ namespace m3d
         retruxx::vector<int, retruxx::allocator<int>>& bankSwitchingMap)
     {
         // TODO: generated code
-        const int numCells = cellsPerTexture.size();
-        const unsigned int* currentCell = &cellsPerTexture[0];
+        int const numCells = cellsPerTexture.size();
+        unsigned int const* currentCell = &cellsPerTexture[0];
 
         if (numCells == 0)
         {
@@ -8227,9 +8403,9 @@ namespace m3d
         int offsetToStore = vertexOffset;
         int totalVerticesProcessed = vertexOffset;
 
-        const int CELLS_PER_TILE = 4;
-        const int VERTICES_PER_CELL = 25;  // 5x5 grid
-        const int MAX_VERTICES = 65535;    // 16-bit limit
+        int const CELLS_PER_TILE = 4;
+        int const VERTICES_PER_CELL = 25;  // 5x5 grid
+        int const MAX_VERTICES = 65535;    // 16-bit limit
 
         int remainingCells = numCells;
 
@@ -8251,13 +8427,13 @@ namespace m3d
             // Process each cell in the current batch
             while (processedInBatch > 0)
             {
-                const unsigned int cellData = *currentCell;
+                unsigned int const cellData = *currentCell;
 
                 // Extract cell information from packed data
-                const unsigned char tileX = cellData & 0xFF;
-                const unsigned char tileY = (cellData >> 8) & 0xFF;
-                const int angle = (cellData >> 16) & 0x3;
-                const int cornerType = (cellData >> 24) & 0xF;
+                unsigned char const tileX = cellData & 0xFF;
+                unsigned char const tileY = (cellData >> 8) & 0xFF;
+                int const angle = (cellData >> 16) & 0x3;
+                int const cornerType = (cellData >> 24) & 0xF;
 
                 // Determine if we should process this cell based on render type
                 bool shouldProcess = true;
@@ -8280,10 +8456,10 @@ namespace m3d
 
                 if (shouldProcess)
                 {
-                    const int squareX = tileX / CELLS_PER_TILE;
-                    const int squareY = tileY / CELLS_PER_TILE;
-                    const int localX = tileX % CELLS_PER_TILE;
-                    const int localY = tileY % CELLS_PER_TILE;
+                    int const squareX = tileX / CELLS_PER_TILE;
+                    int const squareY = tileY / CELLS_PER_TILE;
+                    int const localX = tileX % CELLS_PER_TILE;
+                    int const localY = tileY % CELLS_PER_TILE;
 
                     // Check if we're starting a new tile
                     if (squareX != lastSquareX || squareY != lastSquareY)
@@ -8291,10 +8467,10 @@ namespace m3d
                         // Store previous tile data if we have a valid previous tile
                         if (lastSquareX != -1 && lastSquareY != -1)
                         {
-                            const int storageShift = (renderType != 0) ? 4 : 0;
+                            int const storageShift = (renderType != 0) ? 4 : 0;
 
-                            const char offsetShift = (4 * storageShift);
-                            const char bankShift = (2 * storageShift);
+                            char const offsetShift = (4 * storageShift);
+                            char const bankShift = (2 * storageShift);
 
                             assert(lastSquareX >= 0);
                             assert(lastSquareX < 64);
@@ -8302,9 +8478,10 @@ namespace m3d
                             assert(lastSquareY < 64);
 
                             // Store cell count for this tile
-                            chunk.m_numCellsPerCellMap[lastSquareX + (lastSquareY * 64)] |= (cellsInCurrentPass << (2 *  storageShift));
+                            chunk.m_numCellsPerCellMap[lastSquareX + (lastSquareY * 64)] |=
+                                (cellsInCurrentPass << (2 * storageShift));
 
-                            const int tileIndex = lastSquareX  + (lastSquareY << 8);
+                            int const tileIndex = lastSquareX + (lastSquareY << 8);
 
                             // Store vertex offset
                             chunk.m_offsetsmap[tileIndex] |= (offsetToStore << offsetShift);
@@ -8328,11 +8505,12 @@ namespace m3d
 
                     if (renderType == 1)
                     {
-                        alphaUVs = m_setAndUVs.m_sets[m_CurAlphaSet][specialMapper[cornerType].m_maskindex].m_uvForAngles[specialMapper[cornerType].m_rotate][0];
+                        alphaUVs = m_setAndUVs.m_sets[m_CurAlphaSet][specialMapper[cornerType].m_maskindex]
+                                       .m_uvForAngles[specialMapper[cornerType].m_rotate][0];
                     }
 
-                    const int mapStride = m_mapSize + 1;
-                    const int heightMapBaseOffset = 4 * tileX + 4 * tileY * mapStride;
+                    int const mapStride = m_mapSize + 1;
+                    int const heightMapBaseOffset = 4 * tileX + 4 * tileY * mapStride;
 
                     // Generate 5x5 grid of vertices (25 vertices total)
                     for (int row = 0; row < 5; ++row)
@@ -8343,23 +8521,26 @@ namespace m3d
                         {
                             // Alpha pass rendering
                             float* uvPtr = alphaUVs + 1;
-                            auto vertexOffsetCalc = reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(alphaUVs);
+                            auto vertexOffsetCalc =
+                                reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(alphaUVs);
 
                             for (int col = 0; col < 5; ++col)
                             {
                                 // Calculate vertex index within the 32x32 vertex grid per tile
-                                const short vertexIndex = localY + 32 * (col + 4 * localX);
+                                short const vertexIndex = localY + 32 * (col + 4 * localX);
 
                                 // Store vertex index
                                 vertices[verticesGenerated].xz = row + 4 * vertexIndex;
 
                                 // Set vertex height from heightmap
-                                vertices[verticesGenerated].y = m_heightMap[heightMapBaseOffset + col + row * mapStride];
+                                vertices[verticesGenerated].y =
+                                    m_heightMap[heightMapBaseOffset + col + row * mapStride];
 
                                 // Pack UV coordinates
-                                const float u = *uvPtr;
-                                const float v = *(uvPtr - 1);
-                                vertices[verticesGenerated].uv = static_cast<int>(u * 64.0f) - (static_cast<int>(v * -64.0f) << 9);
+                                float const u = *uvPtr;
+                                float const v = *(uvPtr - 1);
+                                vertices[verticesGenerated].uv =
+                                    static_cast<int>(u * 64.0f) - (static_cast<int>(v * -64.0f) << 9);
 
                                 uvPtr += 2;
                                 ++verticesGenerated;
@@ -8369,23 +8550,26 @@ namespace m3d
                         {
                             // Base pass rendering
                             float* uvPtr = baseUVs + 1;
-                            auto vertexOffsetCalc = reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(baseUVs);
+                            auto vertexOffsetCalc =
+                                reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(baseUVs);
 
                             for (int col = 0; col < 5; ++col)
                             {
                                 // Calculate vertex index within the 32x32 vertex grid per tile
-                                const short vertexIndex = localY + 32 * (col + 4 * localX);
+                                short const vertexIndex = localY + 32 * (col + 4 * localX);
 
                                 // Store vertex index
                                 vertices[verticesGenerated].xz = row + 4 * vertexIndex;
 
                                 // Set vertex height from heightmap
-                                vertices[verticesGenerated].y = m_heightMap[heightMapBaseOffset + col + row * mapStride];
+                                vertices[verticesGenerated].y =
+                                    m_heightMap[heightMapBaseOffset + col + row * mapStride];
 
                                 // Pack UV coordinates
-                                const float u = *uvPtr;
-                                const float v = *(uvPtr - 1);
-                                vertices[verticesGenerated].uv = static_cast<int>(u * 64.0f) - (static_cast<int>(v * -64.0f) << 9);
+                                float const u = *uvPtr;
+                                float const v = *(uvPtr - 1);
+                                vertices[verticesGenerated].uv =
+                                    static_cast<int>(u * 64.0f) - (static_cast<int>(v * -64.0f) << 9);
 
                                 uvPtr += 2;
                                 ++verticesGenerated;
@@ -8426,9 +8610,9 @@ namespace m3d
         // Store final tile data if we have pending cells
         if (cellsInCurrentPass > 0)
         {
-            const int storageShift = (renderType != 0) ? 4 : 0;
-            const char offsetShift = (4 * storageShift);
-            const char bankShift = (2 * storageShift);
+            int const storageShift = (renderType != 0) ? 4 : 0;
+            char const offsetShift = (4 * storageShift);
+            char const bankShift = (2 * storageShift);
 
             assert(lastSquareX >= 0);
             assert(lastSquareX < 64);
@@ -8440,14 +8624,13 @@ namespace m3d
             // Store cell count for this tile
             chunk.m_numCellsPerCellMap[lastSquareY * 64 + lastSquareX] |= (cellsInCurrentPass << (2 * storageShift));
 
-            const int tileIndex = lastSquareX + (lastSquareY << 8);
+            int const tileIndex = lastSquareX + (lastSquareY << 8);
 
             // Store vertex offset
             chunk.m_offsetsmap[tileIndex] |= (offsetToStore << offsetShift);
 
             // Store bank number
             chunk.m_banknumber[tileIndex] |= (currentBank << bankShift);
-
 
             chunk.iotherPassBankNumber = currentBank;
             chunk.iotherPassOffset = totalVerticesProcessed;
@@ -8481,8 +8664,8 @@ namespace m3d
 
         // Calculate shift values based on render type
         int typeShift = (RenderType != RT_FIRSTPASSLIGHT) ? 4 : 0;
-        char cellCountShift = 2 * typeShift;      // Shift for cell count extraction
-        char offsetShift = 4 * typeShift;         // Shift for offset extraction
+        char cellCountShift = 2 * typeShift;  // Shift for cell count extraction
+        char offsetShift = 4 * typeShift;     // Shift for offset extraction
 
         // Process each cell in the texture
         for (unsigned int cellIndex = 0; cellIndex < cellsPerTex.size(); ++cellIndex)
@@ -8493,7 +8676,7 @@ namespace m3d
             unsigned char posX = static_cast<unsigned char>(cellData);
             unsigned char posY = static_cast<unsigned char>(cellData >> 8);
 
-            const float land_scale_27 = 8.0;
+            float const land_scale_27 = 8.0;
 
             // Set position constant for vertex shader
             CVector position;
@@ -8501,15 +8684,12 @@ namespace m3d
             position.y = static_cast<float>(posY) * 128.0f;
             position.z = land_scale_27;
 
-            m3d::Application::g_pApp->m_renderer->SetVsFloatConst(
-                10u,
-                reinterpret_cast<const float*>(&position),
-                1u);
+            m3d::Application::g_pApp->m_renderer->SetVsFloatConst(10u, reinterpret_cast<float const*>(&position), 1u);
 
             // Extract rendering information from chunk data
             unsigned short cellMapIndex = 64 * posY + posX;
-            unsigned char cellCount = static_cast<unsigned char>(
-                tivchunk.m_numCellsPerCellMap[cellMapIndex] >> cellCountShift);
+            unsigned char cellCount =
+                static_cast<unsigned char>(tivchunk.m_numCellsPerCellMap[cellMapIndex] >> cellCountShift);
 
             unsigned char bankNumber = static_cast<unsigned char>(
                 tivchunk.m_banknumber[static_cast<unsigned short>(cellData)] >> cellCountShift);
@@ -8530,12 +8710,7 @@ namespace m3d
                 M3D_RENDERER->SetToStream0(tivchunk.m_vbHandle[bankNumber]);
 
                 // Draw the geometry
-                M3D_RENDERER->DrawIndexedPrimitiveShader(
-                    rend::M3DPT_TRIANGLESTRIP,
-                    0,
-                    vertexCount,
-                    0,
-                    indexCount);
+                M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, vertexCount, 0, indexCount);
             }
         }
     }
@@ -8576,7 +8751,8 @@ namespace m3d
         // tested as well, and the first hit in scan order wins, not the nearest.
         ttt = -1.0f;
         int const n = m_mapSize;
-        auto const heightAt = [&](int x, int z) {
+        auto const heightAt = [&](int x, int z)
+        {
             return (x < 0 || x > n || z < 0 || z > n) ? 0.0f : m_heightMap[x + z * (n + 1)];
         };
         for (int zi = 0; zi <= 16; ++zi)
@@ -8595,7 +8771,8 @@ namespace m3d
                 float tt;
                 float tu;
                 float tv;
-                if (intersectTriangle(start, dir, v[3], v[1], v[0], tt, tu, tv) || intersectTriangle(start, dir, v[3], v[2], v[1], tt, tu, tv))
+                if (intersectTriangle(start, dir, v[3], v[1], v[0], tt, tu, tv) ||
+                    intersectTriangle(start, dir, v[3], v[2], v[1], tt, tu, tv))
                 {
                     ttt = tt;
                     return true;
@@ -8701,7 +8878,8 @@ namespace m3d
                 float const* srcUv2 = nullptr;
                 if (RenderType == RT_OTHERPASSES)
                 {
-                    srcUv2 = alphaUvBase + 200 * (m_CurAlphaSet * 5 + specialMapper[corner].m_maskindex) + 50 * specialMapper[corner].m_rotate;
+                    srcUv2 = alphaUvBase + 200 * (m_CurAlphaSet * 5 + specialMapper[corner].m_maskindex) +
+                        50 * specialMapper[corner].m_rotate;
                 }
 
                 int const idx0 = 4 * tx + 4 * tz * (m_mapSize + 1);
@@ -8839,7 +9017,7 @@ namespace m3d
         m_tiles = nullptr;
 
         // Release textures and vertex buffers
-        const size_t textureCount = m_tilesTextures.size();
+        size_t const textureCount = m_tilesTextures.size();
         for (size_t i = 0; i < textureCount; ++i)
         {
             TIVChunk* texture = m_tilesTextures[i];
@@ -8980,9 +9158,12 @@ namespace m3d
 
                             // Apply rotation and scale by radius
                             int vertexIndex = v * 2 + u;
-                            vertices[vertexIndex].x = (rotationMatrix._11 * 0.0f) + (rotationMatrix._12 * 0.0f) + (rotationMatrix._13 * radius);
-                            vertices[vertexIndex].y = (rotationMatrix._21 * 0.0f) + (rotationMatrix._22 * 0.0f) + (rotationMatrix._23 * radius);
-                            vertices[vertexIndex].z = (rotationMatrix._31 * 0.0f) + (rotationMatrix._32 * 0.0f) + (rotationMatrix._33 * radius);
+                            vertices[vertexIndex].x = (rotationMatrix._11 * 0.0f) + (rotationMatrix._12 * 0.0f) +
+                                (rotationMatrix._13 * radius);
+                            vertices[vertexIndex].y = (rotationMatrix._21 * 0.0f) + (rotationMatrix._22 * 0.0f) +
+                                (rotationMatrix._23 * radius);
+                            vertices[vertexIndex].z = (rotationMatrix._31 * 0.0f) + (rotationMatrix._32 * 0.0f) +
+                                (rotationMatrix._33 * radius);
                         }
                     }
 
@@ -9185,4 +9366,4 @@ namespace m3d
         g_Kernel->AddClass(RT_CLASS_LOCAL(GeomObjectRoad));
         g_Kernel->AddClass(RT_CLASS_LOCAL(GeomObjectPassCell));
     }
-}
+}  // namespace m3d

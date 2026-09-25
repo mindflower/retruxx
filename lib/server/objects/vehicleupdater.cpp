@@ -191,303 +191,234 @@ namespace ai
 
     void VehicleUpdater::_UpdateForceAndVelocity(float elapsedTime)
     {
-        // TODO: generated code
-        // Get vehicle position and ground information
-        CVector vehiclePos = m_vehicle->GetPosition();
+        // RVA 0x7BFC60 - the simplified (point-mass) driving model: gravity along the slope, the
+        // engine's pull and the tyres' grip (both bounded by the ground's reaction times the soil's
+        // friction), and the soil's rolling resistance; then one integration step along the ground.
+        CVector const groundPos = GetGroundPos(m_vehicle->GetPosition(), false, false);
+        m3d::CWorld* world = pServer->GetWorld();
+        float const cellSize = pServer->GetLevelSize() / static_cast<float>(world->GetLandscape().GetTileSize());
+        DynamicScene::SoilProps const& soil = gDynamicScene->GetSoilProps(
+            static_cast<int>((1.0f / cellSize) * groundPos.x + 0.5f),
+            static_cast<int>((1.0f / cellSize) * groundPos.z + 0.5f));
+        float const mu = soil.m_friction;
+        float const sideMu = mu * 1.5f;
+        float const mass = m_vehicle->GetMass();
+        CVector const gravityForce(0.0f, mass * -9.8100004f, 0.0f);
 
-        CVector m_velocityMaximum = ai::GetGroundPos(vehiclePos, false, false);
+        // The vehicle's up axis.
+        static CVector const INITIAL_UP_DIRECTION(0.0f, 1.0f, 0.0f);
+        Quaternion const rot = m_vehicle->GetRotation();
+        float const xz = rot.z * rot.x;
+        float const xw = rot.x * rot.w;
+        float const zw = rot.z * rot.w;
+        float const xx = rot.x * rot.x;
+        float const xy = rot.y * rot.x;
+        float const yz = rot.z * rot.y;
+        float const zz = rot.z * rot.z;
+        float const yy = rot.y * rot.y;
+        float const yw = rot.y * rot.w;
+        CMatrix m;
+        m._11 = 1.0f - (zz + yy) * 2.0f;
+        m._12 = (zw + xy) * 2.0f;
+        m._13 = (xz - yw) * 2.0f;
+        m._14 = 0.0f;
+        m._21 = (xy - zw) * 2.0f;
+        m._22 = 1.0f - (zz + xx) * 2.0f;
+        m._23 = (xw + yz) * 2.0f;
+        m._24 = 0.0f;
+        m._31 = (yw + xz) * 2.0f;
+        m._32 = (yz - xw) * 2.0f;
+        m._33 = 1.0f - (yy + xx) * 2.0f;
+        m._34 = 0.0f;
+        m._41 = 0.0f;
+        m._42 = 0.0f;
+        m._43 = 0.0f;
+        m._44 = 1.0f;
+        CMatrix const rotation(m);
+        CVector const up(
+            rotation._31 * INITIAL_UP_DIRECTION.z + rotation._21 * INITIAL_UP_DIRECTION.y + rotation._11 * INITIAL_UP_DIRECTION.x,
+            rotation._32 * INITIAL_UP_DIRECTION.z + rotation._22 * INITIAL_UP_DIRECTION.y + rotation._12 * INITIAL_UP_DIRECTION.x,
+            rotation._33 * INITIAL_UP_DIRECTION.z + rotation._23 * INITIAL_UP_DIRECTION.y + rotation._13 * INITIAL_UP_DIRECTION.x);
 
-        // Get terrain properties based on position
-        m3d::CWorld* world = ai::pServer->GetWorld();
-        float levelSize = ai::pServer->GetLevelSize();
-        int tileSize = world->GetLandscape().GetTileSize();
-        float scaleFactor = levelSize / static_cast<float>(tileSize);
-
-        int terrainX = static_cast<int>((1.0f / scaleFactor) * m_velocityMaximum.x + 0.5f);
-        int terrainZ = static_cast<int>((1.0f / scaleFactor) * m_velocityMaximum.z + 0.5f);
-
-        ai::DynamicScene::SoilProps const& soilProps = ai::gDynamicScene->GetSoilProps(terrainX, terrainZ);
-
-        // Calculate basic physics properties
-        float vehicleMass = m_vehicle->GetMass();
-        float friction = soilProps.m_friction;
-        float lateralFriction = friction * 1.5f;
-
-        // Calculate gravity force
-        CVector gravityForce = {0.0f, vehicleMass * -9.81f, 0.0f};
-
-        // Get vehicle rotation and build rotation matrix
-        Quaternion vehicleRot = m_vehicle->GetRotation();
-
-        // Build rotation matrix from quaternion
-        CMatrix rotationMatrix;
-        float xx = vehicleRot.x * vehicleRot.x;
-        float xy = vehicleRot.x * vehicleRot.y;
-        float xz = vehicleRot.x * vehicleRot.z;
-        float xw = vehicleRot.x * vehicleRot.w;
-        float yy = vehicleRot.y * vehicleRot.y;
-        float yz = vehicleRot.y * vehicleRot.z;
-        float yw = vehicleRot.y * vehicleRot.w;
-        float zz = vehicleRot.z * vehicleRot.z;
-        float zw = vehicleRot.z * vehicleRot.w;
-
-        rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
-        rotationMatrix._12 = 2.0f * (xy + zw);
-        rotationMatrix._13 = 2.0f * (xz - yw);
-        rotationMatrix._14 = 0.0f;
-
-        rotationMatrix._21 = 2.0f * (xy - zw);
-        rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
-        rotationMatrix._23 = 2.0f * (yz + xw);
-        rotationMatrix._24 = 0.0f;
-
-        rotationMatrix._31 = 2.0f * (xz + yw);
-        rotationMatrix._32 = 2.0f * (yz - xw);
-        rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
-        rotationMatrix._34 = 0.0f;
-
-        rotationMatrix._41 = 0.0f;
-        rotationMatrix._42 = 0.0f;
-        rotationMatrix._43 = 0.0f;
-        rotationMatrix._44 = 1.0f;
-
-        // Transform up vector by rotation matrix
-        CVector INITIAL_UP_DIRECTION_35(0.0, 1.0, 0.0);
-        CVector up;
-        up.x = rotationMatrix._11 * INITIAL_UP_DIRECTION_35.x + rotationMatrix._21 * INITIAL_UP_DIRECTION_35.y +
-            rotationMatrix._31 * INITIAL_UP_DIRECTION_35.z;
-        up.y = rotationMatrix._12 * INITIAL_UP_DIRECTION_35.x + rotationMatrix._22 * INITIAL_UP_DIRECTION_35.y +
-            rotationMatrix._32 * INITIAL_UP_DIRECTION_35.z;
-        up.z = rotationMatrix._13 * INITIAL_UP_DIRECTION_35.x + rotationMatrix._23 * INITIAL_UP_DIRECTION_35.y +
-            rotationMatrix._33 * INITIAL_UP_DIRECTION_35.z;
-
-        // Project gravity force onto ground plane
-        CVector projectedGravity = gravityForce;
-        ai::ProjectVectorOntoPlane(up, projectedGravity);
-
-        // Calculate reaction force magnitude
-        CVector gravityDiff = {
-            gravityForce.x - projectedGravity.x, gravityForce.y - projectedGravity.y, gravityForce.z - projectedGravity.z};
-        float reactionForce = std::sqrt(gravityDiff.x * gravityDiff.x + gravityDiff.y * gravityDiff.y + gravityDiff.z * gravityDiff.z);
+        // Gravity splits into a pull down the slope and the part the ground holds up.
+        CVector const projectedGravity = ProjectVectorOntoPlane(up, gravityForce);
+        double const nx = gravityForce.x - projectedGravity.x;
+        double const ny = gravityForce.y - projectedGravity.y;
+        double const nz = gravityForce.z - projectedGravity.z;
+        float const reactionOfSupport = static_cast<float>(sqrt(nz * nz + ny * ny + nx * nx));
 
         CVector engineForce = ZeroVector;
-        CVector frictionForce = ZeroVector;
-
-        // Handle braking vs driving
+        CVector friction;
         if (m_vehicle->bIsBraking())
         {
-            // Braking logic
-            float speedSq = m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z;
-
-            if (speedSq > 0.001f)
+            if (m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z > 0.001f)
             {
-                // Apply friction against current velocity direction
-                float invSpeed = 1.0f / std::sqrt(speedSq + 1.1920929e-07f);
-                frictionForce.x = (-m_velocity.x * invSpeed) * reactionForce * friction;
-                frictionForce.y = (-m_velocity.y * invSpeed) * reactionForce * friction;
-                frictionForce.z = (-m_velocity.z * invSpeed) * reactionForce * friction;
+                // Skid against the motion.
+                float const inv = static_cast<float>(1.0 / sqrt(double(m_velocity.x) * m_velocity.x +
+                                                                double(m_velocity.y) * m_velocity.y +
+                                                                double(m_velocity.z) * m_velocity.z + 0.00000011920929));
+                friction.x = (0.0f - inv * m_velocity.x) * reactionOfSupport * mu;
+                friction.y = (0.0f - m_velocity.y * inv) * reactionOfSupport * mu;
+                friction.z = (0.0f - m_velocity.z * inv) * reactionOfSupport * mu;
             }
             else
             {
-                // Apply friction against gravity direction when stationary
-                float gravityMagSq = projectedGravity.x * projectedGravity.x + projectedGravity.y * projectedGravity.y +
-                    projectedGravity.z * projectedGravity.z;
-                float invGravityMag = 1.0f / std::sqrt(gravityMagSq + 1.1920929e-07f);
-
-                frictionForce.x = (-projectedGravity.x * invGravityMag) * reactionForce * friction;
-                frictionForce.y = (-projectedGravity.y * invGravityMag) * reactionForce * friction;
-                frictionForce.z = (-projectedGravity.z * invGravityMag) * reactionForce * friction;
-
-                // Clamp friction force if it exceeds available force
-                float frictionMagSq =
-                    frictionForce.x * frictionForce.x + frictionForce.y * frictionForce.y + frictionForce.z * frictionForce.z;
-                if (frictionMagSq > gravityMagSq)
+                // Hold still against the slope, as far as the grip allows.
+                float const pullSq = static_cast<float>(double(projectedGravity.y) * projectedGravity.y +
+                                                        double(projectedGravity.z) * projectedGravity.z +
+                                                        double(projectedGravity.x) * projectedGravity.x);
+                float const inv = static_cast<float>(1.0 / sqrt(pullSq + 0.00000011920929));
+                friction.x = (0.0f - inv * projectedGravity.x) * reactionOfSupport * mu;
+                friction.z = (0.0f - projectedGravity.z * inv) * reactionOfSupport * mu;
+                friction.y = (0.0f - projectedGravity.y * inv) * reactionOfSupport * mu;
+                // Grip beyond the pull only cancels it; otherwise the vehicle slides at full grip.
+                if (friction.x * friction.x + friction.z * friction.z + friction.y * friction.y > pullSq)
                 {
-                    frictionForce.x = -projectedGravity.x;
-                    frictionForce.y = -projectedGravity.y;
-                    frictionForce.z = -projectedGravity.z;
+                    friction.x = 0.0f - projectedGravity.x;
+                    friction.y = 0.0f - projectedGravity.y;
+                    friction.z = 0.0f - projectedGravity.z;
                 }
             }
         }
         else
         {
-            // Driving logic - calculate engine force
-            float wheelAngularVel, engineRpm;
-            int currentGear;
-            CalcRpmsAndGear(wheelAngularVel, engineRpm, currentGear);
-
-            float maxTorque = m_vehicle->GetMaxTorque();
-            float throttle = m_vehicle->m_realThrottle;
-            float torque = maxTorque * throttle;
-
-            // Determine speed limit based on attack status
-            float speedLimit;
-            if (m_vehicle->GetAttackStatus() == 1)
-            {
-                speedLimit = m_vehicle->GetMaxSpeed();
-            }
-            else
-            {
-                speedLimit = m_vehicle->GetCruisingSpeed();
-            }
-
-            // Limit torque if exceeding speed limits or RPM limits
-            float currentSpeed = std::fabs(wheelAngularVel) * m_wheelRadius;
-            if ((currentSpeed - speedLimit > 0.1f && !m_vehicle->bIsBraking()) || engineRpm > m_vehicle->m_maxEngineRpm ||
-                engineRpm < -4000.0f)
+            float wheelAVel;
+            float engineRpm;
+            int gear;
+            CalcRpmsAndGear(wheelAVel, engineRpm, gear);
+            float torque = m_vehicle->GetMaxTorque() * m_vehicle->m_realThrottle;
+            float const maxSpeed =
+                m_vehicle->GetAttackStatus() == Vehicle::ATTACK_ATTACKING ? m_vehicle->GetMaxSpeed() : m_vehicle->GetCruisingSpeed();
+            if ((fabs(wheelAVel) * m_wheelRadius - maxSpeed > 0.1 && !m_vehicle->bIsBraking()) ||
+                engineRpm > m_vehicle->m_maxEngineRpm || engineRpm < -4000.0f)
             {
                 torque = 0.0f;
             }
 
-            // Calculate engine force in vehicle direction
-            CVector vehicleDir = m_vehicle->GetDirection();
-
-            float gearRatio = Vehicle::GEAR_RATIOS[currentGear];
-            float diffRatio = m_vehicle->m_diffRatio;
-            float finalDriveRatio = 1.8f;
-
-            engineForce.x = vehicleDir.x * gearRatio * diffRatio * finalDriveRatio * torque;
-            engineForce.y = vehicleDir.y * gearRatio * diffRatio * finalDriveRatio * torque;
-            engineForce.z = vehicleDir.z * gearRatio * diffRatio * finalDriveRatio * torque;
-
-            // Convert to linear force at wheels
-            float invWheelRadius = 1.0f / m_wheelRadius;
-            engineForce.x *= invWheelRadius;
-            engineForce.y *= invWheelRadius;
-            engineForce.z *= invWheelRadius;
-
-            // Limit engine force by available traction
-            float engineForceMagSq = engineForce.x * engineForce.x + engineForce.y * engineForce.y + engineForce.z * engineForce.z;
-            if (std::sqrt(engineForceMagSq) > reactionForce * friction)
+            // The engine pushes along the vehicle, up to what the grip allows.
+            CVector const dir = m_vehicle->GetDirection();
+            float const gearRatio = Vehicle::GEAR_RATIOS[gear];
+            float const diffRatio = m_vehicle->m_diffRatio;
+            float const invWheelRadius = 1.0f / m_wheelRadius;
+            engineForce.x = dir.x * gearRatio * diffRatio * 1.8f * torque * invWheelRadius;
+            engineForce.y = dir.y * gearRatio * diffRatio * 1.8f * torque * invWheelRadius;
+            engineForce.z = dir.z * gearRatio * diffRatio * 1.8f * torque * invWheelRadius;
+            double const engineSq = double(engineForce.z) * engineForce.z + double(engineForce.y) * engineForce.y +
+                double(engineForce.x) * engineForce.x;
+            if (sqrt(engineSq) > reactionOfSupport * mu)
             {
-                float invEngineForceMag = 1.0f / std::sqrt(engineForceMagSq + 1.1920929e-07f);
-                engineForce.x = (engineForce.x * invEngineForceMag) * reactionForce * friction;
-                engineForce.y = (engineForce.y * invEngineForceMag) * reactionForce * friction;
-                engineForce.z = (engineForce.z * invEngineForceMag) * reactionForce * friction;
+                float const inv = static_cast<float>(1.0 / sqrt(engineSq + 0.00000011920929));
+                engineForce.x = inv * engineForce.x * reactionOfSupport * mu;
+                engineForce.y = engineForce.y * inv * reactionOfSupport * mu;
+                engineForce.z = engineForce.z * inv * reactionOfSupport * mu;
             }
 
-            // Calculate lateral friction (sideways force)
-            CVector lateralDir = {
-                vehicleDir.y * up.z - up.y * vehicleDir.z,
-                vehicleDir.z * up.x - vehicleDir.x * up.z,
-                vehicleDir.x * up.y - vehicleDir.y * up.x};
-
-            float lateralSpeed = m_velocity.x * lateralDir.x + m_velocity.y * lateralDir.y + m_velocity.z * lateralDir.z;
-
-            CVector lateralFrictionForce = {lateralDir.x * lateralSpeed, lateralDir.y * lateralSpeed, lateralDir.z * lateralSpeed};
-
-            float lateralFrictionMagSq = lateralFrictionForce.x * lateralFrictionForce.x + lateralFrictionForce.y * lateralFrictionForce.y +
-                lateralFrictionForce.z * lateralFrictionForce.z;
-
-            if (lateralFrictionMagSq > 0.1f)
+            // The tyres resist sliding sideways, with one and a half times the grip.
+            CVector const side(dir.z * up.y - dir.y * up.z, up.z * dir.x - dir.z * up.x, dir.y * up.x - up.y * dir.x);
+            float const sideSpeed = m_velocity.z * side.z + m_velocity.y * side.y + m_velocity.x * side.x;
+            CVector const sideVel(side.x * sideSpeed, side.y * sideSpeed, side.z * sideSpeed);
+            float const sideSq = sideVel.x * sideVel.x + sideVel.z * sideVel.z + sideVel.y * sideVel.y;
+            if (sideSq > 0.1f)
             {
-                float invLateralFrictionMag = 1.0f / std::sqrt(lateralFrictionMagSq + 1.1920929e-07f);
-                frictionForce.x = (-lateralFrictionForce.x * invLateralFrictionMag) * reactionForce * lateralFriction;
-                frictionForce.y = (-lateralFrictionForce.y * invLateralFrictionMag) * reactionForce * lateralFriction;
-                frictionForce.z = (-lateralFrictionForce.z * invLateralFrictionMag) * reactionForce * lateralFriction;
+                float const inv = static_cast<float>(1.0 / sqrt(sideSq + 0.00000011920929f));
+                friction.x = (0.0f - inv * sideVel.x) * reactionOfSupport * sideMu;
+                friction.y = (0.0f - sideVel.y * inv) * reactionOfSupport * sideMu;
+                friction.z = (0.0f - sideVel.z * inv) * reactionOfSupport * sideMu;
+            }
+            else
+            {
+                friction = CVector(0.0f, 0.0f, 0.0f);
             }
         }
 
-        // Calculate rolling resistance from wheels
-        CVector resistanceForce = ZeroVector;
-        ai::Wheel const* firstWheel = m_vehicle->GetFirstExistingWheel();
-
-        if (firstWheel)
+        // The soil's rolling resistance, for every wheel slot.
+        CVector resistance = friction;
+        if (Wheel const* wheel = m_vehicle->GetFirstExistingWheel())
         {
-            float resistance = soilProps.m_resistance;
-            int wheelCount = m_vehicle->m_wheels.size();
-
-            resistanceForce.x = (-m_velocity.x * resistance) * wheelCount;
-            resistanceForce.y = (-m_velocity.y * resistance) * wheelCount;
-            resistanceForce.z = (-m_velocity.z * resistance) * wheelCount;
-
-            float wheelMass = firstWheel->GetMass();
-            resistanceForce.x *= wheelMass;
-            resistanceForce.y *= wheelMass;
-            resistanceForce.z *= wheelMass;
-
-            // Convert to acceleration (assuming some radius conversion)
-            float invRadius = 1.0f / firstWheel->GetRadius();
-            resistanceForce.x *= invRadius;
-            resistanceForce.y *= invRadius;
-            resistanceForce.z *= invRadius;
+            float const wheelCount = static_cast<float>(static_cast<unsigned>(m_vehicle->m_wheels.size()));
+            float const rx = (0.0f - m_velocity.x) * soil.m_resistance * wheelCount;
+            float const ry = (0.0f - m_velocity.y) * soil.m_resistance * wheelCount;
+            float const rz = (0.0f - m_velocity.z) * soil.m_resistance * wheelCount;
+            float const wheelMass = wheel->GetMass();
+            float const invRadius = 1.0f / wheel->GetRadius();
+            resistance.x = invRadius * (rx * wheelMass) + friction.x;
+            resistance.y = (ry * wheelMass) * invRadius + friction.y;
+            resistance.z = (rz * wheelMass) * invRadius + friction.z;
         }
 
-        // Calculate total acceleration
-        CVector acceleration;
-        acceleration.x = (engineForce.x + projectedGravity.x + frictionForce.x + resistanceForce.x) / vehicleMass;
-        acceleration.y = (engineForce.y + projectedGravity.y + frictionForce.y + resistanceForce.y) / vehicleMass;
-        acceleration.z = (engineForce.z + projectedGravity.z + frictionForce.z + resistanceForce.z) / vehicleMass;
-
-        // Update position using kinematic equations
-        CVector newPosition;
-        newPosition.x = m_velocityMaximum.x + (m_velocity.x * elapsedTime) + (0.5f * acceleration.x * elapsedTime * elapsedTime);
-        newPosition.y = m_velocityMaximum.y + (m_velocity.y * elapsedTime) + (0.5f * acceleration.y * elapsedTime * elapsedTime);
-        newPosition.z = m_velocityMaximum.z + (m_velocity.z * elapsedTime) + (0.5f * acceleration.z * elapsedTime * elapsedTime);
-
-        // Clamp position to level boundaries
-        levelSize = ai::pServer->GetLevelSize();
-        newPosition.x = std::max(0.0f, std::min(newPosition.x, levelSize));
-        newPosition.z = std::max(0.0f, std::min(newPosition.z, levelSize));
-
-        // Adjust position based on ground collision
-        CVector newGroundPos = ai::GetGroundPos(newPosition, false, false);
-        CVector groundOffset = {
-            newGroundPos.x - m_velocityMaximum.x, newGroundPos.y - m_velocityMaximum.y, newGroundPos.z - m_velocityMaximum.z};
-
-        float groundOffsetDist =
-            std::sqrt(groundOffset.x * groundOffset.x + groundOffset.y * groundOffset.y + groundOffset.z * groundOffset.z);
-
-        if (groundOffsetDist > 0.1f)
+        // Integrate.
+        float const invMass = static_cast<float>(1.0 / mass);
+        CVector const accel(
+            (engineForce.x + projectedGravity.x + resistance.x) * invMass,
+            (engineForce.y + projectedGravity.y + resistance.y) * invMass,
+            (engineForce.z + projectedGravity.z + resistance.z) * invMass);
+        CVector const dv(accel.x * elapsedTime, accel.y * elapsedTime, accel.z * elapsedTime);
+        CVector newPosition(
+            (m_velocity.x * elapsedTime + groundPos.x) + dv.x * elapsedTime * 0.5f,
+            (groundPos.y + m_velocity.y * elapsedTime) + dv.y * elapsedTime * 0.5f,
+            (m_velocity.z * elapsedTime + groundPos.z) + dv.z * elapsedTime * 0.5f);
+        float const levelSizeX = pServer->GetLevelSize();
+        if (newPosition.x < 0.0f)
         {
-            float invGroundOffsetDist = 1.0f / std::sqrt(groundOffsetDist * groundOffsetDist + 1.1920929e-07f);
-            CVector groundDir = {
-                groundOffset.x * invGroundOffsetDist, groundOffset.y * invGroundOffsetDist, groundOffset.z * invGroundOffsetDist};
+            newPosition.x = 0.0f;
+        }
+        if (newPosition.x > levelSizeX)
+        {
+            newPosition.x = levelSizeX;
+        }
+        float const levelSizeZ = pServer->GetLevelSize();
+        if (newPosition.z < 0.0f)
+        {
+            newPosition.z = 0.0f;
+        }
+        if (newPosition.z > levelSizeZ)
+        {
+            newPosition.z = levelSizeZ;
+        }
 
-            // Check if ground normal is not too steep
-            float upDot =
-                groundDir.x * INITIAL_UP_DIRECTION_35.x + groundDir.y * INITIAL_UP_DIRECTION_35.y + groundDir.z * INITIAL_UP_DIRECTION_35.z;
-
-            if (std::fabs(upDot) < 0.99f)
+        // Unless the ground drops or rises straight up, keep the distance covered but lay it
+        // along the ground.
+        CVector const newPositionOnGround = GetGroundPos(newPosition, false, false);
+        float const gx = newPositionOnGround.x - groundPos.x;
+        float const gy = newPositionOnGround.y - groundPos.y;
+        float const gz = newPositionOnGround.z - groundPos.z;
+        if (sqrt(double(gx) * gx + double(gz) * gz + double(gy) * gy) > 0.1)
+        {
+            float const inv = static_cast<float>(1.0 / sqrt(double(gx) * gx + double(gz) * gz + double(gy) * gy + 0.00000011920929));
+            if (fabs(double(gz * inv) * INITIAL_UP_DIRECTION.z + double(gy * inv) * INITIAL_UP_DIRECTION.y +
+                     double(inv * gx) * INITIAL_UP_DIRECTION.x) < 0.99000001)
             {
-                // Project movement along ground surface
-                CVector movement = {
-                    newPosition.x - m_velocityMaximum.x, newPosition.y - m_velocityMaximum.y, newPosition.z - m_velocityMaximum.z};
-                float movementDist = std::sqrt(movement.x * movement.x + movement.y * movement.y + movement.z * movement.z);
-
-                newPosition.x = m_velocityMaximum.x + groundDir.x * movementDist;
-                newPosition.y = m_velocityMaximum.y + groundDir.y * movementDist;
-                newPosition.z = m_velocityMaximum.z + groundDir.z * movementDist;
+                float const inv2 = static_cast<float>(1.0 / sqrt(double(gz) * gz + double(gy) * gy + double(gx) * gx + 0.00000011920929));
+                double const mz = newPosition.z - groundPos.z;
+                double const my = newPosition.y - groundPos.y;
+                float const mx = newPosition.x - groundPos.x;
+                float const dist = static_cast<float>(sqrt(mz * mz + my * my + double(mx) * mx));
+                newPosition = CVector(
+                    inv2 * gx * dist + groundPos.x,
+                    gy * inv2 * dist + groundPos.y,
+                    gz * inv2 * dist + groundPos.z);
             }
         }
-
-        // Update vehicle position
         m_vehicle->SetGamePositionOnGround(newPosition, false, true);
+        m_velocity.x = dv.x + m_velocity.x;
+        m_velocity.y = dv.y + m_velocity.y;
+        m_velocity.z = dv.z + m_velocity.z;
 
-        // Update velocity
-        m_velocity.x += acceleration.x * elapsedTime;
-        m_velocity.y += acceleration.y * elapsedTime;
-        m_velocity.z += acceleration.z * elapsedTime;
-
-        // Calculate ground-based velocity and clamp if necessary
-        CVector finalGroundPos = ai::GetGroundPos(newPosition, true, false);
-        m_velocityMaximum.x = (finalGroundPos.x - m_velocityMaximum.x) / elapsedTime;
-        m_velocityMaximum.y = (finalGroundPos.y - m_velocityMaximum.y) / elapsedTime;
-        m_velocityMaximum.z = (finalGroundPos.z - m_velocityMaximum.z) / elapsedTime;
-
-        float groundSpeed = std::sqrt(
-            m_velocityMaximum.x * m_velocityMaximum.x + m_velocityMaximum.y * m_velocityMaximum.y +
-            m_velocityMaximum.z * m_velocityMaximum.z);
-
-        float currentSpeed = std::sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z);
-
-        // Clamp velocity to ground speed if necessary
-        if (currentSpeed > groundSpeed)
+        // The speed can be no more than the distance actually covered allows.
+        CVector const finalGroundPos = GetGroundPos(newPosition, true, false);
+        float const invTime = static_cast<float>(1.0 / elapsedTime);
+        float const vx = invTime * (finalGroundPos.x - groundPos.x);
+        float const vy = (finalGroundPos.y - groundPos.y) * invTime;
+        float const vz = (finalGroundPos.z - groundPos.z) * invTime;
+        float const maxVel = static_cast<float>(sqrt(double(vz) * vz + double(vy) * vy + double(vx) * vx));
+        if (sqrt(double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y + double(m_velocity.z) * m_velocity.z) >
+            maxVel)
         {
-            float invCurrentSpeed = 1.0f / std::sqrt(currentSpeed * currentSpeed + 1.1920929e-07f);
-            m_velocity.x = (m_velocity.x * invCurrentSpeed) * groundSpeed;
-            m_velocity.y = (m_velocity.y * invCurrentSpeed) * groundSpeed;
-            m_velocity.z = (m_velocity.z * invCurrentSpeed) * groundSpeed;
+            float const inv = static_cast<float>(1.0 / sqrt(double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y +
+                                                            double(m_velocity.z) * m_velocity.z + 0.00000011920929));
+            m_velocity.x = inv * m_velocity.x * maxVel;
+            m_velocity.y = inv * m_velocity.y * maxVel;
+            m_velocity.z = inv * m_velocity.z * maxVel;
         }
     }
 }  // namespace ai

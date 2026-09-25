@@ -527,16 +527,17 @@ int CStr::rfind(char c) const
     return res == std::string_view::npos ? CStr_npos : static_cast<int>(res);
 }
 
-CStr CStr::substr(int pos, int endpos) const
+CStr CStr::substr(int pos, int npos) const
 {
-    //TODO: check this
+    // RVA 0x413EB0 - npos characters from pos (despite the name, a count), or the rest of the
+    // string for CStr_npos.
     assert(m_charPtr);
-    std::string const str(m_charPtr);
-    if (endpos == CStr_npos)
-    {
-        return str.substr(pos).c_str();
-    }
-    return str.substr(pos, endpos - pos).c_str();
+    int const count = npos == CStr_npos ? length() - pos : npos;
+    assert(pos >= 0);
+    // NOTE: the shipped check compares count - pos, not pos + count, with the length.
+    assert(count - pos <= length());
+    char const* const start = &m_charPtr[pos];
+    return std::string(start, strnlen(start, static_cast<size_t>(count))).c_str();
 }
 
 int CStr::findsubstr(char const* substr, int offset) const

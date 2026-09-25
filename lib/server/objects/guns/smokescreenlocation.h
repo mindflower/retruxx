@@ -12,6 +12,8 @@ namespace ai
 
     class SmokeScreenLocation : public ai::TemporaryLocation
     {
+        friend class SmokeScreenLocationPrototypeInfo;
+
     protected:
         virtual  ~SmokeScreenLocation() override /* 0x00 */;
 

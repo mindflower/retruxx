@@ -12,6 +12,8 @@ namespace ai
 
     class NailLocation : public ai::TemporaryLocation
     {
+        friend class NailLocationPrototypeInfo;
+
     protected:
         virtual  ~NailLocation() override /* 0x00 */;
 

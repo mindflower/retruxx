@@ -25,6 +25,47 @@
 #include "server/dynamicscene.h"
 #include <server/server.h>
 
+namespace
+{
+    // Rows of the rotation matrix of a unit quaternion (row vector convention), as expanded
+    // inline throughout PhysicBody.
+    struct RotRows
+    {
+        float _11, _12, _13, _21, _22, _23, _31, _32, _33;
+    };
+
+    RotRows RotationRows(Quaternion const& q)
+    {
+        float const zw = q.z * q.w;
+        float const zx = q.z * q.x;
+        float const xx = q.x * q.x;
+        float const wx = q.w * q.x;
+        float const yx = q.y * q.x;
+        float const zy = q.z * q.y;
+        float const yw = q.y * q.w;
+        float const zz = q.z * q.z;
+        float const yy = q.y * q.y;
+        RotRows m;
+        m._11 = 1.0f - (zz + yy) * 2.0f;
+        m._21 = (yx - zw) * 2.0f;
+        m._31 = (yw + zx) * 2.0f;
+        m._12 = (zw + yx) * 2.0f;
+        m._22 = 1.0f - (zz + xx) * 2.0f;
+        m._32 = (zy - wx) * 2.0f;
+        m._13 = (zx - yw) * 2.0f;
+        m._23 = (wx + zy) * 2.0f;
+        m._33 = 1.0f - (yy + xx) * 2.0f;
+        return m;
+    }
+
+    // INITIAL_OBJECTS_DIRECTION (0, 0, 1) rotated by q.
+    CVector DirectionOf(Quaternion const& q)
+    {
+        RotRows const m = RotationRows(q);
+        return CVector(m._31, m._32, m._33);
+    }
+}
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(PhysicBody)
@@ -96,7 +137,8 @@ namespace ai
 
     int PhysicBody::GetNodeAnimAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616620
+        return m_animAction;
     }
 
     void PhysicBody::SetNodeAnimAction(int action, bool forceRestartAction)
@@ -280,9 +322,17 @@ namespace ai
         return result;
     }
 
-    void PhysicBody::SetPosition(CVector const&)
+    void PhysicBody::SetPosition(CVector const& vec)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619060
+        if (m_ownerPhysicObj)
+        {
+            m_ownerPhysicObj->SetPosition(vec);
+        }
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            dGeomSetPosition(geom->GetGeomId(), vec.x, vec.y, vec.z);
+        }
     }
 
     void PhysicBody::UpdateGeomsByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
@@ -386,9 +436,13 @@ namespace ai
         }
     }
 
-    void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
+    void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>& geoms) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Declared in the PDB but never emitted in the shipped build; lists the geom transforms, as GetGeom does.
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            geoms.push_back(geom);
+        }
     }
 
     m3d::SgNode* PhysicBody::CreateNode(CStr const& modelname, int action, CVector const& scale, PhysicBody* owner, bool addToRoot)
@@ -476,12 +530,14 @@ namespace ai
 
     CVector PhysicBody::GetDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619230
+        return DirectionOf(GetRotation());
     }
 
     unsigned PhysicBody::GetNumGeoms() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617340
+        return static_cast<unsigned>(m_pGeoms.size());
     }
 
     void PhysicBody::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -561,14 +617,21 @@ namespace ai
         return {0.0, 0.0, 0.0, 1.0};
     }
 
-    void PhysicBody::SetRotation(Quaternion const*)
+    void PhysicBody::SetRotation(Quaternion const* q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619130
+        SetRotation(*q);
     }
 
-    void PhysicBody::SetRotation(Quaternion const&)
+    void PhysicBody::SetRotation(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6190C0
+        // ODE takes quaternions as (w, x, y, z).
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            dQuaternion const quat = {q.w, q.x, q.y, q.z};
+            dGeomSetQuaternion(geom->GetGeomId(), quat);
+        }
     }
 
     void PhysicBody::UnlinkGeomsFromBody()
@@ -579,9 +642,25 @@ namespace ai
         }
     }
 
-    void PhysicBody::SetAnimationStopped(bool)
+    void PhysicBody::SetAnimationStopped(bool bStopped)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61CD30
+        // A stopped node leaves the scene graph's think list; restarting it resumes from now.
+        m_bAnimationIsStopped = bStopped;
+        if (!m_Node)
+        {
+            return;
+        }
+        if (bStopped)
+        {
+            m_Node->GetGraph()->m_thinkList.erase(m_Node);
+        }
+        else
+        {
+            unsigned frameStartTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
+            m_Node->SetProperty(8719u, &frameStartTime);
+            m_Node->GetGraph()->m_thinkList.insert(m_Node);
+        }
     }
 
     m3d::DbgCounter* PhysicBody::GetCountNodeRelinks()
@@ -589,9 +668,11 @@ namespace ai
         return m_countNodeRelinks;
     }
 
-    Geom* PhysicBody::GetGeom(unsigned) const
+    Geom* PhysicBody::GetGeom(unsigned n) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A800
+        // NOTE: n is not range checked.
+        return m_pGeoms[n];
     }
 
     void PhysicBody::RelinkSceneGraphNode()
@@ -652,14 +733,31 @@ namespace ai
         }
     }
 
-    void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A900
+        // NOTE: the name attribute is literally "m" in the shipped build (the pointer lands on
+        // the tail of the string "Param").
+        xmlNode->SetAttribute("m", m_name.c_str());
+        xmlNode->SetAttribute("Id", CStr(GetId()).c_str());
+        dReal const* pos = dGeomGetPosition(m_pGeoms.front()->GetGeomId());
+        xmlNode->SetAttribute("Position", CStr(CVector(pos[0], pos[1], pos[2])).c_str());
+        Quaternion const rot = GetRotation();
+        xmlNode->SetAttribute("Rotation", CStr::format_("%.4f %.4f %.4f %.4f", rot.x, rot.y, rot.z, rot.w).c_str());
+        xmlNode->SetAttribute("ModelName", m_modelname.c_str());
+        xmlNode->SetAttribute("Owner", CStr(m_ownerPhysicObj ? m_ownerPhysicObj->GetId() : -1).c_str());
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            ref_ptr geomNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Geom");
+            xmlNode->AddChild(geomNode);
+            geom->DumpPhysicInfo(xmlFile, geomNode);
+        }
     }
 
     int PhysicBody::GetNodeEffectAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616630
+        return m_effectAction;
     }
 
     void PhysicBody::LinkGeomToCollisionCells()
@@ -681,9 +779,18 @@ namespace ai
         return this->m_collisionInfos;
     }
 
-    void PhysicBody::SetNodeAbsolutePosition(CVector const&)
+    void PhysicBody::SetNodeAbsolutePosition(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619980
+        // The offset from the body, brought into the body's frame.
+        dReal const* bodyPos = dGeomGetPosition(m_pGeoms.front()->GetGeomId());
+        CVector const d(pos.x - bodyPos[0], pos.y - bodyPos[1], pos.z - bodyPos[2]);
+        RotRows const m = RotationRows(GetRotation().getInversed());
+        CVector const rel(
+            (m._31 * d.z + m._21 * d.y) + m._11 * d.x,
+            (m._32 * d.z + m._22 * d.y) + m._12 * d.x,
+            (m._33 * d.z + m._23 * d.y) + m._13 * d.x);
+        SetNodeRelativePosition(rel);
     }
 
     CVector PhysicBody::GetNodeAbsolutePosition() const
@@ -761,14 +868,43 @@ namespace ai
             m_Node->SetProperty(4353u, &newBelong);
     }
 
-    void PhysicBody::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicBody::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617680
+        Obj::SaveRuntimeValues(xmlFile, xmlNode);
+        if (m_animAction)
+        {
+            xmlNode->SetAttribute("AnimAction", CStr(m_animAction).c_str());
+        }
+        if (m_effectAction)
+        {
+            xmlNode->SetAttribute("EffectAction", CStr(m_effectAction).c_str());
+        }
+        xmlNode->SetAttribute("ModelName", m_modelname.c_str());
+        if (m_cfgNum)
+        {
+            xmlNode->SetAttribute("Cfg", CStr(m_cfgNum).c_str());
+        }
+        if (m_bAnimationIsStopped)
+        {
+            xmlNode->SetAttribute("AnimationIsStopped", CStr(static_cast<int>(m_bAnimationIsStopped)).c_str());
+        }
+        int const curAnimTime = GetNodeElapsedAnimationTimeInMs(m_Node);
+        if (curAnimTime > 0)
+        {
+            xmlNode->SetAttribute("CurAnimTime", CStr(curAnimTime).c_str());
+        }
     }
 
     int PhysicBody::GetSkin() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6165F0
+        int skin = -1;
+        if (m_Node)
+        {
+            m_Node->GetProperty(8706u, &skin);
+        }
+        return skin;
     }
 
     void PhysicBody::SetSkin(int skin)
@@ -779,7 +915,8 @@ namespace ai
 
     int PhysicBody::GetNodeCfgNum() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616640
+        return m_cfgNum;
     }
 
     void PhysicBody::RenderDebugInfo() const
@@ -805,7 +942,10 @@ namespace ai
 
     void PhysicBody::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6187D0
+        M3D_LOG_INFO(CStr("Object is ") + CStr(bIsVisible() ? "" : "NOT") + CStr(" visible in SetPassed..."));
+        Obj::SetPassedToAnotherMapStatus();
+        _DeleteNode();
     }
 
     void PhysicBody::ApplyCurrentModelCollision()
@@ -826,22 +966,53 @@ namespace ai
 
     CVector PhysicBody::GetNodeAbsoluteDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A350
+        // The node's rotation relative to the body, composed with the body's rotation.
+        Quaternion const rel = GetNodeRelativeRotation();
+        Quaternion const rot = GetRotation();
+        Quaternion q;
+        q.x = ((rel.z * rot.y + rot.w * rel.x) + rel.w * rot.x) - rot.z * rel.y;
+        q.y = ((rel.w * rot.y + rot.w * rel.y) + rot.z * rel.x) - rel.z * rot.x;
+        q.z = ((rel.z * rot.w + rel.w * rot.z) + rot.x * rel.y) - rot.y * rel.x;
+        q.w = ((rel.w * rot.w - rot.x * rel.x) - rot.y * rel.y) - rel.z * rot.z;
+        return DirectionOf(q);
     }
 
     Geom::CellAabb PhysicBody::GetCollisionCellAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x618580
+        // Only the concrete bodies know their cells.
+        SYS_ERROR("0");
+        Geom::CellAabb aabb;
+        aabb.x0 = 0;
+        aabb.z0 = 0;
+        aabb.x1 = -1;
+        aabb.z1 = -1;
+        return aabb;
     }
 
-    void PhysicBody::SetNodeAbsoluteDirection(CVector const&)
+    void PhysicBody::SetNodeAbsoluteDirection(CVector const& direction)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A650
+        // A heading about y composed with an elevation about x.
+        double const halfYaw = atan2(direction.x, direction.z) * 0.5;
+        float const hy = static_cast<float>(sin(halfYaw));
+        float const hw = static_cast<float>(cos(halfYaw));
+        double const halfPitch = -asin(direction.y) * 0.5;
+        float const ex = static_cast<float>(sin(halfPitch));
+        float const ew = static_cast<float>(cos(halfPitch));
+        Quaternion q;
+        q.x = hw * ex;
+        q.y = ew * hy;
+        q.z = -(hy * ex);
+        q.w = ew * hw;
+        SetNodeAbsoluteRotation(q);
     }
 
     m3d::Class* PhysicBody::GetRtClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6164A0
+        return RT_CLASS_LOCAL(PhysicBody);
     }
 
     void PhysicBody::SetOwnerBodyToGeoms()
@@ -877,7 +1048,13 @@ namespace ai
 
     int PhysicBody::GetNodeRealAnimAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6175E0
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        if (animInfo && !animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation())
+        {
+            return animInfo->GetCurAnimation()->m_action;
+        }
+        return -1;
     }
 
     void PhysicBody::SetCollisionTrimeshAllowed(bool bCollisionTrimeshAllowed)
@@ -941,12 +1118,19 @@ namespace ai
 
     int PhysicBody::GetNodeRealAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617830
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        if (animInfo && !animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation())
+        {
+            return animInfo->GetCurAnimation()->m_action;
+        }
+        return -1;
     }
 
     bool PhysicBody::bNeedToRelinkNode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6EB0F0
+        return m_bNeedToRelinkNode;
     }
 
     void PhysicBody::SetVisible()
@@ -1021,9 +1205,17 @@ namespace ai
         }
     }
 
-    void PhysicBody::SetNodeAbsoluteRotation(Quaternion const&)
+    void PhysicBody::SetNodeAbsoluteRotation(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A000
+        // The rotation relative to the body: q composed with the body's inverse rotation.
+        Quaternion const inv = GetRotation().getInversed();
+        Quaternion rel;
+        rel.x = ((q.y * inv.z + inv.x * q.w) + inv.w * q.x) - inv.y * q.z;
+        rel.y = ((inv.x * q.z + inv.w * q.y) + q.w * inv.y) - q.x * inv.z;
+        rel.z = ((inv.w * q.z + inv.y * q.x) + q.w * inv.z) - q.y * inv.x;
+        rel.w = ((inv.w * q.w - inv.x * q.x) - q.y * inv.y) - inv.z * q.z;
+        SetNodeRelativeRotation(rel);
     }
 
     Quaternion PhysicBody::GetNodeAbsoluteRotation() const
@@ -1052,7 +1244,8 @@ namespace ai
 
     bool PhysicBody::CanChildBeAdded(m3d::Class*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61D0A0
+        return false;
     }
 
     CVector PhysicBody::GetNodeRelativeDirection() const
@@ -1192,7 +1385,9 @@ namespace ai
 
     int PhysicBody::_GetCurAnimationFrame() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617630
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        return animInfo ? animInfo->CurAnimFrame() : 0;
     }
 
     void PhysicBody::_SetScenegraphNode(CVector const& pos, Quaternion const& rot)
@@ -1238,7 +1433,13 @@ namespace ai
 
     int PhysicBody::_GetNodeRealAnimAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617650
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        if (animInfo && !animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation())
+        {
+            return animInfo->GetCurAnimation()->m_action;
+        }
+        return -1;
     }
 
     void PhysicBody::_InternalCreateVisualPart()
@@ -1320,6 +1521,11 @@ namespace ai
 
     void PhysicBody::_DeleteNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6164D0
+        if (m_Node)
+        {
+            m_Node->GetGraph()->RemoveNode(m_Node);
+            m_Node = nullptr;
+        }
     }
 }  // namespace ai

@@ -5,7 +5,7 @@
 
 namespace m3d
 {
-    class CameraPathState;
+    struct CameraPathState;
 }
 
 namespace ai
@@ -37,6 +37,8 @@ namespace ai
 
     class Submarine : public ai::DummyObject
     {
+        friend class SubmarinePrototypeInfo;
+
     protected:
         virtual  ~Submarine() override /* 0x00 */;
 

@@ -1,5 +1,6 @@
 #include "boxybody.h"
 
+#include <cassert>
 #include <stdexcept>
 
 #include "geoms/box.h"
@@ -35,17 +36,23 @@ namespace ai
 
     m3d::Object* BoxyBody::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850AB0
+        // NOTE: the copy constructor asserts, so this never produces a body.
+        return new BoxyBody(*this);
     }
 
-    void BoxyBody::SetMass(float)
+    void BoxyBody::SetMass(float newMassValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850C90
+        CVector const size = _Box()->GetSize();
+        dMassSetBoxTotal(&m_mass, newMassValue, size.x, size.y, size.z);
     }
 
     m3d::Object* BoxyBody::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850B00
+        // NOTE: the default constructor asserts, so this never produces a body.
+        return new BoxyBody();
     }
 
     m3d::Class* BoxyBody::GetBaseClass()
@@ -57,21 +64,32 @@ namespace ai
 
     CVector BoxyBody::GetSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850B90
+        return _Box()->GetSize();
     }
 
     BoxyBody::BoxyBody()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850A70 - a boxy body must be built from collision infos.
+        assert(0);
     }
 
     BoxyBody::BoxyBody(BoxyBody const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850A40 - boxy bodies cannot be copied.
+        assert(0);
     }
 
     Box const* BoxyBody::_Box() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x850B80
+        // The single geom's transform wraps the box itself.
+        return static_cast<Box const*>(static_cast<GeomTransform const*>(m_pGeoms.front())->GetGeom());
+    }
+
+    Box* BoxyBody::_Box()
+    {
+        // Always inlined in the shipped build; the same as the const overload.
+        return const_cast<Box*>(static_cast<BoxyBody const*>(this)->_Box());
     }
 }

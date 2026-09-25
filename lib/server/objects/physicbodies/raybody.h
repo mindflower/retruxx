@@ -6,6 +6,8 @@ namespace ai
 {
     class RayBodyPrototypeInfo : public SimplePhysicBodyPrototypeInfo
     {
+        friend class RayBody;
+
     public:
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         RayBodyPrototypeInfo();

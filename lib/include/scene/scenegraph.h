@@ -10,6 +10,7 @@ namespace ai
 {
     class CompositeObj;
     class JointedObj;
+    class PhysicBody;
 }
 
 
@@ -71,6 +72,8 @@ namespace m3d
         // ai::CompositeObj takes its node off the think list once the pieces drive it.
         friend class ai::CompositeObj;
         friend class ai::JointedObj;
+        // PhysicBody::SetAnimationStopped moves nodes in and out of the think list.
+        friend class ai::PhysicBody;
         friend class LightsServer;
 
     public:

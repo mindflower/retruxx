@@ -2684,143 +2684,86 @@ namespace m3d
 
         void GetWord(CStr const& src, int i, m3d::TextWrapFlags wrapFlags, CStr& word, int& nextWordPos)
         {
-            // TODO: generated code
-            // Initialize with empty string
-            word = "";
+            // RVA 0x685000 - the length of the word starting at i: one character (or a whole '#'
+            // colour or '@' code) when wrapping by characters, otherwise up to the next space or
+            // unescaped '|'; -1 for the rest of the string. An unescaped '|' at i is a word of
+            // length 0, so the caller steps over it and breaks the line.
+            word = CStr("");
             nextWordPos = -1;
-
-            char const* srcStr = src.c_str();
-            int srcLen = src.length();
-
-            if (i < 0 || i >= srcLen)
-            {
-                nextWordPos = -1;
-                return;
-            }
-
+            int offset = 0;
+            int const len = src.c_str() ? static_cast<int>(strlen(src.c_str())) : 0;
             if (wrapFlags == TW_CHAR_WRAP)
             {
-                // Character-based wrapping
-                nextWordPos = 1;  // Default: single character word
-
+                nextWordPos = 1;
                 if (!IsEscSymbolBeforeSymbol(src, i))
                 {
-                    char currentChar = srcStr[i];
-
-                    switch (currentChar)
+                    switch (src.c_str()[i])
                     {
                     case '#':
-                        // Color code - typically 2 characters (# followed by color code)
-                        if (i + 1 < srcLen)
+                        if (i + 1 < len)
                         {
                             nextWordPos = 2;
                         }
                         break;
-
                     case '@':
-                        // Special command - typically 9 characters
-                        if (i + 9 <= srcLen)
+                        if (i + 9 <= len)
                         {
                             nextWordPos = 9;
                         }
                         break;
-
                     case '|':
-                        // Line break character
                         nextWordPos = 0;
                         break;
-
                     default:
-                        // Regular character - keep default of 1
                         break;
                     }
                 }
             }
             else
             {
-                // Word-based wrapping (space-separated)
-                int v8 = 0;
-
                 while (true)
                 {
-                    // Find next space or pipe character
-                    int foundPos = src.findOneOf(" |", v8 + i);
-
-                    if (foundPos == -1)
-                    {
-                        // No delimiter found - take rest of string
-                        nextWordPos = -1;
-                        break;
-                    }
-
-                    int relativePos = foundPos + v8;
-                    nextWordPos = relativePos;
-
-                    if (relativePos == -1)
-                    {
-                        break;
-                    }
-
-                    char foundChar = srcStr[foundPos + i];
-
-                    if (foundChar != '|')
-                    {
-                        // Found a space, not a pipe
-                        break;
-                    }
-
-                    // Found a pipe character
-                    if (!IsEscSymbolBeforeSymbol(src, foundPos + i))
-                    {
-                        // Unescaped pipe - treat as word boundary
-                        break;
-                    }
-
-                    // Escaped pipe - continue searching
-                    if (foundPos + i + 1 >= srcLen)
+                    // findOneOf gives the offset from where the search started.
+                    int const found = src.findOneOf(" |", offset + i);
+                    if (found == -1)
                     {
                         nextWordPos = -1;
                         break;
                     }
-
-                    v8 = relativePos + 1;
+                    int const pos = found + offset;
+                    nextWordPos = pos;
+                    if (pos == -1)
+                    {
+                        break;
+                    }
+                    char const c = src.c_str()[pos + i];
+                    if (c != '|')
+                    {
+                        // A space at i is a word of its own.
+                        if (c == ' ' && pos == 0)
+                        {
+                            nextWordPos = 1;
+                        }
+                        break;
+                    }
+                    if (!IsEscSymbolBeforeSymbol(src, pos + i))
+                    {
+                        break;
+                    }
+                    // An escaped '|' is part of the word.
+                    if (pos + i + 1 >= len)
+                    {
+                        nextWordPos = -1;
+                        break;
+                    }
+                    offset = pos + 1;
                     if (nextWordPos == -1)
                     {
                         break;
                     }
                 }
-
-                // Handle special case: if we found a space at the beginning
-                if (nextWordPos != -1)
-                {
-                    char boundaryChar = srcStr[i + nextWordPos];
-                    if (boundaryChar == ' ' && nextWordPos == 0)
-                    {
-                        nextWordPos = 1;  // Single space word
-                    }
-                }
             }
-
-            // Extract the actual word
-            if (nextWordPos == -1)
-            {
-                // Take the rest of the string from position i
-                if (i < srcLen)
-                {
-                    word = src.substr(i, srcLen - i);
-                }
-            }
-            else if (nextWordPos == 0)
-            {
-                // Special case: pipe character as a word
-                word = "|";
-            }
-            else
-            {
-                // TODO: check this
-                // Extract substring of specified length
-                word = src.substr(i, nextWordPos + i);
-            }
+            word = src.substr(i, nextWordPos);
         }
     }  // namespace
 

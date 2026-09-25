@@ -17,7 +17,8 @@ namespace ai
 
     const ai::Geom* GeomTransform::GetGeom() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CE5E0
+        return m_innerGeom;
     }
 
     ai::Geom* GeomTransform::GetGeom()

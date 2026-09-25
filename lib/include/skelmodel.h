@@ -10,6 +10,7 @@ namespace ai
 {
     class CompositeObj;
     class JointedObj;
+    class SubmarinePrototypeInfo;
 }
 
 
@@ -104,6 +105,8 @@ namespace m3d
         friend class AnimatedModelsServer;
         // ai::CompositeObj takes a model apart into one physical piece per hierarchy geom.
         friend class ai::CompositeObj;
+        // SubmarinePrototypeInfo::RefreshFromXml retunes the platform animation.
+        friend class ai::SubmarinePrototypeInfo;
         friend class AnimInfo;
     public:
         struct HierarchyChange

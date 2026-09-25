@@ -20,6 +20,7 @@
  *                                                                       *
  *************************************************************************/
 
+#include <float.h>
 #include "ode/ode.h"
 #include "objects.h"
 #include "joint.h"
@@ -94,8 +95,22 @@ void dxStepBody (dxBody *b, dReal h)
 {
   int j;
 
-  // handle linear velocity
-  for (j=0; j<3; j++) b->pos[j] += h * b->lvel[j];
+  // retruxx: the shipped build (RVA 0x8FC8F0) throws away runaway velocities - a linear
+  // component that is NaN, infinite or over 1000 becomes 0 (0.1 upwards), an angular one 0 -
+  // and applies the body's damping before integrating.
+  for (j=0; j<3; j++) {
+    if (_isnan(b->lvel[j]) || !_finite(b->lvel[j]) || dFabs(b->lvel[j]) > REAL(1000.0))
+      b->lvel[j] = (j == 1) ? REAL(0.1) : REAL(0.0);
+    if (b->flags & dxBodyFlagDamping)
+      b->lvel[j] = (REAL(1.0) - b->m_damping.m_linearDamping * h) * b->lvel[j];
+    b->pos[j] = b->lvel[j] * h + b->pos[j];
+  }
+  for (j=0; j<3; j++) {
+    if (_isnan(b->avel[j]) || !_finite(b->avel[j]) || dFabs(b->avel[j]) > REAL(1000.0))
+      b->avel[j] = 0;
+    if (b->flags & dxBodyFlagDamping)
+      b->avel[j] = (REAL(1.0) - b->m_damping.m_angularDamping * h) * b->avel[j];
+  }
 
   if (b->flags & dxBodyFlagFiniteRotation) {
     dVector3 irv;	// infitesimal rotation vector

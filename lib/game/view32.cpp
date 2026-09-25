@@ -275,12 +275,12 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
             LoadLevel(
                 M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
                 {},
+                false,
                 true,
                 false,
-                false,
                 nullptr,
                 nullptr,
-                (ai::ObjContainer::eSAVE_TYPES)(ai::ObjContainer::SAVE_EDITOR | ai::ObjContainer::SAVE_FULL | 0x8)) ==
+                ai::ObjContainer::SAVE_LEVEL) ==
             0;
         if (loadRes)
         {
@@ -1428,80 +1428,82 @@ int CMiracle3d::OnObtainingFocus()
 
 int CMiracle3d::LoadLevel(
     CStr const& name,
-    CStr const& saveDir,
-    bool LoadServers,
+    CStr const&,
     bool bQuiet,
+    bool LoadServers,
     bool bContinuousMap,
     m3d::cmn::XmlFile* dynamicSceneXmlFile,
     m3d::cmn::XmlNode const* dynamicSceneXmlNode,
     ai::ObjContainer::eSAVE_TYPES saveType)
 {
-    //TODO: check bQuiet, continiousMap and LoadServers!!!!
+    // RVA 0x418100 - loads the level's world (unless LoadServers is false) and then its dynamic
+    // scene: from the given XML, or - when continuing onto a map visited before - from the copy
+    // saved on leaving it. saveDir is unused (the optimised build does not even pass it).
     if (!m_gameInited)
     {
         return 0;
     }
-    M3D_LOG_INFO("-- Loading Level: " + name + " --");
-    if (LoadServers)
+    M3D_LOG_INFO(CStr("-- Loading Level: ") + name + CStr(" --"));
+    if (!bContinuousMap)
     {
         ai::pServer->InitOnce();
     }
-    //TODO: check this
-    if (!bContinuousMap && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
+    if (LoadServers && !m3d::pClient->GetWorld().Load(name, m_curCamera, bQuiet))
     {
-        M3D_LOG_INFO("Level file " + name + " not found");
+        M3D_LOG_INFO(CStr((CStr("Level file ") + name + CStr(" not found")).c_str()));
         EnqueueMessage(1, 0, 0, 0, 0, {}, {});
         return 0;
     }
     m_blockMusicManager->Init();
-    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
-    if (LoadServers)
+    // The binary reads these through g_pApp, which is this application.
+    auto* app = static_cast<CMiracle3d*>(g_pApp);
+    if (!dynamicSceneXmlFile)
     {
         app->m_serverAnimatedModels->GenerateImpostorsIfNeeded();
     }
-    M3D_LOG_INFO("Load Server begin...");
-    auto levelFullPath = m3d::pClient->GetWorld().m_level->GetFullPathNameA({});
-    m_cinematic->SetFolder(levelFullPath.c_str());
+
+    M3D_LOG_INFO(CStr("Load Server begin..."));
+    m_cinematic->SetFolder(m3d::pClient->GetWorld().m_level->GetFullPathNameA(CStr("")).c_str());
     app->m_pInterfaceManager->LaunchEvent(84, GUI_EVENT_CUSTOM, nullptr);
-    if (!bContinuousMap)
+    if (bContinuousMap)
     {
-        auto xmlName = help::GetMapNameFromFileName(name);
-        auto tempMapsPath = app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps();
-        auto mapXmlPath = tempMapsPath + xmlName += ".xml";
-        auto attr = GetFileAttributesA(mapXmlPath.c_str());
-        if (attr == -1 || (attr & 0x10) != 0)
+        // A map left earlier in this game was saved to the temporary maps folder.
+        CStr const mapName = help::GetMapNameFromFileName(name);
+        CStr const ext(".xml");
+        CStr const visitedMap =
+            app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps() + mapName + ext;
+        DWORD const attr = GetFileAttributesA(visitedMap.c_str());
+        if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
             ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, bContinuousMap, saveType);
         }
         else
         {
-            ai::pServer->LoadVisitedMap(mapXmlPath, bContinuousMap);
+            ai::pServer->LoadVisitedMap(visitedMap, bContinuousMap);
         }
     }
     else
     {
-        ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, true, saveType);
+        ai::pServer->Load(ai::LOCAL_GAME, dynamicSceneXmlFile, dynamicSceneXmlNode, false, saveType);
     }
-    M3D_LOG_INFO("Load Server end");
+    M3D_LOG_INFO(CStr("Load server end"));
+
     if (!bContinuousMap)
     {
         app->m_pInterfaceManager->GetQuestInfoManager()->Init();
     }
-    //TODO: check this!!!
-    int data = M3D_APP->GetCurGameMode();
-    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, &data);
-    if (auto vehicle = ai::gDynamicScene->GetVehicleControlledByPlayer())
+    int continuous = bContinuousMap ? 1 : 0;
+    app->m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, &continuous);
+
+    if (ai::gDynamicScene->GetVehicleControlledByPlayer())
     {
-        m_curCamera.m_worldOrigin = vehicle->GetPosition();
+        m_curCamera.m_worldOrigin = ai::gDynamicScene->GetVehicleControlledByPlayer()->GetPosition();
     }
     m_blockMusicManager->Reset();
     m3d::g_Kernel->GetTimer().SetActiveState(1);
-    if (app->AppActive())
+    if (app->AppActive() && m3d::g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
     {
-        if (m3d::g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
-        {
-            CaptureAndClipSystemCursor(true);
-        }
+        CaptureAndClipSystemCursor(true);
     }
     m_bRenderAsBackground = false;
     m_bBackgroundTextureIsValid = false;
@@ -1732,7 +1734,7 @@ int CMiracle3d::LoadMainMenuLevel()
         auto app = dynamic_cast<CMiracle3d*>(g_pApp);
         app->m_pInterfaceManager->StartSplashing(11);
         //TODO: check this
-        auto res = LoadLevel(mapName, {}, true, false, false, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
+        auto res = LoadLevel(mapName, {}, false, true, false, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
         if (res == 0)
         {
             M3D_LOG_INFO("Could not load main menu level...");
@@ -2013,7 +2015,7 @@ bool CMiracle3d::LoadMap(
     if (m_gameInited)
     {
         CleanLevel(isContinuousMap, true);
-        LoadLevel(fullMapName, {}, true, false, isContinuousMap, dynamicSceneXmlFile, dynamicSceneXmlNode, saveType);
+        LoadLevel(fullMapName, {}, false, true, isContinuousMap, dynamicSceneXmlFile, dynamicSceneXmlNode, saveType);
     }
 
     if (M3D_ENGINE_CFG.m_mus_Enable.GetB())

@@ -47,4 +47,58 @@ namespace ai
     private:
         /* 0x0004 */ ai::ChaseMotionData m_chaseMotionData;
     }; /* size: 0x0048 */
+
+    class ChaseMotionTacticsCheater : public ai::ChaseMotionTactics
+    {
+    public:
+        ChaseMotionTacticsCheater(ai::ChaseMotionTacticsCheater const&);
+        ChaseMotionTacticsCheater(int targetId, int ChaseMotionrId);
+        virtual CVector EvaluateCurrentChasePoint(float elapsedTime) override /* 0x04 */;
+
+        enum CheaterState
+        {
+            csNormal = 0,
+            csOut = 1,
+            csIn = 2,
+        };
+
+    private:
+        /* 0x0048 */ ai::ChaseMotionTacticsCheater::CheaterState m_CheaterState;
+        /* 0x004c */ float m_elapsedTime;
+        /* 0x0050 */ float m_Period;
+
+    public:
+        ai::ChaseMotionTacticsCheater::CheaterState getCheaterState() const;
+    }; /* size: 0x0054 */
+
+    class ChaseMotionTacticsCircle : public ai::ChaseMotionTactics
+    {
+    public:
+        ChaseMotionTacticsCircle(ai::ChaseMotionTacticsCircle const&);
+        ChaseMotionTacticsCircle(int targetId, int chaserId, float radius);
+        virtual CVector EvaluateCurrentChasePoint(float elapsedTime) override /* 0x04 */;
+
+    private:
+        /* 0x0048 */ float m_radius;
+        /* 0x004c */ float m_clockwiseSign;
+    }; /* size: 0x0050 */
+
+    class ChaseMotionTacticsFigureOfEight : public ai::ChaseMotionTactics
+    {
+    public:
+        ChaseMotionTacticsFigureOfEight(ai::ChaseMotionTacticsFigureOfEight const&);
+        ChaseMotionTacticsFigureOfEight(int targetId, int chaserId, float radius);
+        virtual CVector EvaluateCurrentChasePoint(float elapsedTime) override /* 0x04 */;
+
+    private:
+        /* 0x0048 */ float m_radius;
+        /* 0x004c */ float m_clockwiseSign;
+        /* 0x0050 */ float m_angle;
+    }; /* size: 0x0054 */
+
+    static_assert(sizeof(ChaseMotionData) == 0x44);
+    static_assert(sizeof(ChaseMotionTactics) == 0x48);
+    static_assert(sizeof(ChaseMotionTacticsCheater) == 0x54);
+    static_assert(sizeof(ChaseMotionTacticsCircle) == 0x50);
+    static_assert(sizeof(ChaseMotionTacticsFigureOfEight) == 0x54);
 }  // namespace ai

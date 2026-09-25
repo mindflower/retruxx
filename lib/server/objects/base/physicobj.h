@@ -45,6 +45,8 @@ namespace ai
         // body stays off.
         friend class PlasmaBunch;
         friend class Rocket;
+        friend class MortarShell;
+        friend class Submarine;
 
     protected:
         virtual ~PhysicObj() override /* 0x00 */;

@@ -1,11 +1,18 @@
 #include "vehiclerolependulum.h"
 
+#include <cmath>
+#include <cstdlib>
 #include <stdexcept>
 
 #include "core/ini.h"
+#include "core/kernel.h"
+#include "math/vector2.h"
 #include "server/utils.h"
+#include "server/objects/team.h"
 #include "server/objects/vehicle.h"
-#include <server/objects/base/prototypemanager.h>
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/base/physicobj.h"
+#include "server/objects/base/prototypemanager.h"
 
 namespace ai
 {
@@ -13,170 +20,176 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehicleRolePendulum);
 
-    VehicleRolePendulumPrototypeInfo::VehicleRolePendulumPrototypeInfo() = default;
-
-    Obj* VehicleRolePendulumPrototypeInfo::CreateTargetObject() const
+    VehicleRolePendulumPrototypeInfo::VehicleRolePendulumPrototypeInfo()
     {
-        return new VehicleRolePendulum(*this);
-    }
-
-    float VehicleRolePendulumPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    float VehicleRolePendulumPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    float VehicleRolePendulumPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
-    {
-        return 2.0;
+        // RVA 0x7FD040
     }
 
     bool VehicleRolePendulumPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        auto result = ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        // RVA 0x7FD090
+        bool const result = VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
             m3d::SafeVector2Attrib(m_oppressionShift, xmlNode, "OppressionShift");
             m3d::SafeFloatAttrib(m_A, xmlNode, "A");
             m3d::SafeFloatAttrib(m_B, xmlNode, "B");
-            return 1;
         }
         return result;
     }
 
-    VehicleRolePendulum::VehicleRolePendulum(VehicleRolePendulumPrototypeInfo const& prototype) : VehicleRole(prototype)
+    Obj* VehicleRolePendulumPrototypeInfo::CreateTargetObject() const
     {
-        this->m_Direction.x = 1.0;
-        this->m_Direction.y = 0.0;
-        this->m_angle = 0.0;
+        // RVA 0x7FD6B0
+        return new VehicleRolePendulum(*this);
     }
 
-    void VehicleRolePendulum::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    float VehicleRolePendulumPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FCFB0
+        return 2.0f;
     }
 
-    VehicleRolePendulumPrototypeInfo const* VehicleRolePendulum::GetPrototypeInfo() const
+    float VehicleRolePendulumPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), VehicleRolePendulumPrototypeInfo const);
+        // RVA 0x7FCFC0 - NOTE: *targetVehicle is left untouched.
+        return 2.0f;
     }
 
-    m3d::Class* VehicleRolePendulum::GetClass() const
+    float VehicleRolePendulumPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
     {
-        return RT_CLASS_LOCAL(VehicleRolePendulum);
+        // RVA 0x7FCFD0
+        return 2.0f;
     }
 
-    void VehicleRolePendulum::setTargetObj(Obj const* obj)
+    VehicleRolePendulum::VehicleRolePendulum(VehicleRolePendulumPrototypeInfo const& prototype) :
+        VehicleRole(prototype),
+        m_Direction(1.0f, 0.0f),
+        m_angle(0.0f)
     {
-        VehicleRole::setTargetObj(obj);
+        // RVA 0x7FD120
     }
 
-    void VehicleRolePendulum::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    // RVA 0x7FCFE0
+    VehicleRolePendulum::~VehicleRolePendulum() = default;
+
+    void VehicleRolePendulum::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FD710 - NOTE: a missing or empty Direction reads as (0, 0), not the current
+        // direction.
+        VehicleRole::LoadRuntimeValues(xmlFile, xmlNode);
+        CStr strDirection = CStr::format_("%.3f %.3f", m_Direction.x, m_Direction.y);
+        m3d::SafeStrAttrib(strDirection, xmlNode, "Direction");
+        float x = 0.0f;
+        float y = 0.0f;
+        if (strDirection.c_str() && strlen(strDirection.c_str()))
+        {
+            sscanf(strDirection.c_str(), "%f %f", &x, &y);
+        }
+        m_Direction.x = x;
+        m_Direction.y = y;
+        m3d::SafeFloatAttrib(m_angle, xmlNode, "Angle");
     }
 
-    m3d::Class* VehicleRolePendulum::GetBaseClass()
+    void VehicleRolePendulum::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        return RT_CLASS_LOCAL(VehicleRole);
+        // RVA 0x7FD830
+        VehicleRole::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("Direction", CStr::format_("%.3f %.3f", m_Direction.x, m_Direction.y).c_str());
+        xmlNode->SetAttribute("Angle", CStr(m_angle).c_str());
     }
 
     void VehicleRolePendulum::setTargetVehicle(Vehicle const* vehicle)
     {
+        // RVA 0x7FCFF0
         VehicleRole::setTargetVehicle(vehicle);
-        this->setTargetObj(vehicle);
+        setTargetObj(vehicle);
     }
 
-    void VehicleRolePendulum::setTargetTeam(Team const*)
+    void VehicleRolePendulum::setTargetTeam(Team const* team)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FD010
+        VehicleRole::setTargetTeam(team);
+        setTargetObj(team);
+    }
+
+    void VehicleRolePendulum::setTargetObj(Obj const* obj)
+    {
+        // RVA 0x7FD030
+        VehicleRole::setTargetObj(obj);
     }
 
     bool VehicleRolePendulum::UpdateVehicle(float elapsedTime, Vehicle* v)
     {
-        auto updated = ai::VehicleRole::UpdateVehicle(elapsedTime, v);
-        if (updated)
+        // RVA 0x7FD8E0
+        if (!VehicleRole::UpdateVehicle(elapsedTime, v))
         {
-            auto const pendulumPosition = getPendulumPosition(v, elapsedTime);
-            v->SetExternalDestination(pendulumPosition);
-            _LookAndFireToEnemy(v, elapsedTime);
+            return false;
         }
-        return updated;
+        v->SetExternalDestination(getPendulumPosition(v, elapsedTime));
+        _LookAndFireToEnemy(v, elapsedTime);
+        return true;
     }
 
-    VehicleRolePendulum::~VehicleRolePendulum() = default;
-
-    CVector VehicleRolePendulum::getPendulumPosition(Vehicle* vehicle, float elapsedTime)
+    CVector VehicleRolePendulum::getPendulumPosition(Vehicle* v, float elapsedTime)
     {
-        // TODO: generated code VehicleRolePendulum::getPendulumPosition
-        ai::VehicleRolePendulumPrototypeInfo const* prototype = GetPrototypeInfo();
-        ai::Obj const* targetObj = getTargetObj();
-
-        if (!targetObj)
+        // RVA 0x7FD190 - swings along an ellipse (semi-axes A and B) round the target, the
+        // ellipse turned to m_Direction; after three turns it picks a new random direction.
+        // NOTE: m_oppressionShift is loaded but unused.
+        VehicleRolePendulumPrototypeInfo const* prototype = GetPrototypeInfo();
+        Obj const* target = getTargetObj();
+        if (!target)
         {
-            // No target object, return vehicle's current position
-            return vehicle->GetPosition();;
+            return v->GetPosition();
         }
-
-        // Get target object position
-        CVector targetPos = ai::getPhysicObjOrPhysicBodyPosition(targetObj);
-
-        // Calculate pendulum offset using elliptical motion
-        float sinAngle = std::sin(this->m_angle);
-        float cosAngle = std::cos(this->m_angle);
-
-        float offsetX = sinAngle * prototype->m_A * this->m_Direction.x - cosAngle * prototype->m_B * this->m_Direction.y;
-
-        float offsetZ = cosAngle * prototype->m_B * this->m_Direction.x + sinAngle * prototype->m_A * this->m_Direction.y;
-
-        // Update pendulum angle based on vehicle speed and time
-        float speedFactor = std::sqrt(prototype->m_B * prototype->m_B + prototype->m_A * prototype->m_A);
-        float timeScale = elapsedTime / speedFactor;
-        float angleDelta = vehicle->GetMaxSpeed() * timeScale * 0.3f;
-
-        this->m_angle += angleDelta;
-
-        // Reset angle if it exceeds 6pi (3 full rotations) and randomize direction
-        if (this->m_angle > 6.283185307f * 3.0f)
-        {  // 18.849556f = 6pi
-            this->m_angle = 0.0f;
-
-            // Generate random direction vector
-            this->m_Direction.x = static_cast<float>(std::rand()) / RAND_MAX * 32767.0f - 16383.5f;
-            this->m_Direction.y = static_cast<float>(std::rand()) / RAND_MAX * 32767.0f - 16383.5f;
-
-            // Normalize the direction
-            m_Direction = m_Direction.normalize();
+        CVector const vPos = getPhysicObjOrPhysicBodyPosition(target);
+        double const sinA = sin(m_angle) * prototype->m_A;
+        double const cosB = cos(m_angle) * prototype->m_B;
+        float const dx = static_cast<float>(sinA * m_Direction.x - cosB * m_Direction.y);
+        float const dz = static_cast<float>(cosB * m_Direction.x + sinA * m_Direction.y);
+        double const scaledTime = elapsedTime / sqrt(double(prototype->m_B) * prototype->m_B + double(prototype->m_A) * prototype->m_A);
+        m_angle = static_cast<float>(v->GetMaxSpeed() * scaledTime * 0.30000001f + m_angle);
+        if (m_angle > 18.849556f)
+        {
+            m_angle = 0.0f;
+            // The first number drawn goes to y.
+            float const y = static_cast<float>(rand()) - 16383.5f;
+            float const x = static_cast<float>(rand()) - 16383.5f;
+            m_Direction = CVector2(x, y).normalize();
         }
+        PointBase<float> const clamped = clampIntoLandscape(PointBase<float>(vPos.x + dx, vPos.z + dz));
+        return CVector(clamped.x, vPos.y, clamped.y);
+    }
 
-        // Calculate final position with pendulum offset
-        CVector pendulumPos;
-        pendulumPos.x = targetPos.x + offsetX;
-        pendulumPos.z = targetPos.z + offsetZ;  // Using Z for the second coordinate
-        pendulumPos.y = targetPos.y;            // Keep original Y (height)
+    m3d::Class* VehicleRolePendulum::GetClass() const
+    {
+        // RVA 0x7FCFA0
+        return RT_CLASS_LOCAL(VehicleRolePendulum);
+    }
 
-        // Clamp position to stay within landscape boundaries
-        PointBase<float> clampedPos = ai::clampIntoLandscape(PointBase<float>(pendulumPos.x, pendulumPos.z));
+    m3d::Class* VehicleRolePendulum::GetBaseClass()
+    {
+        // RVA 0x7FCF90
+        return RT_CLASS_LOCAL(VehicleRole);
+    }
 
-        CVector result;
-        result.x = clampedPos.x;
-        result.y = pendulumPos.y;  // Maintain original height
-        result.z = clampedPos.y;   // clampedPos.y contains the clamped Z coordinate
-
-        return result;
+    VehicleRolePendulumPrototypeInfo const* VehicleRolePendulum::GetPrototypeInfo() const
+    {
+        // RVA 0x7FD940 - NOTE: the prototype is cast without a type check.
+        return static_cast<VehicleRolePendulumPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRolePendulum::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FD4F0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* VehicleRolePendulum::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FD330
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
-}
+}  // namespace ai

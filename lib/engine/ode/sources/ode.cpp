@@ -276,6 +276,11 @@ dxBody *dBodyCreate (dxWorld *w)
   b->adis_stepsleft = b->adis.idle_steps;
   b->adis_timeleft = b->adis.idle_time;
 
+  // retruxx: the shipped build copies the world's damping into every new body
+  b->m_damping = w->m_damping;
+  if (w->m_dampingFlag) b->flags |= dxBodyFlagDamping;
+  else b->flags &= ~dxBodyFlagDamping;
+
   // b->m_movedCallback = 0;
   b->m_changeEnabledStateCallback = 0;
   return b;

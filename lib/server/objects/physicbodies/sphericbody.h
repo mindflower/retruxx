@@ -7,6 +7,8 @@ namespace ai
 
     class SphericBodyPrototypeInfo : public SimplePhysicBodyPrototypeInfo
     {
+        friend class SphericBody;
+
     public:
         SphericBodyPrototypeInfo();
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);

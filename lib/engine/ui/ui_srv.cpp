@@ -1,11 +1,13 @@
 #include <config.h>
 #include <m3dapp.h>
+#include <algorithm>
 #include <stdexcept>
 #include <core/ini.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
 #include <ui/ui_srv.h>
 #include <ui/frame.h>
+#include <ui/tabwnd.h>
 
 namespace m3d
 {
@@ -345,66 +347,579 @@ namespace m3d
     }
 
     void ui::GfxServer::AddTabWndPaneNormal(
-        DrawInfo const&,
-        BoundsBase<float> const&,
-        unsigned,
-        TabButtonInfo const&,
-        retruxx::vector<BoundsBase<float>> const&,
-        int,
-        int,
-        CStr const&,
-        PaneFlagBg)
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        TabButtonInfo const& btnInfo,
+        retruxx::vector<BoundsBase<float>> const& buttonRects,
+        int selButton,
+        int drawFlags,
+        CStr const& paneName,
+        PaneFlagBg bgFlags)
     {
-        // RVA 0x680D60 - the tab strip: the same pane drawing as
-        // AddFlatAxialPane0, but with the top edge broken open around the tab
-        // buttons and each button framed in its own right.
-        //
-        // Structure recovered from the disassembly (not yet written out):
-        //  * pane lookup falls back to "defaultTab", not "defaultWnd";
-        //    stage state is TS_TEXTURE here where AddFlatAxialPane0 uses
-        //    TS_MODULATE.
-        //  * cornerSz / cornerRoundSz / usedBarW come from m_frame[bgFlags],
-        //    else m_frame[0]; both corner sizes are forced to 0 when
-        //    (drawFlags & 4) == 0.
-        //  * background (drawFlags & 1) is not one quad but a list of rects:
-        //    the body below the tab row, the strip directly under the buttons,
-        //    one rect per button spanning cornerRoundSz..btnHeight, and (with
-        //    complex corners) each button's rounded top inset by cornerRoundSz.
-        //    Rects belonging to a button other than selButton are drawn from
-        //    m_bg[1]'s texture, or from the normal one in colour 3 if the pane
-        //    has no second background.
-        //  * frame (drawFlags & 2): left bar m_textures[0] and right bar
-        //    m_textures[2] (or [0] with U flipped) span
-        //    rect.y0 + btnHeight + cornerRoundSz .. rect.y0 + rect.height - cornerSz;
-        //    the top bar m_textures[1] is drawn as two segments either side of
-        //    the selected button, cut at (cornerSz - usedBarW) from its edges;
-        //    the bottom bar is m_textures[3], or [1] with V flipped.
-        //  * each button then gets its own top / left / right bars, taking the
-        //    texture from m_frame[1] when the button is not selected.
-        //  * corners (drawFlags & 4): the window's own from m_textures[4..7],
-        //    and each button's rounded corners from m_textures[8..11] - the
-        //    tabbtn_corner_* set that Frame::ReadFromXmlNode loads.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x680D60 - a tabbed window: the pane of AddFlatAxialPane0 with a row of tab buttons
+        // on top of it. The window's top edge is broken open under the selected tab, which joins
+        // the body; the other tabs are drawn from the pane's second background and frame.
+        // NOTE: the geometry mixes coordinates relative to the window (the background rects, the
+        // far top-edge segment, the tab buttons) with ones offset by rect.x0/y0, so it only lines
+        // up when the window is drawn at the origin, as TabWnd does.
+        Pane* pane = nullptr;
+        m_panes.get(paneName, pane);
+        if (!pane)
+        {
+            m_panes.get(CStr("defaultTab"), pane);
+            if (!pane)
+            {
+                return;
+            }
+        }
+
+        auto* renderer = M3D_APP->m_renderer;
+        renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+        renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+        renderer->PushBlend(rend::BM_ALPHA);
+        renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        renderer->PushZbState(rend::ZB_DISABLE);
+
+        float cornerSz = 0.0f;
+        float cornerRoundSz = 0.0f;
+        int usedBarW = 0;
+        if (Frame const* sizes = pane->m_frame[bgFlags] ? pane->m_frame[bgFlags] : pane->m_frame[PANE_FLAG_BG_OUT])
+        {
+            cornerSz = static_cast<float>(sizes->m_cornerSize);
+            cornerRoundSz = static_cast<float>(sizes->m_cornerRoundSize);
+            usedBarW = sizes->m_barUsedWidth;
+        }
+        bool const drawComplexCorners = (drawFlags & 4) != 0;
+        if (!drawComplexCorners)
+        {
+            cornerSz = 0.0f;
+            cornerRoundSz = 0.0f;
+        }
+        int const numButtons = static_cast<int>(buttonRects.size());
+
+        if ((drawFlags & 1) != 0)
+        {
+            PaneFlagBg bg = bgFlags;
+            rend::TexHandle bgTex;
+            rend::TexHandle unselTex;
+            if (pane->m_bg[bgFlags])
+            {
+                bgTex = pane->m_bg[bgFlags]->m_texture;
+            }
+            if (!pane->m_bg[bgFlags] || !bgTex.IsValid())
+            {
+                bg = PANE_FLAG_BG_OUT;
+                if (pane->m_bg[PANE_FLAG_BG_OUT])
+                {
+                    bgTex = pane->m_bg[PANE_FLAG_BG_OUT]->m_texture;
+                }
+            }
+            if (pane->m_bg[PANE_FLAG_BG_DOWN])
+            {
+                unselTex = pane->m_bg[PANE_FLAG_BG_DOWN]->m_texture;
+            }
+
+            if (bgTex.IsValid())
+            {
+                int sx = 0;
+                int sy = 0;
+                renderer->GetDims(bgTex, sx, sy);
+                float texWidth = static_cast<float>(sx);
+                float texHeight = static_cast<float>(sy);
+                renderer->AbsToRel(texWidth, texHeight);
+
+                // The background is a list of rects: the body under the tab row, the strip under
+                // the tabs, each tab below its rounded top, and the rounded tops themselves.
+                // The ones belonging to unselected tabs are remembered by index.
+                retruxx::vector<BoundsBase<float>> rects;
+                retruxx::vector<int> unsel;
+                BoundsBase<float> r;
+                r.x0 = rect.x0;
+                r.width = rect.width;
+                r.height = rect.height - (btnInfo.m_height + cornerRoundSz);
+                r.y0 = rect.height - r.height;
+                rects.push_back(r);
+                if (drawComplexCorners)
+                {
+                    r.x0 = cornerRoundSz;
+                    r.width = rect.width - cornerRoundSz * 2.0f;
+                    r.y0 = btnInfo.m_height;
+                    r.height = cornerRoundSz;
+                    rects.push_back(r);
+                }
+                r.y0 = cornerRoundSz;
+                r.height = btnInfo.m_height - cornerRoundSz;
+                for (int i = 0; i < numButtons; ++i)
+                {
+                    r.x0 = buttonRects[i].x0;
+                    r.width = buttonRects[i].width;
+                    rects.push_back(r);
+                    if (i != selButton)
+                    {
+                        unsel.push_back(static_cast<int>(rects.size()) - 1);
+                    }
+                }
+                if (drawComplexCorners)
+                {
+                    r.y0 = 0.0f;
+                    r.height = cornerRoundSz;
+                    for (int i = 0; i < numButtons; ++i)
+                    {
+                        r.x0 = cornerRoundSz + buttonRects[i].x0;
+                        r.width = buttonRects[i].width - cornerRoundSz * 2.0f;
+                        rects.push_back(r);
+                        if (i != selButton)
+                        {
+                            unsel.push_back(static_cast<int>(rects.size()) - 1);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < static_cast<int>(rects.size()); ++i)
+                {
+                    BackGround const* background = pane->m_bg[bg];
+                    float tu = 1.0f;
+                    float tv = 1.0f;
+                    if (background->m_repeatU)
+                    {
+                        tu = rects[i].width / texWidth;
+                    }
+                    if (background->m_repeatV)
+                    {
+                        tv = rects[i].height / texHeight;
+                    }
+                    unsigned color = clr;
+                    if (std::find(unsel.begin(), unsel.end(), i) == unsel.end())
+                    {
+                        renderer->SetTexture(0, bgTex, -1.0);
+                    }
+                    else if (unselTex.IsValid())
+                    {
+                        renderer->SetTexture(0, unselTex, -1.0);
+                    }
+                    else
+                    {
+                        // NOTE: with no second background an unselected tab is drawn in colour
+                        // 3, which is black and all but transparent.
+                        renderer->SetTexture(0, bgTex, -1.0);
+                        color = 3;
+                    }
+                    AddFlatAxialQuad(di, rects[i], color, 0.0, 0.0, tu, tv);
+                }
+            }
+        }
+
+        PaneFlagBg frameIdx = bgFlags;
+        if (!pane->m_frame[bgFlags])
+        {
+            frameIdx = PANE_FLAG_BG_OUT;
+            if (!pane->m_frame[PANE_FLAG_BG_OUT])
+            {
+                renderer->PopBlend();
+                renderer->PopZbState();
+                renderer->SetAlphaTest(0);
+                return;
+            }
+        }
+        Frame const* frame = pane->m_frame[frameIdx];
+        Frame const* unselFrame = pane->m_frame[PANE_FLAG_BG_DOWN];
+        float const d = cornerSz - static_cast<float>(usedBarW);
+
+        // The size a bar's texture coordinates are measured against: the bar itself (so the
+        // texture is stretched over it once), or the texture's own size if the bar repeats.
+        auto barTexSize = [&](rend::TexHandle const& tex, float& ssx, float& ssy)
+        {
+            if (frame->m_barRepeat)
+            {
+                int sx = 0;
+                int sy = 0;
+                renderer->GetDims(tex, sx, sy);
+                ssx = static_cast<float>(sx);
+                ssy = static_cast<float>(sy);
+                renderer->AbsToRel(ssx, ssy);
+            }
+        };
+
+        if ((drawFlags & 2) != 0)
+        {
+            int const barTexWidth = frame->m_barTexWidth;
+            float const barW = static_cast<float>(barTexWidth);
+            BoundsBase<float> r;
+
+            // The window's sides, from under the tab row down to the bottom corners.
+            if (frame->m_textures[0].IsValid())
+            {
+                renderer->SetTexture(0, frame->m_textures[0], -1.0);
+                r.x0 = rect.x0;
+                r.y0 = btnInfo.m_height + rect.y0 + cornerRoundSz;
+                r.width = (barW + rect.x0) - rect.x0;
+                r.height = ((rect.height + rect.y0) - cornerSz) - r.y0;
+                float ssx = r.width;
+                float ssy = r.height;
+                barTexSize(frame->m_textures[0], ssx, ssy);
+                AddFlatAxialQuad(di, r, clr, 0.0, 0.0, 1.0, r.height / ssy);
+
+                float const right = rect.width + rect.x0;
+                r.x0 = right - barW;
+                r.y0 = btnInfo.m_height + rect.y0 + cornerRoundSz;
+                r.width = right - r.x0;
+                r.height = ((rect.height + rect.y0) - cornerSz) - r.y0;
+                if (!frame->m_textures[2].IsValid())
+                {
+                    // The left side, still bound, with U reversed.
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(frame->m_textures[0], ssx, ssy);
+                    AddFlatAxialQuad(di, r, clr, 1.0, 0.0, 0.0, r.height / ssy);
+                }
+                else
+                {
+                    renderer->SetTexture(0, frame->m_textures[2], -1.0);
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(frame->m_textures[2], ssx, ssy);
+                    AddFlatAxialQuad(di, r, clr, 0.0, 0.0, 1.0, r.height / ssy);
+                }
+            }
+
+            if (frame->m_textures[1].IsValid())
+            {
+                renderer->SetTexture(0, frame->m_textures[1], -1.0);
+
+                // The window's top edge, open under the selected tab.
+                float const segEnd = selButton == -1
+                    ? rect.width + rect.x0
+                    : (buttonRects[selButton].x0 + rect.x0) - d;
+                float const top = btnInfo.m_height + rect.y0;
+                r.x0 = rect.x0 + cornerRoundSz;
+                r.y0 = top;
+                r.width = segEnd - r.x0;
+                r.height = (top + barW) - top;
+                float ssx = r.width;
+                float ssy = r.height;
+                barTexSize(frame->m_textures[1], ssx, ssy);
+                AddFlatAxialQuad(di, r, clr, 0.0, 0.0, r.width / ssx, 1.0);
+                if (selButton != -1)
+                {
+                    // NOTE: unlike the first segment, this one's start leaves out rect.x0.
+                    r.x0 = (d + buttonRects[selButton].width) + buttonRects[selButton].x0;
+                    r.y0 = top;
+                    r.width = ((rect.width + rect.x0) - cornerRoundSz) - r.x0;
+                    r.height = (top + barW) - top;
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(frame->m_textures[1], ssx, ssy);
+                    AddFlatAxialQuad(di, r, clr, 0.0, 0.0, r.width / ssx, 1.0);
+                }
+
+                // The bottom edge: its own texture, or the top one with V reversed.
+                float const bottom = rect.height + rect.y0;
+                r.x0 = rect.x0 + cornerSz;
+                r.y0 = bottom - barW;
+                r.width = ((rect.width + rect.x0) - cornerSz) - r.x0;
+                r.height = bottom - r.y0;
+                if (!frame->m_textures[3].IsValid())
+                {
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(frame->m_textures[1], ssx, ssy);
+                    AddFlatAxialQuad(di, r, clr, 0.0, 1.0, r.width / ssx, 0.0);
+                }
+                else
+                {
+                    renderer->SetTexture(0, frame->m_textures[3], -1.0);
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(frame->m_textures[3], ssx, ssy);
+                    AddFlatAxialQuad(di, r, clr, 0.0, 0.0, r.width / ssx, 1.0);
+                }
+
+                // Each tab's top edge, between its rounded corners.
+                for (int i = 0; i < numButtons; ++i)
+                {
+                    rend::TexHandle tex = frame->m_textures[1];
+                    if (i != selButton && unselFrame && unselFrame->m_textures[1].IsValid())
+                    {
+                        tex = unselFrame->m_textures[1];
+                    }
+                    renderer->SetTexture(0, tex, -1.0);
+                    BoundsBase<float> const& b = buttonRects[i];
+                    r.x0 = b.x0 + cornerRoundSz;
+                    r.y0 = b.y0;
+                    r.width = ((b.width + b.x0) - cornerRoundSz) - r.x0;
+                    r.height = (b.y0 + barW) - b.y0;
+                    ssx = r.width;
+                    ssy = r.height;
+                    // NOTE: measured against the selected frame's texture even when the
+                    // unselected one is drawn.
+                    barTexSize(frame->m_textures[1], ssx, ssy);
+                    AddFlatAxialQuad(di, r, clr, 0.0, 0.0, r.width / ssx, 1.0);
+                }
+
+                // Each tab's left side; the selected tab's runs on down to join the window.
+                for (int i = 0; i < numButtons; ++i)
+                {
+                    rend::TexHandle tex = frame->m_textures[0];
+                    if (i != selButton && unselFrame && unselFrame->m_textures[0].IsValid())
+                    {
+                        tex = unselFrame->m_textures[0];
+                    }
+                    renderer->SetTexture(0, tex, -1.0);
+                    BoundsBase<float> const& b = buttonRects[i];
+                    float sideBottom = b.height + b.y0;
+                    if (i == selButton)
+                    {
+                        sideBottom = sideBottom - d;
+                    }
+                    r.x0 = b.x0;
+                    r.y0 = b.y0 + cornerRoundSz;
+                    r.width = (barW + b.x0) - b.x0;
+                    r.height = sideBottom - r.y0;
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(frame->m_textures[0], ssx, ssy);
+                    // NOTE: the texture is repeated across the bar's width rather than along its
+                    // length, unlike every other side bar.
+                    AddFlatAxialQuad(di, r, clr, 0.0, 0.0, r.width / ssx, 1.0);
+                }
+
+                // Each tab's right side: its own texture or the left one mirrored.
+                for (int i = 0; i < numButtons; ++i)
+                {
+                    BoundsBase<float> const& b = buttonRects[i];
+                    float sideBottom = b.height + b.y0;
+                    if (i == selButton)
+                    {
+                        sideBottom = sideBottom - d;
+                    }
+                    float const right = b.width + b.x0;
+                    r.x0 = right - barW;
+                    r.y0 = b.y0 + cornerRoundSz;
+                    r.width = right - r.x0;
+                    r.height = sideBottom - r.y0;
+
+                    rend::TexHandle tex = frame->m_textures[2];
+                    bool flip = false;
+                    if (!tex.IsValid())
+                    {
+                        tex = frame->m_textures[0];
+                        flip = true;
+                    }
+                    if (i != selButton && unselFrame)
+                    {
+                        if (unselFrame->m_textures[2].IsValid())
+                        {
+                            tex = unselFrame->m_textures[2];
+                            flip = false;
+                        }
+                        else if (unselFrame->m_textures[0].IsValid())
+                        {
+                            tex = unselFrame->m_textures[0];
+                            flip = true;
+                        }
+                    }
+                    renderer->SetTexture(0, tex, -1.0);
+                    ssx = r.width;
+                    ssy = r.height;
+                    barTexSize(tex, ssx, ssy);
+                    float const tv1 = r.height / ssy;
+                    AddFlatAxialQuad(di, r, clr, flip ? 1.0f : 0.0f, 0.0, flip ? 0.0f : 1.0f, tv1);
+                }
+            }
+        }
+
+        if (drawComplexCorners)
+        {
+            BoundsBase<float> c;
+
+            // The window's top corners sit under the tab row and use the tabs' rounded-corner
+            // art; its bottom corners are the frame's own.
+            renderer->SetTexture(0, frame->m_textures[8], -1.0);
+            float const top = btnInfo.m_height + rect.y0;
+            c.x0 = rect.x0;
+            c.y0 = top;
+            c.width = (rect.x0 + cornerRoundSz) - rect.x0;
+            c.height = (top + cornerRoundSz) - top;
+            AddFlatAxialQuad(di, c, clr, 0.0, 0.0, 1.0, 1.0);
+
+            float const right = rect.x0 + rect.width;
+            if (frame->m_textures[9].IsValid())
+            {
+                // NOTE: a top-right corner of its own is placed at the top of the window, not
+                // under the tab row, and sized cornerSize rather than cornerRoundSize.
+                renderer->SetTexture(0, frame->m_textures[9], -1.0);
+                c.x0 = right - cornerSz;
+                c.y0 = rect.y0;
+                c.width = right - c.x0;
+                c.height = (rect.y0 + cornerSz) - rect.y0;
+                AddFlatAxialQuad(di, c, clr, 0.0, 0.0, 1.0, 1.0);
+            }
+            else
+            {
+                renderer->SetTexture(0, frame->m_textures[8], -1.0);
+                c.x0 = right - cornerRoundSz;
+                c.y0 = top;
+                c.width = right - c.x0;
+                c.height = (top + cornerRoundSz) - top;
+                AddFlatAxialQuad(di, c, clr, 1.0, 0.0, 0.0, 1.0);
+            }
+
+            float const bottom = rect.height + rect.y0;
+            if (frame->m_textures[6].IsValid())
+            {
+                renderer->SetTexture(0, frame->m_textures[6], -1.0);
+                c.x0 = rect.x0;
+                c.y0 = bottom - cornerSz;
+                c.width = (rect.x0 + cornerSz) - rect.x0;
+                c.height = bottom - c.y0;
+                AddFlatAxialQuad(di, c, clr, 0.0, 0.0, 1.0, 1.0);
+            }
+            float tu0 = 0.0f;
+            float tu1 = 1.0f;
+            if (!frame->m_textures[7].IsValid())
+            {
+                renderer->SetTexture(0, frame->m_textures[6], -1.0);
+                tu0 = 1.0f;
+                tu1 = 0.0f;
+            }
+            else
+            {
+                renderer->SetTexture(0, frame->m_textures[7], -1.0);
+            }
+            c.x0 = right - cornerSz;
+            c.y0 = bottom - cornerSz;
+            c.width = right - c.x0;
+            c.height = bottom - c.y0;
+            AddFlatAxialQuad(di, c, clr, tu0, 0.0, tu1, 1.0);
+
+            // Each tab's rounded top corners, and where the selected tab meets the window, the
+            // corners joining the two.
+            for (int i = 0; i < numButtons; ++i)
+            {
+                BoundsBase<float> const& b = buttonRects[i];
+
+                rend::TexHandle tex = frame->m_textures[8];
+                if (i != selButton && unselFrame && unselFrame->m_textures[8].IsValid())
+                {
+                    tex = unselFrame->m_textures[8];
+                }
+                renderer->SetTexture(0, tex, -1.0);
+                c.x0 = b.x0;
+                c.y0 = b.y0;
+                c.width = (b.x0 + cornerRoundSz) - b.x0;
+                c.height = (b.y0 + cornerRoundSz) - b.y0;
+                AddFlatAxialQuad(di, c, clr, 0.0, 0.0, 1.0, 1.0);
+
+                tex = frame->m_textures[9];
+                bool flip = false;
+                if (!tex.IsValid())
+                {
+                    tex = frame->m_textures[8];
+                    flip = true;
+                }
+                if (i != selButton && unselFrame)
+                {
+                    if (unselFrame->m_textures[9].IsValid())
+                    {
+                        tex = unselFrame->m_textures[9];
+                        flip = false;
+                    }
+                    else if (unselFrame->m_textures[8].IsValid())
+                    {
+                        tex = unselFrame->m_textures[8];
+                        flip = true;
+                    }
+                }
+                renderer->SetTexture(0, tex, -1.0);
+                float const bRight = b.width + b.x0;
+                c.x0 = bRight - cornerRoundSz;
+                c.y0 = b.y0;
+                c.width = bRight - c.x0;
+                c.height = (b.y0 + cornerRoundSz) - b.y0;
+                AddFlatAxialQuad(
+                    di, c, clr, static_cast<float>(flip), 0.0, static_cast<float>(!flip), 1.0);
+
+                if (i == selButton)
+                {
+                    float const bBottom = b.height + b.y0;
+                    float const usedW = static_cast<float>(usedBarW);
+                    renderer->SetTexture(0, frame->m_textures[10], -1.0);
+                    c.x0 = b.x0 - d;
+                    c.y0 = bBottom - d;
+                    c.width = (usedW + b.x0) - c.x0;
+                    c.height = (bBottom + usedW) - c.y0;
+                    AddFlatAxialQuad(di, c, clr, 0.0, 0.0, 1.0, 1.0);
+
+                    c.x0 = bRight - usedW;
+                    c.y0 = bBottom - d;
+                    c.height = (bBottom + usedW) - c.y0;
+                    if (frame->m_textures[11].IsValid())
+                    {
+                        renderer->SetTexture(0, frame->m_textures[11], -1.0);
+                        c.width = (bRight + d) - c.x0;
+                        AddFlatAxialQuad(di, c, clr, 0.0, 0.0, 1.0, 1.0);
+                    }
+                    else
+                    {
+                        renderer->SetTexture(0, frame->m_textures[10], -1.0);
+                        c.width = ((b.width + d) + b.x0) - c.x0;
+                        AddFlatAxialQuad(di, c, clr, 1.0, 0.0, 0.0, 1.0);
+                    }
+                }
+            }
+        }
+
+        renderer->PopBlend();
+        renderer->PopZbState();
+        renderer->SetAlphaTest(0);
     }
 
     void ui::GfxServer::AddTabWndPaneIzvrat(
-        DrawInfo const&,
-        BoundsBase<float> const&,
-        unsigned,
-        TabButtonInfo const&,
-        retruxx::vector<BoundsBase<float>> const&,
-        retruxx::vector<rend::TexHandle> const&,
-        int,
-        int,
-        CStr const&,
-        PaneFlagBg)
+        DrawInfo const& di,
+        BoundsBase<float> const& rect,
+        unsigned clr,
+        TabButtonInfo const& btnInfo,
+        retruxx::vector<BoundsBase<float>> const& buttonRects,
+        retruxx::vector<rend::TexHandle> const& buttonImages,
+        int selButton,
+        int drawFlags,
+        CStr const& paneName,
+        PaneFlagBg bgFlags)
     {
-        // RVA 0x67F3C0 - the "izvrat" tab strip draws each tab as its own glyph
-        // image (the buttonImages vector) rather than a pane-framed button.
-        // Same shape as AddTabWndPaneNormal above, which should be written
-        // first; not reconstructed yet. TabWnd::OnNcPaint dispatches here when
-        // the tab info asks for DRAWSTYLE_IZVRAT.
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x67F3C0 - the "izvrat" tab strip: every tab is a picture of its own. The
+        // unselected tabs go behind the window's pane and the selected one in front of it, so it
+        // covers the pane's top edge. Nothing is drawn unless there is one picture per tab and a
+        // tab is selected.
+        if (buttonImages.size() != buttonRects.size() || selButton < 0 ||
+            selButton >= static_cast<int>(buttonRects.size()))
+        {
+            return;
+        }
+        for (int i = 0; i < static_cast<int>(buttonRects.size()); ++i)
+        {
+            if (i != selButton)
+            {
+                AddImagedRectGeneral(di, buttonRects[i], clr, buttonImages[i], 0.0f, 0.0f, 1.0f, 1.0f);
+            }
+        }
+        if ((drawFlags & 2) != 0)
+        {
+            // The pane starts just under the tab row, pulled up by the visible width of its top
+            // bar so that the bar tucks under the tabs.
+            Pane* pane = nullptr;
+            m_panes.get(paneName, pane);
+            float const usedBarW = (pane && pane->m_frame[PANE_FLAG_BG_OUT])
+                ? static_cast<float>(pane->m_frame[PANE_FLAG_BG_OUT]->m_barUsedWidth)
+                : 0.0f;
+            BoundsBase<float> frameB;
+            frameB.x0 = rect.x0;
+            frameB.y0 = (btnInfo.m_height + rect.y0) - usedBarW;
+            frameB.width = (rect.width + rect.x0) - rect.x0;
+            frameB.height = (rect.height + rect.y0) - frameB.y0;
+            AddFlatAxialPane0(di, frameB, clr, drawFlags, paneName, bgFlags);
+        }
+        AddImagedRectGeneral(di, buttonRects[selButton], clr, buttonImages[selButton], 0.0f, 0.0f, 1.0f, 1.0f);
     }
 
     void ui::GfxServer::AddChkButtonFlatAxialPane(

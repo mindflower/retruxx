@@ -3,6 +3,8 @@
 #include "game/m3dgame.h"
 #include "core/log.h"
 #include "base/prototypemanager.h"
+#include "base/globalproperties.h"
+#include "server/dynamicscene.h"
 
 #include <ode/objects.h>
 #include "ode/odecpp.h"
@@ -475,10 +477,210 @@ namespace ai
         m_initVelocities = initVelocities;
     }
 
-    void PhysicUnit::Update(float, unsigned)
+    void PhysicUnit::Update(float elapsedTime, unsigned workTime)
     {
-        // TODO: implement PhysicUnit::Update
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80BD60 - a pedestrian walking its paths: it stands for a while, turns towards
+        // the next waypoint, walks to it, and at the end of a path picks another one. Units far
+        // from the player's vehicle stop (with hysteresis between the two distances).
+        SimplePhysicObj::Update(elapsedTime, workTime);
+
+        Vehicle* playerVehicle = gDynamicScene->GetVehicleControlledByPlayer();
+        if (!playerVehicle)
+        {
+            m_bMustWalk = true;
+        }
+        else
+        {
+            CVector const vehiclePos = playerVehicle->GetPosition();
+            CVector const pos = GetPosition();
+            float const dz = pos.z - vehiclePos.z;
+            float const dy = pos.y - vehiclePos.y;
+            float const dx = pos.x - vehiclePos.x;
+            float const dist = static_cast<float>(sqrt(double(dz * dz + dy * dy) + dx * dx));
+            if (theGlobProp.m_distToTurnOnPhysics > dist)
+            {
+                m_bMustWalk = true;
+            }
+            else if (dist > theGlobProp.m_distToTurnOffPhysics)
+            {
+                m_bMustWalk = false;
+            }
+        }
+        if (!m_bMustWalk)
+        {
+            return;
+        }
+
+        float distToNext = 0.0f;
+        if (m_walkState == STAND)
+        {
+            if (m_pathsMap.empty())
+            {
+                return;
+            }
+            m_standTtl.regenerate(elapsedTime);
+            if (m_standTtl.value().get() != m_standTtl.minValue().get())
+            {
+                return;
+            }
+            m_walkTtl.setToMin();
+            m_prevWayPoint = GetPosition();
+            if (m_curWayPointNum == 0)
+            {
+                if (!m_curPath)
+                {
+                    SYS_ERROR("m_curPath");
+                }
+                // Already standing on the first waypoint: head for the second one.
+                CVector const& first = (*m_curPath)[m_curWayPointNum];
+                CVector const offset(m_prevWayPoint.x - first.x, 0.0f - first.y, m_prevWayPoint.z - first.z);
+                if (offset.length() < 0.001f)
+                {
+                    m_curWayPointNum = 1;
+                }
+                // After a path is finished another one (not the same, if there is a choice) is
+                // picked at random.
+                if (m_bMustChangePath && m_pathsMap.size() > 1)
+                {
+                    std::vector<CStr> names;
+                    for (auto const& path : m_pathsMap)
+                    {
+                        names.push_back(path.first);
+                    }
+                    unsigned idx;
+                    while (true)
+                    {
+                        idx = (static_cast<unsigned>(names.size()) * static_cast<unsigned>(rand())) >> 15;
+                        if (!(names[idx] == m_curPathName) || names.empty() || names.size() <= 1)
+                        {
+                            break;
+                        }
+                    }
+                    m_curPathName = names[idx];
+                    m_curPath = &m_pathsMap[m_curPathName];
+                    m_curWayPointNum = 0;
+                    m_bMustChangePath = false;
+                }
+            }
+            if (m_curWayPointNum >= m_curPath->size())
+            {
+                m_curWayPointNum = 0;
+            }
+            CVector const& next = (*m_curPath)[m_curWayPointNum];
+            distToNext = CVector(next.x - m_prevWayPoint.x, 0.0f, next.z - m_prevWayPoint.z).length();
+        }
+        else if (m_walkState == WALK)
+        {
+            if (!m_curPath || m_curPath->empty())
+            {
+                SYS_ERROR("m_curPath && !m_curPath->empty()");
+            }
+            // Walk the straight line from the previous waypoint, m_walkTtl being the progress.
+            m_walkTtl.regenerate(elapsedTime);
+            float const t = m_walkTtl.value().get();
+            CVector const& next = (*m_curPath)[m_curWayPointNum];
+            SetPosition(CVector(
+                m_prevWayPoint.x + (next.x - m_prevWayPoint.x) * t,
+                m_prevWayPoint.y + (next.y - m_prevWayPoint.y) * t,
+                m_prevWayPoint.z + (next.z - m_prevWayPoint.z) * t));
+            if (m_walkTtl.value().get() != m_walkTtl.maxValue().get())
+            {
+                return;
+            }
+
+            unsigned const reached = m_curWayPointNum;
+            if (reached == 0)
+            {
+                // Back at the start of the path: stand, and change paths if there is only one
+                // point to walk to.
+                if (m_bMustChangePath || (m_bMustChangePath = m_curPath->size() < 2))
+                {
+                    _SetWalkState(STAND);
+                    return;
+                }
+            }
+            m_curWayPointNum = reached + 1;
+            if (m_curWayPointNum >= m_curPath->size())
+            {
+                m_curWayPointNum = 0;
+                m_bMustChangePath = true;
+                CauseEvent(GE_TARGET_REACHED, 0.0f, m3d::AIParam(GetId()), m3d::AIParam(m_curPathName));
+            }
+            m_walkTtl.setToMin();
+            m_prevWayPoint = GetPosition();
+            CVector const& following = (*m_curPath)[m_curWayPointNum];
+            double const fx = following.x - m_prevWayPoint.x;
+            double const fz = following.z - m_prevWayPoint.z;
+            distToNext = static_cast<float>(sqrt(fx * fx + fz * fz));
+        }
+        else if (m_walkState == TURN)
+        {
+            if (!m_curPath || m_curPath->empty())
+            {
+                SYS_ERROR("m_curPath && !m_curPath->empty()");
+            }
+            // Turn about the vertical (or whatever axis takes it there) towards the next
+            // waypoint, at m_turnSpeed; once facing it, walk.
+            CVector const& next = (*m_curPath)[m_curWayPointNum];
+            CVector needDir = CVector(next.x - m_prevWayPoint.x, next.y - m_prevWayPoint.y, next.z - m_prevWayPoint.z).getNormalized();
+            CVector const dir = GetDirection();
+            needDir.y = dir.y;
+            needDir.normalizeInplace();
+            CVector axis = CVector(
+                needDir.z * dir.y - dir.z * needDir.y,
+                dir.z * needDir.x - needDir.z * dir.x,
+                dir.x * needDir.y - needDir.x * dir.y).getNormalized();
+            if ((axis.x * axis.x + axis.z * axis.z) + axis.y * axis.y < 0.99900001f)
+            {
+                axis = CVector(0.0f, 1.0f, 0.0f);
+            }
+            float cosAngle = (needDir.y * dir.y + dir.x * needDir.x) + dir.z * needDir.z;
+            if (cosAngle < -0.99999899f)
+            {
+                cosAngle = -0.99999899f;
+            }
+            else if (cosAngle > 0.99999899f)
+            {
+                cosAngle = 0.99999899f;
+            }
+            float angle = m_turnSpeed * elapsedTime;
+            float const desiredAngle = static_cast<float>(acos(cosAngle));
+            if (angle >= desiredAngle)
+            {
+                angle = desiredAngle;
+                m_walkState = WALK;
+            }
+            double const halfAngle = angle * 0.5;
+            float const s = static_cast<float>(sin(halfAngle));
+            float const w = static_cast<float>(cos(halfAngle));
+            float const qx = s * axis.x;
+            float const qy = axis.y * s;
+            float const qz = axis.z * s;
+            float const yx = qy * qx;
+            float const zy = qz * qy;
+            float const m11 = 1.0f - (qz * qz + qy * qy) * 2.0f;
+            float const m21 = (yx - w * qz) * 2.0f;
+            float const m31 = (w * qy + qz * qx) * 2.0f;
+            float const m12 = (w * qz + yx) * 2.0f;
+            float const m22 = 1.0f - (qz * qz + qx * qx) * 2.0f;
+            float const m32 = (zy - w * qx) * 2.0f;
+            float const m13 = (qz * qx - w * qy) * 2.0f;
+            float const m23 = (w * qx + zy) * 2.0f;
+            float const m33 = 1.0f - (qy * qy + qx * qx) * 2.0f;
+            SetDirection(CVector(
+                (m11 * dir.x + m31 * dir.z) + m21 * dir.y,
+                (m12 * dir.x + m32 * dir.z) + m22 * dir.y,
+                (m13 * dir.x + m33 * dir.z) + m23 * dir.y));
+            return;
+        }
+        else
+        {
+            return;
+        }
+
+        // Start the next leg: m_walkTtl runs from 0 to 1 over it.
+        m_walkTtl.regeneration().set(distToNext <= 0.001f ? 1.0f : m_walkSpeed / distToNext);
+        _SetWalkState(TURN);
     }
 
     void PhysicUnit::SetDirection(CVector const& direction)

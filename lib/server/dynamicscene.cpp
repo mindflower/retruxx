@@ -854,23 +854,15 @@ namespace ai
         // Initialize wheel traces
         _InitWheelTraces();
 
-        // Build soil properties index map
-        size_t tileSize = landscape.GetTileSize();
+        // The soil of every tile, indexed [x][z] by tile; a tile's soil is that of its first
+        // texture.
+        int const tileSize = landscape.GetTileSize();
         m_soilPropsIdx.resize(tileSize);
-
-        for (size_t y = 0; y < tileSize; ++y)
+        for (int x = 0; x < tileSize; ++x)
         {
-            for (size_t x = 0; x < tileSize; ++x)
+            for (int z = 0; z < tileSize; ++z)
             {
-                m3d::Landscape::TileInfo const& tileInfo =
-                    landscape.GetTileInfo(static_cast<int>(y), static_cast<int>(x));
-                uint16_t texIndex = tileInfo.m_texIndex0;
-
-                size_t index = y * tileSize + x;
-                if (index < m_soilPropsIdx.size())
-                {
-                    m_soilPropsIdx[index].push_back(texIndex);
-                }
+                m_soilPropsIdx[x].push_back(landscape.GetTileInfo(x, z).m_texIndex0);
             }
         }
 
@@ -906,7 +898,7 @@ namespace ai
         m3d::cmn::XmlNode const* rootNode,
         retruxx::vector<m3d::Class*> const& allowedClasses)
     {
-        // TODO: generated code
+        // RVA 0x60CA60
         // Validate allowed classes
         if (allowedClasses.empty())
         {
@@ -998,7 +990,8 @@ namespace ai
             int prototypeId = thePrototypeManager->GetPrototypeId(prototypeName);
             int objId = theObjects->CreateNewObject(prototypeId, "Player1", -1, -1);
 
-            ai::thePlayer = dynamic_cast<ai::Player*>(ai::theObjects->GetEntityByObjId(objId));
+            // NOTE: the new object is taken to be a Player without a type check.
+            ai::thePlayer = static_cast<ai::Player*>(ai::theObjects->GetEntityByObjId(objId));
             thePlayer->SetBelong(1100);
         }
 

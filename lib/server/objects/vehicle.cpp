@@ -839,7 +839,8 @@ namespace ai
             m3d::SafeFloatAttrib(m_selfBrakingCoeff, xmlNode, "SelfBrakingCoeff");
             m3d::SafeFloatAttrib(m_steeringSpeed, xmlNode, "SteeringSpeed");
 
-            CStr decisionMatrixName;
+            // TODO: without "void" it crashes when trying create new Vehicle
+            CStr decisionMatrixName = "void";
             m3d::SafeStrAttrib(decisionMatrixName, xmlNode, "DecisionMatrix");
             if (!decisionMatrixName.empty())
             {
@@ -4159,262 +4160,226 @@ namespace ai
 
     void Vehicle::Update(float elapsedTime, unsigned workTime)
     {
-        // TODO: check this
-        if (!GetParentRepository() && (GetFlags() & 1) != 0)
+        // RVA 0x5EC0D0 - one AI step of a vehicle on the map (not one lying in a repository, and
+        // only while it is active): health and durability upkeep, the player's fuel and mileage,
+        // then the role and the driving - by the player, along a path, or in formation - and
+        // finally the physical upkeep: water, stabilisation, engine, gears, steering, suspension.
+        if (GetParentRepository() || (GetFlags() & 1) == 0)
         {
-            ai::LocalProfiler prof(pServer->GetPathFindingProfiler());
-            PhysicObj::Update(elapsedTime, workTime);
-            if (GetPassedToAnotherMapStatus())
+            return;
+        }
+        LocalProfiler prof(pServer->GetPathFindingProfiler());
+        PhysicObj::Update(elapsedTime, workTime);
+        if (GetPassedToAnotherMapStatus())
+        {
+            return;
+        }
+
+        m_bCurSteeringForceValid = false;
+        _EnsureRecollection();
+        if (_GetDeadStatus())
+        {
+            _DeadActions(elapsedTime);
+            return;
+        }
+        if (elapsedTime < 0.000099999997f)
+        {
+            return;
+        }
+
+        _UpdatePhysicsUpdater();
+        if (Health().minValue().get() >= Health().value().get())
+        {
+            if (!m_bImmortalMode)
             {
+                _EvaluateToDead();
                 return;
             }
+            CauseEvent(GE_VEHICLE_WITHOUT_HEALTH, 0.0f, m3d::AIParam(GetId()), m3d::AIParam());
+        }
 
-            m_bCurSteeringForceValid = false;
-            _EnsureRecollection();
-            if (_GetDeadStatus())
+        if (VehiclePrototypeInfo const* prototypeInfo = GetPrototypeInfo())
+        {
+            if (prototypeInfo->m_healthRegeneration != 0.0f)
             {
-                _DeadActions(elapsedTime);
-                return;
+                Health().regenerate(elapsedTime);
             }
-
-            if (elapsedTime < 0.000099999997)
+            if (prototypeInfo->m_durabilityRegeneration != 0.0f)
             {
-                return;
-            }
-
-            _UpdatePhysicsUpdater();
-            auto& heath = Health();
-            if (heath.minValue().get() >= heath.value().get())
-            {
-                if (!m_bImmortalMode)
+                for (auto& [name, part] : m_vehicleParts)
                 {
-                    _EvaluateToDead();
-                    return;
-                }
-
-                CauseEvent(GE_VEHICLE_WITHOUT_HEALTH, 0.0, {GetId()}, {});
-            }
-
-            auto const* prototypeInfo = GetPrototypeInfo();
-            if (prototypeInfo)
-            {
-                if (prototypeInfo->m_healthRegeneration != 0.0)
-                {
-                    heath.regenerate(elapsedTime);
-                }
-                if (prototypeInfo->m_durabilityRegeneration != 0.0)
-                {
-                    for (auto& [name, part] : m_vehicleParts)
+                    if (!part)
                     {
-                        if (!part)
-                        {
-                            continue;
-                        }
-                        if (IS_KIND_OF(part, CompoundVehiclePart))
-                        {
-                            auto compoundPart = RT_DYNCAST(part, CompoundVehiclePart);
-                            compoundPart->RegenerateDurability(elapsedTime);
-                        }
-                        else
-                        {
-                            part->Durability().regenerate(elapsedTime);
-                        }
+                        continue;
+                    }
+                    if (part->IsKindOf(RT_CLASS_LOCAL(CompoundVehiclePart)))
+                    {
+                        static_cast<CompoundVehiclePart*>(part)->RegenerateDurability(elapsedTime);
+                    }
+                    else
+                    {
+                        part->Durability().regenerate(elapsedTime);
                     }
                 }
             }
-            if (m_bCustomControl && m_customControlWeapons)
+        }
+
+        if (m_bCustomControl && m_customControlWeapons)
+        {
+            WeaponFirer::WeaponLookAtPoint(this, _GetCustomWeaponTargetPoint(), elapsedTime);
+            _CauseCustomGunPointedEvents();
+        }
+
+        if (m_bIsControlledByPlayer)
+        {
+            if (m_bMustGetOutOfDifficultPlace)
             {
-                auto target = _GetCustomWeaponTargetPoint();
-                WeaponFirer::WeaponLookAtPoint(this, target, elapsedTime);
-                _CauseCustomGunPointedEvents();
+                _GetOutOfDifficlultPlaceInternal();
+                m_bMustGetOutOfDifficultPlace = false;
             }
-            if (m_bIsControlledByPlayer)
+            // The engine burns fuel in proportion to the vehicle's mass and its revs.
+            if (Cabin* cabin = GetCabin())
             {
-                if (m_bMustGetOutOfDifficultPlace)
-                {
-                    _GetOutOfDifficlultPlaceInternal();
-                    m_bMustGetOutOfDifficultPlace = false;
-                }
-
-                auto* cabin = GetCabin();
-                if (cabin)
-                {
-                    auto time = GetMass() * fabs(m_engineRpm) * cabin->GetFuelConsumption() * elapsedTime * 0.000001;
-                    Fuel().regenerate(time);
-                }
-
-                auto* globalStatistic =
-                    (FloatStatistic*)theStatisticManager->GetStatistic(STATISTIC_PATH_ELAPSED, "FloatStatistic");
-                globalStatistic->m_bGlobalFlag = true;
-
-                auto const linearVelocity = GetLinearVelocity();
-                auto const len = linearVelocity.length() * elapsedTime;
-                globalStatistic->Increase(len);
-
-                auto* levelStatistic = (FloatStatistic*)theStatisticManager->GetStatistic(
-                    STATISTIC_PATH_ELAPSED + pServer->GetWorld()->m_level->m_levelName, "FloatStatistic");
-                levelStatistic->m_bGlobalFlag = false;
-                levelStatistic->Increase(len);
-                _CheckForNearbyChests();
+                float const fuelConsumption = cabin->GetFuelConsumption();
+                double const rpm = fabs(m_engineRpm);
+                Fuel().regenerate(static_cast<float>(GetMass() * rpm * fuelConsumption * elapsedTime * 0.000001));
             }
-            if (!m_bIsTrailer)
+            // The distance driven, over the whole game and on this map.
+            auto* totalPath = static_cast<FloatStatistic*>(
+                theStatisticManager->GetStatistic(STATISTIC_PATH_ELAPSED, CStr("FloatStatistic")));
+            totalPath->m_bGlobalFlag = true;
+            totalPath->Increase(static_cast<float>(GetLinearVelocity().length() * elapsedTime));
+            auto* mapPath = static_cast<FloatStatistic*>(theStatisticManager->GetStatistic(
+                STATISTIC_PATH_ELAPSED + pServer->GetWorld()->m_level->m_levelName, CStr("FloatStatistic")));
+            mapPath->m_bGlobalFlag = false;
+            mapPath->Increase(static_cast<float>(GetLinearVelocity().length() * elapsedTime));
+            _CheckForNearbyChests();
+        }
+
+        if (m_bIsTrailer)
+        {
+            // A trailer is only towed.
+            SetThrottle(0.0f, false);
+        }
+        else
+        {
+            if (VehicleRole* role = GetRole())
             {
-                auto* role = GetRole();
-                if (role && (!m_bIsMovingAlongExternalPath || m_bCanBeDistractedFromMoving))
+                if (!m_bIsMovingAlongExternalPath || m_bCanBeDistractedFromMoving)
                 {
                     role->UpdateVehicle(elapsedTime, this);
                 }
+            }
+            m_timeOutForNextIntersectionWithWorld.regenerate(elapsedTime);
+            if (m_timeOutForNextIntersectionWithWorld.value().get() ==
+                m_timeOutForNextIntersectionWithWorld.minValue().get())
+            {
+                m_timeOutForNextIntersectionWithWorld.value().set(_GetTimeOutForNextIntersectionWithWorld());
+                IntersectWithWorld();
+            }
 
-                m_timeOutForNextIntersectionWithWorld.regenerate(elapsedTime);
-                if (this->m_timeOutForNextIntersectionWithWorld.value().get() ==
-                    this->m_timeOutForNextIntersectionWithWorld.minValue().get())
+            bool const playerDrives = m_bIsControlledByPlayer && !m_bIsMovingAlongExternalPath;
+            if (playerDrives && !m_bCustomControl)
+            {
+                // The player drives; the vehicle only looks around and aims.
+                _UpdateSeenObjAndWeapons(elapsedTime);
+                _UpdateAlarmStatus();
+                _UpdateLockedObj(elapsedTime);
+            }
+            else
+            {
+                // NOTE: a player's vehicle under custom control also comes this way, but keeps its
+                // throttle and steering.
+                if (!playerDrives && !m_bCustomControl)
                 {
-                    auto time = _GetTimeOutForNextIntersectionWithWorld();
-                    m_timeOutForNextIntersectionWithWorld.value().set(time);
-                    IntersectWithWorld();
+                    SetThrottle(0.0f, true);
+                    m_steerRadians = 0.0f;
                 }
-                if (!m_bIsControlledByPlayer || m_bIsMovingAlongExternalPath)
+                if (m_moveStatus == MOVE_IDLE)
                 {
-                    if (!m_bCustomControl)
-                    {
-                        SetThrottle(0.0, 1);
-                        m_steerRadians = 0.0;
-                    }
-                }
-                else if (!m_bCustomControl)
-                {
-                    _UpdateSeenObjAndWeapons(elapsedTime);
-                    _UpdateAlarmStatus();
-                    _UpdateLockedObj(elapsedTime);
-                    _TakeWaterIntoAccount(elapsedTime);
-                    _ApplyStabilizingForces();
-                    _KeepThrottle(1);
-                    _KeepGearBox(elapsedTime);
-                    _KeepSteer(elapsedTime);
-                    _KeepSuspension();
-                    _AdjustTrailer();
-                    if (!m_bIsControlledByPlayer)
-                    {
-                        ActivateHeadLights(
-                            m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
-                    }
-                    if (m_stoppageMode)
-                    {
-                        SetLinearVelocity(ZeroVector);
-                        SetAngularVelocity(ZeroVector);
-                    }
-                    return;
-                }
-                if (!m_moveStatus)
-                {
-                    SetThrottle(0.0, 1);
-                    if (m_pPath)
-                    {
-                        delete m_pPath;
-                    }
-                    m_pPath = 0;
+                    SetThrottle(0.0f, true);
+                    delete m_pPath;
+                    m_pPath = nullptr;
                     m_pathNum = -1;
                 }
-                if (m_moveStatus == 2)
+
+                if (m_moveStatus == MOVE_MOVING_BY_STEERING_FORCE)
                 {
-                    auto const steerForce = _CalcSteeringForce(elapsedTime);
-                    _DriveBySteeringForce(steerForce);
-                    auto* parent = RT_DYNCAST(GetParent(), Team);
-                    auto formation = parent->GetFormation();
+                    // Driving in formation: towards the external destination until the formation
+                    // stops and the vehicle has reached its place in it.
+                    _DriveBySteeringForce(_CalcSteeringForce(elapsedTime));
+                    // NOTE: the parent is taken to be a team without a type check.
+                    Formation* formation = static_cast<Team*>(GetParent())->GetFormation();
                     if (!formation->bIsMoving())
                     {
-                        auto direction = formation->GetDirection();
-
-                        CVector nextPoint;
-                        nextPoint.x = m_externalDestination.x + direction.x;
-                        nextPoint.y = m_externalDestination.y + direction.y;
-                        nextPoint.z = m_externalDestination.z + direction.z;
+                        CVector const direction = formation->GetDirection();
+                        CVector const nextPoint(
+                            m_externalDestination.x + direction.x,
+                            m_externalDestination.y + direction.y,
+                            m_externalDestination.z + direction.z);
                         if (_bPassedPathPoint(m_externalDestination, nextPoint, true))
                         {
                             m_moveStatus = MOVE_IDLE;
                         }
                     }
                 }
-                else
+                else if (m_pPath && m_pathNum >= 0)
                 {
-                    if (m_pPath && m_pathNum >= 0)
+                    // Following a path, one point after another; the last one must be reached
+                    // precisely.
+                    CVector curPoint;
+                    GetPathItem(m_pPath, m_pathNum, curPoint);
+                    CVector const nextPoint = _GetNextPathPoint();
+                    bool const isLastPoint = m_pathNum == static_cast<int>(m_pPath->GetSize()) - 1;
+                    CVector const steeringForce = _CalcSteeringForce(elapsedTime);
+                    _DriveBySteeringForce(steeringForce);
+                    if (_bPassedPathPoint(curPoint, nextPoint, isLastPoint))
                     {
-                        CVector curPoint;
-                        ai::GetPathItem(m_pPath, m_pathNum, curPoint);
-
-                        CVector nextPoint = _GetNextPathPoint();
-
-                        bool const isLastPath = m_pathNum == m_pPath->GetSize() - 1;
-                        auto const force = _CalcSteeringForce(elapsedTime);
-                        _DriveBySteeringForce(force);
-                        if (_bPassedPathPoint(curPoint, nextPoint, elapsedTime))
-                        {
-                            ++m_pathNum;
-                        }
-                        if (m_pathNum >= m_pPath->GetSize() && m_moveStatus == MOVE_MOVING_ALONG_PATH)
-                        {
-                            _SetIdleMoveStatusAndCauseTargetReached();
-                        }
+                        ++m_pathNum;
                     }
-                    else if (!m_bCustomControl)
+                    if (m_pathNum >= static_cast<int>(m_pPath->GetSize()) && m_moveStatus == MOVE_MOVING_ALONG_PATH)
                     {
-                        SetThrottle(0.0, 1);
-                        m_steerRadians = 0.0;
+                        _SetIdleMoveStatusAndCauseTargetReached();
                     }
                 }
-                if (!m_attackStatus)
+                else if (!m_bCustomControl)
                 {
-                    for (auto& obstacle : m_currentNearbyObstacles)
+                    SetThrottle(0.0f, true);
+                    m_steerRadians = 0.0f;
+                }
+
+                // Not yet attacking: any enemy vehicle among the nearby obstacles is noticed.
+                if (m_attackStatus == ATTACK_IDLE)
+                {
+                    for (auto const& obstacle : m_currentNearbyObstacles)
                     {
-                        auto owner = RT_DYNCAST(obstacle->GetOwner(), Obj);
-                        if (owner && owner->GetClass() == &ai::Vehicle::m_classVehicle && owner->bIsEnemyWith(this))
+                        m3d::Object* owner = obstacle->GetOwner();
+                        if (owner && owner->GetClass() == RT_CLASS_LOCAL(Vehicle) &&
+                            static_cast<Obj*>(owner)->bIsEnemyWith(this))
                         {
-                            CauseEvent(GE_NOTICE_ENEMY, 0.0, owner->GetId(), {});
+                            CauseEvent(
+                                GE_NOTICE_ENEMY, 0.0f, m3d::AIParam(static_cast<Obj*>(owner)->GetId()), m3d::AIParam());
                         }
                     }
                 }
+            }
+        }
 
-                // TODO: remove code duplication
-                _TakeWaterIntoAccount(elapsedTime);
-                _ApplyStabilizingForces();
-                _KeepThrottle(1);
-                _KeepGearBox(elapsedTime);
-                _KeepSteer(elapsedTime);
-                _KeepSuspension();
-                _AdjustTrailer();
-                if (!m_bIsControlledByPlayer)
-                {
-                    ActivateHeadLights(
-                        m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
-                }
-                if (m_stoppageMode)
-                {
-                    SetLinearVelocity(ZeroVector);
-                    SetAngularVelocity(ZeroVector);
-                }
-                return;
-            }
-
-            SetThrottle(0.0, 0);
-            // TODO: remove code duplication
-            _TakeWaterIntoAccount(elapsedTime);
-            _ApplyStabilizingForces();
-            _KeepThrottle(1);
-            _KeepGearBox(elapsedTime);
-            _KeepSteer(elapsedTime);
-            _KeepSuspension();
-            _AdjustTrailer();
-            if (!m_bIsControlledByPlayer)
-            {
-                ActivateHeadLights(
-                    m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
-            }
-            if (m_stoppageMode)
-            {
-                SetLinearVelocity(ZeroVector);
-                SetAngularVelocity(ZeroVector);
-            }
-            return;
+        _TakeWaterIntoAccount(elapsedTime);
+        _ApplyStabilizingForces();
+        _KeepThrottle(true);
+        _KeepGearBox(elapsedTime);
+        _KeepSteer(elapsedTime);
+        _KeepSuspension();
+        _AdjustTrailer();
+        if (!m_bIsControlledByPlayer)
+        {
+            ActivateHeadLights(m3d::pClient->GetWorld().GetWeatherManager().GetCurrentDayTime() == m3d::GTP_NIGHT_TIME);
+        }
+        if (m_stoppageMode)
+        {
+            SetLinearVelocity(ZeroVector);
+            SetAngularVelocity(ZeroVector);
         }
     }
 
@@ -5371,91 +5336,43 @@ namespace ai
 
     void Vehicle::_KeepSteer(float elapsedTime)
     {
-        // TODO: generated code
+        // RVA 0x5DA940 - turns each wheel towards m_steerRadians (times its steering factor) at
+        // m_steeringSpeed; a wheel swinging back towards the centre turns faster, the more so the
+        // further it is out. A step that would overshoot the target stops at it.
         for (auto& wheelInfo : m_wheels)
         {
-            ai::Wheel* wheel = wheelInfo.GetWheel();
+            Wheel* wheel = wheelInfo.GetWheel();
             if (!wheel)
+            {
                 continue;
-
-            // Adjust wheel parameters
+            }
             _AdjustWheel(wheelInfo);
 
-            // Calculate target steering angle based on wheel's steering ratio
-            float targetAngle = static_cast<float>(wheel->m_steering) * m_steerRadians;
-            float currentAngle = wheel->m_curAngle;
-
-            // Determine if we need to adjust steering speed based on current position
-            float angleDifference = targetAngle - currentAngle;
-            float steeringSpeed = m_steeringSpeed;
-
-            // Check if we're close to the target (using dot product-like check)
-            float proximityCheck = angleDifference * currentAngle;
-
-            // If we're not very close to target, use dynamic steering speed
-            if (fabs(proximityCheck) > 0.000001f)
+            float const target = static_cast<float>(wheel->m_steering) * m_steerRadians;
+            float const current = wheel->m_curAngle;
+            float const towardsCentre = (target - current) * current;
+            float speed;
+            if (towardsCentre > 0.000001f || towardsCentre >= -0.000001f)
             {
-                // Use base steering speed
-                steeringSpeed = m_steeringSpeed;
+                speed = m_steeringSpeed;
             }
             else
             {
-                // Use dynamic steering speed that increases with current angle
-                // This helps with centering and makes steering more responsive at larger angles
-                float absCurrentAngle = fabs(currentAngle);
-                steeringSpeed = (2.0f * absCurrentAngle + 1.0f) * m_steeringSpeed;
+                double const absAngle = fabs(current);
+                speed = static_cast<float>((absAngle + absAngle + 1.0) * m_steeringSpeed);
             }
+            int const dir = target - current >= 0.0f ? 1 : -1;
+            float newAngle = static_cast<float>(dir) * speed * elapsedTime + current;
 
-            // Determine steering direction (1 for positive, -1 for negative)
-            int steeringDirection = (angleDifference >= 0.0f) ? 1 : -1;
-
-            // Calculate new steering angle based on steering speed and time
-            float angleChange = steeringDirection * steeringSpeed * elapsedTime;
-            float newAngle = currentAngle + angleChange;
-
-            // Check if we would overshoot the target
-            float newAngleDifference = newAngle - targetAngle;
-            int newDirection;
-            if (newAngleDifference > 0.000001f)
+            float const after = newAngle - target;
+            int const signAfter = after > 0.000001f ? 1 : (after >= -0.000001f ? 0 : -1);
+            double const before = current - static_cast<float>(wheel->m_steering) * m_steerRadians;
+            int const signBefore = before > 0.000001 ? 1 : (before >= -0.000001 ? 0 : -1);
+            if (signAfter * signBefore <= 0)
             {
-                newDirection = 1;
+                newAngle = static_cast<float>(wheel->m_steering) * m_steerRadians;
             }
-            else if (newAngleDifference < -0.000001f)
-            {
-                newDirection = -1;
-            }
-            else
-            {
-                newDirection = 0;
-            }
-
-            // Check original direction
-            float originalDifference = currentAngle - targetAngle;
-            int originalDirection;
-            if (originalDifference > 0.000001f)
-            {
-                originalDirection = 1;
-            }
-            else if (originalDifference < -0.000001f)
-            {
-                originalDirection = -1;
-            }
-            else
-            {
-                originalDirection = 0;
-            }
-
-            // If we're changing direction (overshooting), clamp to target angle
-            if (newDirection * originalDirection <= 0)
-            {
-                newAngle = targetAngle;
-            }
-
-            // Apply the steering angle change to the wheel
-            float angleDelta = newAngle - currentAngle;
-            _TurnWheelByAngle(wheel, angleDelta);
-
-            // Update wheel's current angle
+            _TurnWheelByAngle(wheel, newAngle - current);
             wheel->m_curAngle = newAngle;
         }
     }
@@ -5512,62 +5429,51 @@ namespace ai
 
     void Vehicle::_ApplyStabilizingForces()
     {
+        // RVA 0x5D5E60 - while any wheel is on the ground: a downforce growing with the horizontal
+        // speed, and a yaw torque turning the vehicle with its steered wheels (reversed when
+        // driving backwards). Resets the wheels-on-ground count for the next step.
         M3D_ASSERT(IsAlive());
 
-        // TODO: check this!!
-        auto const linearVelocity = GetLinearVelocity();
+        CVector const vel = GetLinearVelocity();
         if (m_numWheelsTouchingGround > 0)
         {
-            auto const horizVel = sqrt(linearVelocity.z * linearVelocity.z + linearVelocity.x * linearVelocity.x);
-            if (horizVel > 5.0)
+            float const horizVel = static_cast<float>(sqrt(double(vel.z) * vel.z + double(vel.x) * vel.x));
+            if (horizVel > 5.0f)
             {
-                auto const pressingForce = GetPrototypeInfo()->m_pressingForce;
-                auto const mass = GetMass();
-
+                float const pressingForce = GetPrototypeInfo()->m_pressingForce;
                 CVector force;
-                force.x = 0.0;
-                force.y = mass * pressingForce * horizVel * -0.1962;
-                force.z = 0.0;
+                force.x = 0.0f;
+                force.y = static_cast<float>(double(GetMass()) * pressingForce * horizVel * -0.19620000f);
+                force.z = 0.0f;
                 AddForce(force);
             }
         }
 
-        auto const velocity = sqrt(
-            linearVelocity.y * linearVelocity.y + linearVelocity.z * linearVelocity.z +
-            linearVelocity.x * linearVelocity.x);
+        float const speed =
+            static_cast<float>(sqrt(double(vel.y) * vel.y + double(vel.z) * vel.z + double(vel.x) * vel.x));
         if (m_numWheelsTouchingGround > 0)
         {
-            if (auto const* wheel = GetFirstExistingWheel())
+            if (Wheel const* wheel = GetFirstExistingWheel())
             {
-                auto const dir = GetDirection();
-                auto throttle = m_throttle * 0.5;
-                auto direction = -1;
-                if ((((dir.y * linearVelocity.y) + (dir.z * linearVelocity.z)) + (dir.x * linearVelocity.x)) >= 0.0)
-                {
-                    direction = 1;
-                }
+                static CVector const INITIAL_UP_DIRECTION(0.0f, 1.0f, 0.0f);
+                float const curAngle = wheel->m_curAngle;
+                CVector const dir = GetDirection();
+                float const halfThrottle = m_throttle * 0.5f;
+                // NOTE: a NaN velocity counts as driving forwards.
+                int const sign = 0.0f > (dir.y * vel.y + dir.z * vel.z) + dir.x * vel.x ? -1 : 1;
 
-                CVector const INITIAL_UP_DIRECTION = {0.0, 1.0, 0.0};
-
-                CVector relDir;
-                relDir.x = (0.0 - INITIAL_UP_DIRECTION.x) * wheel->m_curAngle;
-                relDir.y = (0.0 - INITIAL_UP_DIRECTION.y) * wheel->m_curAngle;
-                relDir.z = (0.0 - INITIAL_UP_DIRECTION.z) * wheel->m_curAngle;
-
-                auto const mass = GetMass();
-                relDir.x = ((relDir.x * mass) * velocity) * m_driftCoeff;
-                relDir.y = ((relDir.y * mass) * velocity) * m_driftCoeff;
-                relDir.z = ((relDir.z * mass) * velocity) * m_driftCoeff;
-
-                auto const cabinControlCoeff = _GetCabinControlCoeff();
-
-                auto v21 = fabs(throttle) + 0.5;
-
-                CVector force;
-                force.x = ((relDir.x * cabinControlCoeff) * direction) * v21;
-                force.y = ((relDir.y * cabinControlCoeff) * direction) * v21;
-                force.z = ((relDir.z * cabinControlCoeff) * direction) * v21;
-                AddRelTorque(force);
+                float const mass = GetMass();
+                CVector torque(
+                    (0.0f - INITIAL_UP_DIRECTION.x) * curAngle * mass * speed * m_driftCoeff,
+                    (0.0f - INITIAL_UP_DIRECTION.y) * curAngle * mass * speed * m_driftCoeff,
+                    (0.0f - INITIAL_UP_DIRECTION.z) * curAngle * mass * speed * m_driftCoeff);
+                float const cabinControl = _GetCabinControlCoeff();
+                float const throttleCoeff = static_cast<float>(fabs(halfThrottle) + 0.5);
+                float const fsign = static_cast<float>(sign);
+                torque.x = torque.x * cabinControl * fsign * throttleCoeff;
+                torque.y = torque.y * cabinControl * fsign * throttleCoeff;
+                torque.z = torque.z * cabinControl * fsign * throttleCoeff;
+                AddRelTorque(torque);
             }
         }
 
@@ -6824,49 +6730,43 @@ namespace ai
     void Vehicle::_AdjustLookBox(bool bForLooking, CVector const& myPos, CVector const& pathPoint, CVector const& guide)
         const
     {
-        // TODO: generated code Vehicle::_AdjustLookBox
-        // Calculate direction vector from current position to path point
-        CVector dir = pathPoint - myPos;
-        float distanceToPathPoint = dir.length();
+        // RVA 0x5D6FB0 - lays the look box (along guide) or the target box (towards pathPoint) out
+        // in front of the vehicle: 1.5 times its width, twice its height, and as long as the
+        // default length or the distance to pathPoint, whichever is shorter.
+        // NOTE: the look box is also cut short by the distance to pathPoint, although it does
+        // not point at it.
+        float const dx = pathPoint.x - myPos.x;
+        float const dy = pathPoint.y - myPos.y;
+        float const dz = pathPoint.z - myPos.z;
+        float const distToPathPoint = static_cast<float>(sqrt(double(dz) * dz + double(dy) * dy + double(dx) * dx));
 
-        float boxLength;
-        CVector normalizedDir;
-
+        float defaultLength;
+        CVector dir;
         if (bForLooking)
         {
-            // For look box: use guide direction with default look box length
-            boxLength = ai::theGlobProp.m_defaultLookBoxLength;
-            normalizedDir = guide.getNormalized();
+            defaultLength = theGlobProp.m_defaultLookBoxLength;
+            float const inv = static_cast<float>(
+                1.0 / sqrt(double(guide.x) * guide.x + double(guide.y) * guide.y + double(guide.z) * guide.z + 0.00000011920929));
+            dir = CVector(guide.x * inv, guide.y * inv, guide.z * inv);
         }
         else
         {
-            // For target box: use path direction with default target box length
-            boxLength = ai::theGlobProp.m_defaultTargetBoxLength;
-            normalizedDir = dir.getNormalized();
+            defaultLength = theGlobProp.m_defaultTargetBoxLength;
+            // NOTE: a path point at the vehicle's own position gives a zero direction.
+            float const inv = static_cast<float>(
+                1.0 / sqrt(double(dz) * dz + double(dy) * dy + double(dx) * dx + 0.00000011920929));
+            dir = CVector(inv * dx, dy * inv, dz * inv);
         }
+        float const length = distToPathPoint > defaultLength ? defaultLength : distToPathPoint;
 
-        // Use the shorter of calculated distance or default box length
-        float actualLength = std::min(distanceToPathPoint, boxLength);
-
-        // Select the appropriate box (look box or target box)
-        scoped_ptr<ai::Box> const& targetBox = bForLooking ? this->m_lookBox : this->m_targetBox;
-
-        // Set box size (width, height, length)
-        CVector size;
-        size.x = this->m_size.x * 1.5f;  // Width: 1.5x vehicle width
-        size.y = this->m_size.y * 2.0f;  // Height: 2x vehicle height
-        size.z = actualLength;           // Length: dynamic based on distance
-
-        targetBox->SetSize(size);
-
-        // Orient the box in the calculated direction
-        ai::SetDirectionToObject(*targetBox, normalizedDir);
-
-        // Position the box halfway between current position and target point
-        CVector boxCenter = myPos + (normalizedDir * (actualLength * 0.5f));
-
-        // Update physics geometry position
-        dGeomSetPosition(targetBox->GetGeomId(), boxCenter.x, boxCenter.y, boxCenter.z);
+        Box& box = bForLooking ? *m_lookBox : *m_targetBox;
+        box.SetSize(CVector(m_size.x * 1.5f, m_size.y * 2.0f, length));
+        SetDirectionToObject<Geom>(box, dir);
+        dGeomSetPosition(
+            box.GetGeomId(),
+            myPos.x + dir.x * length * 0.5f,
+            dir.y * length * 0.5f + myPos.y,
+            myPos.z + dir.z * length * 0.5f);
     }
 
     CVector Vehicle::_CalcSteeringForceToPathPoint(CVector const& point, CVector const& nextPoint) const
@@ -7860,143 +7760,138 @@ namespace ai
 
     CVector Vehicle::_CalcSteeringForce(float elapsedTime) const
     {
-        // TODO: generated code
-        // Return cached steering force if valid
+        // RVA 0x5E12C0 - the direction (of length at most 1) the vehicle wants to drive in: pulled
+        // along its path, towards an external destination and by the team's attack formation,
+        // pushed away from nearby objects. Computed once per frame, then cached. Also runs the
+        // stuck check: if the vehicle has moved less than sqrt(0.1) over a second of steady
+        // steering, m_bWasStuck is set for 2 seconds.
         if (m_bCurSteeringForceValid)
         {
             return m_curSteeringForce;
         }
 
-        // Get current position and velocity
-        CVector pos = GetPosition();
-        CVector vel = GetLinearVelocity();
-
-        // Determine guide direction (use current direction if moving slowly, otherwise use velocity)
+        CVector const pos = GetPosition();
+        CVector const vel = GetLinearVelocity();
         CVector guide;
-        if (vel.lengthSq() <= 1.0f)
+        if (vel.z * vel.z + vel.y * vel.y + vel.x * vel.x <= 1.0f)
         {
-            guide = GetDirection();  // Use facing direction when moving slowly
+            guide = GetDirection();
         }
         else
         {
-            guide = vel;  // Use velocity direction when moving fast
+            guide = vel;
         }
 
-        // Initialize steering forces
-        CVector attraction = ZeroVector;  // Force towards target
-        CVector repulsion = ZeroVector;   // Force away from obstacles
-
-        // Calculate path following attraction force
-        CVector curPoint;
-        if (ai::GetPathItem(m_pPath, m_pathNum, curPoint))
+        CVector attraction = ZeroVector;
+        CVector curPoint = ZeroVector;
+        if (GetPathItem(m_pPath, m_pathNum, curPoint))
         {
-            CVector nextPoint = _GetNextPathPoint();
-            CVector pathForce = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
-            attraction += pathForce;
+            CVector const nextPoint = _GetNextPathPoint();
+            CVector const force = _CalcSteeringForceToPathPoint(curPoint, nextPoint);
+            attraction.x = force.x + attraction.x;
+            attraction.y = force.y + attraction.y;
+            attraction.z = force.z + attraction.z;
         }
-
-        // Add external destination force if in specific move status
-        if (m_moveStatus == 2)
+        if (m_moveStatus == MOVE_MOVING_BY_STEERING_FORCE)
         {
-            curPoint = ai::GetGroundPos(m_externalDestination, false, false);
-            CVector destForce = _CalcSteeringForceToPathPoint(m_externalDestination, m_externalDestination);
-            attraction += destForce;
+            curPoint = GetGroundPos(m_externalDestination, false, false);
+            CVector const force = _CalcSteeringForceToPathPoint(m_externalDestination, m_externalDestination);
+            attraction.x = force.x + attraction.x;
+            attraction.y = force.y + attraction.y;
+            attraction.z = force.z + attraction.z;
         }
-
-        // Add team-based steering forces if attacking
-        if (m_attackStatus == 1)
+        if (m_attackStatus == ATTACK_ATTACKING)
         {
-            ai::Team* team = static_cast<ai::Team*>(GetParent());
-            if (team)
+            // NOTE: the parent is taken to be a team without a type check.
+            if (Team* team = static_cast<Team*>(GetParent()))
             {
-                auto& steeringForceMap = team->GetSteeringForceMap();
-                auto it = steeringForceMap.find(GetId());
-                if (it != steeringForceMap.end())
+                auto const& steeringForces = team->GetSteeringForceMap();
+                auto const it = steeringForces.find(GetId());
+                if (it != steeringForces.end())
                 {
-                    attraction += it->second;
+                    attraction.x = attraction.x + it->second.x;
+                    attraction.y = it->second.y + attraction.y;
+                    attraction.z = it->second.z + attraction.z;
                 }
             }
         }
 
-        // Calculate obstacle avoidance repulsion force if not on external path
+        CVector const predictedPos(
+            pos.x + vel.x * theGlobProp.m_predictionTime,
+            pos.y + vel.y * theGlobProp.m_predictionTime,
+            pos.z + vel.z * theGlobProp.m_predictionTime);
+        float repulsionX = 0.0f;
+        float repulsionY = 0.0f;
+        float repulsionZ = 0.0f;
         if (!m_bIsMovingAlongExternalPath)
         {
-            // Predict future position
-            CVector predictedPos;
-            predictedPos.x = pos.x + vel.x * ai::theGlobProp.m_predictionTime;
-            predictedPos.y = pos.y + vel.y * ai::theGlobProp.m_predictionTime;
-            predictedPos.z = pos.z + vel.z * ai::theGlobProp.m_predictionTime;
-
-            // Calculate repulsion forces for different look directions
             _AdjustLookBox(true, pos, curPoint, guide);
-            CVector repulsion1 = _CalcRepulsionForNearbyObjects(pos, predictedPos, vel, guide, true, attraction);
-
+            CVector const repulsion1 = _CalcRepulsionForNearbyObjects(pos, predictedPos, vel, guide, true, attraction);
             _AdjustLookBox(false, pos, curPoint, guide);
-            CVector repulsion2 = _CalcRepulsionForNearbyObjects(pos, predictedPos, vel, guide, false, attraction);
-
-            repulsion = repulsion1 + repulsion2;
+            CVector const repulsion2 = _CalcRepulsionForNearbyObjects(pos, predictedPos, vel, guide, false, attraction);
+            repulsionX = repulsion2.x + repulsion1.x;
+            repulsionY = repulsion2.y + repulsion1.y;
+            repulsionZ = repulsion2.z + repulsion1.z;
         }
 
-        // Combine all steering forces
-        CVector totalForce = attraction + repulsion;
-
-        // Normalize and clamp the total force
-        float forceMagnitude = totalForce.length();
-        float clampedMagnitude = std::clamp(forceMagnitude, 0.0f, 1.0f);
-
-        if (forceMagnitude > 0.0f)
+        // Normalize the sum, keeping its length when it is shorter than 1.
+        float const forceX = repulsionX + attraction.x;
+        float const forceY = repulsionY + attraction.y;
+        float const forceZ = repulsionZ + attraction.z;
+        float const lenSq = forceZ * forceZ + forceY * forceY + forceX * forceX;
+        float const len = static_cast<float>(sqrt(lenSq));
+        float scale;
+        if (0.0f > len)
         {
-            totalForce.normalizeInplace();
-            totalForce *= clampedMagnitude;
-        }
-
-        // Store the previous steering force for comparison
-        CVector prevSteeringForce = m_curSteeringForce;
-
-        // Update current steering force
-        m_curSteeringForce = totalForce;
-
-        // Handle stuck detection
-        m_timeOutToCheckStuck -= elapsedTime;
-
-        if (m_bWasStuck ||
-            (float)((float)((float)(this->m_curSteeringForce.z * prevSteeringForce.z) +
-                            (float)(this->m_curSteeringForce.y * prevSteeringForce.y)) +
-                    (float)(prevSteeringForce.x * m_curSteeringForce.x)) >= 0.0)
-        {
-            // Not stuck or consistent steering direction
-            // Reset timeout if we were previously stuck but now have consistent steering
-            if (!m_bWasStuck)
-            {
-                m_timeOutToCheckStuck = 1.0f;
-            }
+            scale = 0.0f;
         }
         else
         {
-            // Inconsistent steering direction, reset stuck timer
+            scale = len;
+            if (len > 1.0f)
+            {
+                scale = 1.0f;
+            }
+        }
+        float const invLen = static_cast<float>(1.0 / sqrt(lenSq + 0.00000011920929f));
+        CVector const prevForce = m_curSteeringForce;
+        m_curSteeringForce.x = invLen * forceX * scale;
+        m_curSteeringForce.y = forceY * invLen * scale;
+        m_curSteeringForce.z = forceZ * invLen * scale;
+
+        // The stuck check. Its timer restarts whenever the steering turns by more than 90 degrees.
+        m_timeOutToCheckStuck = m_timeOutToCheckStuck - elapsedTime;
+        bool const wasStuck = m_bWasStuck;
+        if (!wasStuck &&
+            0.0f > m_curSteeringForce.z * prevForce.z + m_curSteeringForce.y * prevForce.y + prevForce.x * m_curSteeringForce.x)
+        {
             m_timeOutToCheckStuck = 1.0f;
         }
-
-        // Check if vehicle is stuck (not moving significantly)
-        if (m_timeOutToCheckStuck < 0.0f)
+        if (0.0f > m_timeOutToCheckStuck)
         {
-            float moveDistanceSq = (pos - m_prevPosToCheckStuck).lengthSq();
-
-            if (moveDistanceSq >= 0.1f)
+            if (wasStuck)
             {
-                // Vehicle has moved enough, not stuck
-                m_prevPosToCheckStuck = pos;
+                m_bWasStuck = false;
                 m_timeOutToCheckStuck = 1.0f;
             }
             else
             {
-                // Vehicle is stuck
-                m_bWasStuck = true;
-                m_timeOutToCheckStuck = 2.0f;  // Longer timeout when stuck
+                float const dz = pos.z - m_prevPosToCheckStuck.z;
+                float const dy = pos.y - m_prevPosToCheckStuck.y;
+                float const dx = pos.x - m_prevPosToCheckStuck.x;
+                if (0.1f > dz * dz + dy * dy + dx * dx)
+                {
+                    m_bWasStuck = true;
+                    m_timeOutToCheckStuck = 2.0f;
+                }
+                else
+                {
+                    m_prevPosToCheckStuck = pos;
+                    m_timeOutToCheckStuck = 1.0f;
+                }
             }
         }
 
-        // Mark steering force as valid and return result
         m_bCurSteeringForceValid = true;
         return m_curSteeringForce;
     }

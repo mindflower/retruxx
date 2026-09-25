@@ -1022,6 +1022,122 @@ namespace ai
         }
     }
 
+    bool GetSmoothAcceleratedValue(
+        float elapsedTime,
+        float destination,
+        float position,
+        float velocity,
+        float acceleration,
+        float maxVelocity,
+        float& newPosition,
+        float& newVelocity)
+    {
+        // RVA 0x7D31A0 - one step of a move towards destination: accelerate up to maxVelocity,
+        // cruise, then brake so as to stop on it. Returns true once it has arrived.
+        float delta = static_cast<float>(destination - position);
+        if (fabs(delta) < 0.0099999998f)
+        {
+            newPosition = destination;
+            newVelocity = 0.0f;
+            return true;
+        }
+        if (maxVelocity < 0.001f || acceleration < 0.001f)
+        {
+            newPosition = position;
+            newVelocity = 0.0f;
+            return false;
+        }
+
+        // Work in the direction of travel.
+        bool flipped = false;
+        if (delta < 0.0f)
+        {
+            delta = 0.0f - delta;
+            velocity = 0.0f - velocity;
+            position = 0.0f - position;
+            destination = 0.0f - destination;
+            flipped = true;
+        }
+
+        bool result = false;
+        float const brakeWork = delta * acceleration;
+        float const maxVelThatCanBeReached = static_cast<float>(sqrt(double(velocity) * velocity * 0.5 + brakeWork));
+        if (maxVelThatCanBeReached > velocity - 0.000099999997f || velocity < 0.0f)
+        {
+            // Accelerate (to the cap), cruise, then brake.
+            float const topVelocity = maxVelThatCanBeReached > maxVelocity ? maxVelocity : maxVelThatCanBeReached;
+            float accelTime = elapsedTime;
+            if (elapsedTime > (topVelocity - velocity) * (1.0f / acceleration))
+            {
+                accelTime = (topVelocity - velocity) * (1.0f / acceleration);
+            }
+            newPosition = ((accelTime * acceleration) * 0.5f + velocity) * accelTime + position;
+            float const reachedVelocity = accelTime * acceleration + velocity;
+            newVelocity = reachedVelocity;
+            float const restTime = elapsedTime - accelTime;
+            float cruiseTime = restTime;
+            float const cruiseLimit =
+                ((destination - (topVelocity * topVelocity) / (acceleration * 2.0f)) - newPosition) / topVelocity;
+            if (restTime > cruiseLimit)
+            {
+                cruiseTime = cruiseLimit;
+            }
+            float const cruisePos = reachedVelocity * cruiseTime + newPosition;
+            newPosition = cruisePos;
+            float brakeTime = restTime - cruiseTime;
+            if (brakeTime > (1.0f / acceleration) * newVelocity)
+            {
+                brakeTime = (1.0f / acceleration) * newVelocity;
+            }
+            newPosition = (newVelocity - (brakeTime * acceleration) * 0.5f) * brakeTime + cruisePos;
+            newVelocity = newVelocity - brakeTime * acceleration;
+        }
+        else
+        {
+            // Too fast to stop in time: brake.
+            float const velocitySq = static_cast<float>(double(velocity) * velocity);
+            float discriminant = velocitySq - brakeWork * 2.0f;
+            if (discriminant < 0.0f)
+            {
+                discriminant = 0.0f;
+            }
+            float brakeTime = elapsedTime;
+            double const stopTime = (sqrt(discriminant) + velocity) / acceleration;
+            if (elapsedTime > stopTime)
+            {
+                brakeTime = static_cast<float>(stopTime);
+            }
+            newPosition = (velocity - (brakeTime * acceleration) * 0.5f) * brakeTime + position;
+            newVelocity = velocity - brakeTime * acceleration;
+        }
+
+        // Passing the destination at a crawl counts as arriving.
+        if ((newPosition - destination) * (position - destination) <= 0.0f && fabs(newVelocity) < 0.0099999998f)
+        {
+            newPosition = destination;
+            newVelocity = 0.0f;
+            result = true;
+        }
+        if (flipped)
+        {
+            newPosition = 0.0f - newPosition;
+            newVelocity = 0.0f - newVelocity;
+        }
+        return result;
+    }
+
+    int GetNodeElapsedAnimationTimeInMs(m3d::SgNode const* node)
+    {
+        // RVA 0x7D3030 - NOTE: the current frame times the frame rate, not divided by it, so the
+        // result is not really milliseconds (see also the use in the function below).
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(node);
+        if (!animInfo || !animInfo->GetCurAnimation())
+        {
+            return 0;
+        }
+        return animInfo->GetCurAnimation()->m_fps * animInfo->CurAnimFrame();
+    }
+
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const* node)
     {
         if (!node)

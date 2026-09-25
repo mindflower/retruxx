@@ -916,7 +916,8 @@ namespace ai
 
     void CServer::Update(float elapsedTime)
     {
-        // TODO: generated code
+        // RVA 0x5F4090 - one server tick: physics step, AI and objects, then collision (whose
+        // contacts and forces feed the next tick's step).
         if (!m_StartServerUpdates)
         {
             return;
@@ -933,7 +934,9 @@ namespace ai
         }
         else
         {
-            CurTime = static_cast<float>(m3d::g_Kernel->GetTimer().GetCurTime()) * 0.001f;
+            // The milliseconds are scaled in double before narrowing, so long sessions keep
+            // millisecond resolution.
+            CurTime = static_cast<float>(static_cast<double>(m3d::g_Kernel->GetTimer().GetCurTime()) * 0.001);
         }
 
         // Handle very small elapsed times
@@ -946,61 +949,60 @@ namespace ai
             }
         }
 
-        // Apply minimum frame time constraint
-        float minFrameTime = m3d::g_Kernel->GetEngineCfg().m_ai_min_frame_time.GetF();
-
-        float m_averageElapsedTime = elapsedTime;
-        if (elapsedTime > minFrameTime)
+        // The step is capped at ai_min_frame_time (despite the name, a maximum).
+        // The server also keeps a running average of the last m_MaxAverageLength steps in
+        // m_averageElapsedTime, which replaces the step when m_AveElapsedTimeUsed is set.
+        float const maxFrameTime = m3d::g_Kernel->GetEngineCfg().m_ai_min_frame_time.GetF();
+        float step = elapsedTime;
+        if (elapsedTime > maxFrameTime)
         {
-            elapsedTime = minFrameTime;
-            m_averageElapsedTime = minFrameTime;
+            elapsedTime = maxFrameTime;
+            step = maxFrameTime;
         }
 
-        // Update moving average of elapsed times
+        // While the history is still filling up the average is taken over what there is.
         if (m_Accumulation)
         {
-            if (m_CurIndex >= m_MaxAverageLength)
+            int const index = m_CurIndex;
+            if (index >= m_MaxAverageLength)
             {
                 m_Accumulation = false;
             }
             else
             {
-                m_lastElapsedTimes[m_CurIndex] = m_averageElapsedTime;
-
-                // Calculate new average
+                m_lastElapsedTimes[index] = step;
                 m_averageElapsedTime = 0.0f;
                 for (int i = 0; i <= m_CurIndex; ++i)
                 {
-                    m_averageElapsedTime += m_lastElapsedTimes[i];
+                    m_averageElapsedTime = m_lastElapsedTimes[i] + m_averageElapsedTime;
                 }
-                m_averageElapsedTime /= static_cast<float>(m_CurIndex + 1);
-                m_CurIndex++;
+                m_averageElapsedTime = m_averageElapsedTime / static_cast<float>(index + 1);
+                m_CurIndex = index + 1;
             }
         }
-
+        // Then it is updated as a moving average over a ring of samples.
         if (!m_Accumulation)
         {
             if (m_CurIndex >= m_MaxAverageLength)
             {
                 m_CurIndex = 0;
             }
-
-            float* currentSlot = &m_lastElapsedTimes[m_CurIndex];
-            m_averageElapsedTime += (m_averageElapsedTime - *currentSlot) / static_cast<float>(m_MaxAverageLength);
-            *currentSlot = m_averageElapsedTime;
-            m_CurIndex++;
+            float& oldest = m_lastElapsedTimes[m_CurIndex];
+            m_averageElapsedTime =
+                (step - oldest) / static_cast<float>(m_MaxAverageLength) + m_averageElapsedTime;
+            oldest = step;
+            ++m_CurIndex;
         }
 
-        // Use average elapsed time if configured
         if (m_AveElapsedTimeUsed)
         {
-            m_averageElapsedTime = m_averageElapsedTime;
+            step = m_averageElapsedTime;
             elapsedTime = m_averageElapsedTime;
         }
 
         // Determine work time based on elapsed time
         unsigned int workTime = 2;
-        if (m_averageElapsedTime <= 0.0001f)
+        if (step <= 0.0001f)
         {
             workTime = 0;
         }

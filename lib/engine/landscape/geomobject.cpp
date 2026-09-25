@@ -181,7 +181,10 @@ namespace m3d
 
     Object* GeomObjectLandscape::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E6F0
+        // NOTE: the copy constructor copies nothing, so this is a freshly default initialised
+        // object.
+        return new GeomObjectLandscape(*this);
     }
 
     Object* GeomObjectLandscape::CreateObject()
@@ -198,9 +201,10 @@ namespace m3d
     {
     }
 
-    GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&)
+    GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&) :
+        GeomObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E3A0 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
 
     Class* GeomObjectStatics::GetClass() const
@@ -222,7 +226,10 @@ namespace m3d
 
     Object* GeomObjectStatics::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E750
+        // NOTE: the copy constructor copies nothing, so this is a freshly default initialised
+        // object.
+        return new GeomObjectStatics();
     }
 
     GeomObjectStatics::GeomObjectStatics() = default;
@@ -256,12 +263,17 @@ namespace m3d
 
     Object* GeomObjectRoad::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E7B0
+        // NOTE: the copy constructor copies nothing, so this is a freshly default initialised
+        // object.
+        return new GeomObjectRoad(*this);
     }
 
-    GeomObjectRoad::GeomObjectRoad(GeomObjectRoad const&)
+    GeomObjectRoad::GeomObjectRoad(GeomObjectRoad const&) :
+        GeomObject(),
+        m_roadNode(nullptr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E520 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
 
     GeomObjectRoad::GeomObjectRoad() : m_roadNode(nullptr)
@@ -282,7 +294,10 @@ namespace m3d
 
     Object* GeomObjectWater::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E690
+        // NOTE: the copy constructor copies nothing, so this is a freshly default initialised
+        // object.
+        return new GeomObjectWater(*this);
     }
 
     Class* GeomObjectWater::GetClass() const
@@ -294,19 +309,22 @@ namespace m3d
     {
     }
 
-    GeomObjectWater::GeomObjectWater(GeomObjectWater const&)
+    GeomObjectWater::GeomObjectWater(GeomObjectWater const&) :
+        GeomObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E2E0 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
 
     Object* GeomObjectPassCell::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61EA50
+        return new GeomObjectPassCell();
     }
 
     Class* GeomObjectPassCell::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E0E0
+        return RT_CLASS_LOCAL(GeomObjectPassCell);
     }
 
     Class* GeomObjectPassCell::GetBaseClass()
@@ -316,21 +334,26 @@ namespace m3d
 
     Object* GeomObjectPassCell::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E810
+        // NOTE: the copy constructor copies nothing, so this is a freshly default initialised
+        // object.
+        return new GeomObjectPassCell(*this);
     }
 
     GeomObjectPassCell::~GeomObjectPassCell()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E620 - nothing of its own; the geom is released through Release().
     }
 
-    GeomObjectPassCell::GeomObjectPassCell(GeomObjectPassCell const&)
+    GeomObjectPassCell::GeomObjectPassCell(GeomObjectPassCell const&) :
+        GeomObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E5E0 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
 
-    GeomObjectPassCell::GeomObjectPassCell()
+    GeomObjectPassCell::GeomObjectPassCell() :
+        GeomObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61E5A0
     }
 }  // namespace m3d

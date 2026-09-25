@@ -370,7 +370,7 @@ namespace m3d
             }
             m_texture = imageTex;
             M3D_RENDERER->ReferenceTexture(m_texture);
-            if (m_texture.IsValid())
+            if (targetTex.IsValid())
             {
                 m_renderTexture = targetTex;
                 M3D_RENDERER->ReferenceTexture(m_renderTexture);
@@ -418,7 +418,7 @@ namespace m3d
         {
             // RVA 0x709FF0 builds the ImageWnd base, resets m_renderTexture / m_cfg,
             // then asserts false: ModelWnd has no working copy constructor.
-            RETRUXX_NOT_IMPLEMENTED;
+            assert(false);
         }
 
         ModelWnd::ModelWnd() :

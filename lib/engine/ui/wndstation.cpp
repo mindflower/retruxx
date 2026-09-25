@@ -1008,8 +1008,8 @@ namespace m3d
                         break;
                     }
                     CStr replacedSubstr;
-                    GetStringByStringId(replacedSubstr, newStr.substr(pos1 + 1, pos2));
-                    newStr = newStr.substr(startPos, pos1) + replacedSubstr + newStr.substr(pos2 + 1);
+                    GetStringByStringId(replacedSubstr, newStr.substr(pos1 + 1, pos2 - (pos1 + 1)));
+                    newStr = newStr.substr(startPos, pos1 - startPos) + replacedSubstr + newStr.substr(pos2 + 1);
                     startPos = pos2 + 1;
                 }
                 return newStr;
