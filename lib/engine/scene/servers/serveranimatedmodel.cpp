@@ -1579,16 +1579,16 @@ namespace m3d
             SafeIntAttrib(shadow, modelNode, "shadow");
 
             int windwavy = 0;
-            SafeIntAttrib(shadow, modelNode, "windwavy");
+            SafeIntAttrib(windwavy, modelNode, "windwavy");
 
             int tessellate = 0;
-            SafeIntAttrib(shadow, modelNode, "tessellate");
+            SafeIntAttrib(tessellate, modelNode, "tessellate");
 
             int trackland = 0;
-            SafeIntAttrib(shadow, modelNode, "trackland");
+            SafeIntAttrib(trackland, modelNode, "trackland");
 
             int shadowVolume = 0;
-            SafeIntAttrib(shadow, modelNode, "shadowVolume");
+            SafeIntAttrib(shadowVolume, modelNode, "shadowVolume");
 
             bool useImpostors = false;
             m3d::SafeBoolAttrib(useImpostors, modelNode, "useImpostors");
@@ -1600,7 +1600,7 @@ namespace m3d
             m3d::SafeBoolAttrib(passable, modelNode, "passable");
 
             int trans = 0;
-            SafeIntAttrib(shadow, modelNode, "trans");
+            SafeIntAttrib(trans, modelNode, "trans");
 
             CVector bBoxMin, bBoxMax;
 

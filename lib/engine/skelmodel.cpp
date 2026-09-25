@@ -17,7 +17,7 @@
 namespace m3d
 {
     AnimAction actions[] = {
-        {"STAN", AT_STAND1},
+        {"STAND1", AT_STAND1},
         {"STAND2", AT_STAND2},
         {"MOVE1", AT_MOVE1},
         {"MOVE2", AT_MOVE2},
@@ -609,8 +609,8 @@ namespace m3d
                     }
                 }
 
-                auto v99 = nextAnims_0[v97];
-                if (v97 == 32 || (v99 < 0))
+                int const v99 = v97 == 32 ? -1 : nextAnims_0[v97];
+                if (v99 < 0)
                 {
                     this->m_animations[i].m_nextAnimation = -1;
                 }

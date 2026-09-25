@@ -9,7 +9,7 @@
 #include "core/ref_ptr.h"
 #include <server/objects/base/prototypemanager.h>
 #include <algorithm>
-#include <random>
+#include <cstdlib>
 
 namespace ai
 {
@@ -23,7 +23,8 @@ namespace ai
 
     Obj* TeamTacticPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800A30 - a plain tactic cannot be made; only tactics with roles.
+        return nullptr;
     }
 
     TeamTacticPrototypeInfo::TeamTacticPrototypeInfo()
@@ -46,7 +47,8 @@ namespace ai
 
     TeamTacticPrototypeInfo const* TeamTactic::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x801630 - NOTE: the prototype is cast without a type check.
+        return static_cast<TeamTacticPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Class* TeamTactic::GetClass() const
@@ -58,12 +60,16 @@ namespace ai
 
     m3d::Object* TeamTactic::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800E30
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* TeamTactic::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800C70
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     TeamTacticWithRolesPrototypeInfo::TeamTacticWithRolesPrototypeInfo() = default;
@@ -110,9 +116,10 @@ namespace ai
         }
     }
 
-    void TeamTacticWithRoles::AssignAgainstObj(Team*, Obj const*)
+    void TeamTacticWithRoles::AssignAgainstObj(Team* v, Obj const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800B70
+        ai::TeamRoleManager::AssignAgainstObj(this, v, target);
     }
 
     TeamTacticWithRoles::TeamTacticWithRoles(TeamTacticWithRolesPrototypeInfo const& prototype) : TeamTactic(prototype)
@@ -126,7 +133,8 @@ namespace ai
 
     TeamTacticWithRolesPrototypeInfo const* TeamTacticWithRoles::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), TeamTacticWithRolesPrototypeInfo const);
+        // RVA 0x801660 - NOTE: the prototype is cast without a type check.
+        return static_cast<TeamTacticWithRolesPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void TeamTacticWithRoles::AssignAgainstVehicle(Team* v, Vehicle const* target)
@@ -134,9 +142,10 @@ namespace ai
         ai::TeamRoleManager::AssignAgainstVehicle(this, v, target);
     }
 
-    void TeamTacticWithRoles::AssignAgainstTeam(Team*, Team const*)
+    void TeamTacticWithRoles::AssignAgainstTeam(Team* v, Team const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800B50
+        ai::TeamRoleManager::AssignAgainstTeam(this, v, target);
     }
 
     float TeamTacticWithRoles::FitAgainstVehicle(Team const* v, Vehicle const* target)
@@ -146,32 +155,32 @@ namespace ai
 
     void TeamTacticWithRoles::GetRolePrototypeIdsEx(int vehicleNum, std::vector<int, std::allocator<int>>& prototypeIds) const
     {
-        // TODO: generated code TeamTacticWithRoles::GetRolePrototypeIdsEx
-        // Get role prototype IDs (returns a vector reference)
-        std::vector<int> const& rolePrototypeIds = this->GetRolePrototypeIds();
-
-        // Clear the output vector using the allocator
+        // RVA 0x801A70 - one role for each of vehicleNum vehicles: the tactic's roles repeated as
+        // often as needed, and when that gives too many, shuffled and cut down to size.
+        // NOTE: a tactic with no roles never fills the list, and the loop does not end.
+        std::vector<int> const& rolePrototypeIds = GetRolePrototypeIds();
         prototypeIds.clear();
-
-        // Fill the vector until it has at least vehicleNum elements
-        while (prototypeIds.size() <= static_cast<size_t>(vehicleNum))
+        while (vehicleNum > static_cast<int>(prototypeIds.size()))
         {
-            // Insert the entire rolePrototypeIds vector at the end
             prototypeIds.insert(prototypeIds.end(), rolePrototypeIds.begin(), rolePrototypeIds.end());
         }
-
-        // If we have more elements than needed
-        if (static_cast<size_t>(vehicleNum) < prototypeIds.size())
+        if (vehicleNum < static_cast<int>(prototypeIds.size()))
         {
-            if (!prototypeIds.empty())
+            // std::random_shuffle of the shipped runtime (RVA 0x801590): element k is swapped with a
+            // random one of the first k + 1, using 15 bits of rand().
+            // NOTE: past 32768 elements the runtime widens the number with set bits, not more rand().
+            for (unsigned index = 2; index <= prototypeIds.size(); ++index)
             {
-                std::random_device rd;
-                std::mt19937 g(rd());
-                std::shuffle(prototypeIds.begin(), prototypeIds.end(), g);
-
-                // Remove excess elements beyond vehicleNum
-                prototypeIds.resize(vehicleNum);
+                unsigned long range = 0x7FFF;
+                unsigned long r = static_cast<unsigned long>(rand()) & 0x7FFF;
+                while (range < index && range != ~0UL)
+                {
+                    range = (range << 15) | 0x7FFF;
+                    r = (r << 15) | 0x7FFF;
+                }
+                std::swap(prototypeIds[index - 1], prototypeIds[r % index]);
             }
+            prototypeIds.erase(prototypeIds.begin() + vehicleNum, prototypeIds.end());
         }
     }
 
@@ -180,21 +189,25 @@ namespace ai
         return RT_CLASS_LOCAL(TeamTactic);
     }
 
-    float TeamTacticWithRoles::FitAgainstTeam(Team const*, Team const*)
+    float TeamTacticWithRoles::FitAgainstTeam(Team const* v, Team const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800AF0
+        return ai::TeamRoleManager::FitAgainstTeam(this, v, target);
     }
 
-    float TeamTacticWithRoles::FitAgainstObj(Team const*, Obj const*)
+    float TeamTacticWithRoles::FitAgainstObj(Team const* v, Obj const* target)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800B10
+        return ai::TeamRoleManager::FitAgainstObj(this, v, target);
     }
 
     TeamTacticWithRoles::~TeamTacticWithRoles() = default;
 
     m3d::Object* TeamTacticWithRoles::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8011B0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     std::vector<int, std::allocator<int>> const& TeamTacticWithRoles::GetRolePrototypeIds() const
@@ -206,6 +219,8 @@ namespace ai
 
     m3d::Object* TeamTacticWithRoles::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x800FF0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }

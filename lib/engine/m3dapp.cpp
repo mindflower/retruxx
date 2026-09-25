@@ -110,7 +110,7 @@ namespace
         } while (elapsed < 2000);
         return static_cast<double>(numDraws) * 1000.0 / static_cast<double>(elapsed);
     }
-}
+}  // namespace
 
 namespace
 {
@@ -118,11 +118,11 @@ namespace
     {
         // RVA 0x7AF9F0 - packs a unit normal into RGB and the height into alpha.
         return (static_cast<unsigned int>(static_cast<int>(h * 255.0f)) << 24) |
-               (static_cast<unsigned char>(static_cast<int>(normal.x * 127.0f + 128.0f)) << 16) |
-               (static_cast<unsigned char>(static_cast<int>(normal.y * 127.0f + 128.0f)) << 8) |
-               static_cast<unsigned char>(static_cast<int>(normal.z * 127.0f + 128.0f));
+            (static_cast<unsigned char>(static_cast<int>(normal.x * 127.0f + 128.0f)) << 16) |
+            (static_cast<unsigned char>(static_cast<int>(normal.y * 127.0f + 128.0f)) << 8) |
+            static_cast<unsigned char>(static_cast<int>(normal.z * 127.0f + 128.0f));
     }
-}
+}  // namespace
 
 namespace
 {
@@ -468,8 +468,10 @@ namespace m3d
                         if (m_bDrawGraph)
                         {
                             // RVA 0x5A3AD0 (performance graphs)
-                            static unsigned const colArray[7] = {0xFFFF0000, 0xFF0000FF, 0xFF00FF00, 0xFFFF00FF, 0xFF00FFFF, 0xFFFFFF00, 0xFF888888};
-                            static rend::VbHandle m_graphsVB = g_pApp->m_renderer->AddVb(rend::VERTEX_XYZWC, 7025, CStr("GraphStats"), 512u);
+                            static unsigned const colArray[7] = {
+                                0xFFFF0000, 0xFF0000FF, 0xFF00FF00, 0xFFFF00FF, 0xFF00FFFF, 0xFFFFFF00, 0xFF888888};
+                            static rend::VbHandle m_graphsVB =
+                                g_pApp->m_renderer->AddVb(rend::VERTEX_XYZWC, 7025, CStr("GraphStats"), 512u);
                             static GraphInfo infos[7];
 
                             rend::RenderStats rs;
@@ -486,7 +488,8 @@ namespace m3d
                                 stage = 1;
                                 xx = 90.0f;
                             }
-                            auto const addGraph = [&](char const* label, float value) {
+                            auto const addGraph = [&](char const* label, float value)
+                            {
                                 DrawTextAbs(xx, 700.0f, colArray[stage], CStr(label), 0, -1);
                                 infos[stage++].AddValue(value);
                                 xx += 70.0f;
@@ -522,8 +525,10 @@ namespace m3d
                             }
 
                             int vofs = 0;
-                            auto* v = static_cast<rend::VertexXYZWC*>(g_pApp->m_renderer->LockVbStreaming(m_graphsVB, 1000 * stage + 25, vofs, nullptr));
-                            auto const set = [](rend::VertexXYZWC& vert, float x, float y, unsigned c) {
+                            auto* v = static_cast<rend::VertexXYZWC*>(
+                                g_pApp->m_renderer->LockVbStreaming(m_graphsVB, 1000 * stage + 25, vofs, nullptr));
+                            auto const set = [](rend::VertexXYZWC& vert, float x, float y, unsigned c)
+                            {
                                 vert.x = x;
                                 vert.y = y;
                                 vert.z = 0.0f;
@@ -545,7 +550,10 @@ namespace m3d
                             {
                                 for (int i = 0; i < 1000; ++i)
                                 {
-                                    set(v[22 + g * 1000 + i], static_cast<float>(i) + 12.0f, 700.0f - infos[g].GetValue(i) * 350.0f, colArray[g]);
+                                    set(v[22 + g * 1000 + i],
+                                        static_cast<float>(i) + 12.0f,
+                                        700.0f - infos[g].GetValue(i) * 350.0f,
+                                        colArray[g]);
                                 }
                             }
                             g_pApp->m_renderer->UnlockVb(m_graphsVB);
@@ -565,8 +573,15 @@ namespace m3d
                                 for (int j = 70; j < 700; j += 70)
                                 {
                                     ++n;
-                                    CStr const text(static_cast<float>(static_cast<float>(n) * infos[g].GetAverValue()) * 0.2f);
-                                    DrawTextAbs(18.0f, (700.0f - static_cast<float>(j)) + static_cast<float>(g * 10), colArray[g], text, 0, -1);
+                                    CStr const text(
+                                        static_cast<float>(static_cast<float>(n) * infos[g].GetAverValue()) * 0.2f);
+                                    DrawTextAbs(
+                                        18.0f,
+                                        (700.0f - static_cast<float>(j)) + static_cast<float>(g * 10),
+                                        colArray[g],
+                                        text,
+                                        0,
+                                        -1);
                                 }
                             }
                         }
@@ -576,7 +591,8 @@ namespace m3d
                             ui::FontParams params;
                             params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
                             params.ttfParams.style = 1;
-                            ui::Wnd::GetGfxServer()->SetFont(CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
                             CStr statStr;
                             statStr.format("mem used:          %10d", g_Kernel->debugMemUsed());
                             DrawTextAbs(0.5f, 30.0f, 0xFFFFFFFF, statStr, 0, -1);
@@ -601,12 +617,14 @@ namespace m3d
                             ui::FontParams params;
                             params.ttfParams.codePage = m_codePage.CodePage;
                             params.ttfParams.style = 1;
-                            ui::Wnd::GetGfxServer()->SetFont(CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
                             for (unsigned k = 0; k < m_profilerStack.m_numProfilers; ++k)
                             {
                                 Profiler* const profiler = m_profilerStack.m_stack[k];
                                 CStr line;
-                                double const ms = static_cast<double>(profiler->m_averageClocks) / profiler->m_performanceCounterFrequency * 1000.0;
+                                double const ms = static_cast<double>(profiler->m_averageClocks) /
+                                    profiler->m_performanceCounterFrequency * 1000.0;
                                 line.format("%s: %.04f", profiler->GetName(), ms);
                                 DrawTextAbs(0.5f, statsY, 0xFFFFFFFF, line, 0, -1);
                                 statsY += 15.0f;
@@ -618,7 +636,8 @@ namespace m3d
                             ui::FontParams params;
                             params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
                             params.ttfParams.style = 1;
-                            ui::Wnd::GetGfxServer()->SetFont(CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
                             for (unsigned m = 0; m < m_counterStack.m_numCounters; ++m)
                             {
                                 DbgCounter* const counter = m_counterStack.m_stack[m];
@@ -667,7 +686,8 @@ namespace m3d
                             ui::FontParams params;
                             params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
                             params.ttfParams.style = 1;
-                            ui::Wnd::GetGfxServer()->SetFont(CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
                             CStr statStr;
                             rend::DeviceMemStats ms;
                             g_pApp->m_renderer->GetDeviceMemStats(ms);
@@ -680,7 +700,9 @@ namespace m3d
                             DrawTextRel(774.0f, 224.0f, 0xFFFFFFFF, statStr, 0, -1);
                             statStr.format("StatTex size:%#05.3fKb", static_cast<double>(ms.StaticTexSize) * kb);
                             DrawTextRel(774.0f, 236.0f, 0xFFFFFFFF, statStr, 0, -1);
-                            statStr.format("TotalTex size:%#05.3fKb", static_cast<double>(ms.DynamicTexSize + ms.StaticTexSize) * kb);
+                            statStr.format(
+                                "TotalTex size:%#05.3fKb",
+                                static_cast<double>(ms.DynamicTexSize + ms.StaticTexSize) * kb);
                             DrawTextRel(774.0f, 248.0f, 0xFFFFFFFF, statStr, 0, -1);
                             statStr.format("DynVB count:     %7d", ms.DynamicVBCount);
                             DrawTextRel(774.0f, 268.0f, 0xFFFFFFFF, statStr, 0, -1);
@@ -692,7 +714,9 @@ namespace m3d
                             DrawTextRel(774.0f, 304.0f, 0xFFFFFFFF, statStr, 0, -1);
                             statStr.format("VBpool size:%5.3fKb", static_cast<double>(ms.VBPoolsSize) * kb);
                             DrawTextRel(774.0f, 316.0f, 0xFFFFFFFF, statStr, 0, -1);
-                            statStr.format("TotalVB size:%5.3fKb", static_cast<double>(ms.DynamicVBSize + ms.StaticVBSize + ms.VBPoolsSize) * kb);
+                            statStr.format(
+                                "TotalVB size:%5.3fKb",
+                                static_cast<double>(ms.DynamicVBSize + ms.StaticVBSize + ms.VBPoolsSize) * kb);
                             DrawTextRel(774.0f, 328.0f, 0xFFFFFFFF, statStr, 0, -1);
                             statStr.format("DynIB count:     %7d", ms.DynamicIBCount);
                             DrawTextRel(774.0f, 348.0f, 0xFFFFFFFF, statStr, 0, -1);
@@ -704,11 +728,17 @@ namespace m3d
                             DrawTextRel(774.0f, 384.0f, 0xFFFFFFFF, statStr, 0, -1);
                             statStr.format("IBpool size:%5.3fKb", static_cast<double>(ms.IBPoolsSize) * kb);
                             DrawTextRel(774.0f, 396.0f, 0xFFFFFFFF, statStr, 0, -1);
-                            statStr.format("TotalIB size:%5.3fKb", static_cast<double>(ms.DynamicIBSize + ms.StaticIBSize + ms.IBPoolsSize) * kb);
+                            statStr.format(
+                                "TotalIB size:%5.3fKb",
+                                static_cast<double>(ms.DynamicIBSize + ms.StaticIBSize + ms.IBPoolsSize) * kb);
                             DrawTextRel(774.0f, 408.0f, 0xFFFFFFFF, statStr, 0, -1);
-                            unsigned const total = ms.DynamicTexSize + ms.StaticTexSize + ms.DynamicVBSize + ms.StaticVBSize + ms.VBPoolsSize +
-                                                   ms.DynamicIBSize + ms.StaticIBSize + ms.IBPoolsSize + ms.RtTexSize;
-                            statStr.format("Total size:%5.3fKb(%5.3fMb)", static_cast<double>(total) * kb, 0.00000095367432 * static_cast<double>(total));
+                            unsigned const total = ms.DynamicTexSize + ms.StaticTexSize + ms.DynamicVBSize +
+                                ms.StaticVBSize + ms.VBPoolsSize + ms.DynamicIBSize + ms.StaticIBSize + ms.IBPoolsSize +
+                                ms.RtTexSize;
+                            statStr.format(
+                                "Total size:%5.3fKb(%5.3fMb)",
+                                static_cast<double>(total) * kb,
+                                0.00000095367432 * static_cast<double>(total));
                             DrawTextRel(724.0f, 428.0f, 0xFFFFFFFF, statStr, 0, -1);
                         }
                         if (m_bShowRenderStats)
@@ -716,14 +746,22 @@ namespace m3d
                             ui::FontParams params;
                             params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
                             params.ttfParams.style = 1;
-                            ui::Wnd::GetGfxServer()->SetFont(CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
                             CStr statStr;
                             rend::RenderStats rs;
                             g_pApp->m_renderer->GetStats(rs);
-                            DrawTextRel(1024.0f - static_cast<float>(m_frameStats.length()) * 9.0f, 0.5f, 0xFFFFFFFF, m_frameStats, 0, -1);
+                            DrawTextRel(
+                                1024.0f - static_cast<float>(m_frameStats.length()) * 9.0f,
+                                0.5f,
+                                0xFFFFFFFF,
+                                m_frameStats,
+                                0,
+                                -1);
                             statStr.format("%-12s %8d", "t/f:", rs.polyCount);
                             DrawTextRel(824.0f, 24.0f, 0xFFFFFFFF, statStr, 0, -1);
-                            int const fps = static_cast<int>(g_Kernel->GetTimer().m_timescale * g_Kernel->GetTimer().m_fps);
+                            int const fps =
+                                static_cast<int>(g_Kernel->GetTimer().m_timescale * g_Kernel->GetTimer().m_fps);
                             statStr.format("%-12s %8d", "t/sec:", rs.polyCount * fps);
                             DrawTextRel(824.0f, 36.0f, 0xFFFFFFFF, statStr, 0, -1);
                             statStr.format("%-12s %8d", "dip/f:", rs.DIPs);
@@ -1062,8 +1100,8 @@ namespace m3d
         osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
         ::GetVersionExA(&osinfo);
         M3D_LOG_INFO(
-            CStr("Windows version: ") + CStr(osinfo.dwMajorVersion) + CStr(".") + CStr(osinfo.dwMinorVersion) + CStr(".") +
-            CStr(osinfo.dwBuildNumber));
+            CStr("Windows version: ") + CStr(osinfo.dwMajorVersion) + CStr(".") + CStr(osinfo.dwMinorVersion) +
+            CStr(".") + CStr(osinfo.dwBuildNumber));
 
         char computerName[1024];
         DWORD size = 1024;
@@ -1073,7 +1111,7 @@ namespace m3d
         int cpuInfo[4] = {0};
         __cpuid(cpuInfo, 0);
         char cpuName[16];
-        memcpy(cpuName, &cpuInfo[1], 4);  // ebx
+        memcpy(cpuName, &cpuInfo[1], 4);      // ebx
         memcpy(cpuName + 4, &cpuInfo[3], 4);  // edx
         memcpy(cpuName + 8, &cpuInfo[2], 4);  // ecx
         memset(cpuName + 12, 0, 4);
@@ -1092,10 +1130,17 @@ namespace m3d
         memset(&memStatus, 0, sizeof(memStatus));
         memStatus.dwLength = sizeof(MEMORYSTATUS);
         ::GlobalMemoryStatus(&memStatus);
-        M3D_LOG_INFO(CStr("Physical memory: ") + CStr(static_cast<unsigned long>(memStatus.dwTotalPhys >> 20)) + CStr(" MB"));
-        M3D_LOG_INFO(CStr("Total memory:    ") + CStr(static_cast<unsigned long>(memStatus.dwTotalPageFile >> 20)) + CStr(" MB"));
-        M3D_LOG_INFO(CStr("Physical memory available: ") + CStr(static_cast<unsigned long>(memStatus.dwAvailPhys >> 20)) + CStr(" MB"));
-        M3D_LOG_INFO(CStr("Total memory available:    ") + CStr(static_cast<unsigned long>(memStatus.dwAvailVirtual >> 20)) + CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Physical memory: ") + CStr(static_cast<unsigned long>(memStatus.dwTotalPhys >> 20)) + CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Total memory:    ") + CStr(static_cast<unsigned long>(memStatus.dwTotalPageFile >> 20)) +
+            CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Physical memory available: ") + CStr(static_cast<unsigned long>(memStatus.dwAvailPhys >> 20)) +
+            CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Total memory available:    ") + CStr(static_cast<unsigned long>(memStatus.dwAvailVirtual >> 20)) +
+            CStr(" MB"));
         return 1;
     }
 
@@ -1386,21 +1431,20 @@ namespace m3d
 
     int Application::HandleEvent(Event const& ev)
     {
+        // RVA 0x5A85B0
         static bool bAltEnterActive = false;
         static bool bCtrlShiftActive = false;
 
         int res = 0;
-        //TODO: imlement Application::HandleEvent
         switch (ev.m_eventType)
         {
         case EV_APP_QUIT:
         {
-            ::PostMessageA(M3D_ENGINE_CFG.m_mainWnd, 0x10, 0, 0);
+            ::PostMessageA(M3D_ENGINE_CFG.m_mainWnd, WM_CLOSE, 0, 0);
             return 1;
         }
         case EV_ACTIVATE_APP:
         {
-            //TODO: check this
             m_isAppActive = ev.m_intEv[0];
             if (m_input)
             {
@@ -1410,7 +1454,6 @@ namespace m3d
             {
                 m_renderer->SetActiveState(m_isAppActive);
             }
-
             M3D_KERNEL->GetTimer().SetActiveState(m_isAppActive);
             if (m_isAppActive)
             {
@@ -1418,20 +1461,19 @@ namespace m3d
                 {
                     CaptureAndClipSystemCursor(true);
                 }
-                //TODO: check this
                 ShowSystemCursor(m_bDXCursorEnabled);
                 if (M3D_APP->m_sound)
                 {
                     M3D_APP->m_sound->PauseAllSounds(false);
-                    return 1;
                 }
             }
             else
             {
-                ReleaseCapture();
-                ClipCursor(nullptr);
-                while (ShowCursor(TRUE) < 0)
-                    ;
+                ::ReleaseCapture();
+                ::ClipCursor(nullptr);
+                while (::ShowCursor(TRUE) < 0)
+                {
+                }
                 if (M3D_APP->m_sound)
                 {
                     M3D_APP->m_sound->PauseAllSounds(true);
@@ -1441,14 +1483,14 @@ namespace m3d
         }
         case EV_CHANGE_DISPLAY_MODE:
         {
-            //TODO: check this
-            SwitchDisplayModes(M3D_ENGINE_CFG.m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
+            SwitchDisplayModes(M3D_ENGINE_CFG.m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_uintEv[2] != 0);
             return 1;
         }
         case EV_DISPLAY_CHANGED:
         {
-            auto const viewport = m_renderer->GetViewport();
-            M3D_ENGINE_CFG.m_console->CheckResize(viewport.m_width, viewport.m_height);
+            // Not consumed: still goes on to the focus handler and the windows below.
+            M3D_ENGINE_CFG.m_console->CheckResize(
+                m_renderer->GetViewport().m_width, m_renderer->GetViewport().m_height);
             m_appNeedToRedraw = 1;
             break;
         }
@@ -1456,17 +1498,15 @@ namespace m3d
         {
             if (ev.m_byteEv[0] == KBD_F11)
             {
+                // F11 toggles a screenshot every frame; switching it on needs debug mode.
                 if (m_screenShotPendingAlways)
                 {
                     m_screenShotPendingAlways = 0;
                 }
-                else
+                else if (M3D_ENGINE_CFG.m_debugMode.GetB())
                 {
-                    if (M3D_ENGINE_CFG.m_debugMode.GetB())
-                    {
-                        m_screenShotPendingAlways = 1;
-                        m_screenShotPending = 1;
-                    }
+                    m_screenShotPendingAlways = 1;
+                    m_screenShotPending = 1;
                 }
                 res = 1;
             }
@@ -1475,30 +1515,28 @@ namespace m3d
                 m_screenShotPending = 1;
                 res = 1;
             }
-            else
+            else if (m_waitForAnykey)
             {
-                if (m_waitForAnykey)
-                {
-                    m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
-                    res = 1;
-                }
+                // NOTE: unlike key up and the mouse buttons, key down only restamps the time and
+                // leaves m_waitForAnykey set and the timer paused.
+                m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+                res = 1;
             }
 
-            if ((ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER)))
+            if (ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER))
             {
                 if (M3D_ENGINE_CFG.m_g_altEnterAllow.GetB() && !bAltEnterActive)
                 {
-                    // RVA 0x5A85B0 (Alt+Enter toggles full screen through the console)
                     bAltEnterActive = true;
-                    bool const newFullScreen = !M3D_ENGINE_CFG.m_r_fullScreen.GetB();
+                    bool const fullScreen = !M3D_ENGINE_CFG.m_r_fullScreen.GetB();
                     M3D_ENGINE_CFG.m_console->executeCommand(
                         CStr("/r_videomode ") + CStr(M3D_ENGINE_CFG.m_r_width.GetI()) + CStr(" ") +
-                        CStr(M3D_ENGINE_CFG.m_r_height.GetI()) + CStr(" ") + CStr(static_cast<int>(newFullScreen)));
+                        CStr(M3D_ENGINE_CFG.m_r_height.GetI()) + CStr(" ") + CStr(static_cast<int>(fullScreen)));
                 }
                 res = 1;
             }
 
-            if ((ev.m_ushortEv[0] & KBD_LCTRL) != 0 && (ev.m_ushortEv[0] & KBD_LSHIFT) != 0)
+            if ((ev.m_ushortEv[0] & 0x8000) && (ev.m_ushortEv[0] & KBD_LSHIFT))
             {
                 if (!bCtrlShiftActive)
                 {
@@ -1513,33 +1551,24 @@ namespace m3d
                 return res;
             }
 
-            if (ev.m_byteEv[3] == KEY_GRAVE)
+            if (ev.m_byteEv[3] != KEY_GRAVE)
             {
-                if (M3D_ENGINE_CFG.m_console->isActive())
-                {
-                    if (M3D_APP)
-                    {
-                        SetKeyboardFocus(M3D_APP);
-                        return 1;
-                    }
-                }
-                else
-                {
-                    if (!m_isConsoleAllowed)
-                    {
-                        return 1;
-                    }
-                    if (M3D_ENGINE_CFG.m_console)
-                    {
-                        SetKeyboardFocus(M3D_ENGINE_CFG.m_console);
-                        return 1;
-                    }
-                }
-                SetKeyboardFocus(nullptr);
-                return 1;
+                break;
             }
 
-            break;
+            // The console key.
+            if (M3D_ENGINE_CFG.m_console->isActive())
+            {
+                SetKeyboardFocus(M3D_APP ? static_cast<IEventHandler*>(M3D_APP) : nullptr);
+                return 1;
+            }
+            if (!m_isConsoleAllowed)
+            {
+                return 1;
+            }
+            SetKeyboardFocus(
+                M3D_ENGINE_CFG.m_console ? static_cast<IEventHandler*>(M3D_ENGINE_CFG.m_console) : nullptr);
+            return 1;
         }
         case EV_KEY_UP:
         {
@@ -1555,26 +1584,25 @@ namespace m3d
                 m_waitForAnykey = false;
                 res = 1;
             }
-
-            if (bAltEnterActive &&
-                (ev.m_ushortEv[0] == KBD_ENTER || ev.m_ushortEv[0] == KBD_LALT ||
-                 ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER)))
+            if (bAltEnterActive)
             {
-                bAltEnterActive = 0;
-                res = 1;
+                auto const key = static_cast<short>(ev.m_ushortEv[0]);
+                if (key == KBD_ENTER || key == KBD_LALT || key == (KBD_LALT | KBD_ENTER))
+                {
+                    bAltEnterActive = false;
+                    res = 1;
+                }
             }
-            // TODO: check this
-            if (bCtrlShiftActive && (ev.m_ushortEv[0] & 0xA000u) != 0)
+            if (bCtrlShiftActive && (ev.m_ushortEv[0] & 0xA000) != 0)
             {
-                bCtrlShiftActive = 0;
+                bCtrlShiftActive = false;
                 return 1;
             }
-
-            if (!res)
+            if (res)
             {
-                break;
+                return res;
             }
-            return res;
+            break;
         }
         case EV_MOUSE_LBTN:
         case EV_MOUSE_RBTN:
@@ -1590,77 +1618,36 @@ namespace m3d
             return 1;
         }
         default:
-        {
             break;
         }
+
+        // Keys go to the keyboard focus first, unless the application itself holds it.
+        if ((ev.m_eventType == EV_KEY_DOWN || ev.m_eventType == EV_KEY_UP) && m_focusKbdEntity &&
+            m_focusKbdEntity != static_cast<IEventHandler*>(this))
+        {
+            res = m_focusKbdEntity->HandleEvent(ev);
+            if (res)
+            {
+                return res;
+            }
         }
 
-        if (ev.m_eventType != EV_KEY_DOWN && ev.m_eventType != EV_KEY_UP || m_focusKbdEntity == nullptr ||
-            m_focusKbdEntity == this)
+        // The wheel scrolls the console while it has the focus.
+        if (ev.m_eventType == EV_MOUSE_WHEEL)
         {
-            if (m_focusKbdEntity && m_focusKbdEntity != this && m_focusKbdEntity->HandleEvent(ev) != 0)
+            IConsole* const console = M3D_ENGINE_CFG.m_console;
+            if (m_focusKbdEntity == (console ? static_cast<IEventHandler*>(console) : nullptr))
             {
-                return 1;
+                // NOTE: no null check here; with no console and no focus this calls through null.
+                res = static_cast<IEventHandler*>(M3D_ENGINE_CFG.m_console)->HandleEvent(ev);
+                if (res)
+                {
+                    return res;
+                }
             }
+        }
 
-            if (ev.m_eventType != EV_MOUSE_WHEEL)
-            {
-                return WndStation::ProcessEvent(ev);
-            }
-
-            if (m_focusKbdEntity != M3D_ENGINE_CFG.m_console)
-            {
-                return WndStation::ProcessEvent(ev);
-            }
-
-            res = M3D_ENGINE_CFG.m_console->HandleEvent(ev);
-            if (!res)
-                return WndStation::ProcessEvent(ev);
-        }
-        return res;
-
-        /*
-        if ((ev.m_eventType == EV_KEY_DOWN || ev.m_eventType == EV_KEY_UP) && m_focusKbdEntity != nullptr)
-        {
-            return ProcessEvent(ev);
-        }
-        //TODO: check this
-        if (ev.m_eventType != 15)
-        {
-            if (M3D_KERNEL->GetEngineCfg().m_console == m_focusKbdEntity)
-            {
-                return M3D_KERNEL->GetEngineCfg().m_console->HandleEvent(ev) != 0;
-            }
-            return ProcessEvent(ev);
-        }
-        if (M3D_KERNEL->GetEngineCfg().m_console->isActive())
-        {
-            if (M3D_APP)
-            {
-                SetKeyboardFocus(M3D_APP);
-                return 1;
-            }
-        }
-        else
-        {
-            if (!m_isConsoleAllowed)
-            {
-                return 1;
-            }
-            if (M3D_KERNEL->GetEngineCfg().m_console)
-            {
-                SetKeyboardFocus(M3D_KERNEL->GetEngineCfg().m_console);
-                return 1;
-            }
-        }
-        if (bCtrlShiftActive)
-        {
-            return 1;
-        }
-        bCtrlShiftActive = true;
-        ChangeLanguage();
-        return 1;
-        */
+        return WndStation::ProcessEvent(ev);
     }
 
     void Application::doneProcTexThread()
@@ -2014,12 +2001,42 @@ namespace m3d
         auto* v = static_cast<rend::VertexXYZCT1*>(g_pApp->m_renderer->LockVbStreaming(vb, 6, vofs, 0));
         // NOTE: the texture coordinates of the second triangle do not match the first one's
         // (tri[2] gets (1, 0) and tri[3] gets (1, 1)); kept as shipped.
-        v[0].x = tri[0].x; v[0].y = tri[0].y; v[0].z = tri[0].z; v[0].c = clr; v[0].tu = 0.0f; v[0].tv = 0.0f;
-        v[1].x = tri[1].x; v[1].y = tri[1].y; v[1].z = tri[1].z; v[1].c = clr; v[1].tu = 1.0f; v[1].tv = 0.0f;
-        v[2].x = tri[2].x; v[2].y = tri[2].y; v[2].z = tri[2].z; v[2].c = clr; v[2].tu = 1.0f; v[2].tv = 1.0f;
-        v[3].x = tri[0].x; v[3].y = tri[0].y; v[3].z = tri[0].z; v[3].c = clr; v[3].tu = 0.0f; v[3].tv = 0.0f;
-        v[4].x = tri[2].x; v[4].y = tri[2].y; v[4].z = tri[2].z; v[4].c = clr; v[4].tu = 1.0f; v[4].tv = 0.0f;
-        v[5].x = tri[3].x; v[5].y = tri[3].y; v[5].z = tri[3].z; v[5].c = clr; v[5].tu = 1.0f; v[5].tv = 1.0f;
+        v[0].x = tri[0].x;
+        v[0].y = tri[0].y;
+        v[0].z = tri[0].z;
+        v[0].c = clr;
+        v[0].tu = 0.0f;
+        v[0].tv = 0.0f;
+        v[1].x = tri[1].x;
+        v[1].y = tri[1].y;
+        v[1].z = tri[1].z;
+        v[1].c = clr;
+        v[1].tu = 1.0f;
+        v[1].tv = 0.0f;
+        v[2].x = tri[2].x;
+        v[2].y = tri[2].y;
+        v[2].z = tri[2].z;
+        v[2].c = clr;
+        v[2].tu = 1.0f;
+        v[2].tv = 1.0f;
+        v[3].x = tri[0].x;
+        v[3].y = tri[0].y;
+        v[3].z = tri[0].z;
+        v[3].c = clr;
+        v[3].tu = 0.0f;
+        v[3].tv = 0.0f;
+        v[4].x = tri[2].x;
+        v[4].y = tri[2].y;
+        v[4].z = tri[2].z;
+        v[4].c = clr;
+        v[4].tu = 1.0f;
+        v[4].tv = 0.0f;
+        v[5].x = tri[3].x;
+        v[5].y = tri[3].y;
+        v[5].z = tri[3].z;
+        v[5].c = clr;
+        v[5].tu = 1.0f;
+        v[5].tv = 1.0f;
         g_pApp->m_renderer->UnlockVb(vb);
         g_pApp->m_renderer->SetToStream0(vb);
         g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 2u);
@@ -2043,7 +2060,12 @@ namespace m3d
         // Only the members' destructors run.
     }
 
-    void Application::TexSoften(rend::TexHandle dstTex, rend::TexHandle srcTex, int numJitters, float jitterDist, unsigned clr)
+    void Application::TexSoften(
+        rend::TexHandle dstTex,
+        rend::TexHandle srcTex,
+        int numJitters,
+        float jitterDist,
+        unsigned clr)
     {
         // RVA 0x7AFB10
         int sx = 0;
@@ -2264,7 +2286,8 @@ namespace m3d
         auto vb = g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
         int vofs = 0;
         auto* v = static_cast<rend::VertexXYZWCT1*>(g_pApp->m_renderer->LockVbStreaming(vb, 8, vofs, 0));
-        auto const set = [color](rend::VertexXYZWCT1& vert, float x, float y, float t) {
+        auto const set = [color](rend::VertexXYZWCT1& vert, float x, float y, float t)
+        {
             vert.x = x;
             vert.y = y;
             vert.z = 0.5f;
@@ -2504,7 +2527,8 @@ namespace m3d
         }
 
         auto& cfg = g_Kernel->GetEngineCfg();
-        if (cfg.m_r_width.GetI() == dwWidth && cfg.m_r_height.GetI() == dwHeight && cfg.m_r_fullScreen.GetB() == bFullScreen)
+        if (cfg.m_r_width.GetI() == dwWidth && cfg.m_r_height.GetI() == dwHeight &&
+            cfg.m_r_fullScreen.GetB() == bFullScreen)
         {
             return ret;
         }
@@ -3335,8 +3359,7 @@ namespace m3d
                 else
                 {
                     int const next = pos + i;
-                    if (next < 0 || next >= len || src.c_str()[next] != '|' ||
-                        IsEscSymbolBeforeSymbol(src, next))
+                    if (next < 0 || next >= len || src.c_str()[next] != '|' || IsEscSymbolBeforeSymbol(src, next))
                     {
                         // A zero-length word would leave the position where it was, so it is
                         // stepped over by hand to keep the loop moving.
@@ -3427,8 +3450,7 @@ namespace m3d
                 }
 
                 prevWord = word;
-            }
-            while (i < len);
+            } while (i < len);
         }
 
         // Whatever is still in hand becomes the last line.
@@ -3602,7 +3624,8 @@ namespace m3d
         {
             float const s = sin(angleVerts);
             float const co = cos(angleVerts);
-            auto const rotate = [&](float& x, float& y) {
+            auto const rotate = [&](float& x, float& y)
+            {
                 float const dx = x - avx;
                 float const dy = y - avy;
                 x = dx * co - dy * s + avx;
@@ -3626,7 +3649,8 @@ namespace m3d
         {
             float const s = sin(angleImage);
             float const co = cos(angleImage);
-            auto const rotate = [&](float& u, float& v) {
+            auto const rotate = [&](float& u, float& v)
+            {
                 float const du = u - aix;
                 float const dv = v - aiy;
                 u = du * co - dv * s + aix;
@@ -3639,7 +3663,25 @@ namespace m3d
         }
 
         // The quad is emitted as a strip: corner 0, 1, 3, 2.
-        PutSprite2Abs(x0 + cx, y0 + cy, x1 + cx, y1 + cy, x3 + cx, y3 + cy, x2 + cx, y2 + cy, u0, v0, u1, v1, u3, v3, u2, v2, 0.0f, c);
+        PutSprite2Abs(
+            x0 + cx,
+            y0 + cy,
+            x1 + cx,
+            y1 + cy,
+            x3 + cx,
+            y3 + cy,
+            x2 + cx,
+            y2 + cy,
+            u0,
+            v0,
+            u1,
+            v1,
+            u3,
+            v3,
+            u2,
+            v2,
+            0.0f,
+            c);
     }
 
     Profiler* Application::CreateProfiler(char const* name)
@@ -3721,7 +3763,9 @@ namespace m3d
         return ui::Wnd::GetGfxServer()->SetFont(fontName, height, ui::FONT_TYPE_WINDOWS, params);
     }
 
-    bool Application::SaveUsedOnlyServers(CStr const& filename, retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& usedAnimatedHandles)
+    bool Application::SaveUsedOnlyServers(
+        CStr const& filename,
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& usedAnimatedHandles)
     {
         // RVA 0x6A8DC0
         struct
@@ -3844,7 +3888,8 @@ namespace m3d
     {
         // RVA 0x670490
         // "^0".."^7" select one of these colours for the rest of the text.
-        static unsigned const colors[8] = {0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF, 0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
+        static unsigned const colors[8] = {
+            0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF, 0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
 
         ui::Font* const fnt = ui::Wnd::GetGfxServer()->GetCurFont();
         if (!fnt)
@@ -3948,10 +3993,12 @@ namespace m3d
             float const ofsY = h * -0.1f;
 
             int vofs = 0;
-            auto* v = static_cast<rend::VertexXYZCT1*>(
-                g_pApp->m_renderer->LockVbStreaming(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1), 12, vofs, nullptr));
+            auto* v = static_cast<rend::VertexXYZCT1*>(g_pApp->m_renderer->LockVbStreaming(
+                g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1), 12, vofs, nullptr));
 
-            auto const set = [&](rend::VertexXYZCT1& vert, float px, float py, bool shadow, unsigned vcolor, float tu, float tv) {
+            auto const set =
+                [&](rend::VertexXYZCT1& vert, float px, float py, bool shadow, unsigned vcolor, float tu, float tv)
+            {
                 float vx = at.x + right.x * px + up.x * py;
                 float vy = at.y + right.y * px + up.y * py;
                 float vz = at.z + right.z * px + up.z * py;
@@ -4151,7 +4198,8 @@ namespace m3d
 
         auto* v = &m_pointsVertsWct1[m_numPointsVerts];
         m_numPointsVerts += 4;
-        auto const set = [clr](rend::VertexXYZWCT1& vert, float vx, float vy, float tu, float tv) {
+        auto const set = [clr](rend::VertexXYZWCT1& vert, float vx, float vy, float tu, float tv)
+        {
             vert.x = vx;
             vert.y = vy;
             vert.z = 0.0f;
@@ -4203,7 +4251,8 @@ namespace m3d
                 int const h = src[0];
                 float const dx = static_cast<float>(src[1] - h);
                 float const dy = static_cast<float>(src[sx] - h);
-                float const len = static_cast<float>(1.0 / sqrt(static_cast<double>(dy) * dy + static_cast<double>(dx) * dx + 1.0000001f));
+                float const len = static_cast<float>(
+                    1.0 / sqrt(static_cast<double>(dy) * dy + static_cast<double>(dx) * dx + 1.0000001f));
                 CVector normal;
                 normal.x = len * dx;
                 normal.y = len * dy;
@@ -4247,7 +4296,8 @@ namespace m3d
             g_pApp->PutSpriteRel(0.0f, 0.0f, 1024.0f, 768.0f, 0xFFFFFFFF);
         }
 
-        g_pApp->m_renderer->SetTexture(0, m_loadScreenInfo.m_picture.IsValid() ? m_loadScreenInfo.m_picture : m_defLoadPicture, -1.0);
+        g_pApp->m_renderer->SetTexture(
+            0, m_loadScreenInfo.m_picture.IsValid() ? m_loadScreenInfo.m_picture : m_defLoadPicture, -1.0);
         float x1 = 110.0f;
         float y1 = 87.0f;
         float x2 = 909.0f;
@@ -4262,8 +4312,14 @@ namespace m3d
         g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
         g_pApp->m_renderer->SetTexture(0, m_texProgr, -1.0);
         g_pApp->PutSprite2Rel(
-            292.0f, 686.0f, 0.0f, 0.0f,
-            static_cast<float>(proc) * 4.68f + 292.0f, 717.0f, static_cast<float>(proc) * 0.01f, 1.0f,
+            292.0f,
+            686.0f,
+            0.0f,
+            0.0f,
+            static_cast<float>(proc) * 4.68f + 292.0f,
+            717.0f,
+            static_cast<float>(proc) * 0.01f,
+            1.0f,
             0xFFFFFFFF);
         g_pApp->m_renderer->SetAlphaTest(0);
 
@@ -4377,9 +4433,10 @@ namespace m3d
         float zval,
         unsigned c)
     {
-        auto const handle = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZWCT1);  
+        auto const handle = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZWCT1);
         int vofs = 0;
-        auto* vertex = static_cast<m3d::rend::VertexXYZWCT1*>(M3D_RENDERER->LockVbStreaming(handle, rend::VERTEX_XYZWCT1, vofs, nullptr));
+        auto* vertex = static_cast<m3d::rend::VertexXYZWCT1*>(
+            M3D_RENDERER->LockVbStreaming(handle, rend::VERTEX_XYZWCT1, vofs, nullptr));
 
         vertex[0].x = x1;
         vertex[0].y = y1;
@@ -4531,8 +4588,8 @@ namespace m3d
             sy = static_cast<float>(lrintf(sy));
 
             int vofs = 0;
-            auto* v = static_cast<rend::VertexXYZWCT1*>(
-                g_pApp->m_renderer->LockVbStreaming(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1), 12, vofs, nullptr));
+            auto* v = static_cast<rend::VertexXYZWCT1*>(g_pApp->m_renderer->LockVbStreaming(
+                g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1), 12, vofs, nullptr));
 
             float const left = sx - 0.5f;
             float const right = sx + glyphSz.x - 0.5f;
@@ -4543,7 +4600,9 @@ namespace m3d
             float const u1 = tcs.m_coordinates[2];
             float const v1 = tcs.m_coordinates[3];
 
-            auto const set = [](rend::VertexXYZWCT1& vert, float x, float y, float z, float w, unsigned color, float tu, float tv) {
+            auto const set =
+                [](rend::VertexXYZWCT1& vert, float x, float y, float z, float w, unsigned color, float tu, float tv)
+            {
                 vert.x = x;
                 vert.y = y;
                 vert.z = z;
@@ -4789,8 +4848,24 @@ namespace m3d
     {
         // RVA 0x673950
         PutSprite2Abs(
-            x - size2, y + size2, x - size2, y - size2, x + size2, y + size2, x + size2, y - size2,
-            0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, c);
+            x - size2,
+            y + size2,
+            x - size2,
+            y - size2,
+            x + size2,
+            y + size2,
+            x + size2,
+            y - size2,
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            1.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            c);
     }
 
     void Application::PutSpriteAbs(float x1, float y1, float x2, float y2, unsigned c)
@@ -4798,7 +4873,16 @@ namespace m3d
         PutSprite2Abs(x1, y2, x1, y1, x2, y2, x2, y1, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, c);
     }
 
-    void Application::PutSpriteAbs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, unsigned c)
+    void Application::PutSpriteAbs(
+        float x1,
+        float y1,
+        float x2,
+        float y2,
+        float x3,
+        float y3,
+        float x4,
+        float y4,
+        unsigned c)
     {
         // RVA 0x673A30
         PutSprite2Abs(x1, y1, x2, y2, x3, y3, x4, y4, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, c);
@@ -4931,7 +5015,8 @@ namespace m3d
         {
             if (params.NumOfTokens(' ') < 2)
             {
-                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Usage: /descExport <file name> [skip empty? (yes by default)]\n"));
+                g_Kernel->GetEngineCfg().m_console->PrintF(
+                    CStr("Usage: /descExport <file name> [skip empty? (yes by default)]\n"));
                 return;
             }
             CStr const fileName(params.UnsafeStringToken(1, ' '));
@@ -5010,7 +5095,8 @@ namespace m3d
             }
             else
             {
-                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Some errors occured while reloading shaders. See log...\n"));
+                g_Kernel->GetEngineCfg().m_console->PrintF(
+                    CStr("Some errors occured while reloading shaders. See log...\n"));
             }
             return;
         case 13:
@@ -5027,7 +5113,8 @@ namespace m3d
             int const numReloaded = g_pApp->m_renderer->ReloadTextures();
             if (numReloaded)
             {
-                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Reloaded ") + CStr(numReloaded) + CStr(" textures OK\n"));
+                g_Kernel->GetEngineCfg().m_console->PrintF(
+                    CStr("Reloaded ") + CStr(numReloaded) + CStr(" textures OK\n"));
             }
             else
             {
@@ -5040,8 +5127,9 @@ namespace m3d
             return;
         case 18:
         {
-            bool const ok = params.NumOfTokens(' ') >= 2 ? g_pApp->m_renderer->ReportTexturesInfo(params.UnsafeStringToken(1, ' '))
-                                                         : g_pApp->m_renderer->ReportTexturesInfo("UsedTextures.txt");
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_renderer->ReportTexturesInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_renderer->ReportTexturesInfo("UsedTextures.txt");
             if (ok)
             {
                 g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Textures info saved ok...\n"));
@@ -5055,8 +5143,9 @@ namespace m3d
         case 19:
         {
             char const defaultName[] = "vb_info.txt";
-            bool const ok = params.NumOfTokens(' ') >= 2 ? g_pApp->m_renderer->ReportVbsInfo(params.UnsafeStringToken(1, ' '))
-                                                         : g_pApp->m_renderer->ReportVbsInfo(defaultName);
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_renderer->ReportVbsInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_renderer->ReportVbsInfo(defaultName);
             if (ok)
             {
                 g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Vertex buffers info saved ok...\n"));
@@ -5070,8 +5159,9 @@ namespace m3d
         case 20:
         {
             char const defaultName[] = "ib_info.txt";
-            bool const ok = params.NumOfTokens(' ') >= 2 ? g_pApp->m_renderer->ReportIbsInfo(params.UnsafeStringToken(1, ' '))
-                                                         : g_pApp->m_renderer->ReportIbsInfo(defaultName);
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_renderer->ReportIbsInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_renderer->ReportIbsInfo(defaultName);
             if (ok)
             {
                 g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Index buffers info saved ok...\n"));
@@ -5085,10 +5175,11 @@ namespace m3d
         case 21:
         {
             CStr const levelName = NameFromFileName(CStr(g_Kernel->GetEngineCfg().m_levFileName.GetS()));
-            CStr const defaultLogFile = CStr("models_") + CStr(levelName.substr(0, levelName.rfind('.')).c_str()) + CStr(".txt");
-            bool const ok = params.NumOfTokens(' ') >= 2
-                                ? g_pApp->m_serverAnimatedModels->ReportServerInfo(params.UnsafeStringToken(1, ' '))
-                                : g_pApp->m_serverAnimatedModels->ReportServerInfo(defaultLogFile.c_str());
+            CStr const defaultLogFile =
+                CStr("models_") + CStr(levelName.substr(0, levelName.rfind('.')).c_str()) + CStr(".txt");
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_serverAnimatedModels->ReportServerInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_serverAnimatedModels->ReportServerInfo(defaultLogFile.c_str());
             if (ok)
             {
                 g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Models info saved ok...\n"));
@@ -5139,13 +5230,14 @@ namespace m3d
         r->GetCurBppStr(&bpp);
         float const mbPerFrame = static_cast<float>((bpp == 32 ? 4 : 2) * height * width) * 9.5367432e-7f;
         M3D_LOG_INFO(
-            CStr("\n---------------------------------------------------------\nFillrate (") + CStr(width) + CStr("x") + CStr(height) +
-            CStr(")\n---------------------------------------------------------"));
+            CStr("\n---------------------------------------------------------\nFillrate (") + CStr(width) + CStr("x") +
+            CStr(height) + CStr(")\n---------------------------------------------------------"));
 
         auto quadVb = r->GetVbStreaming(rend::VERTEX_XYZCT1);
         int vOfs = 0;
         auto* q = static_cast<rend::VertexXYZCT1*>(r->LockVbStreaming(quadVb, 4, vOfs, nullptr));
-        auto const setQ = [](rend::VertexXYZCT1& v, float x, float y, unsigned c, float tu, float tv) {
+        auto const setQ = [](rend::VertexXYZCT1& v, float x, float y, unsigned c, float tu, float tv)
+        {
             v.x = x;
             v.y = y;
             v.z = 0.0f;
@@ -5170,7 +5262,8 @@ namespace m3d
         r->SetZbState(rend::ZB_DISABLE, false);
         r->SetToStream0(quadVb);
 
-        auto const logFill = [&](char const* what) {
+        auto const logFill = [&](char const* what)
+        {
             float const mbPerSec = static_cast<float>(TestQuadFps(vOfs, &g_Kernel->GetTimer()) * mbPerFrame);
             M3D_LOG_INFO(CStr(what) + CStr(mbPerSec) + CStr(" MB/sec"));
         };
@@ -5300,23 +5393,27 @@ namespace m3d
         delete[] strip;
 
         M3D_LOG_INFO(
-            CStr("\n---------------------------------------------------------\nTnL (scene has ") + CStr(7206) + CStr(" vertices and ") +
-            CStr(13199) + CStr(" triangles), vertex size ") + CStr(32u) + CStr("\n---------------------------------------------------------"));
+            CStr("\n---------------------------------------------------------\nTnL (scene has ") + CStr(7206) +
+            CStr(" vertices and ") + CStr(13199) + CStr(" triangles), vertex size ") + CStr(32u) +
+            CStr("\n---------------------------------------------------------"));
 
         rend::Material mtrl;
-        auto const setMaterial = [&]() {
+        auto const setMaterial = [&]()
+        {
             memset(&mtrl, 0, sizeof(mtrl));
             mtrl.m_diffuse.r = mtrl.m_diffuse.g = mtrl.m_diffuse.b = mtrl.m_diffuse.a = 1.0f;
             mtrl.m_ambient.r = mtrl.m_ambient.g = mtrl.m_ambient.b = mtrl.m_ambient.a = 1.0f;
             r->MaterialSet(mtrl);
         };
-        auto const fill = [&](rend::VbHandle const& vb, rend::IbHandle const& ib) {
+        auto const fill = [&](rend::VbHandle const& vb, rend::IbHandle const& ib)
+        {
             memcpy(r->LockVb(vb, 0, 0, 0), verts, sizeof(rend::VertexXYZNT1) * 7206);
             r->UnlockVb(vb);
             memcpy(r->LockIb(ib, 0, 0, 0), indices, sizeof(unsigned short) * 39597);
             r->UnlockIb(ib);
         };
-        auto const logGeom = [&](char const* what) {
+        auto const logGeom = [&](char const* what)
+        {
             float const mtris = static_cast<float>(TestGeom(13199, &g_Kernel->GetTimer()) * 0.013199f);
             M3D_LOG_INFO(CStr(what) + CStr(mtris) + CStr(" MTris/sec"));
         };
@@ -5585,8 +5682,9 @@ namespace m3d
             return 0;
         }
 
-        bool const doClip = !(textBounds.x0 == visible.x0 && textBounds.y0 == visible.y0 && textBounds.width == visible.width &&
-                              textBounds.height == visible.height);
+        bool const doClip =
+            !(textBounds.x0 == visible.x0 && textBounds.y0 == visible.y0 && textBounds.width == visible.width &&
+              textBounds.height == visible.height);
 
         int firstVisibleChar = -1;
         int firstInvisibleChar = textLen;
@@ -5615,7 +5713,15 @@ namespace m3d
                 break;
             }
             PointBase<float> clippedSz;
-            GetTextExtent(text, clippedSz, -1, &localClip, &firstVisibleChar, &firstInvisibleChar, &leftInvisibleSubstr, &rightInvisibleSubstr);
+            GetTextExtent(
+                text,
+                clippedSz,
+                -1,
+                &localClip,
+                &firstVisibleChar,
+                &firstInvisibleChar,
+                &leftInvisibleSubstr,
+                &rightInvisibleSubstr);
         }
 
         float curX = 0.0f;
@@ -5674,7 +5780,8 @@ namespace m3d
             g_pApp->m_renderer->RelToAbs(absClient.x0, absClient.y0);
             g_pApp->m_renderer->RelToAbs(absClient.width, absClient.height);
             // NOTE: a justified line without inner spaces divides by zero here.
-            spaceW = (static_cast<float>(numSpaces) * spaceW + (absClient.width - absSz.x)) / static_cast<float>(numSpaces);
+            spaceW =
+                (static_cast<float>(numSpaces) * spaceW + (absClient.width - absSz.x)) / static_cast<float>(numSpaces);
         }
 
         // '@' + 8 hex digits sets the colour; '#' escapes the next '@', '#', '$' or '&'; '$' and '&' are dropped.
@@ -5755,18 +5862,21 @@ namespace m3d
                 }
                 if (idx == firstInvisibleChar - 1 && origX1 > clipRight)
                 {
-                    tx1 = (origX1 - clipRight) / w * (tcs.m_coordinates[0] - tcs.m_coordinates[2]) + tcs.m_coordinates[2];
+                    tx1 =
+                        (origX1 - clipRight) / w * (tcs.m_coordinates[0] - tcs.m_coordinates[2]) + tcs.m_coordinates[2];
                     x1 = clipRight;
                 }
                 float const origY0 = y0;
                 if (lclip.y0 > origY0)
                 {
-                    ty0 = (lclip.y0 - origY0) / glyphH * (tcs.m_coordinates[3] - tcs.m_coordinates[1]) + tcs.m_coordinates[1];
+                    ty0 = (lclip.y0 - origY0) / glyphH * (tcs.m_coordinates[3] - tcs.m_coordinates[1]) +
+                        tcs.m_coordinates[1];
                     y0 = lclip.y0;
                 }
                 if (origY1 > clipBottom)
                 {
-                    ty1 = (origY1 - clipBottom) / glyphH * (tcs.m_coordinates[1] - tcs.m_coordinates[3]) + tcs.m_coordinates[3];
+                    ty1 = (origY1 - clipBottom) / glyphH * (tcs.m_coordinates[1] - tcs.m_coordinates[3]) +
+                        tcs.m_coordinates[3];
                     y1 = clipBottom;
                 }
             }

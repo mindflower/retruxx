@@ -34,7 +34,7 @@ namespace
     lua_CFunction oldToString = nullptr;
     m3d::ScriptServer* g_scriptServer = nullptr;
 
-    int _getGlobalObject(lua_State * L)
+    int _getGlobalObject(lua_State* L)
     {
         auto glob = lua_tostring(L, 1);
         auto obj = m3d::g_Kernel->FindGlobal(glob);
@@ -73,7 +73,7 @@ namespace
         return 1;
     }
 
-    int _logMethod(lua_State * L)
+    int _logMethod(lua_State* L)
     {
         auto v2 = lua_gettop(L);
         lua_pushstring(L, "tostring");
@@ -100,7 +100,7 @@ namespace
         }
 
         lua_Debug ar;
-        if (_getLastErrorInfo(L, &ar) )
+        if (_getLastErrorInfo(L, &ar))
         {
             auto v6 = NameFromFileName(g_scriptServer->getNameOfLastScript());
             m3d::g_Kernel->m_Log->sourceLine() = ar.currentline;
@@ -110,14 +110,14 @@ namespace
         return 0;
     }
 
-    int _execLuaScript(lua_State * L)
+    int _execLuaScript(lua_State* L)
     {
         luaL_checktype(L, 1, 4);
         auto file = lua_tostring(L, 1);
         return m3d::Scriptlet::g_scriptServer->executeScriptFile(file);
     }
 
-    int _errorMethod(lua_State * L)
+    int _errorMethod(lua_State* L)
     {
         luaL_checktype(L, 1, 4);
         errDesc.descriptionString = lua_tostring(L, 1);
@@ -142,27 +142,124 @@ namespace
         return 1;
     }
 
-    int _callClassMethod(lua_State *L)
+    int _callClassMethod(lua_State* L)
     {
         m3d::LuaContext ctx;
         ctx.L = L;
         ctx.m_stackStart = 2;
         ctx.m_numInputs = lua_gettop(L) - 1;
         ctx.m_numOutputs = 0;
-        auto func = reinterpret_cast<int(**)(m3d::Context*)>(lua_touserdata(L, 1));
+        auto func = reinterpret_cast<int (**)(m3d::Context*)>(lua_touserdata(L, 1));
         (*func)(&ctx);
         return ctx.m_numOutputs;
     }
 
-    int _callClassNativeMethod(lua_State *)
+    int _callClassNativeMethod(lua_State* L)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x620A80 - __call of a NATIVE_METHOD export: (func userdata, self, args...)
+        m3d::LuaContext ctx;
+        ctx.L = L;
+        ctx.m_stackStart = 2;
+        ctx.m_numInputs = lua_gettop(L) - 1;
+        ctx.m_numOutputs = 0;
+        // NOTE: the userdata block itself is called, while _addExports stores the function
+        // address *inside* it, so invoking any native method jumps into data. No shipped class
+        // seems to export one.
+        auto const func = reinterpret_cast<int(__fastcall*)(m3d::Object*, m3d::sArgStack*)>(lua_touserdata(L, 1));
+        m3d::Object* const self = ctx.asObject(0, "Object");
+
+        // NOTE: the arguments are popped from the top, so they reach the function in reverse
+        // order. Booleans and full userdata (script vectors and quaternions) are dropped, and a
+        // tagged instance table yields a null object since lua_touserdata is used on a table.
+        m3d::sArgStack stack;
+        while (lua_gettop(L) != 2)
+        {
+            switch (lua_type(L, -1))
+            {
+            case LUA_TNIL:
+                stack.newIn()->SetB(false);
+                break;
+            case LUA_TNUMBER:
+                stack.newIn()->SetF(static_cast<float>(lua_tonumber(L, -1)));
+                break;
+            case LUA_TSTRING:
+                stack.newIn()->SetS(lua_tostring(L, -1));
+                break;
+            case LUA_TTABLE:
+                switch (ext_getTag(L, -1))
+                {
+                case tag_luaVector:
+                    stack.newIn()->SetV(*static_cast<CVector*>(lua_touserdata(L, -1)));
+                    break;
+                case tag_instance:
+                    stack.newIn()->SetO(static_cast<m3d::Object*>(lua_touserdata(L, -1)));
+                    break;
+                case tag_luaQuaternion:
+                    stack.newIn()->SetQ(*static_cast<Quaternion*>(lua_touserdata(L, -1)));
+                    break;
+                default:
+                    break;
+                }
+                break;
+            default:
+                break;
+            }
+            lua_settop(L, -2);
+        }
+
+        if (!func(self, &stack))
+        {
+            // NOTE: -1 is handed back to Lua as the number of results.
+            return -1;
+        }
+
+        for (unsigned i = 0; i < stack.getNumOutArgs(); ++i)
+        {
+            m3d::sArg* const out = stack.popOut();
+            switch (out->GetType())
+            {
+            case m3d::sArg::ARGTYPE_INT:
+                lua_pushnumber(L, out->GetI());
+                break;
+            case m3d::sArg::ARGTYPE_FLOAT:
+                lua_pushnumber(L, out->GetF());
+                break;
+            case m3d::sArg::ARGTYPE_BOOL:
+                // NOTE: true goes out as the number 1 and false as nil.
+                if (out->GetB())
+                {
+                    lua_pushnumber(L, 1.0);
+                }
+                else
+                {
+                    lua_pushnil(L);
+                }
+                break;
+            case m3d::sArg::ARGTYPE_STRING:
+                lua_pushstring(L, out->GetS());
+                break;
+            case m3d::sArg::ARGTYPE_OBJECT:
+                if (auto* const obj = out->GetO())
+                {
+                    lua_rawgeti(L, LUA_REGISTRYINDEX, m3d::ScriptServer::_getScriptObject(obj));
+                }
+                else
+                {
+                    lua_pushnil(L);
+                }
+                break;
+            default:
+                // NOTE: vectors and quaternions push nothing but are still counted as results.
+                break;
+            }
+        }
+        return stack.getNumOutArgs();
     }
 
-    char buf_0[5] = { 0 };
-    char buf[5] = { 0 };
+    char buf_0[5] = {0};
+    char buf[5] = {0};
 
-    int _toString(lua_State *L)
+    int _toString(lua_State* L)
     {
         auto v2 = ext_getTag(L, -1) - 1001;
         if (v2)
@@ -201,15 +298,15 @@ namespace
                 stack.newIn()->SetB(false);
                 break;
 
-            case 1: // boolean
+            case 1:  // boolean
                 stack.newIn()->SetB(lua_toboolean(L, i) != 0);
                 break;
 
-            case 3: // number
+            case 3:  // number
                 stack.newIn()->SetF(static_cast<float>(lua_tonumber(L, i)));
                 break;
 
-            case 4: // string
+            case 4:  // string
                 stack.newIn()->SetS(lua_tostring(L, i));
                 break;
 
@@ -223,7 +320,7 @@ namespace
                 }
 
             case 2:
-            case 7: // userdata
+            case 7:  // userdata
                 if (ext_getTag(L, i) == tag_luaVector)
                 {
                     auto vec = reinterpret_cast<CVector*>(lua_touserdata(L, i));
@@ -302,19 +399,19 @@ namespace
     void _addExports(m3d::Class* pClass)
     {
         //TODO: check this and refactor!!!
-        lua_State* v1; // esi
-        m3d::Class* v3; // eax
-        m3d::ExportInfo* v4; // edi
-        m3d::ExportInfo* v5; // ebx
-        m3d::eExportType v6; // eax
-        int v7; // edx
+        lua_State* v1;        // esi
+        m3d::Class* v3;       // eax
+        m3d::ExportInfo* v4;  // edi
+        m3d::ExportInfo* v5;  // ebx
+        m3d::eExportType v6;  // eax
+        int v7;               // edx
 
         v1 = m3d::ScriptServer::L;
         if (pClass)
         {
             v3 = pClass->m_fnGetBaseClass();
             _addExports(v3);
-        	v4 = pClass->m_lExports;
+            v4 = pClass->m_lExports;
             if (v4)
             {
                 if (v4->name)
@@ -351,7 +448,7 @@ namespace
 
     void _buildExportMap(m3d::Class* pClass)
     {
-        int n; // eax
+        int n;  // eax
 
         lua_newtable(m3d::ScriptServer::L);
         n = luaL_ref(m3d::ScriptServer::L, -10000);
@@ -361,7 +458,7 @@ namespace
         lua_pushnumber(m3d::ScriptServer::L, 1002.0);
         lua_settable(m3d::ScriptServer::L, -3);
         _addExports(pClass);
-    	lua_settop(m3d::ScriptServer::L, -2);
+        lua_settop(m3d::ScriptServer::L, -2);
     }
 
     int _indexObject(lua_State* L)
@@ -371,15 +468,53 @@ namespace
         lua_gettable(L, -2);
         return 1;
     }
+}  // namespace
+
+void _dumpStack(lua_State* L)
+{
+    // RVA 0x621F00
+    for (int i = 1; i <= lua_gettop(L); ++i)
+    {
+        int const type = lua_type(L, i);
+        char buffer[64];
+        sprintf(buffer, "%2d: %s ", i, lua_typename(L, type));
+        CStr const tmp(buffer);
+        switch (type)
+        {
+        case LUA_TLIGHTUSERDATA:
+            sprintf(buffer, "(light user data)");
+            break;
+        case LUA_TNUMBER:
+            sprintf(buffer, "(%f)", static_cast<double>(lua_tonumber(L, i)));
+            break;
+        case LUA_TSTRING:
+            // NOTE: unbounded; a long string overruns the 64-byte buffer.
+            sprintf(buffer, "(\"%s\")", lua_tostring(L, i));
+            break;
+        case LUA_TTABLE:
+            sprintf(buffer, "(table)");
+            break;
+        case LUA_TUSERDATA:
+            sprintf(buffer, "(user data)");
+            break;
+        default:
+            buffer[0] = 0;
+            break;
+        }
+        M3D_KERNEL->m_Log->sourceLine() = __LINE__;
+        M3D_KERNEL->m_Log->setSourceFile(__FILE__);
+        M3D_KERNEL->m_Log->logRaw((tmp + CStr(buffer) + CStr("\n")).c_str());
+    }
 }
 
 namespace m3d
 {
-    Class ScriptServer::m_classScriptServer {"ScriptServer", sizeof(ScriptServer), CreateObject, GetBaseClass};
+    Class ScriptServer::m_classScriptServer{"ScriptServer", sizeof(ScriptServer), CreateObject, GetBaseClass};
 
     eScriptError Scriptlet::compile()
     {
-	    RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x895B20 - there is no compiler; this only reports whether the source is loaded.
+        return m_bLoaded ? SUCCESS : OTHER_ERROR;
     }
 
     Scriptlet::~Scriptlet()
@@ -418,6 +553,7 @@ namespace m3d
 
     eScriptError Scriptlet::execute(char const* nameAs, bool bGlobalEnv)
     {
+        // RVA 0x895B30
         if (!m_bLoaded)
         {
             return OTHER_ERROR;
@@ -426,7 +562,7 @@ namespace m3d
         {
             return g_scriptServer->executeBuffer(m_compiledData, m_compiledDataLen, nameAs);
         }
-        g_scriptServer->executeBuffer(m_data, m_dataLen, nameAs);
+        return g_scriptServer->executeBuffer(m_data, m_dataLen, nameAs);
     }
 
     Scriptlet::Scriptlet()
@@ -450,28 +586,40 @@ namespace m3d
             lua_newtable(L);
             lua_pushlightuserdata(L, pObj);
             lua_rawseti(L, -2, 0);
-            auto cls  = pObj->GetClass();
+            auto cls = pObj->GetClass();
             if (!cls->m_scriptHandle)
             {
                 _buildExportMap(cls);
             }
-        	lua_rawgeti(L, -10000, reinterpret_cast<int>(cls->m_scriptHandle));
+            lua_rawgeti(L, -10000, reinterpret_cast<int>(cls->m_scriptHandle));
             lua_type(L, -1);
             lua_type(L, -2);
             lua_rawseti(L, -2, 1);
             lua_newtable(L);
             lua_pushstring(L, "__index");
             lua_pushcclosure(L, _indexObject, 0);
-        	lua_settable(L, -3);
+            lua_settable(L, -3);
             lua_setmetatable(L, -2);
             pObj->m_scriptHandle = reinterpret_cast<void*>(luaL_ref(L, -10000));
         }
         return reinterpret_cast<int>(pObj->m_scriptHandle);
     }
 
-    eScriptError ScriptServer::reloadScript(char const*)
+    eScriptError ScriptServer::reloadScript(char const* fileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x622A40
+        if (!m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+        // NOTE: unlike addScript and executeScriptFile, the name is looked up without
+        // UnifyFileName, so it must already be in unified form.
+        auto const it = m_scripts.find(CStr(fileName));
+        if (it == m_scripts.end())
+        {
+            return OTHER_ERROR;
+        }
+        return it->second->loadFromFile(fileName);
     }
 
     eScriptError ScriptServer::callScriptFunc(char const* funcName, sArgStack& stack, int nresults)
@@ -490,8 +638,8 @@ namespace m3d
 
         if (lua_type(L, -1) == LUA_TNIL)
         {
-            lua_settop(L, -2); // Clean up stack
-            return NO_SUCH_FUNCTION; // Function not found
+            lua_settop(L, -2);        // Clean up stack
+            return NO_SUCH_FUNCTION;  // Function not found
         }
 
         // Push arguments to Lua stack
@@ -539,14 +687,15 @@ namespace m3d
                 break;
             }
 
-            case sArg::ARGTYPE_QUATERNION: {
+            case sArg::ARGTYPE_QUATERNION:
+            {
                 Quaternion* quat = ext_createQuaternion(L);
                 *quat = arg->GetQ();
                 break;
             }
 
             default:
-                return OTHER_ERROR; // Unknown argument type
+                return OTHER_ERROR;  // Unknown argument type
             }
         }
 
@@ -557,10 +706,14 @@ namespace m3d
             // Handle Lua errors
             switch (callResult)
             {
-            case LUA_ERRRUN: return RUNTIME_ERROR;   // Runtime error
-            case LUA_ERRMEM: return MEMORY_ERROR;   // Memory error
-            case LUA_ERRSYNTAX: return SYNTAX_ERROR;   // Error handler error
-            default: return OTHER_ERROR;           // Unknown error
+            case LUA_ERRRUN:
+                return RUNTIME_ERROR;  // Runtime error
+            case LUA_ERRMEM:
+                return MEMORY_ERROR;  // Memory error
+            case LUA_ERRSYNTAX:
+                return SYNTAX_ERROR;  // Error handler error
+            default:
+                return OTHER_ERROR;  // Unknown error
             }
         }
 
@@ -572,7 +725,8 @@ namespace m3d
 
         for (int j = 0; j < nresults; ++j)
         {
-            if (lua_gettop(L) == 0) break; // No more results
+            if (lua_gettop(L) == 0)
+                break;  // No more results
 
             int luaType = lua_type(L, -1);
 
@@ -617,10 +771,10 @@ namespace m3d
                 break;
             }
 
-            lua_settop(L, -2); // Remove processed value
+            lua_settop(L, -2);  // Remove processed value
         }
 
-        return SUCCESS; // Success
+        return SUCCESS;  // Success
     }
 
     eScriptError ScriptServer::done()
@@ -650,9 +804,29 @@ namespace m3d
         return m_funcDescs;
     }
 
-    eScriptError ScriptServer::addScript(char const*)
+    eScriptError ScriptServer::addScript(char const* fileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6241C0
+        if (!m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+        CStr fName(fileName);
+        UnifyFileName(fName);
+        if (m_scripts.find(fName) != m_scripts.end())
+        {
+            return SUCCESS;
+        }
+        auto* const scriptlet = new Scriptlet;
+        // NOTE: loads from the name as given, not the unified one it is stored under.
+        eScriptError const res = scriptlet->loadFromFile(fileName);
+        if (res != SUCCESS)
+        {
+            delete scriptlet;
+            return res;
+        }
+        m_scripts[fName] = scriptlet;
+        return SUCCESS;
     }
 
     eScriptError ScriptServer::execute(char const* str, char const* bufName)
@@ -676,16 +850,16 @@ namespace m3d
             UnifyFileName(m_lastScriptExecuted);
             errDesc.sourceString = m_lastScriptExecuted;
         }
-        switch(lua_dobuffer(L, static_cast<const char*>(buf), bufSize, m_lastScriptExecuted.c_str()))
+        switch (lua_dobuffer(L, static_cast<char const*>(buf), bufSize, m_lastScriptExecuted.c_str()))
         {
         case 0:
-            return  SUCCESS;
+            return SUCCESS;
         case 1:
-            return  RUNTIME_ERROR;
+            return RUNTIME_ERROR;
         case 3:
-            return  SYNTAX_ERROR;
+            return SYNTAX_ERROR;
         case 4:
-            return  MEMORY_ERROR;
+            return MEMORY_ERROR;
         default:
             return OTHER_ERROR;
         }
@@ -697,12 +871,26 @@ namespace m3d
 
     lua_State* ScriptServer::getGlobalEnvironment()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x895AE0
+        return L;
     }
 
     eScriptError ScriptServer::reloadAllScripts()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x622AC0 - reloads every source, returning the last error met.
+        if (!m_bInitialized)
+        {
+            return NOT_INITIALIZED;
+        }
+        eScriptError res = SUCCESS;
+        for (auto& [name, scriptlet] : m_scripts)
+        {
+            if (eScriptError const err = scriptlet->loadFromFile(name.c_str()))
+            {
+                res = err;
+            }
+        }
+        return res;
     }
 
     CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError err) const
@@ -710,8 +898,8 @@ namespace m3d
         // TODO: implement ScriptServer::getFormatedScriptErrorDes
         if (err)
         {
-            CStr res = "(" + errDesc.sourceString + "/" + errDesc.nameString + "@ "+ CStr(errDesc.lineNumber) + "):" +
-                CStr(ScriptErrorDesc[err]) + "\n" + errDesc.descriptionString;
+            CStr res = "(" + errDesc.sourceString + "/" + errDesc.nameString + "@ " + CStr(errDesc.lineNumber) +
+                "):" + CStr(ScriptErrorDesc[err]) + "\n" + errDesc.descriptionString;
             return res;
         }
         return {};
@@ -719,7 +907,8 @@ namespace m3d
 
     auxScriptErrorDesc const& ScriptServer::getLastErrorDesc() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61F930
+        return errDesc;
     }
 
     Class* ScriptServer::GetClass() const
@@ -727,14 +916,16 @@ namespace m3d
         return RT_CLASS_LOCAL(ScriptServer);
     }
 
-    char const* ScriptServer::getErrorDescString(eScriptError) const
+    char const* ScriptServer::getErrorDescString(eScriptError err) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61F920 - no range check
+        return ScriptErrorDesc[err];
     }
 
     void ScriptServer::dumpStack()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6225A0
+        _dumpStack(L);
     }
 
     eScriptError ScriptServer::executeScriptFile(char const* fileName)
@@ -755,10 +946,10 @@ namespace m3d
             if (res == SUCCESS)
             {
                 res = scriptlet.execute(unifiedFileName.c_str(), true);
-	            if (res)
-	            {
+                if (res)
+                {
                     M3D_LOG_ERR(getFormatedScriptErrorDesc(res));
-	            }
+                }
             }
             return res;
         }
@@ -820,10 +1011,17 @@ namespace m3d
 
     Object* ScriptServer::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;   
+        // RVA 0x6249A0
+        // NOTE: a member-wise copy, so both servers own the same Scriptlet pointers.
+        return new ScriptServer(*this);
     }
 
-    eScriptError ScriptServer::registerGlobalFunction(int(*NativeGlobalFunc)(sArgStack&), char const* name, char const* returnValue, char const* params, char const* shortDesc)
+    eScriptError ScriptServer::registerGlobalFunction(
+        int (*NativeGlobalFunc)(sArgStack&),
+        char const* name,
+        char const* returnValue,
+        char const* params,
+        char const* shortDesc)
     {
         if (!m_bInitialized)
         {
@@ -835,11 +1033,11 @@ namespace m3d
         }
         auto const it = m_funcDescs.find(name);
         if (it != m_funcDescs.cend())
-        { 
+        {
             return ALREADY_REGISTERED;
         }
 
-        auto data = (int(**)(sArgStack&))lua_newuserdata(L, sizeof(NativeGlobalFunc));
+        auto data = (int (**)(sArgStack&))lua_newuserdata(L, sizeof(NativeGlobalFunc));
         *data = NativeGlobalFunc;
         lua_newtable(L);
         lua_pushstring(L, "__call");
@@ -858,15 +1056,15 @@ namespace m3d
 
         return SUCCESS;
     }
-}
+}  // namespace m3d
 
 ext_InternalTags ext_getTag(lua_State* L, int pos)
 {
     //TODO: check this and refactor
-    int v4; // eax
-    int v5; // eax
-    int v7; // edx
-    ext_InternalTags v8; // edi
+    int v4;               // eax
+    int v5;               // eax
+    int v7;               // edx
+    ext_InternalTags v8;  // edi
 
     v4 = lua_type(L, pos) - 2;
     if (v4)

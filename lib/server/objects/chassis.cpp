@@ -89,7 +89,7 @@ namespace ai
     Chassis::Chassis(ChassisPrototypeInfo const& prototype) :
         VehiclePart(prototype),
         m_health(prototype.m_maxHealth, 0.0, prototype.m_maxHealth, 0.0),
-        m_fuel(prototype.m_maxFuel, 0.0, prototype.m_maxFuel, 0.0)
+        m_fuel(prototype.m_maxFuel, 0.0, prototype.m_maxFuel, -1.0)
     {
         m_health.m_BeforeValueApplyModifier =
             new BeforeApplyModifierFloatCallback(*this, &ai::Chassis::_OnHealthValueBeforeApplyModifier);
