@@ -6,6 +6,8 @@
 #include "aimanager.h"
 #include "core/log.h"
 
+#include <cstdio>
+
 RT_CLASS_EXPORT_METHOD_DEFINE(DecisionMatrix, AddSignal)
 {
     auto* matrix = dynamic_cast<ai::DecisionMatrix*>(context->asObject(0, "DecisionMatrix"));
@@ -132,9 +134,23 @@ namespace ai
         this->m_flags = 1;
     }
 
+    // RVA 0x8268D0
     void DecisionMatrixElement::Dump()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (m_PassageCommands.empty())
+        {
+            return;
+        }
+        // NOTE: the original prints "ClearStack" when the flag is set and an empty string otherwise.
+        printf("%s ", (m_flags & 1) ? "ClearStack" : "");
+        for (int i = 0; i < (int)m_PassageCommands.size(); ++i)
+        {
+            m_PassageCommands[i].Dump();
+            if (i != (int)m_PassageCommands.size() - 1)
+            {
+                printf("-> ");
+            }
+        }
     }
 
     void DecisionMatrix::ClearTemporaryParams()
@@ -168,9 +184,10 @@ namespace ai
         }
     }
 
+    // RVA 0x82CD00
     m3d::Object* DecisionMatrix::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new DecisionMatrix(*this);
     }
 
     unsigned DecisionMatrix::GetSignalNum(CStr const& signalName) const
@@ -185,9 +202,15 @@ namespace ai
         return 0xFFFF;
     }
 
-    unsigned DecisionMatrix::UnsafeFirstDecision(unsigned, unsigned) const
+    // RVA 0x826C30
+    unsigned DecisionMatrix::UnsafeFirstDecision(unsigned stateNum, unsigned signalNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        const DecisionMatrixElement& element = m_Elements[stateNum + signalNum * m_numStates];
+        if (element.m_PassageCommands.empty())
+        {
+            return 0xFFFF;
+        }
+        return element.m_PassageCommands.front().m_StateNum;
     }
 
     m3d::Class* DecisionMatrix::GetBaseClass()
@@ -195,9 +218,92 @@ namespace ai
         return RT_CLASS_LOCAL(Object);
     }
 
+    // RVA 0x826CA0
     void DecisionMatrix::Dump() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        printf("SIGNALS:\n");
+        for (int i = 0; i < (int)m_Signals.size(); ++i)
+        {
+            printf("SIGNAL[%d] ", i);
+            m_Signals[i].Dump();
+            printf("\n");
+        }
+
+        printf("STATES:\n");
+        for (int i = 0; i < (int)m_States.size(); ++i)
+        {
+            printf("state[%d] ", i);
+            m_States[i].Dump();
+            printf("\n");
+        }
+
+        if (m_Default.m_StateNum != 0xFFFF)
+        {
+            printf("default = %s( ", m_States[m_Default.m_StateNum].GetName().c_str());
+            for (int i = 0; i < (int)m_Default.m_ParamRefList.size(); ++i)
+            {
+                printf("%d", m_Default.m_ParamRefList[i].m_Num);
+                if (i != (int)m_Default.m_ParamRefList.size() - 1)
+                {
+                    printf(",");
+                }
+            }
+            printf(" )\n");
+        }
+
+        if (m_ExitStateNum != 0xFFFF)
+        {
+            printf("exit = %s\n", m_States[m_ExitStateNum].GetName().c_str());
+        }
+
+        printf("DECISIONS:\n");
+        for (int state = 0; state < (int)m_States.size(); ++state)
+        {
+            printf("state[%d] %s\n", state, m_States[state].GetName().c_str());
+            for (int signal = 0; signal < (int)m_Signals.size(); ++signal)
+            {
+                const DecisionMatrixElement& element = m_Elements[state + signal * m_numStates];
+                if (element.m_PassageCommands.empty())
+                {
+                    continue;
+                }
+
+                m_Signals[signal].Dump();
+                printf(" ");
+                for (int k = 0; k < (int)element.m_PassageCommands.size(); ++k)
+                {
+                    const AIPassageCommand& command = element.m_PassageCommands[k];
+                    printf("%s", m_States[command.m_StateNum].GetName().c_str());
+                    if (!command.m_ParamRefList.empty())
+                    {
+                        printf("( ");
+                        for (int l = 0; l < (int)command.m_ParamRefList.size(); ++l)
+                        {
+                            printf("%d", command.m_ParamRefList[l].m_Num);
+                            if (l != (int)command.m_ParamRefList.size() - 1)
+                            {
+                                printf(",");
+                            }
+                        }
+                        printf(" )");
+                    }
+                    if (k != (int)element.m_PassageCommands.size() - 1)
+                    {
+                        printf(" -> ");
+                    }
+                }
+                printf("\n");
+            }
+        }
+
+        for (int i = 0; i < (int)m_States.size(); ++i)
+        {
+            if (m_States[i].m_pChildDecisionMatrix)
+            {
+                printf("SUBLEVEL state[%d] %s\n", i, m_States[i].GetName().c_str());
+                m_States[i].m_pChildDecisionMatrix->Dump();
+            }
+        }
     }
 
     m3d::Object* DecisionMatrix::CreateObject()
@@ -205,14 +311,86 @@ namespace ai
         return new DecisionMatrix;
     }
 
-    void DecisionMatrix::Create(int, int)
+    // RVA 0x82CD80
+    void DecisionMatrix::Create(int numStates, int numSignals)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_numStates = numStates;
+        m_numSignals = numSignals;
+        m_States.reserve(numStates);
+        m_Signals.reserve(numSignals);
+        m_Elements.resize(numSignals * numStates, DecisionMatrixElement());
     }
 
+    // RVA 0x827130
     void DecisionMatrix::LogDump() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        {
+            M3D_LOG_INFO("SIGNALS:");
+        }
+        for (unsigned int i = 0; i < m_Signals.size(); ++i)
+        {
+            M3D_LOG_INFO(CStr("SIGNAL[") + CStr(i) + CStr("] = ") + m_Signals[i].GetName());
+        }
+
+        {
+            M3D_LOG_INFO("STATES:");
+        }
+        for (unsigned int i = 0; i < m_States.size(); ++i)
+        {
+            M3D_LOG_INFO(CStr("state[") + CStr(i) + CStr("] = ") + m_States[i].GetName());
+        }
+
+        if (m_Default.m_StateNum != 0xFFFF)
+        {
+            M3D_LOG_INFO(CStr("default = ") + m_States[m_Default.m_StateNum].GetName());
+        }
+
+        if (m_ExitStateNum != 0xFFFF)
+        {
+            M3D_LOG_INFO(CStr("exit = ") + m_States[m_ExitStateNum].GetName());
+        }
+
+        CStr OutStr;
+        {
+            M3D_LOG_INFO("DECISIONS:");
+        }
+        for (int state = 0; state < (int)m_States.size(); ++state)
+        {
+            for (int signal = 0; signal < (int)m_Signals.size(); ++signal)
+            {
+                const DecisionMatrixElement& element = m_Elements[state + signal * m_numStates];
+                if (element.m_PassageCommands.empty())
+                {
+                    continue;
+                }
+
+                OutStr = CStr("");
+                if ((element.m_flags & 1) == 0)
+                {
+                    OutStr += CStr("STACK_PUSH -> ");
+                }
+                for (int k = 0; k < (int)element.m_PassageCommands.size(); ++k)
+                {
+                    OutStr += m_States[element.m_PassageCommands[k].m_StateNum].GetName();
+                    if (k != (int)element.m_PassageCommands.size() - 1)
+                    {
+                        OutStr += CStr(" -> ");
+                    }
+                }
+                M3D_LOG_INFO(m_States[state].GetName() + CStr(", ") + m_Signals[signal].GetName() + CStr(", ") + OutStr);
+            }
+        }
+
+        {
+            M3D_LOG_INFO("EXTERN:");
+        }
+        for (unsigned int i = 0; i < 16; ++i)
+        {
+            if (m_ExternSignalMappings[i] != 0xFFFF)
+            {
+                M3D_LOG_INFO(CStr("S") + CStr(i) + CStr(" = ") + m_Signals[m_ExternSignalMappings[i]].GetName());
+            }
+        }
     }
 
     void DecisionMatrix::SetDefaultState(char const* stateName)
@@ -339,9 +517,10 @@ namespace ai
         m_Elements[stateNum + signalNum * m_numStates].m_flags &= ~1;
     }
 
-    void DecisionMatrix::SetSaveStackFlag(int, int)
+    // RVA 0x826C10
+    void DecisionMatrix::SetSaveStackFlag(int stateNum, int signalNum)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_Elements[stateNum + signalNum * m_numStates].m_flags &= ~1;
     }
 
     void DecisionMatrix::AddSignal(char const* signalName, char const* externSignalName, char const* functionName)
@@ -391,9 +570,10 @@ namespace ai
         }
     }
 
+    // RVA 0x7EF5F0
     int DecisionMatrix::NumSignals() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_numSignals;
     }
 
     AISignal const& DecisionMatrix::GetSignal(int signalNum) const
@@ -421,9 +601,10 @@ namespace ai
         return m_States[stateNum];
     }
 
-    DecisionMatrix const* DecisionMatrix::GetSubmatrix(int) const
+    // RVA 0x7EFBD0
+    DecisionMatrix const* DecisionMatrix::GetSubmatrix(int stateNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_States[stateNum].m_pChildDecisionMatrix;
     }
 
     AIPassageCommand const& DecisionMatrix::GetDefault() const
@@ -529,9 +710,11 @@ namespace ai
         return 0xFFFF;
     }
 
+    // RVA 0x82CB40
     DecisionMatrix::DecisionMatrix(DecisionMatrix const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // NOTE: the original always asserts; decision matrices cannot be cloned.
+        SYS_ERROR("0");
     }
 
     DecisionMatrix::DecisionMatrix()
@@ -556,18 +739,21 @@ namespace ai
         this->m_ExternSignalMappings[15] = 0xFFFF;
     }
 
-    DecisionMatrixElement const& DecisionMatrix::_GetElement(int, int) const
+    // RVA 0x826A40
+    DecisionMatrixElement const& DecisionMatrix::_GetElement(int signalNum, int stateNum) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_Elements[stateNum + signalNum * m_numStates];
     }
 
-    DecisionMatrixElement& DecisionMatrix::_GetElement(int, int)
+    // RVA 0x826A60
+    DecisionMatrixElement& DecisionMatrix::_GetElement(int signalNum, int stateNum)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_Elements[stateNum + signalNum * m_numStates];
     }
 
-    void DecisionMatrix::_LogUnexpectedToken(CStr const&)
+    // RVA 0x8263F0
+    void DecisionMatrix::_LogUnexpectedToken(CStr const& token)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_LOG_INFO(CStr("Unexpected token: ") + token);
     }
 }  // namespace ai

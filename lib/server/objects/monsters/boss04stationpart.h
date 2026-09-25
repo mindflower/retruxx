@@ -18,6 +18,8 @@ namespace ai
 
     class Boss04StationPart : public ai::VehiclePart
     {
+        friend class Boss04StationPartPrototypeInfo;
+
     protected:
         virtual  ~Boss04StationPart() override /* 0x00 */;
 

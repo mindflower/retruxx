@@ -12,9 +12,6 @@ namespace m3d
 
     MemoryManager::MemoryManager()
     {
-        //(this->*inject::cast<void(MemoryManager::*)()>(0x007487A0))();
-        //return;
-
         //TODO: implement memeory manager initialization
         //this->m_memAllocated = 0;
         //this->m_memUsed = 0;

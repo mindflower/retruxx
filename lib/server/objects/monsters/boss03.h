@@ -44,6 +44,8 @@ namespace ai
 
     class Boss03 : public ai::AnimatedComplexPhysicObj
     {
+        friend class Boss03PrototypeInfo;
+
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Boss03, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss03, ai::Modifier, float, bool>;
@@ -80,9 +82,36 @@ namespace ai
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
 
-        enum LiveStatus;
-        enum DroneSpawningStatus;
-        enum PathTrackingStatus;
+        enum LiveStatus
+        {
+            LIVE_PLACING_DRONES = 0,
+            LIVE_FIGHTING_WITH_WINGS = 1,
+            LIVE_SMALL_HELICOPTER = 2,
+            LIVE_DEAD = 3,
+            LIVE_IDLE = 4,
+            LIVE_LAST = 5,
+        };
+        enum DroneSpawningStatus
+        {
+            DRONE_DECIDING = 0,
+            DRONE_FLYING_TO_SPAWN = 1,
+            DRONE_START_PLACING = 2,
+            DRONE_PLACING_NOW = 3,
+            DRONE_END_PLACING = 4,
+            DRONE_FLYING_TO_SHOOT = 5,
+            DRONE_SHOOTING = 6,
+            DRONE_LAST = 7,
+        };
+        enum PathTrackingStatus
+        {
+            PATH_IDLE = 0,
+            PATH_SETTING_HORIZONTAL_BEFORE = 1,
+            PATH_SETTING_DIRECTION_TO_MOVE = 2,
+            PATH_TILTING = 3,
+            PATH_MOVING = 4,
+            PATH_SETTING_HORIZONTAL_AFTER = 5,
+            PATH_SETTING_FINAL_DIRECTION = 6,
+        };
 
     public:
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;

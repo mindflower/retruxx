@@ -19,6 +19,11 @@ namespace ai
 
     class Obstacle
     {
+        // Reads the obstacle radius when placing generated vehicles.
+        friend class VehiclesGeneratorPrototypeInfo;
+        // Reads the obstacle radius when placing vehicles passed to a new map.
+        friend class PassageData;
+
     public:
         void UnlinkFromOwner();
         ~Obstacle();

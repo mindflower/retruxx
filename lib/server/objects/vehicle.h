@@ -85,6 +85,8 @@ namespace ai
     {
         friend class VehicleUpdater;
         friend class Player;
+        // Turns off its trailer's wheel steering.
+        friend class ArticulatedVehicle;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Vehicle, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Vehicle, ai::Modifier, float, bool>;

@@ -25,6 +25,11 @@ namespace ai
 
     class BossMetalArmLoad : public ai::DummyObject
     {
+        // The arms set the collision mode directly when they let go of a load.
+        friend class BossMetalArmLoadPrototypeInfo;
+        friend class BossArm;
+        friend class BossMetalArm;
+
     protected:
         virtual  ~BossMetalArmLoad() override /* 0x00 */;
 
@@ -41,7 +46,12 @@ namespace ai
         virtual const ai::BossMetalArmLoadPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::BossMetalArmLoad, float, void>;
-        enum CollisionMode;
+        enum CollisionMode
+        {
+            COLLIDE_NONE = 0,
+            COLLIDE_NORMAL = 1,
+            COLLIDE_EXPLODE = 2,
+        };
 
     public:
         virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;

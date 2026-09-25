@@ -638,9 +638,10 @@ namespace ai
                 this->origin.x = 0.0;
             }
 
-            bool IsPointInFront(CVector const&)
+            bool IsPointInFront(CVector const& point)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                // RVA 0x5CB7F0 - in the ground plane: the point lies on the normal's side of the line.
+                return point.z * normal.z + point.x * normal.x > origin.z * normal.z + origin.x * normal.x;
             }
 
             void RenderDebugInfo(unsigned int color)

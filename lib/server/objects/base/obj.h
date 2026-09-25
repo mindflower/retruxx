@@ -212,6 +212,10 @@ namespace ai
         friend class ObjPrefab;
         // StaticAutoGun::RemoveChild clears a released bullet's parent id directly.
         friend class StaticAutoGun;
+        // Clears m_parentId of a detached container.
+        friend class Boss02;
+        friend class Boss03;
+        friend class Boss04;
 
     protected:
         Obj(PrototypeInfo const& prototypeInfo);

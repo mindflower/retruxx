@@ -39,6 +39,8 @@ namespace ai
 
     class BossMetalArm : public ai::SimplePhysicObj
     {
+        friend class BossMetalArmPrototypeInfo;
+
     protected:
         virtual  ~BossMetalArm() override /* 0x00 */;
 
@@ -55,7 +57,13 @@ namespace ai
         virtual const ai::BossMetalArmPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
         virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
 
-        enum AttackState;
+        enum AttackState
+        {
+            ATTACK_IDLE = 0,
+            ATTACK_NOTICED_PLAYER = 1,
+            ATTACK_CHARGING = 2,
+            ATTACK_ATTACKING = 3,
+        };
 
     public:
         virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;

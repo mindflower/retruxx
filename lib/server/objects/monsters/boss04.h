@@ -37,6 +37,8 @@ namespace ai
 
     class Boss04 : public ai::ComplexPhysicObj
     {
+        friend class Boss04PrototypeInfo;
+
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Boss04, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss04, ai::Modifier, float, bool>;
@@ -76,7 +78,12 @@ namespace ai
     public:
         virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
 
-        enum Boss04State;
+        enum Boss04State
+        {
+            STATE_WAITING = 0,
+            STATE_ACTION = 1,
+            STATE_DEAD = 2,
+        };
 
     public:
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;

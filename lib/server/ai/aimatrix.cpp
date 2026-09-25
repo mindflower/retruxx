@@ -30,8 +30,10 @@ namespace ai
         return m_pDM;
     }
 
-    void AIMatrix::Set(CStr const&, DecisionMatrix*)
+    // RVA 0x7E71F0
+    void AIMatrix::Set(CStr const& Name, DecisionMatrix* pDM)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_name = Name;
+        m_pDM = pDM;
     }
 }

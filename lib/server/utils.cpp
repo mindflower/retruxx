@@ -155,10 +155,15 @@ namespace ai
         }
     }
 
-    int DebugText(CVector const&, float, float, unsigned int, CStr const&)
+    // RVA 0x6A9E70
+    int DebugText(CVector const& p1, float size, float, unsigned int color, CStr const& OutStr)
     {
-        // TODO: implement DebugText
-        // RETRUXX_NOT_IMPLEMENTED;
+        // NOTE: the third argument is never read.
+        CVector const org = M3D_RENDERER->Project(p1 - M3D_RENDERER->MatGetOrgInv());
+        M3D_APP->SetFont(CStr("Tahoma"), size, 0, M3D_APP->m_codePage.CodePage);
+        M3D_RENDERER->PushFog(false);
+        M3D_APP->DrawTextAbs(org.x, org.y, color, OutStr, 0, -1);
+        M3D_RENDERER->PopFog();
         return 1;
     }
 
@@ -196,6 +201,7 @@ namespace ai
 
     CVector GetGroundPos(CVector const& pos, bool withCollisions, bool forVehicle)
     {
+        // RVA 0x6A9F80
         CVector res = pos;
         if (!withCollisions)
         {
@@ -208,9 +214,10 @@ namespace ai
         return res;
     }
 
-    CVector GetGroundPos(CVector2 const&, bool)
+    CVector GetGroundPos(CVector2 const& pos, bool withCollisions)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6AA000 - the 2D point is (x, z); never uses the vehicle collision mode.
+        return GetGroundPos(CVector(pos.x, 0.0f, pos.y), withCollisions, false);
     }
 
     PointBase<float> clampIntoLandscape(PointBase<float> const& point)

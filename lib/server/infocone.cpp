@@ -33,7 +33,10 @@ namespace ai
 {
     InfoCone::InfoCone(ai::InfoCone const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // NOTE: declared in the PDB but never emitted, so there is no original body. The cone
+        // owns m_sphere and m_ray and deletes them, so a member-wise copy would free them twice;
+        // copying is refused instead.
+        SYS_ERROR("0");
     }
 
     InfoCone::InfoCone()

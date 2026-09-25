@@ -1,5 +1,6 @@
 #include "aistate.h"
 
+#include <cstdio>
 #include <stdexcept>
 
 namespace ai
@@ -33,9 +34,13 @@ namespace ai
         m_ParamRefList.clear();
     }
 
+    // RVA 0x825D00
     void AIState::SetRetValueInterpretation(int S, unsigned int SignalID)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (S < 16)
+        {
+            m_SignalIDs[S] = SignalID;
+        }
     }
 
     const CStr& AIState::GetName() const
@@ -43,8 +48,29 @@ namespace ai
         return m_name;
     }
 
+    // RVA 0x906310
     void AIState::Dump() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        printf("%s( ", m_name.c_str());
+        for (int i = 0; i < (int)m_ParamRefList.size(); ++i)
+        {
+            printf("%d", m_ParamRefList[i].m_Num);
+            if (i != (int)m_ParamRefList.size() - 1)
+            {
+                printf(",");
+            }
+        }
+        printf(" ) = %d", m_FuncNum);
+        for (unsigned int i = 0; i < 16; ++i)
+        {
+            if (m_SignalIDs[i] != 0xFFFF)
+            {
+                printf(", S%d = %d", i, m_SignalIDs[i]);
+            }
+        }
+        if (m_pChildDecisionMatrix)
+        {
+            printf(" Sublevel present");
+        }
     }
 }

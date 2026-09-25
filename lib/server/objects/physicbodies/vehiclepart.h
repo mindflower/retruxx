@@ -53,6 +53,10 @@ namespace ai
         // Vehicle::InflictDamage builds a BreakData directly, as the shipped
         // code does.
         friend class Vehicle;
+        // Breaks the hit part the way Vehicle::InflictDamage does.
+        friend class Boss03;
+        friend class Boss04Station;
+        friend class Boss04Drone;
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::VehiclePart, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::VehiclePart, ai::Modifier, float, bool>;

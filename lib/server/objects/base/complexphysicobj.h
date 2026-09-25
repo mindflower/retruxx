@@ -161,6 +161,10 @@ namespace ai
         friend class Workshop;
         // BlastWave shares an explosion's damage and push over all of a vehicle's parts.
         friend class BlastWave;
+        // Reads the parts of its stations.
+        friend class Boss04;
+        // Obstacle::RenderDebugInfo checks the first part's node.
+        friend class Obstacle;
         /* 0x0120 */ retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > > m_vehicleParts;
         virtual void _InternalCreateVisualPart() override /* 0x100 */;
         virtual void _ConstructVehiclePart(const CStr& name, ai::VehiclePart* vehiclePart, int index, bool bForAnimation) /* 0x1b8 */;

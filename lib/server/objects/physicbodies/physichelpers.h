@@ -37,6 +37,8 @@ namespace ai
     void CommonGeomMovedCallback(dxGeom*);
     void SetUniversalJointParams(dxJoint* joint);
     void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int);
+    int GetNodeCurAnimationFrame(m3d::SgNode const*);
+    void SetNodeCurAnimationFrame(m3d::SgNode*, int);
     CVector ProjectVectorOntoPlane(CVector const&, CVector const&);
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);
     int TraceSegment(Segment const& segment, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact);

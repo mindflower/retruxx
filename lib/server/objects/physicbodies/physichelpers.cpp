@@ -1138,6 +1138,23 @@ namespace ai
         return animInfo->GetCurAnimation()->m_fps * animInfo->CurAnimFrame();
     }
 
+    int GetNodeCurAnimationFrame(m3d::SgNode const* node)
+    {
+        // RVA 0x7D3120
+        m3d::AnimInfo* const animInfo = GetNodeAnimInfo(node);
+        return animInfo ? animInfo->CurAnimFrame() : 0;
+    }
+
+    void SetNodeCurAnimationFrame(m3d::SgNode* node, int frame)
+    {
+        // RVA 0x7D3150 - jumps the node's animation to the given frame.
+        m3d::AnimInfo* const animInfo = GetNodeAnimInfo(node);
+        if (animInfo && animInfo->GetCurAnimation())
+        {
+            SetNodeElapsedAnimationTimeInMs(node, frame * animInfo->GetCurAnimation()->m_fps);
+        }
+    }
+
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const* node)
     {
         if (!node)

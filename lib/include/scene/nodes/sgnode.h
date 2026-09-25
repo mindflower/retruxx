@@ -14,6 +14,8 @@ namespace ai
 {
     class DummyObject;
     class RopeObj;
+    class BossArm;
+    class BossMetalArm;
     class CompositeObj;
     class JointedObj;
 }
@@ -68,6 +70,8 @@ namespace m3d
         friend class ::ai::JointedObj;
         // RopeObj matches its tie positions against nodes' world origins and load points.
         friend class ::ai::RopeObj;
+        friend class ::ai::BossArm;
+        friend class ::ai::BossMetalArm;
 
     protected:
         SgNode();

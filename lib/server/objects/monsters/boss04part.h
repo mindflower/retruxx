@@ -5,37 +5,46 @@ struct dContact;
 
 namespace ai
 {
-    class Boss04PartPrototypeInfo : public VehiclePartPrototypeInfo
+    class Boss04PartPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
     public:
-        virtual Obj* CreateTargetObject() const;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    };
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+    }; /* size: 0x0110 */
 
-    class Boss04Part : public VehiclePart
+    static_assert(sizeof(Boss04PartPrototypeInfo) == 0x0110);
+
+    class Boss04Part : public ai::VehiclePart
     {
-    public:
-        static m3d::Class* GetBaseClass();
-        Boss04Part(Boss04PartPrototypeInfo const&);
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-        virtual Boss04PartPrototypeInfo const* GetPrototypeInfo() const;
-        static int __fastcall CollideBoss04PartAndVehiclePart(Boss04Part*, VehiclePart*, dContact*, unsigned int&, bool);
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        virtual m3d::Class* GetClass() const;
+        friend class Boss04PartPrototypeInfo;
 
     protected:
-        virtual bool _OnDurabilityValueBeforeApplyModifier(Modifier const&, float&);
-        virtual ~Boss04Part();
-        virtual void _OnDurabilityValueAfterChange(float);
+        virtual ~Boss04Part() override /* 0x00 */;
 
     private:
-        static m3d::Object* CreateObject();
-        virtual m3d::Object* Clone();
+        Boss04Part(const ai::Boss04PartPrototypeInfo& prototypeInfo);
+        Boss04Part(const ai::Boss04Part&);
+        virtual m3d::Object* Clone() override /* 0x00 */;
+        static m3d::Object* __fastcall CreateObject();
 
     public:
-        RT_CLASS_DECLARE(Boss04Part);
+        static m3d::Class* __fastcall GetBaseClass();
+        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class m_classBoss04Part;
+        virtual const ai::Boss04PartPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        bool bIsDamageable() const;
+        void SetDamageable(bool);
+        static int __fastcall CollideBoss04PartAndVehiclePart(ai::Boss04Part* boss04Part, ai::VehiclePart* vp, dContact* contact, unsigned int& numContacts, bool reverse);
+
+    protected:
+        virtual bool _OnDurabilityValueBeforeApplyModifier(const ai::Modifier& modifier, float& newDurabilityValue) override /* 0x160 */;
+        virtual void _OnDurabilityValueAfterChange(float oldDurabilityValue) override /* 0x164 */;
 
     private:
-        bool m_bIsDamageable;
-    };
+        /* 0x02c8 */ bool m_bIsDamageable;
+    }; /* size: 0x02cc */
+
+    static_assert(sizeof(Boss04Part) == 0x02cc);
 }

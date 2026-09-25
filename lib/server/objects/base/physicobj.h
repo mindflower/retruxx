@@ -48,6 +48,14 @@ namespace ai
         friend class Rocket;
         friend class MortarShell;
         friend class Submarine;
+        // Keeps the boss out of the physics by hand.
+        friend class Boss03;
+        // Hitches its trailer's body.
+        friend class ArticulatedVehicle;
+        // Reads the obstacle radius when placing generated vehicles.
+        friend class VehiclesGeneratorPrototypeInfo;
+        // Reads the obstacle radius when placing vehicles passed to a new map.
+        friend class PassageData;
 
     protected:
         virtual ~PhysicObj() override /* 0x00 */;

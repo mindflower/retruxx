@@ -33,6 +33,8 @@ namespace ai
 
     class BossArm : public ai::VehiclePart
     {
+        friend class BossArmPrototypeInfo;
+
     protected:
         virtual  ~BossArm() override /* 0x00 */;
 
@@ -55,7 +57,13 @@ namespace ai
         virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
         int GetNumExploadedLoads() const;
 
-        enum AttackState;
+        enum AttackState
+        {
+            ATTACK_IDLE = 0,
+            ATTACK_CUSTOM = 1,
+            ATTACK_CHARGING = 2,
+            ATTACK_ATTACKING = 3,
+        };
 
     protected:
         /* 0x02c8 */ int m_loadObjId;

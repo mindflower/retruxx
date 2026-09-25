@@ -88,6 +88,61 @@ namespace ai
                 }
             }
         }
+
+        void PushObstacleByKindOf(ai::Obstacle* pOb)
+        {
+            // RVA 0x7E9C00 - NOTE: unlike PushObstacle, an empty class set matches nothing.
+            if (!pOb)
+            {
+                return;
+            }
+
+            auto owner = pOb->GetOwner();
+            if (!owner)
+            {
+                return;
+            }
+
+            for (m3d::Class* const cls : *tmpTargetClasses)
+            {
+                if (owner->IsKindOf(cls))
+                {
+                    tmpObstacles->emplace(pOb);
+                    return;
+                }
+            }
+        }
+
+        void IntersectionCallbackByKindOf(void* data, dxGeom* o1, dxGeom* o2)
+        {
+            // RVA 0x7E9D40
+            if ((dGeomIsSpace(o1) || dGeomIsSpace(o2)) && o1 != o2)
+            {
+                dSpaceCollide2(o1, o2, data, IntersectionCallbackByKindOf);
+            }
+            else
+            {
+                auto sphere1 = static_cast<SphereForIntersection*>(dGeomGetData(o1));
+                auto sphere2 = static_cast<SphereForIntersection*>(dGeomGetData(o2));
+
+                ai::Obstacle* id = nullptr;
+                if (sphere1)
+                {
+                    id = sphere1->GetOwner();
+                }
+                if (sphere2)
+                {
+                    auto otherId = sphere2->GetOwner();
+                    PushObstacleByKindOf(id);
+                    PushObstacleByKindOf(otherId);
+                }
+                else
+                {
+                    PushObstacleByKindOf(id);
+                    PushObstacleByKindOf(nullptr);
+                }
+            }
+        }
     }  // namespace
 
     bool IntersectionManager::SpheresIntersect(CVector const& center1, float radius1, CVector const center2, float radius2)
@@ -122,7 +177,8 @@ namespace ai
         retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const& targetClasses,
         bool bCheckBoxes)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7EB010
+        _GetIntersectedObjectsCustom(objIds, pLookSphere, targetClasses, IntersectionCallbackByKindOf, bCheckBoxes, false);
     }
 
     bool IntersectionManager::IsSphereValid(

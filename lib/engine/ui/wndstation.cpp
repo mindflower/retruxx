@@ -1093,9 +1093,6 @@ namespace m3d
         {
             m_wndStation = this;
 
-            //inject::injectMemoryAddress(0x00A0A2D4, inject::cast<uint32_t>(m_wndStation));
-            //inject::cast<WndStation*>(0x00A0A2D4);
-
             if (gfxserver == nullptr)
             {
                 gfxserver = new GfxServer;

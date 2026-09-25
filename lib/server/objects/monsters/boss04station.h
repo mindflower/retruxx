@@ -18,6 +18,8 @@ namespace ai
 
     class Boss04Station : public ai::ComplexPhysicObj
     {
+        friend class Boss04StationPrototypeInfo;
+
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Boss04Station, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss04Station, ai::Modifier, float, bool>;

@@ -58,9 +58,15 @@ namespace ai
             return m_value;
         }
 
-        void assign(ai::NumericBoundedBelow<T> const&)
+        // NOTE: assign and _AssignUnsafe are declared in the PDB but were never
+        // instantiated, so their bodies do not come from the binary. They follow
+        // the guarded/unguarded split used by NumericInRange.
+        void assign(ai::NumericBoundedBelow<T> const& other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The bound goes in before the value so that the value is checked
+            // against the new bound rather than the old one.
+            m_minValue.set(other.m_minValue.get());
+            m_value.set(other.m_value.get());
         }
 
         void setToMin()
@@ -74,9 +80,10 @@ namespace ai
         }
 
     protected:
-        void _AssignUnsafe(ai::NumericBoundedBelow<T> const&)
+        void _AssignUnsafe(ai::NumericBoundedBelow<T> const& other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_value.SetUnsafe(other.m_value.get());
+            m_minValue.SetUnsafe(other.m_minValue.get());
         }
 
     private:

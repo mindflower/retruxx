@@ -23,9 +23,10 @@ namespace ai
 		return this->m_geomSize;
 	}
 
+	// RVA 0x6C5740
 	int Resource::GetParentId() const
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		return m_parentId;
 	}
 
 	CStr Resource::GetName() const

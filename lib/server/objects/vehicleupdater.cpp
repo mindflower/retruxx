@@ -9,9 +9,14 @@
 
 namespace ai
 {
-    VehicleUpdater::VehicleUpdater(ai::VehicleUpdater const&)
+    VehicleUpdater::VehicleUpdater(ai::VehicleUpdater const& other) :
+        m_vehicle(other.m_vehicle),
+        m_wheelRadius(other.m_wheelRadius),
+        m_velocity(other.m_velocity),
+        m_relFrontPoint(other.m_relFrontPoint),
+        m_relRearPoint(other.m_relRearPoint)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Declared in the PDB but never emitted in the shipped build; a member-wise copy.
     }
 
     VehicleUpdater::VehicleUpdater(ai::Vehicle* vehicle)

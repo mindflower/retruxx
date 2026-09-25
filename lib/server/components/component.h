@@ -34,15 +34,18 @@ namespace ai
         /* 0x0000 */ ai::FuncPtrOneArg<T, void> m_AfterChange;
         /* 0x0008 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeChange;
 
+        // NOTE: assign and _AssignUnsafe are declared in the PDB but were never
+        // instantiated, so their bodies do not come from the binary. They follow
+        // the guarded/unguarded split used by NumericInRange.
+        // The base only holds the callbacks, which stay bound to their owner, so
+        // there is nothing to copy.
         void assign(ThisType const&)
         {
-            RETRUXX_NOT_IMPLEMENTED;
         }
 
     protected:
         void _AssignUnsafe(ThisType const&)
         {
-            RETRUXX_NOT_IMPLEMENTED;
         }
     }; /* size: 0x0010 */
 }  // namespace ai

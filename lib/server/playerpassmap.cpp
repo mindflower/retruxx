@@ -23,14 +23,43 @@ namespace ai
         return this->m_sideSize == 0;
     }
 
-    bool PlayerPassMap::SaveToBinaryFile(CStr const&) const
+    // RVA 0x7BBAD0
+    bool PlayerPassMap::SaveToBinaryFile(CStr const& fileName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_sideSize)
+        {
+            return false;
+        }
+
+        m3d::fs::auxTaggedFile file;
+        if (file.Open(fileName.c_str(), m3d::fs::auxTaggedFile::CREATE_IGNORE_CRC))
+        {
+            M3D_LOG_ERR(CStr("Couldn't create player pass map file ") + CStr(fileName));
+            return false;
+        }
+
+        file.setFormatTitle("PLAYERPASSMAP");
+        file.setFormatVersion(2);
+        file.addChunk(0xBADF00D);
+        file.addChunkDataCopy(0xBADF00D, 4, &m_sideSize);
+        file.addChunkDataCopy(0xBADF00D, 4 * m_container.size(), m_container.data());
+        file.Close();
+        return true;
     }
 
-    void PlayerPassMap::SetValue(unsigned, unsigned, bool)
+    // RVA 0x7BBEC0
+    void PlayerPassMap::SetValue(unsigned x, unsigned y, bool bValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_ASSERT(x < m_sideSize && y < m_sideSize);
+        unsigned int const bit = y + x * m_sideSize;
+        if (bValue)
+        {
+            m_container[bit >> 5] |= 1 << (bit & 0x1F);
+        }
+        else
+        {
+            m_container[bit >> 5] &= ~(1 << (bit & 0x1F));
+        }
     }
 
     void PlayerPassMap::Create(unsigned sideLength, bool bDefaultValue)
@@ -40,9 +69,13 @@ namespace ai
         m_sideSize = sideLength;
     }
 
-    void PlayerPassMap::Fill(bool)
+    // RVA 0x7BBE60
+    void PlayerPassMap::Fill(bool bValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (unsigned int i = 0; i < m_container.size(); ++i)
+        {
+            m_container[i] = -static_cast<int>(bValue);
+        }
     }
 
     PlayerPassMap::PlayerPassMap()

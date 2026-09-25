@@ -3501,8 +3501,6 @@ namespace m3d
             M3D_LOG_INFO("Starting up...");
             g_pApp = this;
 
-            //inject::injectMemoryAddress(0x00A0A55C, inject::cast<uint32_t>(g_pApp));
-
             m_focusKbdEntity = this;
             m_strWindowTitle = "retruxx - release version build v0.01";
 

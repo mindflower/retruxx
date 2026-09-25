@@ -23,6 +23,8 @@ namespace ai
 
     class ArticulatedVehicle : public ai::Vehicle
     {
+        friend class ArticulatedVehiclePrototypeInfo;
+
     protected:
         virtual  ~ArticulatedVehicle() override /* 0x00 */;
 

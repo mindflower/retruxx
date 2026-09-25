@@ -9,6 +9,13 @@
 #include "math/obb.h"
 #include "ode/objects.h"
 #include "objects/base/physicobj.h"
+#include "objects/base/complexphysicobj.h"
+#include "objects/base/simplephysicobj.h"
+#include "objects/physicbodies/vehiclepart.h"
+#include "objects/physicbodies/geoms/sphereforintersection.h"
+#include "landscape.h"
+#include "core/kernel.h"
+#include "core/timer.h"
 #include "ode/odecpp.h"
 #include "objects/base/objcontainer.h"
 #include "objects/physicbodies/geoms/box.h"
@@ -31,9 +38,13 @@ namespace ai
         delete m_intersectionBox;
     }
 
+    // RVA 0x7BB790
     Quaternion Obstacle::GetRotation() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        dQuaternion quat;
+        dGeomGetQuaternion(m_intersectionSphere->GetGeomId(), quat);
+        // ODE keeps w first.
+        return Quaternion(quat[1], quat[2], quat[3], quat[0]);
     }
 
     int Obstacle::DecRef()
@@ -269,9 +280,46 @@ namespace ai
         return this->m_intersectionSphere;
     }
 
+    // RVA 0x7BB960
     void Obstacle::RenderDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_bIsEnabled)
+        {
+            return;
+        }
+
+        // Only obstacles whose owner's model was drawn this frame are shown.
+        if (m_ownerPhysicObjId >= 0)
+        {
+            Obj* const owner = theObjects->GetEntityByObjId(m_ownerPhysicObjId);
+            if (owner)
+            {
+                if (owner->IsKindOf(RT_CLASS_LOCAL(SimplePhysicObj)))
+                {
+                    m3d::SgNode const* const node = static_cast<SimplePhysicObj*>(owner)->GetPhysicBody()->m_Node;
+                    if (node && node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame())
+                    {
+                        return;
+                    }
+                }
+                else if (owner->IsKindOf(RT_CLASS_LOCAL(ComplexPhysicObj)))
+                {
+                    ComplexPhysicObj const* const complexObj = static_cast<ComplexPhysicObj*>(owner);
+                    if (!complexObj->m_vehicleParts.empty())
+                    {
+                        // NOTE: the first part's node is used without a null check.
+                        m3d::SgNode const* const node = complexObj->m_vehicleParts.begin()->second->m_Node;
+                        if (node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame())
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        dGeomID const geom = m_intersectionBox ? m_intersectionBox->GetGeomId() : m_intersectionSphere->GetGeomId();
+        pServer->GetWorld()->GetLandscape().DrawGeom(geom);
     }
 
     bool Obstacle::bIsEnabled() const
@@ -289,8 +337,14 @@ namespace ai
         return RT_DYNCAST(theObjects->GetEntityByObjId(m_ownerPhysicObjId), PhysicObj);
     }
 
+    // RVA 0x7BB000
     void Obstacle::_Init()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_refCount = 0;
+        m_bIsEnabled = true;
+        m_intersectionSphere = nullptr;
+        m_intersectionBox = nullptr;
+        m_ownerPhysicObjId = -1;
+        m_ownerSgNode = nullptr;
     }
 }  // namespace ai

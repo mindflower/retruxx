@@ -21,6 +21,8 @@ namespace ai
 
     class Boss04Drone : public ai::ComplexPhysicObj
     {
+        friend class Boss04DronePrototypeInfo;
+
     protected:
         virtual  ~Boss04Drone() override /* 0x00 */;
 

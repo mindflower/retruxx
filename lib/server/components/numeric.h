@@ -40,9 +40,12 @@ namespace ai
             m_value = newValue;
         }
 
-        void assign(ai::Numeric<T> const&)
+        // NOTE: assign and _AssignUnsafe are declared in the PDB but were never
+        // instantiated, so their bodies do not come from the binary. They follow
+        // the guarded/unguarded split used by NumericInRange.
+        void assign(ai::Numeric<T> const& other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            set(other.m_value);
         }
 
         void add(T value)
@@ -85,9 +88,9 @@ namespace ai
         }
 
     protected:
-        void _AssignUnsafe(ai::Numeric<T> const&)
+        void _AssignUnsafe(ai::Numeric<T> const& other)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            m_value = other.m_value;
         }
 
     private:
