@@ -1446,7 +1446,7 @@ namespace m3d
     void Cinematic::SetFolder(char const* folder)
     {
         m_folder = folder;
-        UnifyFileName(m_folder);
+        UnifyFileName0(m_folder);
         if (!m_folder.empty())
         {
             if (m_folder[m_folder.length() - 1] != '/')
