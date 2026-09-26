@@ -2,6 +2,7 @@
 #include <cstring>
 #include <file/package.h>
 #include <Windows.h>
+#include <zlib/zlib.h>
 
 namespace m3d
 {
@@ -19,13 +20,6 @@ namespace m3d
             int const OPEN_OK = 0;
             int const OPEN_NOT_FOUND = 2;
             int const OPEN_BAD_FORMAT = 13;
-
-            // zlib's uncompress(), which the shipped game links statically (zlib 1.1.4). The repo does not have
-            // zlib yet, so archived entries cannot be unpacked.
-            int uncompress(unsigned char*, unsigned long*, unsigned char const*, unsigned long)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-            }
         }  // namespace
 
         Package::DetailedSegment::DetailedSegment(void* pAddress, unsigned int uiSize)

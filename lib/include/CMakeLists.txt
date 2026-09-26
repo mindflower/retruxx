@@ -12,4 +12,5 @@ add_subdirectory(renderer)
 add_subdirectory(scene)
 add_subdirectory(script)
 add_subdirectory(ui)
+add_subdirectory(zlib)
 

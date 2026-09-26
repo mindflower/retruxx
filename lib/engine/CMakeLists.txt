@@ -17,6 +17,7 @@ add_subdirectory(ui)
 add_subdirectory(video)
 add_subdirectory(weather)
 add_subdirectory(wheeltraces)
+add_subdirectory(zlib)
 
 target_sources(retruxx_lib PRIVATE
     benchmark.cpp
