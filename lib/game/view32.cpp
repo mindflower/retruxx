@@ -3121,7 +3121,7 @@ int CMiracle3d::InitMedia()
 
 int CMiracle3d::FrameMove()
 {
-    //TODO: implement CMiracle3d::FrameMove
+    // RVA 0x415710
     if (!m_playingVideo || m_enginePlayingVideo)
     {
         auto* profiler = GetProfilerStack().GetProfiler(m_profiler_Client);
@@ -3130,7 +3130,7 @@ int CMiracle3d::FrameMove()
         m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
         auto startTime = m3d::g_Kernel->GetTimer().GetFrameStartTime();
         auto lastTime = m3d::g_Kernel->GetTimer().GetLastFrameTime();
-        auto dT = lastTime * 0.001;
+        float const dT = static_cast<float>(lastTime * 0.001);
         if (m3d::pClient)
         {
             GetCameraController()->Update();
@@ -3143,7 +3143,13 @@ int CMiracle3d::FrameMove()
                 }
                 else
                 {
-                    HandleCinematic(m3d::g_Kernel->GetTimer().GetLastFrameTime() * 0.001);
+                    // Paused game time (a zero time scale) holds the cinematic.
+                    float tlen = 0.0f;
+                    if (m3d::g_Kernel->GetTimer().GetTimeScale() > 0.0f)
+                    {
+                        tlen = static_cast<float>(m3d::g_Kernel->GetTimer().GetLastFrameTime() * 0.001);
+                    }
+                    HandleCinematic(tlen);
                 }
             }
             m3d::pClient->Update(startTime, lastTime);
@@ -3154,8 +3160,9 @@ int CMiracle3d::FrameMove()
             }
             if (this->m_curGameMode.m_mode != GS_CINEMATIC)
             {
-                // TODO: check this!!!!!!
-                Controls(startTime, dT);
+                // NOTE: the shipped call pushes only t0 (the frame time); tlen is whatever lies in the caller's stack
+                // slot above it. Controls never reads tlen, so 0 is passed here.
+                Controls(dT, 0.0);
             }
             M3D_APP->m_pInterfaceManager->Update();
         }

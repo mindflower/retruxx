@@ -36,6 +36,7 @@
 #include "game/uimanager/uidefs.h"
 #include "game/uiwindows/charwindows/znayukakprodatwnd.h"
 #include "server/objects/physicbodies/vehiclepart.h"
+#include "server/objects/physicbodies/compoundvehiclepart.h"
 #include "server/server.h"
 #include "ui/ui.h"
 #include "ui/button.h"
@@ -694,23 +695,157 @@ namespace help
         return workshop ? static_cast<int>(workshop->GetObjectSellPrice(obj)) : -3;
     }
 
+    void GunFullReload(ai::Obj* gun)
+    {
+        // RVA 0x553C60 - a full charge and a full pool, ready to fire.
+        if (!gun)
+        {
+            return;
+        }
+        unsigned int chargeSize = 0;
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            chargeSize = static_cast<ai::Gun*>(gun)->GetChargeSize();
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            chargeSize = static_cast<ai::CompoundGun*>(gun)->GetChargeSize();
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            static_cast<ai::Gun*>(gun)->SetShellsInCurrentCharge(chargeSize);
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            static_cast<ai::CompoundGun*>(gun)->SetShellsInCurrentCharge(chargeSize);
+        }
+        unsigned int poolSize = 0;
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            poolSize = static_cast<ai::Gun*>(gun)->GetShellsPoolSize();
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            poolSize = static_cast<ai::CompoundGun*>(gun)->GetShellsPoolSize();
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            static_cast<ai::Gun*>(gun)->SetShellsInPool(poolSize);
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            static_cast<ai::CompoundGun*>(gun)->SetShellsInPool(poolSize);
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            static_cast<ai::Gun*>(gun)->SetChargeState(ai::Gun::csReady);
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            static_cast<ai::CompoundGun*>(gun)->SetChargeState(ai::Gun::csReady);
+        }
+    }
+
+    void RepairVehiclePart(ai::VehiclePart* vp)
+    {
+        // RVA 0x556BB0 - full durability, and a gun is also fully reloaded.
+        if (!vp)
+        {
+            return;
+        }
+        if (vp->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+        {
+            auto* cvp = static_cast<ai::CompoundVehiclePart*>(vp);
+            cvp->SetDurability(cvp->GetMaxDurability());
+        }
+        else
+        {
+            vp->Durability().setToMax();
+        }
+        if (vp->IsKindOf(&ai::Gun::m_classGun) || vp->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            GunFullReload(vp);
+        }
+    }
+
+    void RepairVehicle(ai::Vehicle* v)
+    {
+        // RVA 0x556B10 - full health, and every part repaired.
+        if (!v)
+        {
+            return;
+        }
+        v->Health().setToMax();
+        for (auto it = v->begin(); it != v->end(); ++it)
+        {
+            RepairVehiclePart(it->second);
+        }
+    }
+
     void RepairObj(ai::Obj* o)
     {
-        // TODO(RVA 0x556AD0): the shipped helper dispatches to help::RepairVehicle /
-        // help::RepairVehiclePart by kind; neither leaf helper is ported yet, so this
-        // is a no-op for now (objects added back to a shop simply aren't auto-repaired).
-        (void)o;
+        // RVA 0x556AD0
+        if (!o)
+        {
+            return;
+        }
+        if (o->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            RepairVehicle(static_cast<ai::Vehicle*>(o));
+        }
+        else if (o->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
+        {
+            RepairVehiclePart(static_cast<ai::VehiclePart*>(o));
+        }
+    }
+
+    bool IsGadgetCompatibleWithVehicle(int gadgetId, int vehicleId)
+    {
+        // RVA 0x554550 - the vehicle has room for at least one gadget of this kind.
+        if (gadgetId == -1 || vehicleId == -1)
+        {
+            return false;
+        }
+        ai::Obj* gadget = ai::theObjects->GetEntityByObjId(gadgetId);
+        if (!gadget || !gadget->IsKindOf(&ai::Gadget::m_classGadget))
+        {
+            return false;
+        }
+        ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (!vehicleObj || !vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            return false;
+        }
+        ai::PrototypeInfo const* proto = gadget->GetPrototypeInfo();
+        if (!proto)
+        {
+            return false;
+        }
+        CStr const resourceName = ai::theResourceManager->GetResourceName(proto->m_resourceId);
+        return static_cast<ai::Vehicle*>(vehicleObj)->GetMaxGadgets(resourceName) > 0;
     }
 
     bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId)
     {
-        // TODO(RVA 0x5544C0): dispatches to help::IsVehiclePartCompatibleWithVehicle /
-        // help::IsGadgetCompatibleWithVehicle by kind - the gadget leaf is not ported
-        // yet. Reported as "not compatible" so shop slots simply don't get the
-        // compatible-with-vehicle highlight until that is implemented.
-        (void)objId;
-        (void)vehicleId;
-        return false;
+        // RVA 0x5544C0
+        if (objId == -1 || vehicleId == -1)
+        {
+            return false;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj || !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            return false;
+        }
+        if (obj->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
+        {
+            return IsVehiclePartCompatibleWithVehicle(objId, vehicleId);
+        }
+        if (!obj->IsKindOf(&ai::Gadget::m_classGadget))
+        {
+            return false;
+        }
+        return IsGadgetCompatibleWithVehicle(objId, vehicleId);
     }
 
     void GetObjetsInRepositoryByResourceType(
@@ -1014,9 +1149,19 @@ namespace help
         return gfx->GetFontId(fontName, wantedFontSz, type, params);
     }
 
-    bool IsBoss(ai::Obj const*)
+    bool IsBoss(ai::Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x555900
+        if (!obj)
+        {
+            return false;
+        }
+        ai::PrototypeInfo const* proto = obj->GetPrototypeInfo();
+        if (!proto)
+        {
+            return false;
+        }
+        return ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, ai::theResourceManager->GetResourceId("BOSS"));
     }
 
     CStr GetClanAbbreviationByName(CStr const& clanName)
@@ -1024,9 +1169,10 @@ namespace help
         return M3D_APP->GetStringByStringId0(clanName + "_abb");
     }
 
-    CStr GetClanFullNameByName(CStr const&)
+    CStr GetClanFullNameByName(CStr const& clanName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x551BD0
+        return M3D_APP->GetStringByStringId0(clanName);
     }
 
     CStr GetClanNameByBelong(int clanBelong)
@@ -1079,15 +1225,51 @@ namespace help
     }
     CStr GetServiceSymbols()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5534E0
+        return ".~!@#$%^&*|\\/\"<>?:";
     }
     CStr GetServiceSymbolsForVisualisation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5534F0 - the symbols separated by spaces, with the engine's own markup characters escaped by '#'.
+        CStr const symbols(".~!@#$%^&*|\\/\"<>?:");
+        CStr strRes;
+        int const len = symbols.c_str() ? static_cast<int>(strlen(symbols.c_str())) : 0;
+        CStr const engineSymbols("|@$#&");
+        for (int i = 0; i < len; ++i)
+        {
+            char const c = symbols.c_str()[i];
+            if (strchr(engineSymbols.c_str(), c))
+            {
+                strRes += CStr("#");
+            }
+            char const sym[2] = {symbols.c_str()[i], 0};
+            strRes += CStr(sym);
+            if (i < len - 1)
+            {
+                strRes += CStr(" ");
+            }
+        }
+        return strRes;
     }
-    CStr GetVehiclePartNameByResourceId(int)
+
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CStr const CABIN_21("CABIN");
+        CStr const BASKET_21("BASKET");
+    }  // namespace
+
+    CStr GetVehiclePartNameByResourceId(int vpResourceId)
+    {
+        // RVA 0x554150 - the resource name of the part's kind, empty for anything else.
+        if (ai::theResourceManager->bResourceIsKindOf(vpResourceId, ai::theResourceManager->GetResourceId("CABIN")))
+        {
+            return CABIN_21;
+        }
+        if (ai::theResourceManager->bResourceIsKindOf(vpResourceId, ai::theResourceManager->GetResourceId("BASKET")))
+        {
+            return BASKET_21;
+        }
+        return CStr();
     }
     int RoundHealth(float val)
     {
@@ -1098,10 +1280,63 @@ namespace help
         return 1;
     }
 
-    void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char)
+    void SetWndTextAlpha(m3d::ui::Wnd* w, unsigned char alpha)
     {
-        // TODO: implement SetWndTextAlpha
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x554F60 - sets the alpha of the text colour and of every inline "@AARRGGBB" colour code in the text;
+        // "#@" is an escaped '@'.
+        if (!w)
+        {
+            return;
+        }
+        unsigned int const color = m3d::ui::Wnd::GetGfxServer()->GetColor(w->GetTextColor());
+        w->SetTextColor((static_cast<unsigned int>(alpha) << 24) | (color & 0xFFFFFF));
+
+        CStr const a = w->GetText();
+        if (!a.c_str() || !strlen(a.c_str()))
+        {
+            return;
+        }
+        CStr newText;
+        int const len = static_cast<int>(strlen(a.c_str()));
+        int idx = 0;
+        while (idx < len)
+        {
+            char const* at = strchr(a.c_str() + idx, '@');
+            if (!at)
+            {
+                break;
+            }
+            idx = static_cast<int>(at - a.c_str());
+            if (idx + 9 > len)
+            {
+                break;
+            }
+            if (idx - 1 >= 0 && a.c_str()[idx - 1] == '#')
+            {
+                // NOTE: the '@' is skipped by 2, not 1; harmless as the next strchr finds the same codes.
+                idx += 2;
+            }
+            else
+            {
+                char strAlpha[16];
+                sprintf(strAlpha, "%02x", alpha);
+                if (!newText.c_str() || !strlen(newText.c_str()))
+                {
+                    newText = a;
+                }
+                const_cast<char*>(newText.c_str())[idx + 1] = strAlpha[0];
+                const_cast<char*>(newText.c_str())[idx + 2] = strAlpha[1];
+                idx += 9;
+            }
+            if (idx < 0)
+            {
+                break;
+            }
+        }
+        if (newText.c_str() && strlen(newText.c_str()))
+        {
+            w->SetText(newText);
+        }
     }
 
     bool WindowsDirExists(CStr const& dirPath)
@@ -1281,26 +1516,53 @@ namespace help
 
     bool CanGunFire(ai::Obj const* gun)
     {
-        // NOTE: this helper's own implementation is not among the functions
-        // decompiled for this pass (only its call sites are, which show it
-        // takes the gun object and returns whether it can currently fire).
-        // A hard RETRUXX_NOT_IMPLEMENTED stub is avoided here because this
-        // runs every frame from WeaponInfoWnd::UpdateOnNewFrame while any
-        // weapon-info UI is visible; as a safe placeholder this reports
-        // "can fire" whenever a gun object exists.
-        return gun != nullptr;
+        // RVA 0x554E60
+        if (!gun)
+        {
+            return false;
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            return static_cast<ai::Gun const*>(gun)->CanFire();
+        }
+        if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            return static_cast<ai::CompoundGun const*>(gun)->CanFire();
+        }
+        return false;
     }
 
     bool CanGunShotToSeenObj(ai::Obj const* gun)
     {
-        // NOTE: same situation as CanGunFire above - this helper's own
-        // implementation is not among the functions decompiled for this
-        // pass, only call sites that show it takes the gun object and
-        // returns whether it can currently hit the player's seen/locked
-        // target. A safe placeholder ("can shoot" whenever a gun exists) is
-        // used instead of a hard RETRUXX_NOT_IMPLEMENTED stub because this
-        // is called every frame while weapon-group UI is visible.
-        return gun != nullptr;
+        // RVA 0x554DE0 - whether the gun can hit what the player's vehicle is looking at, if that is alive.
+        if (!gun || !ai::thePlayer)
+        {
+            return false;
+        }
+        ai::Vehicle const* vehicle = ai::thePlayer->GetVehicle();
+        if (!vehicle)
+        {
+            return false;
+        }
+        int const targetId = vehicle->GetSeenObjId();
+        if (targetId == -1)
+        {
+            return false;
+        }
+        ai::Obj* target = ai::theObjects->GetEntityByObjId(targetId);
+        if (!target || !target->IsAlive())
+        {
+            return false;
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            return static_cast<ai::Gun const*>(gun)->CanShotToTarget(targetId);
+        }
+        if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            return static_cast<ai::CompoundGun const*>(gun)->CanShotToTarget(targetId);
+        }
+        return false;
     }
 
     bool IsGunWithCharging(ai::Obj const* gun)

@@ -50,10 +50,23 @@ ObjectsIcons::ObjectsIcons()
 {
 }
 
-void ObjectsIcons::Clear(bool)
+void ObjectsIcons::Clear(bool bGlobal)
 {
-    // TODO: implement ObjectsIcons::Clear
-    // RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x56FC30 - drops the level's icons, and with bGlobal the global ones too.
+    for (auto& levelIcon : m_levelIcons)
+    {
+        delete levelIcon.second;
+    }
+    m_levelIcons.clear();
+    if (bGlobal)
+    {
+        m_levelName = "";
+        for (auto& globalIcon : m_globalIcons)
+        {
+            delete globalIcon.second;
+        }
+        m_globalIcons.clear();
+    }
 }
 
 m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const& name, int mode) const
@@ -72,7 +85,8 @@ m3d::rend::TexHandle ObjectsIcons::GetIcoByName(CStr const& name, int mode) cons
 
 ObjectsIcons::~ObjectsIcons()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x56FBA0
+    Clear(true);
 }
 
 int ObjectsIcons::Load(CStr const& fileName, bool bGlobal)

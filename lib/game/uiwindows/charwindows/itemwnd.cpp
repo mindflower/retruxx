@@ -149,11 +149,6 @@ bool ItemWnd::NeedUpdateInfoWnd(ItemInfoWnd* infoWnd) const
     return infoWnd != nullptr;
 }
 
-int ItemWnd::GetResourceId() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
 ai::Obj* ItemWnd::GetItem() const
 {
     return m_itemId >= 0 ? ai::theObjects->GetEntityByObjId(m_itemId) : nullptr;
@@ -234,16 +229,6 @@ void ItemWnd::LaunchEventOnItemDeactivation() const
 }
 void ItemWnd::UpdateItemValue()
 {
-}
-
-m3d::Object* ItemWnd::RepositoryClone()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int ItemWnd::RepositoryDeactivateItem()
-{
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 // ---------------------------------------------------------------------------
@@ -547,6 +532,7 @@ void ItemWnd::DrawFrame(m3d::ui::DrawInfo const& di)
 
 void ItemWnd::DrawItemInfo(m3d::ui::DrawInfo const& di)
 {
+    // RVA 0x458330
     m3d::ui::GfxServer* gfx = m_gfx;
     float const lineHeight = gfx->MeasureText(CStr("A"), m_defFont, m3d::TW_NOWRAP, 1000.0f).y;
 
@@ -574,8 +560,17 @@ void ItemWnd::DrawItemInfo(m3d::ui::DrawInfo const& di)
 
     if ((m_drawStyle & 1) != 0 && GetItemObjId() != -1)
     {
-        // TODO(RVA 0x458330): draws help::GetPriceSmart(objId) top-right; that
-        // helper routes through the unported ZnayuKakProdatWnd / town price tables.
+        // A negative (unknown) price shows as 0. NOTE: unlike GeomSlot, the price is drawn without the text colour
+        // prefix.
+        int price = help::GetPriceSmart(GetItemObjId());
+        if (price < 0)
+        {
+            price = 0;
+        }
+        CStr const strPrice(price);
+        PointBase<float> const textSz = gfx->MeasureText(strPrice, m_defFont, m3d::TW_NOWRAP, m_bounds.width);
+        PointBase<float> const at{di.m_clientRect.width - textSz.x, 0.0f};
+        gfx->AddText(di, at, strPrice, m_defFont, m3d::TW_NOWRAP, m3d::TF_LEFT);
     }
 }
 

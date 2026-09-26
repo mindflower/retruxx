@@ -7,6 +7,7 @@
 #include "math/vector.h"
 #include "script/luaaiparam.h"
 #include "script/luavector.h"
+#include "script/luaquaternion.h"
 #include "script/scriptserver.h"
 
 extern "C"{
@@ -118,7 +119,8 @@ namespace m3d
 
 	int LuaContext::countArgs()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x8999C0
+		return m_numInputs;
 	}
 
 	float LuaContext::asFloat(int i)
@@ -220,9 +222,11 @@ namespace m3d
 		return lua_tostring(this->L, v3);
 	}
 
-	void LuaContext::pushQuaternion(Quaternion const&)
+	void LuaContext::pushQuaternion(Quaternion const& x)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x899B00
+		*ext_createQuaternion(L) = x;
+		++m_numOutputs;
 	}
 
 	void LuaContext::pushInt(int x)
@@ -274,8 +278,14 @@ namespace m3d
         ++m_numOutputs;
 	}
 
-	int LuaContext::_validateArg(int)
+	int LuaContext::_validateArg(int i)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x899B30
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		return i + this->m_stackStart;
 	}
 }

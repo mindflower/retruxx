@@ -15,6 +15,7 @@ namespace m3d
                 Item(CStr const&, int, Item*, Item*);
 
             private:
+                friend class MenuWnd;
                 Item* m_next;
                 Item* m_child;
                 Item* m_parent;

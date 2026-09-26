@@ -880,10 +880,11 @@ int ConversationWnd::PlayerRepliesListBoxWnd::SetUpForDynamicQuestThemes(ai::Npc
         }
         auto* dQuest = static_cast<ai::DynamicQuest*>(obj);
 
-        // TODO(RVA 0x996B0): the shipped build reads a per-quest status word and
-        // skips quests that are no longer offerable before this point. That
-        // field (ai::DynamicQuest::QuestStatus) is only forward declared in the
-        // ported headers, so for now every live dynamic quest is listed.
+        // Only quests not yet taken are offered.
+        if (dQuest->GetQuestStatus() != ai::DynamicQuest::STATUS_NOT_TAKEN)
+        {
+            continue;
+        }
         dQuest->UpdateBeforeShowInConversation();
 
         auto* btn = new PlayerReplyButton(

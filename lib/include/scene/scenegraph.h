@@ -75,6 +75,8 @@ namespace m3d
         // PhysicBody::SetAnimationStopped moves nodes in and out of the think list.
         friend class ai::PhysicBody;
         friend class LightsServer;
+        // ProjectorsServer::RenderItem walks the sorted cells and sets up the projector shaders.
+        friend class ProjectorsServer;
 
     public:
         SceneGraph(const m3d::SceneGraph&);

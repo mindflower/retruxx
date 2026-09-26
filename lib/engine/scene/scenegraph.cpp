@@ -2,6 +2,9 @@
 #include <stdexcept>
 #include <scene/scenegraph.h>
 #include <algorithm>
+#include <cmath>
+#include "landscape.h"
+#include "math/coremath.h"
 
 #include "config.h"
 #include "m3dapp.h"
@@ -118,12 +121,123 @@ namespace
     bool inTransparencyRadius = false;
 }  // namespace
 
+int clipLineToBox(CVector* v, float* box);
+
 namespace
 {
+    // The shipped MemoryManager::Malloc puts the block size and 0xDEADBEEF in front of every allocation and
+    // 0xFEEBDAED behind it, and CheckNodeValidity reads those words around a node. This build allocates nodes with
+    // the C runtime instead, so the words are not there and the check is switched off.
+    constexpr bool NODES_HAVE_GUARD_WORDS = false;
+
+    // Read by RenderDebugForNode but never assigned, so every label says 0.
+    int g_nodeNum = 0;
+
+    void DumpNodeInfo(m3d::SgNode* node)
+    {
+        // RVA 0x635FE0 - logs the node and each of its ancestors.
+        while (node)
+        {
+            {
+                M3D_LOG_INFO(CStr("Node class = '") + CStr(node->GetClassNameA()) + CStr("'"));
+            }
+            {
+                M3D_LOG_INFO(CStr("Node name = '") + CStr(node->GetName()) + CStr("'"));
+            }
+            m3d::DataServer* const server = node->GetServer();
+            if (!server)
+            {
+                M3D_LOG_INFO("Node server is NULL");
+            }
+            else
+            {
+                int serverHandle = -1;
+                node->GetProperty(m3d::PROP_NODE_HANDLE, &serverHandle);
+                if (serverHandle == -1)
+                {
+                    M3D_LOG_INFO("Node has invalid handle");
+                }
+                else
+                {
+                    CStr name;
+                    CStr fileName;
+                    server->GetItemProperty(serverHandle, m3d::PROP_MODEL_NAME, &name);
+                    server->GetItemProperty(serverHandle, m3d::PROP_MODEL_FILENAME, &fileName);
+                    M3D_LOG_INFO(CStr("Node model: '") + name + CStr("' (") + fileName + CStr(")"));
+                }
+            }
+
+            m3d::Object* const parent = node->GetParent();
+            if (!parent)
+            {
+                break;
+            }
+            if (!parent->IsKindOf(&m3d::SgNode::m_classSgNode))
+            {
+                M3D_LOG_INFO("Node parent is not SgNode!");
+                return;
+            }
+            {
+                M3D_LOG_INFO("\nNode parent:");
+            }
+            node = static_cast<m3d::SgNode*>(parent);
+        }
+    }
+
     void CheckNodeValidity(m3d::SgNode* node, char const* debugStr)
     {
-        // TODO: implement CheckNodeValidity
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6368C0 - checks the allocator's guard words around the node and stops in the debugger when either
+        // is damaged.
+        if (!NODES_HAVE_GUARD_WORDS)
+        {
+            return;
+        }
+
+        int const* const header = reinterpret_cast<int const*>(node);
+        bool valid = true;
+        if (static_cast<unsigned>(header[-1]) != 0xDEADBEEF)
+        {
+            M3D_LOG_ERR(CStr("Error: node prefix is invalid: ") + CStr(header[-1]));
+            valid = false;
+        }
+        int const size = header[-2];
+        int const* const postfix = reinterpret_cast<int const*>(reinterpret_cast<char const*>(node) + size);
+        if (valid)
+        {
+            if (static_cast<unsigned>(*postfix) == 0xFEEBDAED)
+            {
+                return;
+            }
+            M3D_LOG_ERR(CStr("Error: node postfix is invalid: ") + CStr(*postfix));
+        }
+        {
+            M3D_LOG_INFO(CStr("Debug string: '") + CStr(debugStr) + CStr("'"));
+        }
+        {
+            M3D_LOG_INFO(CStr("Node size = ") + CStr(size));
+        }
+        DumpNodeInfo(node);
+        __debugbreak();
+    }
+
+    // Line points outside the landscape (one cell's margin in, up to 2000 high) are cut off.
+    int clipLineToLanscapeRect(CVector* v, int x0, int z0, int x1, int z1)
+    {
+        // RVA 0x88D8A0
+        CVector vv[3];
+        vv[0] = v[0];
+        vv[1] = v[1];
+        float box[6];
+        box[1] = 0.0f;
+        box[4] = 2000.0f;
+        box[0] = static_cast<float>(x0) * VISCELL_EDGE_LENGTH_6 + 1.0f;
+        box[2] = static_cast<float>(z0) * VISCELL_EDGE_LENGTH_6 + 1.0f;
+        box[3] = static_cast<float>(x1) * VISCELL_EDGE_LENGTH_6 - 1.0f;
+        box[5] = static_cast<float>(z1) * VISCELL_EDGE_LENGTH_6 - 1.0f;
+        int const result = clipLineToBox(vv, box);
+        v[0] = vv[0];
+        v[1] = vv[1];
+        return result;
     }
 
     m3d::SgNode* GetNodeByNameNode(CStr const& name, m3d::SgNode* node)
@@ -532,9 +646,43 @@ namespace m3d
         }
     }
 
-    void SceneGraph::DumpRenderingNodesInfoForClass(Class const*)
+    void SceneGraph::DumpRenderingNodesInfoForClass(Class const* nodeClass)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x635860 - logs the models of the nodes of one class gathered for rendering this frame.
+        if (!nodeClass)
+        {
+            return;
+        }
+        SgNode** const slots = &m_visSlots[2000 * nodeClass->m_index];
+        int const numNodes = m_visNumSlots[nodeClass->m_index];
+        if (!numNodes)
+        {
+            return;
+        }
+        DataServer* const server = slots[0]->GetServer();
+        if (!server)
+        {
+            return;
+        }
+        for (int i = 0; i < numNodes; ++i)
+        {
+            CStr logStr = CStr(i) + CStr(": ");
+            int serverHandle = -1;
+            slots[i]->GetProperty(PROP_NODE_HANDLE, &serverHandle);
+            if (serverHandle == -1)
+            {
+                logStr += CStr("Invalid node");
+            }
+            else
+            {
+                CStr name;
+                CStr fileName;
+                server->GetItemProperty(serverHandle, PROP_MODEL_NAME, &name);
+                server->GetItemProperty(serverHandle, PROP_MODEL_FILENAME, &fileName);
+                logStr += name + CStr(" (") + fileName + CStr(")");
+            }
+            M3D_LOG_INFO(logStr);
+        }
     }
 
     SgNode* SceneGraph::GetRootNode()
@@ -941,9 +1089,139 @@ namespace m3d
         }
     }
 
-    SgNode* SceneGraph::TraceLine(CVector&, CVector const&, CVector const&, retruxx::set<Class*> const&, unsigned)
+    SgNode* SceneGraph::TraceLine(
+        CVector& hit, CVector const& start, CVector const& finish, retruxx::set<Class*> const& cl0, unsigned traceMode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x88DE90 (traceline.cpp) - walks the visibility cells under the segment and returns the nearest node
+        // of the wanted classes it crosses (the landscape counts as a node). A set holding nullptr means the
+        // landscape, static and animated models and game units.
+        CVector v[2] = {start, finish};
+        int const landSize = m_owner->m_level->land_size;
+        if (!clipLineToLanscapeRect(v, 0, 0, landSize, landSize))
+        {
+            return nullptr;
+        }
+
+        retruxx::set<Class*> classes;
+        if (cl0.find(nullptr) == cl0.end())
+        {
+            classes = cl0;
+        }
+        else
+        {
+            classes.insert(RT_CLASS_LOCAL(Landscape));
+            classes.insert(RT_CLASS_LOCAL(SgStaticModelNode));
+            classes.insert(RT_CLASS_LOCAL(SgAnimatedModelNode));
+            classes.insert(RT_CLASS_LOCAL(SgGameUnitNode));
+        }
+
+        CVector const delta(finish.x - start.x, finish.y - start.y, finish.z - start.z);
+        SgNode* hitNodes[64];
+        float hitDistances[64];
+        hitNodes[(RT_CLASS_LOCAL(Landscape))->m_index] = &m_owner->m_landscape;
+        for (float& d : hitDistances)
+        {
+            d = -1.0f;
+        }
+        float const lineLength = std::sqrt(delta.x * delta.x + delta.z * delta.z + delta.y * delta.y);
+        float const invLength =
+            1.0f / std::sqrt(delta.z * delta.z + delta.y * delta.y + delta.x * delta.x + 0.00000011920929f);
+        CVector const dir(invLength * delta.x, delta.y * invLength, delta.z * invLength);
+
+        retruxx::set<SgNode*> dontCheckTwice;
+        int const x0 = static_cast<int>(v[0].x);
+        int const z0 = static_cast<int>(v[0].z);
+        CBrezLine cellLine;
+        cellLine.start(x0, z0, static_cast<int>(v[1].x), static_cast<int>(v[1].z));
+        int const ssz = static_cast<int>(static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH_6);
+        if (x0 < 0 || z0 < 0 || x0 >= ssz || z0 >= ssz)
+        {
+            // NOTE: the "dst" part of the message prints the start point again, and "ssz = " follows the z0 value
+            // without a space.
+            M3D_LOG_INFO(CStr("TRACELINE ERROR: x0 = ") + CStr(x0) + CStr(" z0 = ") + CStr(z0) + CStr("ssz = ") +
+                CStr(ssz) + CStr(" src = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z) +
+                CStr(" dst = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z));
+            return nullptr;
+        }
+
+        float prevCellX = -1.0f;
+        float prevCellZ = -1.0f;
+        float const scale = 1.0f / VISCELL_EDGE_LENGTH_6;
+        int px = 0;
+        int pz = 0;
+        if (!cellLine.step(px, pz))
+        {
+            return nullptr;
+        }
+        for (;;)
+        {
+            float const cellX = static_cast<float>(std::floor(static_cast<double>(px) * scale));
+            float const cellZ = static_cast<float>(std::floor(static_cast<double>(pz) * scale));
+            if ((prevCellX != cellX || prevCellZ != cellZ) && cellX >= 0.0f && cellZ >= 0.0f && cellX < 64.0f &&
+                cellZ < 64.0f)
+            {
+                prevCellX = cellX;
+                prevCellZ = cellZ;
+                int const cx = static_cast<int>(cellX);
+                int const cz = static_cast<int>(cellZ);
+                for (Class* const cls : classes)
+                {
+                    int const index = cls->m_index;
+                    if (cls == RT_CLASS_LOCAL(Landscape))
+                    {
+                        m_owner->m_landscape.traceLineThruCellLs(
+                            hitDistances[index], cx, cz, start, dir, (traceMode & 1) != 0);
+                    }
+                    else
+                    {
+                        hitNodes[index] = TraceLineThruCellNodesForClass(
+                            hitDistances[index], cx, cz, start, dir, cls, dontCheckTwice, traceMode);
+                    }
+                }
+
+                // Hits beyond the end of the segment do not count.
+                bool found = false;
+                for (Class* const cls : classes)
+                {
+                    float& distance = hitDistances[cls->m_index];
+                    if (distance >= 0.0f)
+                    {
+                        if (distance <= lineLength)
+                        {
+                            found = true;
+                        }
+                        else
+                        {
+                            distance = -1.0f;
+                        }
+                    }
+                }
+                if (found)
+                {
+                    break;
+                }
+            }
+            if (!cellLine.step(px, pz))
+            {
+                return nullptr;
+            }
+        }
+
+        float min = 999999.0f;
+        SgNode* nearest = nullptr;
+        for (Class* const cls : classes)
+        {
+            int const index = cls->m_index;
+            if (hitDistances[index] >= 0.0f && min > hitDistances[index])
+            {
+                nearest = hitNodes[index];
+                min = hitDistances[index];
+            }
+        }
+        hit.x = dir.x * min + start.x;
+        hit.y = dir.y * min + start.y;
+        hit.z = dir.z * min + start.z;
+        return nearest;
     }
 
     void SceneGraph::LightSetupLightsForNode(SgNode* node)
@@ -1085,9 +1363,24 @@ namespace m3d
         m_bIsPurgingRemoveIfFree = false;
     }
 
-    void SceneGraph::RenderDebugForNode(SgNode*)
+    void SceneGraph::RenderDebugForNode(SgNode* n)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634B90 - labels the node with its class above its origin. NOTE: the label is lifted along Y by half
+        // the box's Z extent.
+        auto* const renderer = M3D_RENDERER;
+        CVector const org(n->m_currentWorldOrigin.x,
+            n->m_currentWorldOrigin.y + (n->m_boundingBox.m_box[5] - n->m_boundingBox.m_box[2]) * 0.5f,
+            n->m_currentWorldOrigin.z);
+        CVector const screen = renderer->Project(org - renderer->MatGetOrgInv());
+        M3D_APP->SetFont(CStr("Tahoma"), 11.0f, 0, M3D_APP->m_codePage.CodePage);
+        renderer->PushFog(false);
+        renderer->PushBlend(rend::BM_NONE);
+        renderer->PushZbState(rend::ZB_DISABLE);
+        CStr const strText = CStr(n->GetClassNameA()) + CStr(" ") + CStr(g_nodeNum);
+        M3D_APP->DrawTextAbs(screen.x, screen.y, 0xFFFFFFFF, strText, 0, -1);
+        renderer->PopZbState();
+        renderer->PopBlend();
+        renderer->PopFog();
     }
 
     void SceneGraph::RenderContouredNodes()
@@ -1644,8 +1937,8 @@ namespace m3d
 
     void SceneGraph::EnableVisibleCells(CClipper& frusta, unsigned or)
     {
+        // RVA 0x6375B0
         float v5 = (float)m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_6;
-        //TODO: check this
         float box[6] = {0};
         box[2] = 0.0;
         box[5] = v5;
@@ -1654,7 +1947,6 @@ namespace m3d
         m_owner->GetLandscape().getMinMaxHeightForBox(box, 0.0);
         frusta.enableAll();
         enableVisibleCells_r(frusta, box, or);
-        //RETRUXX_NOT_IMPLEMENTED;
     }
 
     void SceneGraph::RemoveNode(SgNode*& toRemove)
@@ -3044,7 +3336,64 @@ namespace m3d
 
     void SceneGraph::DrawStencilShadows()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8A9ED0 - hands the (up to 100) nearest animated models and game units within the shadow distance to
+        // the stencil shadow renderer. NOTE: the fade distances are worked out but never used.
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame() - 1;
+        float fogStart;
+        float fogEnd;
+        m_owner->GetLandscape().GetFogStartAndEnd(fogStart, fogEnd);
+        fogStart *= 0.75f;
+        fogEnd *= 0.75f;
+        fogStart = FADE_START <= fogStart ? FADE_START : fogStart;
+        float const farDist = static_cast<float>(M3D_ENGINE_CFG.m_g_shadowFarDist.GetI()) * VISCELL_EDGE_LENGTH_6;
+        fogEnd = farDist <= fogEnd ? farDist : fogEnd;
+        unsigned const ls = pClient->GetWorld().m_level->land_size;
+        if (!M3D_ENGINE_CFG.m_g_stencilShadows.GetB())
+        {
+            return;
+        }
+
+        retruxx::vector<Class*> classes;
+        classes.push_back(RT_CLASS_LOCAL(SgAnimatedModelNode));
+        classes.push_back(RT_CLASS_LOCAL(SgGameUnitNode));
+        retruxx::set<SgNode*> nodes;
+        m_sortedCellsEndRadius = M3D_ENGINE_CFG.m_g_shadowFarDist.GetI();
+        m_sortedCellsCurCell = 0;
+        m_sortedCellsCurRadius = 0;
+        int x;
+        int z;
+        int v;
+        int radius;
+        while (SortedCellsFetch(x, z, v, radius))
+        {
+            if (v)
+            {
+                CollectShadowingNodesStencil(nodes, classes[0], x, z, ls, curFrame);
+                CollectShadowingNodesStencil(nodes, classes[1], x, z, ls, curFrame);
+            }
+        }
+
+        int numNodes = static_cast<int>(nodes.size());
+        if (numNodes)
+        {
+            retruxx::vector<SgNode*> shadowNodes(nodes.begin(), nodes.end());
+            CVector const cameraPos = M3D_RENDERER->MatGetOrgInv();
+            // ShadowNodesSortPred: nearest to the camera first.
+            std::sort(shadowNodes.begin(), shadowNodes.end(), [&cameraPos](SgNode const* node1, SgNode const* node2) {
+                float const d1z = node1->m_currentWorldOrigin.z - cameraPos.z;
+                float const d1y = node1->m_currentWorldOrigin.y - cameraPos.y;
+                float const d1x = node1->m_currentWorldOrigin.x - cameraPos.x;
+                float const d2y = node2->m_currentWorldOrigin.y - cameraPos.y;
+                float const d2z = node2->m_currentWorldOrigin.z - cameraPos.z;
+                float const d2x = node2->m_currentWorldOrigin.x - cameraPos.x;
+                return d2z * d2z + d2y * d2y + d2x * d2x > d1z * d1z + d1y * d1y + d1x * d1x;
+            });
+            if (numNodes > 100)
+            {
+                numNodes = 100;
+            }
+            M3D_APP->GetAnimatedModelsServer().RenderShadowVolumesSet(shadowNodes.data(), numNodes);
+        }
     }
 
     bool SceneGraph::IsTransparent(SgNode* n)

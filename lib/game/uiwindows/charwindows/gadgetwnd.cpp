@@ -172,13 +172,9 @@ bool GadgetWnd::SetItemObjId(int objId)
                 m_itemId = -1;
                 return false;
             }
-            // TODO(RVA 0x4457F0): the shipped build also stamps the gadget's own
-            // slot field with m_slotId here; ai::Gadget exposes no accessor for
-            // it in retruxx yet.
-            if (ai::Vehicle* vehicle = GetVehicle())
-            {
-                vehicle->AddGadget(static_cast<ai::Gadget*>(item));
-            }
+            // RVA 0x4457F0 - NOTE: the vehicle is not checked for null.
+            static_cast<ai::Gadget*>(item)->SetSlotNum(m_slotId);
+            GetVehicle()->AddGadget(static_cast<ai::Gadget*>(item));
         }
     }
     return true;

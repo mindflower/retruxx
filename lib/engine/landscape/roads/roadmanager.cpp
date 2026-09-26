@@ -220,6 +220,18 @@ namespace m3d
         m_owner = landscape;
     }
 
+    RoadInFrustumTest::RoadInFrustumTest(CClipper* fr)
+    {
+        // RVA 0x75ED30
+        frustum = fr;
+    }
+
+    bool RoadInFrustumTest::TestRoadNode(RoadNode* rn) const
+    {
+        // RVA 0x7B3A40
+        return frustum->testSphere(rn->m_boundCenter, rn->m_boundRadius) != 0;
+    }
+
     int RoadManager::RenderRoads(
         retruxx::vector<unsigned>& visList,
         RenderRoadType rrt,

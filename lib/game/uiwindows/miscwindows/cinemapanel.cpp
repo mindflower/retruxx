@@ -1,4 +1,5 @@
 #include "cinemapanel.h"
+#include <cassert>
 
 #include "autoscrolltextwnd.h"
 #include "config.h"
@@ -69,6 +70,7 @@ m3d::Class* CinemaPanel::GetBaseClass()
 
 m3d::Object* CinemaPanel::Clone()
 {
+    // RVA 0x4AD4A0
     // The shipped game allocates a fresh CinemaPanel and runs the copy
     // constructor, which is an assert(0) - the panel is not copyable.
     return new CinemaPanel(*this);
@@ -632,11 +634,12 @@ void CinemaPanel::SetupTextNormal(MsgInfo const* msgInfo)
     m_wndText->ShowWindow(true);
 }
 
-CinemaPanel::CinemaPanel(CinemaPanel const&) : CinemaPanel()
+CinemaPanel::CinemaPanel(CinemaPanel const&)
 {
-    // Matches the shipped game: the copy constructor is an assert(0) - a
-    // CinemaPanel cannot be duplicated.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4ADA00 - NOTE: the shipped copy constructor is an assert(0) (live in the retail build) - a
+    // CinemaPanel cannot be duplicated. Only the message queue and the aux info are constructed; the other
+    // members are left uninitialized.
+    assert(0);
 }
 
 CinemaPanel::CinemaPanel()

@@ -13,6 +13,7 @@
 
 #include "core/timer.h"
 #include "scene/nodes/sgnodeanimatedmodel.h"
+#include "engine/scene/shadows/shadowmanager.h"
 
 namespace m3d
 {
@@ -484,10 +485,12 @@ namespace m3d
         }
         case 8708:
         {
-            auto* node = (SgAnimatedModelNode*)src;
+            // RVA 0x774BC0 - the effects of one action, then the skin and configuration it asks for.
+            auto const* const ri = static_cast<PropSrvNodeAction const*>(src);
+            SgNode* const node = ri->m_node;
             ModelEffectList* list = nullptr;
             node->GetProperty(2, &list);
-            list->adjustModelEffects(node, node->m_action);
+            list->adjustModelEffects(node, ri->m_action);
 
             auto* dynamicModel = (DynamicModel*)m_models[id].m_ptr;
             auto* animatedModel = dynamicModel->m_mdl[0];
@@ -506,8 +509,8 @@ namespace m3d
                 list->m_curEffectList[i].m_effectNode->SetRotation(quat);
             }
 
-            auto skinNum = dynamicModel->m_effects[node->m_action].skinNum;
-            auto cfgNum = dynamicModel->m_effects[node->m_action].cfgNum;
+            auto skinNum = dynamicModel->m_effects[ri->m_action].skinNum;
+            auto cfgNum = dynamicModel->m_effects[ri->m_action].cfgNum;
             if (skinNum >= 0)
             {
                 node->SetProperty(8706u, &skinNum);
@@ -521,18 +524,22 @@ namespace m3d
         }
         case 8709:
         {
-            auto* node = (SgAnimatedModelNode*)src;
+            // RVA 0x774BC0 - the model's own animation.
+            auto const* const ri = static_cast<PropSrvNodeAction const*>(src);
             AnimInfo* anim = nullptr;
-            node->GetProperty(1, &anim);
-            anim->SetAnimation(node->m_action);
+            ri->m_node->GetProperty(1, &anim);
+            anim->SetAnimation(ri->m_action);
             return 1;
         }
         case 8710:
         {
-            auto* node = (SgAnimatedModelNode*)src;
+            // RVA 0x774BC0 - the effects of every action in the list, then each action's skin and configuration in
+            // turn, so the last one that sets them wins.
+            auto const* const ri = static_cast<PropSrvNodeActions const*>(src);
+            SgNode* const node = ri->m_node;
             ModelEffectList* list = nullptr;
             node->GetProperty(2, &list);
-            list->adjustModelEffects(node, node->m_action);
+            list->adjustModelEffects(node, *ri->m_Actions);
 
             auto* dynamicModel = (DynamicModel*)m_models[id].m_ptr;
             auto* animatedModel = dynamicModel->m_mdl[0];
@@ -540,10 +547,11 @@ namespace m3d
             for (int i = 0; i < list->m_curEffectList.size(); ++i)
             {
                 auto mat = animatedModel->GetBoneMatrix(list->m_curEffectList[i].m_desc->m_lpId);
+                // Here the origin is ZeroVector put through the full matrix rather than the folded form above.
                 CVector pos;
-                pos.x = (float)((float)((float)(mat._11 + mat._21) + mat._31) * 0.0) + mat._41;
-                pos.y = (float)((float)((float)(mat._12 + mat._22) + mat._32) * 0.0) + mat._42;
-                pos.z = (float)((float)((float)(mat._13 + mat._23) + mat._33) * 0.0) + mat._43;
+                pos.x = mat._11 * ZeroVector.x + mat._31 * ZeroVector.z + mat._21 * ZeroVector.y + mat._41;
+                pos.y = mat._32 * ZeroVector.z + mat._22 * ZeroVector.y + mat._12 * ZeroVector.x + mat._42;
+                pos.z = mat._33 * ZeroVector.z + mat._23 * ZeroVector.y + mat._13 * ZeroVector.x + mat._43;
                 list->m_curEffectList[i].m_effectNode->SetOriginAbs(pos);
 
                 Quaternion quat;
@@ -551,11 +559,11 @@ namespace m3d
                 list->m_curEffectList[i].m_effectNode->SetRotation(quat);
             }
 
-            // TODO: check this
-            for (int i = 0; i < node->m_action; ++i)
+            for (size_t i = 0; i < ri->m_Actions->size(); ++i)
             {
-                auto skinNum = dynamicModel->m_effects[i].skinNum;
-                auto cfgNum = dynamicModel->m_effects[i].cfgNum;
+                ActionType const action = (*ri->m_Actions)[i];
+                auto skinNum = dynamicModel->m_effects[action].skinNum;
+                auto cfgNum = dynamicModel->m_effects[action].cfgNum;
                 if (skinNum >= 0)
                 {
                     node->SetProperty(8706u, &skinNum);
@@ -565,9 +573,6 @@ namespace m3d
                     node->SetProperty(8707u, &cfgNum);
                 }
             }
-
-            return 1;
-
             return 1;
         }
         }
@@ -1111,10 +1116,11 @@ namespace m3d
         }
     }
 
-    int AnimatedModelsServer::RenderShadowVolumesSet(SgNode**, unsigned numNodes)
+    int AnimatedModelsServer::RenderShadowVolumesSet(SgNode** nodes, unsigned numNodes)
     {
         // RVA 0x8F45E0 - hands the sun direction and every mesh of at least 10 faces to the shadow manager, which draws
-        // the stencil shadows.
+        // the stencil shadows. NOTE: nothing in the game ever creates m_ShadowMan, so with stencil shadows on and
+        // casters present this dereferences a null manager, as the original does.
         if (!M3D_KERNEL->GetEngineCfg().m_g_stencilShadows.GetB())
         {
             return 1;
@@ -1122,8 +1128,39 @@ namespace m3d
         m_profiler->StartCountdown();
         if (numNodes)
         {
-            // ShadowManager is not reimplemented yet, so the casters cannot be collected.
-            RETRUXX_NOT_IMPLEMENTED;
+            CVector const& sunDir = pClient->GetWorld().m_sunDir;
+            m_ShadowMan->AddDirectionalLight(CVector(0.0f - sunDir.x, 0.0f - sunDir.y, 0.0f - sunDir.z));
+            if (!m_ShadowMan->ShadowsEnabled())
+            {
+                m_ShadowMan->EnableShadows(true);
+            }
+            unsigned char const alpha = static_cast<unsigned char>(
+                static_cast<unsigned __int64>(pClient->GetWorld().GetSForShadowsFromWeather() * 76.5));
+            m_ShadowMan->SetShadowColor(static_cast<unsigned int>(alpha) << 24);
+            // NOTE: the full-screen quad is rebuilt every time shadows are drawn.
+            m_ShadowMan->OnChangeScreenResolution();
+
+            for (unsigned nodeNum = 0; nodeNum < numNodes; ++nodeNum)
+            {
+                SgNode* const node = nodes[nodeNum];
+                AnimInfo* anim = nullptr;
+                node->GetProperty(1, &anim);
+                Configuration* cfg = nullptr;
+                node->GetProperty(8707, &cfg);
+                for (unsigned i = 0; i < cfg->m_meshes.size(); ++i)
+                {
+                    AnimatedModel::Mesh const* const mesh = cfg->m_meshes[i];
+                    // NOTE: type 1 is let through the first test only to be dropped by the last one.
+                    if ((mesh->m_meshType == 4 || mesh->m_meshType == 1) && mesh->m_numFaces >= 10 &&
+                        mesh->m_meshType == 4)
+                    {
+                        m_ShadowMan->AddShadowCaster(node->m_currentXForm, *mesh);
+                    }
+                }
+            }
+            m_ShadowMan->BeginScene();
+            m_ShadowMan->EndScene();
+            m_numShadowingNodes = 0;
         }
         m_profiler->EndCountdown();
         return 1;
@@ -2371,7 +2408,32 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     const retruxx::vector<ActionType, retruxx::allocator<ActionType>>& newActions)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7748E0 - the effects of all the given actions together, minus those on suppressed loadpoints.
+    retruxx::vector<ModelEffectList::tEffect> newEffectList;
+    newEffectList.reserve(10);
+    retruxx::set<int>* suppressedLPs = nullptr;
+    realModel->GetProperty(8714, &suppressedLPs);
+
+    for (size_t j = 0; j < newActions.size(); ++j)
+    {
+        auto const& lpEffects = m_dynModel->m_effects[newActions[j]].lpEffects;
+        for (size_t i = 0; i < lpEffects.size(); ++i)
+        {
+            tEffect effect;
+            effect.m_effectNode = 0;
+            effect.m_desc = &m_dynModel->m_effects[newActions[j]].lpEffects[i];
+            if (!suppressedLPs || suppressedLPs->find(effect.m_desc->m_lpId) == suppressedLPs->end())
+            {
+                newEffectList.push_back(std::move(effect));
+            }
+        }
+    }
+
+    if (!newEffectList.empty())
+    {
+        std::stable_sort(newEffectList.begin(), newEffectList.end(), SortPred());
+    }
+    adjustModelEffects(realModel, newEffectList);
 }
 
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newAction)
@@ -2524,7 +2586,13 @@ void DynamicModel::_createImpostorShit()
 
 void DynamicModel::_releaseImpostorShit()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x76D1B0
+    if (m_useImpostors)
+    {
+        M3D_RENDERER->ReleaseVb(m_impostorVb);
+        M3D_RENDERER->ReleaseIb(m_impostorIb);
+        M3D_RENDERER->ReleaseTexture(m_impostorTex);
+    }
 }
 
 DynamicModel::auxActionEffectsDesc::auxActionEffectsDesc()

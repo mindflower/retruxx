@@ -174,7 +174,8 @@ IcoResourceInfo::~IcoResourceInfo() = default;
 
 m3d::Object* IcoResourceInfo::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x53FFF0 - NOTE: returns a default-constructed info, not a copy of this one.
+    return new IcoResourceInfo();
 }
 
 bool IcoResourceInfo::IsValid() const

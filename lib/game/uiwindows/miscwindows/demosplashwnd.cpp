@@ -1,4 +1,5 @@
 #include "demosplashwnd.h"
+#include <cassert>
 
 #include <windows.h>
 
@@ -45,9 +46,9 @@ DemoSplashWnd::DemoSplashWnd()
 
 DemoSplashWnd::DemoSplashWnd(DemoSplashWnd const&)
 {
-    // RVA 0x4B41F0 - the shipped copy constructor is an assert(0); the splash is
-    // a singleton owned by the interface manager and cannot be duplicated.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B41F0 - NOTE: the shipped copy constructor is an assert(0) (live in the retail build); the splash
+    // is a singleton owned by the interface manager and cannot be duplicated. Nothing is copied.
+    assert(0);
 }
 
 DemoSplashWnd::~DemoSplashWnd()
@@ -57,9 +58,8 @@ DemoSplashWnd::~DemoSplashWnd()
 
 m3d::Object* DemoSplashWnd::Clone()
 {
-    // RVA 0x4B4020 - allocates, runs the asserting copy constructor and returns
-    // null; cloning this window is not supported.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4B4020 - runs the asserting copy constructor; cloning this window is not supported.
+    return new DemoSplashWnd(*this);
 }
 
 m3d::Object* DemoSplashWnd::CreateObject()

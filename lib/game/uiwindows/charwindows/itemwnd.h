@@ -34,7 +34,6 @@ public:
     virtual ai::GeomRepositoryItem GetAsRepositoryItem() const;
     virtual void SetVehicleId(int);
     virtual int CreateFromPattern(m3d::ui::Wnd const*, bool);
-    virtual m3d::Object* RepositoryClone();
     int GetDrawStyle() const;
     static m3d::Class* GetBaseClass();
     void SetDrawStyle(int);
@@ -63,14 +62,13 @@ protected:
     virtual int GameDataUpdate(void*, int);
     virtual int CanAddDragItem(bool) override;
     virtual int AddItem(ai::GeomRepositoryItem const&) override;
-    virtual int GetResourceId() const;
+    virtual int GetResourceId() const = 0 /* 0x17c */;
     bool IsHidden() const;
     class ai::Vehicle* GetVehicle() const;
     virtual void OnUpdateWhileNoDrag( PointBase<float> const&);
     virtual int OnPaint( m3d::ui::DrawInfo const&);
     virtual int GetItemPrototypeId() const;
     virtual void SetupInfoWnd(ItemInfoWnd*);
-    virtual int RepositoryDeactivateItem();
     virtual void ShowDragSrc();
     virtual void HideDragSrc();
     virtual void OnDragOut();

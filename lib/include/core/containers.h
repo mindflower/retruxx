@@ -47,9 +47,10 @@ namespace m3d
             return false;
         }
 
-        void remove(const CStr&)
+        void remove(const CStr& key)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // NOTE: not emitted in the shipped binary; drops the key if present.
+            m_hash.erase(key);
         }
 
         using tStrHash = retruxx::map<CStr, T>;

@@ -13,12 +13,24 @@ namespace m3d
 
         IStream* FileReader::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757580
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->Clone();
+            }
+            return nullptr;
         }
 
-        int FileReader::ReadLine(CStr&)
+        int FileReader::ReadLine(CStr& s)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757AE0
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->ReadLine(s);
+            }
+            return 0;
         }
 
         int FileReader::Close()
@@ -37,14 +49,26 @@ namespace m3d
             return g_Kernel->GetFileServer().OpenFileStream(this, fileName, openMode);
         }
 
-        unsigned FileReader::PeekBytes(void*, unsigned)
+        unsigned FileReader::PeekBytes(void* dst, unsigned numBytes)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757790
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->PeekBytes(dst, numBytes);
+            }
+            return 0;
         }
 
         int FileReader::Flush()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757890
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->Flush();
+            }
+            return 0;
         }
 
         int FileReader::FSeek(long offset, int origin)
@@ -100,12 +124,24 @@ namespace m3d
 
         bool FileReader::IsOpen()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7575D0
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->IsOpen();
+            }
+            return false;
         }
 
-        FileStream& FileReader::operator<<(char const*)
+        FileStream& FileReader::operator<<(char const* c)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757920
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject << c;
+            }
+            return *this;
         }
 
         FileStream& FileReader::operator<<(float k)
@@ -118,14 +154,26 @@ namespace m3d
             return *this;
         }
 
-        FileStream& FileReader::operator<<(unsigned)
+        FileStream& FileReader::operator<<(unsigned k)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757A20
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject << k;
+            }
+            return *this;
         }
 
-        FileStream& FileReader::operator<<(int)
+        FileStream& FileReader::operator<<(int k)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7579A0
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject << k;
+            }
+            return *this;
         }
 
         FileReader::~FileReader()
@@ -133,34 +181,70 @@ namespace m3d
             delete InternalObject;
         }
 
-        FileStream& FileReader::operator>>(CStr&)
+        FileStream& FileReader::operator>>(CStr& k)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7578E0
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject >> k;
+            }
+            return *this;
         }
 
-        FileStream& FileReader::operator>>(float&)
+        FileStream& FileReader::operator>>(float& k)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757A60
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject >> k;
+            }
+            return *this;
         }
 
-        FileStream& FileReader::operator>>(int&)
+        FileStream& FileReader::operator>>(int& k)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757960
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject >> k;
+            }
+            return *this;
         }
 
-        FileStream& FileReader::operator>>(unsigned&)
+        FileStream& FileReader::operator>>(unsigned& k)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7579E0
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                *InternalObject >> k;
+            }
+            return *this;
         }
 
         int FileReader::Eof()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7577F0
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->Eof();
+            }
+            return -1;
         }
 
-        unsigned FileReader::FRead(void*, unsigned, unsigned)
+        unsigned FileReader::FRead(void* buffer, unsigned size, unsigned count)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757B30
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->FRead(buffer, size, count);
+            }
+            return 0;
         }
 
         unsigned FileReader::GetSize() const
@@ -175,7 +259,13 @@ namespace m3d
 
         int FileReader::Error()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x757840
+            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            if (InternalObject)
+            {
+                return InternalObject->Error();
+            }
+            return ERROR_OBJECT_NOT_FOUND;
         }
     }
 }

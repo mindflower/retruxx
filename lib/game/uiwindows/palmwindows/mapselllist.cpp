@@ -1,5 +1,8 @@
 #include "mapselllist.h"
 
+#include <cmath>
+#include <iterator>
+
 #include <core/kernel.h>
 #include <core/log.h>
 
@@ -367,11 +370,35 @@ int MapSellList::OnBeforeAddToWndStation()
 
 int MapSellList::CreateItemsFromRealObject()
 {
-    // TODO(RVA 0xF2510: rebuild the list from the town's live shop prices via
-    //      help::GetWarePricesForTown (RVA 0x155420), which itself needs the
-    //      by-prototype-id buy/sell pricing helpers)
+    // RVA 0xF2510 - the live prices of the town on the current level, at most 10 wares.
     RemoveAllItems();
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0 || !m_objectInfo)
+    {
+        return 0;
+    }
+    if (CStr::my_strcmp(m_objectInfo->GetLevelName().c_str(), help::GetCurrentLevelName().c_str()) != 0)
+    {
+        return 0;
+    }
+    ai::Obj* townObj = ai::theObjects->GetEntityByObjId(m_objectInfo->GetId());
+    if (!townObj || !townObj->IsKindOf(&ai::Town::m_classTown))
+    {
+        return 0;
+    }
+    retruxx::map<int, CVector2> prices;
+    help::GetWarePricesForTown(static_cast<ai::Town*>(townObj), prices);
+    int res = 1;
+    int count = 0;
+    for (auto it = prices.begin(); it != prices.end() && count < 10; ++it, ++count)
+    {
+        // A bare fistp: the prices round to nearest rather than truncate.
+        int const buyPrice = static_cast<int>(lrintf(it->second.y));
+        int const sellPrice = static_cast<int>(lrintf(it->second.x));
+        // NOTE: "last" means last in the whole price list, so with more than 10 wares no item is marked last.
+        bool const bLastItem = std::distance(it, prices.end()) == 1;
+        res &= CreateItem(it->first, sellPrice, buyPrice, bLastItem);
+    }
+    return res;
 }
 
 int MapSellList::CreateItemsFromSaveList()

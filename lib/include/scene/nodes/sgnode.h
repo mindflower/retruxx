@@ -72,6 +72,10 @@ namespace m3d
         friend class ::ai::RopeObj;
         friend class ::ai::BossArm;
         friend class ::ai::BossMetalArm;
+        // A loadpoint node thinks again when its parent does.
+        friend class SgLoadpointNode;
+        // The shadow volumes are placed with each caster's world transform.
+        friend class AnimatedModelsServer;
 
     protected:
         SgNode();

@@ -34,7 +34,8 @@ namespace m3d
 {
     int LightsServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76B9B0
+        return 1;
     }
 
     int LightsServer::Init()
@@ -46,7 +47,15 @@ namespace m3d
 
     int LightsServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76C180
+        m_valid = false;
+        CFlare::Release();
+        for (auto& model : m_models)
+        {
+            delete static_cast<PointLightModel*>(model.m_ptr);
+        }
+        m_models = retruxx::vector<Model>();
+        return 1;
     }
 
     int LightsServer::AddItem(char const* params, char const* id)
@@ -106,7 +115,8 @@ namespace m3d
 
     LightsServer::~LightsServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76D070
+        Release();
     }
 
     void LightsServer::RenderItem(int id, void* params)
@@ -276,7 +286,8 @@ namespace m3d
 
     int LightsServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76B950 - lights live for the whole level.
+        return 1;
     }
 
     int LightsServer::GetItemProperty(int id, int prop, void* dest)
@@ -297,9 +308,10 @@ namespace m3d
         }
     }
 
-    int LightsServer::SetItemProperty(int, int, void*)
+    int LightsServer::SetItemProperty(int id, int prop, void* src)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x76B960
+        return DataServer::SetItemProperty(id, prop, src);
     }
 
     void LightsServer::AddItemsList(retruxx::vector<ServerItem>& list)

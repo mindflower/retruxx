@@ -54,6 +54,10 @@ namespace m3d
         // SceneGraph::DrawDetailedShadows / DrawShadowsToTexture read m_sunDir
         // directly, exactly as the shipped code does.
         friend class SceneGraph;
+        // AnimatedModelsServer::RenderShadowVolumesSet lights the stencil shadows from m_sunDir.
+        friend class AnimatedModelsServer;
+        // ProjectorsServer::RenderItem draws each projector over the landscape, roads and models.
+        friend class ProjectorsServer;
 
     public:
         /* 0x0000 */ m3d::CVar m_lsInscatterCoeff;

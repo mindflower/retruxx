@@ -3011,6 +3011,11 @@ namespace m3d
         return *m_serverSprites;
     }
 
+    DataServer& Application::GetLinesServer()
+    {
+        return *m_serverLines;
+    }
+
     void Application::panic()
     {
         doneProcTexThread();

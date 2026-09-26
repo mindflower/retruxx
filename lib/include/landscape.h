@@ -112,6 +112,10 @@ namespace m3d
         friend class CWorld;
         friend class RoadManager;
         friend class LightsServer;
+        // SceneGraph::TraceLine traces through the landscape cells.
+        friend class SceneGraph;
+        // ProjectorsServer::RenderItem reads the cell heights to cull cells against a projector.
+        friend class ProjectorsServer;
 
     protected:
         Landscape();

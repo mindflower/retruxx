@@ -73,9 +73,18 @@ namespace m3d
         return 0;
     }
 
-    int SgPointLightSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const
+    int SgPointLightSourceNode::GetPropertiesList(retruxx::set<unsigned>& props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x79E260
+        if (!SgNode::GetPropertiesList(props))
+        {
+            return 0;
+        }
+        props.insert(PROP_NODE_HANDLE);
+        props.insert(PROP_LS_COLOR);
+        props.insert(PROP_LS_RADIUS);
+        props.insert(PROP_LS_BRIGHTNESS);
+        return 1;
     }
 
     Class* SgPointLightSourceNode::GetClass() const

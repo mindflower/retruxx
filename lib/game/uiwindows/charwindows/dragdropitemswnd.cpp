@@ -1,6 +1,7 @@
 #include "dragdropitemswnd.h"
 
 #include <game/m3dgame.h>
+#include <game/uimisc/guihelper.h>
 #include <m3dapp.h>
 
 #include <ui/ui_srv.h>
@@ -110,6 +111,7 @@ void GeomSlot::SetItem(ai::GeomRepositoryItem const& item)
 
 int GeomSlot::OnPaint(m3d::ui::DrawInfo const& di)
 {
+    // RVA 0x444950
     m3d::ui::ImageWnd::OnPaint(di);
 
     m3d::ui::GfxServer* gfx = m_gfx;
@@ -140,8 +142,16 @@ int GeomSlot::OnPaint(m3d::ui::DrawInfo const& di)
     // (m_gsStyle & 1): "smart" price, top-right.
     if ((m_gsStyle & 1) != 0 && m_item.GetObjId() != -1)
     {
-        // TODO(RVA 0x444950): draws help::GetPriceSmart(objId) here; that helper
-        // routes through the (unported) ZnayuKakProdatWnd / town price tables.
+        // A negative (unknown) price shows as 0.
+        int price = help::GetPriceSmart(m_item.GetObjId());
+        if (price < 0)
+        {
+            price = 0;
+        }
+        CStr const strPrice(price);
+        PointBase<float> const textSz = gfx->MeasureText(strPrice, m_defFont, m3d::TW_NOWRAP, m_bounds.width);
+        PointBase<float> const at{di.m_clientRect.width - textSz.x, 0.0f};
+        gfx->AddText(di, at, m_strTextColor + strPrice, m_defFont, m3d::TW_NOWRAP, m3d::TF_LEFT);
     }
 
     // (m_gsStyle & 0x10 / 0x20): "unsuitable" / "too rich" corner badges.

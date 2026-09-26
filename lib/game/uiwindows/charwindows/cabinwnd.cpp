@@ -104,17 +104,31 @@ int CabinWnd::GameDataSetup()
 
 int CabinWnd::GameDataUpdate(void* data, int dataType)
 {
+    // RVA 0x438E80 - dataType 31: a gadget slot of this vehicle went away (vehicle id at +0x34, slot id at +0x38
+    // of the data); its gadget is taken off the vehicle and put back through AddThing, flushing to the reference
+    // chests unless the ground window is up.
     if ((m_gameDataFlags & 1) == 0)
     {
         return 0;
     }
     if (dataType == 31)
     {
-        // TODO(RVA 0x438E80): gadget drag-drop reconciliation - looks up the
-        // GadgetWnd by slot id (m_intEv[1]) for the matching vehicle
-        // (m_intEv[0]), pulls its item off the vehicle and re-adds it either to
-        // the vehicle or the player repository via ai::Vehicle::AddThing.
-        // Blocked on the unported GadgetWnd/ItemWnd item pipeline.
+        if (data && static_cast<int*>(data)[13] == m_vehicleId)
+        {
+            ref_ptr<GadgetWnd> gadgetWnd = GetGadgetWndByGadgetSlotId(static_cast<int*>(data)[14]);
+            ai::Vehicle* vehicle = GetVehicle();
+            if (gadgetWnd && vehicle)
+            {
+                ai::GeomRepositoryItem item = gadgetWnd->GetAsRepositoryItem();
+                vehicle->RemoveChild(gadgetWnd->GetItem());
+                if (item.IsValid())
+                {
+                    ref_ptr<m3d::ui::Wnd> groundWnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_GROUND);
+                    bool const bFlushInReferenceChests = !groundWnd || !groundWnd->IsChildOf(M3D_APP);
+                    vehicle->AddThing(item, bFlushInReferenceChests);
+                }
+            }
+        }
         return 1;
     }
     CBWnd::GameDataUpdate(data, dataType);

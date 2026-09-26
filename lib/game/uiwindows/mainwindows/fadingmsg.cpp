@@ -6,6 +6,8 @@
 #include "game/m3dgame.h"
 #include "game/uimanager/truxxuimanager.h"
 #include "game/uimisc/guihelper.h"
+#include "game/uimisc/questinfo.h"
+#include "impulses/i_impulses.h"
 #include "game/uimisc/stringparser.h"
 #include "ui/ui_srv.h"
 
@@ -41,6 +43,35 @@ namespace
         }
         return FormatParam(param.GetAsID());
     }
+
+    // The string ids of the enumerated messages (static init RVA 0x97EC10).
+    struct MsgIdName
+    {
+        CStr name;
+        int msgId;
+    };
+
+    MsgIdName const l_msgId2Name[] = {
+        {CStr("fm_convoy_failed"), 0},
+        {CStr("fm_hunt_completed"), 1},
+        {CStr("fm_dynamic_quest_completed"), 2},
+        {CStr("fm_relation_changed"), 3},
+        {CStr("fm_town_cant_enter_enemy"), 4},
+        {CStr("fm_town_cant_enter_locked"), 5},
+        {CStr("fm_town_enter"), 6},
+        {CStr("fm_item_pickup"), 7},
+        {CStr("fm_all_chests_taken"), 8},
+        {CStr("fm_take_chest_hint"), 9},
+        {CStr("fm_sunrise"), 10},
+        {CStr("fm_day"), 11},
+        {CStr("fm_sunset"), 12},
+        {CStr("fm_night"), 13},
+        {CStr("fm_items_remained_on_ground"), 14},
+        {CStr("fm_player_add_money"), 15},
+        {CStr("fm_player_give_money"), 16},
+        {CStr("fm_dynamic_quest_failed_because_hirer_becames_enemy"), 17},
+    };
+    int const MSG_ID_NAMES_NUM = 18;
 }  // namespace
 
 int FadingMsgList::AddMsgT(CStr const& msg, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const& params)
@@ -156,16 +187,11 @@ float FadingMsgList::GetSummaryHeight()
 
 int FadingMsgList::AddEnumeredMsg(int msgId, m3d::Event const* ev)
 {
-    // TODO(RVA 0x1221C0): looks msgId up in a shipped static table
-    // (l_msgId2Name, 18 entries) mapping msgId -> a localizable string id
-    // name, then formats it with per-msgId parameters (see
-    // GetParamsForEnumeredMsg) and adds it via AddMsgT. Blocked on
-    // recovering that static table's contents, which are not visible in the
-    // decompile text (only its address, unk_A45BAC, is) - would need a
-    // further targeted IDA data dump to reconstruct faithfully.
-    (void)msgId;
-    (void)ev;
-    return 0;
+    // RVA 0x1221C0
+    CStr const msgName = MsgId2Name(msgId);
+    std::vector<m3d::AIParam> params;
+    GetParamsForEnumeredMsg(msgId, ev, params);
+    return AddMsgT(M3D_APP->GetStringByStringId0(msgName), params);
 }
 
 void FadingMsgList::GetParamsForEnumeredMsg(
@@ -173,13 +199,46 @@ void FadingMsgList::GetParamsForEnumeredMsg(
     m3d::Event const* ev,
     std::vector<m3d::AIParam, std::allocator<m3d::AIParam>>& params) const
 {
-    // TODO(RVA 0x1222A0): builds the AIParam list for a specific enumerated
-    // msgId (quest briefs, impulse names, event strings, ...); blocked on
-    // the same missing l_msgId2Name table as AddEnumeredMsg, since the
-    // msgId->case mapping is keyed off table indices not visible here.
-    (void)msgId;
-    (void)ev;
+    // RVA 0x1222A0
     params.clear();
+    switch (msgId)
+    {
+    case 2:
+    case 17:
+    {
+        // The dynamic quest's brief description; the quest id is in m_intEv[1].
+        int const dQuestId = ev ? ev->m_intEv[1] : -1;
+        CStr questDiz;
+        if (QuestInfo const* qi = M3D_APP->m_pInterfaceManager->GetQuestInfoManager()->GetQuestInfoForDynamicQuest(dQuestId))
+        {
+            questDiz = qi->GetBriefDiz();
+        }
+        CStr sQuestDiz;
+        sQuestDiz = questDiz;
+        params.push_back(m3d::AIParam(sQuestDiz));
+        break;
+    }
+    case 6:
+        params.push_back(m3d::AIParam(M3D_APP->m_pImpulses->GetImpulseNameById(28)));
+        break;
+    case 7:
+    case 14:
+        // NOTE: ev is not checked for null here.
+        params.push_back(m3d::AIParam(ev->m_strEv));
+        break;
+    case 9:
+        params.push_back(m3d::AIParam(M3D_APP->m_pImpulses->GetImpulseNameById(42)));
+        break;
+    case 15:
+    case 16:
+    {
+        int const amount = ev ? ev->m_intEv[1] : 0;
+        params.push_back(m3d::AIParam(amount));
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void FadingMsgList::RecalcLayot()
@@ -218,10 +277,15 @@ void FadingMsgList::RecalcLayot()
 
 CStr FadingMsgList::MsgId2Name(int msgId) const
 {
-    // TODO(RVA 0x122520): see AddEnumeredMsg - blocked on the missing
-    // l_msgId2Name static table.
-    (void)msgId;
-    return {};
+    // RVA 0x122520
+    for (int i = 0; i < MSG_ID_NAMES_NUM; ++i)
+    {
+        if (l_msgId2Name[i].msgId == msgId)
+        {
+            return l_msgId2Name[i].name;
+        }
+    }
+    return CStr();
 }
 
 int FadingMsgList::InsertMsg(FadingMsgItem* newMsg)

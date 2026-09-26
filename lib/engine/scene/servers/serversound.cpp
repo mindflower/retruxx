@@ -34,17 +34,21 @@ namespace m3d
 
     int Sound3DServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762810
+        return 1;
     }
 
     Sound3DServer::~Sound3DServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x764070
+        Release();
     }
 
     int Sound3DServer::AddItem(char const*, char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7628B0 - sounds are only added from the XML list.
+        SYS_ERROR("!\"obsolete\"");
+        return -1;
     }
 
     void Sound3DServer::PostLoad()
@@ -84,7 +88,8 @@ namespace m3d
 
     int Sound3DServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762830
+        return 1;
     }
 
     void Sound3DServer::RenderItem(int id, void* params)
@@ -189,7 +194,37 @@ namespace m3d
 
     int Sound3DServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762E10 - the sounds are only taken out of the sound system while it is enabled; the items are freed
+        // either way.
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            auto* const item = static_cast<SoundItem*>(model.m_ptr);
+            if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+            {
+                auto* const sound = M3D_APP->m_sound;
+                switch (item->type)
+                {
+                case SOUND_TYPE_SIMPLE:
+                    sound->DeleteIdTableSound(item->soundIds[0]);
+                    break;
+                case SOUND_TYPE_DOUBLE:
+                    sound->DeleteIdTableSound(item->soundIds[0]);
+                    sound->DeleteIdTableSound(item->soundIds[1]);
+                    break;
+                case SOUND_TYPE_TRIPLE:
+                    sound->DeleteIdTableSound(item->soundIds[0]);
+                    sound->DeleteIdTableSound(item->soundIds[1]);
+                    sound->DeleteIdTableSound(item->soundIds[2]);
+                    break;
+                default:
+                    break;
+                }
+            }
+            delete item;
+        }
+        m_models = retruxx::vector<Model>();
+        return 1;
     }
 
     void Sound3DServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)

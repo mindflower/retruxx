@@ -17,6 +17,21 @@ namespace m3d
     class AnimInfo;
     class SgAnimatedModelNode;
 
+    // What SgAnimatedModelNode hands to AnimatedModelsServer::SetItemProperty for PROP_DM_ACTION,
+    // PROP_DM_EFFECT_ACTION and PROP_DM_MODEL_ACTION (AnimatedModelsServer::SetItemProperty::RenderInfo in the PDB).
+    struct PropSrvNodeAction
+    {
+        /* 0x0000 */ m3d::SgNode* m_node;
+        /* 0x0004 */ ActionType m_action;
+    }; /* size: 0x0008 */
+
+    // The same for PROP_DM_ARRAY_EFFECT_ACTIONS: the node's whole list of effect actions.
+    struct PropSrvNodeActions
+    {
+        /* 0x0000 */ m3d::SgNode* m_node;
+        /* 0x0004 */ retruxx::vector<ActionType, retruxx::allocator<ActionType> >* m_Actions;
+    }; /* size: 0x0008 */
+
     class AnimatedModelsServer : public m3d::DataServer
     {
     public:

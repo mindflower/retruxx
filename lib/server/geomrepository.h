@@ -7,7 +7,7 @@ namespace ai
 {
     class Chest;
     class Vehicle;
-    class GeomRepositoryItem;
+    struct GeomRepositoryItem;
 
     class GeomRepository : public m3d::Object
     {

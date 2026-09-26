@@ -6,6 +6,14 @@
 #include "core/kernel.h"
 #include "core/timer.h"
 #include "server/obstacle.h"
+#include <algorithm>
+#include <client.h>
+#include <world.h>
+#include <landscape.h>
+#include <skelmodel.h>
+#include <config.h>
+#include <scene/scenegraph.h>
+#include <scene/servers/serveranimatedmodel.h>
 
 namespace m3d
 {
@@ -144,14 +152,84 @@ namespace m3d
         return 1;
     }
 
-    int SgAnimatedModelNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // What the node hands to AnimatedModelsServer::RenderItem (SgAnimatedModelNode::Render::RenderInfo in the PDB).
+        struct RenderInfo
+        {
+            /* 0x0000 */ CMatrix* m_localXForm;
+            /* 0x0004 */ float m_alpha;
+            /* 0x0008 */ m3d::SgNode* m_node;
+        }; /* size: 0x000c */
+    }  // namespace
+
+    int SgAnimatedModelNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
+    {
+        // RVA 0x667060 - only the settings that differ from the model's defaults are written, the action aside.
+        if (!SgNode::WriteToXmlNode(file, writeTo))
+        {
+            return 0;
+        }
+
+        int action = 0;
+        GetProperty(PROP_DM_ACTION, &action);
+        writeTo->SetAttribute("ndmAction", CStr(action).c_str());
+
+        AnimatedModel* mdl = nullptr;
+        GetServer()->GetItemProperty(m_srvId, PROP_INTERNAL_GETMODEL, &mdl);
+        if (!mdl || mdl->bIsPassable() != m_passable)
+        {
+            // m3d::XmlNodeSetAttribute<bool>
+            writeTo->SetAttribute("passable", CStr(static_cast<int>(m_passable)).c_str());
+        }
+        if (m_SkinNumber)
+        {
+            writeTo->SetAttribute("skin", CStr(m_SkinNumber).c_str());
+        }
+        if (m_cfg.m_num)
+        {
+            writeTo->SetAttribute("cfg", CStr(m_cfg.m_num).c_str());
+        }
+        if (!m_castShadow)
+        {
+            writeTo->SetAttribute("CastShadow", "no");
+        }
+        return 1;
     }
 
-    int SgAnimatedModelNode::Render(SgNodeRenderFlags, void*, int, int)
+    int SgAnimatedModelNode::Render(SgNodeRenderFlags flags, void* data, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72FC20 - with the fog of war on, models of other belongs standing on unexplored ground are skipped.
+        if (m_srvId == -1)
+        {
+            return 0;
+        }
+        if ((flags & 4) == 0)
+        {
+            GetGraph()->LightSetupLightsForNode(this);
+            M3D_RENDERER->SetCull(rend::M3DCULL_CCW, false);
+        }
+
+        CMatrix temp = MatrixFromFlags(flags, data);
+        RenderInfo ri;
+        ri.m_localXForm = &temp;
+        ri.m_node = this;
+
+        float const x = m_currentWorldOrigin.x;
+        float const y = m_currentWorldOrigin.y;
+        if (M3D_ENGINE_CFG.m_FogOfWar.GetB())
+        {
+            unsigned char const explored = pClient->GetWorld().GetLandscape().GetColor(x, y);
+            int belong = 1000;
+            GetProperty(PROP_NODE_BELONG, &belong);
+            if (belong != 1000 && !explored)
+            {
+                return 1;
+            }
+        }
+        ri.m_alpha = GetGraph()->GetAlphaForNode(this);
+        GetServer()->RenderItem(m_srvId, &ri);
+        return 1;
     }
 
     int SgAnimatedModelNode::SetProperty(unsigned propId, void* property)
@@ -170,37 +248,80 @@ namespace m3d
         }
         case 8704u:
         {
-            this->m_action = *(ActionType*)property;
-            m_effectActions.resize(1);
-            m_effectActions[0] = m_action;
-                //TODO: check this
-            GetServer()->SetItemProperty(m_srvId, 8704, this);
+            // RVA 0x730810 - the action drives both the model's animation and its effects.
+            PropSrvNodeAction ri;
+            ri.m_node = this;
+            ri.m_action = *(ActionType*)property;
+            this->m_action = ri.m_action;
+            m_effectActions.resize(1u, AT_STAND1);
+            m_effectActions.front() = ri.m_action;
+            GetServer()->SetItemProperty(m_srvId, 8704, &ri);
             return 1;
         }
         case 8708u:
         {
+            // NOTE: only the effects change; m_action keeps the model's own action.
+            PropSrvNodeAction ri;
+            ri.m_node = this;
+            ri.m_action = *(ActionType*)property;
             m_effectActions.resize(1u, AT_STAND1);
-            this->m_effectActions.front() = *(ActionType*)property;
-            GetServer()->SetItemProperty(this->m_srvId, 8708, this);
+            m_effectActions.front() = ri.m_action;
+            GetServer()->SetItemProperty(this->m_srvId, 8708, &ri);
             return 1;
         }
         case 8711u:
-            RETRUXX_NOT_IMPLEMENTED;
+        {
+            // RVA 0x730810 - an action already in the list is not added twice.
+            ActionType const action = *(ActionType*)property;
+            if (std::find(m_effectActions.begin(), m_effectActions.end(), action) == m_effectActions.end())
+            {
+                m_effectActions.push_back(action);
+                PropSrvNodeActions ri;
+                ri.m_node = this;
+                ri.m_Actions = &m_effectActions;
+                GetServer()->SetItemProperty(this->m_srvId, 8710, &ri);
+            }
+            return 1;
+        }
         case 8712u:
-            RETRUXX_NOT_IMPLEMENTED;
+        {
+            ActionType const action = *(ActionType*)property;
+            auto const it = std::find(m_effectActions.begin(), m_effectActions.end(), action);
+            if (it != m_effectActions.end())
+            {
+                m_effectActions.erase(it);
+                PropSrvNodeActions ri;
+                ri.m_node = this;
+                ri.m_Actions = &m_effectActions;
+                GetServer()->SetItemProperty(this->m_srvId, 8710, &ri);
+            }
+            return 1;
+        }
         case 8710:
         {
             m_effectActions = *(decltype(m_effectActions)*)property;
-            GetServer()->SetItemProperty(this->m_srvId, 8710, this);
+            PropSrvNodeActions ri;
+            ri.m_node = this;
+            ri.m_Actions = &m_effectActions;
+            GetServer()->SetItemProperty(this->m_srvId, 8710, &ri);
             return 1;
         }
         case 8715u:
-            GetServer()->SetItemProperty(m_srvId, 8710, this);
+        {
+            // Restarts the current effects by handing the same list over again.
+            PropSrvNodeActions ri;
+            ri.m_node = this;
+            ri.m_Actions = &m_effectActions;
+            GetServer()->SetItemProperty(m_srvId, 8710, &ri);
             return 1;
+        }
         case 8709u:
         {
-            this->m_action = *(ActionType*)property;
-            GetServer()->SetItemProperty(this->m_srvId, 8709, this);
+            PropSrvNodeAction ri;
+            ri.m_node = this;
+            ri.m_action = *(ActionType*)property;
+            this->m_action = ri.m_action;
+            GetServer()->SetItemProperty(this->m_srvId, 8709, &ri);
             return 1;
         }
         case 8706u:
@@ -283,9 +404,23 @@ namespace m3d
         return &M3D_APP->GetAnimatedModelsServer();
     }
 
-    int SgAnimatedModelNode::GetPropertiesList(retruxx::set<unsigned>&) const
+    int SgAnimatedModelNode::GetPropertiesList(retruxx::set<unsigned>& props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x730250
+        if (!SgNode::GetPropertiesList(props))
+        {
+            return 0;
+        }
+        props.insert(PROP_NODE_HANDLE);
+        props.insert(PROP_DM_ACTION);
+        props.insert(PROP_DM_EFFECT_ACTION);
+        props.insert(PROP_DM_MODEL_ACTION);
+        props.insert(PROP_DM_SKIN);
+        props.insert(PROP_DM_CFG);
+        props.insert(PROP_DM_PASSABLE);
+        props.insert(PROP_DM_IS_IMPOSTED);
+        props.insert(PROP_DM_CAST_SHADOW);
+        return 1;
     }
 
     int SgAnimatedModelNode::GetProperty(unsigned propId, void* property) const

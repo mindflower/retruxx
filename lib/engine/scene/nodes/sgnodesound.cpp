@@ -89,9 +89,15 @@ namespace m3d
         return &m3d::Application::g_pApp->GetSoundServer();
     }
 
-    int SgSoundSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const
+    int SgSoundSourceNode::GetPropertiesList(retruxx::set<unsigned>& props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x661980
+        if (!SgNode::GetPropertiesList(props))
+        {
+            return 0;
+        }
+        props.insert(PROP_NODE_HANDLE);
+        return 1;
     }
 
     Class* SgSoundSourceNode::GetClass() const
@@ -99,14 +105,26 @@ namespace m3d
         return RT_CLASS_LOCAL(SgSoundSourceNode);
     }
 
-    int SgSoundSourceNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgSoundSourceNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6615D0 - sounds loop by default, so only an unlooped one is written.
+        if (!SgNode::WriteToXmlNode(file, writeTo))
+        {
+            return 0;
+        }
+        int looped = 0;
+        GetProperty(PROP_SND_LOOPED, &looped);
+        if (!looped)
+        {
+            writeTo->SetAttribute("looped", CStr(0).c_str());
+        }
+        return 1;
     }
 
     float SgSoundSourceNode::IntersectRay(CVector const&, CVector const&, SgNode*&, Class*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x661A40 - sound sources are never hit.
+        return -1.0f;
     }
 
     int SgSoundSourceNode::Render(SgNodeRenderFlags, void*, int, int)
@@ -233,7 +251,8 @@ namespace m3d
 
     bool SgSoundSourceNode::_OnSoundStopped()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6614C0
+        return true;
     }
 
     int SgSoundSourceNode::_InternalRender()

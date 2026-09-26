@@ -30,4 +30,19 @@ namespace m3d
     void CGSModel::Release()
     {
     }
+
+    int CGSModel::Prepare2Draw(const CStr&, int, int)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int CGSModel::Prepare2Draw2(void*, void*)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
+
+    int CGSModel::Render(const CMatrix&, float)
+    {
+        RETRUXX_NOT_IMPLEMENTED;
+    }
 }

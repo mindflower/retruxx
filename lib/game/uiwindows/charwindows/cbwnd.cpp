@@ -80,6 +80,7 @@ void CBWnd::SetVehicleId(int vehicleId)
 
 void CBWnd::SetPartId(int partId)
 {
+    // RVA 0x4407B0
     if (partId != -1)
     {
         auto* obj = ai::theObjects->GetEntityByObjId(partId);
@@ -87,10 +88,11 @@ void CBWnd::SetPartId(int partId)
         {
             return;
         }
-        // TODO(RVA 0x4407B0): the shipped build also requires the part's parent
-        // part name to equal m_mainPartName. ai::VehiclePart exposes no clean
-        // accessor for that in retruxx yet, so the gate is relaxed to "is a
-        // VehiclePart".
+        // Only a part of this window's kind is taken.
+        if (CStr::my_strcmp(static_cast<ai::VehiclePart*>(obj)->GetPartName().c_str(), m_mainPartName.c_str()) != 0)
+        {
+            return;
+        }
     }
     m_mainPartId = partId;
     if (IsChildOf(M3D_APP))

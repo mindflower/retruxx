@@ -88,12 +88,17 @@ namespace m3d
 
     int CWorld::Load(CStr const& levelname, CCamera& cam, bool bQuiet)
     {
+        // RVA 0x5C9F50
         auto timeStart = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- World Loading");
-        M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
-        if (m_level->Load(levelname, cam, bQuiet) == 0)
         {
-            M3D_LOG_INFO("Level file " + levelname + " not found");
+            M3D_LOG_INFO("----------------------- World Loading");
+        }
+        // The level is loaded by the name stored in the cvar, not by the argument.
+        M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
+        if (m_level->Load(CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()), cam, bQuiet) == 0)
+        {
+            M3D_LOG_INFO(CStr("Level file ") + CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()) +
+                CStr(" not found"));
             return 0;
         }
         ai::pServer->Init(this);
@@ -105,8 +110,11 @@ namespace m3d
             return 0;
         }
         auto const landscapeEnd = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- Landscape loaded in: " + CStr(landscapeEnd - landscapeStart));
+        {
+            M3D_LOG_INFO("----------------------- Landscape loaded in: " + CStr(static_cast<int>(landscapeEnd - landscapeStart)));
+        }
 
+        auto const serversStart = M3D_KERNEL->GetTimer().GetCurTime();
         bool res = true;
         if (m_level->m_serversname.empty() || !M3D_APP->LoadServers(m_level->m_serversname, bQuiet))
         {
@@ -130,7 +138,9 @@ namespace m3d
         M3D_APP->PostLoadServers();
 
         auto const serversEnd = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- Servers loaded in: " + CStr(serversEnd - landscapeEnd));
+        {
+            M3D_LOG_INFO("----------------------- Servers loaded in: " + CStr(static_cast<int>(serversEnd - serversStart)));
+        }
 
         const auto worldBegin = M3D_KERNEL->GetTimer().GetCurTime();
         if (!bQuiet)
@@ -142,7 +152,9 @@ namespace m3d
         LoadWorld(m_level->GetFullPathNameA("world.xml"));
 
         const auto worldEnd = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- Nodes loaded in: " + CStr(worldEnd - worldBegin));
+        {
+            M3D_LOG_INFO("----------------------- Nodes loaded in: " + CStr(static_cast<int>(worldEnd - worldBegin)));
+        }
 
         const auto initWorldBegin = M3D_KERNEL->GetTimer().GetCurTime();
         if (!bQuiet)
@@ -152,14 +164,18 @@ namespace m3d
         }
 
         const auto initWorldEnd = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- Prefabs loaded in: " + CStr(initWorldEnd - initWorldBegin));
+        {
+            M3D_LOG_INFO("----------------------- Prefabs loaded in: " + CStr(static_cast<int>(initWorldEnd - initWorldBegin)));
+        }
 
         ProcessCollisionStuff();
         m_weatherManager.ReadFromXmlFile(M3D_KERNEL->GetEngineCfg().m_weather_ConfigFile.GetS());
         m_weatherManager.UpdateDayTime();
 
         const auto worldLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- World loaded in: " + CStr(worldLoadedEnd - timeStart));
+        {
+            M3D_LOG_INFO("----------------------- World loaded in: " + CStr(static_cast<int>(worldLoadedEnd - timeStart)));
+        }
 
         if (m_borderWallGeoms[0])
         {
@@ -197,7 +213,9 @@ namespace m3d
         m_roadManager.ReadRoadsFromXmlFile((m_level->m_levelPath + "\\" + m_level->m_roadmapName).c_str());
 
         const auto roadsLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
-        M3D_LOG_INFO("----------------------- Roads loaded in: " + CStr(roadsLoadedEnd - roadsLoadedBegin));
+        {
+            M3D_LOG_INFO("----------------------- Roads loaded in: " + CStr(static_cast<int>(roadsLoadedEnd - roadsLoadedBegin)));
+        }
 
         return 1;
     }
@@ -791,8 +809,8 @@ namespace m3d
             unsigned int loadEndTime = M3D_KERNEL->GetTimer().GetCurTime();
 
             CStr loadTimeStr(loadEndTime - loadStartTime);
-            CStr loadMsg(loadTimeMsg);;
-            M3D_LOG_INFO(logMsg);
+            CStr loadMsg(loadTimeMsg + loadTimeStr);
+            M3D_LOG_INFO(loadMsg);
 
             // Process static obstacles if enabled
             unsigned int processStartTime = M3D_KERNEL->GetTimer().GetCurTime();

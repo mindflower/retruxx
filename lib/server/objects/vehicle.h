@@ -22,7 +22,7 @@ namespace ai
     class VehicleRole;
     class VehicleRecollection;
     class Chassis;
-    class GeomRepositoryItem;
+    struct GeomRepositoryItem;
     class Team;
     class Cabin;
     class Gadget;

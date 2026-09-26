@@ -212,6 +212,10 @@ namespace help
 
     // Repairs a Vehicle or a VehiclePart in place; no-op for anything else.
     void RepairObj(ai::Obj* o);
+    void RepairVehicle(ai::Vehicle* v);
+    void RepairVehiclePart(ai::VehiclePart* vp);
+    void GunFullReload(ai::Obj* gun);
+    bool IsGadgetCompatibleWithVehicle(int gadgetId, int vehicleId);
 
     // True when the object `objId` is a VehiclePart or Gadget that is compatible
     // with the vehicle `vehicleId`.

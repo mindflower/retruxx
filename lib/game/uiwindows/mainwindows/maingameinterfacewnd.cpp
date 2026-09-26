@@ -23,7 +23,10 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(MainGameInterfaceWnd, SetupForBoss)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x529340
+    auto* obj = static_cast<MainGameInterfaceWnd*>(context->asObject(0, "MainGameInterfaceWnd"));
+    context->pushInt(obj->SetupForBoss(context->asInt(1)));
+    return 1;
 }
 
 RT_CLASS_EXPORTS_BEGIN(MainGameInterfaceWnd)

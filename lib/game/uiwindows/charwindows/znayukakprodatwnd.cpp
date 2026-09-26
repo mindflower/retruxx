@@ -2042,10 +2042,8 @@ int ZnayuKakProdatWnd::RepairThing(int itemId)
 
 void ZnayuKakProdatWnd::DestroyHackedVehicle()
 {
-    // Declared by the shipped headers but completely absent from the shipped
-    // binary - the compiler dropped it because nothing calls it, so there is no
-    // ground truth to port. Left unimplemented on purpose rather than guessed.
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: declared in the PDB but never emitted, and nothing calls it. Unlike PlayerVehicleWnd (RVA 0x466C50),
+    // this window keeps no hacked-vehicle id, so there is nothing to destroy; left empty.
 }
 
 // ---------------------------------------------------------------------------

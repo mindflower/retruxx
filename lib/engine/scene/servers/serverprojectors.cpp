@@ -7,6 +7,14 @@
 #include <core/ref_ptr.h>
 #include <core/timer.h>
 #include <scene/servers/serverprojectors.h>
+#include <cmath>
+#include <clipper.h>
+#include <client.h>
+#include <landscape.h>
+#include <level.h>
+#include <world.h>
+#include <scene/scenegraph.h>
+#include "engine/landscape/roads/roadmanager.h"
 
 namespace
 {
@@ -20,6 +28,16 @@ namespace
 
     // Property id: read a projector's radius back as a float.
     int const PROJECTOR_RADIUS = 10241;
+
+    // What SgProjectorNode hands to RenderItem: its world transform (the projector looks along the Y axis) and
+    // radius.
+    struct ProjectorRenderInfo
+    {
+        /* 0x0000 */ CMatrix m_xform;
+        /* 0x0040 */ float m_radius;
+    };
+
+    float const VISCELL_EDGE_LENGTH_16 = 128.0f;
 }
 
 struct ProjectorStats
@@ -303,11 +321,128 @@ namespace m3d
             break;
         }
         default:
-            // TODO: the per-projector pass - builds the projector's frustum
-            // from m_texProjBiasMat, gathers the landscape cells, roads and
-            // models it covers and renders them with the projected texture,
-            // accumulating into `stats`. Not yet reimplemented.
-            RETRUXX_NOT_IMPLEMENTED;
+        {
+            // One projector: the landscape cells, roads and animated models inside its 60-degree frustum are drawn
+            // again with its texture projected onto them.
+            auto const* const ri = static_cast<ProjectorRenderInfo const*>(params);
+            CVector const org(ri->m_xform._41, ri->m_xform._42, ri->m_xform._43);
+            CVector const dir(ri->m_xform._21, ri->m_xform._22, ri->m_xform._23);
+            CVector const target(dir.x + org.x, dir.y + org.y, dir.z + org.z);
+            CMatrix projViewMatrix;
+            projViewMatrix.lookAtLH(org, target, CVector(0.0f, 1.0f, 0.0f));
+            CMatrix const projWorldMat = projViewMatrix * m_texProjBiasMat;
+
+            auto* const proto = static_cast<ProjectorProto*>(m_models[id].m_ptr);
+            auto* const renderer = M3D_RENDERER;
+            rend::TexHandle tex = proto->m_texture;
+            renderer->SetTexture(0, tex, -1.0);
+            float const projRadius = static_cast<float>(proto->m_radius);
+            CClipper projectorFrusta;
+            projectorFrusta.createScreenFrustums(org, projViewMatrix, 1.0471976f, 1.0471976f, 0.1f, projRadius);
+
+            CWorld& world = pClient->GetWorld();
+            SceneGraph& graph = world.m_sceneGraph;
+            Landscape& ls = world.m_landscape;
+            rend::IEffect* const lsShader = graph.m_lsProjectorShader;
+            rend::IEffect* const roadShader = graph.m_roadProjectorShader;
+            retruxx::vector<unsigned int> roadCells;
+            retruxx::set<SgNode*> projNodes;
+
+            renderer->TgSetTransformMode(0, rend::TG_PROJ_PS11);
+            renderer->SingleLayerStencilStart();
+            lsShader->SetMatrix(rend::IEffect::User_float4x4_param, projWorldMat);
+            roadShader->SetMatrix(rend::IEffect::User_float4x4_param, projWorldMat);
+            lsShader->SetVector3(rend::IEffect::User_float4_param, org);
+            {
+                CVector const n = dir.getNormalized();
+                lsShader->SetVector3(rend::IEffect::User_float3_param, CVector(0.0f - n.x, 0.0f - n.y, 0.0f - n.z));
+            }
+            lsShader->SetFloat(rend::IEffect::User_float_param, projRadius);
+            roadShader->SetVector3(rend::IEffect::User_float4_param, org);
+            {
+                CVector const n = dir.getNormalized();
+                roadShader->SetVector3(rend::IEffect::User_float3_param, CVector(0.0f - n.x, 0.0f - n.y, 0.0f - n.z));
+            }
+            roadShader->SetFloat(rend::IEffect::User_float_param, projRadius);
+
+            // Fade distance and weather-dependent strength, shared with the object and tree shaders.
+            float const fadeDist = static_cast<float>(
+                (static_cast<double>(M3D_ENGINE_CFG.m_g_projectorsFarDist.GetI()) - 0.5) * VISCELL_EDGE_LENGTH_16);
+            lsShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            roadShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            unsigned char const specular = static_cast<unsigned char>(world.GetWeatherSpecularColor());
+            float const strength =
+                static_cast<float>(1.3 - static_cast<double>(static_cast<int>(specular) * 0.0039215689f));
+            lsShader->SetFloat(rend::IEffect::User_float_param3, strength);
+            roadShader->SetFloat(rend::IEffect::User_float_param3, strength);
+            graph.m_objProjectorShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            graph.m_treeProjectorShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
+            graph.m_objProjectorShader->SetFloat(rend::IEffect::User_float_param3, strength);
+            graph.m_treeProjectorShader->SetFloat(rend::IEffect::User_float_param3, strength);
+
+            graph.m_sortedCellsEndRadius = M3D_ENGINE_CFG.m_g_projectorsFarDist.GetI();
+            graph.m_sortedCellsCurCell = 0;
+            graph.m_sortedCellsCurRadius = 0;
+            int x;
+            int z;
+            int v;
+            int radius;
+            while (graph.SortedCellsFetch(x, z, v, radius))
+            {
+                if (!v)
+                {
+                    continue;
+                }
+                int const landSize = ls.m_owner->m_level->land_size;
+                float const cellRadius = VISCELL_EDGE_LENGTH_16 * 0.70700002f;
+                Landscape::CellParams const& cell = ls.m_cellParams[x + z * landSize];
+                CVector const cellOrg((static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH_16,
+                    (cell.m_h1 + cell.m_h0) * 0.5f, (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH_16);
+                if (projectorFrusta.testSphere(cellOrg, cellRadius))
+                {
+                    ls.drawCellOverlayedShader(x, z, lsShader);
+                    roadCells.push_back(x + (z << 16));
+                    graph.CollectNodesProjector(projNodes, x, z, projectorFrusta);
+                    ++stats.numCellsRendered;
+                }
+            }
+
+            renderer->PushCull(rend::M3DCULL_CCW);
+            RoadInFrustumTest roadTest(&projectorFrusta);
+            world.m_roadManager.RenderRoads(roadCells, RRT_FOR_PROJECTOR, &roadTest, false);
+            renderer->SingleLayerStencilFinish();
+
+            if (!projNodes.empty())
+            {
+                retruxx::vector<SgNode*> nodesVector(projNodes.begin(), projNodes.end());
+                RenderNodeInfo rni;
+                rni.rnt = RNT_FOR_PROJECTOR;
+                rni.isCullInverted = false;
+                rni.isPrimaryRender = false;
+                rni.isUseImpostors = true;
+                float const invLen = 1.0f / std::sqrt(dir.x * dir.x + dir.z * dir.z + dir.y * dir.y + 0.00000011920929f);
+                rni.projDir = CVector(0.0f - invLen * dir.x, 0.0f - dir.y * invLen, 0.0f - dir.z * invLen);
+                rni.projOrg = org;
+                rni.projTansform = projWorldMat;
+                graph.m_objProjectorShader->SetFloat(rend::IEffect::User_float_param, projRadius);
+                graph.m_treeProjectorShader->SetFloat(rend::IEffect::User_float_param, projRadius);
+                renderer->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
+                renderer->SetStageState(1, rend::BM_COLOR, rend::TS_PREV);
+                renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_TEXTURE);
+                renderer->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
+                M3D_APP->GetAnimatedModelsServer().RenderNodeSet(
+                    nodesVector.data(), static_cast<unsigned>(nodesVector.size()), rni);
+                renderer->SetAlphaTest(0);
+                renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+                renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+            }
+            renderer->PopCull();
+            renderer->TgSetTransformMode(0, rend::TG_DISABLE);
+            renderer->TgDisable(1);
+            stats.numModelsRendered += static_cast<int>(projNodes.size());
+            ++stats.numProjToRender;
+            break;
+        }
         }
         m_profiler->EndCountdown();
     }

@@ -25,12 +25,24 @@ namespace m3d
 {
     MusicServer::~MusicServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762750
+        Release();
     }
 
-    int MusicServer::GetItemProperty(int, int, void*)
+    int MusicServer::GetItemProperty(int id, int prop, void* dest)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x761320 - NOTE: the music cvar is read but both outcomes return 0; the server has no properties of
+        // its own.
+        if (id == -1)
+        {
+            return 0;
+        }
+        if (DataServer::GetItemProperty(id, prop, dest))
+        {
+            return 1;
+        }
+        M3D_ENGINE_CFG.m_mus_Enable.GetB();
+        return 0;
     }
 
     int MusicServer::SetItemProperty(int id, int prop, void* src)
@@ -74,7 +86,15 @@ namespace m3d
 
     int MusicServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x761810
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            delete static_cast<MusicItem*>(model.m_ptr);
+            model.m_ptr = nullptr;
+        }
+        m_models = retruxx::vector<Model>();
+        return 1;
     }
 
     void MusicServer::PostLoad()
@@ -83,12 +103,14 @@ namespace m3d
 
     int MusicServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x761290
+        return 1;
     }
 
     int MusicServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7612A0
+        return 1;
     }
 
     int MusicServer::AddItem(char const* params, char const* id)

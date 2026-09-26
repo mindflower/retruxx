@@ -1,4 +1,5 @@
 #include "cinemafadepanel.h"
+#include <cassert>
 
 #include <cinematic.h>
 #include <core/kernel.h>
@@ -44,9 +45,9 @@ CinemaFadePanel::CinemaFadePanel()
 
 CinemaFadePanel::CinemaFadePanel(CinemaFadePanel const&)
 {
-    // RVA 0x4AD0E0 - the shipped copy constructor is an assert(0); the panel is
-    // a singleton owned by the interface manager and cannot be duplicated.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4AD0E0 - NOTE: the shipped copy constructor is an assert(0) (live in the retail build); the panel is
+    // a singleton owned by the interface manager and cannot be duplicated. Nothing is copied.
+    assert(0);
 }
 
 CinemaFadePanel::~CinemaFadePanel()
@@ -56,9 +57,8 @@ CinemaFadePanel::~CinemaFadePanel()
 
 m3d::Object* CinemaFadePanel::Clone()
 {
-    // RVA 0x4ACF20 - allocates, runs the asserting copy constructor and returns
-    // null; cloning this panel is not supported.
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4ACF20 - runs the asserting copy constructor; cloning this panel is not supported.
+    return new CinemaFadePanel(*this);
 }
 
 float CinemaFadePanel::GetAlpha()

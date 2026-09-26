@@ -84,14 +84,42 @@ CounterWnd::CounterWnd()
 
 void CounterWnd::OnStartLevel(void* data)
 {
-    // TODO(RVA 0x11A690): finds the DynamicQuestHunt with the latest
-    // "take" game-time among all live DynamicQuestHunt instances whose
-    // status is "active" and calls SetupForHuntQuest on it. Blocked on
-    // ai::DynamicQuest::QuestStatus (an incomplete enum with no defined
-    // enumerators in this codebase yet) and DynamicQuest::GetQuestStatus(),
-    // which is itself RETRUXX_NOT_IMPLEMENTED - implementing this faithfully
-    // requires that dependency to land first.
-    (void)data;
+    // RVA 0x11A690 - on a level start (*data == 2), tracks the active hunt quest taken last.
+    if (!data || *static_cast<int*>(data) != 2)
+    {
+        return;
+    }
+    std::set<int> const* hunts =
+        M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(&ai::DynamicQuestHunt::m_classDynamicQuestHunt);
+    if (!hunts)
+    {
+        return;
+    }
+    ai::GameTime maxTime;
+    int latestQuestId = -1;
+    for (int id : *hunts)
+    {
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(id);
+        if (!obj || !obj->IsKindOf(&ai::DynamicQuestHunt::m_classDynamicQuestHunt))
+        {
+            continue;
+        }
+        auto* quest = static_cast<ai::DynamicQuestHunt*>(obj);
+        if (quest->GetQuestStatus() != ai::DynamicQuest::STATUS_PROCESSING)
+        {
+            continue;
+        }
+        // NOTE: >=, so of equal take times the last one in id order wins.
+        if (quest->GetTakeGameTime().asInt64() >= maxTime.asInt64())
+        {
+            maxTime = quest->GetTakeGameTime();
+            latestQuestId = id;
+        }
+    }
+    if (latestQuestId != -1)
+    {
+        SetupForHuntQuest(latestQuestId);
+    }
 }
 
 int CounterWnd::SetupForHuntQuest(int dQuestId)
@@ -209,13 +237,32 @@ int CounterWnd::GameDataSetup()
 
 void CounterWnd::OnDynamicQuestStateChanged(void* data)
 {
-    // TODO(RVA 0x11A2D0): on a DynamicQuest state-change event, sets up this
-    // counter for a newly-active DynamicQuestHunt (status "active"), or
-    // clears it if the currently-tracked hunt just left the active range.
-    // Blocked on ai::DynamicQuest::QuestStatus (an incomplete enum with no
-    // defined enumerators in this codebase yet) and
-    // DynamicQuest::GetQuestStatus(), which is itself RETRUXX_NOT_IMPLEMENTED.
-    (void)data;
+    // RVA 0x11A2D0 - a hunt quest turning active (STATUS_PROCESSING) gets tracked; the tracked one leaving it (STATUS_COMPLETE to STATUS_FORGOTTEN) is
+    // dropped. The quest id is at +0x34 of the event data.
+    if ((m_gameDataFlags & 1) == 0 || !data)
+    {
+        return;
+    }
+    int const dQuestId = static_cast<int*>(data)[13];
+    ai::Obj* obj = ai::theObjects->GetEntityByObjId(dQuestId);
+    if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+    {
+        return;
+    }
+    auto* quest = static_cast<ai::DynamicQuest*>(obj);
+    if (quest->GetQuestType() != ai::DynamicQuestManager::TYPE_HUNT)
+    {
+        return;
+    }
+    ai::DynamicQuest::QuestStatus const status = quest->GetQuestStatus();
+    if (status == ai::DynamicQuest::STATUS_PROCESSING)
+    {
+        SetupForHuntQuest(dQuestId);
+    }
+    else if (status > ai::DynamicQuest::STATUS_PROCESSING && status <= ai::DynamicQuest::STATUS_FORGOTTEN && m_counterType == COUNTERTYPE_QUEST_HUNT && m_dQuestId == dQuestId)
+    {
+        GameDataClear(false);
+    }
 }
 
 void CounterWnd::CheckAndShow()
