@@ -377,7 +377,7 @@ int DragDropItemsWnd::Drop(PointBase<float> const& mousePt)
     int result = 1;
     PlayDropSound();
 
-    ItemAcceptInfo info(m_dragSlot->m_srcItemsWnd, this, m_dragSlot->GetItem());
+    ItemAcceptInfo info(this, m_dragSlot->m_srcItemsWnd, m_dragSlot->GetItem());
     M3D_APP->m_pInterfaceManager->LaunchEvent(100, GUI_EVENT_CUSTOM, &info);
     if (CanAddDragItem(false))
     {

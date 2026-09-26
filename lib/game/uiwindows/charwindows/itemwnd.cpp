@@ -818,7 +818,7 @@ int ItemWnd::ShowInfoWnd()
             return 0;
         }
         SetupInfoWnd(static_cast<ItemInfoWnd*>(infoWnd.get()));
-        if (!M3D_APP->m_pInterfaceManager->AddWindowById(infoWnd.get(), 36, true, false))
+        if (!M3D_APP->m_pInterfaceManager->AddWindowById(infoWnd.get(), 36, false, true))
         {
             return 0;
         }

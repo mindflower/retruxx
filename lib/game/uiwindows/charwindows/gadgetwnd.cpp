@@ -182,6 +182,7 @@ bool GadgetWnd::SetItemObjId(int objId)
 
 int GadgetWnd::GiveUpItem(ai::GeomRepositoryItem const& item, m3d::ui::Wnd* targetWnd)
 {
+    // RVA 0x445DA0
     if (m_itemId < 0)
     {
         return 0;
@@ -197,6 +198,8 @@ int GadgetWnd::GiveUpItem(ai::GeomRepositoryItem const& item, m3d::ui::Wnd* targ
     {
         vehicle->RemoveChild(obj);
     }
+    // The slot is cleared directly on the gadget after it leaves the vehicle (0x445E47).
+    static_cast<ai::Gadget*>(obj)->SetSlotNum(-1);
 
     if (targetWnd && targetWnd->IsKindOf(&RepositoryWnd::m_classRepositoryWnd) &&
         static_cast<RepositoryWnd*>(targetWnd)->GetRepositoryType() == RepositoryWnd::REPOSITORYTYPE_SHOP)
@@ -220,12 +223,13 @@ int GadgetWnd::GiveUpItem(ai::GeomRepositoryItem const& item, m3d::ui::Wnd* targ
 
 void GadgetWnd::DrawBackground(m3d::ui::DrawInfo const& di)
 {
-    if (!m_itemIco.IsValid())
+    // RVA 0x445B20 - the empty-slot picture is the window background taken over from the pattern.
+    if (!m_bgTexture.IsValid())
     {
         return;
     }
     BoundsBase<float> const rect{0.0f, 0.0f, m_bounds.width, m_bounds.height};
-    m_gfx->AddImagedRect(di, rect, GadgetDrawColor(m_style, m_curClr), m_itemIco);
+    m_gfx->AddImagedRect(di, rect, GadgetDrawColor(m_style, m_curClr), m_bgTexture);
 }
 
 void GadgetWnd::DrawItemIco(m3d::ui::DrawInfo const& di)

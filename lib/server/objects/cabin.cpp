@@ -29,6 +29,8 @@ namespace ai
 
     bool CabinPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        // RVA 0x6CC480 - each <Slot> of the cabin's <GadgetDescription> takes the next MaxAmount slot ids, keyed
+        // by the resource type it accepts.
         auto result = ai::VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
@@ -44,20 +46,22 @@ namespace ai
             this->m_maxSpeed = this->m_maxSpeed * 0.27777779;
 
             ref_ptr gadgetNode = xmlFile->CreateNode();
-            xmlFile->GetFirstChild(gadgetNode, "GadgetDescription");
+            xmlNode->GetFirstChild(gadgetNode, "GadgetDescription");
             if (!gadgetNode->IsEmpty() && gadgetNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
             {
                 ref_ptr slotNode = xmlFile->CreateNode();
+                // NOTE: a slot without MaxAmount reuses the previous slot's (the first one's is uninitialized in
+                // the shipped build).
+                int maxAmount = -1;
                 for (gadgetNode->GetFirstChild(slotNode, "Slot"); !slotNode->IsEmpty();
                      slotNode->GetNextSibling(slotNode, "Slot"))
                 {
                     CStr resourceType;
                     m3d::SafeStrAttrib(resourceType, slotNode, "ResourceType");
 
-                    int maxAmount = -1;
                     m3d::SafeIntAttrib(maxAmount, slotNode, "MaxAmount");
 
-                    // TOOD: check this!!
+                    // The new range starts after the highest slot id taken so far.
                     int slot = -1;
                     for (auto const& gadgetSlot : this->m_gadgetSlots)
                     {

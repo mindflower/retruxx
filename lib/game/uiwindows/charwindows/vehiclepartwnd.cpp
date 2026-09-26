@@ -379,8 +379,8 @@ void VehiclePartWnd::DrawGunAngleEdges(m3d::ui::DrawInfo const& di)
     // second call should plausibly have been BM_ALPHA, mirroring the stage-0
     // pair above); preserved as shipped.
     M3D_RENDERER->SetStageState(1, m3d::rend::BM_COLOR, m3d::rend::TS_NONE);
-    M3D_RENDERER->PushZbState(m3d::rend::ZB_NOWRITE);
-    M3D_RENDERER->PushBlend(m3d::rend::BM_NONE);
+    M3D_RENDERER->PushBlend(m3d::rend::BM_ALPHA);
+    M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
 
     for (m3d::ui::Edges edge : m_gunAngleEdges)
     {

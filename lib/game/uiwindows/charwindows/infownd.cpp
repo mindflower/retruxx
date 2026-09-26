@@ -288,12 +288,17 @@ InfoWnd::AuxInfo::AuxInfo()
 //  InfoWnd
 // ===========================================================================
 
-InfoWnd::InfoWnd() : m_numberOfColumns(1)
+InfoWnd::InfoWnd() : m_numberOfColumns(2)
 {
+    // RVA 0x44E370 - the window is created visible (0x300) with a 1x1 rect; the
+    // real size is set by RecalcLayot on the first paint.
+    Wnd::Create(CStr(), 0x300u, BoundsBase<float>{0.0f, 0.0f, 1.0f, 1.0f}, 0);
+    SetPane("PaneTooltip");
 }
 
-InfoWnd::InfoWnd(InfoWnd const&) : InfoWnd()
+InfoWnd::InfoWnd(InfoWnd const&)
 {
+    // RVA 0x44E4A0
     // NOTE: as with the other windows here, the shipped copy ctor only builds the
     // base and empties m_items; nothing is copied from rhs.
 }

@@ -96,11 +96,13 @@ ItemInfoWnd::AuxInfo::AuxInfo(ItemInfoWnd::AuxInfo const& rhs)
 //  ItemInfoWnd
 // ===========================================================================
 
-ItemInfoWnd::ItemInfoWnd() : m_infoType(INFOTYPE_REPOSITORY_ITEM), m_objId(-1)
+ItemInfoWnd::ItemInfoWnd()
 {
+    // RVA 0x453620
+    ItemInfoWnd::GameDataClear(false);
 }
 
-ItemInfoWnd::ItemInfoWnd(ItemInfoWnd const&) : ItemInfoWnd()
+ItemInfoWnd::ItemInfoWnd(ItemInfoWnd const&) : InfoWnd()
 {
     // NOTE: the shipped copy ctor (RVA 0x4536A0) only builds the base, empties
     // m_auxFullName and nulls m_srcWnd; nothing is copied from rhs.

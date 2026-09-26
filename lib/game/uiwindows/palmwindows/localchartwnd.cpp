@@ -200,15 +200,8 @@ LocalChartWnd::~LocalChartWnd()
 
 CVector LocalChartWnd::WndPtToWorldPos(PointBase<float> const& wndPt, CStr const& levelName) const
 {
-    // RVA 0x4E4420
-    //
-    // Maps a chart pixel back to a world position. NOTE: in the shipped build
-    // this is *not* a clean inverse of WorldPosToWndPt - for the north.z
-    // orientations it uses the opposite sign/origin and routes the value derived
-    // from screen X into world X (rather than world Z), so a world->window->world
-    // round trip is mirrored and axis-swapped. Reproduced faithfully; the only
-    // caller is the right-click "drop user waypoint" path in
-    // LocalMapWnd::OnWndNotify.
+    // RVA 0x4E4420 - maps a chart pixel back to a world position (y = 0); the inverse of WorldPosToWndPt. Points
+    // off the chart give the origin.
     BoundsBase<float> const chartRect = GetClientBounds();
     if (wndPt.x < chartRect.x0 || chartRect.x0 + chartRect.width <= wndPt.x || wndPt.y < chartRect.y0 ||
         chartRect.y0 + chartRect.height <= wndPt.y)
@@ -352,14 +345,16 @@ BoundsBase<float> LocalChartWnd::GetCellWndBounds(CStr const& levelName, int cel
     CVector const nearCorner{static_cast<float>(col) * cell, 0.0f, static_cast<float>(row) * cell};
     CVector const farCorner{static_cast<float>(col + 1) * cell, 0.0f, static_cast<float>(row + 1) * cell};
 
-    PointBase<float> const farPt = WorldPosToWndPt(farCorner, levelName);
     PointBase<float> const nearPt = WorldPosToWndPt(nearCorner, levelName);
+    PointBase<float> const farPt = WorldPosToWndPt(farCorner, levelName);
 
+    // World x runs right to left and z top to bottom on the chart (for the default north), so the far corner
+    // gives the left edge and the near corner the top.
     BoundsBase<float> b;
-    b.x0 = nearPt.x;
-    b.y0 = farPt.y;
-    b.width = farPt.x - nearPt.x;
-    b.height = nearPt.y - farPt.y;
+    b.x0 = farPt.x;
+    b.y0 = nearPt.y;
+    b.width = nearPt.x - farPt.x;
+    b.height = farPt.y - nearPt.y;
     return b;
 }
 
@@ -597,47 +592,36 @@ int LocalChartWnd::UpdateMapMarks()
 
 PointBase<float> LocalChartWnd::WorldPosToWndPt(CVector const& worldPos, CStr const& levelName) const
 {
-    // RVA 0x4E4290
-    //
-    // Projects a world position onto the chart in client pixels. The shipped
-    // build inlines an orientation table (keyed on the level's north vector)
-    // that mirrors/rotates the projection so "north" points up on screen.
-    // NOTE: the Hex-Rays output for this __userpurge came out with its return
-    // struct field indices cross-wired; the reconstruction keeps the
-    // dimensionally coherent wiring (screen X from the x0/width terms, screen Y
-    // from the y0/height terms) - the orientation GetCellWndBounds relies on.
+    // RVA 0x4E4290 - projects a world position onto the chart. The level's north vector picks which corner of the
+    // chart the world origin maps to and which way each axis runs; when north lies along world X the two world axes
+    // swap. WndPtToWorldPos is its exact inverse.
     BoundsBase<float> const chartRect = GetClientBounds();
     CVector const north = GetNorth(levelName);
     float const levelSize = M3D_APP->m_pInterfaceManager->GetLevelInfoManager()->GetLevelSize(levelName);
-    float const invSize = levelSize != 0.0f ? 1.0f / levelSize : 0.0f;
 
-    // Orientation: origin corner offset (client px) + per-axis sign (+1/-1).
-    float originX = 0.0f;
-    float signX = 1.0f;
-    float originY = chartRect.height;
-    float signY = -1.0f;
-    if (north.z == -1.0f)  // north points -Z (also the fallback)
+    // Default (and north = -Z): world x runs right to left, world z top to bottom.
+    float originX = chartRect.width;
+    float signX = -1.0f;
+    float originY = 0.0f;
+    float signY = 1.0f;
+    if (north.z == -1.0f)
+    {
+    }
+    else if (north.z == 1.0f)
     {
         originX = 0.0f;
         signX = 1.0f;
         originY = chartRect.height;
         signY = -1.0f;
     }
-    else if (north.z == 1.0f)  // north points +Z
-    {
-        originX = chartRect.width;
-        signX = -1.0f;
-        originY = 0.0f;
-        signY = 1.0f;
-    }
-    else if (north.x == 1.0f)  // north points +X
+    else if (north.x == 1.0f)
     {
         originX = chartRect.width;
         signX = -1.0f;
         originY = chartRect.height;
         signY = -1.0f;
     }
-    else if (north.x == -1.0f)  // north points -X
+    else if (north.x == -1.0f)
     {
         originX = 0.0f;
         signX = 1.0f;
@@ -645,14 +629,13 @@ PointBase<float> LocalChartWnd::WorldPosToWndPt(CVector const& worldPos, CStr co
         signY = 1.0f;
     }
 
-    // When north lies along world X, the X/Z axes feeding screen X/Y swap.
-    bool const axesSwapped = north.x != 0.0f;
-    float const feedX = axesSwapped ? worldPos.x : worldPos.z;
-    float const feedY = axesSwapped ? worldPos.z : worldPos.x;
+    float const along = north.x == 0.0f ? worldPos.x : worldPos.z;
+    float const across = north.x == 0.0f ? worldPos.z : worldPos.x;
+    float const invSize = 1.0f / levelSize;
 
     PointBase<float> out;
-    out.x = chartRect.x0 + (invSize * chartRect.width * feedX - originX) / signX;
-    out.y = chartRect.y0 + (invSize * chartRect.height * feedY - originY) / signY;
+    out.x = chartRect.x0 + (invSize * chartRect.width * along - originX) / signX;
+    out.y = chartRect.y0 + (invSize * chartRect.height * across - originY) / signY;
     return out;
 }
 

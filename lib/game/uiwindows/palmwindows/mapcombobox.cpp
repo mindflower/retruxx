@@ -137,6 +137,7 @@ MapComboBox::MapComboBox()
 
 int MapComboBox::OnStartLevel()
 {
+    // RVA 0x4ECEC0 - lists the visited levels by their full (display) names.
     if ((m_gameDataFlags & 1) == 0)
     {
         return 0;
@@ -157,7 +158,7 @@ int MapComboBox::OnStartLevel()
         {
             continue;
         }
-        int idx = AddItem(levelInfo->GetName());
+        int idx = AddItem(levelInfo->GetFullName());
         if (idx != -1)
         {
             SetItemData(idx, lim->GetLevelInfoId(visitedLevelNames[i]));
@@ -171,15 +172,13 @@ int MapComboBox::OnStartLevel()
         host = host->GetParent();
     }
 
-    if (host)
+    // Hosted in the quest log: add a localized "All" entry (data -2 = any map) and select it. If it cannot be
+    // added, the current level is selected as for a standalone list.
+    int const allIdx = host ? AddItem(M3D_APP->GetStringByStringId0("All")) : -1;
+    if (allIdx != -1)
     {
-        // Hosted in the quest log: add a localized "All" entry (data -2 = any map) and select it.
-        int idx = AddItem(M3D_APP->GetStringByStringId0("All"));
-        if (idx != -1)
-        {
-            SetItemData(idx, -2);
-            SetCurSel(idx);
-        }
+        SetItemData(allIdx, -2);
+        SetCurSel(allIdx);
     }
     else
     {

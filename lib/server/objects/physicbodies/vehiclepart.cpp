@@ -115,7 +115,7 @@ namespace ai
             std::vector<CStr> strs;
             CStr strLoadPoints;
             m3d::SafeStrAttrib(strLoadPoints, xmlNode, "LoadPoints");
-            m3d::Tokenize(strDurabilityCoeffs, strs, "(), ;\t");
+            m3d::Tokenize(strLoadPoints, strs, "(), ;\t");
             m_loadPoints.insert(strs.begin(), strs.end());
 
             m3d::SafeUintAttrib(this->m_price, xmlNode, "Price");

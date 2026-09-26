@@ -11,6 +11,8 @@
 #include <server/objects/base/objcontainer.h>
 #include <server/objects/physicbodies/vehiclepart.h>
 #include <server/resourcemanager.h>
+#include <server/geomrepositoryitem.h>
+#include <server/objects/vehicle.h>
 
 RT_CLASS_EXPORTS_BEGIN(CBWnd)
 RT_CLASS_EXPORTS_END;
@@ -219,8 +221,25 @@ int CBWnd::GameDataUpdate(void* data, int dataType)
     switch (dataType)
     {
     case 32:
-        // Trade part-removal notification. The child-part map is never populated
-        // in this build, so there is nothing to reconcile here.
+        // RVA 0x440580 - a child part of this vehicle was sold off: it is taken off the vehicle and put back
+        // through AddThing, flushing to the reference chests unless the ground window is up.
+        if (data)
+        {
+            const auto* evt = static_cast<const m3d::Event*>(data);
+            if (evt->m_intEv[0] == m_vehicleId)
+            {
+                auto const it = m_wndChildVehicleParts.find(evt->m_strEv);
+                ai::Vehicle* vehicle = GetVehicle();
+                if (vehicle && it != m_wndChildVehicleParts.end() && it->second)
+                {
+                    vehicle->SetPartByName(evt->m_strEv, nullptr, false);
+                    ai::GeomRepositoryItem const item = it->second->GetAsRepositoryItem();
+                    ref_ptr<m3d::ui::Wnd> const groundWnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_GROUND);
+                    bool const bFlushInReferenceChests = !groundWnd || !groundWnd->IsChildOf(M3D_APP);
+                    vehicle->AddThing(item, bFlushInReferenceChests);
+                }
+            }
+        }
         break;
     case 34:
         OnFinishTrade();

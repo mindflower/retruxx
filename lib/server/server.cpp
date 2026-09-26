@@ -1199,10 +1199,12 @@ namespace ai
 
     void CServer::InitOnce()
     {
+        // RVA 0x5F2160
         LoadGlobalPropertiesFromXML(m3d::g_Kernel->GetEngineCfg().m_pathToGlobProps.GetS());
         theResourceManager = new ResourceManager;
         theResourceManager->Init();
         m_pAffixManager = new AffixManager;
+        m_pAffixManager->LoadFromXmlFile(ai::theGlobProp.m_pathToAffixes.c_str());
         DynamicScene::InitOnce();
         m_pDynamicScene = dynamic_cast<DynamicScene*>(m3d::g_Kernel->New("DynamicScene"));
         m_pDynamicScene->IncRef();

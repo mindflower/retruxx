@@ -62,9 +62,9 @@ namespace m3d
             m_header.m_numVertices = Header.m_numVertices;
             m_header.m_numFaces = Header.m_numFaces;
             m_header.m_alpha = Header.m_alpha;
-            m_verts = g_Kernel->g_mar.AllocMem(32 * m_header.m_numVertices, nullptr, 0);
+            m_verts = new unsigned char[32 * m_header.m_numVertices];
             stream->ReadBytes(m_verts, 32 * m_header.m_numVertices);
-            m_triIndices = static_cast<unsigned short*>(g_Kernel->g_mar.AllocMem(6 * m_header.m_numFaces, nullptr, 0));
+            m_triIndices = new unsigned short[3 * m_header.m_numFaces];
             stream->ReadBytes(m_triIndices, 6 * m_header.m_numFaces);
             FlipWinding(m_triIndices, m_header.m_numFaces);
             stream->Close();
@@ -102,7 +102,7 @@ namespace m3d
                 m_header.m_numVertices = Header.m_numVertices;
                 m_header.m_numFaces = Header.m_numFaces;
                 m_header.m_alpha = Header.m_alpha;
-                m_verts = g_Kernel->g_mar.AllocMem(32 * Header.m_numVertices, nullptr, 0);
+                m_verts = new unsigned char[32 * Header.m_numVertices];
                 file.getChunkDataCopy(2u, m_verts);
                 // Tagged files are Z-up: swap Y and Z of the positions and the normals.
                 unsigned int* v = reinterpret_cast<unsigned int*>(m_verts);
@@ -115,7 +115,7 @@ namespace m3d
                     v[4] = v[5];
                     v[5] = ny;
                 }
-                m_triIndices = static_cast<unsigned short*>(g_Kernel->g_mar.AllocMem(6 * m_header.m_numFaces, nullptr, 0));
+                m_triIndices = new unsigned short[3 * m_header.m_numFaces];
                 file.getChunkDataCopy(3u, m_triIndices);
                 FlipWinding(m_triIndices, m_header.m_numFaces);
             }
@@ -124,7 +124,7 @@ namespace m3d
                 void* data;
                 file.getChunkData(4u, &data);
                 int const numLoadPoints = *static_cast<int*>(data);
-                m_loadPoints = static_cast<LPoint*>(g_Kernel->g_mar.AllocMem(sizeof(LPoint) * numLoadPoints, nullptr, 0));
+                m_loadPoints = new LPoint[numLoadPoints];
                 m_numLoadPoints = numLoadPoints;
                 memcpy(m_loadPoints, static_cast<char*>(data) + 4, sizeof(LPoint) * numLoadPoints);
             }
@@ -135,10 +135,9 @@ namespace m3d
                 {
                     M3D_LOG_INFO(CStr("Collision data for ") + fname + CStr(": ") + CStr(m_col_header.numFaces)
                                  + CStr(" faces, ") + CStr(m_col_header.numVertices) + CStr(" vertices"));
-                    m_col_verts = static_cast<CollidingVertex*>(
-                        g_Kernel->g_mar.AllocMem(sizeof(CollidingVertex) * m_col_header.numVertices, nullptr, 0));
+                    m_col_verts = new CollidingVertex[m_col_header.numVertices];
                     file.getChunkDataCopy(6u, m_col_verts);
-                    m_col_idx = static_cast<unsigned short*>(g_Kernel->g_mar.AllocMem(6 * m_col_header.numFaces, nullptr, 0));
+                    m_col_idx = new unsigned short[3 * m_col_header.numFaces];
                     file.getChunkDataCopy(7u, m_col_idx);
                     for (unsigned int i = 0; i < m_col_header.numVertices; ++i)
                     {
@@ -214,30 +213,15 @@ namespace m3d
         {
             M3D_RENDERER->ReleaseTexture(texture.Handle);
         }
-        if (m_triIndices)
-        {
-            g_Kernel->g_mar.FreeMem(m_triIndices, nullptr, 0);
-        }
+        delete[] m_triIndices;
         m_triIndices = nullptr;
-        if (m_verts)
-        {
-            g_Kernel->g_mar.FreeMem(m_verts, nullptr, 0);
-        }
+        delete[] static_cast<unsigned char*>(m_verts);
         m_verts = nullptr;
-        if (m_col_verts)
-        {
-            g_Kernel->g_mar.FreeMem(m_col_verts, nullptr, 0);
-        }
+        delete[] m_col_verts;
         m_col_verts = nullptr;
-        if (m_col_idx)
-        {
-            g_Kernel->g_mar.FreeMem(m_col_idx, nullptr, 0);
-        }
+        delete[] m_col_idx;
         m_col_idx = nullptr;
-        if (m_loadPoints)
-        {
-            g_Kernel->g_mar.FreeMem(m_loadPoints, nullptr, 0);
-        }
+        delete[] m_loadPoints;
         m_loadPoints = nullptr;
     }
 

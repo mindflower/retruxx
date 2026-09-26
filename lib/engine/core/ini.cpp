@@ -267,10 +267,10 @@ namespace m3d
 
 namespace
 {
-    // Copies str into memory from the kernel allocator, so the caller frees it the engine's way.
+    // Copies str into a new[] buffer the caller frees with delete[] (the engine used its kernel allocator).
     char* AllocStringCopy(CStr const& str, unsigned int allocSize)
     {
-        auto* copy = static_cast<char*>(M3D_KERNEL->g_mar.AllocMem(allocSize, nullptr, 0));
+        auto* copy = new char[allocSize];
         std::strcpy(copy, str.c_str());
         return copy;
     }

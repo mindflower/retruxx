@@ -1,3 +1,5 @@
+#include <server/objects/base/prototypemanager.h>
+#include <server/objects/town.h>
 #include "localmapwnd.h"
 #include "saveselllist.h"
 #include "mapinfopanel.h"
@@ -132,8 +134,13 @@ m3d::Class* LocalMapWnd::GetClass() const
 
 bool LocalMapWnd::IsObjectInfoValidForPrices(ObjectInfo* objectInfo)
 {
-    // RVA 0x4E9B80 - a non-ruined town.
-    return objectInfo && objectInfo->IsTown() && !objectInfo->IsRuined();
+    // RVA 0x4E9B80 - a non-ruined town, judged by the object's prototype.
+    if (!objectInfo)
+    {
+        return false;
+    }
+    ai::PrototypeInfo const* proto = ai::thePrototypeManager->GetPrototypeInfo(objectInfo->GetPrototypeId());
+    return proto && proto->IsPrototypeOf(&ai::Town::m_classTown) && !objectInfo->IsRuined();
 }
 
 // --- accessors -----------------------------------------------------------------------------------

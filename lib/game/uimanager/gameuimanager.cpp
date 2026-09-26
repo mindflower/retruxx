@@ -1265,7 +1265,7 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
     }
     else
     {
-        if (&it->second != &w)
+        if (it->second.get() != w.get())
         {
             return 0;
         }
