@@ -357,7 +357,8 @@ namespace m3d
 
     float AuxImpulseInfo::UnpackWheel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x594500 - the wheel delta is the signed low word of m_info1.
+        return static_cast<float>(static_cast<int16_t>(m_info1 & 0xFFFF));
     }
 
     int GameImpulse::LoadFromFile(CStr const& bindFile)

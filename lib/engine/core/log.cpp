@@ -11,7 +11,8 @@ namespace m3d
 
     unsigned const& Log::logMask() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary; the non-const overload is RVA 0x612BA0.
+        return m_logMask;
     }
 
     Log::~Log()
@@ -57,7 +58,8 @@ namespace m3d
 
     bool Log::logStarted() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x612B80
+        return m_logStarted;
     }
 
     bool Log::endLog()
@@ -90,22 +92,79 @@ namespace m3d
 
     bool const& Log::lineCharsFlag() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x612BB0
+        return m_lineCharsFlag;
     }
 
     bool& Log::lineCharsFlag()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x612BC0
+        return m_lineCharsFlag;
     }
 
-    void Log::logRaw(char const*)
+    void Log::logRaw(char const* s)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x613080 - writes s as is, with no header and no line break.
+        AutoLock guard(m_cs);
+        if (m_logStarted)
+        {
+            std::ofstream file(m_fileName.c_str(), std::ios_base::out | std::ios_base::app);
+            if (file)
+            {
+                file << (s ? s : "");
+                if (m_flushImmediately)
+                {
+                    file.flush();
+                }
+            }
+        }
     }
 
-    void Log::logHex(char const*, unsigned, eLogFlags)
+    void Log::logHex(char const* buffer, unsigned count, eLogFlags logFlags)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x613660 - one line per 20 bytes: the bytes in hex at columns 0..59, then the bytes as characters
+        // from column 60, with '.' for those outside 0x20..0x7F.
+        AutoLock guard(m_cs);
+        if (!m_logStarted || !buffer || (logFlags & m_logMask) == 0)
+        {
+            return;
+        }
+        std::ofstream file(m_fileName.c_str(), std::ios_base::out | std::ios_base::app);
+        if (!file)
+        {
+            return;
+        }
+        static char const digits[] = "0123456789ABCDEF";
+        unsigned pos = 0;
+        while (pos < count)
+        {
+            CStr line;
+            for (int i = 0; i < 20; ++i)
+            {
+                line += CStr("-- ");
+            }
+            for (int i = 0; i < 20; ++i)
+            {
+                line += CStr(".");
+            }
+            unsigned column = 0;
+            for (unsigned i = 0; i < 60 && pos < count; i += 3, ++column, ++pos)
+            {
+                unsigned char c = static_cast<unsigned char>(buffer[pos]);
+                line[i] = digits[c >> 4];
+                line[i + 1] = digits[c & 0xF];
+                if (c < 0x20 || c > 0x7F)
+                {
+                    c = '.';
+                }
+                line[60 + column] = static_cast<char>(c);
+            }
+            file << headerString(logFlags).c_str() << line.c_str() << std::endl;
+        }
+        if (m_flushImmediately)
+        {
+            file.flush();
+        }
     }
 
     unsigned& Log::sourceLine()

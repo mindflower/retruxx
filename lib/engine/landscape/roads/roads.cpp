@@ -64,9 +64,27 @@ namespace m3d
         }
     }  // namespace
 
-    int RoadNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int RoadNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A0FB0 - empty links are left out, and AsCliff only when set.
+        node->SetAttribute("class", GetClassNameA());
+        node->SetAttribute("name", m_name.c_str());
+        node->SetAttribute("roadset", m_owner->GetRoadSetNameByHandle(m_roadSetHandle).c_str());
+        node->SetAttribute("skinNumber", CStr(m_skinNumber).c_str());
+        for (int i = 0; i < 4; ++i)
+        {
+            if (m_linkedNames[i].c_str() && strlen(m_linkedNames[i].c_str()))
+            {
+                node->SetAttribute(RDL_NAMES[i], m_linkedNames[i].c_str());
+            }
+        }
+        node->SetAttribute("org", CStr::format_("%.3f %.3f %.3f", m_origin.x, m_origin.y, m_origin.z).c_str());
+        node->SetAttribute("ModelNum", CStr(m_modelNum).c_str());
+        if (m_asCliff)
+        {
+            node->SetAttribute("AsCliff", CStr(static_cast<int>(m_asCliff)).c_str());
+        }
+        return 1;
     }
 
     Class* RoadNode::GetBaseClass()
@@ -76,7 +94,8 @@ namespace m3d
 
     int RoadNode::ReadFromXmlNodeAfterAdd(cmn::XmlFile*, cmn::XmlNode*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A0D50
+        return 1;
     }
 
     RoadNode::~RoadNode()
@@ -221,7 +240,8 @@ namespace m3d
 
     Object* RoadNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A1BA0 - NOTE: the copy constructor copies nothing, so the clone is a blank node.
+        return new RoadNode(*this);
     }
 
     CVector RoadNode::GetPoint3()
@@ -269,7 +289,8 @@ namespace m3d
 
     Class* RoadNode::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A0D40
+        return RT_CLASS_LOCAL(RoadNode);
     }
 
     Object* RoadNode::CreateObject()
@@ -279,7 +300,9 @@ namespace m3d
 
     RoadNode::RoadNode(RoadNode const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A1910 - NOTE: nothing is copied, not even the Object part: only the members with constructors of
+        // their own (the strings, the covered-cells list and the pool fields) are set up, and the plain fields are
+        // left uninitialized.
     }
 
     RoadNode::RoadNode()

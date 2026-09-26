@@ -15,6 +15,9 @@ namespace m3d
 
     class WeatherManager
     {
+        // CWorld reads the current time of day for its shadow settings.
+        friend class CWorld;
+
     private:
         /* 0x0000 */ retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*> > m_weatherStorage;
         /* 0x0010 */ retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*> > m_curWeatherStorage;

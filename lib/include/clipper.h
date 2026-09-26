@@ -13,8 +13,9 @@ enum tbEnum
 class CClipper
 {
 public:
-    /* 0x0000 */ float m_planes[4][26];
-    /* 0x01a0 */ unsigned int m_indices[156];
+    // 26 planes of (normal, distance): the PDB dump prints the dimensions the other way round, but the binary
+    // strides planes by 16 bytes.
+    /* 0x0000 */ float m_planes[26][4];    /* 0x01a0 */ unsigned int m_indices[156];
     /* 0x0410 */ unsigned int m_enabled;
     /* 0x0414 */ unsigned int m_nfrustums;
 

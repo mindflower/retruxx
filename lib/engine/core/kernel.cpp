@@ -1,6 +1,8 @@
 #include "memoryman.h"
 #include <atomic>
 #include <cassert>
+#include <cstdarg>
+#include <cstdio>
 #include <config.h>
 #include <m3dapp.h>
 #include "core/clazz.h"
@@ -130,7 +132,8 @@ namespace m3d
 
     unsigned Kernel::debugMemUsed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x589690
+        return m_memMan->debugMemUsed();
     }
 
     cmn::Timer& Kernel::GetTimer()
@@ -166,12 +169,14 @@ namespace m3d
 
     void Kernel::DumpMem(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5895D0 - the file name is not used.
+        m_memMan->DumpMemoryFootprint(true);
     }
 
     unsigned Kernel::debugMemAllocated() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5896A0
+        return m_memMan->debugMemAllocated();
     }
 
     void Kernel::AddClass(Class* rtClass)
@@ -193,22 +198,51 @@ namespace m3d
 
     unsigned Kernel::debugMemOverhead() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5896B0
+        return m_memMan->debugMemOverhead();
     }
 
-    void Kernel::SetClipboardData(char const*) const
+    void Kernel::SetClipboardData(char const* str) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x589610
+        if (!::OpenClipboard(nullptr))
+        {
+            return;
+        }
+        if (::EmptyClipboard())
+        {
+            SIZE_T const size = strlen(str) + 1;
+            // GMEM_MOVEABLE | GMEM_DDESHARE
+            HGLOBAL const hMem = ::GlobalAlloc(0x2002, size);
+            if (hMem)
+            {
+                void* const data = ::GlobalLock(hMem);
+                if (data)
+                {
+                    memcpy(data, str, size);
+                    ::SetClipboardData(CF_TEXT, hMem);
+                    ::GlobalUnlock(hMem);
+                }
+            }
+        }
+        ::CloseClipboard();
     }
 
-    void Kernel::KernelLog(char const*, ...)
+    void Kernel::KernelLog(char const* str, ...)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x58A080 - formats into a static buffer with no length limit.
+        static char tmp[4096];
+        va_list args;
+        va_start(args, str);
+        vsprintf(tmp, str, args);
+        va_end(args);
+        M3D_LOG_INFO(CStr(tmp));
     }
 
-    void Kernel::TurnAggressiveMemoryDebugMode(bool)
+    void Kernel::TurnAggressiveMemoryDebugMode(bool bOn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5895E0
+        m_memMan->turnAggressiveDebugMode(bOn);
     }
 
     Object* Kernel::RegisterGlobal(Object* object, char const* name)
@@ -254,22 +288,42 @@ namespace m3d
 
     CStr Kernel::GetClipboardData() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x58A6E0
+        CStr data;
+        if (::OpenClipboard(nullptr))
+        {
+            HANDLE const hMem = ::GetClipboardData(CF_TEXT);
+            if (hMem)
+            {
+                char const* const text = static_cast<char const*>(::GlobalLock(hMem));
+                if (text)
+                {
+                    data = CStr(text);
+                    ::GlobalUnlock(hMem);
+                }
+            }
+            ::CloseClipboard();
+        }
+        return data;
     }
 
     int Kernel::debugMemLastAllocSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5896C0 - the last allocation that failed.
+        return m_memMan->debugMemLastUnsuccessfulAllocSize();
     }
 
     void Kernel::UnRegisterGlobalObject(Object const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x589600 - empty; the object stays in the globals map.
     }
 
-    void Kernel::RemoveClass(Class*)
+    void Kernel::RemoveClass(Class* rtClass)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x58BD30
+        auto const cmi = m_classes->find(CStr(rtClass->m_className));
+        assert(cmi != m_classes->end());
+        m_classes->erase(cmi);
     }
 
     void Kernel::GetListOfClasses(Class**& classList, unsigned& numOfClasses)

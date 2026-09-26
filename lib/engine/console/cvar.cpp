@@ -1,13 +1,25 @@
 #include <core/console/cvar.h>
 #include <core/console/console.h>
 #include <cstdio>
-#include <stdexcept>
+#include <cstring>#include <stdexcept>
 
 namespace m3d
 {
-    CVar::CVar(CVar const&)
+    CVar::CVar(CVar const& other)
+        : m_name(other.m_name)
+        , m_type(other.m_type)
+        , m_flags(other.m_flags)
+        , m_s(other.m_s)
+        , m_handler(other.m_handler)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary. A member-wise copy, except that the default value is duplicated because the
+        // destructor frees it.
+        m_i = other.m_i;
+        if (other.m_defaultValue)
+        {
+            m_defaultValue = new char[strlen(other.m_defaultValue) + 1];
+            strcpy(m_defaultValue, other.m_defaultValue);
+        }
     }
 
     CVar::CVar()
@@ -189,7 +201,11 @@ namespace m3d
 
     void CVar::ResetToDefault()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary. Restores the value the cvar had when it was first set.
+        if (m_defaultValue)
+        {
+            Set(m_defaultValue);
+        }
     }
 
     IConHandler* CVar::GetHandler() const
@@ -204,7 +220,8 @@ namespace m3d
 
     bool CVar::operator==(CVar const& rhs) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary. Cvars are identified by name.
+        return m_name == rhs.m_name;
     }
 
     CVar::eFlags CVar::GetFlags() const

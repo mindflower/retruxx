@@ -152,9 +152,36 @@ namespace Graph
         }
     }
 
-    void applyOperation(CSquareMatrix<float>*, std::vector<int> const&, std::vector<int> const&)
+    void applyOperation(CSquareMatrix<float>* m, std::vector<int> const& parentX, std::vector<int> const& parentY)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9483E0 - finds the smallest weight between a reached X vertex and an unreached Y vertex, subtracts
+        // it along those edges and adds it along the edges from unreached X to reached Y.
+        int const size = static_cast<int>(m->getSize());
+        float delta = 1.0e10f;
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                if (parentX[i] != -1 && parentY[j] == -1 && delta > (*m)(i, j))
+                {
+                    delta = (*m)(i, j);
+                }
+            }
+        }
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                if (parentX[i] != -1 && parentY[j] == -1)
+                {
+                    (*m)(i, j) = (*m)(i, j) - delta;
+                }
+                if (parentX[i] == -1 && parentY[j] != -1)
+                {
+                    (*m)(i, j) = (*m)(i, j) + delta;
+                }
+            }
+        }
     }
 
     TQueueVertex::TQueueVertex(bool inFirstPartite_, int index_)

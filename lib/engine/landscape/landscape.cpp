@@ -1152,55 +1152,97 @@ namespace m3d
 
     void Landscape::DrawLandScapeTextures(VisibilityMode visMode, bool drawMinimap, bool roadMap)
     {
+        // RVA 0x7A9130 - sorts the visible tiles into per-texture lists and draws them, two passes per texture (the
+        // first lit pass, then the blended ones). The editor gathers the tiles itself, lights the terrain with the
+        // sun and maps the lightmap through the fixed-function pipeline; it can also draw the whole map
+        // (drawMinimap), and roads and shores on top.
+        int const landSize = m_owner->m_level->land_size;
+        int const gridSize = 4 * landSize;
         auto& sceneGraph = m_owner->m_sceneGraph;
-        auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-        sceneGraph.SortedCellsStartFetching(0, m_drawRadius * transitionDivider + 1);
+        sceneGraph.SortedCellsStartFetching(
+            0, static_cast<int>(static_cast<float>(m_drawRadius) * M3D_ENGINE_CFG.m_lsTransitionDevider.GetF()) + 1);
 
-        float fogStart = 0.0;
-        float fogEnd = 0.0;
+        float const fogReduce = m_owner->m_weatherManager.GetFogReduceFactorFromWeather();
+        float fogStart = 0.0f;
+        float fogEnd = 0.0f;
         GetFogStartAndEnd(fogStart, fogEnd);
-
+        fogStart = fogStart * fogReduce;
         M3D_RENDERER->SetFogStart(fogStart, false);
+        fogEnd = fogEnd * fogReduce;
         M3D_RENDERER->SetFogEnd(fogEnd, false);
+
+        // Adds a tile to the list of every texture it is painted with, keyed by position, angle and flags.
+        auto const addTileTextures = [this](int x, int y) {
+            TileInfo const& tileInfo = GetTileInfo(x, y);
+            for (int k = 0; k < tileInfo.m_numTexs; ++k)
+            {
+                m_cellsPerTex.m_data[tileInfo.m_texIndices[k]].push_back(
+                    x + ((y + ((tileInfo.m_angle + (tileInfo.m_texFlags[k] << 8)) << 8)) << 8));
+            }
+        };
 
         if (drawMinimap)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_renderMode == RM_EDITOR)
+            {
+                for (int x = 0; x < gridSize; ++x)
+                {
+                    for (int y = 0; y < gridSize; ++y)
+                    {
+                        addTileTextures(x, y);
+                    }
+                }
+                // Every road counts as seen this frame.
+                int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+                for (Object* node = m_owner->m_roadManager.m_roadRoot->GetFirstChild(); node;
+                     node = node->GetNextSibling())
+                {
+                    static_cast<RoadNode*>(node)->m_frameVisible = curFrame;
+                }
+                // A flat grey light from high above.
+                rend::LightSource light;
+                light.m_type = rend::M3DLIGHT_DIRECTIONAL;
+                light.m_diffuse.init(0.0f, 0.0f, 0.0f, 1.0f);
+                light.m_ambient.init(0.49803922f, 0.49803922f, 0.49803922f, 1.0f);
+                light.m_origin = CVector(0.0f, 20000.0f, 0.0f);
+                light.m_direction = light.m_origin;
+                light.m_range = 1000.0f;
+                M3D_RENDERER->LightSet(0, light);
+            }
         }
         else
         {
-            int landSize = this->m_owner->m_level->land_size;
-            int gridSize = 4 * landSize;
-            // Normal rendering - process visible cells from scene graph
-            int cellX, cellY, vis, radius;
+            int cellX = 0;
+            int cellY = 0;
+            int vis = 0;
+            int radius = 0;
             while (sceneGraph.SortedCellsFetch(cellX, cellY, vis, radius))
             {
-                if (vis == 0)
+                if (!vis)
+                {
                     continue;
+                }
 
+                // The cell's 4x4 tiles against the water: all of them under it, or any of them reaching below it.
                 bool isFullyUnderwater = true;
                 bool hasUnderwaterParts = false;
-
-                // Process 4x4 block of cells
-                for (int subY = 0; subY < 4; subY++)
+                for (int subY = 0; subY < 4; ++subY)
                 {
-                    for (int subX = 0; subX < 4; subX++)
+                    int const y = 4 * cellY + subY;
+                    for (int subX = 0; subX < 4; ++subX)
                     {
-                        int worldX = 4 * cellX + subX;
-                        int worldY = 4 * cellY + subY;
-
-                        // Check water status
-                        if (this->m_waterMap[worldX + worldY * landSize])
+                        int const x = 4 * cellX + subX;
+                        int const tile = x + y * gridSize;
+                        if (m_waterMap[tile])
                         {
-                            Landscape::CellParams const& cellParams =
-                                this->m_drawedCellParams[worldX + worldY * landSize];
-                            float waterHeight = m3d::Landscape::getWaterHeight(worldX, worldY);
-
-                            if (cellParams.m_h1 > waterHeight)
+                            float const h0 = m_drawedCellParams[tile].m_h0;
+                            float const h1 = m_drawedCellParams[tile].m_h1;
+                            float const waterHeight = getWaterHeight(x, y);
+                            if (h1 > waterHeight)
                             {
                                 isFullyUnderwater = false;
                             }
-                            if (waterHeight > cellParams.m_h0)
+                            if (waterHeight > h0)
                             {
                                 hasUnderwaterParts = true;
                             }
@@ -1209,92 +1251,93 @@ namespace m3d
                         {
                             isFullyUnderwater = false;
                         }
-
-                        // In editor mode, collect cells per texture
-                        if (m3d::Landscape::m_renderMode == RM_EDITOR)
+                        if (m_renderMode == RM_EDITOR)
                         {
-                            Landscape::TileInfo const& tileInfo = m3d::Landscape::GetTileInfo(worldX, worldY);
-                            if (tileInfo.m_numTexs > 0)
-                            {
-                                for (int texIndex = 0; texIndex < tileInfo.m_numTexs; texIndex++)
-                                {
-                                    // The list is picked by the texture index; the flags only go into the key.
-                                    cmn::vector<unsigned int>* cellsPerTex =
-                                        &this->m_cellsPerTex.m_data[tileInfo.m_texIndices[texIndex]];
-                                    cellsPerTex->push_back(
-                                        worldX +
-                                        ((worldY + ((tileInfo.m_angle + (tileInfo.m_texFlags[texIndex] << 8)) << 8))
-                                         << 8));
-                                }
-                            }
+                            addTileTextures(x, y);
                         }
                     }
                 }
 
-                // Skip cells based on visibility mode
-                if (m3d::Landscape::m_renderMode)
+                // In the game the cells come from the precomputed texture sets; reflections skip the cells wholly
+                // under water, refractions keep only those reaching below it.
+                if (m_renderMode != RM_GAME)
                 {
                     continue;
                 }
-                if (visMode == VIS_DIRECT)
+                if (visMode == VIS_REFLECTION)
                 {
-                    // Always render in direct mode
-                }
-                else if (visMode == VIS_REFLECTION)
-                {
-                    if (!isFullyUnderwater)
+                    if (isFullyUnderwater)
+                    {
                         continue;
+                    }
                 }
-                else if (visMode == VIS_REFRACTION)
+                else if (visMode != VIS_DIRECT && (visMode != VIS_REFRACTION || !hasUnderwaterParts))
                 {
-                    if (!hasUnderwaterParts)
-                        continue;
+                    continue;
                 }
-
-                // Collect texture sets for this cell
-                int cellIndex = cellX + landSize * cellY;
-                std::set<unsigned int>& textureSets = this->m_texSetsmap[cellIndex];
-
-                for (auto it = textureSets.begin(); it != textureSets.end(); ++it)
+                std::set<unsigned int> const& textureSets = m_texSetsmap[cellX + landSize * cellY];
+                for (unsigned int texIndex : textureSets)
                 {
-                    cmn::vector<unsigned int>& cellsPerTex = m_cellsPerTex[*it];
-                    unsigned int cellData = cellX + (cellY << 8);
-                    cellsPerTex.push_back(cellData);
+                    m_cellsPerTex.m_data[texIndex].push_back(cellX + (cellY << 8));
                 }
             }
 
-            if (m3d::Landscape::m_renderMode == RM_EDITOR)
+            if (m_renderMode == RM_EDITOR)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                // The editor lights the terrain with the weather's sun.
+                rend::LightSource light;
+                light.m_type = rend::M3DLIGHT_DIRECTIONAL;
+                light.m_origin =
+                    CVector(0.0f - m_owner->m_sunDir.x, 0.0f - m_owner->m_sunDir.y, 0.0f - m_owner->m_sunDir.z);
+                light.m_direction = light.m_origin;
+                light.m_range = 1000.0f;
+                unsigned int const ambient = m_owner->GetWeatherAmbientColor();
+                light.m_diffuse.init(m_owner->GetWeatherDiffuseColor());
+                // The ambient is taken at half strength.
+                float const HALF_BYTE_TO_FLOAT = 0.0019607844f;
+                light.m_ambient.init(static_cast<float>((ambient >> 16) & 0xFF) * HALF_BYTE_TO_FLOAT,
+                    static_cast<float>((ambient >> 8) & 0xFF) * HALF_BYTE_TO_FLOAT,
+                    static_cast<float>(ambient & 0xFF) * HALF_BYTE_TO_FLOAT,
+                    static_cast<float>(ambient >> 24) * HALF_BYTE_TO_FLOAT);
+                M3D_RENDERER->LightSet(0, light);
             }
         }
 
-        M3D_RENDERER->SetLighting(1, 0);
-        M3D_RENDERER->LightEnable(0, 1);
+        M3D_RENDERER->SetLighting(true, false);
+        M3D_RENDERER->LightEnable(0, true);
 
-        m3d::rend::Material material;
-        material.init({1.0, 1.0, 1.0, 1.0});
+        rend::Material material;
+        memset(&material, 0, sizeof(material));
+        material.m_diffuse.init(1.0f, 1.0f, 1.0f, 1.0f);
+        material.m_ambient.init(1.0f, 1.0f, 1.0f, 1.0f);
         M3D_RENDERER->MaterialSet(material);
 
         m_firstpasscounter = 0;
         m_otherpasscounter = 0;
 
-        // TODO: implement landscape textures rendering
-        //if (false)
         if (M3D_ENGINE_CFG.m_lsShadows.GetB())
         {
-            // TODO: check this
             M3D_RENDERER->SetToStream(1, m_landUVVb);
             M3D_RENDERER->SetTexture(0, m_AlphaSets.front().m_texMasks[0].front(), -1.0);
-
-            auto lightmapTexture = GetLightmapTexture();
-            M3D_RENDERER->SetTexture(2, lightmapTexture, -1.0);
-            auto const weatherFogColor = m_owner->GetWeatherFogColor();
-            M3D_RENDERER->SetFogColor(weatherFogColor, false);
+            M3D_RENDERER->SetTexture(2, GetLightmapTexture(), -1.0);
+            M3D_RENDERER->SetFogColor(m_owner->GetWeatherFogColor(), false);
             M3D_RENDERER->SetFogMode(rend::M3DFOG_LINEAR, false);
-            if (m3d::Landscape::m_renderMode == RM_EDITOR)
+
+            float const VISCELL_EDGE_LENGTH_24 = 128.0f;
+            float const lightmapScale = 1.0f / (static_cast<float>(landSize) * VISCELL_EDGE_LENGTH_24);
+            if (m_renderMode == RM_EDITOR)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                // The lightmap is mapped from the world position: u = x * scale, v = -z * scale. (The shipped code
+                // multiplies two zero-filled matrices into this, so every other entry is 0.)
+                CMatrix lightmapMatrix;
+                memset(&lightmapMatrix, 0, sizeof(lightmapMatrix));
+                lightmapMatrix._11 = lightmapScale;
+                lightmapMatrix._32 = 0.0f - lightmapScale;
+                lightmapMatrix._44 = 1.0f;
+                M3D_RENDERER->TgEnableSetMatrixSt(2, &lightmapMatrix, false);
+                M3D_RENDERER->SetStageState(2, rend::BM_COLOR, rend::TS_TEX_MODULATE2X_PREV);
+                M3D_RENDERER->SetStageState(2, rend::BM_ALPHA, rend::TS_PREV);
+                M3D_RENDERER->DisableTextureStages(3);
             }
             else
             {
@@ -1303,35 +1346,24 @@ namespace m3d
                 CVector fogTerm;
                 fogTerm.x = fogEnd;
                 fogTerm.z = fogStart;
-                fogTerm.y = 1.0 / (fogEnd - fogStart);
+                fogTerm.y = 1.0f / (fogEnd - fogStart);
+                m_landscapeVs->SetVector3(m_landscapeVs->GetParamHandleByName("g_FogTerm"), fogTerm);
 
-                auto const fogTermHandle = m_landscapeVs->GetParamHandleByName("g_FogTerm");
-                m_landscapeVs->SetVector3(fogTermHandle, fogTerm);
+                CMatrix const viewMatrix = M3D_RENDERER->MatGet();
+                CMatrix const viewProjMatrix = viewMatrix * M3D_RENDERER->MatGetProj();
+                CMatrix const worldMatrix = M3D_RENDERER->MatGetWorld();
+                m_landscapeVs->SetMatrix(m_landscapeVs->GetParamHandleByName("mViewProj"), viewProjMatrix);
 
-                auto const mat = M3D_RENDERER->MatGet();
-                auto const projMat = M3D_RENDERER->MatGetProj();
-                auto const matWorld = M3D_RENDERER->MatGetWorld();
+                CVector lightmapScaleVec;
+                lightmapScaleVec.x = lightmapScale;
+                lightmapScaleVec.y = 0.0f - lightmapScale;
+                lightmapScaleVec.z = 0.0f;
+                m_landscapeVs->SetVector3(m_landscapeVs->GetParamHandleByName("lightmapScale"), lightmapScaleVec);
 
-                auto resultMat = mat * projMat;
-
-                auto const viewProjHandle = m_landscapeVs->GetParamHandleByName("mViewProj");
-                m_landscapeVs->SetMatrix(viewProjHandle, resultMat);
-
-                float const VISCELL_EDGE_LENGTH_24 = 128.0;
-
-                CVector lightmapScale;
-                lightmapScale.x = 1.0 / (this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24);
-                lightmapScale.y = 0.0 - (1.0 / (this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24));
-                ;
-                lightmapScale.z = 0.0;
-                auto const lightmapScaleHandle = m_landscapeVs->GetParamHandleByName("lightmapScale");
-                m_landscapeVs->SetVector3(lightmapScaleHandle, lightmapScale);
-
-                auto const worldMatHandle = m_landscapeVs->GetParamHandleByName("mWorld");
-                m_landscapeVs->SetMatrix(worldMatHandle, matWorld);
+                m_landscapeVs->SetMatrix(m_landscapeVs->GetParamHandleByName("mWorld"), worldMatrix);
             }
 
-            for (int i = 0; i < m_tilesTextures.size(); ++i)
+            for (unsigned int i = 0; i < m_tilesTextures.size(); ++i)
             {
                 if (m_cellsPerTex[i].empty())
                 {
@@ -1351,11 +1383,10 @@ namespace m3d
                 }
 
                 M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
-                if (m3d::Landscape::m_renderMode != RM_GAME)
+                if (m_renderMode != RM_GAME)
                 {
-                    // The editor streams the tiles itself (DrawCells0), except for the
-                    // road map.
-                    if (m3d::Landscape::m_renderMode == RM_EDITOR && !roadMap)
+                    // The road map is drawn without the terrain.
+                    if (m_renderMode == RM_EDITOR && !roadMap)
                     {
                         M3D_RENDERER->SetZbState(rend::ZB_ENABLE, false);
                         DrawCells0(m_cellsPerTex[i], RT_FIRSTPASSLIGHT);
@@ -1366,9 +1397,9 @@ namespace m3d
                 }
                 else
                 {
+                    // The shipped build inlines the second DrawCellsFast0 call.
                     M3D_RENDERER->SetZbState(rend::ZB_ENABLE, false);
                     DrawCellsFast0(m_cellsPerTex[i], *m_tilesTextures[i], RT_FIRSTPASSLIGHT);
-
                     M3D_RENDERER->SetZbState(rend::ZB_NOWRITE, false);
                     DrawCellsFast0(m_cellsPerTex[i], *m_tilesTextures[i], RT_OTHERPASSES);
                 }
@@ -1379,31 +1410,56 @@ namespace m3d
         else
         {
             M3D_RENDERER->DisableTextureStages(0);
-            // TODO: check this
-            for (int i = 0; i < m_tilesTextures.size(); ++i)
+            for (unsigned int i = 0; i < m_tilesTextures.size(); ++i)
             {
                 m_cellsPerTex[i].clear();
             }
         }
 
-        M3D_RENDERER->SetAlphaTest(0);
-        M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
+        M3D_RENDERER->SetAlphaTest(false);
+        M3D_RENDERER->SetBlend(rend::BM_NONE, false);
         M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
         M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
         M3D_RENDERER->TgDisable(2);
         M3D_RENDERER->DisableTextureStages(1);
 
-        if (m3d::Landscape::m_renderMode == RM_EDITOR)
+        if (m_renderMode == RM_EDITOR && M3D_ENGINE_CFG.m_g_drawRoads.GetB())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The roads on the visible cells, listed as x + (y << 16).
+            retruxx::vector<unsigned int> visList;
+            visList.reserve(1000);
+            sceneGraph.SortedCellsStartFetching(0, m_drawRadius);
+            // NOTE: the reservation is thrown away again before the list is filled.
+            retruxx::vector<unsigned int>().swap(visList);
+            int cellX = 0;
+            int cellY = 0;
+            int vis = 0;
+            int radius = 0;
+            while (sceneGraph.SortedCellsFetch(cellX, cellY, vis, radius))
+            {
+                if (vis)
+                {
+                    visList.push_back(cellX + (cellY << 16));
+                }
+            }
+            if (roadMap)
+            {
+                M3D_RENDERER->PushBlend(rend::BM_NONE);
+            }
+            m_owner->m_roadManager.RenderRoads(visList, RRT_SIMPLE, nullptr, roadMap);
+            if (roadMap)
+            {
+                M3D_RENDERER->PopBlend();
+            }
         }
-        if (drawMinimap && m3d::Landscape::m_renderMode == RM_EDITOR)
+        if (drawMinimap && m_renderMode == RM_EDITOR && M3D_ENGINE_CFG.m_g_drawShores.GetB())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            M3D_RENDERER->SetTexture(0, rend::TexHandle(), -1.0);
+            DrawShoreLine();
         }
 
-        M3D_RENDERER->LightEnable(0, 0);
-        M3D_RENDERER->SetLighting(0, 0);
+        M3D_RENDERER->LightEnable(0, false);
+        M3D_RENDERER->SetLighting(false, false);
     }
 
     rend::TexHandle Landscape::GetLightmapTexture() const
@@ -6087,6 +6143,7 @@ namespace m3d
 
     void Landscape::Render()
     {
+        // RVA 0x7AAFF0
         if (M3D_KERNEL->GetEngineCfg().m_lsWireframe.GetB())
         {
             M3D_RENDERER->PushFillMode(rend::FillMode::M3DFILL_WIREFRAME);
@@ -6128,7 +6185,7 @@ namespace m3d
         if (m_numWaterCells != 0 && m_isWaterVisible)
         {
             // TODO: generated code
-            // TODO: implement water reflection refraction rendering
+            // The shipped build renders only the reflection here; there is no refraction pass.
             m_profilerDrawWater->StartCountdown();
 
             bool const drawReflectedTerrain = M3D_ENGINE_CFG.m_g_drawReflectedTerrain.GetB();

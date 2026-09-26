@@ -111,6 +111,19 @@ namespace m3d
         /* 0x0004 */ Aabb* m_destBox;
     }; /* size: 0x0008 */
 
+    // PROP_SRV_ACTION_TIME: m_action in, the action's length out.
+    struct PropSrvActionTime
+    {
+        /* 0x0000 */ int m_action;
+        /* 0x0004 */ float m_delta;
+    }; /* size: 0x0008 */
+
+    // PROP_SRV_ATTACK_FRAMETIME: m_action in, the time of the action's attack frame out.
+    struct PropSrvAttackframeTime
+    {
+        /* 0x0000 */ int m_action;
+        /* 0x0004 */ float m_attackFrameTime;
+    }; /* size: 0x0008 */
     enum RenderNodeType
     {
         RNT_SIMPLE = 0x0,

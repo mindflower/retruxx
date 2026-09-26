@@ -38,11 +38,6 @@ namespace m3d
             {
                 return m_handle != a.m_handle;
             }
-            
-            //Handle<T>& operator=(Handle<T> const&)
-            //{
-            //    RETRUXX_NOT_IMPLEMENTED;
-            //}
         };
 
         template<class T>

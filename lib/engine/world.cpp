@@ -21,17 +21,26 @@
 
 #include "scene/nodes/sgnodestaticmodel.h"
 
-
 namespace ai
 {
     extern CServer* pServer;
 }
 
+namespace
+{
+    // A cvar's value as a float, whatever its type.
+    float CVarAsFloat(m3d::CVar const& var)
+    {
+        return var.GetType() == m3d::CVar::CVAR_FLOAT ? var.GetF() : static_cast<float>(var.GetI());
+    }
+}  // namespace
+
 namespace m3d
 {
     bool CWorld::GetShadowVisibilityFromWeather() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A4470
+        return m_weatherManager.GetShadowVisibilityFromWeather();
     }
 
     WeatherManager& CWorld::GetWeatherManager()
@@ -41,7 +50,8 @@ namespace m3d
 
     void CWorld::Invalidate()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFB60
+        m_landscape.Invalidate();
     }
 
     WheelTraceMgr& CWorld::GetWheelTracesMgr()
@@ -61,9 +71,19 @@ namespace m3d
         return m_weatherManager.RenderWeather(rendMode);
     }
 
-    void CWorld::New(CCamera&, int, float)
+    void CWorld::New(CCamera& cam, int lsSize, float hgt0)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C7F90 - an empty editor world.
+        // NOTE: the current time is read and not used.
+        g_Kernel->GetTimer().GetCurTime();
+        m_level->New(cam, lsSize);
+        ai::pServer->Init(this);
+        m_landscape.New(hgt0);
+        m_weatherManager.CreateSky();
+        m_weatherManager.ReadFromXmlFile(M3D_KERNEL->GetEngineCfg().m_weather_ConfigFile.GetS());
+        m_weatherManager.UpdateDayTime();
+        m_roadManager.Init();
+        m_roadManager.ReadRoadSetConfigFromXmlFile("data/models/Roads.xml");
     }
 
     SceneGraph& CWorld::GetGraph()
@@ -97,8 +117,8 @@ namespace m3d
         M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
         if (m_level->Load(CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()), cam, bQuiet) == 0)
         {
-            M3D_LOG_INFO(CStr("Level file ") + CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()) +
-                CStr(" not found"));
+            M3D_LOG_INFO(
+                CStr("Level file ") + CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()) + CStr(" not found"));
             return 0;
         }
         ai::pServer->Init(this);
@@ -111,7 +131,9 @@ namespace m3d
         }
         auto const landscapeEnd = M3D_KERNEL->GetTimer().GetCurTime();
         {
-            M3D_LOG_INFO("----------------------- Landscape loaded in: " + CStr(static_cast<int>(landscapeEnd - landscapeStart)));
+            M3D_LOG_INFO(
+                "----------------------- Landscape loaded in: " +
+                CStr(static_cast<int>(landscapeEnd - landscapeStart)));
         }
 
         auto const serversStart = M3D_KERNEL->GetTimer().GetCurTime();
@@ -130,7 +152,8 @@ namespace m3d
             return 0;
         }
 
-        if (!CreatePrefabsFromFile(m_level->GetFullPathNameA("prefabs.xml").c_str()) && !CreatePrefabsFromFile("data\\models\\prefabs.xml"))
+        if (!CreatePrefabsFromFile(m_level->GetFullPathNameA("prefabs.xml").c_str()) &&
+            !CreatePrefabsFromFile("data\\models\\prefabs.xml"))
         {
             M3D_LOG_INFO("Could not find prefabs.xml");
         }
@@ -139,42 +162,45 @@ namespace m3d
 
         auto const serversEnd = M3D_KERNEL->GetTimer().GetCurTime();
         {
-            M3D_LOG_INFO("----------------------- Servers loaded in: " + CStr(static_cast<int>(serversEnd - serversStart)));
+            M3D_LOG_INFO(
+                "----------------------- Servers loaded in: " + CStr(static_cast<int>(serversEnd - serversStart)));
         }
 
-        const auto worldBegin = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const worldBegin = M3D_KERNEL->GetTimer().GetCurTime();
         if (!bQuiet)
         {
-            const auto str = M3D_APP->GetStringByStringId0("LoadWorld");
+            auto const str = M3D_APP->GetStringByStringId0("LoadWorld");
             M3D_APP->PutSplash(100, str.c_str());
         }
 
         LoadWorld(m_level->GetFullPathNameA("world.xml"));
 
-        const auto worldEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const worldEnd = M3D_KERNEL->GetTimer().GetCurTime();
         {
             M3D_LOG_INFO("----------------------- Nodes loaded in: " + CStr(static_cast<int>(worldEnd - worldBegin)));
         }
 
-        const auto initWorldBegin = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const initWorldBegin = M3D_KERNEL->GetTimer().GetCurTime();
         if (!bQuiet)
         {
-            const auto str = M3D_APP->GetStringByStringId0("InitWorld");
+            auto const str = M3D_APP->GetStringByStringId0("InitWorld");
             M3D_APP->PutSplash(100, str.c_str());
         }
 
-        const auto initWorldEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const initWorldEnd = M3D_KERNEL->GetTimer().GetCurTime();
         {
-            M3D_LOG_INFO("----------------------- Prefabs loaded in: " + CStr(static_cast<int>(initWorldEnd - initWorldBegin)));
+            M3D_LOG_INFO(
+                "----------------------- Prefabs loaded in: " + CStr(static_cast<int>(initWorldEnd - initWorldBegin)));
         }
 
         ProcessCollisionStuff();
         m_weatherManager.ReadFromXmlFile(M3D_KERNEL->GetEngineCfg().m_weather_ConfigFile.GetS());
         m_weatherManager.UpdateDayTime();
 
-        const auto worldLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const worldLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
         {
-            M3D_LOG_INFO("----------------------- World loaded in: " + CStr(static_cast<int>(worldLoadedEnd - timeStart)));
+            M3D_LOG_INFO(
+                "----------------------- World loaded in: " + CStr(static_cast<int>(worldLoadedEnd - timeStart)));
         }
 
         if (m_borderWallGeoms[0])
@@ -190,7 +216,8 @@ namespace m3d
         if (m_borderWallGeoms[1])
             dGeomPlaneSetParams(m_borderWallGeoms[1], -1.0, 0.0, 0.0, 0.0 - this->m_level->m_maxSafex);
         else
-            this->m_borderWallGeoms[1] = dCreatePlane(ai::gGlobalSpace, -1.0, 0.0, 0.0, 0.0 - this->m_level->m_maxSafex);
+            this->m_borderWallGeoms[1] =
+                dCreatePlane(ai::gGlobalSpace, -1.0, 0.0, 0.0, 0.0 - this->m_level->m_maxSafex);
         dGeomSetCategoryBits(this->m_borderWallGeoms[1], 1u);
         dGeomSetCollideBits(this->m_borderWallGeoms[1], 0xFFFFFFFE);
         if (m_borderWallGeoms[3])
@@ -202,32 +229,50 @@ namespace m3d
         if (m_borderWallGeoms[4])
             dGeomPlaneSetParams(m_borderWallGeoms[4], 0.0, 0.0, -1.0, 0.0 - this->m_level->m_maxSafey);
         else
-            this->m_borderWallGeoms[4] = dCreatePlane(ai::gGlobalSpace, 0.0, 0.0, -1.0, 0.0 - this->m_level->m_maxSafey);
+            this->m_borderWallGeoms[4] =
+                dCreatePlane(ai::gGlobalSpace, 0.0, 0.0, -1.0, 0.0 - this->m_level->m_maxSafey);
         dGeomSetCategoryBits(this->m_borderWallGeoms[4], 1u);
         dGeomSetCollideBits(this->m_borderWallGeoms[4], 0xFFFFFFFE);
 
-        const auto roadsLoadedBegin = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const roadsLoadedBegin = M3D_KERNEL->GetTimer().GetCurTime();
 
         m_roadManager.Init();
         m_roadManager.ReadRoadSetConfigFromXmlFile((m_level->m_levelPath + "\\" + m_level->m_roadsetName).c_str());
         m_roadManager.ReadRoadsFromXmlFile((m_level->m_levelPath + "\\" + m_level->m_roadmapName).c_str());
 
-        const auto roadsLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
+        auto const roadsLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
         {
-            M3D_LOG_INFO("----------------------- Roads loaded in: " + CStr(static_cast<int>(roadsLoadedEnd - roadsLoadedBegin)));
+            M3D_LOG_INFO(
+                "----------------------- Roads loaded in: " +
+                CStr(static_cast<int>(roadsLoadedEnd - roadsLoadedBegin)));
         }
 
         return 1;
     }
 
-    bool CWorld::SaveWorld(CStr const&)
+    bool CWorld::SaveWorld(CStr const& filename)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C84E0 - writes the scene graph under a "World" element, with the last node id.
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+        ref_ptr worldNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "World");
+        m_sceneGraph.m_rootNode.WriteToXmlNode(xmlFile, worldNode);
+        xmlFile->AddChild(worldNode);
+        worldNode->SetAttribute("LastId", CStr(m_lastId).c_str());
+        CStr errorStr;
+        return WriteXmlFile(filename.c_str(), xmlFile, &errorStr) != 0;
     }
 
-    void CWorld::RefreshObjectsOnLandscapeRect(CVector const&, float)
+    void CWorld::RefreshObjectsOnLandscapeRect(CVector const& org, float r)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C78A0 - refreshes the visibility cells (128 units wide) covering the square of half-size r around org.
+        // NOTE: the square is taken in x and y.
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        float const inv = 1.0f / VISCELL_EDGE_LENGTH;
+        m_sceneGraph.RefreshObjectsInRect(
+            static_cast<int>((org.x - r) * inv),
+            static_cast<int>((org.y - r) * inv),
+            static_cast<int>((org.x + r) * inv),
+            static_cast<int>((r + org.y) * inv));
     }
 
     CWorld::CWorld() :
@@ -257,7 +302,8 @@ namespace m3d
         g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorG, 0);
         g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorB, 0);
         g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_fogStart, 0);
-        this->m_profilerUpdateOde = Application::g_pApp->GetProfilerStack().GetProfiler(Application::g_pApp->GetProfilerStack().AddProfiler("AI other update", 0x1Eu));
+        this->m_profilerUpdateOde = Application::g_pApp->GetProfilerStack().GetProfiler(
+            Application::g_pApp->GetProfilerStack().AddProfiler("AI other update", 0x1Eu));
         this->m_borderWallGeoms[0] = 0;
         this->m_borderWallGeoms[1] = 0;
         this->m_borderWallGeoms[2] = 0;
@@ -297,10 +343,8 @@ namespace m3d
         this->m_sunDir.z = sin(this->m_sunAzimuth * 0.017453292) * v6 * 20000.0;
         this->m_sunDir.y = sin(v4) * 20000.0;
         auto v7 = sqrt(
-            this->m_sunDir.x * this->m_sunDir.x
-            + this->m_sunDir.y * this->m_sunDir.y
-            + this->m_sunDir.z * this->m_sunDir.z
-            + 0.00000011920929);
+            this->m_sunDir.x * this->m_sunDir.x + this->m_sunDir.y * this->m_sunDir.y +
+            this->m_sunDir.z * this->m_sunDir.z + 0.00000011920929);
         this->m_sunDir.x = 1.0 / v7 * this->m_sunDir.x;
         this->m_sunDir.y = 1.0 / v7 * this->m_sunDir.y;
         this->m_sunDir.z = 1.0 / v7 * this->m_sunDir.z;
@@ -330,7 +374,8 @@ namespace m3d
 
     int CWorld::CreateGeomsRepresentingSceneNodes()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C7910 - does nothing.
+        return 1;
     }
 
     dxSpace* CWorld::GetOdeSpace()
@@ -340,7 +385,8 @@ namespace m3d
 
     unsigned CWorld::GetWeatherSunColor() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C7980
+        return m_weatherManager.GetWeatherColor(CI_SUN);
     }
 
     unsigned CWorld::GetWeatherPlantColor() const
@@ -379,7 +425,18 @@ namespace m3d
 
     float CWorld::GetSForShadowsFromWeather() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C7990 - how far the shadow texture is shifted for the time of day.
+        switch (m_weatherManager.m_curDayTime)
+        {
+        case GTP_SUNRISE_TIME:
+            return 0.25f;
+        case GTP_DAY_TIME:
+            return 1.0f;
+        case GTP_SUNSET_TIME:
+            return 0.75f;
+        default:
+            return 0.0f;
+        }
     }
 
     void CWorld::ProcessCollisionStuffOnNode(SgNode* node)
@@ -392,27 +449,36 @@ namespace m3d
 
     float CWorld::GetShadowTransparencyFromWeather() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8A1D00
+        return m_weatherManager.GetShadowTransparencyFromWeather();
     }
 
     GlobalTimeParams CWorld::GetCurDayTimeFromWeatherManager() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C7400
+        return m_weatherManager.m_curDayTime;
     }
 
     void CWorld::Restore()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFB70
+        m_landscape.Restore();
     }
 
     CVector CWorld::GetScatteringSunColor() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C8120 - the sun colour cvars are percentages of a maximum of 3 per channel.
+        CVector const sunColorMax(3.0f, 3.0f, 3.0f);
+        float const r = sunColorMax.x * CVarAsFloat(m_sunColorR) * 0.0099999998f;
+        float const g = sunColorMax.y * CVarAsFloat(m_sunColorG) * 0.0099999998f;
+        float const b = sunColorMax.z * CVarAsFloat(m_sunColorB) * 0.0099999998f;
+        return CVector(r, g, b);
     }
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> const& CWorld::GetFxNames() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFB80
+        return fxNames;
     }
 
     unsigned CWorld::GetWeatherAmbientColor() const
@@ -437,7 +503,18 @@ namespace m3d
 
     CWorld::~CWorld()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CB450 - the rest is destroyed as members.
+        IConsole* const console = M3D_KERNEL->GetEngineCfg().m_console;
+        console->UnregisterCVar(&m_lsInscatterCoeff);
+        console->UnregisterCVar(&m_lsOutscatterCoeff);
+        console->UnregisterCVar(&m_skyInscatterCoeff);
+        console->UnregisterCVar(&m_skyOutscatterCoeff);
+        console->UnregisterCVar(&m_sunColorR);
+        console->UnregisterCVar(&m_sunColorG);
+        console->UnregisterCVar(&m_sunColorB);
+        console->UnregisterCVar(&m_fogStart);
+        delete m_level;
+        m_level = nullptr;
     }
 
     void CWorld::Update()
@@ -516,7 +593,7 @@ namespace m3d
 
     int CWorld::CreatePrefabsFromFile(char const* fileName)
     {
-        // TODO: generated code 
+        // TODO: generated code
         std::vector<CStr> PrefabFiles;
 
         // Create file stream
@@ -536,7 +613,7 @@ namespace m3d
         fileStream->Close();
 
         // Check for XML parsing errors
-        const char* error = xmlFile->GetError();
+        char const* error = xmlFile->GetError();
         if (error)
         {
             CStr errorMsg = "CreatePrefabsFromFile(): Can't parse: " + CStr(error);
@@ -553,7 +630,7 @@ namespace m3d
 
         while (!filesNode->IsEmpty())
         {
-            const char* file = filesNode->GetAttribute("file");
+            char const* file = filesNode->GetAttribute("file");
             PrefabFiles.push_back(CStr(file));
             filesNode->GetNextSibling(filesNode, "Item");
         }
@@ -561,7 +638,7 @@ namespace m3d
         // Process each prefab file
         for (unsigned int i = 0; i < PrefabFiles.size(); ++i)
         {
-            const CStr& prefabFile = PrefabFiles[i];
+            CStr const& prefabFile = PrefabFiles[i];
 
             // Reopen file stream for this prefab file
             if (!fileStream->Open(prefabFile.c_str(), m3d::fs::IStream::OpenFlags::OPEN_READ))
@@ -596,7 +673,7 @@ namespace m3d
                 if (isMulti)
                 {
                     // Multi-effect prefab
-                    const char* name = prefabsNode->GetAttribute("name");
+                    char const* name = prefabsNode->GetAttribute("name");
 
                     m3d::CWorld::EffectsData effData;
                     effData.onlyOne = false;
@@ -615,7 +692,9 @@ namespace m3d
                             // Validate name matching
                             if (!strstr(prefab->GetName(), name))
                             {
-                                CStr warning = "Warning: multieffect child names doesn't match for parent name. For effect " + CStr(name);
+                                CStr warning =
+                                    "Warning: multieffect child names doesn't match for parent name. For effect " +
+                                    CStr(name);
                                 M3D_LOG_INFO(warning);
                             }
                         }
@@ -693,7 +772,8 @@ namespace m3d
 
     float CWorld::GetSunAscention() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C7890 - in radians.
+        return static_cast<float>(m_sunAscention * 0.017453292f);
     }
 
     float CWorld::GetFogReduceFactorFromWeather() const
@@ -704,17 +784,15 @@ namespace m3d
     SgNode* CWorld::ReadPrefab(ref_ptr<cmn::XmlFile> file, ref_ptr<cmn::XmlNode> pnode)
     {
         // TODO: generated code
-       // RETRUXX_NOT_IMPLEMENTED;
         // Get node attributes
-        const char* name = pnode->GetAttribute("name");
-        const char* className = pnode->GetAttribute("class");
+        char const* name = pnode->GetAttribute("name");
+        char const* className = pnode->GetAttribute("class");
 
         // Create new node instance
         m3d::SgNode* loader = dynamic_cast<m3d::SgNode*>(m3d::g_Kernel->New(className));
 
         // Try to load from XML
-        if (loader->ReadFromXmlNode(file, pnode) &&
-            loader->ReadFromXmlNodeAfterAdd(file, pnode))
+        if (loader->ReadFromXmlNode(file, pnode) && loader->ReadFromXmlNodeAfterAdd(file, pnode))
         {
             // Successfully loaded - process the node hierarchy
             m3d::SceneGraph* graph = loader->GetGraph();
@@ -751,8 +829,8 @@ namespace m3d
         }
         else
         {
-            CStr errorMsg = "Error: Couldn't load prefab '" + CStr(name) +
-                "'. Check if you have child nodes with duplicate names.";
+            CStr errorMsg =
+                "Error: Couldn't load prefab '" + CStr(name) + "'. Check if you have child nodes with duplicate names.";
 
             M3D_LOG_ERR(errorMsg);
 
@@ -763,7 +841,6 @@ namespace m3d
         }
 
         return loader;
-
     }
 
     bool CWorld::LoadWorld(CStr const& filename)
@@ -953,7 +1030,8 @@ namespace m3d
     void CWorld::LoadStaticObstacles()
     {
         scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
-        if (fileStream->Open(m_level->GetFullPathNameA(m_level->m_staticObstaclesFileName).c_str(), fs::IStream::OPEN_READ))
+        if (fileStream->Open(
+                m_level->GetFullPathNameA(m_level->m_staticObstaclesFileName).c_str(), fs::IStream::OPEN_READ))
         {
             ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
             if (xmlFile->Read(*fileStream))
@@ -1006,4 +1084,4 @@ namespace m3d
         g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherThunderstorm));
         g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherFoggy));
     }
-}
+}  // namespace m3d

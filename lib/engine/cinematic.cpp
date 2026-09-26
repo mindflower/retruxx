@@ -394,14 +394,27 @@ namespace m3d
         }
     }
 
-    void CameraPath::push_back(CameraPathState const&)
+    void CameraPath::push_back(CameraPathState const& state)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62AD90
+        _DeFix();
+        m_cameraPathStates.push_back(state);
+        _Fix();
     }
 
-    void CameraPath::MovePoint(int, CameraPathState const&)
+    void CameraPath::MovePoint(int pointNum, CameraPathState const& state)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62AE70
+        _DeFix();
+        if (pointNum < 0 || pointNum >= static_cast<int>(m_cameraPathStates.size()))
+        {
+            M3D_ENGINE_CFG.m_console->PrintF(CStr("Error: invalid point number"));
+        }
+        else
+        {
+            m_cameraPathStates[pointNum] = state;
+        }
+        _Fix();
     }
 
     void CameraPath::CalcFullLength(unsigned pointNum)
@@ -416,7 +429,8 @@ namespace m3d
 
     float CameraPath::GetFullLength() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x624A10
+        return m_fullLength;
     }
 
     void CameraPath::SaveToXmlRuntime(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode) const
@@ -433,9 +447,10 @@ namespace m3d
         }
     }
 
-    void CameraPath::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
+    void CameraPath::LoadFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62AD80
+        LoadFromXmlRuntime(xmlFile, xmlNode);
     }
 
     void CameraPath::SetFullTime(float fullTime)
@@ -443,19 +458,32 @@ namespace m3d
         m_fullTime = fullTime;
     }
 
-    void CameraPath::InitByStates(std::vector<CameraPathState, std::allocator<CameraPathState>> const&)
+    void CameraPath::InitByStates(std::vector<CameraPathState, std::allocator<CameraPathState>> const& states)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62AC20
+        m_cameraPathStates = states;
+        _Fix();
     }
 
     void CameraPath::clear()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x629E30 - releases the points' storage; the lengths and times are kept.
+        std::vector<CameraPathState>().swap(m_cameraPathStates);
     }
 
-    void CameraPath::RemovePoint(int)
+    void CameraPath::RemovePoint(int pointNum)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x62AF20
+        _DeFix();
+        if (pointNum < 0 || pointNum >= static_cast<int>(m_cameraPathStates.size()))
+        {
+            M3D_ENGINE_CFG.m_console->PrintF(CStr("Error: invalid point number"));
+        }
+        else
+        {
+            m_cameraPathStates.erase(m_cameraPathStates.begin() + pointNum);
+        }
+        _Fix();
     }
 
     CameraPathState::CameraPathState(
@@ -464,8 +492,13 @@ namespace m3d
         float zoom,
         float flyTime,
         float speed)
+        : m_point(point)
+        , m_rotation(rotation)
+        , m_zoom(zoom)
+        , m_speed(speed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6257D0
+        // NOTE: flyTime is ignored and m_flyTime is left uninitialized.
     }
 
     CameraPathState::CameraPathState()
@@ -496,9 +529,12 @@ namespace m3d
         xmlNode->SetAttribute("flyTime", CStr(m_flyTime).c_str());
     }
 
-    CameraPath::CameraPath(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const&)
+    CameraPath::CameraPath(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const& states)
+        : m_fullLength(0.0f)
+        , m_fullTime(1.0f)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary; built like the default constructor followed by InitByStates.
+        InitByStates(states);
     }
 
     CameraPath::CameraPath()
@@ -521,14 +557,16 @@ namespace m3d
         _Fix();
     }
 
-    CameraPathState& CameraPath::operator[](unsigned)
+    CameraPathState& CameraPath::operator[](unsigned index)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x626880
+        return m_cameraPathStates[index];
     }
 
-    CameraPathState const& CameraPath::operator[](unsigned) const
+    CameraPathState const& CameraPath::operator[](unsigned index) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x626890
+        return m_cameraPathStates[index];
     }
 
     float CameraPath::GetFullTime() const

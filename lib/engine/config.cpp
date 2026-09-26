@@ -44,9 +44,10 @@ namespace m3d
         return pClient->GetWorld().GetLandscape().GetHeight(x, y, -1, true);
     }
 
-    int EngineConfig::Save(CStr const&)
+    int EngineConfig::Save(CStr const& fname)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x74AF80
+        return m_console->Save(fname);
     }
 
     int EngineConfig::GetModelIdByName(CStr const& name)
@@ -90,12 +91,27 @@ namespace m3d
 
     EngineConfig::~EngineConfig()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x74AF90 - the cvars are destroyed as members.
+        if (m_console->DecRef() <= 0)
+        {
+            m_console = nullptr;
+        }
     }
 
-    float EngineConfig::GetAttackAnimationFrametime(int, int)
+    float EngineConfig::GetAttackAnimationFrametime(int modelId, int actionId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFF00 - -1 when the model is not an animated model or has no attack frame for the action.
+        if (modelId >= 0x200000 && modelId < 0x400000)
+        {
+            PropSrvAttackframeTime info;
+            info.m_action = actionId;
+            if (M3D_APP->GetAnimatedModelsServer().GetItemProperty(modelId - 0x200000, PROP_SRV_ATTACK_FRAMETIME, &info)
+                && info.m_attackFrameTime >= 0.0f)
+            {
+                return info.m_attackFrameTime;
+            }
+        }
+        return -1.0f;
     }
 
     EngineConfig::EngineConfig()
@@ -661,9 +677,19 @@ namespace m3d
         }
     }
 
-    float EngineConfig::GetAnimationLength(int, int)
+    float EngineConfig::GetAnimationLength(int modelId, int actionId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFEA0 - 0 when the model is not an animated model or the action is unknown.
+        if (modelId >= 0x200000 && modelId < 0x400000)
+        {
+            PropSrvActionTime info;
+            info.m_action = actionId;
+            if (M3D_APP->GetAnimatedModelsServer().GetItemProperty(modelId - 0x200000, PROP_SRV_ACTION_TIME, &info))
+            {
+                return info.m_delta;
+            }
+        }
+        return 0.0f;
     }
 
     int EngineConfig::Load(CStr const& fname)

@@ -88,9 +88,18 @@ namespace m3d
         // m_ks points into m_bindings and is not owned.
     }
 
-    void KeyBindStation::UnbindImpulse(int)
+    void KeyBindStation::UnbindImpulse(int imp)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7598D0 - removes the first binding of the impulse; m_lastIndex is left at the removed position, or at
+        // the end when there is none.
+        for (m_lastIndex = m_bindings.begin(); m_lastIndex != m_bindings.end(); ++m_lastIndex)
+        {
+            if (m_lastIndex->m_impulse == imp)
+            {
+                m_lastIndex = m_bindings.erase(m_lastIndex);
+                return;
+            }
+        }
     }
 
     void KeyBindStation::UnbindAll()

@@ -58,6 +58,8 @@ namespace m3d
         friend class AnimatedModelsServer;
         // ProjectorsServer::RenderItem draws each projector over the landscape, roads and models.
         friend class ProjectorsServer;
+        // GameAttractor blows particles along with the current weather's wind.
+        friend class GameAttractor;
 
     public:
         /* 0x0000 */ m3d::CVar m_lsInscatterCoeff;

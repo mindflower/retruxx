@@ -157,7 +157,17 @@ namespace m3d
 
     WheelTraceMgr::~WheelTraceMgr()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699D60
+        Release();
+        M3D_RENDERER->ReleaseVb(m_vb);
+        M3D_RENDERER->ReleaseIb(m_ib);
+        delete[] m_skidStrips;
+        m_skidStrips = nullptr;
+        if (m_shader)
+        {
+            m_shader->Release();
+            m_shader = nullptr;
+        }
     }
 
     int WheelTraceMgr::EndSkidding(void* owner, bool smoothEnd)
@@ -237,7 +247,18 @@ namespace m3d
 
     void WheelTraceMgr::ClearTraces()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x697370 - empties every strip; the soil types and last quads are kept.
+        for (int i = 0; i < 512; ++i)
+        {
+            SkidStrip& strip = m_skidStrips[i];
+            strip.m_binUse = false;
+            strip.m_texCoord = 0.0f;
+            strip.m_lastFramestamp = 0;
+            strip.m_stripSize = 0;
+            strip.m_timeStamp = 0;
+            strip.m_boundCenter = ZeroVector;
+            strip.m_boundRadius = 0.0f;
+        }
     }
 
     WheelTraceMgr::WheelTraceMgr()

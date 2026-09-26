@@ -1,3 +1,4 @@
+#include <cstring>
 #include <stdexcept>
 #include <core/debugcounter.h>
 #include <core/stringm3d.h>
@@ -97,19 +98,37 @@ namespace m3d
         m_numStrings = 0;
     }
 
-    DbgCounter* DbgCounterStack::GetCounterByName(char const*)
+    DbgCounter* DbgCounterStack::GetCounterByName(char const* name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A03F0
+        for (unsigned i = 0; i < m_numCounters; ++i)
+        {
+            if (!strcmp(m_stack[i]->m_name.c_str(), name))
+            {
+                return m_stack[i];
+            }
+        }
+        return nullptr;
     }
 
-    char const* DbgCounterStack::GetString(unsigned) const
+    char const* DbgCounterStack::GetString(unsigned id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A3520
+        if (id >= m_numStrings)
+        {
+            return nullptr;
+        }
+        return m_stringStack[id].c_str();
     }
 
-    char const* DbgCounterStack::GetName(unsigned) const
+    char const* DbgCounterStack::GetName(unsigned id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A0020
+        if (id >= m_numCounters)
+        {
+            return nullptr;
+        }
+        return m_stack[id]->m_name.c_str();
     }
 
     DbgCounterStack::DbgCounterStack()
@@ -121,7 +140,8 @@ namespace m3d
 
     unsigned DbgCounterStack::GetNumStrings() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C9F0
+        return m_numStrings;
     }
 
     void DbgCounterStack::Clear()
