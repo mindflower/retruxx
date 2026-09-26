@@ -322,18 +322,14 @@ bool XmlFileImpl::AddAfterChild(m3d::cmn::XmlNode const* addAfter, m3d::cmn::Xml
 
 int XmlFileImpl::Write(m3d::fs::IStream& out)
 {
-    // RVA 0x749E30 - every written file gets a declaration. The shipped TinyXML streams straight
-    // into the IStream; this one streams into a string that is then written out.
+    // RVA 0x749E30 - every written file gets a declaration.
     if (!GetDeclarationNode())
     {
         TiXmlDeclaration const decl("1.0", "windows-1251", "yes");
         InsertBeforeChild(FirstChild(), decl);
     }
 
-    std::ostringstream stream;
-    StreamOut(&stream);
-    std::string const text = stream.str();
-    out.WriteBytes(text.data(), static_cast<unsigned int>(text.size()));
+    TiXmlDocument::StreamOut(&out, 0);
     return !Error();
 }
 

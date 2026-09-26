@@ -991,30 +991,43 @@ namespace m3d
 
         CStr WndStation::InitializeStringUsingIds(CStr const& src)
         {
-            if (!src.empty())
+            // RVA 0x665660 - replaces each ^id^ with the string of that id.
+            // NOTE: CStr::find returns positions relative to where the search starts. Both are used correctly
+            // for the first marker, but a later search starts past the previous one and its relative result
+            // is used as if it were absolute, so any marker after the first is mangled.
+            if (src.empty())
             {
-                CStr newStr = src;
-                auto startPos = 0;
-                while (true)
-                {
-                    auto const pos1 = newStr.find('^');
-                    if (pos1 == CStr_npos)
-                    {
-                        break;
-                    }
-                    auto const pos2 = newStr.find('^', pos1 + 1);
-                    if (pos2 == CStr_npos)
-                    {
-                        break;
-                    }
-                    CStr replacedSubstr;
-                    GetStringByStringId(replacedSubstr, newStr.substr(pos1 + 1, pos2 - (pos1 + 1)));
-                    newStr = newStr.substr(startPos, pos1 - startPos) + replacedSubstr + newStr.substr(pos2 + 1);
-                    startPos = pos2 + 1;
-                }
-                return newStr;
+                return CStr("");
             }
-            return src;
+            CStr accum;
+            int const len = src.length();
+            int pos = 0;
+            while (true)
+            {
+                int const pos1 = src.find('^', pos);
+                if (pos1 < 0)
+                {
+                    accum += src.substr(pos);
+                    break;
+                }
+                int const idStart = pos1 + 1;
+                int const idLen = src.find('^', idStart);
+                if (idLen < 0)
+                {
+                    accum += src.substr(pos);
+                    break;
+                }
+                CStr const id = src.substr(idStart, idLen);
+                CStr dest;
+                GetStringByStringId(dest, id);
+                accum += src.substr(pos, pos1 - pos) + dest;
+                pos = pos1 + idLen + 2;
+                if (pos >= len)
+                {
+                    break;
+                }
+            }
+            return accum;
         }
 
         WndStation::~WndStation()

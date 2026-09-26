@@ -513,10 +513,10 @@ int CStr::findOneOf(char const* str, int startIdx) const
 
 int CStr::find(char c, int startIdx) const
 {
+    // RVA 0x558940 - NOTE: the position returned is relative to startIdx, not to the start of the string.
     assert(m_charPtr);
-    std::string_view const view(m_charPtr);
-    auto const res = view.find(c, startIdx);
-    return res == std::string_view::npos ? CStr_npos : static_cast<int>(res);
+    char const* const found = strchr(m_charPtr + startIdx, c);
+    return found ? static_cast<int>(found - m_charPtr) - startIdx : CStr_npos;
 }
 
 int CStr::rfind(char c) const
