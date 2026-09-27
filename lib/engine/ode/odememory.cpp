@@ -1,27 +1,22 @@
 #include <ode/memory.h>
 #include <ode/odememory.h>
 #include <cstring>
+#include <core/kernel.h>
 
-// ODE's allocations go through plain new[]/delete[] (the engine routed them through its kernel allocator).
+// ODE's allocations go through kernel allocator.
 void* OdeMemoryAlloc(size_t Size)
 {
-    return new unsigned char[Size];
+    return m3d::g_Kernel->g_mar.AllocMem(Size, nullptr, 0);
 }
 
-void* OdeMemoryRealloc(void* Block, size_t OldSize, size_t NewSize)
+void* OdeMemoryRealloc(void* Block, size_t, size_t NewSize)
 {
-    unsigned char* const newBlock = new unsigned char[NewSize];
-    if (Block)
-    {
-        std::memcpy(newBlock, Block, OldSize < NewSize ? OldSize : NewSize);
-        delete[] static_cast<unsigned char*>(Block);
-    }
-    return newBlock;
+    return m3d::g_Kernel->g_mar.ReallocMem(Block, NewSize, nullptr, 0);
 }
 
-void OdeMemoryFree(void* Block, size_t Size)
+void OdeMemoryFree(void* Block, size_t)
 {
-    delete[] static_cast<unsigned char*>(Block);
+    m3d::g_Kernel->g_mar.FreeMem(Block, 0, 0);
 }
 
 void OdeSetMemoryHandlers()

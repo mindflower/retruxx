@@ -16,6 +16,14 @@
 #include <ode/odememory.h>
 #include <script/scriptserver.h>
 
+// The global operator new/delete below go straight through g_Kernel->g_mar, so the kernel has
+// to be constructed before any other global object. The shipped build places this file's
+// initializer first in the C++ initializer table (the entry right after __xc_a), ahead of every
+// user-level initializer, which is what init_seg(compiler) does.
+#pragma warning(push)
+#pragma warning(disable : 4074)  // initializers put in compiler reserved initialization area
+#pragma init_seg(compiler)
+#pragma warning(pop)
 
 namespace
 {
@@ -25,67 +33,64 @@ namespace
 
     void* __fastcall AllocateMemory(unsigned int sz, char const* file, int linenum)
     {
-        //return mm->Malloc(sz, file, linenum);
-        return malloc(sz);
+        return mm->Malloc(sz, file, linenum);
     }
 
     void* __fastcall ReallocateMemory(void* mem, unsigned int sz, char const* file, int linenum)
     {
-        //return mm->Realloc(mem, sz, file, linenum);
-        return realloc(mem, sz);
+        return mm->Realloc(mem, sz, file, linenum);
     }
 
-    void __fastcall FreeMemory(void* p, char const* file , int linenum)
+    void __fastcall FreeMemory(void* p, char const* file, int linenum)
     {
-        //return mm->Free(p);
-        return free(p);
+        return mm->Free(p);
     }
-}
+}  // namespace
 
 namespace m3d
 {
     Kernel* g_Kernel = nullptr;
     Kernel kernelObject;
+}  // namespace m3d
+
+void* __cdecl operator new(std::size_t count)
+{
+    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
 }
 
-//void* __cdecl operator new(std::size_t count)
-//{
-//    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
-//}
-//
-//void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
-//{
-//    try
-//    {
-//        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
-//    }
-//    catch (...)
-//    {
-//        return nullptr;
-//    }
-//}
-//
-//void* __cdecl operator new[](std::size_t sz)
-//{
-//    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
-//}
-//
-//void __cdecl operator delete(void* p)
-//{
-//    if (p)
-//    {
-//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
-//    }
-//}
-//
-//void __cdecl operator delete[](void* p)
-//{
-//    if (p)
-//    {
-//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
-//    }
-//}
+void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
+{
+    try
+    {
+        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+    }
+    catch (...)
+    {
+        M3D_LOG_ERR("operator new throw an exception!");
+        return nullptr;
+    }
+}
 
+void* __cdecl operator new[](std::size_t sz)
+{
+    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
+}
+
+void __cdecl operator delete(void* p)
+{
+    if (p)
+    {
+        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+    }
+}
+
+void __cdecl operator delete[](void* p)
+{
+    if (p)
+    {
+        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+    }
+}
 
 namespace m3d
 {
@@ -114,8 +119,7 @@ namespace m3d
         return ::MessageBoxA(hWnd, pszText, pszCaption, uType);
     }
 
-    Kernel::auxLogFlow::auxLogFlow(const char* functionName) :
-        m_str(functionName)
+    Kernel::auxLogFlow::auxLogFlow(char const* functionName) : m_str(functionName)
     {
         M3D_KERNEL->m_Log->indent("Enter function: " + CStr(functionName), LOG_FLOW);
     }
@@ -144,7 +148,7 @@ namespace m3d
     Class* Kernel::FindClass(char const* className)
     {
         //TODO: check correctness
-        const auto it = m_classes->find(className);
+        auto const it = m_classes->find(className);
         if (it != m_classes->end())
         {
             return it->second;
@@ -164,7 +168,6 @@ namespace m3d
         delete m_classes;
         delete m_Log;
         delete m_memMan;
-
     }
 
     void Kernel::DumpMem(char const*)
@@ -343,7 +346,6 @@ namespace m3d
         assert(nullptr == g_Kernel);
         g_Kernel = this;
 
-        //TODO: operator new
         m_memMan = new MemoryManager;
         g_mar.AllocMem = AllocateMemory;
         g_mar.ReallocMem = ReallocateMemory;
@@ -359,7 +361,7 @@ namespace m3d
         m_fileMan = new fs::FileServer;
         m_fileMan->Initialize("data\\datasources.txt");
 
-        char workingDirectory[MAX_PATH] = { 0 };
+        char workingDirectory[MAX_PATH] = {0};
         if (::GetCurrentDirectoryA(0x100, workingDirectory))
         {
             m_fileMan->SetCurrentWorkDir(workingDirectory);
@@ -378,7 +380,6 @@ namespace m3d
         RegisterGlobal(m_scriptServer, "script server");
         OdeSetMemoryHandlers();
     }
-
 
     bool Kernel::OpenLog(char const* logFileName)
     {
@@ -406,4 +407,4 @@ namespace m3d
         }
         return g_Kernel;
     }
-}
+}  // namespace m3d
