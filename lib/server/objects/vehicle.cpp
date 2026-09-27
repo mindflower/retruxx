@@ -1814,8 +1814,9 @@ namespace ai
             {
                 actualPart = RT_DYNCAST(actualPart, CompoundGun)->begin()->second.vp;
             }
+            // NOTE: a volley launcher is a RocketLauncher too, but it does not count.
             m_bRocketLaunchersPresent =
-                IS_KIND_OF(actualPart, RocketLauncher) || IS_KIND_OF(actualPart, RocketVolleyLauncher);
+                IS_KIND_OF(actualPart, RocketLauncher) && !IS_KIND_OF(actualPart, RocketVolleyLauncher);
             if (m_bRocketLaunchersPresent)
             {
                 break;

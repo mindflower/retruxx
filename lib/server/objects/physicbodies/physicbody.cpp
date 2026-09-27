@@ -1130,17 +1130,25 @@ namespace ai
 
     void PhysicBody::SetVisible()
     {
+        // RVA 0x616510 - the reverse of SetInvisible: back under the parent it was taken from,
+        // and back into the scene graph's render list.
         Obj::SetVisible();
         EnableGeometry();
         if (m_Node)
         {
             m3d::SgNode* parent = nullptr;
-            m_Node->GetProperty(4359u, &parent);
+            m_Node->GetProperty(m3d::PROP_NODE_LASTPARENT, &parent);
             if (parent)
             {
                 parent->AddChild(m_Node);
                 parent = nullptr;
-                m_Node->SetProperty(4359, &parent);
+                m_Node->SetProperty(m3d::PROP_NODE_LASTPARENT, &parent);
+            }
+            auto* graph = m_Node->GetGraph();
+            if (!graph->IsLinkedNode(m_Node))
+            {
+                graph->LinkNode(m_Node);
+                m_Node->UpdateXForm(false, true);
             }
         }
     }
@@ -1169,7 +1177,7 @@ namespace ai
 
     void PhysicBody::SetInvisible()
     {
-        // TODO: check this
+        // RVA 0x61A730
         Obj::SetInvisible();
         DisableGeometry();
         for (auto* geom : m_pGeoms)

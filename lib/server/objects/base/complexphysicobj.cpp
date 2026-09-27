@@ -505,6 +505,7 @@ namespace ai
 
     void ComplexPhysicObj::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
     {
+        // RVA 0x6C3AA0
         if (vehiclePart)
         {
             if (!bUnsafe && !ai::ComplexPhysicObj::CanPartBeAttached(partName))
@@ -544,8 +545,11 @@ namespace ai
         if (!bUnsafe)
         {
             _Construct(false);
+            // Every part is re-seated in the scene graph from its physics state, so a part that
+            // has just been attached shows up where it now belongs.
             for (auto& part : m_vehicleParts)
             {
+                part.second->TransferPhysicParamsToSceneGraphNode();
                 if (auto* node = part.second->m_Node)
                 {
                     node->UpdateXForm(false, true);
@@ -1708,8 +1712,11 @@ namespace ai
 
     void ComplexPhysicObj::_Construct(bool bForAnimation)
     {
+        // RVA 0x6C1540
         auto const pos = GetPosition();
+        // NOTE: the rotation is read but never restored; only the position is put back below.
         auto const rot = GetRotation();
+        (void)rot;
         _CreateSpace(false);
         for (auto const& [name, part] : m_vehicleParts)
         {
@@ -1717,9 +1724,10 @@ namespace ai
             {
                 auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
                 _ConstructVehiclePart(name, part, 0, bForAnimation);
+                // The sub-parts are built under the compound part's own slot name.
                 for (auto const& [vehPartName, vehPart] : *compoundVehiclePart)
                 {
-                    _ConstructVehiclePart(vehPartName, vehPart.vp, vehPart.index, bForAnimation);
+                    _ConstructVehiclePart(name, vehPart.vp, vehPart.index, bForAnimation);
                 }
             }
             else
@@ -1736,7 +1744,6 @@ namespace ai
         _SetMassCenter(prototypeInfo->m_massTranslation);
         _SetCorrectBoundSphereRadius();
         SetPosition(pos);
-        SetRotation(rot);
 
         for (auto const& [name, part] : m_vehicleParts)
         {

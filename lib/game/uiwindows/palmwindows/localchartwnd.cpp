@@ -23,6 +23,40 @@ RT_CLASS_DEFINE(LocalChartWnd);
 
 int const LocalChartWnd::CELL_SIZE = 512;
 
+namespace
+{
+    // RVA 0x4E3DB0 - turns a world direction into the chart's frame for the level's north, so
+    // that atan2(x, -z) gives the heading as drawn on the chart. Only the four axis-aligned
+    // norths are handled; anything else is treated like -Z.
+    void HackedConvertCoordinate0(CVector& v, CVector const& north)
+    {
+        if (north.z == -1.0f)
+        {
+            v.x = -v.x;
+        }
+        else if (north.z == 1.0f)
+        {
+            v.z = -v.z;
+        }
+        else if (north.x == 1.0f)
+        {
+            float const x = v.x;
+            v.x = -v.z;
+            v.z = -x;
+        }
+        else if (north.x == -1.0f)
+        {
+            float const x = v.x;
+            v.x = v.z;
+            v.z = x;
+        }
+        else
+        {
+            v.x = -v.x;
+        }
+    }
+}  // namespace
+
 LocalChartWnd::AuxInfo::AuxInfo()
 {
     // RVA 0x4E3040
@@ -794,11 +828,9 @@ int LocalChartWnd::UpdatePlayerMark()
         CVector const pos = vehicle->GetPosition();
         m_playerMark->SetImageCoords(WorldPosToWndPt(pos, m_levelName));
 
-        // NOTE: the shipped build first rotates the normalized direction by the
-        // level's north vector (anonymous-namespace HackedConvertCoordinate0)
-        // before taking the heading; that conversion is folded into the chart
-        // geometry TODO cluster (WorldPosToWndPt / GetNorth).
-        CVector const dir = vehicle->GetDirection().getNormalized();
+        // The heading is taken in the chart's frame, which depends on where the level's north is.
+        CVector dir = vehicle->GetDirection().getNormalized();
+        HackedConvertCoordinate0(dir, GetNorth(m_levelName));
         m_playerMark->SetImageAngle(std::atan2(dir.x, -dir.z));
     }
     return 1;

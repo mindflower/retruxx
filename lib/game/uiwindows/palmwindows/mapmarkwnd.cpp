@@ -411,8 +411,6 @@ int PlayerMarkWnd::OnPaint(m3d::ui::DrawInfo const&)
         return 0;
     }
     PointBase<float> const screenPt = parent->ToScreen(m_wndCoords);
-    // NOTE: the shipped build passes a garbage float bit-pattern for the sy
-    // argument; retruxx passes the real half-height.
     M3D_APP->PutSpriteRelRot(screenPt.x, screenPt.y, halfW, halfH, 0xFFFFFFFFu, m_angle, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
     M3D_RENDERER->SetAlphaTest(0);

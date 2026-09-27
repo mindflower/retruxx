@@ -779,11 +779,12 @@ int BindKeysWnd::BindKeysList::BindUnbind(int action, Impulse imp, retruxx::vect
     CStr const gameModeName = M3D_APP->m_pImpulses->GetGameModeNameById(BINDINGS_GAME_MODE);
     CStr const impName = M3D_APP->m_pImpulses->GetImpulseNameById(imp);
 
+    // The impulse name goes last, after the three keys.
     if (action == ACTION_BIND)
     {
-        return M3D_APP->m_pImpulses->BindKey3(gameModeName, impName, keyNames[0], keyNames[1], keyNames[2]);
+        return M3D_APP->m_pImpulses->BindKey3(gameModeName, keyNames[0], keyNames[1], keyNames[2], impName);
     }
-    return M3D_APP->m_pImpulses->UnbindKey3(gameModeName, impName, keyNames[0], keyNames[1], keyNames[2]);
+    return M3D_APP->m_pImpulses->UnbindKey3(gameModeName, keyNames[0], keyNames[1], keyNames[2], impName);
 }
 
 int BindKeysWnd::BindKeysList::MeasureItem(int itemIdx, BoundsBase<float>& bounds) const

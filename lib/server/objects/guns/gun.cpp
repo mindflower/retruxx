@@ -381,7 +381,15 @@ namespace ai
             m3d::SafeUintAttrib(m_ChargeSize, xmlNode, "ChargeSize");
             m3d::SafeFloatAttrib(m_ReChargingTime, xmlNode, "RechargingTime");
             m3d::SafeFloatAttrib(m_ReChargingTimePerShell, xmlNode, "ReChargingTimePerShell");
+
+            m_ShellsPoolSize = 0;
             m3d::SafeUintAttrib(m_ShellsPoolSize, xmlNode, "ShellsPoolSize");
+
+            if (!m_ShellsPoolSize)
+            {
+                m_WithShellsPoolLimit = false;
+                m_ShellsPoolSize = 12;
+            }
             m3d::SafeBoolAttrib(m_WithShellsPoolLimit, xmlNode, "WithShellsPoolLimit");
 
             m3d::SafeFloatAttrib(m_turningSpeed, xmlNode, "TurningSpeed");
@@ -723,8 +731,7 @@ namespace ai
         }
 
         CVector const direction = target - newPosition;
-        float const distance =
-            sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        float const distance = sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
         if (distance > m_firingRange)
         {
             return false;
@@ -1237,8 +1244,7 @@ namespace ai
             PrototypeInfo const* const shellPrototypeInfo =
                 thePrototypeManager->GetPrototypeInfo(prototypeInfo->m_shellPrototypeId);
             price += static_cast<int>(
-                static_cast<double>((m_ShellsInPool + m_ShellsInCurrentCharge) *
-                                    shellPrototypeInfo->GetBasePrice()) *
+                static_cast<double>((m_ShellsInPool + m_ShellsInCurrentCharge) * shellPrototypeInfo->GetBasePrice()) *
                 priceCoeff);
         }
         return price;
@@ -1398,8 +1404,7 @@ namespace ai
         Quaternion const ownerRotation = GetOwner()->GetRotation();
         CMatrix const ownerMatrix = ownerRotation.getInversed().ToMatrix();
 
-        float const desiredBeta =
-            asin(ownerMatrix._12 * dir.x + ownerMatrix._22 * dir.y + ownerMatrix._32 * dir.z);
+        float const desiredBeta = asin(ownerMatrix._12 * dir.x + ownerMatrix._22 * dir.y + ownerMatrix._32 * dir.z);
         return desiredBeta >= m_lowStopAngle && m_highStopAngle >= desiredBeta;
     }
 
@@ -1409,26 +1414,26 @@ namespace ai
         GunPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
         switch (propertyId)
         {
-            case 28:
-                retVal = prototypeInfo->m_damage;
-                return true;
-            case 29:
-                retVal = prototypeInfo->m_firingRate;
-                return true;
-            case 30:
-                retVal = prototypeInfo->m_firingRange;
-                return true;
-            case 34:
-                retVal = prototypeInfo->m_ChargeSize;
-                return true;
-            case 35:
-                retVal = prototypeInfo->m_ReChargingTime;
-                return true;
-            case 36:
-                retVal = prototypeInfo->m_ShellsPoolSize;
-                return true;
-            default:
-                return VehiclePart::_GetPropertyDefaultInternal(propertyId, retVal);
+        case 28:
+            retVal = prototypeInfo->m_damage;
+            return true;
+        case 29:
+            retVal = prototypeInfo->m_firingRate;
+            return true;
+        case 30:
+            retVal = prototypeInfo->m_firingRange;
+            return true;
+        case 34:
+            retVal = prototypeInfo->m_ChargeSize;
+            return true;
+        case 35:
+            retVal = prototypeInfo->m_ReChargingTime;
+            return true;
+        case 36:
+            retVal = prototypeInfo->m_ShellsPoolSize;
+            return true;
+        default:
+            return VehiclePart::_GetPropertyDefaultInternal(propertyId, retVal);
         }
     }
 
@@ -1555,26 +1560,26 @@ namespace ai
         // RVA 0x6E3BF0
         switch (propertyId)
         {
-            case 28:
-                retVal = m_damage;
-                return true;
-            case 29:
-                retVal = m_firingRate;
-                return true;
-            case 30:
-                retVal = m_firingRange;
-                return true;
-            case 34:
-                retVal = m_ChargeSize;
-                return true;
-            case 35:
-                retVal = m_ReChargingTime;
-                return true;
-            case 36:
-                retVal = m_ShellsInPool;
-                return true;
-            default:
-                return VehiclePart::_GetPropertyInternal(propertyId, retVal);
+        case 28:
+            retVal = m_damage;
+            return true;
+        case 29:
+            retVal = m_firingRate;
+            return true;
+        case 30:
+            retVal = m_firingRange;
+            return true;
+        case 34:
+            retVal = m_ChargeSize;
+            return true;
+        case 35:
+            retVal = m_ReChargingTime;
+            return true;
+        case 36:
+            retVal = m_ShellsInPool;
+            return true;
+        default:
+            return VehiclePart::_GetPropertyInternal(propertyId, retVal);
         }
     }
 

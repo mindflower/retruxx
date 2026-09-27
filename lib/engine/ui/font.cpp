@@ -931,6 +931,7 @@ namespace m3d
 
         int FontManager::ValidateFontId(int& id)
         {
+            // RVA 0x8BA010
             if (id < 0 || id >= m_fonts.size())
             {
                 return 0;
@@ -954,12 +955,15 @@ namespace m3d
                 params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
                 params.ttfParams.style = m_fonts[id]->m_style;
             }
+            // The font was rasterised for another resolution: swap the caller's id for the
+            // matching font at the current one.
             auto resId =
                 GetFontId(m_fonts[id]->m_nameShort, m_fonts[id]->m_heightUnscaled, m_fonts[id]->m_type, params);
             if (resId == -1)
             {
                 return 0;
             }
+            id = resId;
             return 1;
         }
 
