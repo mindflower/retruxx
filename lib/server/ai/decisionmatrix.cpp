@@ -525,6 +525,8 @@ namespace ai
 
     void DecisionMatrix::AddSignal(char const* signalName, char const* externSignalName, char const* functionName)
     {
+        // RVA 0x82BC80 - an unknown external signal or function name is logged and the signal
+        // is not added at all.
         int schemeNum = 0xFFFF;
         CStr externSignalNameStr = externSignalName;
         if (!externSignalNameStr.empty())
@@ -533,6 +535,7 @@ namespace ai
             if (schemeNum == 0xFFFF)
             {
                 _LogUnexpectedToken(externSignalNameStr);
+                return;
             }
         }
 
@@ -544,6 +547,7 @@ namespace ai
             if (funcNum == 0xFFFF)
             {
                 _LogUnexpectedToken(functionNamelNameStr);
+                return;
             }
         }
 

@@ -431,10 +431,39 @@ namespace m3d
                 BTN_ID_BASE + idx,
                 info.m_image,
                 info.m_imageDisabled);
-            btn->SetStyle(btn->GetStyle() & ~static_cast<unsigned>(WS_ACTIVATION_CAPTURES_FOCUS | WS_ACTIVATABLE));
+            btn->m_style &= ~static_cast<unsigned>(WS_ACTIVATION_CAPTURES_FOCUS | WS_ACTIVATABLE);
 
             m_buttons.push_back(btn);
             AddChild(btn);
+
+            if (m_buttonInfo.m_drawStyle == TabButtonInfo::DRAWSTYLE_NORMAL)
+            {
+                // A captioned button: the strip's glyph size, no frame, one line of text in the
+                // default font, padded by the button client edge on every side.
+                btn->SetGlyphHeight(m_buttonInfo.m_glyphSz);
+                btn->m_style |= WS_NOFRAME;
+                btn->m_textWrap = TW_NOWRAP;
+                btn->SetDefaultFont(1);
+                btn->SetClientEdges(
+                    m_aif.m_btnClientEdge, m_aif.m_btnClientEdge, m_aif.m_btnClientEdge, m_aif.m_btnClientEdge);
+            }
+            else if (m_buttonInfo.m_drawStyle == TabButtonInfo::DRAWSTYLE_IZVRAT)
+            {
+                // The button itself draws nothing; OnNcPaint draws the tab's icon into its rect.
+                btn->m_style |= WS_NODRAW;
+            }
+
+            PointBase<float> const sz = RecalcButtonSize(idx);
+            btn->SetBounds(BoundsBase<float>(0.0f, 0.0f, sz.x, sz.y), true);
+            // NOTE: the position goes straight into the bounds, leaving the base origin at 0,0.
+            PointBase<float> const pos = RecalcButtonPos(idx);
+            btn->m_bounds.x0 = pos.x;
+            btn->m_bounds.y0 = pos.y;
+
+            // The tooltip is the tab's description, or its caption when there is none.
+            // (The shipped code passes a char*; this port's Wnd::SetProperty takes a CStr*.)
+            CStr tooltip = info.m_diz.empty() ? info.m_caption : info.m_diz;
+            btn->SetProperty(PROP_WND_TOOLTIP, &tooltip);
             return 1;
         }
 

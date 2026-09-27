@@ -95,10 +95,11 @@ namespace
         {
             return;
         }
+        // Only the position moves; the base origin is left alone.
         BoundsBase<float> b = child->GetBounds();
         b.x0 -= owner->GetBounds().x0;
         b.y0 -= owner->GetBounds().y0;
-        child->SetBounds(b, true);
+        child->SetBounds(b, false);
         pattern->RemoveChild(child);
         owner->AddChild(child);
     }
@@ -518,6 +519,14 @@ int WareItem::LoadPattern(m3d::ui::Wnd* pattern)
         static_cast<m3d::ui::ImageWnd*>(take(m_aif.m_wndIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
     ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternIco);
 
+    m_pattern.m_wndPatternCannotBuyIco =
+        static_cast<m3d::ui::ImageWnd*>(take(m_aif.m_wndCannotBuyIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
+    ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternCannotBuyIco);
+
+    m_pattern.m_wndPatternCannotSellIco =
+        static_cast<m3d::ui::ImageWnd*>(take(m_aif.m_wndCannotSellIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
+    ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternCannotSellIco);
+
     m_pattern.m_wndPatternBuyPrice = take(m_aif.m_wndBuyPriceName, &m3d::ui::Wnd::m_classWnd);
     ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternBuyPrice);
 
@@ -527,14 +536,11 @@ int WareItem::LoadPattern(m3d::ui::Wnd* pattern)
     m_pattern.m_wndPatternAmount = take(m_aif.m_wndAmountName, &m3d::ui::Wnd::m_classWnd);
     ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternAmount);
 
-    m_pattern.m_wndPatternCannotBuyIco =
-        static_cast<m3d::ui::ImageWnd*>(take(m_aif.m_wndCannotBuyIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
-    ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternCannotBuyIco);
-
-    m_pattern.m_wndPatternCannotSellIco =
-        static_cast<m3d::ui::ImageWnd*>(take(m_aif.m_wndCannotSellIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
-    ReparentPatternChild(pattern, m_pattern.m_wndPattern, m_pattern.m_wndPatternCannotSellIco);
-
+    // The rows are laid out by the list, so the pattern itself sits at the origin.
+    m_pattern.m_wndPattern->SetBounds(
+        BoundsBase<float>(0.0f, 0.0f, m_pattern.m_wndPattern->GetBounds().width,
+            m_pattern.m_wndPattern->GetBounds().height),
+        false);
     return res;
 }
 
@@ -574,49 +580,86 @@ int WareItem::CreateFromPattern()
             m_pattern.m_wndPattern->GetImageIn(),
             m_pattern.m_wndPattern->GetImageDisabled());
     }
-    return CreateChildren();
+    else
+    {
+        SetRegular();
+    }
+    if (!CreateChildren())
+    {
+        M3D_LOG_INFO("WareItem::CreateFromPattern error - cannot create children");
+        return 0;
+    }
+    m_gameDataFlags |= 1u;
+    return 1;
 }
 
 int WareItem::CreateChildren()
 {
-    // RVA 0x47D4A0 - one child per pattern widget, each cloned and adopted.
-    int res = 1;
-
-    auto clone = [&](m3d::ui::Wnd* pat) -> m3d::ui::Wnd*
+    // RVA 0x47D4A0 - every window hanging off the row pattern (not only the seven named
+    // widgets) is cloned by class and adopted; the named widgets are then looked up among the
+    // clones. A child that cannot be created is skipped silently.
+    if (!m_pattern.m_wndPattern)
     {
-        if (!pat)
+        return 0;
+    }
+
+    for (m3d::Object* child = m_pattern.m_wndPattern->GetFirstChild(); child; child = child->GetNextSibling())
+    {
+        if (!child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
         {
-            res = 0;
-            return nullptr;
+            continue;
         }
-        auto* wnd = RT_DYNCAST(M3D_KERNEL->New(pat->GetClass()->m_className), m3d::ui::Wnd);
-        if (!wnd)
+        auto* pat = static_cast<m3d::ui::Wnd*>(child);
+        auto* wnd = static_cast<m3d::ui::Wnd*>(M3D_KERNEL->New(pat->GetClassNameA()));
+        if (!wnd || !wnd->Create(CStr(), pat->GetStyle(), pat->GetBounds(), pat->GetId()))
         {
-            res = 0;
-            return nullptr;
-        }
-        if (!wnd->Create(CStr(), pat->GetStyle(), pat->GetBounds(), pat->GetId()))
-        {
-            res = 0;
-            return nullptr;
+            continue;
         }
         CopyWndPropsFromPattern(wnd, pat);
+        if (wnd->IsKindOf(&m3d::ui::ImageWnd::m_classImageWnd))
+        {
+            static_cast<m3d::ui::ImageWnd*>(wnd)->SetImage(static_cast<m3d::ui::ImageWnd*>(pat)->GetImage());
+        }
+        else if (wnd->IsKindOf(&m3d::ui::ButtonWnd::m_classButtonWnd))
+        {
+            auto* btn = static_cast<m3d::ui::ButtonWnd*>(wnd);
+            auto* patBtn = static_cast<m3d::ui::ButtonWnd*>(pat);
+            if (patBtn->IsImaged())
+            {
+                btn->SetImaged(
+                    patBtn->GetImageRegular(), patBtn->GetImageDown(), patBtn->GetImageIn(),
+                    patBtn->GetImageDisabled());
+            }
+            else
+            {
+                btn->SetRegular();
+            }
+        }
         AddChild(wnd);
-        return wnd;
+    }
+
+    int res = 1;
+    auto find = [&](CStr const& name, m3d::Class const* cls) -> m3d::ui::Wnd*
+    {
+        m3d::Object* child = GetChildByName(name);
+        if (child && child->IsKindOf(cls))
+        {
+            return static_cast<m3d::ui::Wnd*>(child);
+        }
+        M3D_LOG_INFO("Get control error: control " + name + " is not found or incorrect type");
+        res = 0;
+        return nullptr;
     };
 
-    m_wndName = clone(m_pattern.m_wndPatternName);
-    m_wndIco = RT_DYNCAST(clone(m_pattern.m_wndPatternIco), m3d::ui::ImageWnd);
-    m_wndBuyPrice = clone(m_pattern.m_wndPatternBuyPrice);
-    m_wndSellPrice = clone(m_pattern.m_wndPatternSellPrice);
-    m_wndAmount = clone(m_pattern.m_wndPatternAmount);
-    m_wndCannotBuyIco = RT_DYNCAST(clone(m_pattern.m_wndPatternCannotBuyIco), m3d::ui::ImageWnd);
-    m_wndCannotSellIco = RT_DYNCAST(clone(m_pattern.m_wndPatternCannotSellIco), m3d::ui::ImageWnd);
-
-    if (res)
-    {
-        m_gameDataFlags |= 1u;
-    }
+    m_wndName = find(m_aif.m_wndNameName, &m3d::ui::Wnd::m_classWnd);
+    m_wndIco = static_cast<m3d::ui::ImageWnd*>(find(m_aif.m_wndIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
+    m_wndSellPrice = find(m_aif.m_wndSellPriceName, &m3d::ui::Wnd::m_classWnd);
+    m_wndBuyPrice = find(m_aif.m_wndBuyPriceName, &m3d::ui::Wnd::m_classWnd);
+    m_wndAmount = find(m_aif.m_wndAmountName, &m3d::ui::Wnd::m_classWnd);
+    m_wndCannotBuyIco =
+        static_cast<m3d::ui::ImageWnd*>(find(m_aif.m_wndCannotBuyIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
+    m_wndCannotSellIco =
+        static_cast<m3d::ui::ImageWnd*>(find(m_aif.m_wndCannotSellIcoName, &m3d::ui::ImageWnd::m_classImageWnd));
     return res;
 }
 
@@ -1688,8 +1731,10 @@ int WareWnd::GameDataUpdate(void* data, int dataType)
 
 int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
 {
-    // RVA 0x47AAD0 - clones this window off the XML pattern, then builds the
-    // ware list, the three column icons and the mode button out of it.
+    // RVA 0x47AAD0 - clones this window off the XML pattern and takes its place under the
+    // pattern's parent; then builds the ware list out of its pattern and pulls the mode button,
+    // the three column icons and the mode button's emboss over from the parent, re-expressing
+    // each one's position in this window's space.
     if (!pattern)
     {
         M3D_LOG_INFO("WareWnd::CreateFromPattern - invalid params");
@@ -1703,28 +1748,52 @@ int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
     }
     CopyWndPropsFromPattern(this, pattern);
 
-    int res = 1;
-
-    auto* parent = RT_DYNCAST(pattern->GetParent(), Wnd);
+    auto* parent = static_cast<Wnd*>(pattern->GetParent());
     if (!parent)
     {
-        M3D_LOG_INFO("WareWnd::CreateFromPattern error - cannot create ware list");
+        M3D_LOG_INFO("WareWnd::CreateFromPattern error - invalid parent for pattern");
         return 0;
     }
+    parent->AddChild(this);
+    if (deleteSrc)
+    {
+        parent->RemoveChild(pattern);
+        pattern->DecRef();
+    }
+
+    int res = 1;
 
     m3d::Object* wareListPattern = parent->GetChildByName(m_aif.m_wndWareListName);
     if (wareListPattern && wareListPattern->IsKindOf(&m3d::ui::Wnd::m_classWnd))
     {
-        auto* wareList = RT_DYNCAST(M3D_KERNEL->New("WareList"), WareList);
-        if (wareList && wareList->CreateFromPattern(static_cast<m3d::ui::Wnd*>(wareListPattern), deleteSrc))
+        auto* wareList = static_cast<WareList*>(M3D_KERNEL->New("WareList"));
+        m_wndWareList = wareList;
+        if (!m_wndWareList)
         {
-            m_wndWareList = wareList;
-            AddChild(wareList);
+            M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndWareListName +
+                " - cannot find rtti class " + CStr("WareList"));
+            res = 0;
+        }
+        else if (!m_wndWareList->CreateFromPattern(static_cast<m3d::ui::Wnd*>(wareListPattern), deleteSrc))
+        {
+            M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndWareListName + " from pattern class");
+            res = 0;
         }
         else
         {
-            M3D_LOG_INFO("WareWnd::CreateFromPattern error - cannot create ware list");
-            res = 0;
+            // The list's pattern has served its purpose.
+            if (m3d::Object* listPattern = parent->GetChildByName(m_aif.m_wndWareListName))
+            {
+                parent->RemoveChild(listPattern);
+                listPattern->DecRef();
+            }
+            AddChild(m_wndWareList.get());
+            // NOTE: the list keeps its size and base origin; only its position is shifted from
+            // the parent's space into this window's.
+            BoundsBase<float> listB = m_wndWareList->GetBounds();
+            listB.x0 -= m_bounds.x0;
+            listB.y0 -= m_bounds.y0;
+            m_wndWareList->SetBounds(listB, false);
         }
     }
     else
@@ -1733,24 +1802,42 @@ int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
         res = 0;
     }
 
-    m3d::Object* btnMode = parent->GetChildByName(m_aif.m_btnModeName);
-    if (btnMode && btnMode->IsKindOf(&m3d::ui::ButtonWnd::m_classButtonWnd))
+    // Moves a named control from the pattern's parent into this window, keeping it at the same
+    // place on screen.
+    auto takeControl = [&](CStr const& name, m3d::Class const* cls) -> Wnd*
     {
-        m_btnMode = static_cast<m3d::ui::ButtonWnd*>(btnMode);
-        parent->RemoveChild(m_btnMode);
-        AddChild(m_btnMode);
-    }
-    else
-    {
-        M3D_LOG_INFO("Get control error: control " + m_aif.m_btnModeName + " is not found or incorrect type");
-        res = 0;
-    }
+        m3d::Object* child = parent->GetChildByName(name);
+        if (!child || !child->IsKindOf(cls))
+        {
+            M3D_LOG_INFO("GetControlFromPattern error - no child or invalid class; control name - " + name);
+            res = 0;
+            return nullptr;
+        }
+        auto* wnd = static_cast<Wnd*>(child);
+        parent->RemoveChild(wnd);
+        AddChild(wnd);
+        BoundsBase<float> b = wnd->GetBounds();
+        PointBase<float> const pt = ToWindow(parent->ToScreen(PointBase<float>(b.x0, b.y0)));
+        b.x0 = pt.x;
+        b.y0 = pt.y;
+        wnd->SetBounds(b, false);
+        return wnd;
+    };
 
-    if (res)
+    m_btnMode = static_cast<m3d::ui::ButtonWnd*>(takeControl(m_aif.m_btnModeName, &m3d::ui::ButtonWnd::m_classButtonWnd));
+    takeControl(m_aif.m_wndSellPricesIcoName, &m3d::ui::Wnd::m_classWnd);
+    takeControl(m_aif.m_wndBuyPricesIcoName, &m3d::ui::Wnd::m_classWnd);
+    takeControl(m_aif.m_wndAmountsIcoName, &m3d::ui::Wnd::m_classWnd);
+    takeControl(m_aif.m_wndEmbossBtnModeName, &m3d::ui::Wnd::m_classWnd);
+
+    if (!res)
     {
-        m_gameDataFlags |= 1u;
-        OnCurProfileChanged();
-        OnChangeCurMode();
+        M3D_LOG_INFO("WareWnd: was inited with errors");
+        return 0;
     }
-    return res;
+    m_gameDataFlags |= 1u;
+    OnCurProfileChanged();
+    UpdateModeButtonState();
+    UpdateModeTooltip();
+    return 1;
 }

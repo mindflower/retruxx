@@ -397,14 +397,4 @@ namespace m3d
         }
         return g_uniqueId++;
     }
-
-    Kernel* Kernel::instance()
-    {
-        if (g_Kernel == nullptr)
-        {
-            static Kernel kernelObject;
-            g_Kernel = &kernelObject;
-        }
-        return g_Kernel;
-    }
 }  // namespace m3d

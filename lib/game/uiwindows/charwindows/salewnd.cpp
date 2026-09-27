@@ -453,14 +453,15 @@ m3d::ui::Wnd* SaleWnd::CreateTabItem(SaleWnd::WorkshopTabType type)
         // in the tab control's space so the work window lands inside the tab.
         BoundsBase<float> const patB = itemWnd->GetBounds();
         PointBase<float> const origin = parent->ToScreen(PointBase<float>(patB.x0, patB.y0));
-        BoundsBase<float> newB(
-            origin.x, origin.y, origin.x + patB.width, origin.y + patB.height);
-        m_wndTab->ToWindow(newB);
+        BoundsBase<float> const newB = m_wndTab->ToWindow(
+            BoundsBase<float>(origin.x, origin.y, origin.x + patB.width, origin.y + patB.height));
 
         if (itemWnd->IsKindOf(&RepositoryWnd::m_classRepositoryWnd))
         {
+            // A repository window only gets the area it may use; it sizes itself to whole
+            // cells inside it.
             auto* repositoryWnd = static_cast<RepositoryWnd*>(itemWnd);
-            repositoryWnd->SetBounds(newB, false);
+            repositoryWnd->m_maxBounds = newB;
             repositoryWnd->AdjustWndToCells();
         }
         else

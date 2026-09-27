@@ -103,6 +103,7 @@ namespace m3d
         {
             friend class WndStation;
             friend class ModalWnd;
+            friend class TabWnd;
             friend MbRetCodes __fastcall RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
 
         protected:

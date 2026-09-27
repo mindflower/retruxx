@@ -309,16 +309,18 @@ namespace ai
 
     void AI::AIUpdate(Obj* pObj)
     {
-        // TODO: generated code AI::AIUpdate
+        // RVA 0x7F41B0 - one step of the two-level state machine. At most one signal moves the
+        // outer stack per step: the current command's, else the one the current state returns,
+        // else the last queued outer message's. Then the sub-machine of the resulting outer
+        // state does the same with its own stack and message queue.
         assert(m_numCurCommand >= 0);
 
-        DecisionMatrix* pDM = m_pDM;
+        DecisionMatrix* const pDM = m_pDM;
         if (!pDM)
         {
             return;
         }
 
-        // Initialize state stack 2 if empty
         if (m_StateStack2.empty())
         {
             PushToStateStack(m_StateStack2, pDM->GetDefault(), pObj);
@@ -326,166 +328,95 @@ namespace ai
         }
 
         int signalNum = 0xFFFF;
+        // Set once a signal has been picked; the remaining sources are then skipped this step.
+        bool haveSignal = false;
 
-        // Process commands if not already processed
         if (!m_CommandProcessed)
         {
-            if (m_Commands.empty())
-            {
-                m_Commands.clear();
-                m_numCurCommand = 0;
-            }
-            else if (m_numCurCommand >= static_cast<int>(m_Commands.size()))
+            if (m_numCurCommand >= static_cast<int>(m_Commands.size()))
             {
                 m_Commands.clear();
                 m_numCurCommand = 0;
             }
             else
             {
-                AIMessage& currentCommand = m_Commands[m_numCurCommand];
-
-                if (currentCommand.m_Num == 17)
+                // A "loop" command sends the queue back to its start.
+                if (m_Commands[m_numCurCommand].m_Num == 17)
                 {
                     m_numCurCommand = 0;
                 }
-
                 if (m_Commands[0].m_Num == 17)
                 {
                     m_Commands.clear();
                 }
                 else
                 {
-                    signalNum = pDM->GetExternSignalMapping(currentCommand.m_Num);
+                    AIMessage const& command = m_Commands[m_numCurCommand];
+                    signalNum = pDM->GetExternSignalMapping(command.m_Num);
                     m_CommandProcessed = true;
-
                     if (signalNum != 0xFFFF)
                     {
-                        int funcNum = pDM->GetSignal(signalNum).m_FuncNum;
-                        if (funcNum != 0xFFFF)
+                        int const funcNum = pDM->GetSignal(signalNum).m_FuncNum;
+                        if (funcNum != 0xFFFF && ai::theAIManager->AIAction(funcNum, pObj).GetAsID() != 0)
                         {
-                            m3d::AIParam result = ai::theAIManager->AIAction(funcNum, pObj);
-                            int actionID = result.GetAsID();
-                            if (actionID != 0)
-                            {
-                                m_CommandProcessed = false;
-                            }
+                            m_CommandProcessed = false;
                         }
-
-                        // Process special signal commands
-                        if (signalNum == 65534)
-                        {
-                            m_StateStack2.pop_back();
-                            m_fStateStack2Changed = true;
-                        }
-                        else
-                        {
-                            int currentState = m_StateStack2.back().m_StateNum;
-                            DecisionMatrixElement const* decision = pDM->UnsafeGetDecision(currentState, signalNum);
-
-                            if (!decision->m_PassageCommands.empty())
-                            {
-                                if (decision->m_flags & 1)
-                                {
-                                    m_StateStack2.clear();
-                                }
-
-                                // Push commands in reverse order
-                                for (int i = static_cast<int>(decision->m_PassageCommands.size()) - 1; i >= 0; --i)
-                                {
-                                    PushToStateStack(m_StateStack2, decision->m_PassageCommands[i], pObj);
-                                }
-                                m_fStateStack2Changed = true;
-                            }
-                            else
-                            {
-                                m_CommandProcessed = false;
-                            }
-                        }
+                        haveSignal = true;
                     }
                     else
                     {
-                        // Log unsupported command
-                        CStr prototypeName = ai::thePrototypeManager->GetPrototypeName(pObj->GetPrototypeId());
-
-
-                        // Log warning about unsupported command
-                        M3D_LOG_WARN(
-                            "warning: unsupported command " + CStr(currentCommand.m_Num) + " in AIAction for " + CStr(pObj->GetName()) + " " + prototypeName);
-
+                        CStr const prototypeName = ai::thePrototypeManager->GetPrototypeName(pObj->GetPrototypeId());
+                        M3D_LOG_INFO(CStr("warning: unsupported command S") + CStr(command.m_Num) +
+                            CStr(" in AIAction for ") + CStr(pObj->GetName()) + CStr(" ") + prototypeName);
                         m_CommandProcessed = false;
                     }
                 }
             }
         }
 
-        // Execute current state action
-        int currentState = m_StateStack2.back().m_StateNum;
-        int stateFuncNum = pDM->GetState(currentState).m_FuncNum;
-        m3d::AIParam actionResult = ai::theAIManager->AIAction(stateFuncNum, pObj);
-        int actionID = actionResult.GetAsID();
-
-        if (actionID != 0)
+        if (!haveSignal)
         {
-            signalNum = pDM->GetState(currentState).m_SignalIDs[actionID];
-            if (signalNum != 0xFFFF)
+            AIState const& state = pDM->GetState(m_StateStack2.back().m_StateNum);
+            int const actionId = ai::theAIManager->AIAction(state.m_FuncNum, pObj).GetAsID();
+            if (actionId != 0)
             {
-                // Process state transition based on action result
-                if (signalNum == 65534)
+                signalNum = state.m_SignalIDs[actionId];
+                if (signalNum != 0xFFFF)
                 {
-                    m_StateStack2.pop_back();
-                    m_fStateStack2Changed = true;
+                    haveSignal = true;
                 }
                 else
                 {
-                    DecisionMatrixElement const* decision = pDM->UnsafeGetDecision(currentState, signalNum);
-
-                    if (!decision->m_PassageCommands.empty())
-                    {
-                        if (decision->m_flags & 1)
-                        {
-                            m_StateStack2.clear();
-                        }
-
-                        for (int i = static_cast<int>(decision->m_PassageCommands.size()) - 1; i >= 0; --i)
-                        {
-                            PushToStateStack(m_StateStack2, decision->m_PassageCommands[i], pObj);
-                        }
-                        m_fStateStack2Changed = true;
-                    }
-                    else
-                    {
-                        m_CommandProcessed = false;
-                    }
+                    m_CommandProcessed = false;
                 }
             }
-            else
-            {
-                m_CommandProcessed = false;
-            }
-        }
 
-        // Process pending messages in m_Messages2
-        while (!m_Messages2.empty())
-        {
-            AIMessage& lastMessage = m_Messages2.back();
-
-            if (lastMessage.m_Num < 16)
+            if (!haveSignal)
             {
-                signalNum = pDM->GetExternSignalMapping(lastMessage.m_Num);
-                if (signalNum != 0xFFFF)
+                // Queued messages are handled newest first; each one's signal function runs, and
+                // the last one with a mapped signal decides the transition.
+                while (!m_Messages2.empty())
                 {
-                    int funcNum = pDM->GetSignal(signalNum).m_FuncNum;
-                    if (funcNum != 0xFFFF)
+                    AIMessage const& message = m_Messages2.back();
+                    if (message.m_Num < 16)
                     {
-                        ai::theAIManager->AIAction(funcNum, pObj);
+                        signalNum = pDM->GetExternSignalMapping(message.m_Num);
+                        if (signalNum != 0xFFFF)
+                        {
+                            int const funcNum = pDM->GetSignal(signalNum).m_FuncNum;
+                            if (funcNum != 0xFFFF)
+                            {
+                                ai::theAIManager->AIAction(funcNum, pObj);
+                            }
+                        }
                     }
+                    m_Messages2.pop_back();
                 }
+                haveSignal = signalNum != 0xFFFF;
             }
-            m_Messages2.pop_back();
         }
 
-        // Process signal if valid
-        if (signalNum != 0xFFFF)
+        if (haveSignal)
         {
             if (signalNum == 65534)
             {
@@ -494,16 +425,14 @@ namespace ai
             }
             else
             {
-                int currentState = m_StateStack2.back().m_StateNum;
-                DecisionMatrixElement const* decision = pDM->UnsafeGetDecision(currentState, signalNum);
-
+                DecisionMatrixElement const* const decision =
+                    pDM->UnsafeGetDecision(m_StateStack2.back().m_StateNum, signalNum);
                 if (!decision->m_PassageCommands.empty())
                 {
                     if (decision->m_flags & 1)
                     {
                         m_StateStack2.clear();
                     }
-
                     for (int i = static_cast<int>(decision->m_PassageCommands.size()) - 1; i >= 0; --i)
                     {
                         PushToStateStack(m_StateStack2, decision->m_PassageCommands[i], pObj);
@@ -517,124 +446,91 @@ namespace ai
             }
         }
 
-        // Handle state stack changes
+        // A new outer state starts its sub-machine afresh.
         if (m_fStateStack2Changed)
         {
             m_StateStack1.clear();
             m_fStateStack2Changed = false;
         }
 
-        // Process child state machine if available
-        if (!m_StateStack2.empty())
+        DecisionMatrix* const childDM =
+            m_StateStack2.empty() ? nullptr : pDM->GetState(m_StateStack2.back().m_StateNum).m_pChildDecisionMatrix;
+        if (childDM)
         {
-            int currentState = m_StateStack2.back().m_StateNum;
-            DecisionMatrix* childDM = pDM->GetState(currentState).m_pChildDecisionMatrix;
-
-            if (childDM)
+            int childSignalNum = 0xFFFF;
+            if (m_StateStack1.empty())
             {
-                int childSignalNum = 0xFFFF;
+                PushToStateStack(m_StateStack1, childDM->GetDefault(), pObj);
+            }
 
-                // Initialize child state stack if empty
-                if (m_StateStack1.empty())
+            // NOTE: the inner state's function runs even when that state is the exit state.
+            int const childActionId =
+                ai::theAIManager->AIAction(childDM->GetState(m_StateStack1.back().m_StateNum).m_FuncNum, pObj).GetAsID();
+
+            auto const drainMessages1 = [&]() {
+                while (!m_Messages1.empty())
                 {
-                    PushToStateStack(m_StateStack1, childDM->GetDefault(), pObj);
-                }
-
-                int childState = m_StateStack1.back().m_StateNum;
-
-                // Check for exit condition
-                if (childState == childDM->GetExitStateNum())
-                {
-                    m_StateStack2.pop_back();
-                    m_fStateStack2Changed = true;
-                    m_CommandProcessed = false;
-
-                    // Process child messages
-                    while (!m_Messages1.empty())
+                    AIMessage const& message = m_Messages1.back();
+                    if (message.m_Num < 16)
                     {
-                        AIMessage& lastChildMessage = m_Messages1.back();
-
-                        if (lastChildMessage.m_Num < 16)
+                        childSignalNum = childDM->GetExternSignalMapping(message.m_Num);
+                        if (childSignalNum != 0xFFFF)
                         {
-                            childSignalNum = childDM->GetExternSignalMapping(lastChildMessage.m_Num);
-                            if (childSignalNum != 0xFFFF)
+                            int const funcNum = childDM->GetSignal(childSignalNum).m_FuncNum;
+                            if (funcNum != 0xFFFF)
                             {
-                                int funcNum = childDM->GetSignal(childSignalNum).m_FuncNum;
-                                if (funcNum != 0xFFFF)
-                                {
-                                    ai::theAIManager->AIAction(funcNum, pObj);
-                                }
-                            }
-                        }
-                        m_Messages1.pop_back();
-                    }
-                }
-                else
-                {
-                    // Execute child state action
-                    int childFuncNum = childDM->GetState(childState).m_FuncNum;
-                    m3d::AIParam childResult = ai::theAIManager->AIAction(childFuncNum, pObj);
-                    int childActionID = childResult.GetAsID();
-
-                    if (childActionID != 0)
-                    {
-                        childSignalNum = childDM->GetState(childState).m_SignalIDs[childActionID];
-                    }
-
-                    if (childSignalNum == 0xFFFF)
-                    {
-                        // Process child messages
-                        while (!m_Messages1.empty())
-                        {
-                            AIMessage& lastChildMessage = m_Messages1.back();
-
-                            if (lastChildMessage.m_Num < 16)
-                            {
-                                childSignalNum = childDM->GetExternSignalMapping(lastChildMessage.m_Num);
-                                if (childSignalNum != 0xFFFF)
-                                {
-                                    int funcNum = childDM->GetSignal(childSignalNum).m_FuncNum;
-                                    if (funcNum != 0xFFFF)
-                                    {
-                                        ai::theAIManager->AIAction(funcNum, pObj);
-                                    }
-                                }
-                            }
-                            m_Messages1.pop_back();
-                        }
-                    }
-
-                    if (childSignalNum != 0xFFFF)
-                    {
-                        if (childSignalNum == 65534)
-                        {
-                            m_StateStack1.pop_back();
-                        }
-                        else
-                        {
-                            DecisionMatrixElement const* childDecision = childDM->UnsafeGetDecision(childState, childSignalNum);
-
-                            if (!childDecision->m_PassageCommands.empty())
-                            {
-                                if (childDecision->m_flags & 1)
-                                {
-                                    m_StateStack1.clear();
-                                }
-
-                                for (int i = static_cast<int>(childDecision->m_PassageCommands.size()) - 1; i >= 0; --i)
-                                {
-                                    PushToStateStack(m_StateStack1, childDecision->m_PassageCommands[i], pObj);
-                                }
-
-                                pObj->StopTimeOut();
+                                ai::theAIManager->AIAction(funcNum, pObj);
                             }
                         }
                     }
+                    m_Messages1.pop_back();
                 }
+            };
+
+            int const childState = m_StateStack1.back().m_StateNum;
+            if (childState == childDM->GetExitStateNum())
+            {
+                // The sub-machine has finished, and so has the outer state that owns it.
+                m_StateStack2.pop_back();
+                m_fStateStack2Changed = true;
+                m_CommandProcessed = false;
+                drainMessages1();
             }
             else
             {
-                m_CommandProcessed = false;
+                if (childActionId != 0)
+                {
+                    childSignalNum = childDM->GetState(childState).m_SignalIDs[childActionId];
+                }
+                if (childSignalNum == 0xFFFF)
+                {
+                    drainMessages1();
+                }
+            }
+
+            if (childSignalNum != 0xFFFF)
+            {
+                if (childSignalNum == 65534)
+                {
+                    m_StateStack1.pop_back();
+                }
+                else
+                {
+                    DecisionMatrixElement const* const childDecision =
+                        childDM->UnsafeGetDecision(m_StateStack1.back().m_StateNum, childSignalNum);
+                    if (!childDecision->m_PassageCommands.empty())
+                    {
+                        if (childDecision->m_flags & 1)
+                        {
+                            m_StateStack1.clear();
+                        }
+                        for (int i = static_cast<int>(childDecision->m_PassageCommands.size()) - 1; i >= 0; --i)
+                        {
+                            PushToStateStack(m_StateStack1, childDecision->m_PassageCommands[i], pObj);
+                        }
+                        pObj->StopTimeOut();
+                    }
+                }
             }
         }
         else
@@ -642,28 +538,17 @@ namespace ai
             m_CommandProcessed = false;
         }
 
-        // Advance to next command if current one is processed
+        // A finished command either stays in the queue (and the next one is taken) or is removed.
         if (!m_CommandProcessed)
         {
-            if (m_numCurCommand < 0)
+            if (m_numCurCommand < 0 || m_numCurCommand >= static_cast<int>(m_Commands.size()) ||
+                m_Commands[m_numCurCommand].m_RemoveAfterFinishing == 0)
             {
-                m_numCurCommand++;
-            }
-            else if (m_numCurCommand >= static_cast<int>(m_Commands.size()))
-            {
-                m_numCurCommand++;
+                ++m_numCurCommand;
             }
             else
             {
-                AIMessage& currentCommand = m_Commands[m_numCurCommand];
-                if (currentCommand.m_RemoveAfterFinishing == 0)
-                {
-                    m_numCurCommand++;
-                }
-                else
-                {
-                    m_Commands.erase(m_Commands.begin() + m_numCurCommand);
-                }
+                m_Commands.erase(m_Commands.begin() + m_numCurCommand);
             }
         }
     }
@@ -736,17 +621,13 @@ namespace ai
 
     m3d::AIParam AI::GetCmdParam(unsigned paramNum)
     {
-        if (m_numCurCommand < 0)
+        // RVA 0x7F2190 - an out-of-range request reads back as an undefined parameter.
+        if (m_numCurCommand < 0 || m_numCurCommand >= static_cast<int>(m_Commands.size()) ||
+            paramNum >= m_Commands[m_numCurCommand].m_ParamList.size())
         {
-            return m3d::AIParam(0);
+            return m3d::AIParam();
         }
-
-        if (m_numCurCommand < m_Commands.size() && paramNum < m_Commands[m_numCurCommand].m_ParamList.size())
-        {
-            return m3d::AIParam(m_Commands[m_numCurCommand].m_ParamList[paramNum]); 
-        }
-
-        return m3d::AIParam(0);
+        return m_Commands[m_numCurCommand].m_ParamList[paramNum];
     }
 
     CStr AI::ToStr()
@@ -903,12 +784,25 @@ namespace ai
 
     void AI::InsCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3)
     {
+        // RVA 0x7F4A80 - the command goes in front of the current one and is removed once done;
+        // it is not inserted twice in a row. With nothing current it is appended and made current.
         assert(m_numCurCommand >= 0);
 
         ai::AIMessage command(Num, Param1, Param2, Param3);
         command.m_RemoveAfterFinishing = 1;
         m_CommandProcessed = false;
-        m_Commands.push_back(std::move(command));
+        if (m_numCurCommand < static_cast<int>(m_Commands.size()))
+        {
+            if (!(m_Commands[m_numCurCommand] == command))
+            {
+                m_Commands.insert(m_Commands.begin() + m_numCurCommand, command);
+            }
+        }
+        else
+        {
+            m_Commands.push_back(command);
+            m_numCurCommand = static_cast<int>(m_Commands.size()) - 1;
+        }
     }
 
     void AI::SetState2Param(int ParamNum, m3d::AIParam const& Param)
@@ -943,12 +837,12 @@ namespace ai
 
     m3d::AIParam AI::GetState2Param(unsigned paramNum)
     {
-        if (!m_StateStack2.empty() && paramNum < m_StateStack2.back().m_ParamList.size())
+        // RVA 0x7F2320 - an out-of-range request reads back as an undefined parameter.
+        if (m_StateStack2.empty() || paramNum >= m_StateStack2.back().m_ParamList.size())
         {
-            return m3d::AIParam(m_StateStack2.back().m_ParamList[paramNum]);
+            return m3d::AIParam();
         }
-
-        return m3d::AIParam(0);
+        return m_StateStack2.back().m_ParamList[paramNum];
     }
 
     m3d::AIParam AI::GetState1Param(unsigned paramNum)

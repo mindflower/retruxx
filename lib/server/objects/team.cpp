@@ -387,6 +387,8 @@ namespace ai
 
     m3d::AIParam Team::TeamAIOnStartAttack(Obj* pObj)
     {
+        // RVA 0x659500 - drops the movement and hands out the attack roles, then signals 1 so the
+        // state machine moves on into the attack itself.
         auto* team = RT_DYNCAST(pObj, Team);
         if (team->m_formation)
         {
@@ -396,7 +398,7 @@ namespace ai
         team->m_pPath = nullptr;
 
         team->_AdjustBehaviour();
-        return m3d::AIParam(0);
+        return m3d::AIParam(1);
     }
 
     m3d::Class* Team::GetClass() const

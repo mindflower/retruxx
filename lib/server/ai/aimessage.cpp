@@ -27,6 +27,28 @@ namespace ai
         m_RemoveAfterFinishing = 0;
     }
 
+    bool AIMessage::operator==(AIMessage const& message)
+    {
+        // RVA 0x7F0040
+        if (m_Num != message.m_Num || m_ParamList.size() != message.m_ParamList.size())
+        {
+            return false;
+        }
+        for (unsigned i = 0; i < m_ParamList.size(); ++i)
+        {
+            if (!(m_ParamList[i] == message.m_ParamList[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool AIMessage::operator!=(AIMessage const& message)
+    {
+        return !(*this == message);
+    }
+
     void AIMessage::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode)
     {
         // RVA 0x7F2D40 - the parameters are numbered child elements, read until one is missing.
