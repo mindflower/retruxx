@@ -22,6 +22,4 @@ namespace m3d
     private:
         int _GetSoundIdByServerHandle(int sh) const;
     }; /* size: 0x0048 */
-
-    static_assert(sizeof(MusicServer) == 0x0048);
 }

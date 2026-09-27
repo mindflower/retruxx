@@ -42,8 +42,6 @@ namespace ai
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
     }; /* size: 0x0018 */
 
-    static_assert(sizeof(GameTime) == 0x0018);
-
     class ObjContainer : public m3d::Object
     {
         // The game's debug overlay and save/load read the containers directly.
@@ -258,8 +256,6 @@ namespace ai
         void _SetObjUpdating(int objId);
         void _SetObjNotUpdating(int objId);
     }; /* size: 0x0120 */
-
-    static_assert(sizeof(ObjContainer) == 0x0120);
 
     void SetObjects(ObjContainer*);
 

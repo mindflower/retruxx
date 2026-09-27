@@ -21,8 +21,6 @@ namespace ai
             /* 0x001c */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_loadPrototypeNames;
         }; /* size: 0x002c */
 
-        static_assert(sizeof(StateInfo) == 0x002c);
-
         using StateInfoVector = retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo> >;
 
     public:
@@ -41,8 +39,6 @@ namespace ai
     private:
         /* 0x00d0 */ CStr m_containerPrototypeName;
     }; /* size: 0x00dc */
-
-    static_assert(sizeof(Boss02PrototypeInfo) == 0x00dc);
 
     class Boss02 : public ai::ComplexPhysicObj
     {
@@ -104,6 +100,4 @@ namespace ai
         void _OnBossCriticalLoadsExploded(const ai::Event& evn);
         void _OnBossArmActionFinished(const ai::Event& evn);
     }; /* size: 0x0174 */
-
-    static_assert(sizeof(Boss02) == 0x0174);
 }

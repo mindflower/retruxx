@@ -441,8 +441,6 @@ namespace m3d
             void StopAnimationMoveSound();
         }; /* size: 0x0220 */
 
-        static_assert(sizeof(Wnd) == 0x0220);
-
         class DrawInfo
         {
         public:

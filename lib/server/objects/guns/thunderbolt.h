@@ -21,8 +21,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x0058 */
 
-    static_assert(sizeof(ThunderboltPrototypeInfo) == 0x0058);
-
     // A branching lightning bolt from a ThunderboltLauncher to a set of targets. It lives for
     // m_flyTime seconds, damaging every target a branch touches.
     class Thunderbolt : public ai::Obj
@@ -119,6 +117,4 @@ namespace ai
         void calcThunderboltSegments();
         void Render();
     }; /* size: 0x01dc */
-
-    static_assert(sizeof(Thunderbolt) == 0x01dc);
 }

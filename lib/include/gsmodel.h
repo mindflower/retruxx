@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <core/stringm3d.h>
 #include <math/aabb.h>
 #include <renderer/i_renderer_vertex.h>
@@ -15,10 +16,12 @@ namespace m3d
         /* 0x0008 */ char m_alpha;
     }; /* size: 0x000c */
 
+    // Collision chunk records of GSM files, copied byte for byte.
+#pragma pack(push, 4)
     struct CollisionDataHeader
     {
-        /* 0x0000 */ unsigned int numVertices;
-        /* 0x0004 */ unsigned int numFaces;
+        /* 0x0000 */ uint32_t numVertices;
+        /* 0x0004 */ uint32_t numFaces;
     }; /* size: 0x0008 */
 
     struct CollidingVertex
@@ -27,7 +30,13 @@ namespace m3d
         /* 0x0004 */ float y;
         /* 0x0008 */ float z;
     }; /* size: 0x000c */
+#pragma pack(pop)
 
+    static_assert(sizeof(CollisionDataHeader) == 0x0008);
+    static_assert(sizeof(CollidingVertex) == 0x000c);
+
+    // A load point as stored in GSM files, copied byte for byte.
+#pragma pack(push, 4)
     struct LPoint
     {
         /* 0x0000 */ char name[30];
@@ -36,7 +45,9 @@ namespace m3d
         /* 0x0024 */ float y;
         /* 0x0028 */ float z;
     }; /* size: 0x002c */
+#pragma pack(pop)
 
+    static_assert(sizeof(LPoint) == 0x002c);
 
     class CGSModel
     {

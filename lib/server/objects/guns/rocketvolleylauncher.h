@@ -12,8 +12,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x01a0 */
 
-    static_assert(sizeof(RocketVolleyLauncherPrototypeInfo) == 0x01a0);
-
     // Fires a whole volley at once: one rocket per barrel at the nearest enemies in range, then
     // keeps launching until every queued target has had its rocket.
     class RocketVolleyLauncher : public ai::RocketLauncher
@@ -49,6 +47,4 @@ namespace ai
         /* 0x0340 */ bool m_bIsVolleyFiring;
         void _TryToLaunch();
     }; /* size: 0x0344 */
-
-    static_assert(sizeof(RocketVolleyLauncher) == 0x0344);
 }

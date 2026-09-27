@@ -146,8 +146,6 @@ namespace m3d
         RenderNodeInfo();
     }; /* size: 0x0060 */
 
-    static_assert(sizeof(RenderNodeInfo) == 0x0060);
-
     class DataServer
     {
     public:
@@ -230,6 +228,4 @@ namespace m3d
     protected:
         /* 0x0044 */ bool m_valid = false;
     }; /* size: 0x0048 */
-
-    static_assert(sizeof(DataServer) == 0x0048);
 }

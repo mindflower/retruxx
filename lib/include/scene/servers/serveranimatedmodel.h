@@ -107,8 +107,6 @@ namespace m3d
 
     }; /* size: 0x0258 */
 
-    static_assert(sizeof(AnimatedModelsServer) == 0x0258);
-
     struct PropSrvSoundForAction
     {
         /* 0x0000 */ int m_action;

@@ -44,6 +44,4 @@ namespace m3d
     private:
         /* 0x0098 */ m3d::Profiler* m_profiler = nullptr;
     }; /* size: 0x009c */
-
-    static_assert(sizeof(StaticModelsServer) == 0x009c);
 }

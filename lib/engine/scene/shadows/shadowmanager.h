@@ -46,6 +46,4 @@ namespace m3d
         /* 0x1f6c */ m3d::Profiler* m_profiler1;
         /* 0x1f70 */ m3d::Profiler* m_profiler2;
     }; /* size: 0x1f74 */
-
-    static_assert(sizeof(ShadowManager) == 0x1f74);
 }

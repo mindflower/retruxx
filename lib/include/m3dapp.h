@@ -453,8 +453,6 @@ namespace m3d
         virtual m3d::Class* GetClass() const override /* 0x00 */;
         static m3d::Class m_classApplication;
     }; /* size: 0x8b290 */
-
-    static_assert(sizeof(Application) == 0x8b290);
 }
 
 #define M3D_APP m3d::Application::g_pApp

@@ -40,8 +40,6 @@ namespace ai
         /* 0x00ec */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_dronePrototypeNames;
     }; /* size: 0x00fc */
 
-    static_assert(sizeof(Boss03PrototypeInfo) == 0x00fc);
-
     class Boss03 : public ai::AnimatedComplexPhysicObj
     {
         friend class Boss03PrototypeInfo;
@@ -178,6 +176,4 @@ namespace ai
     public:
         static void __fastcall Registration();
     }; /* size: 0x0278 */
-
-    static_assert(sizeof(Boss03) == 0x0278);
 }

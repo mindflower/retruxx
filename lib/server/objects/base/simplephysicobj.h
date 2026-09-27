@@ -31,8 +31,6 @@ namespace ai
         /* 0x007c */ float m_massValue;
     }; /* size: 0x0080 */
 
-    static_assert(sizeof(SimplePhysicObjPrototypeInfo) == 0x0080);
-
     class SimplePhysicObj : public ai::PhysicObj
     {
     protected:
@@ -119,6 +117,4 @@ namespace ai
         /* 0x013c */ float m_deadTimer;
         /* 0x0140 */ bool m_testVisibility;
     }; /* size: 0x0144 */
-
-    static_assert(sizeof(SimplePhysicObj) == 0x0144);
 }

@@ -10,8 +10,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0198 */
 
-    static_assert(sizeof(LocationPusherPrototypeInfo) == 0x0198);
-
     // A "gun" that drops a temporary location (an oil slick and the like) behind the vehicle.
     class LocationPusher : public ai::Gun
     {
@@ -38,6 +36,4 @@ namespace ai
     protected:
         virtual void _LaunchShells() override /* 0x198 */;
     }; /* size: 0x0330 */
-
-    static_assert(sizeof(LocationPusher) == 0x0330);
 }

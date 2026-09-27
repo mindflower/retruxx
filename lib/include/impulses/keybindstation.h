@@ -26,6 +26,7 @@ namespace m3d
 
         friend bool operator==(const KeysSet& lhd, const KeysSet& rhd);
         friend KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd);
+        friend KeysSet operator-(const KeysSet& lhd, int key);
 
     private:
         std::set<int> m_set;

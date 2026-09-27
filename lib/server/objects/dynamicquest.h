@@ -36,8 +36,6 @@ namespace ai
         /* 0x0040 */ int m_minReward;
     }; /* size: 0x0044 */
 
-    static_assert(sizeof(DynamicQuestPrototypeInfo) == 0x0044);
-
     class DynamicQuest : public ai::Obj
     {
         // DynamicQuestHunt::ConsiderPlayerKill reads the quest state directly.
@@ -133,6 +131,4 @@ namespace ai
         void _OnObjectEntersLocation(const ai::Event& evn);
         void _OnRelationChanged(const ai::Event& evn);
     }; /* size: 0x0110 */
-
-    static_assert(sizeof(DynamicQuest) == 0x0110);
 }

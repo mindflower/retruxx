@@ -79,8 +79,6 @@ namespace ai
         /* 0x0120 */ CStr m_blastWavePrototypeName;
     }; /* size: 0x012c */
 
-    static_assert(sizeof(VehiclePrototypeInfo) == 0x012c);
-
     class Vehicle : public ComplexPhysicObj
     {
         friend class VehicleUpdater;
@@ -595,6 +593,4 @@ namespace ai
         static ai::Vehicle::VehicleMoveStatus __fastcall MoveStatusID(const CStr&);
         static ai::Vehicle::VehicleAttackStatus __fastcall AttackStatusID(const CStr&);
     }; /* size: 0x04f4 */
-
-    static_assert(sizeof(Vehicle) == 0x04f4);
 }

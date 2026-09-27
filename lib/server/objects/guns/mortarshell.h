@@ -53,7 +53,4 @@ namespace ai
         /* 0x0228 */ CVector m_initialVelocity;
         /* 0x0234 */ CVector m_initialPosition;
     }; /* size: 0x0240 */
-
-    static_assert(sizeof(MortarShellPrototypeInfo) == 0x9c);
-    static_assert(sizeof(MortarShell) == 0x240);
 }

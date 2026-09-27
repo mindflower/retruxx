@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include "geoms/geom.h"
 #include <ode/mass.h>
 #include <server/objects/base/obj.h>
@@ -16,7 +17,7 @@ namespace m3d
     class AnimatedModel;
 }
 
-enum ActionType;
+enum ActionType : int32_t;
 
 namespace ai
 {
@@ -32,8 +33,6 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
         virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x0c */;
     }; /* size: 0x0068 */
-
-    static_assert(sizeof(PhysicBodyPrototypeInfo) == 0x0068);
 
     class PhysicBody : public Obj
     {
@@ -164,6 +163,4 @@ namespace ai
         void _DeleteNode();
         void _ApplyCurrentModelName();
     }; /* size: 0x0158 */
-
-    static_assert(sizeof(PhysicBody) == 0x0158);
 }

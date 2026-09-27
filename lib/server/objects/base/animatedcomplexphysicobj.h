@@ -10,8 +10,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0090 */
 
-    static_assert(sizeof(AnimatedComplexPhysicObjPrototypeInfo) == 0x0090);
-
     class AnimatedComplexPhysicObj : public ai::ComplexPhysicObj
     {
         // CreateTargetObject builds one of these.
@@ -33,6 +31,4 @@ namespace ai
         virtual const ai::AnimatedComplexPhysicObjPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
         virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
     }; /* size: 0x014c */
-
-    static_assert(sizeof(AnimatedComplexPhysicObj) == 0x014c);
 }

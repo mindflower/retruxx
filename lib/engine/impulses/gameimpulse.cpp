@@ -827,8 +827,7 @@ namespace m3d
                     auto impulse = bindStation.FindImpulseByLongestSetPossible(m_curKeys, keyToSearchBy, impSet);
                     if (impulse != -1)
                     {
-                        impSet -= keyToSearchBy;
-                        SetImpulsesStateBySet(impulse, false, curGameMode, causeWnd);
+                        SetImpulsesStateBySet(impSet - keyToSearchBy, false, curGameMode, causeWnd);
                         AuxImpulseInfo info(impulse, true, curGameMode, i0, i1);
                         SetImpulseState(info, causeWnd);
                     }
@@ -848,8 +847,7 @@ namespace m3d
                     {
                         AuxImpulseInfo info(impulse, state, curGameMode, i0, i1);
                         SetImpulseState(info, causeWnd);
-                        impSet -= keyToSearchBy;
-                        SetImpulsesStateBySet(impSet, true, curGameMode, causeWnd);
+                        SetImpulsesStateBySet(impSet - keyToSearchBy, true, curGameMode, causeWnd);
                     }
                     m_curKeys -= keyToSearchBy;
                 }

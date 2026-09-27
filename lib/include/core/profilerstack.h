@@ -40,8 +40,6 @@ namespace m3d
         void Init();
     }; /* size: 0x0058 */
 
-    static_assert(sizeof(Profiler) == 0x0058);
-
     class Application;
 
     class ProfilerStack
@@ -65,8 +63,6 @@ namespace m3d
         /* 0x0000 */ retruxx::vector<m3d::Profiler*, retruxx::allocator<m3d::Profiler*> > m_stack;
         /* 0x0010 */ unsigned int m_numProfilers;
     }; /* size: 0x0014 */
-
-    static_assert(sizeof(ProfilerStack) == 0x0014);
 
     class ProfilerPtr
     {

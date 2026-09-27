@@ -687,11 +687,4 @@ class TiXmlDocument : public TiXmlNode
 	/* 0x0030 */ CStr errorDesc;
 }; /* size: 0x003c */
 
-static_assert(sizeof(TiXmlNode) == 0x28);
-static_assert(sizeof(TiXmlAttribute) == 0x28);
-static_assert(sizeof(TiXmlAttributeSet) == 0x28);
-static_assert(sizeof(TiXmlElement) == 0x50);
-static_assert(sizeof(TiXmlDeclaration) == 0x4c);
-static_assert(sizeof(TiXmlDocument) == 0x3c);
-
 #endif

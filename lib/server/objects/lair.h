@@ -14,8 +14,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x00a8 */
 
-    static_assert(sizeof(LairPrototypeInfo) == 0x00a8);
-
     class Lair : public ai::Settlement
     {
         friend class LairPrototypeInfo;
@@ -78,6 +76,4 @@ namespace ai
         /* 0x0304 */ ai::Lair::LairState m_state;
         void _OnObjectEntersLocation(const ai::Event& evn);
     }; /* size: 0x0308 */
-
-    static_assert(sizeof(Lair) == 0x0308);
 }

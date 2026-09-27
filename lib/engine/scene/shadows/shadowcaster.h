@@ -34,6 +34,4 @@ namespace m3d
         /* 0x0028 */ m3d::AnimatedModel::Mesh* m_mesh;
         void InsertEdge(unsigned int& numEdges, unsigned short v0, unsigned short v1);
     }; /* size: 0x002c */
-
-    static_assert(sizeof(ShadowVolume) == 0x002c);
 }

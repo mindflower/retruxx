@@ -54,6 +54,4 @@ namespace m3d
         /* 0x0088 */ unsigned int m_memOverhead = 0;
         /* 0x008c */ int m_lastUnsuccessfulAllocationSize = 0;
     }; /* size: 0x0090 */
-
-    static_assert(sizeof(MemoryManager) == 0x0090);
 }

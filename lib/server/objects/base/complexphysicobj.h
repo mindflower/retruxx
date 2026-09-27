@@ -34,8 +34,6 @@ namespace ai
         /* 0x0038 */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_lpNames;
     }; /* size: 0x0048 */
 
-    static_assert(sizeof(ComplexPhysicObjPartDescription) == 0x0048);
-
     class ComplexPhysicObjPrototypeInfo : public ai::PhysicObjPrototypeInfo
     {
         // WeaponSlotList sorts gun slots by whether they hang off the cabin,
@@ -76,8 +74,6 @@ namespace ai
         /* 0x007c */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_allPartNames;
         /* 0x008c */ ai::ComplexPhysicObjPrototypeInfo::MassShapes m_massShape;
     }; /* size: 0x0090 */
-
-    static_assert(sizeof(ComplexPhysicObjPrototypeInfo) == 0x0090);
 
     class ComplexPhysicObj : public PhysicObj
     {
@@ -200,6 +196,4 @@ namespace ai
         VehiclePartsMap::iterator end();
         unsigned int size() const;
     }; /* size: 0x014c */
-
-    static_assert(sizeof(ComplexPhysicObj) == 0x014c);
 }

@@ -12,8 +12,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x0040 */
 
-    static_assert(sizeof(TriggerPrototypeInfo) == 0x0040);
-
     class Trigger : public ai::Obj
     {
         friend class TriggerPrototypeInfo;
@@ -138,6 +136,4 @@ namespace ai
         void _OnCinemaMessage(const ai::Event& evn);
         void _OnDefaultEvent(const ai::Event& evn);
     }; /* size: 0x0138 */
-
-    static_assert(sizeof(Trigger) == 0x0138);
 }

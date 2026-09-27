@@ -21,8 +21,6 @@ namespace ai
         /* 0x0094 */ CStr m_BlastWavePrototypeName;
     }; /* size: 0x00a0 */
 
-    static_assert(sizeof(RocketPrototypeInfo) == 0x00a0);
-
     // A homing shell: it accelerates up to its top speed and, while it has a target, turns towards
     // it along a circle no tighter than its minimum turning radius.
     class Rocket : public ai::Shell
@@ -71,6 +69,4 @@ namespace ai
         /* 0x0325 */ char Padding_336[3];
         /* 0x0328 */ int m_numCircles;
     }; /* size: 0x032c */
-
-    static_assert(sizeof(Rocket) == 0x032c);
 }

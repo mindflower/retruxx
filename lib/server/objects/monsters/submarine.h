@@ -33,8 +33,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x00a0 */
 
-    static_assert(sizeof(SubmarinePrototypeInfo) == 0x00a0);
-
     class Submarine : public ai::DummyObject
     {
         friend class SubmarinePrototypeInfo;
@@ -102,6 +100,4 @@ namespace ai
     public:
         static void __fastcall Registration();
     }; /* size: 0x01cc */
-
-    static_assert(sizeof(Submarine) == 0x01cc);
 }

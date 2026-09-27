@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <cstddef>
 
 class CStr;
 
@@ -98,7 +99,11 @@ namespace m3d
 
     }; /* size: 0x0028 */
 
+    // The kernel is handed to the original driver DLLs (renderer, input, sound), which call
+    // its virtuals and read g_mar.AllocMem (+0x18) and g_mar.FreeMem (+0x20) directly.
+    static_assert(sizeof(MemoryAllocationRoutines) == 0x000c);
     static_assert(sizeof(Kernel) == 0x0028);
+    static_assert(offsetof(Kernel, g_mar) == 0x0018);
 
     extern Kernel* g_Kernel;
 }

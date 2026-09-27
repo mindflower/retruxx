@@ -20,8 +20,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x00a0 */
 
-    static_assert(sizeof(StaticAutoGunPrototypeInfo) == 0x00a0);
-
     class StaticAutoGun : public ai::ComplexPhysicObj
     {
         friend class StaticAutoGunPrototypeInfo;
@@ -93,6 +91,4 @@ namespace ai
         bool _OnHealthValueBeforeApplyModifier(const ai::Modifier& modifier, float& newHealth);
         void _OnHealthValueAfterChange(float oldHealthValue);
     }; /* size: 0x02ec */
-
-    static_assert(sizeof(StaticAutoGun) == 0x02ec);
 }

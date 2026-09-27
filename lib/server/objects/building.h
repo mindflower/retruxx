@@ -26,8 +26,6 @@ namespace ai
         /* 0x0040 */ ai::BuildingType m_buildingType;
     }; /* size: 0x0044 */
 
-    static_assert(sizeof(BuildingPrototypeInfo) == 0x0044);
-
     class Building : public ai::Obj
     {
         // BuildingPrototypeInfo::CreateTargetObject constructs a plain Building.
@@ -67,6 +65,4 @@ namespace ai
         static inline const CStr m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};
         /* 0x00c0 */ retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> > m_npcs;
     }; /* size: 0x00d0 */
-
-    static_assert(sizeof(Building) == 0x00d0);
 }

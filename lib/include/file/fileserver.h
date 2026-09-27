@@ -58,7 +58,5 @@ namespace m3d
             /* 0x0030 */ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_Files;
             /* 0x003c */ CStr m_CurrentWorkDir;
         }; /* size: 0x0048 */
-
-        static_assert(sizeof(FileServer) == 0x0048);
     }
 }

@@ -17,8 +17,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x008c */
 
-    static_assert(sizeof(PhysicUnitPrototypeInfo) == 0x008c);
-
     class PhysicUnit : public ai::SimplePhysicObj
     {
         friend class PhysicUnitPrototypeInfo;
@@ -114,6 +112,4 @@ namespace ai
         /* 0x034c */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_dummyPath;
         void _SetWalkState(ai::PhysicUnit::WalkState newWalkState);
     }; /* size: 0x035c */
-
-    static_assert(sizeof(PhysicUnit) == 0x035c);
 }

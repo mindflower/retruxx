@@ -26,7 +26,7 @@ class CStr
     }; /* size: 0x0001 */
 private:
     /* 0x0000 */ char* m_charPtr = nullptr;
-    /* 0x0004 */ int m_allocSz = 0;
+    /* 0x0004 */ int32_t m_allocSz = 0;
     /* 0x0008 */ CStr::ZeroCharHolder ZERO;
     void cleanup();
     void realloc(int sz);
@@ -75,6 +75,9 @@ public:
     int Read(m3d::fs::IStream&);
     CStr& CStr::operator=(CStr const& rhs);
 }; /* size: 0x000c */
+
+// Embedded in CVar and read by the original driver DLLs, so the layout is fixed.
+static_assert(sizeof(CStr) == 0x000c);
 
 void UnifyFileName(CStr& fileName);
 void UnifyFileName0(CStr& fileName);

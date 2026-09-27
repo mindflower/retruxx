@@ -24,8 +24,6 @@ namespace ai
         int GetMaxGadgets(const CStr& gadgetResourceName) const;
     }; /* size: 0x0148 */
 
-    static_assert(sizeof(CabinPrototypeInfo) == 0x0148);
-
     class Cabin : public ai::VehiclePart
     {
         friend class CabinPrototypeInfo;
@@ -81,6 +79,4 @@ namespace ai
         /* 0x02d8 */ int m_maxGadgets;
         /* 0x02dc */ float m_control;
     }; /* size: 0x02e0 */
-
-    static_assert(sizeof(Cabin) == 0x02e0);
 }

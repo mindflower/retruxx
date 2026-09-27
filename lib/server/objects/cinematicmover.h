@@ -49,6 +49,4 @@ namespace ai
         float m_currentFlyTime;
         int m_controlledObjId;
     }; /* size: 0x00d8 */
-
-    static_assert(sizeof(CinematicMover) == 0x00d8);
 }

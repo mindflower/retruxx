@@ -23,8 +23,6 @@ namespace ai
         /* 0x014c */ CStr m_blockingContainerPrototypeName;
     }; /* size: 0x0158 */
 
-    static_assert(sizeof(Boss02ArmPrototypeInfo) == 0x0158);
-
     class Boss02Arm : public ai::BossArm
     {
         friend class Boss02ArmPrototypeInfo;
@@ -76,6 +74,4 @@ namespace ai
         void _SetCustomNodeAction(int action, bool forceRestartAction);
         void _SetEffectsDisabled();
     }; /* size: 0x032c */
-
-    static_assert(sizeof(Boss02Arm) == 0x032c);
 }

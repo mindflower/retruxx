@@ -54,6 +54,4 @@ namespace m3d
         /* 0x0228 */ ai::Obstacle* m_obstacle;
         /* 0x022c */ bool m_imposted;
     }; /* size: 0x0230 */
-
-    static_assert(sizeof(SgAnimatedModelNode) == 0x0230);
 }

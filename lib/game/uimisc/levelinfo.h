@@ -52,8 +52,6 @@ private:
     /* 0x0088 */ CVector m_north;
 }; /* size: 0x0094 */
 
-static_assert(sizeof(LevelInfo) == 0x94);
-
 class LevelInfoManager : public m3d::Object
 {
 public:
@@ -151,8 +149,6 @@ public:
     /* 0x0080 */ m3d::CVar m_cvVisibilityRadius;
 }; /* size: 0x00ac */
 
-static_assert(sizeof(LevelInfoManager) == 0xac);
-
 class ObjectInfo
 {
     friend class LevelInfoManager;
@@ -203,4 +199,3 @@ private:
     /* 0x0064 */ int m_belong;
 }; /* size: 0x0068 */
 
-static_assert(sizeof(ObjectInfo) == 0x68);

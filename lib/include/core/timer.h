@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace m3d
 {
     class Application;
@@ -7,6 +9,9 @@ namespace m3d
 
     namespace cmn
     {
+        // The original driver DLLs read the timer directly (the renderer reads +0x14), so the
+        // layout is fixed: natural 8-byte packing for the double and the 64-bit counter.
+#pragma pack(push, 8)
         class Timer
         {
             // Application::OneFrame reads the frame statistics directly.
@@ -37,22 +42,25 @@ namespace m3d
             void NotchCurTime() const;
 
         private:
-            mutable unsigned int m_curTime = 0;
-            mutable unsigned int m_prevTime = 0;
-            mutable unsigned int m_curTimeUnscaled = 0;
-            unsigned int m_frameStartTime = 0;
-            unsigned int m_lastFrameTime = 0;
-            unsigned int m_frameStartTimeUnscaled = 0;
-            unsigned int m_lastFrameTimeUnscaled = 0;
+            mutable uint32_t m_curTime = 0;
+            mutable uint32_t m_prevTime = 0;
+            mutable uint32_t m_curTimeUnscaled = 0;
+            uint32_t m_frameStartTime = 0;
+            uint32_t m_lastFrameTime = 0;
+            uint32_t m_frameStartTimeUnscaled = 0;
+            uint32_t m_lastFrameTimeUnscaled = 0;
             float m_fps = 0.0;
-            unsigned int m_curFrame = 0;
-            unsigned int m_fpsFrame = 0;
-            unsigned int m_fpsTime = 0;
-            long double m_frameStartTimeSec = 0.0;
+            uint32_t m_curFrame = 0;
+            uint32_t m_fpsFrame = 0;
+            uint32_t m_fpsTime = 0;
+            double m_frameStartTimeSec = 0.0;
             float m_timescale = 0.0;
-            __int64 m_performanceCounterFrequency = 0;
+            int64_t m_performanceCounterFrequency = 0;
             bool m_bIsNewFrame = false;
             bool m_bJustActivated = false;
         };
+#pragma pack(pop)
+
+        static_assert(sizeof(Timer) == 0x0050);
     }
 }

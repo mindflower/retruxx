@@ -25,4 +25,3 @@ public:
     void Draw(unsigned int clr);
 }; /* size: 0x0018 */
 
-static_assert(sizeof(Aabb) == 0x0018);

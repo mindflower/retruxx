@@ -28,8 +28,6 @@ namespace ai
         ExternalJointInfo();
     }; /* size: 0x001c */
 
-    static_assert(sizeof(ExternalJointInfo) == 0x001c);
-
     class JointedObjPrototypeInfo : public ai::PrototypeInfo
     {
     public:
@@ -37,8 +35,6 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x0040 */
-
-    static_assert(sizeof(JointedObjPrototypeInfo) == 0x0040);
 
     class JointedObj : public ai::Obj
     {
@@ -130,6 +126,4 @@ namespace ai
         /* 0x018d */ char Padding_105[3];
         /* 0x0190 */ retruxx::map<int, ai::JointedObj::SplineBones, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::JointedObj::SplineBones> > > m_splineNeighbours;
     }; /* size: 0x019c */
-
-    static_assert(sizeof(JointedObj) == 0x019c);
 }

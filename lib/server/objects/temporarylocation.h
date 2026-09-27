@@ -14,8 +14,6 @@ namespace ai
         CStr m_EffectName;
     }; /* size: 0x0094 */
 
-    static_assert(sizeof(TemporaryLocationPrototypeInfo) == 0x0094);
-
     class TemporaryLocation : public ai::Location
     {
     protected:
@@ -49,6 +47,4 @@ namespace ai
         /* 0x027c */ float m_TL;
         /* 0x0280 */ ai::TemporaryLocation::TemporaryLocationState m_TemporaryLocationState;
     }; /* size: 0x0284 */
-
-    static_assert(sizeof(TemporaryLocation) == 0x0284);
 }

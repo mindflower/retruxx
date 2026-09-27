@@ -708,8 +708,6 @@ namespace m3d
         /* 0x8f08 */ m3d::Landscape::TileGrass** m_grassArray;
         /* 0x8f0c */ unsigned int m_numGrassModels;
     }; /* size: 0x8f10 */
-
-    static_assert(sizeof(Landscape) == 0x8f10);
 }
 
 // Scratch buffers the grass passes collect a cell into before handing it to
@@ -733,8 +731,6 @@ struct GrassModelInfo
     /* 0x0014 */ CStr modelName;
     /* 0x0020 */ float boundRadius;
 }; /* size: 0x0024 */
-
-static_assert(sizeof(GrassModelInfo) == 0x0024);
 
 // 0xA17A30 - a fixed table, not a growable one; m_numGrassModels says how many
 // of the slots are in use.

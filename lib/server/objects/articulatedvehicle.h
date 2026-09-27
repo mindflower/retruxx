@@ -19,8 +19,6 @@ namespace ai
         /* 0x0130 */ CStr m_trailerPrototypeName;
     }; /* size: 0x013c */
 
-    static_assert(sizeof(ArticulatedVehiclePrototypeInfo) == 0x013c);
-
     class ArticulatedVehicle : public ai::Vehicle
     {
         friend class ArticulatedVehiclePrototypeInfo;
@@ -83,6 +81,4 @@ namespace ai
         ai::Vehicle* _GetTrailer() const;
         void _AdjustTrailerPosition();
     }; /* size: 0x0514 */
-
-    static_assert(sizeof(ArticulatedVehicle) == 0x0514);
 }

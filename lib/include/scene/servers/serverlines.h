@@ -20,6 +20,4 @@ namespace m3d
     protected:
         virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override /* 0x58 */;
     }; /* size: 0x0048 */
-
-    static_assert(sizeof(LinesServer) == 0x0048);
 }

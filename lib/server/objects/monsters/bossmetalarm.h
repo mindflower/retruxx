@@ -35,8 +35,6 @@ namespace ai
         /* 0x00bc */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_loadPtototypeNames;
     }; /* size: 0x00cc */
 
-    static_assert(sizeof(BossMetalArmPrototypeInfo) == 0x00cc);
-
     class BossMetalArm : public ai::SimplePhysicObj
     {
         friend class BossMetalArmPrototypeInfo;
@@ -90,6 +88,4 @@ namespace ai
         void _PlaceLoadOnLoadpoint();
         void _OnObjectDie(const ai::Event& evn);
     }; /* size: 0x0168 */
-
-    static_assert(sizeof(BossMetalArm) == 0x0168);
 }

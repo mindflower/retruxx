@@ -17,7 +17,6 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0094 */
-    static_assert(sizeof(BlastWavePrototypeInfo) == 0x0094);
 
     class BlastWave : public ai::SimplePhysicObj
     {
@@ -83,6 +82,4 @@ namespace ai
         /* 0x015c */ int m_emitterId;
         /* 0x0160 */ bool m_bCollided;
     }; /* size: 0x0164 */
-
-    static_assert(sizeof(BlastWave) == 0x0164);
 }

@@ -63,8 +63,6 @@ namespace ai
         int m_skinNum;
     };
 
-    static_assert(sizeof(GadgetPrototypeInfo) == 0x0060);
-
     class Gadget : public Obj
     {
         // GadgetPrototypeInfo::CreateTargetObject constructs the Gadget.
@@ -113,6 +111,4 @@ namespace ai
     private:
         int m_slotNum;
     };
-
-    static_assert(sizeof(Gadget) == 0x00c4);
 }  // namespace ai

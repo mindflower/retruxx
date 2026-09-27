@@ -13,3 +13,6 @@ struct CVector4
     CVector4(float xx, float yy, float zz, float ww);
     CVector4() = default;
 }; /* size: 0x0010 */
+
+// Passed to the renderer DLL (effect parameters).
+static_assert(sizeof(CVector4) == 0x0010);

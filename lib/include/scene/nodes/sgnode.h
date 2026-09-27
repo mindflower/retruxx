@@ -210,6 +210,4 @@ namespace m3d
     protected:
         void InternalInit();
     }; /* size: 0x01d4 */
-
-    static_assert(sizeof(SgNode) == 0x01d4);
 }

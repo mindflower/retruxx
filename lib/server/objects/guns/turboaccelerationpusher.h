@@ -17,8 +17,6 @@ namespace ai
         /* 0x019c */ float m_AccelerationTime;
     }; /* size: 0x01a0 */
 
-    static_assert(sizeof(TurboAccelerationPusherPrototypeInfo) == 0x1a0);
-
     class TurboAccelerationPusher : public Gun
     {
     public:

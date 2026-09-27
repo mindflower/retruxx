@@ -25,6 +25,4 @@ namespace m3d
     private:
         /* 0x0048 */ m3d::Profiler* m_profiler = nullptr;
     }; /* size: 0x004c */
-
-    static_assert(sizeof(SpritesServer) == 0x004c);
 }

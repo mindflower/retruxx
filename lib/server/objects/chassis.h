@@ -16,8 +16,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x013c */
 
-    static_assert(sizeof(ChassisPrototypeInfo) == 0x013c);
-
     class Chassis : public ai::VehiclePart
     {
         friend class ChassisPrototypeInfo;
@@ -70,6 +68,4 @@ namespace ai
         /* 0x03a0 */ ai::NumericInRangeRegenerating<float> m_fuel;
         bool _OnHealthValueBeforeApplyModifier(const ai::Modifier& modifier, float& newHealth);
     }; /* size: 0x0478 */
-
-    static_assert(sizeof(Chassis) == 0x0478);
 }

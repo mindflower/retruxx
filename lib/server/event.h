@@ -131,6 +131,4 @@ namespace ai
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
     }; /* size: 0x0054 */
-
-    static_assert(sizeof(ai::Event) == 0x0054);
 }

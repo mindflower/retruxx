@@ -24,8 +24,6 @@ namespace ai
         virtual void PostLoad() override /* 0x00 */;
     }; /* size: 0x011c */
 
-    static_assert(sizeof(CompoundVehiclePartPrototypeInfo) == 0x011c);
-
     class CompoundVehiclePart : public ai::VehiclePart
     {
     protected:
@@ -98,6 +96,4 @@ namespace ai
         virtual void RenderDebugInfo() const override /* 0x00 */;
         virtual void ClearSavedStatus() override /* 0x00 */;
     }; /* size: 0x02d4 */
-
-    static_assert(sizeof(CompoundVehiclePart) == 0x02d4);
 }

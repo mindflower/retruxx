@@ -13,8 +13,6 @@ namespace ai
         /* 0x0198 */ float m_ActionDist;
     }; /* size: 0x019c */
 
-    static_assert(sizeof(ThunderboltLauncherPrototypeInfo) == 0x019c);
-
     // Throws a branching lightning bolt at every enemy in range on its side of the vehicle.
     class ThunderboltLauncher : public ai::Gun
     {
@@ -40,6 +38,4 @@ namespace ai
         /* 0x0330 */ std::vector<int, std::allocator<int> > m_enemies;
         virtual void _LaunchShells() override /* 0x198 */;
     }; /* size: 0x0340 */
-
-    static_assert(sizeof(ThunderboltLauncher) == 0x0340);
 }

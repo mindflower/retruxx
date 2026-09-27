@@ -329,8 +329,24 @@ namespace m3d
 
     KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd)
     {
+        // RVA 0x1975A0 - every key of rhd is looked up and erased by value.
         auto res = lhd;
-        res.m_set.erase(rhd.begin(), rhd.end());
+        for (int const key : rhd.m_set)
+        {
+            auto const it = res.m_set.find(key);
+            if (it != res.m_set.end())
+            {
+                res.m_set.erase(it);
+            }
+        }
+        return res;
+    }
+
+    KeysSet operator-(const KeysSet& lhd, int key)
+    {
+        // RVA 0x197520
+        auto res = lhd;
+        res.m_set.erase(key);
         return res;
     }
 }

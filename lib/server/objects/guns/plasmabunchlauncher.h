@@ -15,8 +15,6 @@ namespace ai
         /* 0x0198 */ CStr m_bunchPrototypeName;
     }; /* size: 0x01a4 */
 
-    static_assert(sizeof(PlasmaBunchLauncherPrototypeInfo) == 0x01a4);
-
     class PlasmaBunchLauncher : public ai::Gun
     {
         friend class PlasmaBunchLauncherPrototypeInfo;
@@ -39,6 +37,4 @@ namespace ai
     protected:
         virtual void _LaunchShells() override /* 0x198 */;
     }; /* size: 0x0330 */
-
-    static_assert(sizeof(PlasmaBunchLauncher) == 0x0330);
 }

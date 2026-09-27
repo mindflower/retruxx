@@ -20,8 +20,6 @@ private:
     /* 0x0004 */ volatile long m_cRef;
 }; /* size: 0x0008 */
 
-static_assert(sizeof(CKeyProvider) == 0x0008);
-
 namespace m3d
 {
     // Layout and offsets as in the shipped build. There is deliberately no

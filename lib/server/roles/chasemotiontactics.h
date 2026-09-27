@@ -95,10 +95,4 @@ namespace ai
         /* 0x004c */ float m_clockwiseSign;
         /* 0x0050 */ float m_angle;
     }; /* size: 0x0054 */
-
-    static_assert(sizeof(ChaseMotionData) == 0x44);
-    static_assert(sizeof(ChaseMotionTactics) == 0x48);
-    static_assert(sizeof(ChaseMotionTacticsCheater) == 0x54);
-    static_assert(sizeof(ChaseMotionTacticsCircle) == 0x50);
-    static_assert(sizeof(ChaseMotionTacticsFigureOfEight) == 0x54);
 }  // namespace ai

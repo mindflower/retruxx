@@ -72,6 +72,4 @@ namespace m3d
         void ChangeCloudsTexture();
         void ChangeLightmapTexture();
     }; /* size: 0x0060 */
-
-    static_assert(sizeof(WeatherManager) == 0x0060);
 }

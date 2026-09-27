@@ -4,14 +4,22 @@
 #include <renderer/i_renderer.h>
 #include <retruxx/common.h>
 
+#include <cstdint>
+
 namespace m3d
 {
+    // The records below marked as file data are read from and written to SAM/GAM model
+    // files byte for byte: fixed-width fields, explicit packing and a size check each.
+
+    // File data.
     struct Index3
     {
-        /* 0x0000 */ unsigned short I[3];
-        const unsigned short& operator[](unsigned int i) const;
-        unsigned short& operator[](unsigned int i);
+        /* 0x0000 */ uint16_t I[3];
+        const uint16_t& operator[](unsigned int i) const;
+        uint16_t& operator[](unsigned int i);
     }; /* size: 0x0006 */
+
+    static_assert(sizeof(Index3) == 0x0006);
 
     struct DCollisionData
     {
@@ -19,16 +27,14 @@ namespace m3d
         /* 0x0010 */ retruxx::vector<m3d::Index3, retruxx::allocator<m3d::Index3> > Triangles;
     }; /* size: 0x0020 */
 
-    static_assert(sizeof(DCollisionData) == 0x0020);
-
-    enum DRAFT_GeomType
+    enum DRAFT_GeomType : int32_t
     {
         BOX = 0x0,
         SPHERE = 0x1,
         CYLINDER = 0x2,
     };
 
-    enum DRAFT_MeshType
+    enum DRAFT_MeshType : int32_t
     {
         SKINED_MESH = 0x2,
         TRI_MESH = 0x1,
@@ -36,7 +42,7 @@ namespace m3d
         STATIC_MESH = 0x4,
     };
 
-    enum DRAFT_Change
+    enum DRAFT_Change : int32_t
     {
         NEW_PARENT = 0x0,
         NOT_VISIBLE = 0x1,
@@ -47,28 +53,29 @@ namespace m3d
     struct DRAFT_GeometryHeader
     {
         /* 0x0000 */ DRAFT_MeshType Type;
-        /* 0x0004 */ __int16 MaterialIndex;
-        /* 0x0006 */ unsigned int VertexCount;
-        /* 0x000a */ unsigned int TriangleCount;
-        /* 0x000e */ __int16 ParentBone;
-        /* 0x0010 */ unsigned int NumberOfVertexComponents;
+        /* 0x0004 */ int16_t MaterialIndex;
+        /* 0x0006 */ uint32_t VertexCount;
+        /* 0x000a */ uint32_t TriangleCount;
+        /* 0x000e */ int16_t ParentBone;
+        /* 0x0010 */ uint32_t NumberOfVertexComponents;
     }; /* size: 0x0014 */
 #pragma pack(pop)
 
     static_assert(sizeof(DRAFT_GeometryHeader) == 0x0014);
 
+#pragma pack(push, 4)
     struct DRAFT_Header
     {
-        /* 0x0000 */ unsigned int NumberOfMeshes;
-        /* 0x0004 */ unsigned int NumberOfMaterials;
-        /* 0x0008 */ unsigned int NumberOfBones;
-        /* 0x000c */ unsigned int NumberOfAnimations;
+        /* 0x0000 */ uint32_t NumberOfMeshes;
+        /* 0x0004 */ uint32_t NumberOfMaterials;
+        /* 0x0008 */ uint32_t NumberOfBones;
+        /* 0x000c */ uint32_t NumberOfAnimations;
     }; /* size: 0x0010 */
 
     struct DRAFT_CollisionHeader
     {
-        /* 0x0000 */ unsigned int PointCount;
-        /* 0x0004 */ unsigned int TriangleCount;
+        /* 0x0000 */ uint32_t PointCount;
+        /* 0x0004 */ uint32_t TriangleCount;
     }; /* size: 0x0008 */
 
     struct DRAFT_BoxSizes
@@ -102,19 +109,19 @@ namespace m3d
     struct DRAFT_HierGeom
     {
         /* 0x0000 */ m3d::DRAFT_Geom geom;
-        /* 0x002c */ unsigned int parentBone;
+        /* 0x002c */ uint32_t parentBone;
     }; /* size: 0x0030 */
 
     struct DRAFT_HierarchyChange
     {
         /* 0x0000 */ m3d::DRAFT_Change Type;
-        /* 0x0004 */ short Index;
-        /* 0x0006 */ short NewParent;
+        /* 0x0004 */ int16_t Index;
+        /* 0x0006 */ int16_t NewParent;
     }; /* size: 0x0008 */
 
     struct DRAFT_BoneBounds
     {
-        /* 0x0000 */ unsigned int BoneIndex;
+        /* 0x0000 */ uint32_t BoneIndex;
         CVector MinRot;
         CVector MaxRot;
 
@@ -130,11 +137,20 @@ namespace m3d
         }
     }; /* size: 0x001c */
 
+#pragma pack(pop)
+
+    static_assert(sizeof(DRAFT_Header) == 0x0010);
+    static_assert(sizeof(DRAFT_CollisionHeader) == 0x0008);
+    static_assert(sizeof(DRAFT_Geom) == 0x002c);
+    static_assert(sizeof(DRAFT_HierGeom) == 0x0030);
+    static_assert(sizeof(DRAFT_HierarchyChange) == 0x0008);
+    static_assert(sizeof(DRAFT_BoneBounds) == 0x001c);
+
 #pragma pack(push, 1)
     struct DRAFT_Bone
     {
         /* 0x0000 */ char Name[40];
-        /* 0x0028 */ __int16 ParentIndex;
+        /* 0x0028 */ int16_t ParentIndex;
         /* 0x002a */ float Tx;
         /* 0x002e */ float Ty;
         /* 0x0032 */ float Tz;
@@ -150,15 +166,15 @@ namespace m3d
     struct DRAFT_AnimationHeader
     {
         /* 0x0000 */ char Name[25];
-        /* 0x0019 */ unsigned int FramesNumber;
-        /* 0x001d */ unsigned int FPS_Number;
-        /* 0x0021 */ int NextAnimation;
-        /* 0x0025 */ unsigned int NumberOfChanges;
+        /* 0x0019 */ uint32_t FramesNumber;
+        /* 0x001d */ uint32_t FPS_Number;
+        /* 0x0021 */ int32_t NextAnimation;
+        /* 0x0025 */ uint32_t NumberOfChanges;
     }; /* size: 0x0029 */
 
     struct DRAFT_Influence
     {
-        /* 0x0000 */ short BoneIndex;
+        /* 0x0000 */ int16_t BoneIndex;
         /* 0x0002 */ float Weight;
     }; /* size: 0x0006 */
 #pragma pack(pop)
@@ -167,6 +183,7 @@ namespace m3d
     static_assert(sizeof(DRAFT_AnimationHeader) == 0x0029);
     static_assert(sizeof(DRAFT_Influence) == 0x0006);
 
+#pragma pack(push, 4)
     struct DRAFT_Transform
     {
         float Tx;
@@ -180,8 +197,11 @@ namespace m3d
         float Sy;
         float Sz;
     };
+#pragma pack(pop)
 
-    enum VERTEX_COMPONENT
+    static_assert(sizeof(DRAFT_Transform) == 0x0028);
+
+    enum VERTEX_COMPONENT : int32_t
     {
         COORDINATE = 0x0,
         NORMAL = 0x1,
@@ -194,14 +214,18 @@ namespace m3d
         INFLUENCES = 0x16,
     };
 
+#pragma pack(push, 4)
     struct DRAFT_VertexComponent
     {
         /* 0x0000 */ VERTEX_COMPONENT Type;
-        /* 0x0004 */ int Size;
+        /* 0x0004 */ int32_t Size;
         DRAFT_VertexComponent(VERTEX_COMPONENT t, int s);
         DRAFT_VertexComponent();
         bool operator==(DRAFT_VertexComponent const& A);
     }; /* size: 0x0008 */
+#pragma pack(pop)
+
+    static_assert(sizeof(DRAFT_VertexComponent) == 0x0008);
 
     struct DInfluence
     {
@@ -210,17 +234,13 @@ namespace m3d
         bool operator==(const DInfluence&) const;
     }; /* size: 0x0008 */
 
-    static_assert(sizeof(DInfluence) == 0x0008);
-
     struct DShader
     {
         /* 0x0000 */ retruxx::string Name;
         /* 0x001c */ m3d::rend::IEffect* Handle = nullptr;
     }; /* size: 0x0020 */
 
-    static_assert(sizeof(DShader) == 0x0020);
-
-    enum DRAFT_TextureType
+    enum DRAFT_TextureType : int32_t
     {
         DIFFUSE = 0x0,
         BUMP = 0x1,
@@ -229,10 +249,11 @@ namespace m3d
         DETAIL = 0x4,
     };
 
+#pragma pack(push, 4)
     struct DRAFT_TextureInfo
     {
         /* 0x0000 */ char FileName[40];
-        /* 0x0028 */ unsigned int UVSet;
+        /* 0x0028 */ uint32_t UVSet;
         /* 0x002c */ m3d::DRAFT_TextureType Type;
     }; /* size: 0x0030 */
 
@@ -241,9 +262,12 @@ namespace m3d
     struct DRAFT_MaterialHeader
     {
         /* 0x0000 */ m3d::rend::Material material;
-        /* 0x0044 */ unsigned int TextureLayersNumber;
-        /* 0x0048 */ unsigned int ShaderStringLength;
+        /* 0x0044 */ uint32_t TextureLayersNumber;
+        /* 0x0048 */ uint32_t ShaderStringLength;
     }; /* size: 0x004c */
+#pragma pack(pop)
+
+    static_assert(sizeof(DRAFT_MaterialHeader) == 0x004c);
 
     struct DTextureInfo
     {

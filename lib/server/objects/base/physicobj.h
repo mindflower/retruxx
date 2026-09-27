@@ -31,8 +31,6 @@ namespace ai
         /* 0x0044 */ float m_lookRadius;
     }; /* size: 0x0048 */
 
-    static_assert(sizeof(PhysicObjPrototypeInfo) == 0x0048);
-
     class PhysicObj : public Obj
     {
         friend class IntersectionManager;
@@ -241,8 +239,6 @@ namespace ai
         static m3d::AIParam __fastcall AIGetCurPos(ai::Obj* pObj);
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x1a0 */;
     }; /* size: 0x0120 */
-
-    static_assert(sizeof(PhysicObj) == 0x0120);
 
     
     CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const*);

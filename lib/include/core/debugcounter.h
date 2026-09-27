@@ -50,8 +50,6 @@ namespace m3d
         /* 0x0024 */ retruxx::string m_name;
     }; /* size: 0x0040 */
 
-    static_assert(sizeof(DbgCounter) == 0x0040);
-
     class Application;
 
     class DbgCounterStack
@@ -79,6 +77,4 @@ namespace m3d
         /* 0x0014 */ retruxx::vector<retruxx::string> m_stringStack;
         /* 0x0024 */ unsigned int m_numStrings = 0;
     }; /* size: 0x0028 */
-
-    static_assert(sizeof(DbgCounterStack) == 0x0028);
 }

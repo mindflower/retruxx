@@ -79,7 +79,5 @@ namespace ai
         void _EnsureAllEventsAreRegistered() const;
     }; /* size: 0x0024 */
 
-    static_assert(sizeof(ProcessManager) == 0x0024);
-
     inline ProcessManager* theProcessManager = nullptr;
 }

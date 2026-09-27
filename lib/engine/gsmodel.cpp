@@ -6,22 +6,25 @@
 #include <file/fileserver.h>
 #include <file/filestream.h>
 #include <file/tagged.h>
+#include <cstdint>
 #include <cstring>
 
 namespace m3d
 {
     namespace
     {
-        // Header of an untagged ("GSSM") model file.
+        // Header of an untagged ("GSSM") model file, read byte for byte.
+#pragma pack(push, 4)
         struct GsmHeader
         {
             /* 0x0000 */ char m_id[4];
-            /* 0x0004 */ int m_version;
-            /* 0x0008 */ unsigned int m_numVertices;
-            /* 0x000c */ unsigned int m_numFaces;
+            /* 0x0004 */ int32_t m_version;
+            /* 0x0008 */ uint32_t m_numVertices;
+            /* 0x000c */ uint32_t m_numFaces;
             /* 0x0010 */ char m_alpha;
             /* 0x0011 */ char m_texname[128];
         }; /* size: 0x0094 */
+#pragma pack(pop)
         static_assert(sizeof(GsmHeader) == 0x94);
 
         // The engine winds triangles the other way round from the files.

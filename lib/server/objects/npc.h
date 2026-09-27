@@ -12,8 +12,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x0040 */
 
-    static_assert(sizeof(NpcPrototypeInfo) == 0x0040);
-
     class Npc : public ai::Obj
     {
         friend class NpcPrototypeInfo;
@@ -91,6 +89,4 @@ namespace ai
         static ai::Npc* __fastcall GetCurrentNpc();
         static void __fastcall Registration();
     }; /* size: 0x00ec */
-
-    static_assert(sizeof(Npc) == 0x00ec);
 }

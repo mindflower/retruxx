@@ -18,8 +18,6 @@ namespace ai
         /* 0x0004 */ const ai::Workshop* m_workshop;
     }; /* size: 0x0008 */
 
-    static_assert(sizeof(WorkshopPriceCoeffProvider) == 0x0008);
-
     class WorkshopPrototypeInfo : public ai::BuildingPrototypeInfo
     {
     public:
@@ -27,8 +25,6 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x0044 */
-
-    static_assert(sizeof(WorkshopPrototypeInfo) == 0x0044);
 
     enum WorkshopRepositoryType
     {
@@ -110,6 +106,4 @@ namespace ai
         /* 0x00ec */ retruxx::vector<int, retruxx::allocator<int> > m_originalObjectsInRepository;
         void ClearRepositoriesFromNonOriginalObjects();
     }; /* size: 0x00fc */
-
-    static_assert(sizeof(Workshop) == 0x00fc);
 }

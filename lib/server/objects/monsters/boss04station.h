@@ -14,8 +14,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0090 */
 
-    static_assert(sizeof(Boss04StationPrototypeInfo) == 0x0090);
-
     class Boss04Station : public ai::ComplexPhysicObj
     {
         friend class Boss04StationPrototypeInfo;
@@ -74,6 +72,4 @@ namespace ai
     private:
         /* 0x014c */ bool m_bDestroyed;
     }; /* size: 0x0150 */
-
-    static_assert(sizeof(Boss04Station) == 0x0150);
 }

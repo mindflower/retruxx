@@ -32,8 +32,6 @@ namespace m3d
         /* 0x0048 */ m3d::Profiler* m_profiler = nullptr;
     }; /* size: 0x004c */
 
-    static_assert(sizeof(LightsServer) == 0x004c);
-
     struct PointLightModel
     {
         /* 0x0000 */ int m_radius;

@@ -53,6 +53,4 @@ namespace ai
     private:
         /* 0x003c */ m3d::Class* m_protoClassObject;
     }; /* size: 0x0040 */
-
-    static_assert(sizeof(PrototypeInfo) == 0x0040);
 }

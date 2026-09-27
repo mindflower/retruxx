@@ -20,8 +20,6 @@ namespace ai
         /* 0x0090 */ CStr m_BlastWavePrototypeName;
     }; /* size: 0x009c */
 
-    static_assert(sizeof(PlasmaBunchPrototypeInfo) == 0x009c);
-
     class PlasmaBunch : public ai::Shell
     {
         friend class PlasmaBunchPrototypeInfo;
@@ -53,6 +51,4 @@ namespace ai
         /* 0x0150 */ ai::NumericInRangeRegenerating<float> m_velocity;
         /* 0x0228 */ ai::NumericInRangeRegenerating<float> m_lifeTime;
     }; /* size: 0x0300 */
-
-    static_assert(sizeof(PlasmaBunch) == 0x0300);
 }

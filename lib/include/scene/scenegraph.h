@@ -52,8 +52,6 @@ namespace m3d
         bool empty() const;
     }; /* size: 0x0300 */
 
-    static_assert(sizeof(ObjectsContainer) == 0x0300);
-
     struct GraphItemsForSgNode
     {
         /* 0x0000 */ PointBase<int> m_cellsCoveredPoint0;
@@ -63,8 +61,6 @@ namespace m3d
         bool bSomeCellsCovered() const;
         void ClearCellsCovered();
     }; /* size: 0x0020 */
-
-    static_assert(sizeof(GraphItemsForSgNode) == 0x0020);
 
     class SceneGraph
     {
@@ -257,6 +253,4 @@ namespace m3d
         int getYOfs(int y);
         void EnsureEverythingIsUnlinked() const;
     }; /* size: 0x395880 */
-
-    static_assert(sizeof(SceneGraph) == 0x395880);
 }

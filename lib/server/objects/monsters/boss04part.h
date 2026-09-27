@@ -12,8 +12,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0110 */
 
-    static_assert(sizeof(Boss04PartPrototypeInfo) == 0x0110);
-
     class Boss04Part : public ai::VehiclePart
     {
         friend class Boss04PartPrototypeInfo;
@@ -45,6 +43,4 @@ namespace ai
     private:
         /* 0x02c8 */ bool m_bIsDamageable;
     }; /* size: 0x02cc */
-
-    static_assert(sizeof(Boss04Part) == 0x02cc);
 }

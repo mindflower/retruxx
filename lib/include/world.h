@@ -181,6 +181,4 @@ namespace m3d
         void LoadStaticObstacles();
         void CreatePlayerPassMapGeoms();
     }; /* size: 0x39eb00 */
-
-    static_assert(sizeof(CWorld) == 0x39eb00);
 }

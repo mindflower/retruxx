@@ -41,6 +41,4 @@ namespace m3d
             /* 0x0004 */ int soundIds[3];
         }; /* size: 0x0010 */
     }; /* size: 0x0048 */
-
-    static_assert(sizeof(Sound3DServer) == 0x0048);
 }

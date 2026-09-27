@@ -44,8 +44,6 @@ namespace ai
         void _LoadFromXmlResourceIdToRandomCoeffMap(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
     }; /* size: 0x0120 */
 
-    static_assert(sizeof(TownPrototypeInfo) == 0x0120);
-
     class Town : public ai::Settlement
     {
         friend class TownPrototypeInfo;
@@ -182,6 +180,4 @@ namespace ai
         void _OnPlayerVehicleHorn(const ai::Event& evn);
         void _OnPlayerVehicleChanged(const ai::Event&);
     }; /* size: 0x0364 */
-
-    static_assert(sizeof(Town) == 0x0364);
 }

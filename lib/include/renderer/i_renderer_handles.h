@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <stdexcept>
 
 namespace m3d
@@ -9,7 +10,7 @@ namespace m3d
         class Handle
         {
         protected:
-            int m_handle = -1;
+            int32_t m_handle = -1;
 
         public:
             Handle(Handle const& rhs)

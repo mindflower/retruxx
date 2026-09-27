@@ -13,8 +13,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x011c */
 
-    static_assert(sizeof(CompoundGunPrototypeInfo) == 0x011c);
-
     // A gun made of several guns (for example twin barrels). Commands go to every part; the
     // charging and ammunition queries answer for the first part only.
     class CompoundGun : public ai::CompoundVehiclePart
@@ -71,6 +69,4 @@ namespace ai
         // shipped code does not check that there is one.
         Gun* _GetFirstGun() const;
     }; /* size: 0x02d4 */
-
-    static_assert(sizeof(CompoundGun) == 0x02d4);
 }

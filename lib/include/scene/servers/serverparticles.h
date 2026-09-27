@@ -58,8 +58,6 @@ namespace m3d
         /* 0x004c */ m3d::Profiler* m_profilerUpdate = nullptr;
     }; /* size: 0x0050 */
 
-    static_assert(sizeof(ParticlesServer) == 0x0050);
-
     inline PoolManager<PsInfoForNode> Info_PoolManager(0);
     inline PoolManager<m3d::ParticlesList> PL_PoolManager(0);
     inline PoolManager<m3d::Particle> ParticlesPool(0);

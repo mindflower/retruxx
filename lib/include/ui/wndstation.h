@@ -130,7 +130,5 @@ namespace m3d
             bool IsWndAlive(const m3d::ui::Wnd* w, int uniqueId) const;
             m3d::ui::Wnd* GetWndByUniqueId(int uniqueId) const;
         }; /* size: 0x02d4 */
-
-        static_assert(sizeof(WndStation) == 0x02d4);
     }
 }

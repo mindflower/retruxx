@@ -1,6 +1,8 @@
 #pragma once
 #include <core/stringm3d.h>
 
+#include <cstdint>
+
 struct CVector;
 
 struct IBase
@@ -25,7 +27,7 @@ namespace m3d
 
     namespace input
     {
-        enum DeviceParam
+        enum DeviceParam : int32_t
         {
             DP_MOUSE_X = 0x0,
             DP_MOUSE_Y = 0x1,
@@ -47,7 +49,7 @@ namespace m3d
             DP_NUM_PARAMS = 0x11,
         };
 
-        enum Language
+        enum Language : int32_t
         {
             LANGUAGE_BASE = 0x0,
             LANGUAGE_ADDITIONAL = 0x1,
@@ -75,14 +77,14 @@ namespace m3d
 
 namespace snd
 {
-    enum UserSoundType
+    enum UserSoundType : int32_t
     {
         SND_TYPE_2DSOUND = 0x0,
         SND_TYPE_3DSOUND = 0x1,
         SND_TYPE_MUSIC = 0x2,
     };
 
-    enum SoundGroupType
+    enum SoundGroupType : int32_t
     {
         SND_MUSIC_GROUP = 0x0,
         SND_SOUND_GROUP = 0x1,
@@ -90,7 +92,7 @@ namespace snd
         SND_MAX_GROUP = 0x10,
     };
 
-    enum SoundPriority
+    enum SoundPriority : int32_t
     {
         SND_PRIORITY_EXTRALOW = 0x32,
         SND_PRIORITY_LOW = 0x64,

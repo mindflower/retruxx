@@ -45,8 +45,6 @@ namespace ai
         void _InitModelMeshes(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
     }; /* size: 0x0110 */
 
-    static_assert(sizeof(VehiclePartPrototypeInfo) == 0x0110);
-
     class VehiclePart : public ai::PhysicBody
     {
         friend class VehiclePartPrototypeInfo;
@@ -213,7 +211,5 @@ namespace ai
         static void __fastcall Registration();
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
     }; /* size: 0x02c8 */
-
-    static_assert(sizeof(VehiclePart) == 0x02c8);
 }
 

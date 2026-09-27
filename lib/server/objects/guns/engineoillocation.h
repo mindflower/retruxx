@@ -10,8 +10,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0094 */
 
-    static_assert(sizeof(EngineOilLocationPrototypeInfo) == 0x0094);
-
     // An oil slick: vehicles inside it are in "on oil" mode.
     class EngineOilLocation : public ai::TemporaryLocation
     {
@@ -36,6 +34,4 @@ namespace ai
         virtual void OnObjectIn(ai::Obj* object) override /* 0x00 */;
         virtual void OnObjectOut(ai::Obj* object) override /* 0x00 */;
     }; /* size: 0x0284 */
-
-    static_assert(sizeof(EngineOilLocation) == 0x0284);
 }

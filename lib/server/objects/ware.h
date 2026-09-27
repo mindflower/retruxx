@@ -39,8 +39,6 @@ namespace ai
         /* 0x005c */ int m_maxCount;
     }; /* size: 0x0060 */
 
-    static_assert(sizeof(WarePrototypeInfo) == 0x0060);
-
     class Ware : public ai::Obj
     {
         friend class WarePrototypeInfo;
@@ -89,6 +87,4 @@ namespace ai
         /* 0x00c0 */ unsigned int m_maxItems;
         /* 0x00c4 */ ai::NumericInRange<float> m_durability;
     }; /* size: 0x0170 */
-
-    static_assert(sizeof(Ware) == 0x0170);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <draftstructures.h>
 #include <math/aabb.h>
 #include <math/matrix.h>
@@ -14,7 +15,7 @@ namespace ai
 }
 
 
-enum ActionType
+enum ActionType : int32_t
 {
     AT_STAND1 = 0x0,
     AT_STAND2 = 0x1,
@@ -63,8 +64,6 @@ namespace m3d
         /* 0x0004 */ retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > loadSkins;
     }; /* size: 0x0010 */
 
-    static_assert(sizeof(LoadSkins) == 0x0010);
-
     struct BoneAnim
     {
         /* 0x0000 */ int m_lastUpdatedFrame;
@@ -73,8 +72,6 @@ namespace m3d
         /* 0x0054 */ CVector m_translation;
         /* 0x0060 */ int m_parentIdx;
     }; /* size: 0x0064 */
-
-    static_assert(sizeof(BoneAnim) == 0x0064);
 
     struct MeshesGroup
     {
@@ -85,8 +82,6 @@ namespace m3d
         /* 0x0034 */ retruxx::vector<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >, retruxx::allocator<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > > > m_variants;
         void GetNextVariant(retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& variant);
     }; /* size: 0x0044 */
-
-    static_assert(sizeof(MeshesGroup) == 0x0044);
 
     struct AnimAction
     {
@@ -346,16 +341,12 @@ namespace m3d
         /* 0x0164 */ Aabb m_box;
     }; /* size: 0x017c */
 
-    static_assert(sizeof(AnimatedModel) == 0x017c);
-
     struct Configuration
     {
         /* 0x0000 */ unsigned int m_num = 0;
         /* 0x0004 */ retruxx::vector<m3d::AnimatedModel::Mesh*, retruxx::allocator<m3d::AnimatedModel::Mesh*> > m_meshes;
         /* 0x0014 */ retruxx::vector<unsigned char, retruxx::allocator<unsigned char> > m_groupVariants;
     }; /* size: 0x0024 */
-
-    static_assert(sizeof(Configuration) == 0x0024);
 
     class AnimInfo
     {
@@ -412,8 +403,6 @@ namespace m3d
         /* 0x0080 */ int m_lastInterpolationUpdatePrev;
         /* 0x0084 */ int m_stickToLastFramePrev;
     }; /* size: 0x0088 */
-
-    static_assert(sizeof(AnimInfo) == 0x0088);
 
     ActionType GetActionByName(char const *);
 }

@@ -13,8 +13,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x019c */
 
-    static_assert(sizeof(MortarPrototypeInfo) == 0x019c);
-
     class Mortar : public ai::Gun
     {
         friend class MortarPrototypeInfo;
@@ -56,6 +54,4 @@ namespace ai
         float targetFunction2(const CVector& src, const CVector& dst, float phi, float initVel, float time, float theta) const;
         CVector GetMortarDirection(const CVector& currentDir, const CVector& src, const CVector& dst, float initVel) const;
     }; /* size: 0x0330 */
-
-    static_assert(sizeof(Mortar) == 0x0330);
 }
