@@ -1,6 +1,8 @@
 #include "vehiclepart.h"
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
+#include <algorithm>
+#include <cstring>
 
 #include "m3dapp.h"
 #include "core/log.h"
@@ -458,79 +460,77 @@ namespace ai
 
     void VehiclePart::DefineSuppressedLPs()
     {
-        if (m_Node)
+        // RVA 0x6D3AF0 - a load point is suppressed (its effects are not shown) when a
+        // mesh hanging on its parent bone is not part of the current configuration,
+        // i.e. that bit of the part is gone. The projector is only suppressed once no
+        // headlight is left.
+        if (!m_Node)
         {
-            m3d::AnimatedModel* mdl = nullptr;
-            m_Node->GetServer()->GetItemProperty(m_Node->GetServerHandle(), 16394, &mdl);
-            if (mdl)
+            return;
+        }
+        m3d::AnimatedModel* mdl = nullptr;
+        m_Node->GetServer()->GetItemProperty(m_Node->GetServerHandle(), 16394, &mdl);
+        if (!mdl)
+        {
+            return;
+        }
+        m3d::Configuration* cfg = nullptr;
+        m_Node->GetProperty(8707, &cfg);
+        m_suppressedLPs.clear();
+
+        int const numNodes = mdl->GetHeader().m_numNodes;
+        int const numMeshes = mdl->GetNumMeshes();
+        for (int nodeNum = 0; nodeNum < numNodes; ++nodeNum)
+        {
+            int const parent = mdl->GetBone(nodeNum).m_parentIdx;
+            for (int meshNum = 0; meshNum < numMeshes; ++meshNum)
             {
-                m3d::Configuration* cfg = nullptr;
-                m_Node->GetProperty(8707, &cfg);
-                m_suppressedLPs.clear();
-
-                // TODO: check this!!!
-                for (int nodeNum = 0; nodeNum < mdl->GetHeader().m_numNodes; ++nodeNum)
+                auto const* mesh = &mdl->GetMesh(meshNum);
+                if (mesh->m_numNode != parent)
                 {
-                    bool found = false;
-                    for (int meshNum = 0; meshNum < mdl->GetNumMeshes(); ++meshNum)
-                    {
-                        if (mdl->GetBone(nodeNum).m_parentIdx == mdl->GetMesh(meshNum).m_numNode)
-                        {
-                            for (auto& cfgMesh : cfg->m_meshes)
-                            {
-                                if (cfgMesh == &mdl->GetMesh(meshNum))
-                                {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (found)
-                            {
-                                break;
-                            }
-                        }
-
-                        if (found)
-                        {
-                            m_suppressedLPs.insert(nodeNum);
-                        }
-                    }
-
-                    if (found)
-                    {
-                        m_suppressedLPs.insert(nodeNum);
-                    }
+                    continue;
                 }
-
-                for (int nodeNum = 0; nodeNum < mdl->GetHeader().m_numNodes; ++nodeNum)
+                // NOTE: an empty configuration counts as "mesh missing", as shipped.
+                auto const& meshes = cfg->m_meshes;
+                if (std::find(meshes.begin(), meshes.end(), mesh) == meshes.end())
                 {
-                    CStr name = mdl->GetBone(nodeNum).m_boneName;
-                    if (name.findsubstr("LP_LIGHT") != CStr_npos)
-                    {
-                        m_suppressedLPs.insert(nodeNum);
-                    }
+                    m_suppressedLPs.insert(nodeNum);
+                    break;
                 }
-
-                for (int nodeNum = 0; nodeNum < mdl->GetHeader().m_numNodes; ++nodeNum)
-                {
-                    CStr name = mdl->GetBone(nodeNum).m_boneName;
-                    if (name.findsubstr("LP_PROJECTOR") != CStr_npos)
-                    {
-                        m_suppressedLPs.insert(nodeNum);
-                    }
-                }
-
-                if (!m_suppressedLPs.empty())
-                {
-                    m_Node->SetProperty(8714, &m_suppressedLPs);
-                }
-                else
-                {
-                    m_Node->SetProperty(8714, nullptr);
-                }
-                m_Node->SetProperty(8715u, 0);
             }
         }
+
+        bool lightLeft = false;
+        for (int nodeNum = 0; nodeNum < numNodes; ++nodeNum)
+        {
+            if (strstr(mdl->GetBone(nodeNum).m_boneName, "LP_LIGHT") &&
+                m_suppressedLPs.find(nodeNum) == m_suppressedLPs.end())
+            {
+                lightLeft = true;
+                break;
+            }
+        }
+        if (!lightLeft)
+        {
+            for (int nodeNum = 0; nodeNum < numNodes; ++nodeNum)
+            {
+                if (!strcmp(mdl->GetBone(nodeNum).m_boneName, "LP_PROJECTOR"))
+                {
+                    m_suppressedLPs.insert(nodeNum);
+                    break;
+                }
+            }
+        }
+
+        if (!m_suppressedLPs.empty())
+        {
+            m_Node->SetProperty(8714, &m_suppressedLPs);
+        }
+        else
+        {
+            m_Node->SetProperty(8714, nullptr);
+        }
+        m_Node->SetProperty(8715u, nullptr);
     }
 
     NumericInRangeRegenerating<float> const& VehiclePart::Durability() const

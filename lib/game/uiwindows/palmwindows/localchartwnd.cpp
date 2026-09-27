@@ -15,6 +15,7 @@
 #include "mapmarkwnd.h"
 #include "server/objects/player.h"
 #include "server/objects/vehicle.h"
+#include "server/event.h"
 
 RT_CLASS_EXPORTS_BEGIN(LocalChartWnd)
 RT_CLASS_EXPORTS_END;
@@ -648,20 +649,20 @@ int LocalChartWnd::GameDataUpdate(void* data, int dataType)
     }
     switch (dataType)
     {
-    case 28:
+    case IE_EV_UM_NAVPOINT_ADDED:
         if (IsChildOf(M3D_APP) && data)
         {
             AddNavPointMark(static_cast<int*>(data)[13]);
         }
         break;
-    case 29:
+    case IE_EV_UM_NAVPOINT_DELETED:
         if (IsChildOf(M3D_APP) && data)
         {
             DeleteNavPointMark(static_cast<int*>(data)[13]);
             return 1;
         }
         break;
-    case 40:
+    case IE_EV_UM_CUR_PROFILE_CHANGED:
         OnCurProfileChanged();
         return 1;
     }

@@ -143,49 +143,44 @@ namespace ai
 
     void PhysicBody::SetNodeAnimAction(int action, bool forceRestartAction)
     {
+        // RVA 0x61C5B0 - the action goes to the node and to every node below it,
+        // unless it is already playing and no restart is forced.
         m_animAction = action;
-        if (action < 0x20)
+        if (action >= 0x20)
         {
-            auto nodeAnimInfo = GetNodeAnimInfo(m_Node);
-            if (forceRestartAction || nodeAnimInfo)
+            return;
+        }
+
+        int curAnimAction = -1;
+        if (auto* nodeAnimInfo = GetNodeAnimInfo(m_Node))
+        {
+            if (!nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
             {
-                auto curAnimAction = -1;
-                if (nodeAnimInfo && !nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
+                curAnimAction = nodeAnimInfo->GetCurAnimation()->m_action;
+            }
+        }
+        if (!forceRestartAction && curAnimAction == m_animAction)
+        {
+            return;
+        }
+        if (!m_Node)
+        {
+            return;
+        }
+
+        m_Node->SetProperty(8709, &action);
+        retruxx::vector<m3d::Object*> stack;
+        stack.push_back(m_Node);
+        while (!stack.empty())
+        {
+            m3d::Object* const currentNode = stack.back();
+            stack.pop_back();
+            for (m3d::Object* child = currentNode->GetFirstChild(); child; child = child->GetNextSibling())
+            {
+                static_cast<m3d::SgNode*>(child)->SetProperty(8709, &action);
+                if (child->GetFirstChild())
                 {
-                    curAnimAction = nodeAnimInfo->GetCurAnimation()->m_action;
-                }
-
-                if (curAnimAction != m_animAction && m_Node)
-                {
-                    m_Node->SetProperty(8709, &action);
-                    retruxx::vector<m3d::Object*> stack;
-                    stack.push_back(m_Node);
-
-                    // Depth-first traversal
-                    while (!stack.empty())
-                    {
-                        // Pop the last node from stack
-                        m3d::Object* currentNode = stack.back();
-                        stack.pop_back();
-
-                        // Process all children of current node
-                        m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-
-                        // TODO: check this
-                        while (child != nullptr)
-                        {
-                            child->SetProperty(8709, &action);
-
-                            // If child has children of its own, push to stack for processing
-                            if (child->GetFirstChild() != nullptr)
-                            {
-                                stack.push_back(child);
-                            }
-
-                            // Move to next sibling
-                            child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
-                        }
-                    }
+                    stack.push_back(child);
                 }
             }
         }

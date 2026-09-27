@@ -174,8 +174,9 @@ int MapMarkIcoWnd::SetUp(ObjectInfo* objectInfo, PointBase<float> const& objWndO
     }
     float const halfW = m_aif.m_sizeSelected.x * 0.5f;
     float const halfH = m_aif.m_sizeSelected.y * 0.5f;
+    // Corners, centred on the object's chart point.
     BoundsBase<float> const b{
-        objWndOrigin.x - halfW, objWndOrigin.y - halfH, m_aif.m_sizeSelected.x, m_aif.m_sizeSelected.y};
+        objWndOrigin.x - halfW, objWndOrigin.y - halfH, objWndOrigin.x + halfW, objWndOrigin.y + halfH};
     if (!m3d::ui::Wnd::Create({}, 0x220u, b, 0x193u))
     {
         return 0;
@@ -267,7 +268,8 @@ int MapMarkIcoWnd::OnPaint(m3d::ui::DrawInfo const& di)
     float const dy = (m_aif.m_sizeSelected.y - m_aif.m_size.y) * 0.5f;
     BoundsBase<float> const b = GetBounds();
 
-    BoundsBase<float> const icoB{dx, dy, b.width - dx * 2.0f, b.height - dy * 2.0f};
+    // Corners: the icon is inset by dx/dy on every side of the selection frame.
+    BoundsBase<float> const icoB{dx, dy, b.width - dx, b.height - dy};
     GetGfxServer()->AddImagedRect(di, icoB, m_curClr, m_bgTexture);
 
     if (m_bSelected)
@@ -541,10 +543,12 @@ int NavPointMarkWnd::CreateNavPointMarkWnd(PointBase<float> const& wndCoords, in
     }
     m3d::rend::TexHandle const tex = GetNpIcoByType(np->GetNavPointType());
 
-    // NOTE: the shipped build uses the x half-size for both axes (m_size is square).
+    // NOTE: the shipped build builds the top-left corner from the x half-size on
+    // both axes and the bottom-right corner from the y half-size (m_size is square).
     float const halfSizeX = m_aif.m_size.x * 0.5f;
-    float const dim = (m_aif.m_size.x + m_aif.m_size.y) * 0.5f;
-    BoundsBase<float> const rc{wndCoords.x - halfSizeX, wndCoords.y - halfSizeX, dim, dim};
+    float const halfSizeY = m_aif.m_size.y * 0.5f;
+    BoundsBase<float> const rc{
+        wndCoords.x - halfSizeX, wndCoords.y - halfSizeX, wndCoords.x + halfSizeY, wndCoords.y + halfSizeY};
     if (!CreateImageWnd(rc, tex))
     {
         return 0;

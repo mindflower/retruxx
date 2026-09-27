@@ -1646,6 +1646,7 @@ int CMiracle3d::OnGameSwitchCamera(m3d::AuxImpulseInfo const& impInfo)
 
 int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
 {
+    // RVA 0x4010F0
     m_gameSlideAuto = ZeroVector;
 
     float x = 0.0;
@@ -1666,25 +1667,29 @@ int CMiracle3d::OnGameMouse(m3d::AuxImpulseInfo const& impInfo)
 
     if (M3D_APP->m_pImpulses->GetImpulseState(9) || !HasChildModalRunning() && res)
     {
+        // Mouse-look owns the mouse: take the capture back (a closed modal
+        // dialog releases it), then turn the camera and re-centre the cursor.
         if (GetCapture() != this)
         {
-            auto const mouseSense = GetMouseSensitivity();
-            m_flyCamTurn.x = dx * mouseSense * 0.003;
-            m_flyCamTurn.y = dy * mouseSense * 0.003;
-            if (IsMouseYAxisFlipped())
-            {
-                m_flyCamTurn.y = 0.0 - m_flyCamTurn.y;
-            }
-            if (IsMouseXAxisFlipped())
-            {
-                m_flyCamTurn.x = 0.0 - m_flyCamTurn.x;
-            }
-
-            float x = 512.0;
-            float y = 384.0;
-            M3D_RENDERER->RelToAbs(x, y);
-            SetMouseXy(x, y);
+            CaptureMouse(this);
         }
+
+        auto const mouseSense = GetMouseSensitivity();
+        m_flyCamTurn.x = dx * mouseSense * 0.003;
+        m_flyCamTurn.y = dy * mouseSense * 0.003;
+        if (IsMouseYAxisFlipped())
+        {
+            m_flyCamTurn.y = 0.0 - m_flyCamTurn.y;
+        }
+        if (IsMouseXAxisFlipped())
+        {
+            m_flyCamTurn.x = 0.0 - m_flyCamTurn.x;
+        }
+
+        float x = 512.0;
+        float y = 384.0;
+        M3D_RENDERER->RelToAbs(x, y);
+        SetMouseXy(x, y);
     }
     return 1;
 }
@@ -2074,10 +2079,13 @@ int CMiracle3d::ValidateCameraAngles()
 
 m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
 {
-    //TODO: check isModal!!!!!!!!!!!!
+    // RVA 0x418010 - releasing the capture outside a modal-like window hands it
+    // to the game view itself (re-centring the cursor). While the game view holds
+    // it the DX cursor is off, so mouse-look reads raw input deltas and the
+    // re-centring does not feed a reverse WM_MOUSEMOVE back into the camera.
+    m3d::ui::Wnd* const self = this;
     auto const oldCapture = m_wndMouseCapture;
-    auto const isModal = M3D_APP->m_pInterfaceManager->IsModalEqualWndRunning();
-    if (wnd || isModal)
+    if (wnd || M3D_APP->m_pInterfaceManager->IsModalEqualWndRunning())
     {
         m_wndMouseCapture = wnd;
     }
@@ -2087,10 +2095,9 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
         float y = 384.0;
         M3D_APP->m_renderer->RelToAbs(x, y);
         M3D_APP->SetMouseXy(x, y);
-        //TODO: check this!!!!1
-        m_wndMouseCapture = nullptr;
+        m_wndMouseCapture = self;
     }
-    if (!isModal && (m_wndMouseCapture == nullptr || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB()))
+    if (m_wndMouseCapture == self || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
     {
         EnableDXCursor(false);
     }

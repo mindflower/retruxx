@@ -439,12 +439,13 @@ namespace m3d
 
         int WndStation::Activate(Wnd* wnd)
         {
+            // RVA 0x58EB60
             auto wndToActive = wnd;
             if (!wndToActive)
             {
                 wndToActive = this;
             }
-            if (wnd == m_wndActive)
+            if (wndToActive == m_wndActive)
             {
                 return 0;
             }
@@ -869,9 +870,11 @@ namespace m3d
 
         void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
         {
-            if (!m_wndModalStack.empty() && m_wndModalStack[m_wndModalStack.size() - 1])
+            // RVA 0x5900B0
+            if (!m_wndModalStack.empty())
             {
-                auto& wndFromStack = m_wndModalStack[m_wndModalStack.size() - 1];
+                // A copy, not a reference: the slot is popped below.
+                ModalWnd* const wndFromStack = m_wndModalStack.back();
                 if (wnd == wndFromStack)
                 {
                     wndFromStack->OnCloseModal(toRet);
@@ -879,7 +882,9 @@ namespace m3d
                     m_wndModalRetVal = toRet;
                     CaptureMouse(nullptr);
                     RemoveCurrentTooltip();
-                    if (m_modalAttachedToStation)
+                    // The dialog's own flag, set by DoModal; removing it lets
+                    // OnRemoveWnd hand activation and keyboard focus back.
+                    if (wndFromStack->m_modalAttachedToStation)
                     {
                         RemoveChild(wndFromStack);
                     }

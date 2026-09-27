@@ -586,7 +586,7 @@ ConversationWnd::PlayerReplyButton::PlayerReplyButton(
     m_reply = nullptr;
     m_dQuest = nullptr;
 
-    BoundsBase<float> const rc{origin.x, origin.y, width, 0.0f};
+    BoundsBase<float> const rc{origin.x, origin.y, origin.x + width, origin.y};
     m3d::ui::ButtonWnd::Create({}, 0xA40u, rc, 500000u);
 
     if (parent)

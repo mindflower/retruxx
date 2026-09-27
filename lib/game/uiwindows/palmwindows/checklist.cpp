@@ -397,7 +397,7 @@ int CheckButton::SetUp(CStr const& name, PointBase<float> const& origin, float w
         return 0;
     }
 
-    BoundsBase<float> const rc{origin.x, origin.y, 0.0f, 0.0f};
+    BoundsBase<float> const rc{origin.x, origin.y, origin.x, origin.y};
     if (!m3d::ui::ButtonWnd::Create({}, 0x40260u, rc, 0))
     {
         return 0;
@@ -407,7 +407,7 @@ int CheckButton::SetUp(CStr const& name, PointBase<float> const& origin, float w
     m_fullName = fullName.empty() ? CalcFullName() : fullName;
 
     // --- record icon --------------------------------------------------------
-    BoundsBase<float> const icoB{0.0f, m_aif.m_spaceY, m_aif.m_icoSz.x, m_aif.m_icoSz.y};
+    BoundsBase<float> const icoB{0.0f, m_aif.m_spaceY, m_aif.m_icoSz.x, m_aif.m_spaceY + m_aif.m_icoSz.y};
     m_ico = static_cast<m3d::ui::ImageWnd*>(M3D_KERNEL->New("ImageWnd"));
     if (!m_ico->CreateImageWnd(icoB, m3d::rend::TexHandle()))
     {

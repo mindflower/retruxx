@@ -139,7 +139,7 @@ int StatsButton::SetUpForStats(CStr const& statsName, PointBase<float> const& or
         return 0;
     }
 
-    BoundsBase<float> const rc{origin.x, origin.y, 0.0f, 0.0f};
+    BoundsBase<float> const rc{origin.x, origin.y, origin.x, origin.y};
     if (!m3d::ui::ButtonWnd::Create({}, 0x40260u, rc, 0))
     {
         return 0;

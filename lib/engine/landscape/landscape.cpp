@@ -4421,9 +4421,26 @@ namespace m3d
 
     void Landscape::ReleaseOdeCollisionData()
     {
-        // TODO: check this
+        // RVA 0x64ECC0
         if (m_oCollisionitems)
         {
+            // NOTE: the shipped loop below reads m_needToDeleteInUnlink through pointers
+            // that are already freed: road geoms, deleted by ReleaseCollision while still
+            // linked into the cells (their flag is left set, so they are skipped), and
+            // pass-cell geoms spanning several cells (the flag is set just before the
+            // delete, so later cells skip them). That only works because the original
+            // pool allocator keeps freed blocks mapped and untouched; on the CRT heap the
+            // read faults. The freed pointers are tracked instead, which gives the same
+            // result without touching freed memory.
+            retruxx::set<GeomObject*> freedGeoms;
+            for (auto* rn = static_cast<RoadNode*>(m_owner->m_roadManager.m_roadRoot->GetFirstChild()); rn;
+                 rn = static_cast<RoadNode*>(rn->GetNextSibling()))
+            {
+                if (rn->m_geomObject)
+                {
+                    freedGeoms.insert(rn->m_geomObject);
+                }
+            }
             m_owner->m_roadManager.ReleaseCollision();
 
             auto const landSize = m_owner->m_level->land_size;
@@ -4434,8 +4451,9 @@ namespace m3d
                     auto* item = m_oCollisionitems[x + y * landSize];
                     for (auto it = item->m_geomsList.begin(); it != item->m_geomsList.end();)
                     {
-                        if (!(*it)->m_needToDeleteInUnlink)
+                        if (freedGeoms.count(*it) == 0 && !(*it)->m_needToDeleteInUnlink)
                         {
+                            freedGeoms.insert(*it);
                             (*it)->m_needToDeleteInUnlink = true;
                             (*it)->Release();
                             delete (*it);

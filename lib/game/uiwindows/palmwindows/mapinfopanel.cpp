@@ -255,7 +255,7 @@ int MapInfoPanel::SetupForClansMode()
 
     // NOTE: the shipped build assembles the description string id as
     // <fullName>_<name>_diz.
-    CStr const dizId = m_objectInfo->GetFullName() + "_" + m_objectInfo->GetName() + "_diz";
+    CStr const dizId = m_objectInfo->GetLevelName() + "_" + m_objectInfo->GetName() + "_diz";
     m_txtObjectDiz->SetText(M3D_APP->GetStringByStringId0(dizId));
     return 1;
 }
@@ -531,6 +531,15 @@ int MapInfoPanel::CreateFromPattern(m3d::ui::Wnd const* patternWnd, bool deleteS
                 {
                     parent->RemoveChild(m_wndSellList);
                     AddChild(m_wndSellList);
+                    // Re-express the list's origin in this panel's coordinates. The
+                    // binary writes m_bounds.x0/y0 directly; the size is unchanged.
+                    BoundsBase<float> lb = m_wndSellList->GetBounds();
+                    PointBase<float> const screenPt =
+                        static_cast<m3d::ui::Wnd*>(parent)->ToScreen(PointBase<float>{lb.x0, lb.y0});
+                    PointBase<float> const winPt = ToWindow(screenPt);
+                    lb.x0 = winPt.x;
+                    lb.y0 = winPt.y;
+                    m_wndSellList->SetBounds(lb, false);
                 }
                 else
                 {

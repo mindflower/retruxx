@@ -1417,7 +1417,7 @@ namespace m3d
         ri->m_node->GetProperty(1, &anim);
 
         int manualAnimControl = 0;
-        ri->m_node->GetProperty(7816, &manualAnimControl);
+        ri->m_node->GetProperty(8716, &manualAnimControl);
         if (manualAnimControl == 0)
         {
             anim->MoveFrame(ri->m_dt);
@@ -1795,17 +1795,22 @@ namespace m3d
                         CStr effectId;
                         SafeStrAttrib(effectId, lpNode, "effect_id");
 
-                        bool restartOnAnimChange = 0;
-                        SafeBoolAttrib(restartOnAnimChange, lpNode, "restartOnAnimationChange");
+                        // RVA 0x7755F0 - both flags are integers compared with 1. An effect with no
+                        // ImmediateRemove attribute is removed at once when its action ends (a glow that
+                        // is left to fade out never does, which kept brake lights lit).
+                        int restartOnAnimChange = 0;
+                        SafeIntAttrib(restartOnAnimChange, lpNode, "restartOnAnimationChange");
 
-                        bool immediateRemove = 0;
-                        SafeBoolAttrib(immediateRemove, lpNode, "ImmediateRemove");
+                        int immediateRemove = 1;
+                        SafeIntAttrib(immediateRemove, lpNode, "ImmediateRemove");
 
                         DynamicModel::auxEffectDesc effectDesc;
+                        effectDesc.m_lpName = lpId;
                         effectDesc.m_lpId = mainModel->GetLoadPointIdByName(lpId.c_str());
                         effectDesc.m_effectName = effectId;
-                        effectDesc.m_restartOnAnimChange = restartOnAnimChange;
-                        effectDesc.m_immediateRemove = immediateRemove;
+                        effectDesc.m_effectId = -1;
+                        effectDesc.m_restartOnAnimChange = restartOnAnimChange == 1;
+                        effectDesc.m_immediateRemove = immediateRemove == 1;
 
                         dynamicModel->m_effects[actionIndex].lpEffects.push_back(effectDesc);
 
@@ -2177,51 +2182,32 @@ ModelEffectList::ModelEffectList(DynamicModel* meta) :
 
 void DeleteEffectNode(m3d::SgNode* parent, m3d::SgNode* node, bool immediateRemove)
 {
-    // TODO: generated code
+    // RVA 0x771840 - either removed at once, or every node below it is told it may
+    // die (particles finish their life) and the node goes once they all have.
     if (immediateRemove)
     {
-        // Immediate removal from scene graph
         m3d::SceneGraph* graph = node->GetGraph();
         graph->RemoveNode(node);
+        return;
     }
-    else
+
+    node->RemoveImmediateAfterParent(false);
+    retruxx::vector<m3d::Object*> stack;
+    stack.push_back(node);
+    while (!stack.empty())
     {
-        // Deferred removal - mark for later cleanup
-        node->RemoveImmediateAfterParent(false);
-
-        // Use stack to traverse and mark all children as free-able
-        std::vector<m3d::SgNode*> nodeStack;
-        nodeStack.push_back(node);
-
-        while (!nodeStack.empty())
+        m3d::Object* const current = stack.back();
+        stack.pop_back();
+        for (m3d::Object* child = current->GetFirstChild(); child; child = child->GetNextSibling())
         {
-            m3d::SgNode* currentNode = nodeStack.back();
-            nodeStack.pop_back();
-
-            // Mark current node as free-able
-            currentNode->CanBeFree();
-
-            // Process all children
-            m3d::SgNode* child = static_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-            while (child)
+            static_cast<m3d::SgNode*>(child)->CanBeFree();
+            if (child->GetFirstChild())
             {
-                // Recursively mark children as free-able
-                child->CanBeFree();
-
-                // If child has children, add to stack for processing
-                if (child->GetFirstChild())
-                {
-                    nodeStack.push_back(child);
-                }
-
-                child = static_cast<m3d::SgNode*>(child->GetNextSibling());
+                stack.push_back(child);
             }
         }
-
-        // Schedule node for deferred removal
-        m3d::SceneGraph* graph = node->GetGraph();
-        graph->InsertInRemoveIfFree(node);
     }
+    node->GetGraph()->InsertInRemoveIfFree(node);
 }
 
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,

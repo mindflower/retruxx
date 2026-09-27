@@ -118,7 +118,7 @@ int MapSellItem::SetUp(
         return 0;
     }
 
-    BoundsBase<float> b{origin.x, origin.y, maxWidth, m_aif.m_height};
+    BoundsBase<float> b{origin.x, origin.y, origin.x + maxWidth, origin.y + m_aif.m_height};
     if (!m3d::ui::Wnd::Create({}, 0x260u, b, 0))
     {
         return 0;
@@ -160,7 +160,7 @@ int MapSellItem::SetUp(
     {
         return 0;
     }
-    BoundsBase<float> sellB{columnW, 0.0f, columnW, GetBounds().height};
+    BoundsBase<float> sellB{columnW, 0.0f, columnW * 2.0f, GetBounds().height};
     CStr const sellCaption = (m_sellPrice < 0) ? CStr("-") : CStr(m_sellPrice);
     if (!m_lblSellPrice->Create(sellCaption, 3904u, sellB, 0))
     {
@@ -180,7 +180,7 @@ int MapSellItem::SetUp(
         return 0;
     }
     float const buyX = sellB.width + sellB.x0;
-    BoundsBase<float> buyB{buyX, 0.0f, GetBounds().width - buyX, GetBounds().height};
+    BoundsBase<float> buyB{buyX, 0.0f, GetBounds().width, GetBounds().height};
     CStr const buyCaption = (m_buyPrice < 0) ? CStr("-") : CStr(m_buyPrice);
     if (!m_lblBuyPrice->Create(buyCaption, 3904u, buyB, 0))
     {
@@ -210,9 +210,9 @@ int MapSellItem::SetUp(
             }
         }
         float const h = GetBounds().height;
-        // NOTE: the shipped build computes the line height as
-        // barWidth - (h - barWidth); reproduced verbatim.
-        BoundsBase<float> lineB{0.0f, h - barWidth, GetBounds().width, barWidth - (h - barWidth)};
+        // NOTE: the shipped build passes barWidth as the bottom corner, so the
+        // line height comes out as barWidth - (h - barWidth); reproduced as-is.
+        BoundsBase<float> lineB{0.0f, h - barWidth, GetBounds().width, barWidth};
         if (!m_line->Create(lineB, 0x300u, m3d::ui::LINEWND_HORIZONTAL))
         {
             delete m_line;
