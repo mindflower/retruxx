@@ -798,9 +798,11 @@ int GameUiManager::GUI_ShowInterface(bool needShow, bool enableAnimation)
             return 1;
         }
         m_isHidden = true;
-        for (auto const& window : m_onScreenWindows)
+        for (auto it = m_onScreenWindows.begin(); it != m_onScreenWindows.end();)
         {
-            if (GUI_HideWindow(window, true, nullptr, true) == -1)
+            auto const wndId= *it;
+            ++it;
+            if (GUI_HideWindow(wndId, true, nullptr, true) == -1)
             {
                 res = 0;
             }
