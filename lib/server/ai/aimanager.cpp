@@ -153,7 +153,15 @@ namespace ai
 
     DecisionMatrix* AIManager::GetDecisionMatrixPtr(int MatrixNum) const
     {
-        return this->m_Matrix[MatrixNum].GetPtr();
+        // RVA 0x7EFC20
+        // NOTE: the original indexes m_Matrix unchecked, so a prototype without a DecisionMatrix
+        // (m_decisionMatrixNum == -1) reads heap memory before the buffer. We return null instead,
+        // which AI::AIUpdate treats as "no AI".
+        if (MatrixNum < 0 || MatrixNum >= static_cast<int>(m_Matrix.size()))
+        {
+            return nullptr;
+        }
+        return m_Matrix[MatrixNum].GetPtr();
     }
 
     m3d::Object* AIManager::CreateObject()

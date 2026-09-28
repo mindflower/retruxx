@@ -135,7 +135,7 @@ GameState CMiracle3d::CurGameMode::Get() const
 
 void CMiracle3d::CurGameMode::Set(GameState mode)
 {
-    //TODO: check this
+    // RVA 0x403B50 - announces the change (UM 65683: new mode, old mode) synchronously.
     auto oldMode = m_mode;
     m_mode = mode;
     g_pApp->ImmediateMessage(65683, mode, oldMode, 0, 0, {}, {});
@@ -185,6 +185,8 @@ void CMiracle3d::Player::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode* xmlNod
 
 int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 {
+    // RVA 0x403070 - the mode impulses: 0 opens the game menu, 1 returns to the main menu, 2 starts a cinematic,
+    // 3 starts (from the main menu) or resumes the game. A running cinematic is interrupted first.
     if (!impInfo.m_state)
     {
         return 1;
@@ -232,9 +234,8 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
             }
         }
         m_curGameMode.Set(GS_MAINMENU);
-        //TODO: check this (1.0)
-        M3D_KERNEL->GetTimer().SetTimeScale(1.0);
-        m_saveTimeScale = M3D_KERNEL->GetTimer().GetTimeScale();
+        M3D_KERNEL->GetTimer().SetTimeScale(m_normalTimeScale);
+        m_saveTimeScale = m_normalTimeScale;
 
         AllowRendering();
         if (!LoadMainMenuLevel())
@@ -269,7 +270,6 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
             GameInit();
         }
 
-        // TODO: check this
         M3D_APP->m_pInterfaceManager->StartSplashing(11);
         int loadRes =
             LoadLevel(
@@ -567,8 +567,10 @@ int CMiracle3d::OnFinishIntroVideoPlaying()
 
 int CMiracle3d::GameDone()
 {
+    // RVA 0x407390
     m_gameInited = false;
     delete m3d::pClient;
+    m3d::pClient = nullptr;
     M3D_KERNEL->GetEngineCfg().m_levFileName.Set("Empty", true);
     return 1;
 }
@@ -627,8 +629,8 @@ bool CMiracle3d::GetCursorShow0() const
 void CMiracle3d::SetCursorShow(bool state)
 {
     auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    // RVA 0x403A30 - with a smart cursor the UI is told when the cursor shows or hides (UM 65682).
     Wnd::SetCursorShow(state);
-    //TODO: check this
     if (app->m_pInterfaceManager->IsGameModeValidForSmartCursor(m_curGameMode.Get()))
     {
         ImmediateMessage(65682, state, 0, 0, 0, {}, {});
@@ -713,7 +715,8 @@ namespace
 
 bool CMiracle3d::CinematicFade()
 {
-    // TODO: generated code
+    // RVA 0x41E5A0 - advances the cinematic's fade states once the current fade has run its period; returns false
+    // while a fade step was taken this frame.
     int fadeTime = m_cinematic->m_playTime - m_cinematic->m_fadeStartTime;
     double fadePeriodDouble = m_cinematic->GetFadePeriodForState(m_cinematic->m_state) * 1000.0;
     int fadePeriod = static_cast<int>(fadePeriodDouble);
@@ -730,7 +733,7 @@ bool CMiracle3d::CinematicFade()
         }
     }
 
-    CinemaPanel* cinemaPanel = GetCinemaPanel();  // Assuming this returns CinemaPanel*
+    CinemaPanel* cinemaPanel = GetCinemaPanel();
 
     if (fadeTime < fadePeriod)
     {
@@ -863,8 +866,8 @@ bool CMiracle3d::CinematicFade()
         {
             if (cinemaPanel)
             {
+                // NOTE: the shipped code also frees the panel's (already cleared) message deque here.
                 cinemaPanel->Clear();
-                // Note: The deque tidy operation would need proper context
             }
             result = false;
         }
@@ -929,11 +932,13 @@ bool CMiracle3d::AddPostEffect(CStr const& effectName, float effParam)
 
 int CMiracle3d::HandleCinematic(float dT)
 {
+    // RVA 0x41E450 - runs the fades; while playing, stops (interrupts) the cinematic once it is within its exit fade
+    // of the end, unless it waits or the cinema panel still shows messages. Returns 0 when no cinematic is set up.
     if (m_cinematic->bCanUpdate())
     {
         m_cinematic->Update(m_curCamera, dT);
     }
-    m_cinematic->m_playTime += dT * 1000;
+    m_cinematic->m_playTime += static_cast<int>(dT * 1000.0f);
 
     while (true)
     {
@@ -949,14 +954,18 @@ int CMiracle3d::HandleCinematic(float dT)
             return 1;
 
         case m3d::CINEMATIC_IS_PLAYING:
-            // TODO: check this
             ai::pServer->PostPlayerEvent(ai::GE_IN_CINEMATIC);
-            auto fadePeriod = this->m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_EXIT_FADE_OUT);
+            float const fadePeriod = m_cinematic->GetFadePeriodForState(m3d::CINEMATIC_EXIT_FADE_OUT);
 
-            auto timeToShowDlg = 0.0;
-            if (!m_cinematic->InPlay() || m_cinematic->GetTimeToTheEnd() >= 0.0)
+            // The time left: 0 when not playing (or when already past the end).
+            float timeToShowDlg = 0.0f;
+            if (m_cinematic->InPlay())
             {
-                timeToShowDlg = m_cinematic->GetTimeToTheEnd();
+                float const timeToTheEnd = m_cinematic->GetTimeToTheEnd();
+                if (timeToTheEnd >= 0.0f)
+                {
+                    timeToShowDlg = timeToTheEnd;
+                }
             }
             auto cinemaPanel = GetCinemaPanel();
             if (m_cinematic->bWaitWhenStop() || fadePeriod < timeToShowDlg || cinemaPanel && (cinemaPanel->HasMsg()))
@@ -1721,6 +1730,7 @@ bool CMiracle3d::CanLaunchIfaceWindow()
 
 int CMiracle3d::LoadMainMenuLevel()
 {
+    // RVA 0x403BE0 - the level behind the main menu; any failure disables it for the rest of the session.
     if (m_bDoNotLoadMainmenuLevel)
     {
         return 0;
@@ -1738,7 +1748,6 @@ int CMiracle3d::LoadMainMenuLevel()
         }
         auto app = dynamic_cast<CMiracle3d*>(g_pApp);
         app->m_pInterfaceManager->StartSplashing(11);
-        //TODO: check this
         auto res = LoadLevel(mapName, {}, false, true, false, nullptr, nullptr, ai::ObjContainer::SAVE_LEVEL);
         if (res == 0)
         {
@@ -1798,15 +1807,15 @@ bool CMiracle3d::LoadMapFromConsole(m3d::CConsoleParams const& params, bool isCo
 
 int CMiracle3d::StartPlayingVideo(char const* videoFile, int (CMiracle3d::*onFinishCallback)())
 {
-    //TODO: check this!!!
-    CStr file = videoFile;
+    // RVA 0x422AB0 - plays a video (an empty name "plays" nothing and counts as started). Returns 0 when started,
+    // 1 when a video is already playing, 2 when it can't be loaded; in the failure cases the callback runs at once.
+    CStr const file = videoFile;
     if (g_pApp->m_sound && !file.empty())
     {
         g_pApp->m_sound->PauseAllSounds(true);
     }
 
     int res = 0;
-
     if (M3dVideoPlayer->IsVideoPlaing())
     {
         M3D_LOG_INFO("Warning: video is already playing");
@@ -1814,16 +1823,20 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int (CMiracle3d::*onFin
     }
     else
     {
-        //TODO; check this
-        g_pApp->ClearViewportToBlack();
-        if (file.empty() || M3dVideoPlayer->Play(videoFile))
+        if (file.empty())
         {
-            res = 0;
             m_playingVideo = true;
             m_onFinishVideoPlaying = onFinishCallback;
-            return res;
+            return 0;
         }
-        M3D_LOG_INFO("Error: couldn't load video '" + file);
+        g_pApp->ClearViewportToBlack();
+        if (M3dVideoPlayer->Play(videoFile))
+        {
+            m_playingVideo = true;
+            m_onFinishVideoPlaying = onFinishCallback;
+            return 0;
+        }
+        M3D_LOG_INFO("Error: couldn't load video '" + file + "'");
         res = 2;
     }
     if (onFinishCallback)
@@ -2258,7 +2271,8 @@ void CMiracle3d::EmergencyRedrawAllObjs()
 
 int CMiracle3d::Controls(double t0, double tlen)
 {
-    // TODO: generated code
+    // RVA 0x4016B0 - applies the driving impulses to the player's vehicle, the pause toggle, the fly-camera
+    // movement and the camera's rotation, then places the camera.
 
     if (!m3d::pClient)
     {
@@ -2642,10 +2656,10 @@ int CMiracle3d::GetCurGameMode()
 
 void CMiracle3d::SetMouseYAxisFlipped(bool bFlip)
 {
+    // RVA 0x419350 - also stored in the current profile.
     Application::SetMouseYAxisFlipped(bFlip);
     if (auto* profile = m_profileManager->GetCurProfile(); profile)
     {
-        //TODO: check tis
         m3d::AIParam const param(static_cast<int>(IsMouseYAxisFlipped()));
         profile->SetParam(PP_MOUSE_YAXIS_FLIP, param);
     }
@@ -2653,10 +2667,10 @@ void CMiracle3d::SetMouseYAxisFlipped(bool bFlip)
 
 void CMiracle3d::SetMouseXAxisFlipped(bool bFlip)
 {
+    // RVA 0x4193E0 - also stored in the current profile.
     Application::SetMouseXAxisFlipped(bFlip);
     if (auto* profile = m_profileManager->GetCurProfile(); profile)
     {
-        //TODO: check tis
         m3d::AIParam const param(static_cast<int>(IsMouseXAxisFlipped()));
         profile->SetParam(PP_MOUSE_XAXIS_FLIP, param);
     }
@@ -2669,8 +2683,9 @@ ProfileManager* CMiracle3d::GetProfileManager() const
 
 int CMiracle3d::OnEvent(m3d::Event const& ev)
 {
-    //TODO: check this and refactor
-    auto app = dynamic_cast<CMiracle3d*>(g_pApp);
+    // RVA 0x417E00 - input events (7-12, 15, 38) skip the UI; everything else is offered to the UI manager first.
+    // Then the application messages this class handles itself.
+    auto* app = static_cast<CMiracle3d*>(g_pApp);
     switch (ev.m_eventType)
     {
     case 7:
@@ -2681,103 +2696,76 @@ int CMiracle3d::OnEvent(m3d::Event const& ev)
     case 0xC:
     case 0xF:
     case 0x26:
-        goto LABEL_5;
+        break;
     default:
-    {
         if (app->m_pInterfaceManager)
         {
-            auto res = app->m_pInterfaceManager->HandleAppEvent(ev);
-            if (res)
+            if (int const res = app->m_pInterfaceManager->HandleAppEvent(ev))
             {
                 return res;
             }
         }
-    LABEL_5:
-        if (ev.m_eventType > 66550)
-        {
-            auto evNum = ev.m_eventType - 66555;
-            if (evNum)
-            {
-                if (evNum == 5)
-                {
-                    //TODO: check this
-                    m_radioEngine->PlaySoundMessage(ev.m_intEv[0], ev.m_intEv[1], ev.m_strEv);
-                    return 0;
-                }
-            }
-            else
-            {
-                //TODO: check this
-                m_blockMusicManager->SetMusicType(static_cast<m3d::BlockMusicManager::BlockMusicType>(ev.m_intEv[0]));
-            }
-        }
-        else if (ev.m_eventType == 66550)
-        {
-            M3D_LOG_INFO("MessageBox called");
-            return 0;
-        }
-        else
-        {
-            auto evNum = ev.m_eventType - 65650;
-            if (!evNum)
-            {
-                //TODO: check this
-                app->m_pInterfaceManager->ShowWindow(154, false, false, false, false, nullptr);
-                m3d::AuxImpulseInfo info(1, true, -1, 0, 0);
-                OnChangeMode(info);
-                return 0;
-            }
-            auto enNum2 = evNum - 28;
-            if (!enNum2)
-            {
-                app->OnChangeProfile();
-                return 0;
-            }
-            if (enNum2 == 871)
-            {
-                m3d::g_Kernel->GetEngineCfg().m_console->executeCommand("/nextmap " + ai::thePassageData->m_mapName);
-                return 0;
-            }
-        }
+        break;
     }
-        return 0;
+
+    switch (ev.m_eventType)
+    {
+    case 66555:
+        m_blockMusicManager->SetMusicType(static_cast<m3d::BlockMusicManager::BlockMusicType>(ev.m_intEv[0]));
+        break;
+    case 66560:
+        m_radioEngine->PlaySoundMessage(ev.m_intEv[0], ev.m_intEv[1], ev.m_strEv);
+        break;
+    case 66550:
+        M3D_LOG_INFO("MessageBox called");
+        break;
+    case 65650:
+        // Back to the main menu.
+        app->m_pInterfaceManager->ShowWindow(154, false, false, false, false, nullptr);
+        OnChangeMode(m3d::AuxImpulseInfo(1, true, -1, 0, 0));
+        break;
+    case 65678:
+        app->OnChangeProfile();
+        break;
+    case 66549:
+        M3D_ENGINE_CFG.m_console->executeCommand("/nextmap " + ai::thePassageData->m_mapName);
+        break;
+    default:
+        break;
     }
+    return 0;
 }
 
 int CMiracle3d::AddChild(m3d::Object* node)
 {
+    // RVA 0x4197F0 - while the mother panel (the in-game menus) is shown, the game renders behind it as a
+    // background, captured afresh.
+    // (Hex-Rays names these bytes m_playingVideo + 0/1: the override runs on the WndStation base at +12.)
     auto result = Wnd::AddChild(node);
-    if (!node)
+    if (node && node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
     {
-        return result;
-    }
-    if (node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
-    {
-        // TODO: whats this??
-        //*(&this->m_playingVideo + 1) = 1;
-        //this->m_playingVideo = 0;
+        m_bRenderAsBackground = true;
+        m_bBackgroundTextureIsValid = false;
     }
     return result;
 }
 
 int CMiracle3d::RemoveChildForce(m3d::Object* object)
 {
+    // RVA 0x419890 - the mother panel's removal ends the background rendering (see AddChild).
     auto result = Wnd::RemoveChildForce(object);
-    if (object)
+    if (object && object->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
     {
-        if (object->IsKindOf(&MotherPanel::m_classMotherPanel))
-        {
-            // TODO: whats this??
-            //*(&this->m_playingVideo + 1) = 0;
-            //this->m_playingVideo = 0;
-        }
+        m_bRenderAsBackground = false;
+        m_bBackgroundTextureIsValid = false;
     }
     return result;
 }
 
 int CMiracle3d::Render(bool needToRedrawAllObjs)
 {
-    // TODO: generated code
+    // RVA 0x415B40 - renders the frame from the camera shaken by the camera controller (a roll and an offset, undone
+    // afterwards), or the captured background while the mother panel is up; then post effects and debug overlays.
     if (!m_playingVideo)
     {
         if (m_curGameMode.m_mode == GS_MAINMENU && m_bDoNotLoadMainmenuLevel)
@@ -2868,14 +2856,13 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         CMatrix viewMatrix;
         m_curCamera.createViewMatrix(viewMatrix);
         M3D_RENDERER->MatSet(viewMatrix);
-        // TODO: check this
         M3D_RENDERER->SetViewMatrix(viewMatrix);
 
         CMatrix projMatrix;
         m_curCamera.createProjectionMatrix(projMatrix, 1.0);
         M3D_RENDERER->MatSetProj(projMatrix);
 
-        // TODO: check this
+        // Undo the shake.
         m_curCamera.m_worldOrigin = oldWorldOrigin;
         rotationMatrix.getYPR(m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
 
@@ -2905,8 +2892,8 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
         M3D_RENDERER->SetFog(false, false);
         m_postEffect->Render(m_bBackgroundTextureIsValid);
 
-        // RVA 0x415B40 - debug overlays: camera position / speed / angles in the
-        // top-right corner, and object and vehicle counters.
+        // Debug overlays: camera position / speed / angles in the top-right corner, and object and vehicle
+        // counters.
         if (M3D_ENGINE_CFG.m_camInfo.GetB() && m3d::pClient)
         {
             M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
@@ -2999,20 +2986,19 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
 
 int CMiracle3d::RemoveChild(m3d::Object* node)
 {
+    // RVA 0x419840 - as RemoveChildForce, when the removal succeeded.
     auto result = Wnd::RemoveChild(node);
-    if (!result || !node)
-        return result;
-    if (!node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
-        return result;
-
-    //TODO: check this
-    //*(&this->m_playingVideo + 1) = 0;
-    //this->m_playingVideo = false;
+    if (result && node && node->IsKindOf(RT_CLASS_LOCAL(MotherPanel)))
+    {
+        m_bRenderAsBackground = false;
+        m_bBackgroundTextureIsValid = false;
+    }
     return result;
 }
 
 int CMiracle3d::DoneMedia()
 {
+    // RVA 0x417790 - tears the game down: the level, the client, the UI and the media managers.
     M3D_LOG_INFO("--- Done Media ---");
     if (g_pApp->m_sound != nullptr)
     {
@@ -3025,8 +3011,7 @@ int CMiracle3d::DoneMedia()
     }
     ClearViewportToBlack();
     CinematicClear();
-    //TODO: mb ref
-    auto* g_pGame = dynamic_cast<CMiracle3d*>(g_pApp);
+    auto* g_pGame = static_cast<CMiracle3d*>(g_pApp);
     auto* savesManager = g_pGame->m_pInterfaceManager->GetSavesManager();
     auto const pathToTempMaps = savesManager->GetPathForTemporaryMaps();
     help::DeleteAllFilesInDirectory(pathToTempMaps.c_str());
@@ -3046,6 +3031,7 @@ int CMiracle3d::DoneMedia()
     }
     m_gameInited = false;
     delete m3d::pClient;
+    m3d::pClient = nullptr;
 
     m3d::g_Kernel->GetEngineCfg().m_levFileName.Set("Empty");
     if (m_pInterfaceManager->DecRef() <= 0)
@@ -3055,14 +3041,18 @@ int CMiracle3d::DoneMedia()
     auto* profileManager = GetProfileManager();
     auto* curProfile = profileManager->GetCurProfile();
     profileManager->SaveProfile(curProfile);
-    //TODO: check this
-    delete profileManager;
+    delete m_profileManager;
+    m_profileManager = nullptr;
     delete m_radioEngine;
+    m_radioEngine = nullptr;
     delete m_blockMusicManager;
+    m_blockMusicManager = nullptr;
     delete m_townMusicManager;
+    m_townMusicManager = nullptr;
 
     g_pGame->m_renderer->UnregisterResetCallback(this);
     delete m_postEffect;
+    m_postEffect = nullptr;
 
     g_pGame->m_renderer->ReleaseTexture(m_backgroundTexture);
     M3D_LOG_INFO("--- Done Media: Ok ---");
@@ -3347,13 +3337,13 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
 
 bool CMiracle3d::HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params)
 {
-    //TODO: check this
+    // RVA 0x41FD50
     return Application::HandleCVar(cvar, params);
 }
 
 int CMiracle3d::NewFrame()
 {
-    //TODO: chgck this
+    // RVA 0x4156E0 - the fly camera's turn is per frame.
     m_flyCamTurn.zero();
     return 1;
 }

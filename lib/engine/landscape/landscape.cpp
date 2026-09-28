@@ -231,6 +231,12 @@ namespace m3d
 {
     extern CClient* pClient;
 
+    namespace
+    {
+        // The edge of a visibility/collision cell in world units (the binary's VISCELL_EDGE_LENGTH_* copies).
+        constexpr float VISCELL_EDGE_LENGTH = 128.0f;
+    }
+
     m3d::RenderModes Landscape::m_renderMode = RM_GAME;
 
     struct AlphaSpecial
@@ -264,37 +270,19 @@ namespace m3d
 
     void Landscape::LinkObstacleToCells(ai::Obstacle* obstacle)
     {
-        // TODO: generated code
-        // Get the obstacle's bounding box
-        Aabb box = obstacle->GetAabb();
-
-        float const VISCELL_EDGE_LENGTH_8 = 128.0;
-
-        // Convert world coordinates to grid coordinates
-        float const cellSizeInv = 1.0f / VISCELL_EDGE_LENGTH_8;
-        int x0 = static_cast<int>(box.m_box[0] * cellSizeInv);
-        int x1 = static_cast<int>(box.m_box[3] * cellSizeInv);
-        int z0 = static_cast<int>(box.m_box[2] * cellSizeInv);
-        int z1 = static_cast<int>(box.m_box[5] * cellSizeInv);
-
-        // Get landscape bounds
-        int land_size = this->m_owner->m_level->land_size;
-        int max_index = land_size - 1;
-
-        // Clamp coordinates to valid range
-        x0 = std::clamp(x0, 0, max_index);
-        x1 = std::clamp(x1, 0, max_index);
-        z0 = std::clamp(z0, 0, max_index);
-        z1 = std::clamp(z1, 0, max_index);
-
-        // Iterate through all affected cells
+        // RVA 0x64C7D0 - adds the obstacle to every collision cell its bounding box overlaps.
+        Aabb const box = obstacle->GetAabb();
+        float const toCell = 1.0f / VISCELL_EDGE_LENGTH;
+        int const maxIndex = m_owner->m_level->land_size - 1;
+        int const x0 = std::clamp(static_cast<int>(box.m_box[0] * toCell), 0, maxIndex);
+        int const x1 = std::clamp(static_cast<int>(box.m_box[3] * toCell), 0, maxIndex);
+        int const z0 = std::clamp(static_cast<int>(box.m_box[2] * toCell), 0, maxIndex);
+        int const z1 = std::clamp(static_cast<int>(box.m_box[5] * toCell), 0, maxIndex);
         for (int z = z0; z <= z1; ++z)
         {
             for (int x = x0; x <= x1; ++x)
             {
-                // Get the collision items container for this cell
-                auto& collisionItems = m_oCollisionitems[x + z * land_size];
-                collisionItems->m_obstacles->insert(obstacle);
+                GetCollisionCellItem(x, z)->m_obstacles->insert(obstacle);
             }
         }
     }
@@ -350,68 +338,31 @@ namespace m3d
 
     void Landscape::LinkNodeAndChildrenCollisionGeomsToCell(SgNode* node)
     {
-        // TODO: generated code
+        // RVA 0x64D680 - links the collision geoms of the node and its whole subtree to the cells under the node's
+        // bounding box. A node owned by a physic body is skipped unless it is flagged as having collision.
+        Aabb const bounds = node->GetObb().GetBounds();
+        float const toCell = 1.0f / VISCELL_EDGE_LENGTH;
+        int const maxIndex = m_owner->m_level->land_size - 1;
+        int const x0 = std::clamp(static_cast<int>(bounds.m_box[0] * toCell), 0, maxIndex);
+        int const z0 = std::clamp(static_cast<int>(bounds.m_box[2] * toCell), 0, maxIndex);
+        int const x1 = std::clamp(static_cast<int>(bounds.m_box[3] * toCell), 0, maxIndex);
+        int const z1 = std::clamp(static_cast<int>(bounds.m_box[5] * toCell), 0, maxIndex);
 
-        // Get OBB and convert to AABB bounds
-        auto obb = node->GetObb();
-        // Assuming Obb::GetBounds converts OBB to AABB
-        auto bounds = obb.GetBounds();
-
-        auto VISCELL_EDGE_LENGTH_8 = 128.0;
-        // Convert world coordinates to cell coordinates
-        int x0 = static_cast<int>(bounds.m_box[0] * (1.0f / VISCELL_EDGE_LENGTH_8));
-        int z0 = static_cast<int>(bounds.m_box[2] * (1.0f / VISCELL_EDGE_LENGTH_8));
-        int x1 = static_cast<int>(bounds.m_box[3] * (1.0f / VISCELL_EDGE_LENGTH_8));
-        int z1 = static_cast<int>(bounds.m_box[5] * (1.0f / VISCELL_EDGE_LENGTH_8));
-
-        int landSize = this->m_owner->m_level->land_size - 1;
-
-        // Clamp coordinates to valid range
-        x0 = std::clamp(x0, 0, landSize);
-        x1 = std::clamp(x1, 0, landSize);
-        z0 = std::clamp(z0, 0, landSize);
-        z1 = std::clamp(z1, 0, landSize);
-
-        // Check node properties
-        int PhysicBodyPtr = 0;
+        int physicBodyPtr = 0;
         int isNodeHaveCollision = 0;
-        node->GetProperty(4356u, &PhysicBodyPtr);
-        node->GetProperty(4358u, &isNodeHaveCollision);
-
-        if (!PhysicBodyPtr || isNodeHaveCollision)
+        node->GetProperty(PROP_NODE_PHYSICBODY, &physicBodyPtr);
+        node->GetProperty(PROP_NODE_HAVECOLLISION, &isNodeHaveCollision);
+        if (physicBodyPtr && !isNodeHaveCollision)
         {
-            // Link the main node
-            LinkNodeCollisionGeomsToCell(node, x0, x1, z0, z1);
-            UpdateNodeCollisionGeoms(node);
-
-            // Process children using iterative DFS
-            std::vector<m3d::Object*> stack;
-            stack.push_back(dynamic_cast<m3d::Object*>(node->GetFirstChild()));
-
-            while (!stack.empty())
-            {
-                m3d::Object* current = stack.back();
-                stack.pop_back();
-
-                // Process all siblings of the current node
-                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
-                while (sibling)
-                {
-                    // Link the sibling node
-                    LinkNodeCollisionGeomsToCell(sibling, x0, x1, z0, z1);
-                    UpdateNodeCollisionGeoms(sibling);
-
-                    // If this sibling has children, add to stack for processing
-                    if (sibling->GetFirstChild())
-                    {
-                        stack.push_back(sibling->GetFirstChild());
-                    }
-
-                    // Move to next sibling
-                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
-                }
-            }
+            return;
         }
+
+        LinkNodeCollisionGeomsToCell(node, x0, x1, z0, z1);
+        UpdateNodeCollisionGeoms(node);
+        ForEachDescendant(node, [&](SgNode* child) {
+            LinkNodeCollisionGeomsToCell(child, x0, x1, z0, z1);
+            UpdateNodeCollisionGeoms(child);
+        });
     }
 
     float Landscape::GetHeightWithCollisions(float x, float y, bool forVehicle) const
@@ -435,8 +386,8 @@ namespace m3d
 
     void Landscape::InitReflectionRefractionTextures()
     {
-        // TODO: generated code
-        // Release any existing textures first
+        // RVA 0x5C14A0 - render targets and shaders for the water, picked by the pixel shader version available
+        // (forced by g_forceWaterPSVersion) and the water quality.
         ReleaseReflectionRefractionTextures();
 
         // Determine texture size based on water quality setting
@@ -566,8 +517,9 @@ namespace m3d
         {
             m_waveBumpTex = m3d::Application::g_pApp->m_renderer->AddTexture("data/textures/water_dsdt.shader", 2);
 
-            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_S, 3u);
+            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_S, 1u);
             m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_WRAP_T, 1u);
+            m3d::Application::g_pApp->m_renderer->SetTextureParameter(m_waveBumpTex, rend::TM_TEX_FILTER, 4u);
         }
 
         // Load simple water shaders
@@ -618,106 +570,78 @@ namespace m3d
 
     void Landscape::BuildSolidLandscape()
     {
+        // RVA 0x7A6910 - the solid (untextured) landscape: one vertex buffer of 17x17 vertices per cell, and one
+        // triangle-strip index buffer per LOD (every 1st/2nd/4th/8th vertex) shared by all cells.
         if (m_solidVb.IsValid())
         {
             M3D_RENDERER->ReleaseVb(m_solidVb);
         }
 
-        // TODO: check and refactor
-        auto land_size = this->m_owner->m_level->land_size;
-        m_solidVb = M3D_RENDERER->AddVb(rend::VertexType::VERTEX_YNI, 289 * land_size * land_size, "SolidLandscape", 0);
-        this->vertsPerCell = 289;
-        float* buff = (float*)M3D_RENDERER->LockVb(m_solidVb, vertsPerCell * land_size * land_size, 0, 0);
-        M3D_ASSERT(buff);
+        int const landSize = m_owner->m_level->land_size;
+        vertsPerCell = 17 * 17;
+        m_solidVb = M3D_RENDERER->AddVb(rend::VertexType::VERTEX_YNI, vertsPerCell * landSize * landSize, "SolidLandscape", 0);
+        float* vertex = static_cast<float*>(M3D_RENDERER->LockVb(m_solidVb, vertsPerCell * landSize * landSize, 0, 0));
+        M3D_ASSERT(vertex != 0);
 
-        auto sizeinCells = land_size;
-        unsigned v9 = 0;
-        float* v10 = buff;
-        unsigned v = 0;
-        if (land_size)
+        // A vertex is its height, its index in the cell ((x << 7) + z, x and z in 0..16) and its normal (x, z, y)
+        // scaled by 1024, all but the height as 16-bit values.
+        for (int cellX = 0; cellX < landSize; ++cellX)
         {
-            do
+            for (int cellZ = 0; cellZ < landSize; ++cellZ)
             {
-                auto v11 = 0;
-                auto i = 0;
-                auto v32 = 16 * v9;
-                do
+                for (int x = 0; x <= 16; ++x)
                 {
-                    auto v12 = 0;
-                    auto nn = 0;
-                    auto v34 = 16 * v11;
-                    do
+                    for (int z = 0; z <= 16; ++z)
                     {
-                        auto v13 = v32 + v12;
-                        auto v14 = 0;
-                        auto v15 = v12 << 7;
-                        do
-                        {
-                            auto v16 = v13 + (this->m_mapSize + 1) * (v14 + v34);
-                            *((unsigned short*)v10 + 2) = v15 + v14;
-                            *v10 = this->m_heightMap[v16];
-                            v16 *= 12;
-                            *((unsigned short*)v10 + 3) =
-                                (int)(float)(*(float*)((char*)&this->m_vnormal->x + v16) * 1024.0);
-                            *((unsigned short*)v10 + 4) =
-                                (int)(float)(*(float*)((char*)&this->m_vnormal->z + v16) * 1024.0);
-                            *((unsigned short*)v10 + 5) =
-                                (int)(float)(*(float*)((char*)&this->m_vnormal->y + v16) * 1024.0);
-                            ++v14;
-                            v10 += 3;
-                        } while (v14 <= 0x10);
-                        v12 = ++nn;
-                    } while (nn <= 0x10);
-                    v11 = ++i;
-                } while (i < sizeinCells);
-                v9 = ++v;
-            } while (v < sizeinCells);
+                        int const mapIndex = 16 * cellX + x + (m_mapSize + 1) * (z + 16 * cellZ);
+                        auto* packed = reinterpret_cast<unsigned short*>(vertex);
+                        packed[2] = static_cast<unsigned short>((x << 7) + z);
+                        vertex[0] = m_heightMap[mapIndex];
+                        packed[3] = static_cast<unsigned short>(static_cast<int>(m_vnormal[mapIndex].x * 1024.0f));
+                        packed[4] = static_cast<unsigned short>(static_cast<int>(m_vnormal[mapIndex].z * 1024.0f));
+                        packed[5] = static_cast<unsigned short>(static_cast<int>(m_vnormal[mapIndex].y * 1024.0f));
+                        vertex += 3;
+                    }
+                }
+            }
         }
         M3D_RENDERER->UnlockVb(m_solidVb);
 
-        int v25 = 0;
-        int v17 = 0;
-        unsigned ia = 0;
-        do
+        for (int lod = 0; lod < 4; ++lod)
         {
-            if (m_solidIb[ia].IsValid())
-                M3D_RENDERER->ReleaseIb(m_solidIb[ia]);
-            int v19 = 1 << v17;
-            int v20 = (unsigned __int16)(1 << v17);
-            m_solidIb[ia] = M3D_RENDERER->AddIb(32 * (16 / v20 + 2) / v20, 0);
-            auto asd = 32 * (16 / v20 + 2) / v20;
-            short* v21 = (short*)M3D_RENDERER->LockIb(m_solidIb[ia], 32 * (16 / v20 + 2) / v20, 0, 0);
-            M3D_RENDERER->GetLastErrorStr();
-            int v22 = 0;
-            unsigned nna = 0;
-            unsigned va = 0;
-            int v23 = 17 * v19;
-            do
+            if (m_solidIb[lod].IsValid())
             {
-                auto v24 = 0;
-                do
-                {
-                    *v21 = v23 + v22;
-                    v21[1] = v22;
-                    if (v24 == 16)
-                        v22 = v23 + v22 - 16;
-                    else
-                        v22 += v19;
-                    nna += 2;
-                    v24 += v20;
-                    v21 += 2;
-                } while (v24 <= 16);
-                nna += 2;
-                *v21 = v22 - v23 + 16;
-                v21[1] = v23 + v22;
-                v21 += 2;
-                va += v20;
-            } while (va < 16);
+                M3D_RENDERER->ReleaseIb(m_solidIb[lod]);
+            }
 
-            trisPerCell[ia] = nna - 4;
-            M3D_RENDERER->UnlockIb(m_solidIb[ia]);
-            v25 = ++ia < 4;
-        } while (v25);
+            int const step = 1 << lod;
+            int const numIndices = 32 * (16 / step + 2) / step;
+            m_solidIb[lod] = M3D_RENDERER->AddIb(numIndices, 0);
+            auto* index = static_cast<short*>(M3D_RENDERER->LockIb(m_solidIb[lod], numIndices, 0, 0));
+            M3D_RENDERER->GetLastErrorStr();
+
+            // One strip row per `step` rows of vertices, joined by two degenerate indices.
+            int const rowStride = 17 * step;
+            int vert = 0;
+            int count = 0;
+            for (int row = 0; row < 16; row += step)
+            {
+                for (int col = 0; col <= 16; col += step)
+                {
+                    index[0] = static_cast<short>(rowStride + vert);
+                    index[1] = static_cast<short>(vert);
+                    vert = col == 16 ? rowStride + vert - 16 : vert + step;
+                    count += 2;
+                    index += 2;
+                }
+                count += 2;
+                index[0] = static_cast<short>(vert - rowStride + 16);
+                index[1] = static_cast<short>(rowStride + vert);
+                index += 2;
+            }
+            trisPerCell[lod] = count - 4;
+            M3D_RENDERER->UnlockIb(m_solidIb[lod]);
+        }
     }
 
     void Landscape::DrawCellsOverlayedEditor(cmn::vector<unsigned> const& cellsPerTex, unsigned clr)
@@ -796,6 +720,7 @@ namespace m3d
 
     void Landscape::DrawSolidLandscape(LandRenderMode landMode, int lod)
     {
+        // RVA 0x7A77B0
         M3D_RENDERER->SetAlphaTest(0);
 
         auto const fogColor = m_owner->GetWeatherFogColor();
@@ -954,58 +879,36 @@ namespace m3d
 
         M3D_RENDERER->SetToStream0(m_solidVb);
 
-        // TODO: check this!!!
+        // One draw per visible cell: constant 5 is the cell's world origin (and the height scale 8), constant 6
+        // its lightmap UV origin and the UV step of one vertex.
+        int const landSize = m_owner->m_level->land_size;
+        float const uvStep = 1.0f / static_cast<float>(16 * landSize);
+        int landTris = 0;
+        int landDips = 0;
         int x = 0;
         int y = 0;
         int vis = 0;
         int radius = 0;
-        int v = 0;
-        int landDips = 0;
-        float sizeinCells = m_owner->m_level->land_size;
-
-        int maxX = -1;
-        int maxY = -1;
-        int maxVis = -1;
-        int maxRadius = -1;
-        int minX = 9999999;
-        int minY = 9999999;
-        int minVis = 9999999;
-        int minRadius = 9999999;
         while (m_owner->GetGraph().SortedCellsFetch(x, y, vis, radius))
         {
-            if (vis)
+            if (!vis)
             {
-                maxX = std::max(maxX, x);
-                maxY = std::max(maxY, y);
-                maxVis = std::max(maxVis, vis);
-                maxRadius = std::max(maxRadius, radius);
-                minX = std::min(minX, x);
-                minY = std::min(minY, y);
-                minVis = std::min(minVis, vis);
-                minRadius = std::min(minRadius, radius);
-                float buff[3] = {0};
-
-                buff[0] = x * 128.0;
-                buff[1] = y * 128.0;
-                buff[2] = 8.0;
-                M3D_RENDERER->SetVsFloatConst(5u, buff, 1u);
-
-                buff[0] = x / sizeinCells;
-                buff[1] = y / sizeinCells;
-                buff[2] = 1.0 / (float)(16 * m_owner->m_level->land_size);
-                M3D_RENDERER->SetVsFloatConst(6u, buff, 1u);
-
-                v += trisPerCell[lod];
-                ++landDips;
-
-                M3D_RENDERER->SetIndices(m_solidIb[lod], vertsPerCell * (y + sizeinCells * x));
-                M3D_RENDERER->DrawIndexedPrimitiveShader(
-                    rend::M3DPT_TRIANGLESTRIP, 0, this->vertsPerCell, 0, this->trisPerCell[lod]);
+                continue;
             }
+
+            float const cellOrigin[3] = {static_cast<float>(x) * 128.0f, static_cast<float>(y) * 128.0f, 8.0f};
+            M3D_RENDERER->SetVsFloatConst(5u, cellOrigin, 1u);
+            float const cellUV[3] = {static_cast<float>(x) / landSize, static_cast<float>(y) / landSize, uvStep};
+            M3D_RENDERER->SetVsFloatConst(6u, cellUV, 1u);
+
+            landTris += trisPerCell[lod];
+            ++landDips;
+            M3D_RENDERER->SetIndices(m_solidIb[lod], vertsPerCell * (y + landSize * x));
+            M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, vertsPerCell, 0, trisPerCell[lod]);
         }
 
         M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeDips = " + CStr(landDips)).c_str());
-        M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeTris = " + CStr(v)).c_str());
+        M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("lanscapeTris = " + CStr(landTris)).c_str());
 
         M3D_RENDERER->PopFog();
     }
@@ -1548,135 +1451,68 @@ namespace m3d
 
     int Landscape::ConstructCollisionData()
     {
-        // TODO: generated code
-        int landSize = this->m_owner->m_level->land_size;
-
-        // Allocate collision items array
+        // RVA 0x64E810 - one collision item per landscape cell, holding a water quad (two triangles) for every
+        // wet quarter-cell; plus the terrain heightfield geom.
+        int const landSize = m_owner->m_level->land_size;
         m_oCollisionitems = new CollisionCellItem*[landSize * landSize];
-        for (int i = 0; i < landSize * landSize; i++)
-        {
-            m_oCollisionitems[i] = nullptr;
-        }
 
-        // Process each cell in the landscape
-        for (int cellY = 0; cellY < landSize; cellY++)
+        for (int cellY = 0; cellY < landSize; ++cellY)
         {
-            for (int cellX = 0; cellX < landSize; cellX++)
+            for (int cellX = 0; cellX < landSize; ++cellX)
             {
-                // Create collision cell item
                 auto* item = new CollisionCellItem;
                 item->m_wasEnabledLastFrame = false;
                 item->m_bMustCheck = false;
 
-                // Process sub-cells (4x4 grid within each cell)
-                for (int subY = 0; subY < 4; subY++)
+                // The water map has 4x4 samples per cell; a sample covers 4x4 heightmap steps of 8 units.
+                for (int subY = 0; subY < 4; ++subY)
                 {
-                    int worldY = subY + 4 * cellY;
-                    int vertexYOffset = 16 * cellY + 4 * subY;
-
-                    for (int subX = 0; subX < 4; subX++)
+                    int const waterY = 4 * cellY + subY;
+                    for (int subX = 0; subX < 4; ++subX)
                     {
-                        int worldX = subX + 4 * cellX;
-
-                        // Check if this position has water
-                        if (m_waterMap[4 * worldY * landSize + 4 * worldX])
+                        int const waterX = 4 * cellX + subX;
+                        if (!m_waterMap[4 * waterY * landSize + waterX])
                         {
-                            // Create water geometry object
-                            auto* waterObj = RT_DYNCAST(M3D_KERNEL->New("GeomObjectWater"), GeomObjectWater);
-
-                            // Allocate vertices and indices
-                            waterObj->m_Vertices = new CVector[4];  // 4 vertices for the quad
-                            waterObj->m_Indices = new int[6];       // 6 indices for two triangles
-
-                            // Set up indices for two triangles forming a quad
-                            int* indices = waterObj->m_Indices;
-                            indices[0] = 2;
-                            indices[1] = 1;
-                            indices[2] = 0;  // First triangle
-                            indices[3] = 3;
-                            indices[4] = 1;
-                            indices[5] = 2;  // Second triangle
-
-                            // Create vertices for water quad
-                            int vertexCounter = 0;
-                            for (int vertexSubY = 0; vertexSubY < 2; vertexSubY++)
-                            {
-                                float vertexZ = (vertexYOffset + vertexSubY * 4) * 8.0f;
-
-                                for (int vertexSubX = 0; vertexSubX < 2; vertexSubX++)
-                                {
-                                    float vertexX = (4 * worldX + vertexSubX * 4) * 8.0f;
-                                    float waterHeight = m3d::Landscape::getWaterHeight(worldX, worldY);
-
-                                    CVector* vertex = &waterObj->m_Vertices[vertexCounter];
-                                    vertex->x = vertexX;
-                                    vertex->y = waterHeight;
-                                    vertex->z = vertexZ;
-
-                                    vertexCounter++;
-                                }
-                            }
-
-                            // Create triangle mesh for collision
-                            waterObj->m_TriData = dGeomTriMeshDataCreate();
-                            dGeomTriMeshDataBuildSingle(
-                                waterObj->m_TriData,
-                                waterObj->m_Vertices,
-                                sizeof(CVector),  // vertex stride
-                                4,                // vertex count
-                                waterObj->m_Indices,
-                                6,               // index count
-                                3 * sizeof(int)  // triangle stride
-                            );
-
-                            // Create ODE geometry
-                            dxSpace* odeSpace = m_owner->GetOdeSpace();
-                            dxGeom* triMeshGeom = dCreateTriMesh(odeSpace, waterObj->m_TriData, 0, 0, 0);
-                            waterObj->SetGeom(triMeshGeom);
-
-                            waterObj->m_needToDeleteInUnlink = false;
-
-                            // Add to collision cell's geometry list
-                            item->m_geomsList.insert(waterObj);
+                            continue;
                         }
+
+                        auto* water = RT_DYNCAST(M3D_KERNEL->New("GeomObjectWater"), GeomObjectWater);
+                        water->m_Vertices = new CVector[4];
+                        water->m_Indices = new int[6]{2, 1, 0, 3, 1, 2};
+                        int vertex = 0;
+                        for (int dz = 0; dz <= 4; dz += 4)
+                        {
+                            float const z = static_cast<float>(16 * cellY + 4 * subY + dz) * 8.0f;
+                            for (int dx = 0; dx <= 4; dx += 4)
+                            {
+                                float const x = static_cast<float>(16 * cellX + 4 * subX + dx) * 8.0f;
+                                water->m_Vertices[vertex++] = CVector(x, getWaterHeight(waterX, waterY), z);
+                            }
+                        }
+
+                        water->m_TriData = dGeomTriMeshDataCreate();
+                        dGeomTriMeshDataBuildSingle(
+                            water->m_TriData, water->m_Vertices, sizeof(CVector), 4, water->m_Indices, 6, 3 * sizeof(int));
+                        water->SetGeom(dCreateTriMesh(m_owner->GetOdeSpace(), water->m_TriData, 0, 0, 0));
+                        water->m_needToDeleteInUnlink = false;
+                        item->m_geomsList.insert(water);
                     }
                 }
-
-                // Store collision cell item in the array
                 m_oCollisionitems[cellY * landSize + cellX] = item;
             }
         }
 
-        // Create terrain heightfield data
-        float* heightData = new float[4 * this->m_mapSize * this->m_mapSize];
-
-        // Copy heightmap data (convert from (n+1)x(n+1) to nxn)
-        for (int y = 0; y < this->m_mapSize; y++)
+        // The heightfield takes an n x n grid; the height map has (n + 1) x (n + 1) samples.
+        float* heights = new float[m_mapSize * m_mapSize];
+        for (int y = 0; y < m_mapSize; ++y)
         {
-            float* sourceRow = &this->m_heightMap[y * (this->m_mapSize + 1)];
-            float* destRow = &heightData[y * this->m_mapSize];
-            memcpy(destRow, sourceRow, sizeof(float) * this->m_mapSize);
+            memcpy(&heights[y * m_mapSize], &m_heightMap[y * (m_mapSize + 1)], sizeof(float) * m_mapSize);
         }
-
-        // Create terrain geometry object
-        this->m_terrainObject = (m3d::GeomObject*)m3d::g_Kernel->New("GeomObjectLandscape");
-
-        dxSpace* terrainSpace = m_owner->GetOdeSpace();
-        dxGeom* terrainGeom = dCreateTerrainY(
-            terrainSpace,
-            heightData,
-            this->m_mapSize * 8.0f,  // terrain width
-            this->m_mapSize,         // grid size
-            1,                       // vertical scale
-            0                        // flags
-        );
-
-        m_terrainObject->SetGeom(terrainGeom);
-        dGeomEnable(this->m_terrainObject->GetGeom());
-
-        // Free temporary height data
-        delete[] heightData;
-        return true;
+        m_terrainObject = static_cast<GeomObject*>(M3D_KERNEL->New("GeomObjectLandscape"));
+        m_terrainObject->SetGeom(dCreateTerrainY(m_owner->GetOdeSpace(), heights, m_mapSize * 8.0f, m_mapSize, 1, 0));
+        dGeomEnable(m_terrainObject->GetGeom());
+        delete[] heights;
+        return 1;
     }
 
     void Landscape::setOwner(CWorld* world)
@@ -1836,8 +1672,8 @@ namespace m3d
 
     void Landscape::ReadTileInfo(int loadExtraTextures)
     {
-        // TODO: generated code
-        // Construct the TileInfo.xml path
+        // RVA 0x5BBBD0 - reads TileInfo.xml: the alpha mask sets (loaded once) and the land types, whose tile
+        // textures are loaded when loadExtraTextures is set and the texture is used (or all are to be loaded).
         CStr tileInfoPath = m_pathTile + "TileInfo.xml";
 
         // Create and open the file stream
@@ -1845,7 +1681,7 @@ namespace m3d
 
         if (!fileStream->Open(tileInfoPath.c_str(), m3d::fs::IStream::OpenFlags::OPEN_READ))
         {
-            M3D_LOG_ERR("TileSet: cannot open resources " + tileInfoPath);
+            M3D_LOG_INFO("TileSet: cannot open resources " + tileInfoPath);
             return;
         }
 
@@ -1853,9 +1689,10 @@ namespace m3d
         ref_ptr xmlFile(M3D_KERNEL->CreateXmlFile());
         if (!xmlFile->Read(*fileStream))
         {
-            M3D_LOG_ERR("TileSet: cannot parse resources (" + CStr(xmlFile->GetError()) + ") " + tileInfoPath);
+            M3D_LOG_INFO("TileSet: cannot parse resources (" + CStr(xmlFile->GetError()) + ") " + tileInfoPath);
             return;
         }
+        fileStream->Close();
 
         // Create XML nodes for parsing
         ref_ptr tileSetNode(xmlFile->CreateNode());
@@ -1868,44 +1705,31 @@ namespace m3d
 
         // Process AlphaSets
         tileSetNode->GetFirstChild(alphaSetsNode, "AlphaSets");
-        m_AlphaSets.clear();
-
-        alphaSetsNode->GetFirstChild(alphaSetNode, "Set");
-        while (!alphaSetNode->IsEmpty())
+        if (m_AlphaSets.empty())
         {
-            // Create new AlphaMask entry
-            AlphaMask alphaMask;
-            alphaMask.m_name = alphaSetNode->GetAttribute("name");
-
-            // Process mask textures (mask1, mask2, etc.)
-            for (int i = 1; i <= 4; i++)
+            int alphaSetIndex = 0;
+            for (alphaSetsNode->GetFirstChild(alphaSetNode, "Set"); !alphaSetNode->IsEmpty();
+                 alphaSetNode->GetNextSibling(alphaSetNode, "Set"))
             {
-                CStr maskName = "mask" + CStr(i);
-                alphaSetNode->GetFirstChild(maskNode, maskName.c_str());
-
-                while (!maskNode->IsEmpty())
+                char const* setName = alphaSetNode->GetAttribute("name");
+                AlphaMask alphaMask;
+                alphaMask.m_name = setName;
+                for (int i = 1; i <= 4; ++i)
                 {
-                    char const* textureName = maskNode->GetAttribute("name");
-                    CStr fullTexturePath = m_pathTile + textureName;
-
-                    // Add texture and set parameters
-                    rend::TexHandle texHandle = M3D_RENDERER->AddTexture(fullTexturePath, 2);
-
-                    M3D_RENDERER->SetTextureParameter(texHandle, m3d::rend::TexParam::TM_WRAP_S, 3);
-                    M3D_RENDERER->SetTextureParameter(texHandle, m3d::rend::TexParam::TM_WRAP_T, 3);
-                    M3D_RENDERER->SetTextureParameter(texHandle, m3d::rend::TexParam::TM_MIP_LOD_BIAS, -1.0f);
-
-                    alphaMask.m_texMasks[i - 1].push_back(texHandle);
-
-                    maskNode->GetNextSibling(maskNode, maskName.c_str());
+                    CStr const maskName = "mask" + CStr(i);
+                    for (alphaSetNode->GetFirstChild(maskNode, maskName.c_str()); !maskNode->IsEmpty();
+                         maskNode->GetNextSibling(maskNode, maskName.c_str()))
+                    {
+                        auto& masks = alphaMask.m_texMasks[i - 1];
+                        masks.push_back(M3D_RENDERER->AddTexture(m_pathTile + CStr(maskNode->GetAttribute("name")), 2));
+                        M3D_RENDERER->SetTextureParameter(masks.back(), rend::TM_WRAP_S, 3);
+                        M3D_RENDERER->SetTextureParameter(masks.back(), rend::TM_WRAP_T, 3);
+                        M3D_RENDERER->SetTextureParameter(masks.back(), rend::TM_MIP_LOD_BIAS, rend::FloatTexParam(-1.0f));
+                    }
                 }
+                m_AlphaSets.push_back(alphaMask);
+                m_hashAlphaToLand.add(setName, alphaSetIndex++);
             }
-
-            // Add to AlphaSets and mapping
-            m_AlphaSets.push_back(std::move(alphaMask));
-            m_hashAlphaToLand.add(alphaMask.m_name, m_AlphaSets.size() - 1);
-
-            alphaSetNode->GetNextSibling(alphaSetNode, "Set");
         }
 
         // Process LandTypes
@@ -1937,9 +1761,8 @@ namespace m3d
                     char const* passmaskAttr = typeNode->GetAttribute("passmask");
                     landType.m_passmask = passmaskAttr ? atoi(passmaskAttr) : 0;
 
-                    char const* alphasetAttr = typeNode->GetAttribute("alphaset");
-                    landType.m_alphaset = 0;
-                    m_hashAlphaToLand.add(alphasetAttr, landType.m_alphaset);
+                    int alphaSet = 0;
+                    landType.m_alphaset = m_hashAlphaToLand.get(typeNode->GetAttribute("alphaset"), alphaSet) ? alphaSet : 0;
 
                     // Process tiles
                     ref_ptr tileNode(xmlFile->CreateNode());
@@ -2258,8 +2081,7 @@ namespace m3d
 
     void Landscape::ReloadWaterTextures()
     {
-        // TODO: generated code Landscape::ReloadWaterTextures
-        // Only reload textures for PS2.0 shader version
+        // RVA 0x5C0FE0 - the level's big and small wave bump maps, used by the PS 2.0 water only.
         if (m_waterShaderVersion != 20)
         {
             return;
@@ -2504,6 +2326,7 @@ namespace m3d
 
     int Landscape::Load()
     {
+        // RVA 0x5BDC00
         M3D_LOG_FLOW();
 
         m_mapSize = 16 * m_owner->m_level->land_size;
@@ -2547,7 +2370,9 @@ namespace m3d
                     M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_S, 3u);
                     M3D_APP->m_renderer->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3u);
                     M3D_APP->m_renderer->SetTextureParameter(
-                        texHandle, rend::TM_MIP_LOD_BIAS, M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF());
+                        texHandle,
+                        rend::TM_MIP_LOD_BIAS,
+                        rend::FloatTexParam(M3D_KERNEL->GetEngineCfg().m_g_shoresMipBias.GetF()));
                     ws.m_texHandle = texHandle;
                 }
                 m_waves.push_back(ws);
@@ -2559,7 +2384,6 @@ namespace m3d
         }
 
         delete[] m_colormap;
-        //TODO: check size
         m_colormap = new unsigned[(m_mapSize + 1) * (m_mapSize + 1)];
 
         delete[] m_texSetsmap;
@@ -2599,7 +2423,7 @@ namespace m3d
         delete[] m_cliffHeightMap;
         m_cliffHeightMap = new unsigned char[(m_mapSize + 1) * (m_mapSize + 1)];
 
-        // TODO: check this
+        // The heightfield file is either 16-bit (scaled by 0.12) or float heights, m_mapSize x m_mapSize.
         if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream(); stream->Open(
                 m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_hfName).c_str(), fs::IStream::OPEN_READ))
         {
@@ -2672,7 +2496,7 @@ namespace m3d
         m_waterMap = new short[landSize * landSize];
         memset(m_waterMap, 0, waterMapSize);
 
-        // TODO check this!!
+        // The water map: a water height (units of 0.12) per quarter-cell, or an old style byte mask.
         if (scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream(); stream->Open(
                 m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_waterName).c_str(), fs::IStream::OPEN_READ))
         {
@@ -2973,183 +2797,53 @@ namespace m3d
 
     void Landscape::RecalcUV()
     {
-        // TODO: check and rafactor this shit!!
-        auto v48 = &this->m_uvForAngles[0][0][1];
-        auto v29 = 0;
-        auto v1 = &this->m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][1];
-        do
+        // RVA 0x5ADBA0 - the UVs of a 5x5 vertex grid (a quarter-cell per step) under each of the 4 rotations of an
+        // alpha mask (0, -90, -180, -270 degrees about the mask's centre): plain in m_uvForAngles, and for every
+        // set group and mask placed in the 8x2 mask atlas (cells of 1/8 x 1/2, shrunk by 5% and inset).
+        // NOTE: both arrays are written as flat [rotation][row][column][u, v] runs of floats, whatever their declared
+        // shape; the atlas entries follow one another for 8 groups x 5 masks. m_uvForAngles is rewritten, identically,
+        // for every group and mask.
+        // The arithmetic keeps the evaluation order the shipped build's inlined matrix products reduce to.
+        float* atlasUV = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][0];
+        for (int group = 0; group < 32; group += 4)
         {
-            for (int masknum = 0; masknum < 5; ++masknum)
+            for (int mask = 0; mask < 5; ++mask)
             {
-                auto v2 = v48;
-                auto i = 0;
-                bool v24 = false;
-                do
+                float* plainUV = &m_uvForAngles[0][0][0];
+                for (int rotation = 0; rotation < 4; ++rotation)
                 {
-                    CMatrix shiftHalf0;
-                    memset(&shiftHalf0, 0, sizeof(shiftHalf0));
-                    auto v3 = -((double)i * 1.5707964);
-
-                    CMatrix shiftHalf1;
-                    CMatrix mat;
-                    memset(&shiftHalf1, 0, sizeof(shiftHalf1));
-                    memset(&mat, 0, sizeof(mat));
-
-                    auto v27 = sin(v3);
-                    auto v26 = cos(v3);
-                    auto v47 = v26;
-                    auto v4 = (float)((float)((float)(mat._41 * shiftHalf0._14) + (float)(mat._31 * shiftHalf0._13)) +
-                                      (float)(shiftHalf0._12 * (float)(0.0 - v27))) +
-                        v26;
-                    auto v5 = (float)((float)((float)(mat._43 * shiftHalf0._14) + (float)(mat._23 * shiftHalf0._12)) +
-                                      mat._13) +
-                        shiftHalf0._13;
-                    auto v36 = shiftHalf0._12 * v26 + mat._42 * shiftHalf0._14 + mat._32 * shiftHalf0._13 + v27;
-                    auto v37 = (float)((float)((float)(mat._34 * shiftHalf0._13) + (float)(mat._24 * shiftHalf0._12)) +
-                                       mat._14) +
-                        shiftHalf0._14;
-                    auto v6 = (float)((float)((float)(shiftHalf0._21 * v26) + (float)(shiftHalf0._24 * mat._41)) +
-                                      (float)(shiftHalf0._23 * mat._31)) +
-                        (float)(0.0 - v27);
-                    auto v38 = (float)((float)((float)(shiftHalf0._23 * mat._34) + (float)(shiftHalf0._21 * mat._14)) +
-                                       shiftHalf0._24) +
-                        mat._24;
-                    auto v39 = (float)((float)((float)(shiftHalf0._32 * v26) + (float)(shiftHalf0._31 * v27)) +
-                                       (float)(shiftHalf0._34 * mat._42)) +
-                        mat._32;
-                    auto v40 = (float)((float)((float)(shiftHalf0._34 * mat._43) + (float)(shiftHalf0._32 * mat._23)) +
-                                       (float)(shiftHalf0._31 * mat._13)) +
-                        1.0;
-                    auto v7 = (float)((float)((float)(shiftHalf0._21 * v27) + (float)(shiftHalf0._24 * mat._42)) +
-                                      (float)(shiftHalf0._23 * mat._32)) +
-                        v26;
-                    auto v8 = (float)((float)((float)(shiftHalf0._24 * mat._43) + (float)(shiftHalf0._21 * mat._13)) +
-                                      shiftHalf0._23) +
-                        mat._23;
-                    auto v9 = (float)((float)((float)(shiftHalf0._31 * v26) + (float)(shiftHalf0._34 * mat._41)) +
-                                      (float)(shiftHalf0._32 * (float)(0.0 - v27))) +
-                        mat._31;
-                    auto v41 = (float)((float)((float)(shiftHalf0._32 * mat._24) + (float)(shiftHalf0._31 * mat._14)) +
-                                       shiftHalf0._34) +
-                        mat._34;
-                    auto v33 = v26 * -0.5;
-                    auto v42 = (float)((float)((float)(mat._31 * 0.0) - (float)((float)(0.0 - v27) * 0.5)) +
-                                       (float)(v26 * -0.5)) +
-                        mat._41;
-                    auto v43 =
-                        (float)((float)((float)(mat._32 * 0.0) - (float)(v27 * 0.5)) + (float)(v26 * -0.5)) + mat._42;
-                    auto v44 = mat._43 - (float)((float)(mat._23 + mat._13) * 0.5);
-                    auto v35 = v37 * 0.5;
-                    auto v45 = (float)((float)(mat._34 * 0.0) - (float)((float)(mat._24 + mat._14) * 0.5)) + 1.0;
-                    auto v52 = (float)((float)((float)(shiftHalf1._31 * v5) + (float)(shiftHalf1._21 * v36)) +
-                                       (float)(v37 * 0.5)) +
-                        v4;
-                    auto v53 = (float)((float)((float)(shiftHalf1._32 * v5) + (float)(shiftHalf1._12 * v4)) +
-                                       (float)(v37 * 0.5)) +
-                        v36;
-                    auto v54 = (float)((float)((float)(shiftHalf1._23 * v36) + (float)(shiftHalf1._13 * v4)) +
-                                       (float)(v37 * 0.0)) +
-                        v5;
-                    auto v55 = (float)((float)((float)(shiftHalf1._34 * v5) + (float)(shiftHalf1._24 * v36)) +
-                                       (float)(shiftHalf1._14 * v4)) +
-                        v37;
-                    auto v49 = v38 * 0.5;
-                    auto v56 = (float)((float)((float)(shiftHalf1._31 * v8) + (float)(shiftHalf1._21 * v7)) +
-                                       (float)(v38 * 0.5)) +
-                        v6;
-                    auto v57 = (float)((float)((float)(shiftHalf1._32 * v8) + (float)(shiftHalf1._12 * v6)) +
-                                       (float)(v38 * 0.5)) +
-                        v7;
-                    auto v58 = (float)((float)((float)(shiftHalf1._23 * v7) + (float)(shiftHalf1._13 * v6)) +
-                                       (float)(v38 * 0.0)) +
-                        v8;
-                    auto v34 = v41 * 0.5;
-                    auto v59 = (float)((float)((float)(shiftHalf1._31 * v40) + (float)(shiftHalf1._21 * v39)) +
-                                       (float)(v41 * 0.5)) +
-                        v9;
-                    auto v60 = (float)((float)((float)(shiftHalf1._32 * v40) + (float)(shiftHalf1._12 * v9)) +
-                                       (float)(v41 * 0.5)) +
-                        v39;
-                    auto v61 = (float)((float)((float)(shiftHalf1._23 * v39) + (float)(shiftHalf1._13 * v9)) +
-                                       (float)(v41 * 0.0)) +
-                        v40;
-                    auto v32 = v45 * 0.5;
-                    auto v62 = (float)((float)((float)(shiftHalf1._31 * v44) + (float)(shiftHalf1._21 * v43)) +
-                                       (float)(v45 * 0.5)) +
-                        v42;
-                    auto v63 = (float)((float)((float)(shiftHalf1._32 * v44) + (float)(shiftHalf1._12 * v42)) +
-                                       (float)(v45 * 0.5)) +
-                        v43;
-                    float v64[16];
-                    v64[0] = v52;
-                    v64[1] = v53;
-                    v64[2] = v54;
-                    v64[3] = v55;
-                    v64[4] = v56;
-                    v64[5] = v57;
-                    v64[6] = v58;
-                    v64[8] = v59;
-                    v64[9] = v60;
-                    v64[10] = v61;
-                    v64[12] = v62;
-                    v64[11] = (float)((float)((float)(shiftHalf1._34 * v40) + (float)(shiftHalf1._24 * v39)) +
-                                      (float)(shiftHalf1._14 * v9)) +
-                        v41;
-                    v64[7] = (float)((float)((float)(shiftHalf1._34 * v8) + (float)(shiftHalf1._24 * v7)) +
-                                     (float)(shiftHalf1._14 * v6)) +
-                        v38;
-                    auto v10 = 0.5;
-                    v64[13] = v63;
-                    v64[14] = (float)((float)((float)(shiftHalf1._23 * v43) + (float)(shiftHalf1._13 * v42)) +
-                                      (float)(v45 * 0.0)) +
-                        v44;
-                    v64[15] = (float)((float)((float)(shiftHalf1._34 * v44) + (float)(shiftHalf1._24 * v43)) +
-                                      (float)(shiftHalf1._14 * v42)) +
-                        v45;
-                    memcpy(&mat, v64, sizeof(mat));
-                    auto yy = 0;
-                    auto v11 = mat._31 * 0.0;
-                    auto v12 = mat._32 * 0.0;
-                    auto v13 = v1;
-                    do
+                    double const angle = -(rotation * 1.5707964);
+                    float const s = static_cast<float>(sin(angle));
+                    float const c = static_cast<float>(cos(angle));
+                    float const offsetU = 0.5f + (s * 0.5f + c * -0.5f);
+                    float const offsetV = 0.5f + (-(s * 0.5f) + c * -0.5f);
+                    for (int row = 0; row < 5; ++row)
                     {
-                        auto v14 = (float)yy * 0.25;
-                        auto v15 = v14 * mat._21;
-                        auto v16 = v13;
-                        auto v17 = 0;
-                        auto v18 = v2;
-                        v13 += 10;
-                        auto v46 = (float)(v14 * mat._22) + v12;
-                        v2 += 10;
-                        do
+                        float const y = static_cast<float>(row) * 0.25f;
+                        for (int col = 0; col < 5; ++col)
                         {
-                            auto v19 = (float)v17 * 0.25;
-                            auto v20 = (float)((float)(mat._12 * v19) + v46) + mat._42;
-                            auto v21 = (float)((float)((float)(v19 * mat._11) + v11) + mat._41) + v15;
-                            *(v18 - 1) = v21;
-                            *v18 = v20;
-                            auto v22 = (float)(v21 * 0.125) * 0.94999999;
-                            auto v23 = (float)(v20 * v10) * 0.94999999;
-                            if (masknum)
+                            float const x = static_cast<float>(col) * 0.25f;
+                            float const u = (x * c + offsetU) + y * -s;
+                            float const v = (s * x + y * c) + offsetV;
+                            plainUV[0] = u;
+                            plainUV[1] = v;
+
+                            float atlasU = u * 0.125f * 0.94999999f;
+                            float atlasV = v * 0.5f * 0.94999999f;
+                            if (mask)
                             {
-                                v22 = (float)((float)((v29 + masknum) % 8) * 0.125) + v22;
-                                v10 = 0.5;
-                                v23 = (float)((float)((v29 + masknum) / 8) * 0.5) + v23;
+                                atlasU = static_cast<float>((group + mask) % 8) * 0.125f + atlasU;
+                                atlasV = static_cast<float>((group + mask) / 8) * 0.5f + atlasV;
                             }
-                            *(v16 - 1) = v22 + 0.0031250007;
-                            *v16 = v23 + 0.012500003;
-                            ++v17;
-                            v18 += 2;
-                            v16 += 2;
-                        } while (v17 < 5);
-                        ++yy;
-                    } while (yy < 5);
-                    v24 = ++i < 4;
-                    v1 = v13;
-                } while (v24);
+                            atlasUV[0] = atlasU + 0.0031250007f;
+                            atlasUV[1] = atlasV + 0.012500003f;
+                            plainUV += 2;
+                            atlasUV += 2;
+                        }
+                    }
+                }
             }
-            v29 += 4;
-        } while (v29 < 32);
+        }
     }
 
     void Landscape::UpdateTexturesFilters()
@@ -3224,7 +2918,8 @@ namespace m3d
 
     void Landscape::LinkNodeCollisionGeomsToCell(SgNode* node, int startX, int endX, int startY, int endY)
     {
-        // TODO: generated code
+        // RVA 0x64CD80 - static collision geoms for a node's model (its collision trimesh and its primitive geoms,
+        // scaled by the node's x scale), linked into the given range of collision cells and handed to the node.
         auto const landSize = m_owner->m_level->land_size;
 
         m3d::AnimatedModel* mdl = nullptr;
@@ -3323,7 +3018,7 @@ namespace m3d
             auto* geomStatic = RT_DYNCAST(M3D_KERNEL->New("GeomObjectStatics"), GeomObjectStatics);
 
             dxGeom* odeGeom = nullptr;
-
+            Quaternion rotation = geom->Rotation;
             switch (geom->Type)
             {
             case 0:  // Box
@@ -3348,12 +3043,11 @@ namespace m3d
                 float length = geom->Sizes.BoxSizes.y * scale;
                 dxSpace* odeSpace = m_owner->GetOdeSpace();
 
-                // Apply rotation for cylinder (45 degrees around some axis)
-                Quaternion rot(geom->Rotation[0], geom->Rotation[1], geom->Rotation[2], geom->Rotation[3]);
-                Quaternion addRot(0.7071f, 0.0f, 0.0f, 0.7071f);  // 45 degrees
-                rot *= addRot;
-
-                geomStatic->m_rotation = rot;
+                // ODE's capped cylinder lies along z; the model's stands along y: turn it 90 degrees about x.
+                // NOTE: the shipped build inlines the product with its own summation order.
+                Quaternion turn;
+                turn.FromAxisAngle(CVector(1.0f, 0.0f, 0.0f), 1.5707963705062866f);
+                rotation = rotation * turn;
                 odeGeom = dCreateCCylinder(odeSpace, radius, length);
                 break;
             }
@@ -3361,7 +3055,7 @@ namespace m3d
 
             // Set position and rotation
             geomStatic->m_translation = geom->Translation;
-            geomStatic->m_rotation = geom->Rotation;
+            geomStatic->m_rotation = rotation;
 
             geomStatic->SetGeom(odeGeom);
 
@@ -3688,6 +3382,7 @@ namespace m3d
 
     void Landscape::DrawCollisionGeoms(bool allGeoms)
     {
+        // RVA 0x64ABE0 - debug wireframe of the enabled geoms in the collision cells (cgDraw).
         bool const cgDraw = M3D_ENGINE_CFG.m_cgDraw.GetB();
         if (cgDraw)
         {
@@ -3712,8 +3407,9 @@ namespace m3d
                 {
                     int cellIndex = x + y * landSize;
                     auto* cell = m_oCollisionitems[cellIndex];
-                    // TODO: check this
-                    if (cell->m_wasEnabledLastFrame || allGeoms)
+                    // NOTE: only cells enabled last frame are walked, so allGeoms (tested again per geom) has no
+                    // effect, as shipped.
+                    if (cell->m_wasEnabledLastFrame && (cell->m_wasEnabledLastFrame || allGeoms))
                     {
                         for (auto* geomObj : cell->m_geomsList)
                         {
@@ -4019,6 +3715,7 @@ namespace m3d
 
     void Landscape::UpdateVis(bool vp)
     {
+        // RVA 0x7A60B0 - cell visibility for the frame; with water in sight, also the cells seen in its reflection.
         m_profilerUpdateVis->StartCountdown();
         if (!m_lockVis.GetB())
         {
@@ -4061,8 +3758,7 @@ namespace m3d
             }
             if (m_numWaterCells)
             {
-                // TODO: check this!!!
-                // Create reflection matrix for water plane
+                // Reflection of the view in the water plane
                 CMatrix mirror;
                 CVector const& normal = m_waterPlane.m_normal;
                 float dist = m_waterPlane.m_dist;
@@ -4109,20 +3805,17 @@ namespace m3d
                     fovY = 0.78539819f;
                 }
 
-                // Calculate reflection draw distance
-                float distanceDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-                float reflectionModifier = M3D_ENGINE_CFG.m_g_reflectionDrawDistModifier.GetF();
-
-                float reflectionDistance = (distanceDivider / reflectionModifier) * 8.0f + 4.0f;
+                // The reflection is drawn over fewer cells than the view (a whole number of cells).
+                float const distanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
+                float const reflectionModifier = M3D_ENGINE_CFG.m_g_reflectionDrawDistModifier.GetF();
+                int const reflectionCells = static_cast<int>(distanceDivider / reflectionModifier * 8.0f + 4.0f);
 
                 // Create reflected frustum
                 CMatrix inverseMatrix = im.getInverse();
                 CVector origin = inverseMatrix.getOrg();
 
-                float const VISCELL_EDGE_LENGTH_24 = 128.0f;
-
                 m_reflectedFrustum.createScreenFrustums(
-                    origin, im, fovX, fovY, 1.0f, reflectionDistance * VISCELL_EDGE_LENGTH_24);
+                    origin, im, fovX, fovY, 1.0f, static_cast<float>(reflectionCells) * VISCELL_EDGE_LENGTH);
 
                 // Enable visible cells for reflection
                 m_owner->m_sceneGraph.EnableVisibleCells(m_reflectedFrustum, 2);
@@ -4481,10 +4174,11 @@ namespace m3d
 
     bool Landscape::LoadNormalMap(CStr const& fileName)
     {
+        // RVA 0x5AD4B0 - a "RIV" tagged file of 16-bit (x, y) normal components; z is rebuilt as the unit normal's.
         fs::auxTaggedFile taggedFile;
         if (taggedFile.Open(fileName.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC))
         {
-            M3D_LOG_ERR("Error: Couldn't load normal map from file " + fileName);
+            M3D_LOG_ERR("Error: Couldn't load normal map from file '" + fileName + "'");
             return false;
         }
 
@@ -4492,7 +4186,7 @@ namespace m3d
         taggedFile.getFormatTitle(&formatTitle);
         if (strcmp(formatTitle, "RIV"))
         {
-            M3D_LOG_ERR("Error: Wrong normal map file format: " + CStr(formatTitle));
+            M3D_LOG_ERR("Error: Wrong normal map file format: '" + CStr(formatTitle) + "'");
             return false;
         }
 
@@ -4509,23 +4203,13 @@ namespace m3d
         auto* charData = static_cast<unsigned char*>(data);
         charData += 4;
 
-        // TODO: check and refactor
-        if ((m_mapSize + 1) * (m_mapSize + 1) > 0)
+        auto const* components = reinterpret_cast<short const*>(charData);
+        for (int i = 0; i < (m_mapSize + 1) * (m_mapSize + 1); ++i)
         {
-            int v12 = 0;
-            int v13 = 0;
-            do
-            {
-                auto v14 = &this->m_vnormal[v13];
-                v14->x = (float)*(__int16*)charData * 0.000030518509;
-                m_vnormal = this->m_vnormal;
-                charData += 2;
-                auto p_y = &m_vnormal[v13].y;
-                *p_y = (float)*(__int16*)charData * 0.000030518509;
-                charData += 2;
-                ++v12;
-                this->m_vnormal[v13++].z = sqrt(1.0 - v14->x * v14->x - *p_y * *p_y);
-            } while (v12 < (this->m_mapSize + 1) * (this->m_mapSize + 1));
+            CVector& normal = m_vnormal[i];
+            normal.x = static_cast<float>(*components++) * 0.000030518509f;
+            normal.y = static_cast<float>(*components++) * 0.000030518509f;
+            normal.z = static_cast<float>(sqrt(1.0 - normal.x * normal.x - normal.y * normal.y));
         }
 
         taggedFile.Close();
@@ -4586,51 +4270,45 @@ namespace m3d
 
     void Landscape::getMinMaxHeightForBox(float* box, float buldgeY)
     {
-        // TODO: generated code
-        float constexpr VISCELL_EDGE_LENGTH = 128.0f;
-        float const invCellSize = 1.0f / VISCELL_EDGE_LENGTH;
+        // RVA 0x5AB670 - sets the box's y range (box[1], box[4]) to the terrain heights (and water) of the cells
+        // under it, raised by a cell edge plus buldgeY at the top. The cell range excludes the last partial cell.
+        // NOTE: the shipped code indexes m_cellParams without a range check; out-of-range cells are skipped here.
+        float const toCell = 1.0f / VISCELL_EDGE_LENGTH;
+        int const x0 = static_cast<int>(box[0] * toCell);
+        int const x1 = static_cast<int>(box[3] * toCell);
+        int const z0 = static_cast<int>(box[2] * toCell);
+        int const z1 = static_cast<int>(box[5] * toCell);
+        int const landSize = m_owner->m_level->land_size;
 
-        // Calculate grid indices for bounding box
-        unsigned const minGridX = static_cast<unsigned>(box[0] * invCellSize);
-        unsigned const minGridZ = static_cast<unsigned>(box[2] * invCellSize);
-        float const maxGridX = box[3] * invCellSize;
-        float const maxGridZ = box[5] * invCellSize;
-
-        unsigned const landSize = m_owner->m_level->land_size;
-
-        box[1] = 999999.0;
-        box[4] = -999999.0;
-
-        // Process all grid cells in bounding box
-        for (unsigned gridX = minGridX; gridX < maxGridX; ++gridX)
+        box[1] = 999999.0f;
+        box[4] = -999999.0f;
+        for (int x = x0; x < x1; ++x)
         {
-            for (unsigned gridZ = minGridZ; gridZ < maxGridZ; ++gridZ)
+            for (int z = z0; z < z1; ++z)
             {
-                // Skip out-of-bounds cells
-                if (gridX >= landSize || gridZ >= landSize)
-                    continue;
-
-                auto const& cell = m_cellParams[gridX + gridZ * landSize];
-
-                if (box[1] > cell.m_h0)
-                    box[1] = cell.m_h0;
-                if (cell.m_h0 > box[4])
-                    box[4] = cell.m_h0;
-                if (box[1] > cell.m_h1)
-                    box[1] = cell.m_h1;
-                if (cell.m_h1 > box[4])
-                    box[4] = cell.m_h1;
-
-                // Process water cells
-                if (cell.m_iswatercell)
+                if (x < 0 || x >= landSize || z < 0 || z >= landSize)
                 {
-                    box[4] = std::max(box[4], cell.m_maxwater);
+                    continue;
+                }
+                auto const& cell = m_cellParams[x + z * landSize];
+                for (float const h : {cell.m_h0, cell.m_h1})
+                {
+                    if (box[1] > h)
+                    {
+                        box[1] = h;
+                    }
+                    if (h > box[4])
+                    {
+                        box[4] = h;
+                    }
+                }
+                if (cell.m_iswatercell && cell.m_maxwater > box[4])
+                {
+                    box[4] = cell.m_maxwater;
                 }
             }
         }
-
-        // Apply final offset to max height
-        box[4] += VISCELL_EDGE_LENGTH + buldgeY;
+        box[4] = box[4] + VISCELL_EDGE_LENGTH + buldgeY;
     }
 
     void Landscape::SetGameRenderMode()
@@ -4739,85 +4417,38 @@ namespace m3d
 
     void Landscape::DrawGeom(dxGeom* geom)
     {
-        // TODO: generated code Landscape::DrawGeom
-        dxGeom* currentGeom = geom;
-        int geomClass = dGeomGetClass(geom);
+        // RVA 0x648110 - debug-draws a geom in its world pose; a transform geom is drawn as its inner geom placed in
+        // the transform's frame. Classes 0-2 (sphere, box, capped cylinder) and 6 (transform) push a world matrix.
+        // NOTE: the shipped build inlines the matrix products with its own summation order.
+        auto const geomMatrix = [](dxGeom* g) {
+            dReal const* pos = dGeomGetPosition(g);
+            dQuaternion q;
+            dGeomGetQuaternion(g, q);
+            CMatrix m;
+            m.rotTranslate(Quaternion(q[1], q[2], q[3], q[0]), CVector(pos[0], pos[1], pos[2]));
+            return m;
+        };
 
-        if (geomClass >= 0)
+        dxGeom* drawn = geom;
+        int const geomClass = dGeomGetClass(geom);
+        if (geomClass >= 0 && geomClass <= 2)
         {
-            if (geomClass <= 2)  // Simple geometry types (0, 1, 2)
-            {
-                // Get position
-                float const* positionData = dGeomGetPosition(geom);
-                CVector const pos(positionData[0], positionData[1], positionData[2]);
-
-                // Get quaternion orientation
-                float quat[4];
-                dGeomGetQuaternion(geom, quat);
-                Quaternion rot(quat[1], quat[2], quat[3], quat[0]);
-
-                CMatrix const mat1 = rot.ToMatrix();
-                CMatrix mat2;
-                mat2.setOrg(pos);
-
-                CMatrix const worldMatrix = (mat1 * mat2) + mat1;
-
-                m3d::Application::g_pApp->m_renderer->MatPushWorld();
-                m3d::Application::g_pApp->m_renderer->MatSetWorld(worldMatrix);
-            }
-            else if (geomClass == 6)  // Transform geometry
-            {
-                // Get position
-                float const* positionData = dGeomGetPosition(geom);
-                CVector const pos(positionData[0], positionData[1], positionData[2]);
-
-                // Get quaternion orientation
-                float quat[4];
-                dGeomGetQuaternion(geom, quat);
-                Quaternion rot(quat[1], quat[2], quat[3], quat[0]);
-
-                // Convert transform's quaternion to matrix
-                CMatrix rotMat = rot.ToMatrix();
-                CMatrix posMat;
-                posMat.setOrg(pos);
-
-                CMatrix const geomMatrix = (rotMat * posMat) + rotMat;
-
-                // Now get the encapsulated geometry
-                currentGeom = dGeomTransformGetGeom(geom);
-
-                // Get position
-                float const* transformPositionData = dGeomGetPosition(currentGeom);
-                CVector const transformPos(
-                    transformPositionData[0], transformPositionData[1], transformPositionData[2]);
-
-                // Get quaternion orientation
-                dGeomGetQuaternion(currentGeom, quat);
-                Quaternion transformRot(quat[1], quat[2], quat[3], quat[0]);
-
-                // Convert transform's quaternion to matrix
-                CMatrix transformRotMat = transformRot.ToMatrix();
-                CMatrix transformPosMat;
-                transformPosMat.setOrg(transformPos);
-
-                CMatrix const transformMatrix = (transformRotMat * transformPosMat) + transformRotMat;
-
-                // Combine matrices
-                CMatrix combinedMatrix = transformMatrix * geomMatrix;
-
-                // Apply combined matrix to renderer
-                m3d::Application::g_pApp->m_renderer->MatPushWorld();
-                m3d::Application::g_pApp->m_renderer->MatSetWorld(combinedMatrix);
-            }
+            M3D_RENDERER->MatPushWorld();
+            M3D_RENDERER->MatSetWorld(geomMatrix(geom));
+        }
+        else if (geomClass == 6)
+        {
+            CMatrix const transform = geomMatrix(geom);
+            drawn = dGeomTransformGetGeom(geom);
+            M3D_RENDERER->MatPushWorld();
+            M3D_RENDERER->MatSetWorld(geomMatrix(drawn) * transform);
         }
 
-        // Draw the actual geometry
-        DrawNonTransformGeom(currentGeom);
-
-        // Restore world matrix unless it's class 7
+        DrawNonTransformGeom(drawn);
+        // NOTE: every class but 7 pops the world matrix, including those that did not push one, as shipped.
         if (geomClass != 7)
         {
-            m3d::Application::g_pApp->m_renderer->MatPopWorld();
+            M3D_RENDERER->MatPopWorld();
         }
     }
 
@@ -4827,16 +4458,13 @@ namespace m3d
 
     void Landscape::DrawWaterLayer()
     {
-        // TODO: generated code Landscape::DrawWaterLayer
+        // RVA 0x5C4140 - draws the visible water tiles with the water shaders of m_waterShaderVersion.
         M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
         M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 1);
         M3D_RENDERER->TgSetTcSource(2, rend::TC_FROM_VERTEX, 2);
         M3D_RENDERER->TgSetTcSource(3, rend::TC_FROM_VERTEX, 3);
         M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
-        if (M3D_ENGINE_CFG.m_r_enableFog.GetB())
-        {
-            M3D_RENDERER->PushFog(true);
-        }
+        M3D_RENDERER->PushFog(M3D_ENGINE_CFG.m_r_enableFog.GetB());
         M3D_RENDERER->SetAlphaTest(0);
         M3D_RENDERER->SetLighting(0, 0);
 
@@ -4976,193 +4604,178 @@ namespace m3d
         CMatrix invView = mat.getInverse();
         int landSize = m_owner->m_level->land_size;
 
-        for (int x = 0; x < landSize; ++x)
+        // Water tiles in the order the shipped code visits them: by water-map column, then row, skipping the rows of
+        // scene cells that aren't enabled.
+        int const waterMapStride = 4 * landSize;
+        for (int waterMapX = 0; waterMapX < waterMapStride; ++waterMapX)
         {
-            for (int y = 0; y < landSize; ++y)
+            for (int waterMapY = 0; waterMapY < waterMapStride; ++waterMapY)
             {
-                // Check if cell is enabled in scene graph
-                if (m_owner->m_sceneGraph.IsCellEnabled(x, y) == 0)
+                if (!m_owner->m_sceneGraph.IsCellEnabled(waterMapX / 4, waterMapY / 4))
                 {
+                    waterMapY += 3;
                     continue;
                 }
-
-                // Process sub-cells (4x4 grid within each cell)
-                for (int subY = 0; subY < 4; subY++)
+                if (m_waterMap[4 * waterMapY * landSize + waterMapX])
                 {
-                    int waterMapY = subY + 4 * y;
+                    // Default to highest LOD (most detailed)
+                    int lodLevel = 3;
 
-                    for (int subX = 0; subX < 4; subX++)
+                    // Get water height with bounds checking
+                    float waterHeight = 0.0f;
+                    if (waterMapX >= 0 && waterMapX < waterMapStride && waterMapY >= 0 && waterMapY < waterMapStride)
                     {
-                        int waterMapX = subX + 4 * x;
+                        waterHeight = static_cast<float>(m_waterMap[waterMapX + waterMapStride * waterMapY] * 0.12);
+                    }
 
-                        // Check if this cell has water
-                        if (m_waterMap[4 * waterMapY * landSize + waterMapX])
+                    bool isShaderVersion14 = (this->m_waterShaderVersion == 14);
+
+                    // Only calculate advanced LOD if not using shader version 14 and water quality is not low
+                    if (!isShaderVersion14 && m3d::g_Kernel->GetEngineCfg().m_r_waterQuality.GetI() != 1)
+                    {
+                        // Calculate world position of this water cell (center of cell)
+                        float worldX = (static_cast<float>(waterMapX) + 0.5f) * 32.0f;
+                        float worldY = (static_cast<float>(waterMapY) + 0.5f) * 32.0f;
+
+                        // Calculate position relative to camera
+                        CVector2 cellPos;
+                        cellPos.x = invView._41 - worldX;  // Camera X - cell X
+                        cellPos.y = invView._43 - worldY;  // Camera Z - cell Y
+
+                        // Calculate angle from camera to cell relative to reference vector (1,1)
+                        CVector2 referenceVec(1.0f, 1.0f);
+                        float angle = -CalculateAngle(cellPos, referenceVec);
+
+                        // Normalize angle to 0-2PI range
+                        if (angle <= 0.0f)
                         {
-                            int waterMapStride = 4 * landSize;
+                            angle += 6.2831855f;  // 2 * PI
+                        }
 
-                            // Default to highest LOD (most detailed)
-                            int lodLevel = 3;
+                        // Convert angle to quadrant (0-3)
+                        int quadrant = static_cast<int>(angle * 0.63661975);  // Multiply by 2/PI
 
-                            // Get water height with bounds checking
-                            float waterHeight = 0.0f;
-                            if (waterMapX >= 0 && waterMapX < waterMapStride && waterMapY >= 0 &&
-                                waterMapY < waterMapStride)
+                        // Calculate distance to this cell (using max of absolute X/Y distances)
+                        float distanceX = std::abs(cellPos.x);
+                        float distanceY = std::abs(cellPos.y);
+                        float distanceToCell = (distanceY <= distanceX) ? distanceX : distanceY;
+
+                        // Determine neighbor position based on quadrant for edge detection
+                        CVector2 neighborPos(worldX, worldY);
+                        switch (quadrant)
+                        {
+                        case 0:  // Right quadrant - check neighbor above
+                            neighborPos.y += 32.0f;
+                            break;
+                        case 1:  // Left quadrant - check neighbor to the left
+                            neighborPos.x -= 32.0f;
+                            break;
+                        case 2:  // Down quadrant - check neighbor below
+                            neighborPos.y -= 32.0f;
+                            break;
+                        case 3:  // Up quadrant - check neighbor to the right
+                            neighborPos.x += 32.0f;
+                            break;
+                        }
+
+                        // Calculate distance to neighbor
+                        float neighborDeltaX = neighborPos.x - invView._41;
+                        float neighborDeltaY = neighborPos.y - invView._43;
+                        float neighborDistX = std::abs(neighborDeltaX);
+                        float neighborDistY = std::abs(neighborDeltaY);
+                        float distanceToNeighbor = (neighborDistY <= neighborDistX) ? neighborDistX : neighborDistY;
+
+                        // Determine LOD level based on shader version and distances
+                        if (this->m_waterShaderVersion == 20)
+                        {
+                            // Shader version 20 LOD thresholds
+                            if (distanceToCell >= 60.0f)
                             {
-                                waterHeight =
-                                    static_cast<float>(m_waterMap[waterMapX + waterMapStride * waterMapY]) * 0.12f;
+                                lodLevel = 2;  // Medium detail
+                                if (distanceToCell >= 150.0f)
+                                {
+                                    lodLevel = 3;  // Low detail
+                                }
+                            }
+                            else
+                            {
+                                lodLevel = 1;  // High detail
                             }
 
-                            bool isShaderVersion14 = (this->m_waterShaderVersion == 14);
-
-                            // Only calculate advanced LOD if not using shader version 14 and water quality is not low
-                            if (!isShaderVersion14 && m3d::g_Kernel->GetEngineCfg().m_r_waterQuality.GetI() != 1)
+                            // Determine neighbor LOD for edge detection
+                            int neighborLOD = 1;
+                            if (distanceToNeighbor >= 60.0f)
                             {
-                                // Calculate world position of this water cell (center of cell)
-                                float worldX = (static_cast<float>(waterMapX) + 0.5f) * 32.0f;
-                                float worldY = (static_cast<float>(waterMapY) + 0.5f) * 32.0f;
-
-                                // Calculate position relative to camera
-                                CVector2 cellPos;
-                                cellPos.x = invView._41 - worldX;  // Camera X - cell X
-                                cellPos.y = invView._43 - worldY;  // Camera Z - cell Y
-
-                                // Calculate angle from camera to cell relative to reference vector (1,1)
-                                CVector2 referenceVec(1.0f, 1.0f);
-                                float angle = -CalculateAngle(cellPos, referenceVec);
-
-                                // Normalize angle to 0-2PI range
-                                if (angle <= 0.0f)
+                                neighborLOD = 2;
+                                if (distanceToNeighbor >= 150.0f)
                                 {
-                                    angle += 6.2831855f;  // 2 * PI
+                                    neighborLOD = 3;
                                 }
+                            }
 
-                                // Convert angle to quadrant (0-3)
-                                int quadrant = static_cast<int>(angle * 0.63661975f);  // Multiply by 2/PI
-
-                                // Calculate distance to this cell (using max of absolute X/Y distances)
-                                float distanceX = std::abs(cellPos.x);
-                                float distanceY = std::abs(cellPos.y);
-                                float distanceToCell = (distanceY <= distanceX) ? distanceX : distanceY;
-
-                                // Determine neighbor position based on quadrant for edge detection
-                                CVector2 neighborPos(worldX, worldY);
-                                switch (quadrant)
+                            // If LOD levels differ, encode quadrant information
+                            if (lodLevel != neighborLOD)
+                            {
+                                lodLevel = quadrant + 4 * lodLevel;
+                            }
+                        }
+                        else
+                        {
+                            // Older shader versions LOD thresholds
+                            if (distanceToCell >= 100.0f)
+                            {
+                                if (distanceToCell >= 200.0f)
                                 {
-                                case 0:  // Right quadrant - check neighbor above
-                                    neighborPos.y += 32.0f;
-                                    break;
-                                case 1:  // Left quadrant - check neighbor to the left
-                                    neighborPos.x -= 32.0f;
-                                    break;
-                                case 2:  // Down quadrant - check neighbor below
-                                    neighborPos.y -= 32.0f;
-                                    break;
-                                case 3:  // Up quadrant - check neighbor to the right
-                                    neighborPos.x += 32.0f;
-                                    break;
-                                }
-
-                                // Calculate distance to neighbor
-                                float neighborDeltaX = neighborPos.x - invView._41;
-                                float neighborDeltaY = neighborPos.y - invView._43;
-                                float neighborDistX = std::abs(neighborDeltaX);
-                                float neighborDistY = std::abs(neighborDeltaY);
-                                float distanceToNeighbor =
-                                    (neighborDistY <= neighborDistX) ? neighborDistX : neighborDistY;
-
-                                // Determine LOD level based on shader version and distances
-                                if (this->m_waterShaderVersion == 20)
-                                {
-                                    // Shader version 20 LOD thresholds
-                                    if (distanceToCell >= 60.0f)
+                                    lodLevel = 2;  // Medium detail
+                                    if (distanceToCell >= 400.0f)
                                     {
-                                        lodLevel = 2;  // Medium detail
-                                        if (distanceToCell >= 150.0f)
-                                        {
-                                            lodLevel = 3;  // Low detail
-                                        }
-                                    }
-                                    else
-                                    {
-                                        lodLevel = 1;  // High detail
-                                    }
-
-                                    // Determine neighbor LOD for edge detection
-                                    int neighborLOD = 1;
-                                    if (distanceToNeighbor >= 60.0f)
-                                    {
-                                        neighborLOD = 2;
-                                        if (distanceToNeighbor >= 150.0f)
-                                        {
-                                            neighborLOD = 3;
-                                        }
-                                    }
-
-                                    // If LOD levels differ, encode quadrant information
-                                    if (lodLevel != neighborLOD)
-                                    {
-                                        lodLevel = quadrant + 4 * lodLevel;
+                                        lodLevel = 3;  // Low detail
                                     }
                                 }
                                 else
                                 {
-                                    // Older shader versions LOD thresholds
-                                    if (distanceToCell >= 100.0f)
-                                    {
-                                        if (distanceToCell >= 200.0f)
-                                        {
-                                            lodLevel = 2;  // Medium detail
-                                            if (distanceToCell >= 400.0f)
-                                            {
-                                                lodLevel = 3;  // Low detail
-                                            }
-                                        }
-                                        else
-                                        {
-                                            lodLevel = 1;  // High detail
-                                        }
-                                    }
-                                    else
-                                    {
-                                        lodLevel = 0;  // Highest detail
-                                    }
+                                    lodLevel = 1;  // High detail
+                                }
+                            }
+                            else
+                            {
+                                lodLevel = 0;  // Highest detail
+                            }
 
-                                    // Determine neighbor LOD for edge detection
-                                    int neighborLOD = 0;
-                                    if (distanceToNeighbor >= 100.0f)
+                            // Determine neighbor LOD for edge detection
+                            int neighborLOD = 0;
+                            if (distanceToNeighbor >= 100.0f)
+                            {
+                                if (distanceToNeighbor >= 200.0f)
+                                {
+                                    neighborLOD = 2;
+                                    if (distanceToNeighbor >= 400.0f)
                                     {
-                                        if (distanceToNeighbor >= 200.0f)
-                                        {
-                                            neighborLOD = 2;
-                                            if (distanceToNeighbor >= 400.0f)
-                                            {
-                                                neighborLOD = 3;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            neighborLOD = 1;
-                                        }
+                                        neighborLOD = 3;
                                     }
-
-                                    // If LOD levels differ, encode quadrant information
-                                    if (lodLevel != neighborLOD)
-                                    {
-                                        lodLevel = quadrant + 4 * lodLevel;
-                                    }
+                                }
+                                else
+                                {
+                                    neighborLOD = 1;
                                 }
                             }
 
-                            // Add cell to appropriate LOD bucket
-                            unsigned int encodedCoords =
-                                static_cast<unsigned int>((waterMapY & 0xFF) << 8) | (waterMapX & 0xFF);
-                            std::pair<unsigned int, float> cellData(encodedCoords, waterHeight);
-
-                            // Add to the water cells vector for this LOD level
-                            std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[lodLevel];
-                            lodBucket.push_back(cellData);
+                            // If LOD levels differ, encode quadrant information
+                            if (lodLevel != neighborLOD)
+                            {
+                                lodLevel = quadrant + 4 * lodLevel;
+                            }
                         }
                     }
+
+                    // Add cell to appropriate LOD bucket
+                    unsigned int encodedCoords =
+                        static_cast<unsigned int>((waterMapY & 0xFF) << 8) | (waterMapX & 0xFF);
+                    std::pair<unsigned int, float> cellData(encodedCoords, waterHeight);
+
+                    // Add to the water cells vector for this LOD level
+                    std::vector<std::pair<unsigned int, float>>& lodBucket = this->waterCellsToDraw[lodLevel];
+                    lodBucket.push_back(cellData);
                 }
             }
         }
@@ -5276,255 +4889,173 @@ namespace m3d
 
     void Landscape::CreateHelperStructures()
     {
-        // TODO: generated code Landscape::CreateHelperStructures
-        int const landSize = this->m_owner->m_level->land_size;
-        int const sizeInCells = landSize;
+        // RVA 0x5B61E0 - per quarter-cell tile: which textures its four corners use (each with a mask of the corners
+        // it covers, sorted by texture index), collapsed to one texture when the tile and its 8 neighbours are of the
+        // same land type. In game mode it then builds each texture's vertex buffers from the tiles using it.
+        int const landSize = m_owner->m_level->land_size;
         int const stride = 4 * landSize;
+        int const maxIndex = stride - 1;
+        int const cornerFlags[4] = {1, 2, 4, 8};
+        auto const texAt = [&](int x, int y) {
+            return m_tiles[std::clamp(x, 0, maxIndex) + stride * std::clamp(y, 0, maxIndex)].m_texIndex0;
+        };
 
-        // Initialize flags for the four corners of a tile
-        int cornerFlags[4] = {1, 2, 4, 8};
-
-        // Initialize maskHash
-        m3d::CIntHash<unsigned int> maskHash;
-
-        // Process each tile in the landscape
-        for (int y = 0; y < landSize; ++y)
+        // NOTE: `land` is only set when the tile's own texture has a land type; otherwise the previous tile's value
+        // is compared against (starting from 0 here, uninitialised in the shipped code).
+        int land = 0;
+        for (int cellY = 0; cellY < landSize; ++cellY)
         {
-            for (int xOffset = 0; xOffset < landSize; ++xOffset)
+            for (int cellX = 0; cellX < landSize; ++cellX)
             {
-                unsigned int const baseOffset = 4 * stride * y;
-
-                // Process 4x4 subtile grid
                 for (int subY = 0; subY < 4; ++subY)
                 {
-                    int const globalY = subY + 4 * y;
-                    unsigned int currentOffset = baseOffset;
-
+                    int const y = 4 * cellY + subY;
                     for (int subX = 0; subX < 4; ++subX)
                     {
-                        int const globalX = 4 * xOffset + subX;
+                        int const x = 4 * cellX + subX;
+                        TileInfo& tile = m_tiles[x + stride * y];
+                        int const tex[4] = {texAt(x, y), texAt(x + 1, y), texAt(x, y + 1), texAt(x + 1, y + 1)};
 
-                        // Get the current tile info
-                        m3d::Landscape::TileInfo* currentTile = &m_tiles[currentOffset + globalX];
-
-                        // Clamp coordinates to valid range
-                        int const clampedX = std::clamp(globalX, 0, stride - 1);
-                        int const clampedY = std::clamp(globalY, 0, stride - 1);
-
-                        // Get texture indices for the four corners of this subtile
-                        int textureIndices[4];
-                        textureIndices[0] = m_tiles[clampedX + stride * clampedY].m_texIndex0;
-                        textureIndices[1] =
-                            m_tiles[std::clamp(globalX + 1, 0, stride - 1) + stride * clampedY].m_texIndex0;
-                        textureIndices[2] =
-                            m_tiles[clampedX + stride * std::clamp(globalY + 1, 0, stride - 1)].m_texIndex0;
-                        textureIndices[3] = m_tiles
-                                                [std::clamp(globalX + 1, 0, stride - 1) +
-                                                 stride * std::clamp(globalY + 1, 0, stride - 1)]
-                                                    .m_texIndex0;
-
-                        // Reset tile texture count
-                        currentTile->m_numTexs = 0;
-                        std::vector<int> processedCorners(4, 0);
-
-                        // Process each corner to determine unique textures and their coverage
+                        // One entry per distinct corner texture, with the corners it covers.
+                        int done[4] = {};
+                        tile.m_numTexs = 0;
                         for (int corner = 0; corner < 4; ++corner)
                         {
-                            if (!processedCorners[corner])
+                            if (done[corner])
                             {
-                                int coverageFlags = cornerFlags[corner];
-
-                                // Check if other corners share the same texture
-                                for (int otherCorner = corner + 1; otherCorner < 4; ++otherCorner)
-                                {
-                                    if (!processedCorners[otherCorner] &&
-                                        textureIndices[corner] == textureIndices[otherCorner])
-                                    {
-                                        coverageFlags |= cornerFlags[otherCorner];
-                                        processedCorners[otherCorner] = 1;
-                                    }
-                                }
-
-                                // Add unique texture with its coverage
-                                currentTile->m_texFlags[currentTile->m_numTexs] = coverageFlags;
-                                currentTile->m_texIndices[currentTile->m_numTexs] = textureIndices[corner];
-                                ++currentTile->m_numTexs;
-                                processedCorners[corner] = 1;
+                                continue;
                             }
+                            int flags = cornerFlags[corner];
+                            for (int other = corner + 1; other < 4; ++other)
+                            {
+                                if (!done[other] && tex[corner] == tex[other])
+                                {
+                                    flags |= cornerFlags[other];
+                                    done[other] = 1;
+                                }
+                            }
+                            tile.m_texFlags[tile.m_numTexs] = flags;
+                            tile.m_texIndices[tile.m_numTexs] = tex[corner];
+                            ++tile.m_numTexs;
+                            done[corner] = 1;
                         }
 
-                        // Check if this is a uniform tile (all corners same texture)
-                        bool isUniformTile = true;
-                        int baseLandType = -1;
-
-                        // Look up land type for the first texture
-                        int landTypeIter = 0;
-                        if (m_hashIdxToLandType.getValueByKey(textureIndices[0], landTypeIter))
+                        // Uniform when every neighbour (clamped to the map) has a land type, and it is `land`.
+                        bool uniform = true;
+                        m_hashIdxToLandType.getValueByKey(tex[0], land);
+                        for (int ny = y - 1; ny <= y + 1; ++ny)
                         {
-                            baseLandType = landTypeIter;
-
-                            // Check surrounding tiles for consistency
-                            for (int checkY = globalY - 1; checkY <= globalY + 1; ++checkY)
+                            for (int nx = x - 1; nx <= x + 1; ++nx)
                             {
-                                for (int checkX = globalX - 1; checkX <= globalX + 1; ++checkX)
+                                int neighbourLand = 0;
+                                if (!m_hashIdxToLandType.getValueByKey(texAt(nx, ny), neighbourLand))
                                 {
-                                    if (checkX >= 0 && checkX < stride && checkY >= 0 && checkY < stride)
-                                    {
-                                        unsigned int neighborTex = m_tiles[checkX + stride * checkY].m_texIndex0;
-
-                                        int neighborLandTypeIter = 0;
-                                        if (m_hashIdxToLandType.getValueByKey(neighborTex, neighborLandTypeIter))
-                                        {
-                                            if (baseLandType != neighborLandTypeIter)
-                                            {
-                                                isUniformTile = false;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                                if (!isUniformTile)
+                                    uniform = false;
                                     break;
+                                }
+                                if (land != neighbourLand)
+                                {
+                                    uniform = false;
+                                }
                             }
                         }
-
-                        // Simplify texture data for uniform tiles
-                        if (currentTile->m_numTexs == 1 || isUniformTile)
+                        if (tile.m_numTexs == 1 || uniform)
                         {
-                            currentTile->m_texFlags[0] = 0;  // Full coverage
-                            currentTile->m_numTexs = 1;
+                            tile.m_texFlags[0] = 0;
+                            tile.m_numTexs = 1;
                         }
 
-                        // Sort textures by some criteria (appears to be by angle or priority)
-                        for (int i = currentTile->m_numTexs - 1; i > 0; --i)
+                        // Bubble the textures into ascending index order: swap the last out-of-order pair until
+                        // there is none.
+                        for (;;)
                         {
-                            // Sorting logic based on some tile property
-                            if (currentTile->m_texIndices[i] < currentTile->m_texIndices[i - 1])
+                            int k = tile.m_numTexs - 1;
+                            while (k > 0 && tile.m_texIndices[k] >= tile.m_texIndices[k - 1])
                             {
-                                std::swap(currentTile->m_texFlags[i], currentTile->m_texFlags[i - 1]);
-                                std::swap(currentTile->m_texIndices[i], currentTile->m_texIndices[i - 1]);
+                                --k;
                             }
-                        }
-
-                        // Set full coverage flag for multi-texture tiles
-                        if (currentTile->m_numTexs != 1)
-                        {
-                            currentTile->m_texFlags[0] = 15;  // All corners covered
-                        }
-
-                        // Update rendering data structures for game mode
-                        if (m3d::Landscape::m_renderMode == RM_GAME)
-                        {
-                            for (int texIdx = 0; texIdx < currentTile->m_numTexs; ++texIdx)
+                            if (k <= 0)
                             {
-                                unsigned int textureId = currentTile->m_texIndices[texIdx];
+                                break;
+                            }
+                            std::swap(tile.m_texFlags[k], tile.m_texFlags[k - 1]);
+                            std::swap(tile.m_texIndices[k], tile.m_texIndices[k - 1]);
+                        }
+                        if (tile.m_numTexs != 1)
+                        {
+                            tile.m_texFlags[0] = 15;
+                        }
 
-                                // Add to cells per texture
-                                m3d::cmn::vector<unsigned int>& cells = m_cellsPerTex[textureId];
+                        if (m_renderMode == RM_GAME)
+                        {
+                            for (int t = 0; t < tile.m_numTexs; ++t)
+                            {
+                                unsigned const texIndex = tile.m_texIndices[t];
+                                auto& cells = m_cellsPerTex[texIndex];
                                 if (cells.size() < cells.m_maxItems)
                                 {
-                                    // Encode tile position and properties
-                                    unsigned int encodedPos =
-                                        (globalX +
-                                         ((globalY +
-                                           ((currentTile->m_angle + (currentTile->m_texFlags[texIdx] << 8)) << 8))
-                                          << 8));
-                                    cells.push_back(encodedPos);
+                                    // x | y << 8 | angle << 16 | corner flags << 24
+                                    cells.push_back(x + ((y + ((tile.m_angle + (tile.m_texFlags[t] << 8)) << 8)) << 8));
                                 }
-
-                                // Add to texture set mapping
-                                int cellIndex = xOffset + landSize * y;
-                                m_texSetsmap[cellIndex].insert(textureId);
+                                m_texSetsmap[cellX + landSize * cellY].insert(texIndex);
                             }
                         }
-
-                        currentOffset += stride;
                     }
                 }
             }
         }
 
-        if (m3d::Landscape::m_renderMode == RM_GAME)
+        if (m_renderMode != RM_GAME)
         {
-            // Build vertex buffers and process textures
-            int maxCells = 0;
+            return;
+        }
 
-            // Find maximum number of cells
-            for (size_t i = 0; i < this->m_tilesTextures.size(); ++i)
+        unsigned maxCells = 0;
+        for (size_t i = 0; i < m_tilesTextures.size(); ++i)
+        {
+            if (m_cellsPerTex[i].size() > maxCells)
             {
-                if (this->m_cellsPerTex[i].size() > maxCells)
-                {
-                    maxCells = this->m_cellsPerTex[i].size();
-                }
-            }
-
-            if (maxCells > 0)
-            {
-                m3d::rend::VertexLandscape* v46 = new rend::VertexLandscape[25 * maxCells];
-
-                for (size_t textureIndex = 0; textureIndex < this->m_tilesTextures.size(); ++textureIndex)
-                {
-                    m3d::Landscape::TIVChunk* v48 = this->m_tilesTextures[textureIndex];
-
-                    if (this->m_cellsPerTex[textureIndex].size() > 0)
-                    {
-                        // Reset chunk data
-                        memset(v48->m_offsetsmap, 0, sizeof(v48->m_offsetsmap));
-                        memset(v48->m_banknumber, 0, sizeof(v48->m_banknumber));
-                        memset(v48->m_numCellsPerCellMap, 0, sizeof(v48->m_numCellsPerCellMap));
-                        v48->iotherPassOffset = 0;
-                        v48->iotherPassBankNumber = 0;
-
-                        int vofs = 0;
-                        std::vector<int> bankSwitchingMap;
-
-                        // Build cells for different render types
-                        BuildCells0(
-                            v46, *v48, vofs, this->m_cellsPerTex[textureIndex], RT_FIRSTPASSLIGHT, bankSwitchingMap);
-
-                        BuildCells0(
-                            &v46[v48->iotherPassOffset],
-                            *v48,
-                            vofs,
-                            this->m_cellsPerTex[textureIndex],
-                            RT_OTHERPASSES,
-                            bankSwitchingMap);
-
-                        // Reset cell count
-                        this->m_cellsPerTex[textureIndex].clear();
-
-                        bankSwitchingMap.push_back(vofs);
-
-                        // Create vertex buffers
-                        char* vertexDataPtr = reinterpret_cast<char*>(v46);
-
-                        for (size_t bufferIndex = 0; bufferIndex < bankSwitchingMap.size(); ++bufferIndex)
-                        {
-                            int vertexCount = bankSwitchingMap[bufferIndex];
-
-                            // Create vertex buffer
-                            m3d::rend::VbHandle vb =
-                                M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT1_UV2_S1, vertexCount, "Landscape", 0);
-
-                            // Copy vertex data
-                            void* lockedBuffer = M3D_RENDERER->LockVb(vb, vertexCount, 0, 0);
-                            memcpy(lockedBuffer, vertexDataPtr, sizeof(rend::VertexLandscape) * vertexCount);
-                            M3D_RENDERER->UnlockVb(vb);
-
-                            vertexDataPtr += sizeof(rend::VertexLandscape) * vertexCount;
-
-                            // Store vertex buffer handle
-                            v48->m_vbHandle.push_back(vb);
-                        }
-                    }
-                }
-
-                delete[] v46;
-
-                // Build UV set
-                BuildUVSet();
+                maxCells = m_cellsPerTex[i].size();
             }
         }
+
+        // 25 vertices per tile.
+        auto* vertices = new rend::VertexLandscape[25 * maxCells];
+        for (size_t i = 0; i < m_tilesTextures.size(); ++i)
+        {
+            TIVChunk* chunk = m_tilesTextures[i];
+            if (m_cellsPerTex[i].size() == 0)
+            {
+                continue;
+            }
+
+            memset(chunk->m_offsetsmap, 0, sizeof(chunk->m_offsetsmap));
+            memset(chunk->m_banknumber, 0, sizeof(chunk->m_banknumber));
+            memset(chunk->m_numCellsPerCellMap, 0, sizeof(chunk->m_numCellsPerCellMap));
+            chunk->iotherPassOffset = 0;
+            chunk->iotherPassBankNumber = 0;
+
+            int vertexCount = 0;
+            std::vector<int> bankSwitchingMap;
+            BuildCells0(vertices, *chunk, vertexCount, m_cellsPerTex[i], RT_FIRSTPASSLIGHT, bankSwitchingMap);
+            BuildCells0(
+                &vertices[chunk->iotherPassOffset], *chunk, vertexCount, m_cellsPerTex[i], RT_OTHERPASSES, bankSwitchingMap);
+            m_cellsPerTex[i].clear();
+            bankSwitchingMap.push_back(vertexCount);
+
+            // One vertex buffer per bank.
+            rend::VertexLandscape const* bankVertices = vertices;
+            for (int const bankSize : bankSwitchingMap)
+            {
+                rend::VbHandle vb = M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT1_UV2_S1, bankSize, "Landscape", 0);
+                memcpy(M3D_RENDERER->LockVb(vb, bankSize, 0, 0), bankVertices, sizeof(rend::VertexLandscape) * bankSize);
+                bankVertices += bankSize;
+                M3D_RENDERER->UnlockVb(vb);
+                chunk->m_vbHandle.push_back(vb);
+            }
+        }
+        delete[] vertices;
+        BuildUVSet();
     }
 
     void Landscape::drawSpriteOverlayed2Projected(
@@ -5827,34 +5358,31 @@ namespace m3d
 
     void Landscape::DrawMassBox(dMass* mass, CVector const& pos, Quaternion const& rot)
     {
-        CMatrix tr;
-        tr.zero();
-        tr.rotTranslate(rot, pos);
-
-        CMatrix const worldMat = tr * tr;
-
+        // RVA 0x644F80 - debug-draws the box whose inertia tensor matches the mass: for a box of mass m and sides
+        // a, b, c, I = m/12 (b^2 + c^2, a^2 + c^2, a^2 + b^2) on the diagonal, solved for the sides.
+        CMatrix world;
+        world.rotTranslate(rot, pos);
         M3D_RENDERER->MatPushWorld();
-        M3D_RENDERER->MatSetWorld(worldMat);
+        M3D_RENDERER->MatSetWorld(world);
 
-        // TODO: check and refactor
-        auto v11 = 1.0 / mass->mass;
-        auto aa = (float)(mass->I[0] * v11) * 12.0;
-        auto ba = (float)(mass->I[5] * v11) * 12.0;
-        auto ca = (float)(mass->I[10] * v11) * 12.0;
-        CVector size;
-        size.x = sqrt((ca + ba - aa) * 0.5);
-        size.y = sqrt((ca + aa - ba) * 0.5);
-        size.z = sqrt((ba + aa - ca) * 0.5);
+        double const invMass = 1.0 / mass->mass;
+        float const ia = static_cast<float>(mass->I[0] * invMass) * 12.0f;
+        float const ib = static_cast<float>(mass->I[5] * invMass) * 12.0f;
+        float const ic = static_cast<float>(mass->I[10] * invMass) * 12.0f;
+        CVector const size(
+            static_cast<float>(sqrt((ic + ib - ia) * 0.5)),
+            static_cast<float>(sqrt((ic + ia - ib) * 0.5)),
+            static_cast<float>(sqrt((ib + ia - ic) * 0.5)));
 
-        Aabb aabb;
-        aabb.m_box[0] = 0.0 - (float)(size.x * 0.5);
-        aabb.m_box[1] = 0.0 - (float)(size.y * 0.5);
-        aabb.m_box[2] = 0.0 - (float)(size.z * 0.5);
-        aabb.m_box[3] = size.x * 0.5;
-        aabb.m_box[4] = size.y * 0.5;
-        aabb.m_box[5] = size.z * 0.5;
-
-        aabb.Draw((unsigned int)mass | 0xFF000000);
+        Aabb box;
+        box.m_box[0] = 0.0f - size.x * 0.5f;
+        box.m_box[1] = 0.0f - size.y * 0.5f;
+        box.m_box[2] = 0.0f - size.z * 0.5f;
+        box.m_box[3] = size.x * 0.5f;
+        box.m_box[4] = size.y * 0.5f;
+        box.m_box[5] = size.z * 0.5f;
+        // NOTE: the colour is the mass pointer with full alpha, as shipped.
+        box.Draw(reinterpret_cast<unsigned>(mass) | 0xFF000000);
         M3D_RENDERER->MatPopWorld();
     }
 
@@ -6202,8 +5730,8 @@ namespace m3d
         M3D_RENDERER->PushFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB());
         if (m_numWaterCells != 0 && m_isWaterVisible)
         {
-            // TODO: generated code
-            // The shipped build renders only the reflection here; there is no refraction pass.
+            // The water's reflection texture: the sky, flares, and (quality 2-3) the terrain and models mirrored in
+            // the water plane, clipped just below the waves. The shipped build has no refraction pass here.
             m_profilerDrawWater->StartCountdown();
 
             bool const drawReflectedTerrain = M3D_ENGINE_CFG.m_g_drawReflectedTerrain.GetB();
@@ -6369,6 +5897,7 @@ namespace m3d
         }
 
         m_profilerDraw->StartCountdown();
+        m_curVisMode = VIS_DIRECT;
         M3D_RENDERER->SetFog(false, false);
         M3D_RENDERER->SetBlend(rend::BlendMode::BM_NONE, false);
         M3D_RENDERER->SetZbState(rend::ZbState::ZB_DISABLE, false);
@@ -6741,94 +6270,44 @@ namespace m3d
 
     CVector Landscape::getNormal(float worldX, float worldZ)
     {
-        // TODO: generated code
-        // Convert world coordinates to heightmap coordinates (scale factor 0.125 = 1/8)
-        int mapX = static_cast<int>(worldX * 0.125f);
-        int mapZ = static_cast<int>(worldZ * 0.125f);
-
-        int mapSize = this->m_mapSize;
-        int mapSizePlusOne = mapSize + 1;
-
-        // Check if coordinates are out of bounds
-        if (mapX < 0 || mapZ < 0 || mapX + 2 >= mapSizePlusOne || mapZ + 2 >= mapSizePlusOne)
+        // RVA 0x5AB140 - the terrain normal at a point, averaged over triangles of the 2x2 height-map quads from the
+        // point's sample: each quad (x, z) has triangles A = (h00, h10, h01) and B = (h11, h01, h10), with normals
+        // ((h00 - h10) * 8, (h00 - h01) * 8, 64) and ((h01 - h11) * 8, (h10 - h11) * 8, 64). Of the 8, only B of
+        // quad (0, 0), A of (1, 0), B of (0, 1) and A of (1, 1) are summed.
+        // NOTE: the vector is returned as (x gradient, z gradient, up), not y-up, as shipped.
+        int const x0 = static_cast<int>(worldX * 0.125f);
+        int const z0 = static_cast<int>(worldZ * 0.125f);
+        int const stride = m_mapSize + 1;
+        if (x0 < 0 || z0 < 0 || x0 + 2 >= stride || z0 + 2 >= stride)
         {
-            // Return default up vector for out-of-bounds coordinates
-
-            CVector result;
-            result.x = 0.0f;
-            result.y = 1.0f;
-            result.z = 0.0f;
-            return result;
+            return CVector(0.0f, 1.0f, 0.0f);
         }
 
-        // Clamp coordinates to map boundaries
-        if (mapX == mapSizePlusOne)
+        auto const h = [&](int x, int z) { return m_heightMap[x % stride + stride * (z % stride)]; };
+        float fnX[8];
+        float fnY[8];
+        float fnZ[8];
+        for (int dz = 0; dz < 2; ++dz)
         {
-            mapX = mapSize;
-        }
-        if (mapZ == mapSizePlusOne)
-        {
-            mapZ = mapSize;
-        }
-
-        // Arrays to store normal components for the 2x2 quad
-        float normalX[8];
-        float normalY[8];
-        float normalZ[8];
-
-        // Initialize normal arrays
-        for (int i = 0; i < 8; i++)
-        {
-            normalZ[i] = 64.0f;  // Constant Z component
-            normalY[i] = 64.0f;  // Constant Y component
-        }
-
-        // Calculate normals for the 2x2 quad around the point
-        int index = 0;
-        for (int z = mapZ; z <= mapZ + 1; z++)
-        {
-            for (int x = mapX; x <= mapX + 1; x++)
+            for (int dx = 0; dx < 2; ++dx)
             {
-                // Get height values for the current quad
-                int currentIndex = z * (mapSize + 1) + x;
-                int rightIndex = z * (mapSize + 1) + ((x + 1) % (mapSize + 1));
-                int bottomIndex = ((z + 1) % (mapSize + 1)) * (mapSize + 1) + x;
-                int bottomRightIndex = ((z + 1) % (mapSize + 1)) * (mapSize + 1) + ((x + 1) % (mapSize + 1));
-
-                float currentHeight = m_heightMap[currentIndex];
-                float rightHeight = m_heightMap[rightIndex];
-                float bottomHeight = m_heightMap[bottomIndex];
-                float bottomRightHeight = m_heightMap[bottomRightIndex];
-
-                // Calculate X component of normal (derivative in X direction)
-                // Based on height differences between right and current points
-                normalX[index] = (0.0f - (rightHeight - currentHeight)) * 8.0f;
-                normalX[index + 1] = (0.0f - (rightHeight - currentHeight)) * 8.0f;
-
-                // Calculate Y component of normal (derivative in Z direction)
-                // Based on height differences between bottom and current points
-                normalY[index] = (bottomHeight - currentHeight) * 8.0f;
-                normalY[index + 1] = (bottomRightHeight - rightHeight) * 8.0f;
-
-                index += 2;
+                int const x = x0 + dx;
+                int const z = z0 + dz;
+                int const k = 4 * dz + 2 * dx;
+                fnZ[k] = 64.0f;
+                fnZ[k + 1] = 64.0f;
+                fnX[k] = (0.0f - (h(x + 1, z) - h(x, z))) * 8.0f;
+                fnY[k] = (0.0f - (h(x, z + 1) - h(x, z))) * 8.0f;
+                fnX[k + 1] = (h(x, z + 1) - h(x + 1, z + 1)) * 8.0f;
+                fnY[k + 1] = (h(x + 1, z) - h(x + 1, z + 1)) * 8.0f;
             }
         }
 
-        // Sum up all the normal components
-        float sumX = (normalX[6] + normalX[2] + normalX[5] + normalX[1]);
-        float sumY = (normalY[6] + normalY[2] + normalY[5] + normalY[1]);
-        float sumZ = (normalZ[6] + normalZ[2] + normalZ[5] + normalZ[1]);
-
-        // Normalize the resulting vector
-        float length = sqrt(sumX * sumX + sumY * sumY + sumZ * sumZ);
-        float invLength = 1.0f / length;
-
-        CVector result;
-        result.x = invLength * sumX;
-        result.y = invLength * sumY;
-        result.z = invLength * sumZ;
-
-        return result;
+        float const up = fnZ[6] + fnZ[2] + fnZ[5] + fnZ[1];
+        float const gradZ = fnY[6] + fnY[2] + fnY[5] + fnY[1];
+        float const gradX = fnX[6] + fnX[2] + fnX[5] + fnX[1];
+        float const invLength = static_cast<float>(1.0 / sqrt(up * up + gradZ * gradZ + gradX * gradX));
+        return CVector(invLength * gradX, invLength * gradZ, invLength * up);
     }
 
     unsigned char Landscape::GetColor(float, float)
@@ -6861,6 +6340,7 @@ namespace m3d
 
     void Landscape::ReloadLightmapTexture(CStr const& fileName)
     {
+        // RVA 0x5B0100 - falls back to data\grid.dds when the lightmap can't be loaded.
         if (m_texLightmap.IsValid())
         {
             M3D_RENDERER->ReleaseTexture(m_texLightmap);
@@ -6875,9 +6355,9 @@ namespace m3d
         M3D_RENDERER->SetTextureParameter(m_texLightmap, rend::TM_WRAP_S, 1);
         M3D_RENDERER->SetTextureParameter(m_texLightmap, rend::TM_WRAP_T, 1);
 
-        // TODO: check this
-        auto dbgFloat = M3D_ENGINE_CFG.m_dbg_floatVar2.GetF();
-        M3D_RENDERER->SetTextureParameter(m_texLightmap, rend::TM_MIP_LOD_BIAS, dbgFloat);
+        // NOTE: the lightmap's mip bias is taken from the debug cvar dbg_floatVar2, as shipped.
+        M3D_RENDERER->SetTextureParameter(
+            m_texLightmap, rend::TM_MIP_LOD_BIAS, rend::FloatTexParam(M3D_ENGINE_CFG.m_dbg_floatVar2.GetF()));
     }
 
     Object* Landscape::Clone()
@@ -7013,6 +6493,9 @@ namespace m3d
 
     void Landscape::CreateHeights(CellParams* dest, int ls, int cellSize)
     {
+        // RVA 0x5B73B0 - each cell's terrain height range (widened by 64 each way) and, at quarter-cell resolution,
+        // its water range; the level's water level becomes the most common water height.
+        // NOTE: the shipped code counts heights 1, 3, 5, ... (a quirk of its hash update); only the ordering matters.
         std::unordered_map<int, int> counterForHeights;
         std::set<int> usedHeights;
         float maxCounts = 999999.0;
@@ -7071,11 +6554,9 @@ namespace m3d
 
                 if (cellSize == 4)
                 {
-                    // TODO: check this
-                    auto v5 = x / 4 + m_owner->m_level->land_size * (z / 4);
-                    auto v22 = v5;
-                    m_cellParams[v22].m_minwater = wmin;
-                    m_cellParams[v22].m_maxwater = wmax;
+                    auto& cell = m_cellParams[x / 4 + m_owner->m_level->land_size * (z / 4)];
+                    cell.m_minwater = wmin;
+                    cell.m_maxwater = wmax;
                 }
             }
         }
@@ -7180,7 +6661,9 @@ namespace m3d
 
     void Landscape::renderZGuard()
     {
-        // TODO: check this!!!!
+        // RVA 0x7A4990 - fills the depth buffer (colour writes off) with walls the far geometry can't draw through:
+        // unless looking steeply up or down, a 20000-wide, 5000-high quad just inside the draw radius ahead of the
+        // camera, and always a 5000-high box around the level (four walls and a lid).
         M3D_RENDERER->SetAlphaTest(0);
         M3D_RENDERER->SetColorWriteMask(0, false);
         M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
@@ -7188,182 +6671,84 @@ namespace m3d
         M3D_RENDERER->PushBlend(rend::BM_NONE);
         M3D_RENDERER->DisableTextureStages(0);
 
-        auto vbHandle = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
-
-        int x = 0;
-        int y = 0;
-        int z = 0;
-
-        auto* stream = (char*)M3D_RENDERER->LockVbStreaming(vbHandle, x, y, &z);
-
-        m3d::rend::VertexXYZC poly[4];
-        poly[3].c = 0xFFFFFF;
-        poly[2].c = 0xFFFFFF;
-        poly[1].c = 0xFFFFFF;
-        poly[0].c = 0xFFFFFF;
+        int vofs = 0;
+        auto* vertices = static_cast<rend::VertexXYZC*>(
+            M3D_RENDERER->LockVbStreaming(M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC), 25, vofs, nullptr));
+        rend::VertexXYZC quad[4];
+        for (auto& vertex : quad)
+        {
+            vertex.c = 0xFFFFFF;
+        }
+        auto const setVertex = [&quad](int i, float x, float y, float z) {
+            quad[i].x = x;
+            quad[i].y = y;
+            quad[i].z = z;
+        };
 
         CVector r;
         CVector u;
         CVector f;
         M3D_RENDERER->MatGetBasis(r, u, f);
-
-        CVector org;
-
-        auto v13 = 5000.0;
-
-        if (fabs(f.y) < 0.89999998)
+        float const height = 5000.0f;
+        bool const facingHorizon = fabs(f.y) < 0.89999998;
+        if (facingHorizon)
         {
-            auto v37 = 1.0 / sqrt(f.x * f.x + f.z * f.z + 0.00000011920929);
-            f.x = f.x * v37;
-            f.y = v37 * 0.0;
-            f.z = f.z * v37;
-            org = M3D_RENDERER->MatGetOrgInv();
-            auto v10 = (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.y;
-            auto v11 = org.x +
-                (float)((float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24) * f.x);
-            auto v12 = org.z +
-                (float)(f.z * (float)((float)((float)this->m_drawRadius - 0.76999998) * VISCELL_EDGE_LENGTH_24));
-            r.z = f.x - (float)(f.y * 0.0);
-            auto v41 = r.z * 10000.0;
-            r.x = (float)(f.y * 0.0) - f.z;
-            r.y = (float)(f.z * 0.0) - (float)(f.x * 0.0);
-            poly[0].x = v11 - (float)(r.x * 10000.0);
-            poly[0].z = v12 - (float)(r.z * 10000.0);
-            poly[0].y = v10 - (float)(r.y * 10000.0);
-            org.z = (float)(r.z * 10000.0) + v12;
-            poly[1].x = (float)(r.x * 10000.0) + v11;
-            poly[1].z = org.z;
-            poly[1].y = (float)(r.y * 10000.0) + v10;
-            org.x = poly[1].x;
-            org.y = poly[1].y + 5000.0;
-            poly[2].x = poly[1].x;
-            poly[2].y = poly[1].y + 5000.0;
-            poly[2].z = org.z;
-            poly[3].x = poly[0].x;
-            poly[3].y = poly[0].y + 5000.0;
-            poly[3].z = poly[0].z;
-            memcpy(stream, poly, 0x40u);
-            stream += 64;
+            // The forward vector flattened onto the ground, and the right vector across it.
+            float const invLength = static_cast<float>(1.0 / sqrt(f.x * f.x + f.z * f.z + 0.00000011920929));
+            f.x = f.x * invLength;
+            f.y = invLength * 0.0f;
+            f.z = f.z * invLength;
+            CVector const org = M3D_RENDERER->MatGetOrgInv();
+            float const distance = (static_cast<float>(m_drawRadius) - 0.76999998f) * VISCELL_EDGE_LENGTH;
+            float const centreY = distance * f.y;
+            float const centreX = org.x + distance * f.x;
+            float const centreZ = org.z + f.z * distance;
+            r.z = f.x - f.y * 0.0f;
+            r.x = f.y * 0.0f - f.z;
+            r.y = f.z * 0.0f - f.x * 0.0f;
+            setVertex(0, centreX - r.x * 10000.0f, centreY - r.y * 10000.0f, centreZ - r.z * 10000.0f);
+            setVertex(1, r.x * 10000.0f + centreX, r.y * 10000.0f + centreY, r.z * 10000.0f + centreZ);
+            setVertex(2, quad[1].x, quad[1].y + height, quad[1].z);
+            setVertex(3, quad[0].x, quad[0].y + height, quad[0].z);
+            memcpy(vertices, quad, sizeof(quad));
+            vertices += 4;
         }
 
-        auto const land_scale_27 = 8.0;
-        CVector v[4];
-
-        auto v14 = (float)((float)this->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_24) - 8.0;
-        v[0].x = land_scale_27;
-        v[0].y = 0.0;
-        v[0].z = land_scale_27;
-        v[1].x = v14;
-        auto v15 = v14;
-        v[1].y = 0.0;
-        v[1].z = land_scale_27;
-        poly[1].z = land_scale_27;
-        v[2].x = v14;
-        poly[1].y = v13 + 0.0;
-        v[2].z = v14;
-        auto v44 = v14;
-        auto v41 = v14;
-        poly[2].x = v14;
-        v[2].y = 0.0;
-        auto v16 = v13 + 0.0;
-        poly[2].y = v13 + 0.0;
-        auto v17 = v14;
-        poly[2].z = v14;
-        v[3].x = land_scale_27;
-        v[3].y = 0.0;
-        auto v18 = v13 + 0.0;
-        auto v19 = v13 + 0.0;
-        v[3].z = v17;
-        poly[0].x = land_scale_27;
-        poly[0].y = v13 + 0.0;
-        poly[0].z = land_scale_27;
-        poly[1].x = v15;
-        poly[3].x = land_scale_27;
-        poly[3].y = v13 + 0.0;
-        poly[3].z = v17;
-        memcpy(stream, poly, 0x40u);
-        poly[0].x = land_scale_27;
-        poly[0].y = v[0].y;
-        poly[0].z = land_scale_27;
-        poly[1].x = v15;
-        poly[1].y = v[1].y;
-        poly[1].z = v[1].z;
-        poly[2].x = v15;
-        poly[2].y = v13 + 0.0;
-        poly[2].z = land_scale_27;
-        poly[3].x = land_scale_27;
-        auto v20 = stream + 64;
-        poly[3].y = v13 + 0.0;
-        poly[3].z = land_scale_27;
-        memcpy(v20, poly, 0x40u);
-        poly[0].x = v15;
-        poly[0].y = v[1].y;
-        poly[0].z = v[1].z;
-        poly[1].x = v[2].x;
-        poly[1].y = v[2].y;
-        poly[1].z = v[2].z;
-        poly[2].x = v41;
-        poly[2].y = v13 + 0.0;
-        poly[2].z = v44;
-        v20 += 64;
-        poly[3].y = v13 + 0.0;
-        x = v[2].x;
-        poly[3].z = land_scale_27;
-        y = v[3].y;
-        poly[3].x = v15;
-        memcpy(v20, poly, 0x40u);
-        poly[0].x = x;
-        poly[0].y = v[2].y;
-        poly[0].z = v[2].z;
-        auto v23 = v[3].x;
-        poly[1].y = y;
-        v20 += 64;
-        poly[1].x = v[3].x;
-        poly[1].z = v[3].z;
-        org.y = v19;
-        z = v[3].z;
-        poly[2].x = v[3].x;
-        poly[3].y = v16;
-        auto v24 = v[3].y;
-        poly[2].y = v19;
-        poly[2].z = v[3].z;
-        poly[3].x = v41;
-        poly[3].z = v44;
-        memcpy(v20, poly, 0x40u);
-        poly[0].y = v24;
-        poly[0].z = v[3].z;
-        poly[1].x = land_scale_27;
-        poly[1].y = v[0].y;
-        poly[2].y = v18;
-        poly[0].x = v23;
-        poly[1].z = land_scale_27;
-        poly[2].x = land_scale_27;
-        poly[2].z = land_scale_27;
-        poly[3].x = v23;
-        poly[3].y = v19;
-        poly[3].z = z;
-        memcpy(v20 + 64, poly, 0x40u);
-
-        auto v28 = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
-        M3D_RENDERER->UnlockVb(v28);
-
-        auto v32 = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC);
-        M3D_RENDERER->SetToStream0(v32);
-
-        unsigned vofs = 0;
-
-        auto v33 = 0;
-        if (fabs(f.y) < 0.89999998)
+        // The level's box: corners 8 units inside its edges.
+        float const lo = 8.0f;
+        float const hi = static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH - 8.0f;
+        float const top = height + 0.0f;
+        CVector const corner[4] = {{lo, 0.0f, lo}, {hi, 0.0f, lo}, {hi, 0.0f, hi}, {lo, 0.0f, hi}};
+        setVertex(0, lo, top, lo);
+        setVertex(1, hi, top, lo);
+        setVertex(2, hi, top, hi);
+        setVertex(3, lo, top, hi);
+        memcpy(vertices, quad, sizeof(quad));
+        vertices += 4;
+        for (int i = 0; i < 4; ++i)
         {
-            M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, vofs, 2u);
-            v33 = 4;
+            CVector const& a = corner[i];
+            CVector const& b = corner[(i + 1) % 4];
+            setVertex(0, a.x, a.y, a.z);
+            setVertex(1, b.x, b.y, b.z);
+            setVertex(2, b.x, top, b.z);
+            setVertex(3, a.x, top, a.z);
+            memcpy(vertices, quad, sizeof(quad));
+            vertices += 4;
         }
+        M3D_RENDERER->UnlockVb(M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC));
 
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs, 2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 4, 2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 8, 2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 12, 2u);
-        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, v33 + vofs + 16, 2u);
+        M3D_RENDERER->SetToStream0(M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC));
+        int first = vofs;
+        if (facingHorizon)
+        {
+            M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, first, 2u);
+            first += 4;
+        }
+        for (int i = 0; i < 5; ++i)
+        {
+            M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLEFAN, first + 4 * i, 2u);
+        }
         M3D_RENDERER->PopCull();
         M3D_RENDERER->PopZbState();
         M3D_RENDERER->PopBlend();
@@ -7385,7 +6770,9 @@ namespace m3d
         auto const landSize = m_owner->m_level->land_size;
         retruxx::set<ai::PhysicObj*> allPhysicObjs;
 
-        // TODO: check this
+        // RVA 0x64D920 - a collision cell is enabled while one of its objects is simulated by ODE and awake; when a
+        // checked cell changes state, its static geoms and its idle but collidable objects follow.
+        // NOTE: the debug counter counts every linked entry, including null and non-PhysicObj ones.
         for (int y = 0; y < landSize; ++y)
         {
             for (int x = 0; x < landSize; ++x)
@@ -7399,12 +6786,18 @@ namespace m3d
                     for (auto const objId : collisionItem->m_physicObjIds)
                     {
                         auto* obj = theObjects->GetEntityByObjId(objId);
-                        if (obj)
+                        allPhysicObjs.insert(static_cast<PhysicObj*>(obj));
+                        if (!obj)
+                        {
+                            M3D_LOG_INFO(
+                                "Error: NULL object is linked to collision cell x = " + CStr(x) + ", y = " + CStr(y) +
+                                ", id = " + CStr(objId));
+                        }
+                        else
                         {
                             if (IS_KIND_OF(obj, PhysicObj))
                             {
-                                auto* physObj = RT_DYNCAST(obj, PhysicObj);
-                                allPhysicObjs.insert(physObj);
+                                auto* physObj = static_cast<PhysicObj*>(obj);
                                 if (physObj->bIsUpdatingByODE() && (physObj->GetPhysicState() & 1) != 0)
                                 {
                                     isCellEnabled = true;
@@ -7642,139 +7035,151 @@ namespace m3d
 
     int Landscape::LoadTiles(CStr const& filename)
     {
-        // TODO: generated code (looks ok)
-        // Free existing tiles if any
+        // RVA 0x5BCF70 - the tile map: for every quarter-cell tile a texture and a rotation (0-4). The file is a
+        // "TILEMAP" tagged file (texture path, texture name table, then (name index, angle) per tile) or, failing
+        // that format, an old text one (texture path, an unused word, then name and angle per tile).
         FreeTiles();
+        int const side = 4 * m_owner->m_level->land_size;
+        m_tiles = new TileInfo[side * side];
 
-        // Calculate land size and allocate memory for tiles
-        int const landSize = 4 * m_owner->m_level->land_size;
-        int const totalTiles = landSize * landSize;
-
-        // Allocate memory for tile info
-        m_tiles = new TileInfo[totalTiles];
-
-        // Open the tagged file
-        fs::auxTaggedFile file;
-        int openResult = file.Open(filename.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC);
-
-        if (openResult != fs::auxTaggedFile::eError::BAD_FORMAT)
-        {
-            if (openResult != fs::auxTaggedFile::eError::SUCCESS)
+        auto const loadTextTileMap = [&]() -> bool {
+            // NOTE: here the used-textures list gets full paths, where the tagged format stores bare names.
+            scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            if (!stream->Open(filename.c_str(), fs::IStream::OPEN_READ))
             {
-                // Log error
-                M3D_LOG_ERR("Cannot open tiles file " + filename);
+                M3D_LOG_INFO("Cannot open tiles file " + filename);
+                return false;
+            }
+
+            CStr unused;
+            *stream >> m_pathTile;
+            *stream >> unused;
+            if (m_pathTile[m_pathTile.length() - 1] != '\\')
+            {
+                m_pathTile += "\\";
+            }
+
+            // Empty tokens are skipped; the stream running out first fails the whole map.
+            std::vector<CStr> tileNames(side * side);
+            for (int i = 0; i < side * side;)
+            {
+                if (stream->Eof() || stream->Error())
+                {
+                    M3D_LOG_INFO("ReadTiles: premature stream eof or error");
+                    return false;
+                }
+                CStr name;
+                *stream >> name;
+                if (name.empty())
+                {
+                    continue;
+                }
+                int angle = 0;
+                *stream >> angle;
+                m_tiles[i].m_angle = angle < 0 ? 0 : (angle > 4 ? 4 : angle);
+                tileNames[i] = m_pathTile + name;
+                m_usedTexturesList.insert(tileNames[i]);
+                ++i;
+            }
+            stream->Close();
+
+            ReadTileInfo(1);
+            for (int i = 0; i < side * side; ++i)
+            {
+                m_tiles[i].m_texIndex0 = AddOneTexture(tileNames[i]);
+            }
+            return true;
+        };
+
+        fs::auxTaggedFile file;
+        int const openResult = file.Open(filename.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC);
+        if (openResult == fs::auxTaggedFile::eError::BAD_FORMAT)
+        {
+            file.Close();
+            if (!loadTextTileMap())
+            {
                 return 0;
             }
         }
         else
         {
-            M3D_LOG_ERR("Tiles bad format " + filename);
-            return 0;
-        }
-
-        // Check file format
-        char* formatTitle = nullptr;
-        file.getFormatTitle(&formatTitle);
-        if (strcmp(formatTitle, "TILEMAP") != 0)
-        {
-            M3D_LOG_ERR("Error: Bad tiles format title: " + CStr(formatTitle));
-            return 0;
-        }
-
-        // Check format version
-        unsigned int formatVersion = 0;
-        file.getFormatVersion(formatVersion);
-        if (formatVersion != 1)
-        {
-            M3D_LOG_ERR("Error: Wrong tiles format version: " + CStr(formatVersion));
-            return 0;
-        }
-
-        // Process the tile data
-        unsigned char* data = nullptr;
-        if (file.getChunkData(0xBADF00Du, reinterpret_cast<void**>(&data)))
-        {
-            return 0;
-        }
-
-        // Verify land size matches
-        unsigned int fileLandSize = *reinterpret_cast<unsigned int*>(data);
-        data += 4;
-
-        if (fileLandSize != landSize)
-        {
-            M3D_LOG_ERR(
-                "Error: Bad tilemap file, landsize = " + CStr(landSize) +
-                ", tilemap size in file = " + CStr(fileLandSize));
-            return 0;
-        }
-
-        // Read tile path
-        unsigned int pathLength = *reinterpret_cast<unsigned int*>(data);
-        data += 4;
-        m_pathTile = CStr(reinterpret_cast<char*>(data));
-        data += pathLength + 1;
-
-        // Ensure path ends with backslash
-        if (m_pathTile[m_pathTile.length() - 1] != '\\')
-        {
-            m_pathTile += "\\";
-        }
-
-        // Read tile names
-        unsigned int tileNameCount = *reinterpret_cast<unsigned int*>(data);
-        data += 4;
-
-        std::vector<CStr> tileNames;
-        tileNames.reserve(tileNameCount);
-        for (unsigned int i = 0; i < tileNameCount; ++i)
-        {
-            unsigned int nameLength = *reinterpret_cast<unsigned int*>(data);
-            data += 4;
-
-            CStr tileName(reinterpret_cast<char*>(data));
-            tileNames.push_back(std::move(tileName));
-            data += nameLength + 1;
-
-            // Add to used textures set
-            m_usedTexturesList.insert(tileNames.back());
-        }
-
-        // Read tile info
-        ReadTileInfo(1);  // Initialize tile info
-
-        // Process each tile
-        for (int y = 0; y < landSize; ++y)
-        {
-            for (int x = 0; x < landSize; ++x)
+            if (openResult != fs::auxTaggedFile::eError::SUCCESS)
             {
-                TileInfo& tile = m_tiles[y * landSize + x];
-
-                // Read tile data (2 bytes: index, 2 bytes: angle)
-                unsigned short tileIndex = *reinterpret_cast<unsigned short*>(data);
-                unsigned short tileAngle = *reinterpret_cast<unsigned short*>(data + 2);
-                data += 4;
-
-                // Clamp angle
-                if (tileAngle > 4)
-                    tileAngle = 4;
-                tile.m_angle = tileAngle;
-
-                // Create full texture path and add texture
-                CStr texturePath = m_pathTile + tileNames[tileIndex];
-                tile.m_texIndex0 = AddOneTexture(texturePath);
+                M3D_LOG_INFO("Cannot open tiles file " + filename);
+                return 0;
             }
+
+            char* formatTitle = nullptr;
+            file.getFormatTitle(&formatTitle);
+            if (strcmp(formatTitle, "TILEMAP") != 0)
+            {
+                M3D_LOG_ERR("Error: Bad tiles format title: '" + CStr(formatTitle) + "'");
+                return 0;
+            }
+
+            unsigned formatVersion = 0;
+            file.getFormatVersion(formatVersion);
+            if (formatVersion != 1)
+            {
+                M3D_LOG_ERR("Error: Wrong tiles format version: " + CStr(formatVersion));
+                return 0;
+            }
+
+            unsigned char* data = nullptr;
+            file.getChunkData(0xBADF00Du, reinterpret_cast<void**>(&data));
+            auto const readUint = [&data]() {
+                unsigned const value = *reinterpret_cast<unsigned const*>(data);
+                data += 4;
+                return value;
+            };
+            // A string is its length, then its characters and a terminating zero.
+            auto const readString = [&]() {
+                unsigned const length = readUint();
+                CStr const value(reinterpret_cast<char const*>(data));
+                data += length + 1;
+                return value;
+            };
+
+            unsigned const fileSide = readUint();
+            if (fileSide != static_cast<unsigned>(side))
+            {
+                M3D_LOG_ERR(
+                    "Error: Bad tilemap file, landsize = " + CStr(side) + ", tilemap size in file = " +
+                    CStr(fileSide));
+                return 0;
+            }
+
+            m_pathTile = readString();
+            if (m_pathTile[m_pathTile.length() - 1] != '\\')
+            {
+                m_pathTile += "\\";
+            }
+
+            std::vector<CStr> tileNames(readUint());
+            for (CStr& name : tileNames)
+            {
+                name = readString();
+            }
+            for (CStr const& name : tileNames)
+            {
+                m_usedTexturesList.insert(name);
+            }
+
+            ReadTileInfo(1);
+            for (int i = 0; i < side * side; ++i)
+            {
+                unsigned short const nameIndex = *reinterpret_cast<unsigned short const*>(data);
+                unsigned short const angle = *reinterpret_cast<unsigned short const*>(data + 2);
+                data += 4;
+                m_tiles[i].m_angle = angle > 4 ? 4 : angle;
+                m_tiles[i].m_texIndex0 = AddOneTexture(m_pathTile + tileNames[nameIndex]);
+            }
+            file.Close();
         }
 
-        // Clean up
-        file.Close();
-
-        // Update texture information
-        size_t const textureCount = m_tilesTextures.size();
-        ChangedNumberOfUsedTextures(textureCount);
+        ChangedNumberOfUsedTextures(m_tilesTextures.size());
         RecalcUV();
         UpdateTexturesFilters();
-
         return 1;
     }
 
@@ -8460,7 +7865,10 @@ namespace m3d
         RenderTypes renderType,
         retruxx::vector<int, retruxx::allocator<int>>& bankSwitchingMap)
     {
-        // TODO: generated code
+        // RVA 0x7A8B70 - the vertices (5x5 per tile) of one texture's tiles for one pass: the base pass takes the
+        // tiles fully covered by the texture, the alpha pass the partly covered ones (with their mask's UVs). Each
+        // landscape cell records, per pass, its first vertex, vertex bank and tile count; a new bank starts every
+        // 65536 vertices.
         int const numCells = cellsPerTexture.size();
         unsigned int const* currentCell = &cellsPerTexture[0];
 
@@ -8596,8 +8004,6 @@ namespace m3d
                         {
                             // Alpha pass rendering
                             float* uvPtr = alphaUVs + 1;
-                            auto vertexOffsetCalc =
-                                reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(alphaUVs);
 
                             for (int col = 0; col < 5; ++col)
                             {
@@ -8625,8 +8031,6 @@ namespace m3d
                         {
                             // Base pass rendering
                             float* uvPtr = baseUVs + 1;
-                            auto vertexOffsetCalc =
-                                reinterpret_cast<char*>(vertices) - reinterpret_cast<char*>(baseUVs);
 
                             for (int col = 0; col < 5; ++col)
                             {
@@ -8719,8 +8123,7 @@ namespace m3d
 
     void Landscape::DrawCellsFast0(cmn::vector<unsigned> const& cellsPerTex, TIVChunk& tivchunk, RenderTypes RenderType)
     {
-        // TODO: generated code (looks ok)
-        // Set up rendering state based on render type
+        // RVA 0x7A6F60 - draws the cells of one texture for one pass, from the offsets BuildCells0 recorded.
         if (RenderType == RT_OTHERPASSES)
         {
             m3d::Application::g_pApp->m_renderer->SetBlend(rend::BM_ALPHA, 0);
@@ -9086,8 +8489,7 @@ namespace m3d
 
     void Landscape::FreeTiles()
     {
-        // TODO: generated code (looks ok)
-        // Free tile data array
+        // RVA 0x5B6C50
         delete[] m_tiles;
         m_tiles = nullptr;
 
@@ -9161,7 +8563,10 @@ namespace m3d
 
     void Landscape::DrawNonTransformGeom(dxGeom* geom)
     {
-        // TODO: generated code Landscape::DrawNonTransformGeom
+        // RVA 0x6462F0 - debug wireframe of a single geom in its own frame (sphere, box, capped cylinder, trimesh),
+        // coloured by its address.
+        // NOTE: unverified: the sphere and capped-cylinder tessellation was only checked against Hex-Rays output, which
+        // loses track of the stack arrays here; box, trimesh and the error path match.
         unsigned int color = reinterpret_cast<unsigned int>(geom) | 0xFF000000;
         int geomClass = dGeomGetClass(geom);
 
@@ -9390,7 +8795,7 @@ namespace m3d
 
         default:  // Invalid geometry class
         {
-            M3D_LOG_ERR("Error: invalid geom class: " + CStr(geomClass));
+            M3D_LOG_INFO("Error: invalid geom class: " + CStr(geomClass));
             break;
         }
         }

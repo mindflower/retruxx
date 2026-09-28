@@ -39,8 +39,10 @@ namespace m3d
 
     AIParam::AIParam(AIParam const& param)
     {
+        // RVA 0x614B50
         if (this != &param)
         {
+            Init();
             Copy(param);
         }
     }
@@ -52,12 +54,14 @@ namespace m3d
         z(pos.z)
     {
     }
-    //TODO: check z y
-    AIParam::AIParam(CVector2 const& range) :
-        Type(AIPARAM_RANGE),
-        x(range.x),
-        z(range.y)
+    AIParam::AIParam(CVector2 const& range)
     {
+        // RVA 0x41C5C0 - a range keeps its bounds in x and z, which is where GetAsVector,
+        // GetAsRange and GetAsStr read them from.
+        Init();
+        Type = AIPARAM_RANGE;
+        x = range.x;
+        z = range.y;
     }
 
     AIParam::AIParam(retruxx::vector<int> const& list) :
@@ -782,83 +786,81 @@ namespace m3d
 
     void AIParam::LoadFromXML(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
     {
-        //TODO: check this
+        // RVA 0x615F10 - the value is read as a string first and then converted to the stored
+        // type, the inverse of SaveToXML.
         Detach();
-        CStr valueAttr = xmlNode->GetAttribute("GAIParam_Value");
-        operator=(valueAttr);
-        CStr type = xmlNode->GetAttribute("GAIParam_Type");
-        if (type == "AIPARAM_UNDEFINE")
+        operator=(CStr(xmlNode->GetAttribute("GAIParam_Value")));
+
+        CStr const typeName = xmlNode->GetAttribute("GAIParam_Type");
+        eAIParamType type = AIPARAM_UNDEFINE;
+        if (typeName == "AIPARAM_UNDEFINE")
         {
-            SetType(AIPARAM_UNDEFINE);
+            type = AIPARAM_UNDEFINE;
         }
-        else if (type == "AIPARAM_VECTOR")
+        else if (typeName == "AIPARAM_VECTOR")
         {
-            SetType(AIPARAM_VECTOR);
+            type = AIPARAM_VECTOR;
         }
-        else if (type == "AIPARAM_QUATERNION")
+        else if (typeName == "AIPARAM_QUATERNION")
         {
-            SetType(AIPARAM_QUATERNION);
+            type = AIPARAM_QUATERNION;
         }
-        else if (type == "AIPARAM_ID")
+        else if (typeName == "AIPARAM_ID")
         {
-            SetType(AIPARAM_ID);
+            type = AIPARAM_ID;
         }
-        else if (type == "AIPARAM_FLOAT")
+        else if (typeName == "AIPARAM_FLOAT")
         {
-            SetType(AIPARAM_FLOAT);
+            type = AIPARAM_FLOAT;
         }
-        else if (type == "AIPARAM_STRING")
+        else if (typeName == "AIPARAM_STRING")
         {
-            SetType(AIPARAM_STRING);
+            type = AIPARAM_STRING;
         }
-        else if (type == "AIPARAM_ID_LIST")
+        else if (typeName == "AIPARAM_ID_LIST")
         {
-            SetType(AIPARAM_ID_LIST);
+            type = AIPARAM_ID_LIST;
         }
-        else if (type == "AIPARAM_STRING_LIST")
+        else if (typeName == "AIPARAM_STRING_LIST")
         {
-            SetType(AIPARAM_STRING_LIST);
+            type = AIPARAM_STRING_LIST;
         }
-        else if (type == "AIPARAM_RANGE")
+        else if (typeName == "AIPARAM_RANGE")
         {
-            SetType(AIPARAM_RANGE);
+            type = AIPARAM_RANGE;
         }
+
+        // NOTE: an unknown or missing type name falls through as AIPARAM_UNDEFINE, and
+        // SetType(AIPARAM_UNDEFINE) detaches the value that was just read.
+        SetType(type);
     }
 
     float AIParam::GetAsFloat() const
     {
-        double result; // st7
-        float v2; // xmm1_4
-        float* v3; // ebx
-        float* v4; // edi
-        float* v5; // esi
-        const char** v6; // ecx
-        float v7; // [esp+4h] [ebp-8h] BYREF
-        float v8; // [esp+8h] [ebp-4h] BYREF
-
+        // RVA 0x613D60
         switch (Type)
         {
         case AIPARAM_ID:
-            return id;
+            return static_cast<float>(id);
+
         case AIPARAM_STRING:
             if (m_Str && !m_Str->empty())
-                return atof(m_Str->c_str());
-            return 0;
+            {
+                return static_cast<float>(atof(m_Str->c_str()));
+            }
+            return 0.0f;
+
         case AIPARAM_RANGE:
-            //TODO: check this!!!
-            v2 = this->y;
-            v7 = this->id;
-            v8 = v2;
-            v3 = &v8;
-            if (*&v7 <= v2)
-                v3 = &v7;
-            v4 = &v8;
-            if (v2 <= *&v7)
-                v4 = &v7;
-            v5 = &v8;
-            if (*&v7 <= v2)
-                v5 = &v7;
-            return rand() * (*v4 - *v5) * 0.000030518509 + *v3;
+        {
+            // A range reads back as a random value between its bounds.
+            // NOTE: the bounds are taken from x and y, but the CVector2 constructor stores the
+            // second one in z, so a constructed range rolls between x and 0. Only a range set
+            // through operator=(CVector2) has its second bound in y.
+            float const lo = x > y ? y : x;
+            float const hi = y > x ? y : x;
+            return static_cast<float>(rand()) * (hi - lo) * (1.0f / 32767.0f) + lo;
+        }
+
         default:
             return x;
         }
@@ -923,8 +925,12 @@ namespace m3d
             operator=(GetAsStringList());
             break;
         case AIPARAM_RANGE:
-            operator=(GetAsVector());
+        {
+            // RVA 0x615AF0 - a range is rebuilt from the vector's x and z.
+            CVector const vec = GetAsVector();
+            operator=(CVector2(vec.x, vec.z));
             break;
+        }
         default:
             return;
         }
@@ -1062,68 +1068,62 @@ namespace m3d
 
     void AIParam::Copy(AIParam const& param)
     {
-        //TODO: refactor this shit
-        if (&param != this)
+        // RVA 0x614810 - plain values are copied byte for byte; heap-held strings and lists are
+        // deep-copied. Both callers (the copy constructor and operator=) clear this object
+        // first, so the "already holds a value" asserts never fire in practice.
+        if (&param == this)
         {
-            id = 0;
-            switch (param.GetType())
-            {
-            case AIPARAM_STRING:
-            {
-                if (m_Str == param.m_Str)
-                {
-                    break;
-                }
-                M3D_ASSERT(!m_Str);
-                if (!param.m_Str)
-                {
-                    break;
-                }
-                m_Str = new CStr(*param.m_Str);
-                break;
-            }
-            case AIPARAM_ID_LIST:
-            {
-                if (m_NumList == param.m_NumList)
-                {
-                    break;
-                }
-                M3D_ASSERT(!m_NumList);
-                if (!param.m_NumList)
-                {
-                    break;
-                }
-                m_NumList = new retruxx::vector<int>(*param.m_NumList);
-                break;
-            }
-            case AIPARAM_STRING_LIST:
-            {
-                if (m_NameList == param.m_NameList)
-                {
-                    break;
-                }
-                M3D_ASSERT(!m_NameList);
-                if (!param.m_NameList)
-                {
-                    break;
-                }
-                m_NameList = new retruxx::vector<CStr>(*param.m_NameList);
-                break;
-            }
-            default:
-            {
-                memcpy(this, &param, sizeof(AIParam));
-                return;
-            }
-            }
-            //NameFromNum = param.NameFromNum;
-            //NumFromName = param.NumFromName;
-            Type = param.Type;
+            return;
         }
+
+        switch (param.Type)
+        {
+        case AIPARAM_STRING:
+            if (m_Str != param.m_Str)
+            {
+                M3D_ASSERT(!m_Str);
+                if (param.m_Str)
+                {
+                    m_Str = new CStr(*param.m_Str);
+                }
+            }
+            break;
+
+        case AIPARAM_ID_LIST:
+            if (m_NumList != param.m_NumList)
+            {
+                M3D_ASSERT(!m_NumList);
+                if (param.m_NumList)
+                {
+                    m_NumList = new retruxx::vector<int>(*param.m_NumList);
+                }
+            }
+            break;
+
+        case AIPARAM_STRING_LIST:
+            if (m_NameList != param.m_NameList)
+            {
+                M3D_ASSERT(!m_NameList);
+                if (param.m_NameList)
+                {
+                    m_NameList = new retruxx::vector<CStr>(*param.m_NameList);
+                }
+            }
+            break;
+
+        default:
+            memcpy(this, &param, sizeof(AIParam));
+            return;
+        }
+
+        NameFromNum = param.NameFromNum;
+        NumFromName = param.NumFromName;
+        Type = param.Type;
     }
 
     void AIParam::Detach()
     {
+        // RVA 0x404FF0 - frees a heap-held value, then resets to an empty undefined one.
         switch (Type)
         {
         case AIPARAM_STRING:
@@ -1151,11 +1151,7 @@ namespace m3d
             break;
         }
         }
-        id = 0;
+        Init();
         Type = AIPARAM_UNDEFINE;
-        //NameFromNum = 0;
-        //NumFromName = 0;
-        y = 0.0;
-        z = 0.0;
     }
 }

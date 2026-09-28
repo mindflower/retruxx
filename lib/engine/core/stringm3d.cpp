@@ -37,28 +37,31 @@ void UnifyFileName0(CStr& fileName)
 
 CStr DirectoryFromFileName(CStr const& source)
 {
-    auto result = source;
-    UnifyFileName0(result);
-    auto pos = result.rfind('/');
-    if (pos != CStr_npos)
+    // RVA 0x413CE0 - the directory part, without the trailing slash, of the unified
+    // (lower-case, forward-slash) name.
+    CStr unified = source;
+    UnifyFileName0(unified);
+    int const slash = unified.rfind('/');
+    if (slash != CStr_npos)
     {
-        //TODO: check this
-        return result.substr(0, pos);
+        return unified.substr(0, slash);
     }
-    return result;
+    // NOTE: a name with no directory comes back as it was passed in, not unified.
+    return source;
 }
 
 CStr NameFromFileName(CStr const& source)
 {
-    auto result = source;
-    UnifyFileName0(result);
-    auto pos = result.rfind('/');
-    if (pos != CStr_npos)
+    // RVA 0x558AD0 - the part after the last slash of the unified name.
+    CStr unified = source;
+    UnifyFileName0(unified);
+    int const slash = unified.rfind('/');
+    if (slash != CStr_npos)
     {
-        //TODO: check this
-        return result.substr(pos + 1);
+        return unified.substr(slash + 1, unified.length());
     }
-    return result;
+    // NOTE: a name with no directory comes back as it was passed in, not unified.
+    return source;
 }
 
 CVector2 strToVec2(CStr const& str)
@@ -121,8 +124,9 @@ void CStr::cleanup()
 
 void CStr::realloc(int sz)
 {
-    //TODO: check this
-    auto size = 32 * ((sz + 31) / 32);
+    // RVA 0x406FE0 - makes room for sz characters, rounded up to 32, and empties the string.
+    // The old buffer is reused when it is large enough.
+    int const size = 32 * ((sz + 31) / 32);
     if (size > m_allocSz || m_charPtr == ZERO)
     {
         cleanup();

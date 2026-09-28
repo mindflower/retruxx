@@ -20,6 +20,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
     _In_ LPSTR lpCmdLine,
     _In_ int nCmdShow)
 {
+    // RVA 0x414C80
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nCmdShow);
 
@@ -27,8 +28,9 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
     if (g_SentinelMutex != NULL)
     {
         CMiracle3d game;
-        //TODO:: load icon from resources
-        auto hIcon = ::LoadIcon(hInstance, TEXT("icon.ico"));
+        // NOTE: the original loads icon resource id 101 (MAKEINTRESOURCE(0x65)); our app/resource.rc names
+        // the icon MAINICON instead, so it is loaded by that name.
+        auto hIcon = ::LoadIcon(hInstance, TEXT("MAINICON"));
         auto result = 0;
         if (game.init(hInstance, hIcon, "data\\config.cfg", NULL, lpCmdLine) != 0)
         {

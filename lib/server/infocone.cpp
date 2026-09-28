@@ -61,109 +61,57 @@ namespace ai
 
     bool InfoCone::SetVehicleId(int vehicleId)
     {
-        // TODO: generated code InfoCone::SetVehicleId
-        // Check if mouse is pointing at something
+        // RVA 0x7EBD30 - aims the cone from the camera through the mouse cursor. Its half-angle is the angle to the
+        // point m_infoAreaRadius (relative screen units) to the right of the cursor.
         if (!M3D_APP->bIsMousePointing())
         {
             return false;
         }
 
-        // Get mouse hit point in world space
         m3d::SgNode* hitNode = nullptr;
         M3D_APP->GetMouseHitPoint(m_lookAt, hitNode);
-
-        // Store current camera position
         m_cameraPos = M3D_APP->m_curCamera.m_worldOrigin;
-
-        CVector hitPoint = m_lookAt;
-        bool hasValidHit = (hitNode != nullptr);
-
-        // If no valid hit point, create a point far in front of the camera
-        if (!hasValidHit)
+        if (!hitNode)
         {
-            // Get camera rotation matrix
+            // Nothing under the cursor: look far along the camera's forward vector (column 3 of its rotation).
             CMatrix cameraRot;
             cameraRot.rotYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
-
-            CVector INITIAL_OBJECTS_DIRECTION = {0.0, 0.0, 1.0};
-            // Calculate a point far in the camera's forward direction
-            CVector farPoint;
-            farPoint.x = (((cameraRot._13 * INITIAL_OBJECTS_DIRECTION.z) + (cameraRot._12 * INITIAL_OBJECTS_DIRECTION.y)) +
-                     (cameraRot._11 * INITIAL_OBJECTS_DIRECTION.x)) *
-                1000000.0;
-            farPoint.y = (((cameraRot._23 * INITIAL_OBJECTS_DIRECTION.z) + (cameraRot._22 * INITIAL_OBJECTS_DIRECTION.y)) +
-                     (cameraRot._21 * INITIAL_OBJECTS_DIRECTION.x)) *
-                1000000.0;
-            farPoint.z = (((cameraRot._33 * INITIAL_OBJECTS_DIRECTION.z) + (cameraRot._32 * INITIAL_OBJECTS_DIRECTION.y)) +
-                     (cameraRot._31 * INITIAL_OBJECTS_DIRECTION.x)) *
-                1000000.0;
-
-            hitPoint = farPoint;
+            CVector const forward(0.0f, 0.0f, 1.0f);
+            m_lookAt = CVector(
+                (cameraRot._13 * forward.z + cameraRot._12 * forward.y + cameraRot._11 * forward.x) * 1000000.0f,
+                (cameraRot._23 * forward.z + cameraRot._22 * forward.y + cameraRot._21 * forward.x) * 1000000.0f,
+                (cameraRot._33 * forward.z + cameraRot._32 * forward.y + cameraRot._31 * forward.x) * 1000000.0f);
         }
-        else
+        else if (CVector traced; TraceTo(m_lookAt, traced, 5000.0f))
         {
-            // Try to trace to the hit point with a maximum distance
-            CVector traceResult;
-            if (!TraceTo(hitPoint, traceResult, 5000.0f))
-            {
-                // If trace fails, use the original hit point
-                hitPoint = m_lookAt;
-            }
-            else
-            {
-                // Use the traced point
-                hitPoint = traceResult;
-            }
+            m_lookAt = traced;
         }
 
-        // Update the look-at point
-        m_lookAt = hitPoint;
-        
-        // Store vehicle ID
         m_vehicleId = vehicleId;
-
-        // Calculate look vector from camera to hit point
         m_lookVector = m_lookAt - m_cameraPos;
-
-        // Normalize look direction
         m_lookDir = m_lookVector.getNormalized();
-
-        float distance = m_lookVector.length();
-
-        // Store look distance with a small offset
-        m_lookDistance = distance + 10.0f;
-
-        // Scale look vector to the actual distance
+        m_lookDistance = m_lookVector.length() + 10.0f;
         m_lookVector = m_lookVector.getNormalized() * m_lookDistance;
 
-        float infoAreaRadius = theGlobProp.m_infoAreaRadius;
-        float halfConeRightEdge = 0.0;
-        M3D_RENDERER->RelToAbs(infoAreaRadius, halfConeRightEdge);
+        // RelToAbs converts both values in place, so edgeOffset becomes the offset in pixels.
+        float edgeOffset = static_cast<float>(theGlobProp.m_infoAreaRadius);
+        float unused = 0.0f;
+        M3D_RENDERER->RelToAbs(edgeOffset, unused);
+        CVector const edgeDir =
+            M3D_RENDERER->Unproject(CVector2(M3D_APP->GetMouseX() + edgeOffset, static_cast<float>(M3D_APP->GetMouseY())))
+                .getNormalized();
 
-        // Calculate cone properties for visibility testing
-        // Get mouse position
-        float mouseX = M3D_APP->GetMouseX() + infoAreaRadius;
-        float mouseY = M3D_APP->GetMouseY();
-
-        // Convert mouse position to world space ray
-        CVector2 mouseVec2 = CVector2(mouseX, mouseY);
-        CVector mouseWorldRay = M3D_RENDERER->Unproject(mouseVec2);
-
-        // Normalize the mouse ray
-        mouseWorldRay = mouseWorldRay.getNormalized();
-
-        // Calculate cosine of half-cone angle (dot product between look direction and mouse ray)
-        m_halfConeCos = m_lookDir.z * mouseWorldRay.z + (m_lookDir.y * mouseWorldRay.y) + (m_lookDir.x * mouseWorldRay.x);
+        m_halfConeCos = m_lookDir.z * edgeDir.z + m_lookDir.y * edgeDir.y + m_lookDir.x * edgeDir.x;
         m_sphere->SetRadius(0.1f);
-
         m_sphereRadiusCoef = sqrt(1.0 / (m_halfConeCos * m_halfConeCos) - 1.0);
-
         return true;
     }
 
     int InfoCone::GetInfoObjId() const
     {
-        // TODO: check this!!
+        // RVA 0x7EC140 - the object shown in the info panel: among the targetable objects visible last frame whose
+        // geoms touch the cone (tested with a sphere of the cone's radius at the geom's depth) and are in line of
+        // sight, the one closest to the cone's axis.
         auto& landscape = pServer->GetWorld()->GetLandscape();
         auto& graph = m3d::pClient->GetWorld().GetGraph();
 
@@ -200,14 +148,17 @@ namespace ai
             for (int const objId : collisionItem->m_physicObjIds)
             {
                 auto* obj = theObjects->GetEntityByObjId(objId);
+                // A trailer stands for the vehicle towing it (a detached trailer for itself).
                 if (auto* vehicle = RT_DYNCAST(obj, Vehicle); vehicle && vehicle->IsTrailer())
                 {
-                    auto* parent = vehicle->GetParent();
-                    if (!parent || !IS_KIND_OF(parent, PhysicObj))
+                    if (auto* parent = vehicle->GetParent())
                     {
-                        continue;
+                        if (!IS_KIND_OF(parent, PhysicObj))
+                        {
+                            continue;
+                        }
+                        obj = parent;
                     }
-                    obj = parent;
                 }
 
                 auto* physicObj = RT_DYNCAST(obj, PhysicObj);
@@ -232,7 +183,6 @@ namespace ai
                     continue;
                 }
 
-                // TODO: generated code
                 // Check collision with each geometry in the vehicle body
                 for (dxGeom* geom = dBodyGetFirstGeom(physicObj->GetBody()->id()); geom; geom = dGeomGetBodyNext(geom))
                 {
@@ -314,45 +264,19 @@ namespace ai
 
     bool InfoCone::TraceTo(CVector const& dst, CVector& newDst, float length) const
     {
-        // TODO: generated code InfoCone::TraceTo
-        // Set ray origin to camera position
+        // RVA 0x7EBB80 - the first static obstacle on the ray from the camera towards dst, within `length` (or up to
+        // dst when length < 0.1). Dynamic objects, little geoms, the player and shells are ignored.
         dGeomSetPosition(m_ray->GetGeomId(), m_cameraPos.x, m_cameraPos.y, m_cameraPos.z);
+        CVector const toDst = dst - m_cameraPos;
+        m_ray->SetDirection(toDst.getNormalized());
+        m_ray->SetLength(length >= 0.1f ? length : toDst.length());
 
-        // Calculate direction vector from camera to destination
-        CVector directionOriginal = dst - m_cameraPos;
-
-        // Normalize direction vector
-        CVector direction = directionOriginal.getNormalized();
-
-        // Set ray direction
-        m_ray->SetDirection(direction);
-
-        // Set ray length
-        if (length >= 0.1f)
-        {
-            // Use specified maximum length
-            m_ray->SetLength(length);
-        }
-        else
-        {
-            // Use actual distance to destination
-            m_ray->SetLength(directionOriginal.length());
-        }
-
-        // Perform ray trace
         dContact contact;
-        bool hit = ai::TraceLine(*m_ray, contact, true, true, true, false, nullptr, true, false);
-
-        if (!hit)
+        if (!ai::TraceLine(*m_ray, contact, true, true, true, false, nullptr, true, false))
         {
             return false;
         }
-
-        // Store hit point
-        newDst.x = contact.geom.pos[0];
-        newDst.y = contact.geom.pos[1];
-        newDst.z = contact.geom.pos[2];
-
+        newDst = CVector(contact.geom.pos[0], contact.geom.pos[1], contact.geom.pos[2]);
         return true;
     }
 }  // namespace ai

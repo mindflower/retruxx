@@ -397,86 +397,55 @@ namespace m3d
 
     void SceneGraph::LinkNode(SgNode* toLink)
     {
-        // TODO: generated code
-        toLink->m_forGraph = new GraphItemsForSgNode;
+        // RVA 0x639C50
+        GraphItemsForSgNode* const gi = new GraphItemsForSgNode;
+        toLink->m_forGraph = gi;
 
         PointBase<int> p0;
         PointBase<int> p1;
         toLink->GetVisCellBounds(p0, p1);
-        toLink->m_forGraph->m_cellsCoveredPoint0 = p0;
-        toLink->m_forGraph->m_cellsCoveredPoint1 = p1;
+        gi->m_cellsCoveredPoint0 = p0;
+        gi->m_cellsCoveredPoint1 = p1;
 
-        if (p0.x <= p1.x)
+        for (int x = p0.x; x <= p1.x; ++x)
         {
-            int y = p0.y;
-            int v5 = p1.y;
-
-            for (int x = p0.x; x <= p1.x; x++)
+            for (int z = p0.y; z <= p1.y; ++z)
             {
-                int j = y;
-                if (y <= v5)
-                {
-                    do
-                    {
-                        int cellIndex = x + (j << 6);
-                        m3d::SceneGraph::CellItems& v7 = m_cellItems[cellIndex];
-                        v7.m_nodesLinkedDirect.AddObject(toLink);
-                        j++;
-                    } while (j <= v5);
-                }
+                m_cellItems[64 * z + x].m_nodesLinkedDirect.AddObject(toLink);
             }
         }
 
-        auto v13 = m_owner->m_level->land_size - 1;
+        int const maxIdx = m_owner->m_level->land_size - 1;
         int modelCastShadow = 0;
-        toLink->GetServerItemProperty(0, &modelCastShadow);
-        if (modelCastShadow)
+        toLink->GetServerItemProperty(PROP_MODEL_CAST_SHADOW, &modelCastShadow);
+        if (!modelCastShadow)
         {
-            int v35 = 0;
-            toLink->GetProperty(8721u, &v35);
+            return;
+        }
+        bool nodeCastShadow = false;
+        toLink->GetProperty(PROP_DM_CAST_SHADOW, &nodeCastShadow);
+        if (!nodeCastShadow)
+        {
+            return;
+        }
 
-            if (v35)
+        // The shadow can fall anywhere around the node, so the box is grown on all sides by 1.3 of its height.
+        CVector const& org = toLink->m_currentWorldOrigin;
+        Aabb const box = toLink->m_boundingBox;
+        float const margin = ((org.y + box.m_box[4]) - (org.y + box.m_box[1])) * 1.3f;
+        float const invCell = 1.0f / VISCELL_EDGE_LENGTH_6;
+        int const x0 = std::clamp(static_cast<int>(invCell * ((org.x + box.m_box[0]) - margin)), 0, maxIdx);
+        int const x1 = std::clamp(static_cast<int>(invCell * (margin + (org.x + box.m_box[3]))), 0, maxIdx);
+        int const z0 = std::clamp(static_cast<int>(invCell * ((org.z + box.m_box[2]) - margin)), 0, maxIdx);
+        int const z1 = std::clamp(static_cast<int>(invCell * (margin + (org.z + box.m_box[5]))), 0, maxIdx);
+
+        for (int x = x0; x <= x1; ++x)
+        {
+            for (int z = z0; z <= z1; ++z)
             {
-                auto v15 = toLink->m_currentWorldOrigin.y;
-                auto x = toLink->m_currentWorldOrigin.x;
-                auto z = toLink->m_currentWorldOrigin.z;
-
-                Aabb box = toLink->m_boundingBox;
-
-                float v23 = (float)((float)(v15 + box.m_box[4]) - (float)(v15 + box.m_box[1])) * 1.3f;
-                float v24 = v23 + (z + box.m_box[5]);
-
-                int v25 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * ((z + box.m_box[2]) - v23));
-                int v26 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * ((x + box.m_box[0]) - v23));
-                int v27 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * (v23 + (x + box.m_box[3])));
-                int v28 = static_cast<int>((1.0f / VISCELL_EDGE_LENGTH_6) * v24);
-
-                int x0 = v26;
-                int z0 = v25;
-                int x1 = v27;
-                int z1 = v28;
-
-                // Clamp values to valid range
-                x0 = std::clamp(v26, 0, v13);
-                x1 = std::clamp(v27, 0, v13);
-                z0 = std::clamp(v25, 0, v13);
-                z1 = std::clamp(v28, 0, v13);
-
-                for (int xCoord = x0; xCoord <= x1; xCoord++)
-                {
-                    for (int zCoord = z0; zCoord <= z1; zCoord++)
-                    {
-                        int cellIndex = 64 * zCoord + xCoord;
-                        m3d::SceneGraph::CellItems& cell = m_cellItems[cellIndex];
-
-                        // Insert into shadowing set
-                        auto result = cell.m_nodesShadowingDirect.insert(toLink);
-
-                        // Store the cell identifier (combining x and z coordinates)
-                        unsigned int cellId = (xCoord & 0xFFFF) | ((zCoord & 0xFFFF) << 16);
-                        toLink->m_forGraph->m_cellsShadowCovered.push_back(cellId);
-                    }
-                }
+                m_cellItems[64 * z + x].m_nodesShadowingDirect.insert(toLink);
+                // The cell is remembered as (z << 16) + x for UnlinkNode.
+                gi->m_cellsShadowCovered.push_back(x + (z << 16));
             }
         }
     }
@@ -566,64 +535,53 @@ namespace m3d
 
     float SceneGraph::GetAlphaForNode(SgNode* node)
     {
-        // TODO: generated code SceneGraph::GetAlphaForNode
-        // Calculate alpha steps based on engine configuration
+        // RVA 0x6353E0
+        // Alpha test quantises alpha to this many steps; nothing may go below the first one.
         int const alphaSteps = 256 / (M3D_ENGINE_CFG.m_alphaTestWorld.GetI() + 1);
         float const alphaStep = 1.0f / static_cast<float>(alphaSteps);
 
+        // Nodes fade out over the last 1.5 s of their time to live.
         float maxAlpha = 1.0f;
-        float currentAlpha = 1.0f;
-
-        // Get timer for TTL calculation
-        auto const& timer = M3D_KERNEL->GetTimer();
-
-        // Handle TTL (time to live) - fade in effect for newly spawned nodes
         if (node->m_ttl > 0)
         {
-            int timeSinceSpawn = node->m_ttl - timer.GetFrameStartTime();
-            if (timeSinceSpawn >= 0 && timeSinceSpawn < 1500)
+            int const timeLeft = node->m_ttl - M3D_KERNEL->GetTimer().GetFrameStartTime();
+            if (timeLeft < 1500)
             {
-                maxAlpha = static_cast<float>(timeSinceSpawn) * 0.00066666666f;
+                maxAlpha = static_cast<float>(std::max(timeLeft, 0)) * 0.00066666666f;
             }
         }
 
-        // Reduce alpha for small on-screen objects if model culling is enabled
-        if (node->m_onScreenSize < 20.0f && !m_noModelCull)
+        // Small on-screen objects fade out (1 / 19.5 per unit of size).
+        float alpha = node->m_onScreenSize;
+        if (alpha < 20.0f && !m_noModelCull)
         {
-            currentAlpha = node->m_onScreenSize * 0.051282052f;
+            alpha *= 0.051282052f;
         }
 
-        // Handle static model nodes with server-side transparency
+        // Transparent static models (trees) fade near the camera, down to alphaStep.
         if (IS_KIND_OF(node, SgStaticModelNode))
         {
-            m3d::TransparencyType tt = TT_NONE;
-            node->GetServerItemProperty(2, &tt);
-
-            if (tt != TT_NONE)
+            int transparency = 0;
+            node->GetServerItemProperty(PROP_MODEL_TRANS, &transparency);
+            if (transparency)
             {
-                // Calculate distance from camera to node
-                auto renderer = Application::g_pApp->m_renderer;
-                CVector cameraPos = renderer->MatGetOrgInv();
-
-                CVector delta = cameraPos - node->m_originWorldAbsForSphere;
-                float distance = delta.length() - 64.0f - node->m_boundingRadius;
-
+                CVector const d = M3D_RENDERER->MatGetOrgInv() - node->m_originWorldAbsForSphere;
+                float distance = std::sqrt(d.z * d.z + d.y * d.y + d.x * d.x) - 64.0f - node->m_boundingRadius;
                 if (distance < 0.0f)
                 {
                     distance = 0.0f;
                 }
-
-                // Apply distance-based alpha fade
                 if (distance <= 64.0f)
                 {
-                    float distanceFactor = distance * 0.015625f;  // distance / 64
-                    currentAlpha = (maxAlpha - alphaStep) * (distanceFactor * distanceFactor) + alphaStep;
+                    float const k = distance * 0.015625f;
+                    alpha = (maxAlpha - alphaStep) * k * k + alphaStep;
                 }
             }
         }
 
-        // Return the minimum of max alpha and current alpha
-        return std::min(maxAlpha, currentAlpha);
+        // NOTE: alpha starts as the raw on-screen size, not 1, so a node that is not faded by size is simply
+        // capped by maxAlpha (and with m_noModelCull a node under one unit keeps its size as alpha).
+        return maxAlpha > alpha ? alpha : maxAlpha;
     }
 
     void SceneGraph::UpdateThinkNodes()
@@ -749,44 +707,39 @@ namespace m3d
 
     void SceneGraph::InsertInRemoveIfFree(SgNode* toInsert)
     {
-        // TODO: check this
-        if (toInsert)
+        // RVA 0x63B050
+        if (!toInsert)
         {
-            CheckNodeValidity(toInsert, "Check from InsertInRemoveIfFree");
-            if (m_bIsPurgingRemoveIfFree)
+            return;
+        }
+        CheckNodeValidity(toInsert, "Check from InsertInRemoveIfFree");
+        if (m_bIsPurgingRemoveIfFree)
+        {
+            M3D_LOG_WARN(
+                CStr("Warning: inserting node in RemoveIfFree when it is being purged! node name = '") +
+                CStr(toInsert->GetName()) + CStr("', class = '") + CStr(toInsert->GetClassNameA()) + CStr("'"));
+        }
+
+        toInsert->RemoveImmediateAfterParent(false);
+        m_RemoveIfFreeList.insert(toInsert);
+        toInsert->m_persistant = 0;
+        toInsert->m_isInRemoveIfFree = true;
+        toInsert->m_isRemoveIfFree = true;
+
+        // The whole subtree becomes remove-if-free, but only the node itself sits in the list.
+        std::vector<Object*> stack;
+        stack.push_back(toInsert);
+        while (!stack.empty())
+        {
+            Object* const current = stack.back();
+            stack.pop_back();
+            for (auto* child = static_cast<SgNode*>(current->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
             {
-                M3D_LOG_WARN(
-                    "Warning: inserting node in RemoveIfFree when it is being purged! node name = '" +
-                    CStr(toInsert->GetName()) + "', class = '" + CStr(toInsert->GetClassNameA()));
-            }
-
-            toInsert->RemoveImmediateAfterParent(false);
-            m_RemoveIfFreeList.insert(toInsert);
-            toInsert->m_persistant = 0;
-            toInsert->m_isInRemoveIfFree = 1;
-            toInsert->m_isRemoveIfFree = 1;
-
-            std::vector<m3d::Object*> stack;
-            stack.push_back(toInsert);
-
-            while (!stack.empty())
-            {
-                m3d::Object* current = stack.back();
-                stack.pop_back();
-
-                // Process all children of current node
-                m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-                while (childNode)
+                child->m_isRemoveIfFree = true;
+                if (child->GetFirstChild())
                 {
-                    childNode->m_isRemoveIfFree = true;
-
-                    // If child has children, add to stack for processing
-                    if (childNode->GetFirstChild())
-                    {
-                        stack.push_back(childNode);
-                    }
-
-                    childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
+                    stack.push_back(child);
                 }
             }
         }
@@ -890,84 +843,58 @@ namespace m3d
 
     void SceneGraph::UnlinkNode(SgNode* toUnlink)
     {
-        // TODO: generated code
+        // RVA 0x63A070
+        // NOTE: the original has no null checks and dereferences m_forGraph unconditionally; the guard only
+        // turns that crash into a no-op.
         if (!toUnlink || !toUnlink->m_forGraph)
         {
             return;
         }
 
-        m3d::GraphItemsForSgNode* graphItems = toUnlink->m_forGraph;
+        GraphItemsForSgNode* const gi = toUnlink->m_forGraph;
         toUnlink->m_forGraph = nullptr;
 
-        // Process all cells covered by this node
-        for (int x = graphItems->m_cellsCoveredPoint0.x; x <= graphItems->m_cellsCoveredPoint1.x; ++x)
+        Landscape& landscape = m_owner->GetLandscape();
+        for (int x = gi->m_cellsCoveredPoint0.x; x <= gi->m_cellsCoveredPoint1.x; ++x)
         {
-            for (int y = graphItems->m_cellsCoveredPoint0.y; y <= graphItems->m_cellsCoveredPoint1.y; ++y)
+            for (int z = gi->m_cellsCoveredPoint0.y; z <= gi->m_cellsCoveredPoint1.y; ++z)
             {
-                CellItems& cellItems = m_cellItems[64 * y + x];
+                m_cellItems[64 * z + x].m_nodesLinkedDirect.RemoveObject(toUnlink);
 
-                // Remove node from direct links in this cell
-                cellItems.m_nodesLinkedDirect.RemoveObject(toUnlink);
+                // The landscape frees its per-node collision list together with the last covered cell.
+                bool const isLastCell = x == gi->m_cellsCoveredPoint1.x && z == gi->m_cellsCoveredPoint1.y;
+                landscape.UnlinkNodeCollisionGeomsFromCell(toUnlink, x, z, isLastCell);
 
-                // Determine if this is the last cell (for cleanup purposes)
-                bool isLastCell = (x == graphItems->m_cellsCoveredPoint1.x && y == graphItems->m_cellsCoveredPoint1.y);
-
-                // Unlink collision geometries from landscape
-                m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(toUnlink, x, y, isLastCell);
-
-                // Process child nodes recursively using a stack
-                std::vector<m3d::Object*> stack;
+                // The whole subtree's collision geoms are unlinked as well (the node itself only once, above).
+                std::vector<Object*> stack;
                 stack.push_back(toUnlink);
-
                 while (!stack.empty())
                 {
-                    m3d::Object* current = stack.back();
+                    Object* const current = stack.back();
                     stack.pop_back();
-
-                    // Process all children of current node
-                    m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-                    while (childNode)
+                    for (auto* child = static_cast<SgNode*>(current->GetFirstChild()); child;
+                         child = static_cast<SgNode*>(child->GetNextSibling()))
                     {
-                        // Unlink child's collision geometries
-                        m_owner->GetLandscape().UnlinkNodeCollisionGeomsFromCell(childNode, x, y, isLastCell);
-
-                        // If child has children, add to stack for processing
-                        if (childNode->GetFirstChild())
+                        landscape.UnlinkNodeCollisionGeomsFromCell(child, x, z, isLastCell);
+                        if (child->GetFirstChild())
                         {
-                            stack.push_back(childNode);
+                            stack.push_back(child);
                         }
-
-                        childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
                     }
                 }
             }
         }
 
-        // Remove from shadow coverage
-        for (auto it = graphItems->m_cellsShadowCovered.begin(); it != graphItems->m_cellsShadowCovered.end(); ++it)
+        // Cells were remembered by LinkNode as (z << 16) + x.
+        for (unsigned int const cell : gi->m_cellsShadowCovered)
         {
-            uint32_t cellKey = *it;
-            int cellX = cellKey & 0xFFFF;
-            int cellY = (cellKey >> 16) & 0xFFFF;
-
-            m3d::SceneGraph::CellItems& cellItems = m_cellItems[64 * cellY + cellX];
-
-            // Remove node from shadowing direct set
-            auto shadowIt = cellItems.m_nodesShadowingDirect.find(toUnlink);
-            if (shadowIt != cellItems.m_nodesShadowingDirect.end())
-            {
-                cellItems.m_nodesShadowingDirect.erase(shadowIt);
-            }
+            m_cellItems[64 * (cell >> 16) + (cell & 0xFFFF)].m_nodesShadowingDirect.erase(toUnlink);
         }
 
-        // Clean up graph items
-        graphItems->m_cellsCoveredPoint0 = {0, 0};
-        graphItems->m_cellsCoveredPoint1 = {-1, -1};
-
-        graphItems->m_cellsShadowCovered.clear();
-
-        // Free the graph items memory
-        delete graphItems;
+        gi->m_cellsCoveredPoint0 = {0, 0};
+        gi->m_cellsCoveredPoint1 = {-1, -1};
+        gi->m_cellsShadowCovered.clear();
+        delete gi;
     }
 
     SgNode* SceneGraph::GetNodeByName(CStr const& name)
@@ -1226,140 +1153,94 @@ namespace m3d
 
     void SceneGraph::LightSetupLightsForNode(SgNode* node)
     {
-        // TODO: generated code SceneGraph::LightSetupLightsForNode
-        if (!node || !m_owner)
-            return;
+        // RVA 0x7AF6B0 - a single directional sun light, with the direction brought into the node's local space.
+        CVector const& sun = m_owner->GetSun(0.0f);
+        CMatrix const& xf = node->m_currentXForm;
+        // NOTE: the sums are kept in the binary's order (z, y, then x) so the float rounding matches.
+        CVector const dir(
+            0.0f - ((xf._13 * sun.z + xf._12 * sun.y) + sun.x * xf._11),
+            0.0f - ((xf._23 * sun.z + xf._22 * sun.y) + xf._21 * sun.x),
+            0.0f - ((xf._33 * sun.z + xf._32 * sun.y) + xf._31 * sun.x));
 
-        // Transform the sun direction by the node's inverse transpose (for normal transformation)
-        CVector const& sunDir = m_owner->GetSun(0.0);
-        CMatrix const& transform = node->m_currentXForm;
-
-        // Calculate the transformed light direction (applying the node's rotation)
-        // This appears to be transforming the sun direction by the upper 3x3 of the matrix
-        float transformedX = -(sunDir.x * transform._11 + sunDir.y * transform._12 + sunDir.z * transform._13);
-        float transformedY = -(sunDir.x * transform._21 + sunDir.y * transform._22 + sunDir.z * transform._23);
-        float transformedZ = -(sunDir.x * transform._31 + sunDir.y * transform._32 + sunDir.z * transform._33);
-
-        // Setup the directional light source
         rend::LightSource light;
         light.m_type = rend::M3DLIGHT_DIRECTIONAL;
-        light.m_direction.x = transformedX;
-        light.m_direction.y = transformedY;
-        light.m_direction.z = transformedZ;
-        light.m_origin.x = transformedX;
-        light.m_origin.y = transformedY;
-        light.m_origin.z = transformedZ;
+        light.m_direction = dir;
+        light.m_origin = dir;
         light.m_range = 1000.0f;
+        light.m_diffuse = rend::Colorf(m_owner->GetWeatherDiffuseColor());
+        light.m_ambient = rend::Colorf(m_owner->GetWeatherAmbientColor());
 
-        // Set diffuse color from weather system
-        uint32_t weatherDiffuse = m_owner->GetWeatherDiffuseColor();
-        light.m_diffuse = rend::Colorf(weatherDiffuse);
-
-        // Set ambient color from weather system
-        uint32_t weatherAmbient = m_owner->GetWeatherAmbientColor();
-        light.m_ambient = rend::Colorf(weatherAmbient);
-
-        // Apply the light to the renderer
         M3D_RENDERER->LightSet(0, light);
         M3D_RENDERER->LightEnable(0, true);
     }
 
     void SceneGraph::Update()
     {
+        // RVA 0x63E780
         auto const frameStartTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
         UpdateAllXForms();
-        auto ttlIt = m_ttledList.begin();
-        while (ttlIt != m_ttledList.end())
+
+        // Nodes whose time to live has run out are removed right away.
+        for (auto ttlIt = m_ttledList.begin(); ttlIt != m_ttledList.end();)
         {
-            auto* node = *ttlIt;
+            SgNode* node = *ttlIt;
             if (node->m_ttl <= 0 || node->m_ttl >= frameStartTime)
             {
                 ++ttlIt;
+                continue;
             }
-            else
-            {
-                ttlIt = m_ttledList.erase(ttlIt);
-                RemoveNodeExceptRemoveIfFree(node);
-            }
+            ttlIt = m_ttledList.erase(ttlIt);
+            m_RemoveIfFreeList.erase(node);
+            RemoveNodeExceptRemoveIfFree(node);
         }
 
-        // TODO: generated code
-
-        // Process nodes marked for removal if free
+        // A remove-if-free node is deleted once every node of its subtree reports it is free.
         m_bIsPurgingRemoveIfFree = true;
-
-        auto removeIt = m_RemoveIfFreeList.begin();
-        while (removeIt != m_RemoveIfFreeList.end())
+        for (auto removeIt = m_RemoveIfFreeList.begin(); removeIt != m_RemoveIfFreeList.end();)
         {
-            SgNode* currentNode = *removeIt;
+            SgNode* const node = *removeIt;
+            // NOTE: the node itself is never asked, only its descendants.
             bool needToRemove = true;
-
-            // Check if all children are free (eligible for removal)
-            std::vector<SgNode*> stack;
-            stack.push_back(currentNode);
-
+            std::vector<Object*> stack;
+            stack.push_back(node);
             while (!stack.empty())
             {
-                SgNode* current = stack.back();
+                Object* const current = stack.back();
                 stack.pop_back();
-
-                // Check all children of this node
-                SgNode* child = (SgNode*)current->GetFirstChild();
-                while (child != nullptr)
+                for (auto* child = static_cast<SgNode*>(current->GetFirstChild()); child;
+                     child = static_cast<SgNode*>(child->GetNextSibling()))
                 {
                     if (!child->IsFree())
                     {
                         needToRemove = false;
                     }
-
-                    if (child->GetFirstChild() != nullptr)
+                    if (child->GetFirstChild())
                     {
                         stack.push_back(child);
                     }
-
-                    child = (SgNode*)child->GetNextSibling();
                 }
             }
 
-            if (needToRemove)
+            if (!needToRemove)
             {
-                // Remove the node from various lists and clean up
-                auto nextIt = m_RemoveIfFreeList.erase(removeIt);
-
-                // If node is linked in the spatial partitioning, unlink it
-                GraphItemsForSgNode* graphItems = currentNode->m_forGraph;
-                if (graphItems && graphItems->m_cellsCoveredPoint0.x <= graphItems->m_cellsCoveredPoint1.x &&
-                    graphItems->m_cellsCoveredPoint0.y <= graphItems->m_cellsCoveredPoint1.y)
-                {
-                    UnlinkNode(currentNode);
-                }
-
-                // Remove from parent if it has one
-                if (currentNode->GetParent() != nullptr)
-                {
-                    currentNode->GetParent()->RemoveChild(currentNode);
-                }
-
-                // Remove from transformation update list
-                DeleteFromUpdateXFormList(currentNode);
-
-                // Validate node before deletion
-                CheckNodeValidity(currentNode, "Check Two");
-
-                // Delete the node
-
-                // TODO: DecRef
-                delete currentNode;
-
-                removeIt = nextIt;
-            }
-            else
-            {
-                // Move to next node in the list
                 ++removeIt;
+                continue;
             }
-        }
 
+            removeIt = m_RemoveIfFreeList.erase(removeIt);
+            if (IsLinkedNode(node))
+            {
+                UnlinkNode(node);
+            }
+            if (Object* parent = node->GetParent())
+            {
+                parent->RemoveChild(node);
+            }
+            DeleteFromUpdateXFormList(node);
+            CheckNodeValidity(node, "Check Two");
+            // The binary calls the virtual deleting destructor directly, not DecRef.
+            delete node;
+        }
         m_bIsPurgingRemoveIfFree = false;
     }
 
@@ -1531,6 +1412,7 @@ namespace m3d
 
     void SceneGraph::Render(SgRenderFlags flags)
     {
+        // RVA 0x63A850
         auto const frameStart = M3D_KERNEL->GetTimer().GetFrameStartTime();
         auto const lastFrameTime = M3D_KERNEL->GetTimer().GetLastFrameTime();
         if (flags == SGRF_LOW_DETAIL || flags < SGRF_SHADOWS)
@@ -1588,47 +1470,38 @@ namespace m3d
 
             for (auto const clsIdx : effectiveClasses)
             {
-                if (m_visNumSlots[clsIdx])
+                int const numNodes = m_visNumSlots[clsIdx];
+                if (!numNodes)
                 {
-                    auto effIdx = clsIdx * 2000;
-                    if (auto* server = m_visSlots[effIdx]->GetServer())
-                    {
-                        if (server == &M3D_APP->GetAnimatedModelsServer() || server == &M3D_APP->GetParticlesServer())
-                        {
-                            RenderNodeInfo rni;
-                            rni.rnt = RNT_SIMPLE;
-                            rni.isCullInverted = flags == SGRF_LOW_DETAIL;
-                            rni.isUseImpostors = true;
-                            rni.isPrimaryRender = flags != SGRF_LOW_DETAIL;
-                            // TODO: check this
-                            server->RenderNodeSet(&m_visSlots[effIdx], m_visNumSlots[clsIdx], rni);
-                        }
-                        else
-                        {
-                            // TODO: check this
-                            bool renderStart = false;
-                            server->RenderItem(-2, 0);
-                            renderStart = true;
-
-                            auto slots = &m_visSlots[effIdx];
-
-                            for (int i = 0; i < m_visNumSlots[clsIdx]; i++)
-                            {
-                                if (renderStart)
-                                {
-                                    server->RenderItem(-3, 0);
-                                }
-                                server->RenderItem(-2, 0);
-                                renderStart = true;
-                                slots[i]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
-                            }
-                            if (renderStart)
-                            {
-                                server->RenderItem(-3, 0);
-                            }
-                        }
-                    }
+                    continue;
                 }
+                SgNode** const slots = &m_visSlots[2000 * clsIdx];
+                DataServer* const server = slots[0]->GetServer();
+                if (!server)
+                {
+                    continue;
+                }
+                if (server == &M3D_APP->GetAnimatedModelsServer() || server == &M3D_APP->GetParticlesServer())
+                {
+                    RenderNodeInfo rni;
+                    rni.rnt = RNT_SIMPLE;
+                    rni.isCullInverted = flags == SGRF_LOW_DETAIL;
+                    rni.isUseImpostors = true;
+                    rni.isPrimaryRender = flags != SGRF_LOW_DETAIL;
+                    server->RenderNodeSet(slots, numNodes, rni);
+                    continue;
+                }
+
+                // NOTE: the binary opens the batch with -2 and then, for every node, closes the previous
+                // state with -3 and opens it again with -2, so the render state is set up once per node.
+                server->RenderItem(-2, nullptr);
+                for (int i = 0; i < numNodes; ++i)
+                {
+                    server->RenderItem(-3, nullptr);
+                    server->RenderItem(-2, nullptr);
+                    slots[i]->Render(NRF_DEFAULT, nullptr, lastFrameTime, frameStart);
+                }
+                server->RenderItem(-3, nullptr);
             }
         }
         else if (flags == SGRF_SHADOWS)
@@ -1648,6 +1521,7 @@ namespace m3d
 
     SceneGraph::SceneGraph()
     {
+        // RVA 0x63C140
         this->m_noModelCull = 0;
         this->m_bIsInUnlinkAndDeleteAll = 0;
         this->m_bIsPurgingRemoveIfFree = 0;
@@ -1727,19 +1601,19 @@ namespace m3d
         memset(this->m_enableMap, 0, sizeof(this->m_enableMap));
         this->m_enableVisSpaceMask = 1;
 
-        //TODO: add this fields
-        this->m_visSlots = new SgNode*[128000];
+        // Per-class visibility slots: 64 node classes, up to 2000 nodes each.
+        this->m_visSlots = new SgNode*[64 * 2000];
         this->m_visNumSlots = new int[64];
-        this->m_visSlotsUnderwater = new SgNode*[128000];
+        this->m_visSlotsUnderwater = new SgNode*[64 * 2000];
         this->m_visNumSlotsUnderwater = new int[64];
         this->m_transparentNodes = new SgNode*[500];
         this->m_numTransparentNodes = 0;
         this->m_transparencyTest = new IsNodeTransparent;
 
         memset(this->m_visNumSlots, 0, 64 * sizeof(int));
-        memset(this->m_visSlots, 0, 128000 * sizeof(SgNode*));
+        memset(this->m_visSlots, 0, 64 * 2000 * sizeof(SgNode*));
         memset(this->m_visNumSlotsUnderwater, 0, 64 * sizeof(int));
-        memset(this->m_visSlotsUnderwater, 0, 28000 * sizeof(SgNode*));
+        memset(this->m_visSlotsUnderwater, 0, 64 * 2000 * sizeof(SgNode*));
         memset(this->m_transparentNodes, 0, 500 * sizeof(SgNode*));
         this->m_cellsPrepared = 0;
     }
@@ -1860,8 +1734,8 @@ namespace m3d
 
     void SceneGraph::DeleteAllTtledNodes()
     {
-        // TODO: check this
-        for (auto& ttl : m_ttledList)
+        // RVA 0x63E640
+        for (SgNode* ttl : m_ttledList)
         {
             if (ttl)
             {
@@ -2137,31 +2011,22 @@ namespace m3d
 
     void SceneGraph::DeleteFromUpdateXFormList(SgNode* toDelete)
     {
-        // TODO: check this
+        // RVA 0x63B480 - drops the node and its whole subtree from the pending transform updates.
         m_updateXFormList.erase(toDelete);
-
-        // Process child nodes recursively using a stack
-        std::vector<m3d::Object*> stack;
+        std::vector<Object*> stack;
         stack.push_back(toDelete);
-
         while (!stack.empty())
         {
-            m3d::Object* current = stack.back();
+            Object* const current = stack.back();
             stack.pop_back();
-
-            // Process all children of current node
-            m3d::SgNode* childNode = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-            while (childNode)
+            for (auto* child = static_cast<SgNode*>(current->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
             {
-                m_updateXFormList.erase(childNode);
-
-                // If child has children, add to stack for processing
-                if (childNode->GetFirstChild())
+                m_updateXFormList.erase(child);
+                if (child->GetFirstChild())
                 {
-                    stack.push_back(childNode);
+                    stack.push_back(child);
                 }
-
-                childNode = dynamic_cast<m3d::SgNode*>(childNode->GetNextSibling());
             }
         }
     }
@@ -2385,23 +2250,19 @@ namespace m3d
 
     void SceneGraph::RemoveNodeExceptRemoveIfFree(SgNode*& toRemove)
     {
-        auto forGraph = toRemove->m_forGraph;
-        if (forGraph && forGraph->m_cellsCoveredPoint0.x <= forGraph->m_cellsCoveredPoint1.x &&
-            forGraph->m_cellsCoveredPoint0.y <= forGraph->m_cellsCoveredPoint1.y)
+        // RVA 0x63B9F0
+        if (IsLinkedNode(toRemove))
         {
             UnlinkNode(toRemove);
         }
-
-        auto parent = toRemove->GetParent();
-        if (parent)
+        if (Object* parent = toRemove->GetParent())
+        {
             parent->RemoveChild(toRemove);
-
+        }
         DeleteFromUpdateXFormList(toRemove);
         CheckNodeValidity(toRemove, "Check Two");
-
-        // TODO: check this
-        // TODO: DecRef
-        toRemove->DecRef();
+        // The binary calls the virtual deleting destructor directly, whatever the reference count.
+        delete toRemove;
         toRemove = nullptr;
     }
 
@@ -3173,48 +3034,29 @@ namespace m3d
 
     void SceneGraph::enableCellsSetRect(int* rc, unsigned orValue, unsigned andValue)
     {
-        // TODO: check and refactor this
-        auto v4 = rc[1];
-        if (v4 < rc[3])
+        // RVA 0x633D90 - rc is {x0, z0, x1, z1} with exclusive upper bounds.
+        for (int z = rc[1]; z < rc[3]; ++z)
         {
-            auto v5 = rc[2];
-            auto v6 = &this->m_enableMap[256 * v4];
-            do
+            unsigned char* const row = &m_enableMap[256 * z];
+            for (int x = rc[0]; x < rc[2]; ++x)
             {
-                for (int i = *rc; i < v5; v5 = rc[2])
-                {
-                    auto v8 = v6[i++] & andValue;
-                    v6[i - 1] = orValue | v8;
-                }
-                ++v4;
-                v6 += 256;
-            } while (v4 < rc[3]);
+                row[x] = static_cast<unsigned char>((row[x] & andValue) | orValue);
+            }
         }
     }
 
     void SceneGraph::enableCellsSetRect(float* rc, unsigned v0, unsigned v1)
     {
-        //TODO: check and refactor this
-        int rrc[4] = {0};
-
-        auto v4 = rc[3] * (float)(1.0 / VISCELL_EDGE_LENGTH_6);
-        rrc[0] = (int)(float)(*rc * (float)(1.0 / VISCELL_EDGE_LENGTH_6));
-        auto v5 = (int)v4;
-        auto v6 = rc[2] * (float)(1.0 / VISCELL_EDGE_LENGTH_6);
-        rrc[2] = v5;
-        auto v7 = (int)v6;
-        auto v8 = rc[5] * (float)(1.0 / VISCELL_EDGE_LENGTH_6);
-        rrc[1] = v7;
-        auto land_size = this->m_owner->m_level->land_size;
-        rrc[3] = (int)v8;
-        if (rrc[0] > land_size)
-            rrc[0] = land_size;
-        if (v7 > land_size)
-            rrc[1] = land_size;
-        if (v5 > land_size)
-            rrc[2] = land_size;
-        if ((int)v8 > land_size)
-            rrc[3] = land_size;
+        // RVA 0x633DF0 - rc is an Aabb {minX, minY, minZ, maxX, maxY, maxZ} in world units.
+        // NOTE: the cell rectangle is clamped to land_size from above only, never to 0 from below.
+        float const invCell = 1.0f / VISCELL_EDGE_LENGTH_6;
+        int const landSize = m_owner->m_level->land_size;
+        int rrc[4] = {
+            std::min(static_cast<int>(rc[0] * invCell), landSize),
+            std::min(static_cast<int>(rc[2] * invCell), landSize),
+            std::min(static_cast<int>(rc[3] * invCell), landSize),
+            std::min(static_cast<int>(rc[5] * invCell), landSize),
+        };
         enableCellsSetRect(rrc, v0, v1);
     }
 
@@ -3287,47 +3129,36 @@ namespace m3d
 
     int SceneGraph::AddNodeAndItsChildrenToRender(SgNode* n, CClipper const& frusta, int curFrame)
     {
-        if (n->GetName() == std::string("ET_PS_MACHINEGUNROADEXPLOSION"))
-        {
-            bool asd = true;
-        }
+        // RVA 0x63A470
         if (n->m_isWaitingForRender)
+        {
             return 0;
-
-        auto prop = AddOneNodeToRender(n, frusta, curFrame);
-        if (!prop)
-        {
-            n->GetProperty(4355, &prop);
         }
-        if (prop)
+
+        // An invisible node still lets its subtree through when it has a sound child, which must keep playing.
+        int visible = AddOneNodeToRender(n, frusta, curFrame);
+        if (!visible)
         {
-            retruxx::vector<m3d::Object*> stack;
-            stack.push_back(n);
+            n->GetProperty(PROP_NODE_HAVE_CHILDSOUND, &visible);
+        }
+        if (!visible)
+        {
+            return 1;
+        }
 
-            // Depth-first traversal
-            while (!stack.empty())
+        std::vector<Object*> stack;
+        stack.push_back(n);
+        while (!stack.empty())
+        {
+            Object* const current = stack.back();
+            stack.pop_back();
+            for (auto* child = static_cast<SgNode*>(current->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
             {
-                // Pop the last node from stack
-                m3d::Object* currentNode = stack.back();
-                stack.pop_back();
-
-                // Process all children of current node
-                m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-
-                // TODO: check this
-                while (child != nullptr)
+                AddOneNodeToRender(child, frusta, curFrame);
+                if (child->GetFirstChild())
                 {
-                    // Process collision for this child node
-                    AddOneNodeToRender(child, frusta, curFrame);
-
-                    // If child has children of its own, push to stack for processing
-                    if (child->GetFirstChild() != nullptr)
-                    {
-                        stack.push_back(child);
-                    }
-
-                    // Move to next sibling
-                    child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
+                    stack.push_back(child);
                 }
             }
         }
@@ -3420,87 +3251,57 @@ namespace m3d
 
     void SceneGraph::enableVisibleCells_r(CClipper& frusta, float* box, unsigned int orFlags)
     {
-        // TODO: generated code
-        float const VISCELL_EDGE_LENGTH = 128.0f;
-        float const MAX_LAND_SIZE = m_owner->m_level->land_size * VISCELL_EDGE_LENGTH;
-
-        // Test bounding box against frustum
-        CVector ofs(0, 0, 0);
-        int testResult = frusta.testBBox(tbFullTest, box, ofs);
-
-        // Handle fully outside frustum
-        if (testResult == 0)
+        // RVA 0x635060 - quadtree walk over the landscape: cells in fully visible boxes get orFlags, cells in
+        // invisible boxes lose it, and partially visible boxes are split in four until they are one cell wide.
+        int const test = frusta.testBBox(tbFullTest, box, CVector(0.0f, 0.0f, 0.0f));
+        if (test == 0)
         {
             enableCellsSetRect(box, 0, ~orFlags);
             return;
         }
-
-        // Handle fully inside frustum
-        if (testResult == 2)
+        if (test == 2)
         {
             enableCellsSetRect(box, orFlags, 0xFFFFFFFF);
             return;
         }
 
-        // Partially visible case
-        unsigned int clipSave = frusta.m_enabled;
-        ofs = CVector(0, 0, 0);
-        frusta.enableUpdateFromBox(box, ofs);
+        unsigned int const clipSave = frusta.m_enabled;
+        frusta.enableUpdateFromBox(box, CVector(0.0f, 0.0f, 0.0f));
 
-        // Clamp box to maximum landscape size
-        box[3] = std::min(box[3], MAX_LAND_SIZE);
-        box[5] = std::min(box[5], MAX_LAND_SIZE);
-
-        // Calculate box dimensions
-        float width = box[3] - box[0];
-        float depth = box[5] - box[2];
-
-        // Check if we should split the box
-        if (width > VISCELL_EDGE_LENGTH && depth > VISCELL_EDGE_LENGTH)
+        float const maxCoord = static_cast<float>(m_owner->m_level->land_size) * VISCELL_EDGE_LENGTH_6;
+        box[3] = std::min(box[3], maxCoord);
+        box[5] = std::min(box[5], maxCoord);
+        float const width = box[3] - box[0];
+        float const depth = box[5] - box[2];
+        if (VISCELL_EDGE_LENGTH_6 >= width || VISCELL_EDGE_LENGTH_6 >= depth)
         {
-            // Calculate number of subdivisions
-            float xCells = std::ceil((width * 0.5f) / VISCELL_EDGE_LENGTH);
-            float zCells = std::ceil((depth * 0.5f) / VISCELL_EDGE_LENGTH);
-
-            // Calculate sub-box dimensions
-            float subWidth = VISCELL_EDGE_LENGTH * xCells;
-            float subDepth = VISCELL_EDGE_LENGTH * zCells;
-
-            // Create four sub-boxes
-            float newBoxes[4][6] = {
-                // Bottom-left sub-box
-                {box[0], box[1], box[2], box[0] + subWidth, box[4], box[2] + subDepth},
-
-                // Bottom-right sub-box
-                {box[0] + subWidth, box[1], box[2], box[0] + subWidth * 2, box[4], box[2] + subDepth},
-
-                // Top-right sub-box
-                {box[0] + subWidth, box[1], box[2] + subDepth, box[0] + subWidth * 2, box[4], box[2] + subDepth * 2},
-
-                // Top-left sub-box
-                {box[0], box[1], box[2] + subDepth, box[0] + subWidth, box[4], box[2] + subDepth * 2}};
-
-            // Process each sub-box
-            for (auto& newBox : newBoxes)
-            {
-                // Clamp to landscape boundaries
-                newBox[3] = std::min(newBox[3], MAX_LAND_SIZE);
-                newBox[5] = std::min(newBox[5], MAX_LAND_SIZE);
-
-                // Get height range for this box
-                m_owner->GetLandscape().getMinMaxHeightForBox(newBox, 0.0f);
-
-                // Recurse into sub-box
-                enableVisibleCells_r(frusta, newBox, orFlags);
-            }
-        }
-        else
-        {
-            // Box is small enough, mark cells
+            // NOTE: this path returns without restoring frusta.m_enabled, which enableUpdateFromBox changed above.
             enableCellsSetRect(box, orFlags, 0xFFFFFFFF);
+            return;
         }
 
-        // Restore original frustum state
+        // Each half is rounded up to whole cells.
+        float const invCell = 1.0f / VISCELL_EDGE_LENGTH_6;
+        float const halfX = VISCELL_EDGE_LENGTH_6 * std::ceil(width * 0.5f * invCell);
+        float const halfZ = VISCELL_EDGE_LENGTH_6 * std::ceil(depth * 0.5f * invCell);
+        Landscape& landscape = m_owner->GetLandscape();
+        // The quadrants in the binary's order; y (min/max height) is filled in by getMinMaxHeightForBox.
+        float const quadrants[4][2] = {
+            {box[0], box[2]},
+            {box[0] + halfX, box[2]},
+            {box[0] + halfX, box[2] + halfZ},
+            {box[0], box[2] + halfZ},
+        };
+        float newBox[6] = {};
+        for (auto const& q : quadrants)
+        {
+            newBox[0] = q[0];
+            newBox[2] = q[1];
+            newBox[3] = std::min(q[0] + halfX, maxCoord);
+            newBox[5] = std::min(q[1] + halfZ, maxCoord);
+            landscape.getMinMaxHeightForBox(newBox, 0.0f);
+            enableVisibleCells_r(frusta, newBox, orFlags);
+        }
         frusta.m_enabled = clipSave;
     }
 
@@ -3512,20 +3313,15 @@ namespace m3d
 
     void ObjectsContainer::RemoveObject(m3d::Object* obj)
     {
-        // TODO: check this
-        auto cls = obj->GetClass();
-        auto& objs = m_objectsByClassIdx[cls->m_index];
-        auto it = std::find(objs.begin(), objs.end(), obj);
-        if (it != objs.end())
+        // RVA 0x639680 - unlinks the first occurrence; the object itself is not freed.
+        auto& objs = m_objectsByClassIdx[obj->GetClass()->m_index];
+        auto const it = std::find(objs.begin(), objs.end(), obj);
+        if (it == objs.end())
         {
-            objs.erase(it);
-
-            //delete obj;
+            M3D_LOG_INFO(CStr("Warning, object not found: ") + CStr(obj->GetName()));
+            return;
         }
-        else
-        {
-            M3D_LOG_INFO("Warning, object not found: " + CStr(obj->GetName()));
-        }
+        objs.erase(it);
     }
 
     retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* ObjectsContainer::GetObjectsByClass(m3d::Class* cl)

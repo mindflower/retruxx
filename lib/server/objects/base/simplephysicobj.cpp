@@ -760,8 +760,9 @@ namespace ai
 
     SimplePhysicObj::~SimplePhysicObj()
     {
-        // TODO: check this
+        // RVA 0x7F6F80
         delete m_physicBody;
+        m_physicBody = nullptr;
     }
 
     void SimplePhysicObj::_UnlinkBodyFromGeoms()

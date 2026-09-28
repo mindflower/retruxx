@@ -13,46 +13,24 @@ namespace ai
 
     void IzvratRepository::Purge()
     {
-        // TODO: generated code
-        // First pass: remove invalid or empty items
-        auto it = m_slots.begin();
-        while (it != m_slots.end())
+        // RVA 0x6E9720 - drops invalid and empty items, freeing their cells, then relabels the cells of the
+        // remaining items with their new slot indices.
+        for (auto it = m_slots.begin(); it != m_slots.end();)
         {
             if (it->IsValid() && (it->m_repositoryItemType || it->m_amount))
             {
-                // Item is valid, keep it
                 ++it;
             }
             else
             {
-                // Item is invalid or empty - remove it
-                // First, mark the cell area as available (-1)
-                BoundsBase<int> bounds = it->GetBounds();
-
-                // Adjust bounds to account for centering within max geometry
-                bounds.x0 += (m_maxGeomSize.x - m_geomSize.x) / 2;
-                bounds.y0 += (m_maxGeomSize.y - m_geomSize.y) / 2;
-
-                MarkCellPieceByValue(-1, bounds);
-
-                // Remove the item from the slots
+                MarkCellPieceByValue(-1, ToMaxSzRelative(it->GetBounds()));
                 it = m_slots.erase(it);
             }
         }
 
-        // Second pass: reassign cell indices to remaining items
-        int index = 0;
-        for (auto& item : m_slots)
+        for (int i = 0; i < static_cast<int>(m_slots.size()); ++i)
         {
-            BoundsBase<int> bounds = item.GetBounds();
-
-            // Adjust bounds to account for centering within max geometry
-            bounds.x0 += (m_maxGeomSize.x - m_geomSize.x) / 2;
-            bounds.y0 += (m_maxGeomSize.y - m_geomSize.y) / 2;
-
-            // Mark the cell area with the item's new index
-            MarkCellPieceByValue(index, bounds);
-            ++index;
+            MarkCellPieceByValue(i, ToMaxSzRelative(m_slots[i].GetBounds()));
         }
     }
 
@@ -169,32 +147,22 @@ namespace ai
 
     bool IzvratRepository::SetGeomSize(PointBase<int> const& geomSize)
     {
-        // TODO: generated code
-        // Determine the actual size to use (clamped by maximum size)
-        int actualX = (geomSize.x > m_maxGeomSize.x) ? m_maxGeomSize.x : geomSize.x;
-        int actualY = (geomSize.y > m_maxGeomSize.y) ? m_maxGeomSize.y : geomSize.y;
+        // RVA 0x6E9880 - the active area, clamped to the max size, is centred in the max-size grid: its cells are
+        // free (-1) and the rest are outside (-2).
+        PointBase<int> const size(
+            m_maxGeomSize.x < geomSize.x ? m_maxGeomSize.x : geomSize.x,
+            m_maxGeomSize.y < geomSize.y ? m_maxGeomSize.y : geomSize.y);
 
-        PointBase<int> actualSize(actualX, actualY);
+        m_cells.assign(m_maxGeomSize.x * m_maxGeomSize.y, -2);
+        MarkCellPieceByValue(
+            -1,
+            BoundsBase<int>(
+                (m_maxGeomSize.x - size.x) / 2,
+                (m_maxGeomSize.y - size.y) / 2,
+                (m_maxGeomSize.x + size.x) / 2,
+                (m_maxGeomSize.y + size.y) / 2));
 
-        // Calculate total number of cells needed
-        int totalCells = m_maxGeomSize.x * m_maxGeomSize.y;
-
-        // Clear and resize the cells vector, initializing with -2
-        m_cells.clear();
-        m_cells.resize(totalCells, -2);
-
-        // Calculate the piece bounds (centered within the maximum geometry)
-        BoundsBase<int> piece;
-        piece.x0 = (m_maxGeomSize.x - actualSize.x) / 2;
-        piece.y0 = (m_maxGeomSize.y - actualSize.y) / 2;
-        piece.width = actualSize.x;
-        piece.height = actualSize.y;
-
-        // Mark the active piece area with -1
-        MarkCellPieceByValue(-1, piece);
-
-        // Call base class implementation
-        return GeomRepository::SetGeomSize(actualSize);
+        return GeomRepository::SetGeomSize(size);
     }
 
     BoundsBase<int> IzvratRepository::ToMaxSzRelative(BoundsBase<int> geomSzRelative) const
@@ -218,49 +186,9 @@ namespace ai
 
     int IzvratRepository::SnapPiece(BoundsBase<int> const& piece)
     {
-        // TODO: check and refactor this
-
-        auto y = this->m_maxGeomSize.y;
-        BoundsBase<int> pc;
-        pc.x0 = 0;
-        pc.y0 = 0;
-        pc.width = this->m_maxGeomSize.x;
-        pc.height = y;
-        auto v4 = pc.Intersect(piece);
-        auto x0 = v4.x0;
-        auto width = v4.width;
-        auto y0 = v4.y0;
-        auto height = v4.height;
-        auto v9 = x0 + width;
-        pc.y0 = y0;
-        auto v10 = x0;
-        auto piecea = v9;
-        if (x0 < v9)
-        {
-            auto v11 = height + y0;
-            while (1)
-            {
-                if (pc.y0 < v11)
-                {
-                    do
-                    {
-                        auto v12 = v10 + y0 * this->m_maxGeomSize.x;
-                        if (v12 >= 0)
-                        {
-                            auto v14 = this->m_cells.size();
-                            if (v12 < v14)
-                                this->m_cells[v12] = -2;
-                        }
-                        ++y0;
-                    } while (y0 < v11);
-                    v9 = piecea;
-                }
-                if (++v10 >= v9)
-                    break;
-                y0 = pc.y0;
-            }
-        }
-        _RepackItems(this->m_sortStyle);
+        // RVA 0x6E90C0 - takes the piece out of the active area (its cells become -2) and repacks the items.
+        MarkCellPieceByValue(-2, piece);
+        _RepackItems(m_sortStyle);
         return 1;
     }
 
@@ -404,29 +332,16 @@ namespace ai
 
     void IzvratRepository::MarkCellPieceByValue(int value, BoundsBase<int> const& piece)
     {
-        // TODO: generated code
-        // Create bounds for the entire grid
-        BoundsBase<int> gridBounds(0, 0, m_maxGeomSize.x, m_maxGeomSize.y);
-
-        // Calculate the intersection between the grid and the requested piece
-        BoundsBase<int> intersection = gridBounds.Intersect(piece);
-
-        // If no intersection, nothing to do
-        if (intersection.width <= 0 || intersection.height <= 0)
-            return;
-
-        // Iterate through the intersected area
-        for (int x = intersection.x0; x < intersection.x0 + intersection.width; ++x)
+        // RVA 0x6E92C0 - the part of the piece inside the max-size grid.
+        BoundsBase<int> const area = BoundsBase<int>(m_maxGeomSize.x, m_maxGeomSize.y).Intersect(piece);
+        for (int x = area.x0; x < area.x0 + area.width; ++x)
         {
-            for (int y = intersection.y0; y < intersection.y0 + intersection.height; ++y)
+            for (int y = area.y0; y < area.y0 + area.height; ++y)
             {
-                // Calculate cell index
-                int cellIndex = x + y * m_maxGeomSize.x;
-
-                // Bounds check and set value
-                if (cellIndex >= 0 && cellIndex < static_cast<int>(m_cells.size()))
+                int const cell = x + y * m_maxGeomSize.x;
+                if (cell >= 0 && cell < static_cast<int>(m_cells.size()))
                 {
-                    m_cells[cellIndex] = value;
+                    m_cells[cell] = value;
                 }
             }
         }
@@ -434,33 +349,16 @@ namespace ai
 
     void IzvratRepository::MarkCellPieceByValueExcluding(int value, BoundsBase<int> const& piece, int excludingValue)
     {
-        // TODO: generated code
-        // Create bounds for the entire grid
-        BoundsBase<int> gridBounds(0, 0, m_maxGeomSize.x, m_maxGeomSize.y);
-
-        // Calculate the intersection between the grid and the requested piece
-        BoundsBase<int> intersection = gridBounds.Intersect(piece);
-
-        // If no intersection, nothing to do
-        if (intersection.width <= 0 || intersection.height <= 0)
-            return;
-
-        // Iterate through the intersected area
-        for (int x = intersection.x0; x < intersection.x0 + intersection.width; ++x)
+        // RVA 0x6E9370 - as MarkCellPieceByValue, but cells holding excludingValue are kept.
+        BoundsBase<int> const area = BoundsBase<int>(m_maxGeomSize.x, m_maxGeomSize.y).Intersect(piece);
+        for (int x = area.x0; x < area.x0 + area.width; ++x)
         {
-            for (int y = intersection.y0; y < intersection.y0 + intersection.height; ++y)
+            for (int y = area.y0; y < area.y0 + area.height; ++y)
             {
-                // Calculate cell index
-                int cellIndex = x + y * m_maxGeomSize.x;
-
-                // Bounds check
-                if (cellIndex >= 0 && cellIndex < static_cast<int>(m_cells.size()))
+                int const cell = x + y * m_maxGeomSize.x;
+                if (cell >= 0 && cell < static_cast<int>(m_cells.size()) && m_cells[cell] != excludingValue)
                 {
-                    // Set value only if current value is not the excluding value
-                    if (m_cells[cellIndex] != excludingValue)
-                    {
-                        m_cells[cellIndex] = value;
-                    }
+                    m_cells[cell] = value;
                 }
             }
         }

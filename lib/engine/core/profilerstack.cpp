@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstring>
 #include <m3dapp.h>
 #include <core/profilerstack.h>
 
@@ -10,9 +11,11 @@ namespace m3d
     }
 
     Profiler::Profiler(char const* name) :
-        m_name(name),
-        m_performanceCounterFrequency(Application::g_pApp->GetMeasuredCpuFrequency())
+        m_name(name)
     {
+        // Inlined into ProfilerStack::AddProfiler (RVA 0x66F390): the counters start at zero
+        // and the average is taken over 30 frames unless the caller says otherwise.
+        Init();
     }
 
     void Profiler::Init()
@@ -48,7 +51,8 @@ namespace m3d
 
     void Profiler::EndFrame()
     {
-        //TODO: check correctness
+        // RVA 0x59C8D0 - the average is recomputed every m_numFramesToRecalculate frames, or
+        // sooner once the accumulated clocks exceed 1.5e9.
         ++m_curFrame;
         m_totalClocks += m_totalClocksPerFrame;
         if (m_curFrame >= m_numFramesToRecalculate || m_totalClocksForRecalcFrames > 1500000000)
@@ -108,10 +112,18 @@ namespace m3d
 
     unsigned int ProfilerStack::AddProfiler(char const* name, unsigned int averageVal)
     {
-        //TODO: check correctness
+        // RVA 0x66F390 - a name that is already registered returns its existing id, and
+        // averageVal is then ignored.
+        for (unsigned i = 0; i < m_numProfilers; ++i)
+        {
+            if (!strcmp(m_stack[i]->GetName(), name))
+            {
+                return i;
+            }
+        }
+
         auto* profiler = new Profiler(name);
         profiler->SetAverageVal(averageVal);
-
         m_stack.push_back(profiler);
         return m_numProfilers++;
     }

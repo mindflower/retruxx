@@ -25,7 +25,7 @@ HealthIndicatorInMainInterfaceWnd::AuxInfo::AuxInfo()
 
 m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
 {
-    // RVA 0x1256E0
+    // RVA 0x5256E0
     return new HealthIndicatorInMainInterfaceWnd(*this);
 }
 
@@ -37,25 +37,25 @@ void HealthIndicatorInMainInterfaceWnd::SetType(Type newType)
 
 int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
+    // RVA 0x525A90
     using namespace m3d::ui;
 
     if (!patternWnd)
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd: error to create - invalid pattern wnd");
         return 0;
     }
 
     auto* parent = patternWnd->GetParent();
     if (!parent || !IS_KIND_OF(parent, Wnd))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent");
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd: error to create - invalid parent wnd");
         return 0;
     }
 
-    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
-    if (res == 0)
+    if (!Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId()))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - cannot create window");
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - error to create");
         return 0;
     }
 
@@ -69,7 +69,7 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
 
     SetFormatMode(patternWnd->GetFormatMode());
     SetColor(patternWnd->GetColor());
-    SetTextColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetTextColor());
     SetTextColorDisabled(patternWnd->GetTextColorDisabled());
     SetClientEdges(patternWnd->GetClientEdges());
     SetPane(patternWnd->GetPaneName());
@@ -119,7 +119,7 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
     }
     else
     {
-        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
+        M3D_LOG_INFO("Make control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
     }
 
     if (m_wndLowHpLamp)
@@ -191,17 +191,19 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
         m_wndValue->SetDigitalSize(ElectronicDigitalWnd::DIGITAL_SIZE_LARGE);
     }
 
-    parent->AddChild(this);
+    // The pattern is destroyed outright (its deleting destructor, not a reference release); its
+    // destructor detaches it from the parent.
     if (deleteSrc)
     {
-        parent->RemoveChild(patternWnd);
-        // TODO: check this obj delete
-        patternWnd->DecRef();
+        delete patternWnd;
     }
+    parent->AddChild(this);
 
     m_strHealth = M3D_APP->GetStringByStringId0(m_aif.m_strHealthId);
     FullUpdate(true);
 
+    // NOTE: as in FuelIndicatorInMainInterfaceWnd, the original's "was inited with errors" branch
+    // tests a stale argument slot and is dead.
     m_gameDataFlags |= 1u;
     return 1;
 }
@@ -223,7 +225,7 @@ m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
 
 HealthIndicatorInMainInterfaceWnd::~HealthIndicatorInMainInterfaceWnd()
 {
-    // RVA 0x125A50 - m_strHealth and the Wnd base (which owns/destroys the
+    // RVA 0x525A50 - m_strHealth and the Wnd base (which owns/destroys the
     // child m_wndLowHpLamp/m_wndProgressBar/m_wndValue windows) clean up
     // automatically.
 }
@@ -236,7 +238,7 @@ void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 
 void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float curHp, float maxHp)
 {
-    // RVA 0x126900
+    // RVA 0x526900
     if ((m_gameDataFlags & 1) != 0)
     {
         CStr text = m_strHealth + ": " + CStr(static_cast<int>(curHp)) + "/" + CStr(static_cast<int>(maxHp));
@@ -252,7 +254,7 @@ ai::Vehicle const* HealthIndicatorInMainInterfaceWnd::GetVehicle() const
 
 int HealthIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    // RVA 0x126600
+    // RVA 0x526600
     m_vehicleId = -1;
     FullUpdate(true);
     return 1;
@@ -260,7 +262,7 @@ int HealthIndicatorInMainInterfaceWnd::GameDataClear(bool)
 
 void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float curHp, float maxHp)
 {
-    // RVA 0x1267E0
+    // RVA 0x5267E0
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndLowHpLamp->SetValue(curHp, maxHp);
@@ -269,7 +271,7 @@ void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float curHp, float maxHp
 
 int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int dataType)
 {
-    // RVA 0x126620
+    // RVA 0x526620
     if (dataType == 89 && m_vehicleId != -1)
     {
         FullUpdate(false);
@@ -291,7 +293,7 @@ HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&) :
     HealthIndicatorInMainInterfaceWnd()
 {
-    // NOTE: the shipped copy ctor (RVA 0x125A20) default-constructs the base
+    // NOTE: the shipped copy ctor (RVA 0x525A20) default-constructs the base
     // and resets m_strHealth to empty, but leaves m_type/m_wndLowHpLamp/
     // m_wndProgressBar/m_wndValue/m_vehicleId/m_prevCurVal/m_prevMaxVal
     // uninitialized; delegating to the default ctor here avoids reading
@@ -300,7 +302,7 @@ HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndic
 
 void HealthIndicatorInMainInterfaceWnd::GetHp(float& curHp, float& maxHp) const
 {
-    // RVA 0x1268B0
+    // RVA 0x5268B0
     curHp = 0.0f;
     maxHp = 0.0f;
     if (ai::Vehicle const* vehicle = GetVehicle())
@@ -312,7 +314,7 @@ void HealthIndicatorInMainInterfaceWnd::GetHp(float& curHp, float& maxHp) const
 
 void HealthIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    // RVA 0x126650
+    // RVA 0x526650
     if (m_vehicleId != -1)
     {
         FullUpdate(false);
@@ -321,7 +323,7 @@ void HealthIndicatorInMainInterfaceWnd::OnNewFrame()
 
 void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float curHp, float maxHp)
 {
-    // RVA 0x1267B0
+    // RVA 0x5267B0
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndProgressBar->SetMaxValue(maxHp);
@@ -331,7 +333,7 @@ void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float curHp, float max
 
 void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float curHp)
 {
-    // RVA 0x126810
+    // RVA 0x526810
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndValue->ShowNumber(static_cast<int>(curHp), false, 4u, false);

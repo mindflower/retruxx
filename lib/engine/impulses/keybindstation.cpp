@@ -151,48 +151,43 @@ namespace m3d
 
     int KeyBindStation::FindImpulseByLongestSetPossible(m3d::KeysSet const& setToSearchFrom, int keyToSearchWith, KeysSet& impulseSet)
     {
-        // TODO: check this!!!!!
+        // RVA 0x758750
         impulseSet.clear();
+
+        BindKey* bind = nullptr;
         if (keyToSearchWith == -1)
         {
-            for (auto it = setToSearchFrom.rbegin(); it != setToSearchFrom.rend(); ++it)
+            // Without a key to search with, each key of the set is tried in turn, from the highest down.
+            for (auto it = setToSearchFrom.rbegin(); it != setToSearchFrom.rend() && !bind; ++it)
             {
-                KeysSet subset = setToSearchFrom;
-                subset -= *it;
-
-                auto* bindKey = FindImpulseBySet_r(subset, *it);
-
-                if (bindKey)
-                {
-                    impulseSet = *m_ks;
-                    return bindKey->m_impulse;
-                }
+                bind = FindImpulseBySet_r(setToSearchFrom - *it, *it);
             }
         }
-
-        KeysSet subset = setToSearchFrom;
-        subset -= keyToSearchWith;
-
-        auto* bindKey = FindImpulseBySet_r(subset, keyToSearchWith);
-        if (bindKey)
+        else
         {
-            impulseSet = *m_ks;
-            return bindKey->m_impulse;
+            bind = FindImpulseBySet_r(setToSearchFrom - keyToSearchWith, keyToSearchWith);
         }
 
-        return -1;
+        if (!bind)
+        {
+            return -1;
+        }
+        impulseSet = *m_ks;
+        return bind->m_impulse;
     }
 
     KeyBindStation::BindKey* KeyBindStation::GetBindByKey(KeysSet const& ks)
     {
-        //TODO: check this!!!!
-        for (auto& bind : m_bindings)
+        // RVA 0x758280 - m_lastIndex is left at the found binding (or at the end), and m_ks at the matching key set.
+        for (m_lastIndex = m_bindings.begin(); m_lastIndex != m_bindings.end(); ++m_lastIndex)
         {
-            auto it = std::find(bind.m_keys.begin(), bind.m_keys.end(), ks);
-            if (it != bind.m_keys.end())
+            for (auto& keys : m_lastIndex->m_keys)
             {
-                m_ks = &*it;
-                return &bind;
+                if (keys == ks)
+                {
+                    m_ks = &keys;
+                    return &*m_lastIndex;
+                }
             }
         }
         return nullptr;
@@ -200,33 +195,29 @@ namespace m3d
 
     void KeyBindStation::BindKeyToImpulse(KeysSet const& ks, int imp)
     {
-        auto bind = GetBindByKey(ks);
-        for (m_lastIndex = m_bindings.begin(); m_lastIndex != m_bindings.end(); ++m_lastIndex)
+        // RVA 0x759A10
+        BindKey* const oldBind = GetBindByKey(ks);
+        BindKey* newBind = GetBindByImpulse(imp);  // the shipped code inlines this loop
+
+        // A key set belongs to one impulse only: take it away from the impulse that had it.
+        // NOTE: when the set is already bound to this same impulse, it is appended to its list a second time.
+        if (oldBind && oldBind->m_impulse != imp)
         {
-	        if (imp == m_lastIndex->m_impulse)
-	        {
-                break;
-	        }
+            oldBind->m_keys.erase(std::find(oldBind->m_keys.begin(), oldBind->m_keys.end(), ks));
         }
-        if (bind && bind->m_impulse != imp)
+
+        if (!newBind)
         {
-            auto it = std::find(bind->m_keys.begin(), bind->m_keys.end(), ks);
-            bind->m_keys.erase(it);
-            //std::copy(it + 1, bind->m_keys.end(), it);
-            //bind->m_keys.pop_back();
+            // NOTE: m_lastIndex is left at the old end of m_bindings, as in the shipped code.
+            m_bindings.push_back(BindKey());
+            newBind = &m_bindings.back();
+            newBind->m_impulse = imp;
         }
-        if (m_lastIndex == m_bindings.end())
+        newBind->m_keys.push_back(ks);
+
+        if (ks.size() > m_longestComboLen)
         {
-            BindKey bindKey;
-            m_bindings.push_back(bindKey);
-            m_lastIndex = m_bindings.end() - 1;
-            m_lastIndex->m_impulse = imp;
-        }
-        m_lastIndex->m_keys.push_back(ks);
-        auto ksSize = ks.size();
-        if (ksSize > m_longestComboLen)
-        {
-            m_longestComboLen = ksSize;
+            m_longestComboLen = ks.size();
         }
     }
 
@@ -245,76 +236,42 @@ namespace m3d
 
     KeyBindStation::BindKey* KeyBindStation::FindImpulseBySet_r(KeysSet const& ks, int key)
     {
-        // TODO: generated code
-        size_t keySetSize = ks.size();
-
-        // Check if key set exceeds maximum combination length
-        if (keySetSize > m_longestComboLen)
+        // RVA 0x758540 - looks for a binding of `key` together with as many keys of `ks` as possible.
+        if (ks.size() <= m_longestComboLen)
         {
-            // Try excluding each key one by one and search recursively
-            for (auto it = ks.begin(); it != ks.end(); ++it) {
-                int excludedKey = *it;
+            if (ks.size() <= 1)
+            {
+                KeysSet withKey = ks;  // operator+(KeysSet const&, int), RVA 0x7584D0
+                withKey += key;
+                BindKey* bind = GetBindByKey(withKey);
+                if (!bind)
+                {
+                    bind = GetBindByKey(KeysSet(key));
+                }
+                return bind;
+            }
 
-                // Create set without the excluded key
-                KeysSet reducedSet = ks;
-                reducedSet -= excludedKey;
-
-                // Recursively search with reduced set
-                BindKey* binding = FindImpulseBySet_r(reducedSet, key);
-                if (binding) {
-                    return binding;
+            // Same size: swap one of the keys for `key`.
+            for (int const replacedKey : ks)
+            {
+                KeysSet swapped = ks;
+                swapped -= replacedKey;
+                swapped += key;
+                if (BindKey* bind = GetBindByKey(swapped))
+                {
+                    return bind;
                 }
             }
-            return nullptr;
         }
 
-        // Handle small key sets (size <= 1)
-        if (keySetSize <= 1)
+        // One key fewer, recursively.
+        for (int const droppedKey : ks)
         {
-            // Try combination of existing keys + new key
-            KeysSet combinedSet = ks;
-            combinedSet += key;
-            BindKey* binding = GetBindByKey(combinedSet);
-
-            if (binding) {
-                return binding;
-            }
-
-            KeysSet singleKeySet(key);
-            binding = GetBindByKey(singleKeySet);
-            return binding;
-        }
-
-        // For medium-sized key sets, try replacing each key with the new key
-        for (auto it = ks.begin(); it != ks.end(); ++it) {
-            int existingKey = *it;
-
-            // Create set with one key replaced by the new key
-            KeysSet modifiedSet = ks;
-            modifiedSet -= existingKey;
-            modifiedSet += key;
-
-            BindKey* binding = GetBindByKey(modifiedSet);
-            if (binding) {
-                return binding;
+            if (BindKey* bind = FindImpulseBySet_r(ks - droppedKey, key))
+            {
+                return bind;
             }
         }
-
-        // If replacement strategy fails, try the exclusion strategy
-        for (auto it = ks.begin(); it != ks.end(); ++it) {
-            int excludedKey = *it;
-
-            // Create set without the excluded key
-            KeysSet reducedSet = ks;
-            reducedSet -= excludedKey;
-
-            // Recursively search with reduced set
-            BindKey* binding = FindImpulseBySet_r(reducedSet, key);
-            if (binding) {
-                return binding;
-            }
-        }
-
         return nullptr;
     }
 
@@ -329,7 +286,7 @@ namespace m3d
 
     KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd)
     {
-        // RVA 0x1975A0 - every key of rhd is looked up and erased by value.
+        // RVA 0x5975A0 - every key of rhd is looked up and erased by value.
         auto res = lhd;
         for (int const key : rhd.m_set)
         {
@@ -344,7 +301,7 @@ namespace m3d
 
     KeysSet operator-(const KeysSet& lhd, int key)
     {
-        // RVA 0x197520
+        // RVA 0x597520
         auto res = lhd;
         res.m_set.erase(key);
         return res;

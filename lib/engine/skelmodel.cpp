@@ -183,6 +183,7 @@ namespace m3d
 
     void AnimatedModel::CreateTexFileMapping()
     {
+        // RVA 0x785FC0 - data/models/ModelTextures.xml: texture file name -> path; a repeated name overrides.
         scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
         if (fileStream->Open("data/models/ModelTextures.xml", fs::IStream::OPEN_READ))
         {
@@ -194,7 +195,6 @@ namespace m3d
                 ref_ptr texturesNode = xml->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
                 ref_ptr fileNode = xml->CreateNode(cmn::XmlNodeType::XML_NODE_EMPTY, nullptr);
                 xml->GetFirstChild(texturesNode, "Textures");
-                //TODO: check this
                 for (texturesNode->GetFirstChild(fileNode, "file"); !fileNode->IsEmpty();
                      fileNode->GetNextSibling(fileNode, "file"))
                 {
@@ -202,7 +202,7 @@ namespace m3d
                     CStr path;
                     SafeStrAttrib(name, fileNode, "name");
                     SafeStrAttrib(path, fileNode, "path");
-                    m_textureFiles.insert({name, path});
+                    m_textureFiles[name] = path;
                 }
             }
             else
@@ -260,144 +260,23 @@ namespace m3d
 
     CMatrix AnimatedModel::GetBoneMatrix(int boneIndex) const
     {
-        // TODO: generated code
-        // Initialize result as identity matrix
+        // RVA 0x70B8C0 - the bone's bind-pose matrix in model space: its local matrix, then each ancestor's.
         CMatrix result;
         result.identity();
-
         if (boneIndex < 0)
-            return result;
-
-        Bone* bones = m_boneInitialPos;
-
-        // Calculate local bone matrix from quaternion
-        Bone const& currentBone = bones[boneIndex];
-        Quaternion const& q = currentBone.m_quaternion0;
-
-        CMatrix boneMatrix;
-        memset(&boneMatrix, 0, sizeof(boneMatrix));
-
-        // Convert quaternion to rotation matrix
-        float xx = q.x * q.x;
-        float yy = q.y * q.y;
-        float zz = q.z * q.z;
-        float xy = q.x * q.y;
-        float xz = q.x * q.z;
-        float yz = q.y * q.z;
-        float wx = q.w * q.x;
-        float wy = q.w * q.y;
-        float wz = q.w * q.z;
-
-        boneMatrix._11 = 1.0f - 2.0f * (yy + zz);
-        boneMatrix._12 = 2.0f * (xy + wz);
-        boneMatrix._13 = 2.0f * (xz - wy);
-        boneMatrix._14 = 0.0f;
-
-        boneMatrix._21 = 2.0f * (xy - wz);
-        boneMatrix._22 = 1.0f - 2.0f * (xx + zz);
-        boneMatrix._23 = 2.0f * (yz + wx);
-        boneMatrix._24 = 0.0f;
-
-        boneMatrix._31 = 2.0f * (xz + wy);
-        boneMatrix._32 = 2.0f * (yz - wx);
-        boneMatrix._33 = 1.0f - 2.0f * (xx + yy);
-        boneMatrix._34 = 0.0f;
-
-        // Set bone position
-        boneMatrix._41 = currentBone.m_translation0[0];
-        boneMatrix._42 = currentBone.m_translation0[1];
-        boneMatrix._43 = currentBone.m_translation0[2];
-        boneMatrix._44 = 1.0f;
-
-        // Start with the current bone's matrix
-        CMatrix finalMatrix = boneMatrix;
-
-        // Traverse up the bone hierarchy
-        int parentIndex = currentBone.m_parentIdx;
-        while (parentIndex >= 0)
         {
-            Bone const& parentBone = bones[parentIndex];
-            Quaternion const& parentQ = parentBone.m_quaternion0;
-
-            // Calculate parent bone matrix from quaternion
-            CMatrix parentMatrix;
-            memset(&parentMatrix, 0, sizeof(parentMatrix));
-
-            float parent_xx = parentQ.x * parentQ.x;
-            float parent_yy = parentQ.y * parentQ.y;
-            float parent_zz = parentQ.z * parentQ.z;
-            float parent_xy = parentQ.x * parentQ.y;
-            float parent_xz = parentQ.x * parentQ.z;
-            float parent_yz = parentQ.y * parentQ.z;
-            float parent_wx = parentQ.w * parentQ.x;
-            float parent_wy = parentQ.w * parentQ.y;
-            float parent_wz = parentQ.w * parentQ.z;
-
-            parentMatrix._11 = 1.0f - 2.0f * (parent_yy + parent_zz);
-            parentMatrix._12 = 2.0f * (parent_xy + parent_wz);
-            parentMatrix._13 = 2.0f * (parent_xz - parent_wy);
-            parentMatrix._14 = 0.0f;
-
-            parentMatrix._21 = 2.0f * (parent_xy - parent_wz);
-            parentMatrix._22 = 1.0f - 2.0f * (parent_xx + parent_zz);
-            parentMatrix._23 = 2.0f * (parent_yz + parent_wx);
-            parentMatrix._24 = 0.0f;
-
-            parentMatrix._31 = 2.0f * (parent_xz + parent_wy);
-            parentMatrix._32 = 2.0f * (parent_yz - parent_wx);
-            parentMatrix._33 = 1.0f - 2.0f * (parent_xx + parent_yy);
-            parentMatrix._34 = 0.0f;
-
-            // Set parent bone position
-            parentMatrix._41 = parentBone.m_translation0[0];
-            parentMatrix._42 = parentBone.m_translation0[1];
-            parentMatrix._43 = parentBone.m_translation0[2];
-            parentMatrix._44 = 1.0f;
-
-            // Multiply matrices: finalMatrix = parentMatrix * finalMatrix
-            CMatrix tempResult;
-
-            tempResult._11 = parentMatrix._11 * finalMatrix._11 + parentMatrix._12 * finalMatrix._21 +
-                parentMatrix._13 * finalMatrix._31 + parentMatrix._14 * finalMatrix._41;
-            tempResult._12 = parentMatrix._11 * finalMatrix._12 + parentMatrix._12 * finalMatrix._22 +
-                parentMatrix._13 * finalMatrix._32 + parentMatrix._14 * finalMatrix._42;
-            tempResult._13 = parentMatrix._11 * finalMatrix._13 + parentMatrix._12 * finalMatrix._23 +
-                parentMatrix._13 * finalMatrix._33 + parentMatrix._14 * finalMatrix._43;
-            tempResult._14 = parentMatrix._11 * finalMatrix._14 + parentMatrix._12 * finalMatrix._24 +
-                parentMatrix._13 * finalMatrix._34 + parentMatrix._14 * finalMatrix._44;
-
-            tempResult._21 = parentMatrix._21 * finalMatrix._11 + parentMatrix._22 * finalMatrix._21 +
-                parentMatrix._23 * finalMatrix._31 + parentMatrix._24 * finalMatrix._41;
-            tempResult._22 = parentMatrix._21 * finalMatrix._12 + parentMatrix._22 * finalMatrix._22 +
-                parentMatrix._23 * finalMatrix._32 + parentMatrix._24 * finalMatrix._42;
-            tempResult._23 = parentMatrix._21 * finalMatrix._13 + parentMatrix._22 * finalMatrix._23 +
-                parentMatrix._23 * finalMatrix._33 + parentMatrix._24 * finalMatrix._43;
-            tempResult._24 = parentMatrix._21 * finalMatrix._14 + parentMatrix._22 * finalMatrix._24 +
-                parentMatrix._23 * finalMatrix._34 + parentMatrix._24 * finalMatrix._44;
-
-            tempResult._31 = parentMatrix._31 * finalMatrix._11 + parentMatrix._32 * finalMatrix._21 +
-                parentMatrix._33 * finalMatrix._31 + parentMatrix._34 * finalMatrix._41;
-            tempResult._32 = parentMatrix._31 * finalMatrix._12 + parentMatrix._32 * finalMatrix._22 +
-                parentMatrix._33 * finalMatrix._32 + parentMatrix._34 * finalMatrix._42;
-            tempResult._33 = parentMatrix._31 * finalMatrix._13 + parentMatrix._32 * finalMatrix._23 +
-                parentMatrix._33 * finalMatrix._33 + parentMatrix._34 * finalMatrix._43;
-            tempResult._34 = parentMatrix._31 * finalMatrix._14 + parentMatrix._32 * finalMatrix._24 +
-                parentMatrix._33 * finalMatrix._34 + parentMatrix._34 * finalMatrix._44;
-
-            tempResult._41 = parentMatrix._41 * finalMatrix._11 + parentMatrix._42 * finalMatrix._21 +
-                parentMatrix._43 * finalMatrix._31 + parentMatrix._44 * finalMatrix._41;
-            tempResult._42 = parentMatrix._41 * finalMatrix._12 + parentMatrix._42 * finalMatrix._22 +
-                parentMatrix._43 * finalMatrix._32 + parentMatrix._44 * finalMatrix._42;
-            tempResult._43 = parentMatrix._41 * finalMatrix._13 + parentMatrix._42 * finalMatrix._23 +
-                parentMatrix._43 * finalMatrix._33 + parentMatrix._44 * finalMatrix._43;
-            tempResult._44 = parentMatrix._41 * finalMatrix._14 + parentMatrix._42 * finalMatrix._24 +
-                parentMatrix._43 * finalMatrix._34 + parentMatrix._44 * finalMatrix._44;
-
-            finalMatrix = tempResult;
-            parentIndex = parentBone.m_parentIdx;
+            return result;
         }
 
-        result = finalMatrix;
+        Bone const& bone = m_boneInitialPos[boneIndex];
+        result.rotTranslate(bone.m_quaternion0, bone.m_translation0);
+        for (int parentIdx = bone.m_parentIdx; parentIdx >= 0; parentIdx = m_boneInitialPos[parentIdx].m_parentIdx)
+        {
+            Bone const& parent = m_boneInitialPos[parentIdx];
+            CMatrix parentMatrix;
+            parentMatrix.rotTranslate(parent.m_quaternion0, parent.m_translation0);
+            result *= parentMatrix;
+        }
         return result;
     }
 
@@ -411,7 +290,9 @@ namespace m3d
 
     bool AnimatedModel::LoadGAM(CStr const& fileName, bool bForceNextAnimation)
     {
-        // TODO: generated code
+        // RVA 0x8C9830 - loads a compiled (GAM, "IVR" tagged file) model. Chunks: 1 the header, 2 the bones, 4 the
+        // meshes and the bounding box, 8 the animations, 15 the skins; the optional 16 the collision mesh, 32 and 64
+        // the collision primitives, 128 the bone bounds, 240 the mesh groups.
         if (this->m_bVerification)
         {
             M3D_LOG_ERR("LoadGAM does work not for verification of models!!!");
@@ -476,8 +357,6 @@ namespace m3d
             bone.m_parentIdx = stream.get<int32_t>();
             bone.m_translation0 = stream.get<CVector>();
             bone.m_quaternion0 = stream.get<Quaternion>();
-
-            // TODO: check this
             m_initialBoneInvMatrices[i] = stream.get<CMatrix>();
         }
 
@@ -525,9 +404,9 @@ namespace m3d
                 {
                     auto& infl = mesh.m_vertsInfluences[v];
                     infl.m_numBones = stream.get<uint16_t>();
+                    // Packed on disk: 30 bytes per influence.
                     for (int b = 0; b < 4; ++b)
                     {
-                        // TODO: check this
                         auto& boneInfl = infl.m_influences[b];
                         boneInfl.m_boneIdx = stream.get<int16_t>();
                         boneInfl.m_boneWeight = stream.get<float>();
@@ -599,8 +478,7 @@ namespace m3d
             }
         }
 
-        // Animation remapping
-        // TODO: check this
+        // Each action maps to the first animation named after it, which takes the action.
         for (int i = 0; i < 32; ++i)
         {
             m_animRemap[i] = -1;
@@ -609,60 +487,29 @@ namespace m3d
                 if (!strcmp(actions[i].m_name, m_animations[j].m_name))
                 {
                     m_animRemap[i] = j;
-                    m_animations[j].m_action = actions[i].m_action;
+                    m_animations[j].m_action = static_cast<ActionType>(i);
                     break;
                 }
             }
         }
 
-        // Set next animations
-        // TODO: refactor
+        // Without forcing, every animation loops. Forced, an animation continues into the one of its action's
+        // follow-up action (nextAnims_0), or none: an animation no action maps to, or whose action has no follow-up.
         for (int i = 0; i < m_header.m_numAnimations; ++i)
         {
-            if (bForceNextAnimation)
+            if (!bForceNextAnimation)
             {
-                int v97 = 0;
-                short* v98 = &this->m_animRemap[1];
-
-                while (*(v98 - 1) != i)
-                {
-                    if (*v98 == i)
-                    {
-                        ++v97;
-                        break;
-                    }
-                    if (v98[1] == i)
-                    {
-                        v97 += 2;
-                        break;
-                    }
-                    if (v98[2] == i)
-                    {
-                        v97 += 3;
-                        break;
-                    }
-                    v97 += 4;
-                    v98 += 4;
-                    if (v97 >= 32)
-                    {
-                        break;
-                    }
-                }
-
-                int const v99 = v97 == 32 ? -1 : nextAnims_0[v97];
-                if (v99 < 0)
-                {
-                    this->m_animations[i].m_nextAnimation = -1;
-                }
-                else
-                {
-                    this->m_animations[i].m_nextAnimation = this->m_animRemap[v99];
-                }
+                m_animations[i].m_nextAnimation = i;
+                continue;
             }
-            else
+
+            int action = 0;
+            while (action < 32 && m_animRemap[action] != i)
             {
-                this->m_animations[i].m_nextAnimation = i;
+                ++action;
             }
+            int const nextAction = action == 32 ? -1 : nextAnims_0[action];
+            m_animations[i].m_nextAnimation = nextAction < 0 ? -1 : m_animRemap[nextAction];
         }
 
         // Load skins/materials (chunk 15)
@@ -690,7 +537,6 @@ namespace m3d
                 memcpy(&surfaceMaterial, stream.getRaw(materialSize), materialSize);
                 unsigned int textureCount = stream.get<uint32_t>();
 
-                // TODO: check size
                 surfaceMaterial.Shader.Name = stream.getStr(100);
 
                 if (load && !surfaceMaterial.Shader.Name.empty())
@@ -1243,15 +1089,25 @@ namespace m3d
 
     AnimatedModel::~AnimatedModel()
     {
-        delete m_boneInitialPos;
+        // RVA 0x7185B0 - frees the loaded arrays, then releases every material's effect and (unless only verifying)
+        // its textures.
+        delete[] m_boneInitialPos;
+        m_boneInitialPos = nullptr;
         delete[] m_meshes;
+        m_meshes = nullptr;
         delete[] m_animations;
+        m_animations = nullptr;
         delete[] m_initialBoneInvMatrices;
-        // TODO: check this
+        m_initialBoneInvMatrices = nullptr;
         for (auto& skin : m_Skins)
         {
             for (auto& material : skin)
             {
+                if (material.Shader.Handle)
+                {
+                    material.Shader.Handle->Release();
+                    material.Shader.Handle = nullptr;
+                }
                 if (!m_bVerification)
                 {
                     for (auto& texture : material.Textures)
@@ -1582,6 +1438,7 @@ namespace m3d
 
     void AnimatedModel::ReloadSkins(LoadSkins const& skinsToLoad)
     {
+        // RVA 0x716F30 - loads the skins newly wanted and unloads the ones no longer wanted.
         if (skinsToLoad.loadAllSkins && m_loadSkins.loadAllSkins)
         {
             return;
@@ -1589,30 +1446,20 @@ namespace m3d
 
         for (int i = 0; i < m_Skins.size(); ++i)
         {
-            // TODO: check this!!
-            bool loadNewSkin = skinsToLoad.loadSkins.find(i) != skinsToLoad.loadSkins.end();
-            bool unloadOldSkin = m_loadSkins.loadSkins.find(i) != m_loadSkins.loadSkins.end();
-
-            if (skinsToLoad.loadAllSkins)
-                loadNewSkin = true;
-
-            if (this->m_loadSkins.loadAllSkins)
-                unloadOldSkin = true;
-
-            if (loadNewSkin)
+            bool const loadNewSkin =
+                skinsToLoad.loadAllSkins || skinsToLoad.loadSkins.find(i) != skinsToLoad.loadSkins.end();
+            bool const loadedOldSkin =
+                m_loadSkins.loadAllSkins || m_loadSkins.loadSkins.find(i) != m_loadSkins.loadSkins.end();
+            if (loadNewSkin && !loadedOldSkin)
             {
-                if (!unloadOldSkin)
-                {
-                    LoadSkin(i);
-                }
+                LoadSkin(i);
             }
-            else if (unloadOldSkin)
+            else if (!loadNewSkin && loadedOldSkin)
             {
                 UnloadSkin(i);
             }
         }
-
-        m_loadSkins.loadSkins = skinsToLoad.loadSkins;
+        m_loadSkins = skinsToLoad;
     }
 
     void AnimatedModel::CalculateMeshes(Configuration& cfg) const
@@ -1969,167 +1816,33 @@ namespace m3d
 
     int AnimatedModel::GetBoneMatrixByName(CStr const& boneName, CMatrix& res, bool theLastOneOnly) const
     {
-        // TODO: generated code
-        // Initialize result matrix to identity
+        // RVA 0x70C1D0 - the bind-pose matrix of the first bone named boneName: its local matrix alone, or with each
+        // ancestor's applied. 0 (and identity) when there is no such bone.
         res.identity();
-
-        int numNodes = m_header.m_numNodes;
-        if (numNodes <= 0)
-            return false;
-
-        // Find bone by name
-        int boneIndex = -1;
-        for (int i = 0; i < numNodes; i++)
+        int boneIndex = 0;
+        while (boneIndex < m_header.m_numNodes && !(m_boneInitialPos[boneIndex].m_boneName == boneName))
         {
-            if (m_boneInitialPos[i].m_boneName == boneName)
-            {
-                boneIndex = i;
-                break;
-            }
+            ++boneIndex;
+        }
+        if (boneIndex >= m_header.m_numNodes)
+        {
+            return 0;
         }
 
-        if (boneIndex == -1)
-            return false;
-
-        // Get the bone data
         Bone const& bone = m_boneInitialPos[boneIndex];
-
-        // Convert quaternion to rotation matrix
-        float x = bone.m_quaternion0.x;
-        float y = bone.m_quaternion0.y;
-        float z = bone.m_quaternion0.z;
-        float w = bone.m_quaternion0.w;
-
-        float x2 = x * x;
-        float y2 = y * y;
-        float z2 = z * z;
-        float xy = x * y;
-        float xz = x * z;
-        float yz = y * z;
-        float wx = w * x;
-        float wy = w * y;
-        float wz = w * z;
-
-        // Set rotation matrix from quaternion
-        res._11 = 1.0f - 2.0f * (y2 + z2);
-        res._12 = 2.0f * (xy + wz);
-        res._13 = 2.0f * (xz - wy);
-        res._14 = 0.0f;
-
-        res._21 = 2.0f * (xy - wz);
-        res._22 = 1.0f - 2.0f * (x2 + z2);
-        res._23 = 2.0f * (yz + wx);
-        res._24 = 0.0f;
-
-        res._31 = 2.0f * (xz + wy);
-        res._32 = 2.0f * (yz - wx);
-        res._33 = 1.0f - 2.0f * (x2 + y2);
-        res._34 = 0.0f;
-
-        res._41 = bone.m_translation0.x;
-        res._42 = bone.m_translation0.y;
-        res._43 = bone.m_translation0.z;
-        res._44 = 1.0f;
-
-        // If we only want this bone, return now
+        res.rotTranslate(bone.m_quaternion0, bone.m_translation0);
         if (theLastOneOnly)
-            return true;
-
-        // Apply parent transformations up the hierarchy
-        int parentIndex = bone.m_parentIdx;
-        while (parentIndex >= 0)
         {
-            Bone const& parentBone = m_boneInitialPos[parentIndex];
-
-            // Convert parent quaternion to rotation matrix
-            float px = parentBone.m_quaternion0.x;
-            float py = parentBone.m_quaternion0.y;
-            float pz = parentBone.m_quaternion0.z;
-            float pw = parentBone.m_quaternion0.w;
-
-            float px2 = px * px;
-            float py2 = py * py;
-            float pz2 = pz * pz;
-            float pxy = px * py;
-            float pxz = px * pz;
-            float pyz = py * pz;
-            float pwx = pw * px;
-            float pwy = pw * py;
-            float pwz = pw * pz;
-
-            // Create parent rotation matrix
-            CMatrix parentRot;
-            parentRot._11 = 1.0f - 2.0f * (py2 + pz2);
-            parentRot._12 = 2.0f * (pxy + pwz);
-            parentRot._13 = 2.0f * (pxz - pwy);
-            parentRot._14 = 0.0f;
-
-            parentRot._21 = 2.0f * (pxy - pwz);
-            parentRot._22 = 1.0f - 2.0f * (px2 + pz2);
-            parentRot._23 = 2.0f * (pyz + pwx);
-            parentRot._24 = 0.0f;
-
-            parentRot._31 = 2.0f * (pxz + pwy);
-            parentRot._32 = 2.0f * (pyz - pwx);
-            parentRot._33 = 1.0f - 2.0f * (px2 + py2);
-            parentRot._34 = 0.0f;
-
-            parentRot._41 = parentBone.m_translation0.x;
-            parentRot._42 = parentBone.m_translation0.y;
-            parentRot._43 = parentBone.m_translation0.z;
-            parentRot._44 = 1.0f;
-
-            // Combine matrices: result = parentRot * currentResult
-            CMatrix tempResult;
-
-            // Row 1
-            tempResult._11 =
-                parentRot._11 * res._11 + parentRot._12 * res._21 + parentRot._13 * res._31 + parentRot._14 * res._41;
-            tempResult._12 =
-                parentRot._11 * res._12 + parentRot._12 * res._22 + parentRot._13 * res._32 + parentRot._14 * res._42;
-            tempResult._13 =
-                parentRot._11 * res._13 + parentRot._12 * res._23 + parentRot._13 * res._33 + parentRot._14 * res._43;
-            tempResult._14 =
-                parentRot._11 * res._14 + parentRot._12 * res._24 + parentRot._13 * res._34 + parentRot._14 * res._44;
-
-            // Row 2
-            tempResult._21 =
-                parentRot._21 * res._11 + parentRot._22 * res._21 + parentRot._23 * res._31 + parentRot._24 * res._41;
-            tempResult._22 =
-                parentRot._21 * res._12 + parentRot._22 * res._22 + parentRot._23 * res._32 + parentRot._24 * res._42;
-            tempResult._23 =
-                parentRot._21 * res._13 + parentRot._22 * res._23 + parentRot._23 * res._33 + parentRot._24 * res._43;
-            tempResult._24 =
-                parentRot._21 * res._14 + parentRot._22 * res._24 + parentRot._23 * res._34 + parentRot._24 * res._44;
-
-            // Row 3
-            tempResult._31 =
-                parentRot._31 * res._11 + parentRot._32 * res._21 + parentRot._33 * res._31 + parentRot._34 * res._41;
-            tempResult._32 =
-                parentRot._31 * res._12 + parentRot._32 * res._22 + parentRot._33 * res._32 + parentRot._34 * res._42;
-            tempResult._33 =
-                parentRot._31 * res._13 + parentRot._32 * res._23 + parentRot._33 * res._33 + parentRot._34 * res._43;
-            tempResult._34 =
-                parentRot._31 * res._14 + parentRot._32 * res._24 + parentRot._33 * res._34 + parentRot._34 * res._44;
-
-            // Row 4
-            tempResult._41 =
-                parentRot._41 * res._11 + parentRot._42 * res._21 + parentRot._43 * res._31 + parentRot._44 * res._41;
-            tempResult._42 =
-                parentRot._41 * res._12 + parentRot._42 * res._22 + parentRot._43 * res._32 + parentRot._44 * res._42;
-            tempResult._43 =
-                parentRot._41 * res._13 + parentRot._42 * res._23 + parentRot._43 * res._33 + parentRot._44 * res._43;
-            tempResult._44 =
-                parentRot._41 * res._14 + parentRot._42 * res._24 + parentRot._43 * res._34 + parentRot._44 * res._44;
-
-            // Copy temp result back to result
-            res = tempResult;
-
-            // Move up hierarchy
-            parentIndex = parentBone.m_parentIdx;
+            return 1;
         }
-
-        return true;
+        for (int parentIdx = bone.m_parentIdx; parentIdx >= 0; parentIdx = m_boneInitialPos[parentIdx].m_parentIdx)
+        {
+            Bone const& parent = m_boneInitialPos[parentIdx];
+            CMatrix parentMatrix;
+            parentMatrix.rotTranslate(parent.m_quaternion0, parent.m_translation0);
+            res *= parentMatrix;
+        }
+        return 1;
     }
 
     void AnimatedModel::FromCfgNum(Configuration& cfg) const
@@ -3599,102 +3312,37 @@ namespace m3d
 
     void AnimatedModel::MatrixForBone(AnimInfo* ai, int curFrame, int boneIndex)
     {
-        // RVA 0x715650 - a negative frame always recomputes (Convert uses -1 for the bind pose).
-        // TODO: generated code
+        // RVA 0x715650 - brings the bone's model-space matrix up to date: walks up to the first ancestor already
+        // updated this frame (or the root), then recomputes from there down. A negative frame always recomputes
+        // (Convert uses -1 for the bind pose).
+        // NOTE: the ancestor already up to date is recomputed too, as shipped.
         if (curFrame >= 0 && ai->GetBoneAnim(boneIndex).m_lastUpdatedFrame == curFrame)
         {
             return;
         }
 
-        // Build a stack of bones from the target bone up to the root
-        retruxx::stack<int> boneStack;
-        int currentBoneIdx = boneIndex;
-
-        while (true)
+        retruxx::stack<int> stackToParent;
+        for (int idx = boneIndex;;)
         {
-            BoneAnim* currentBone = &ai->GetBoneAnim(currentBoneIdx);
-            boneStack.push(currentBoneIdx);
-
-            // Stop if this bone is already updated or if we reached the root
-            if (curFrame >= 0 && currentBone->m_lastUpdatedFrame == curFrame)
+            BoneAnim const& bone = ai->GetBoneAnim(idx);
+            stackToParent.push(idx);
+            if ((curFrame >= 0 && bone.m_lastUpdatedFrame == curFrame) || bone.m_parentIdx < 0)
             {
                 break;
             }
-            if (currentBone->m_parentIdx < 0)
-            {  // Root bone
-                break;
-            }
-            currentBoneIdx = currentBone->m_parentIdx;
+            idx = bone.m_parentIdx;
         }
 
-        // Process bones from root to target (reverse order of stack)
-        while (!boneStack.empty())
+        while (!stackToParent.empty())
         {
-            int boneIdx = boneStack.top();
-            boneStack.pop();
-
-            BoneAnim* bone = &ai->GetBoneAnim(boneIdx);
-            BoneAnim* parentBone = nullptr;
-            CMatrix* parentMatrix = nullptr;
-
-            if (bone->m_parentIdx >= 0)
+            BoneAnim& bone = ai->GetBoneAnim(stackToParent.top());
+            stackToParent.pop();
+            bone.m_curMatrix.rotTranslate(bone.m_rotation, bone.m_translation);
+            if (bone.m_parentIdx >= 0)
             {
-                parentBone = &ai->GetBoneAnim(bone->m_parentIdx);
-                parentMatrix = &parentBone->m_curMatrix;
+                bone.m_curMatrix *= ai->GetBoneAnim(bone.m_parentIdx).m_curMatrix;
             }
-
-            // Convert quaternion rotation to matrix
-            Quaternion const& rot = bone->m_rotation;
-            CMatrix rotationMatrix;
-
-            // Calculate quaternion components for matrix conversion
-            float xx = rot.x * rot.x;
-            float xy = rot.x * rot.y;
-            float xz = rot.x * rot.z;
-            float xw = rot.x * rot.w;
-
-            float yy = rot.y * rot.y;
-            float yz = rot.y * rot.z;
-            float yw = rot.y * rot.w;
-
-            float zz = rot.z * rot.z;
-            float zw = rot.z * rot.w;
-
-            // Build rotation matrix from quaternion
-            rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
-            rotationMatrix._12 = 2.0f * (xy + zw);
-            rotationMatrix._13 = 2.0f * (xz - yw);
-            rotationMatrix._14 = 0.0f;
-
-            rotationMatrix._21 = 2.0f * (xy - zw);
-            rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
-            rotationMatrix._23 = 2.0f * (yz + xw);
-            rotationMatrix._24 = 0.0f;
-
-            rotationMatrix._31 = 2.0f * (xz + yw);
-            rotationMatrix._32 = 2.0f * (yz - xw);
-            rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
-            rotationMatrix._34 = 0.0f;
-
-            rotationMatrix._41 = bone->m_translation.x;
-            rotationMatrix._42 = bone->m_translation.y;
-            rotationMatrix._43 = bone->m_translation.z;
-            rotationMatrix._44 = 1.0f;
-
-            // Combine with parent matrix if exists
-            if (parentMatrix)
-            {
-                // Multiply bone's local matrix by parent's world matrix
-                bone->m_curMatrix = rotationMatrix;
-                bone->m_curMatrix *= (*parentMatrix);
-            }
-            else
-            {
-                // No parent, so local matrix is world matrix
-                bone->m_curMatrix = rotationMatrix;
-            }
-
-            bone->m_lastUpdatedFrame = curFrame;
+            bone.m_lastUpdatedFrame = curFrame;
         }
     }
 
@@ -3895,69 +3543,42 @@ namespace m3d
 
     void AnimatedModel::VertsForSkinmesh(AnimInfo* ai, Mesh& mesh, void* dstVerts, bool onlyXYZN)
     {
-        // TODO: generated code
-        // Copy original vertices if we need full vertex data
+        // RVA 0x70CF40 - software skinning: each vertex's position and normal are the weighted sums of its bone
+        // offsets through the bones' current matrices. Only the leading position and normal of each destination
+        // vertex are written; unless onlyXYZN, the rest is first copied from the source vertices.
         if (!onlyXYZN)
         {
-            size_t vertexDataSize = mesh.m_VertexTypeSize * mesh.m_numDrawVerts;
-            memcpy(dstVerts, mesh.m_drawVerts, vertexDataSize);
+            memcpy(dstVerts, mesh.m_drawVerts, mesh.m_VertexTypeSize * mesh.m_numDrawVerts);
         }
 
-        // Process each vertex through skinning
-        for (int vertexIndex = 0; vertexIndex < mesh.m_numDrawVerts; ++vertexIndex)
+        auto* dst = static_cast<char*>(dstVerts);
+        for (int v = 0; v < mesh.m_numDrawVerts; ++v, dst += mesh.m_VertexTypeSize)
         {
-            auto& vertexInfluences = mesh.m_vertsInfluences[vertexIndex];
-
-            // Accumulators for transformed position and normal
-            CVector transformedPos(0.0f, 0.0f, 0.0f);
-            CVector transformedNormal(0.0f, 0.0f, 0.0f);
-
-            // Apply all bone influences for this vertex
-            for (int boneIndex = 0; boneIndex < vertexInfluences.m_numBones; ++boneIndex)
+            Influences const& influences = mesh.m_vertsInfluences[v];
+            CVector position(0.0f, 0.0f, 0.0f);
+            CVector normal(0.0f, 0.0f, 0.0f);
+            for (int b = 0; b < influences.m_numBones; ++b)
             {
-                auto const& influence = vertexInfluences.m_influences[boneIndex];
-                auto const& boneAnim = ai->m_bonesAnim[influence.m_boneIdx];
-                auto const& boneMatrix = boneAnim.m_curMatrix;
-                float weight = influence.m_boneWeight;
-
-                // Transform position by bone matrix
-                CVector weightedPos = influence.m_offsetVec;
-                CVector transformedWeightedPos;
-                transformedWeightedPos.x = boneMatrix._11 * weightedPos.x + boneMatrix._21 * weightedPos.y +
-                    boneMatrix._31 * weightedPos.z + boneMatrix._41;
-                transformedWeightedPos.y = boneMatrix._12 * weightedPos.x + boneMatrix._22 * weightedPos.y +
-                    boneMatrix._32 * weightedPos.z + boneMatrix._42;
-                transformedWeightedPos.z = boneMatrix._13 * weightedPos.x + boneMatrix._23 * weightedPos.y +
-                    boneMatrix._33 * weightedPos.z + boneMatrix._43;
-
-                transformedPos += transformedWeightedPos * weight;
-
-                // Transform normal by bone matrix (3x3 rotation part only)
-                CVector weightedNormal = influence.m_offsetNormal;
-                CVector transformedWeightedNormal;
-                transformedWeightedNormal.x = boneMatrix._11 * weightedNormal.x + boneMatrix._21 * weightedNormal.y +
-                    boneMatrix._31 * weightedNormal.z;
-                transformedWeightedNormal.y = boneMatrix._12 * weightedNormal.x + boneMatrix._22 * weightedNormal.y +
-                    boneMatrix._32 * weightedNormal.z;
-                transformedWeightedNormal.z = boneMatrix._13 * weightedNormal.x + boneMatrix._23 * weightedNormal.y +
-                    boneMatrix._33 * weightedNormal.z;
-
-                transformedNormal += transformedWeightedNormal * weight;
+                auto const& influence = influences.m_influences[b];
+                CMatrix const& m = ai->m_bonesAnim[influence.m_boneIdx].m_curMatrix;
+                CVector const& p = influence.m_offsetVec;
+                CVector const& n = influence.m_offsetNormal;
+                float const w = influence.m_boneWeight;
+                position.x += (m._11 * p.x + m._21 * p.y + m._31 * p.z + m._41) * w;
+                position.y += (m._12 * p.x + m._22 * p.y + m._32 * p.z + m._42) * w;
+                position.z += (m._13 * p.x + m._23 * p.y + m._33 * p.z + m._43) * w;
+                normal.x += (m._11 * n.x + m._21 * n.y + m._31 * n.z) * w;
+                normal.y += (m._12 * n.x + m._22 * n.y + m._32 * n.z) * w;
+                normal.z += (m._13 * n.x + m._23 * n.y + m._33 * n.z) * w;
             }
 
-            // Write transformed vertex data to output buffer
-            float* outputVertex =
-                reinterpret_cast<float*>(static_cast<char*>(dstVerts) + vertexIndex * mesh.m_VertexTypeSize);
-
-            outputVertex[0] = transformedPos.x;
-            outputVertex[1] = transformedPos.y;
-            outputVertex[2] = transformedPos.z;
-            outputVertex[3] = transformedNormal.x;
-            outputVertex[4] = transformedNormal.y;
-            outputVertex[5] = transformedNormal.z;
-
-            // Note: If !onlyXYZN, the rest of vertex data (texcoords, colors, etc.)
-            // was already copied and remains unchanged
+            auto* out = reinterpret_cast<float*>(dst);
+            out[0] = position.x;
+            out[1] = position.y;
+            out[2] = position.z;
+            out[3] = normal.x;
+            out[4] = normal.y;
+            out[5] = normal.z;
         }
     }
 
@@ -4113,186 +3734,118 @@ namespace m3d
 
     void AnimInfo::InterpolateBones(int curUpdateFrame)
     {
-        // TODO generated code
-        // Early exit if we already processed this frame
-        if (curUpdateFrame < 0 || m_lastInterpolationUpdate == curUpdateFrame)
+        // RVA 0x70CC60 - the bones' local pose, interpolated between the current animation frame and the next (or
+        // just the current one when stuck to the last frame), then, while blending, eased from the previous
+        // animation's pose over 7 frames. Once per frame; a negative frame always recomputes.
+        if (curUpdateFrame >= 0 && m_lastInterpolationUpdate == curUpdateFrame)
         {
             return;
         }
-
         m_lastInterpolationUpdate = curUpdateFrame;
-
-        if (!m_curAnimation)
+        AnimatedModel::Animation const* anim = m_curAnimation;
+        if (!anim)
         {
             return;
         }
 
-        // Get animation data pointers and interpolation factor
-        auto* anim = m_curAnimation;
-        AnimatedModel::AnimationTransform* currentFrameData = nullptr;
-        AnimatedModel::AnimationTransform* nextFrameData = nullptr;
-        float interpolationFactor = 0.0f;
-
-        if (m_stickToLastFrame)
+        // NOTE: a NaN factor (0 / 0 on a zero fps) clamps to 0.
+        auto const clamp01 = [](float v) { return v >= 0.0f ? (v > 1.0f ? 1.0f : v) : 0.0f; };
+        AnimatedModel::AnimationTransform const* cur = &anim->m_nodesPositions[m_curAnimFrame * anim->m_numNodes];
+        AnimatedModel::AnimationTransform const* next = cur;
+        float t = 0.0f;
+        if (!m_stickToLastFrame)
         {
-            // Stick to the current frame (no interpolation)
-            currentFrameData = &anim->m_nodesPositions[m_curAnimFrame * anim->m_numNodes];
-            interpolationFactor = 0.0f;
-        }
-        else
-        {
-            // Normal interpolation between frames
-            currentFrameData = &anim->m_nodesPositions[m_curAnimFrame * anim->m_numNodes];
-            int nextFrame = (m_curAnimFrame + 1) % anim->m_numFrames;
-            nextFrameData = &anim->m_nodesPositions[nextFrame * anim->m_numNodes];
-
-            // Calculate interpolation factor based on time to next frame
-            interpolationFactor = 1.0f - ((float)m_timeOutToNextFrame / (float)anim->m_fps);
-            interpolationFactor = std::clamp(interpolationFactor, 0.0f, 1.0f);
+            next = &anim->m_nodesPositions[anim->m_numNodes * ((m_curAnimFrame + 1) % anim->m_numFrames)];
+            t = clamp01(1.0f - static_cast<float>(m_timeOutToNextFrame) / static_cast<float>(anim->m_fps));
         }
 
-        // Interpolate bone transformations
-        for (int nodeIndex = 0; nodeIndex < anim->m_numNodes; ++nodeIndex)
+        // Each transform names the bone it moves.
+        for (int i = 0; i < anim->m_numNodes; ++i)
         {
-            auto& boneAnim = m_bonesAnim[nodeIndex];
-
-            if (m_stickToLastFrame)
-            {
-                // Just copy current frame data
-                auto const& currentTransform = currentFrameData[nodeIndex];
-                boneAnim.m_rotation =
-                    Quaternion(currentTransform.qx, currentTransform.qy, currentTransform.qz, currentTransform.qw);
-                boneAnim.m_translation = CVector(currentTransform.tx, currentTransform.ty, currentTransform.tz);
-            }
-            else
-            {
-                // Interpolate between current and next frame
-                auto const& currentTransform = currentFrameData[nodeIndex];
-                auto const& nextTransform = nextFrameData[nodeIndex];
-
-                // Interpolate rotation using quaternion lerp
-                Quaternion q1(currentTransform.qx, currentTransform.qy, currentTransform.qz, currentTransform.qw);
-                Quaternion q2(nextTransform.qx, nextTransform.qy, nextTransform.qz, nextTransform.qw);
-                boneAnim.m_rotation.Lerp(q1, q2, interpolationFactor);
-
-                // Interpolate translation using linear interpolation
-                CVector v1(currentTransform.tx, currentTransform.ty, currentTransform.tz);
-                CVector v2(nextTransform.tx, nextTransform.ty, nextTransform.tz);
-                boneAnim.m_translation = lerp(v1, v2, interpolationFactor);
-            }
+            auto const& a = cur[i];
+            auto const& b = next[i];
+            BoneAnim& bone = m_bonesAnim[a.idx];
+            bone.m_rotation.Lerp(Quaternion(a.qx, a.qy, a.qz, a.qw), Quaternion(b.qx, b.qy, b.qz, b.qw), t);
+            bone.m_translation.x = (b.tx - a.tx) * t + a.tx;
+            bone.m_translation.y = (b.ty - a.ty) * t + a.ty;
+            bone.m_translation.z = (b.tz - a.tz) * t + a.tz;
         }
 
-        // Handle animation blending if active
-        if (m_isBlending)
+        if (!m_isBlending)
         {
-            // Calculate blend factor
-            float blendFactor = 1.0f -
-                (float)((float)(m_timeOutToNextFrame + anim->m_fps * (m_blendFramesNum - 1)) /
-                        (float)(7.0f * (float)anim->m_fps));
-            blendFactor = std::clamp(blendFactor, 0.0f, 1.0f);
-
-            // Apply blending between previous and current bone animations
-            for (int nodeIndex = 0; nodeIndex < anim->m_numNodes; ++nodeIndex)
+            return;
+        }
+        float const blend = clamp01(
+            1.0f -
+            static_cast<float>(m_timeOutToNextFrame + anim->m_fps * (m_blendFramesNum - 1)) /
+                static_cast<float>(7 * anim->m_fps));
+        // Bones whose parent changed between the animations snap to the new pose.
+        for (int i = 0; i < anim->m_numNodes; ++i)
+        {
+            BoneAnim const& prev = m_bonesAnimPrev[i];
+            BoneAnim& bone = m_bonesAnim[i];
+            if (prev.m_parentIdx != bone.m_parentIdx)
             {
-                auto& prevBone = m_bonesAnimPrev[nodeIndex];
-                auto& currentBone = m_bonesAnim[nodeIndex];
-
-                // Only blend if bones have the same parent (same hierarchy)
-                if (prevBone.m_parentIdx == currentBone.m_parentIdx)
-                {
-                    // Store the current state before blending
-                    Quaternion currentRotation = currentBone.m_rotation;
-                    CVector currentTranslation = currentBone.m_translation;
-
-                    // Blend rotation from previous to current
-                    currentBone.m_rotation.Lerp(prevBone.m_rotation, currentRotation, blendFactor);
-
-                    // Blend translation from previous to current
-                    currentBone.m_translation = lerp(prevBone.m_translation, currentTranslation, blendFactor);
-                }
+                continue;
             }
+            bone.m_rotation.Lerp(prev.m_rotation, bone.m_rotation, blend);
+            bone.m_translation.x = (bone.m_translation.x - prev.m_translation.x) * blend + prev.m_translation.x;
+            bone.m_translation.y = (bone.m_translation.y - prev.m_translation.y) * blend + prev.m_translation.y;
+            bone.m_translation.z = (bone.m_translation.z - prev.m_translation.z) * blend + prev.m_translation.z;
         }
     }
 
     int AnimInfo::SetAnimationIdx(int num)
     {
-        // TODO: check and refactor this
-        auto const numAnimations = m_forModel->m_header.m_numAnimations;
-        int v5 = 0;
-        if (!numAnimations)
-            return 0;
-        if (num >= numAnimations)
-            return 0;
-        if (num < 0)
-            return 0;
-
-        auto v7 = &m_forModel->m_animations[num];
-        if (!v7)
-            return 0;
-        m_curAnimation = this->m_curAnimation;
-        if (!m_curAnimation || this->m_lastInterpolationUpdate == -1)
+        // RVA 0x70A440 - starts animation num from its first frame with the bones in the bind pose (re-parented by
+        // the animation's hierarchy changes). If the previous animation has been interpolated, its state is kept
+        // and blended out over 7 frames.
+        AnimatedModel const* model = m_forModel;
+        if (!model->m_header.m_numAnimations || num >= model->m_header.m_numAnimations || num < 0)
         {
-            this->m_isBlending = 0;
+            return 0;
+        }
+        AnimatedModel::Animation* animation = &model->m_animations[num];
+
+        if (!m_curAnimation || m_lastInterpolationUpdate == -1)
+        {
+            m_isBlending = 0;
         }
         else
         {
-            this->m_curAnimationPrev = m_curAnimation;
-            this->m_curAnimFramePrev = m_curAnimFrame;
-            memcpy(m_bonesAnimPrev, this->m_bonesAnim, sizeof(BoneAnim) * m_forModel->m_header.m_numNodes);
-
-            this->m_timeOutToNextFramePrev = this->m_timeOutToNextFrame;
-            this->m_lastInterpolationUpdatePrev = m_lastInterpolationUpdate;
-            this->m_stickToLastFramePrev = m_stickToLastFrame;
-            this->m_blendFramesNum = 7;
-            this->m_isBlending = true;
-            v5 = 0;
+            m_curAnimationPrev = m_curAnimation;
+            m_curAnimFramePrev = m_curAnimFrame;
+            memcpy(m_bonesAnimPrev, m_bonesAnim, sizeof(BoneAnim) * model->m_header.m_numNodes);
+            m_timeOutToNextFramePrev = m_timeOutToNextFrame;
+            m_lastInterpolationUpdatePrev = m_lastInterpolationUpdate;
+            m_stickToLastFramePrev = m_stickToLastFrame;
+            m_blendFramesNum = 7;
+            m_isBlending = 1;
         }
 
-        auto v13 = this->m_forModel;
-        this->m_curAnimation = v7;
-        this->m_curAnimFrame = 0;
-        this->m_stickToLastFrame = 0;
-        this->m_timeOutToNextFrame = 0;
-        this->m_lastInterpolationUpdate = -1;
-        int v14 = 0;
-        if (v13->m_header.m_numNodes > 0)
+        m_curAnimation = animation;
+        m_curAnimFrame = 0;
+        m_stickToLastFrame = 0;
+        m_timeOutToNextFrame = 0;
+        m_lastInterpolationUpdate = -1;
+        for (int i = 0; i < model->m_header.m_numNodes; ++i)
         {
-            int v15 = 0;
-            do
-            {
-                this->m_bonesAnim[v15].m_parentIdx = this->m_forModel->m_boneInitialPos[v5].m_parentIdx;
-                this->m_bonesAnim[v15].m_lastUpdatedFrame = -1000;
-                auto p_m_quaternion0 = &this->m_forModel->m_boneInitialPos[v5].m_quaternion0;
-                auto p_m_rotation = &this->m_bonesAnim[v15].m_rotation;
-                p_m_rotation->x = p_m_quaternion0->x;
-                p_m_rotation->y = p_m_quaternion0->y;
-                p_m_rotation->z = p_m_quaternion0->z;
-                p_m_rotation->w = p_m_quaternion0->w;
-
-                auto p_m_translation0 = &this->m_forModel->m_boneInitialPos[v5].m_translation0;
-                auto p_m_translation = &this->m_bonesAnim[v15].m_translation;
-                p_m_translation->x = p_m_translation0->x;
-                p_m_translation->y = p_m_translation0->y;
-                p_m_translation->z = p_m_translation0->z;
-                ++v14;
-                ++v5;
-                ++v15;
-            } while (v14 < this->m_forModel->m_header.m_numNodes);
+            AnimatedModel::Bone const& initial = model->m_boneInitialPos[i];
+            BoneAnim& bone = m_bonesAnim[i];
+            bone.m_parentIdx = initial.m_parentIdx;
+            bone.m_lastUpdatedFrame = -1000;
+            bone.m_rotation = initial.m_quaternion0;
+            bone.m_translation = initial.m_translation0;
         }
-        auto v20 = this->m_curAnimation;
-        if (v20 && v20->m_numChanges > 0)
+        for (int i = 0; i < animation->m_numChanges; ++i)
         {
-            auto m_hierChanges = v20->m_hierChanges;
-            auto v22 = 0;
-            do
+            AnimatedModel::HierarchyChange const& change = animation->m_hierChanges[i];
+            if (change.changeType == NEW_PARENT)
             {
-                if (m_hierChanges->changeType == NEW_PARENT)
-                    this->m_bonesAnim[m_hierChanges->ownIdx].m_parentIdx = m_hierChanges->newParentIdx;
-                ++v22;
-                ++m_hierChanges;
-            } while (v22 < this->m_curAnimation->m_numChanges);
+                m_bonesAnim[change.ownIdx].m_parentIdx = change.newParentIdx;
+            }
         }
-        this->m_timeOutToNextFrame = this->m_curAnimation->m_fps;
+        m_timeOutToNextFrame = animation->m_fps;
         return 1;
     }
 

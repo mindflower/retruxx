@@ -23,7 +23,7 @@ m3d::Object* DurabilityIndicatorInMainInterfaceWnd::CreateObject()
 
 int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    // RVA 0x11C2E0
+    // RVA 0x51C2E0
     using namespace m3d::ui;
 
     if (!patternWnd || !patternWnd->IsKindOf(&ImageWnd::m_classImageWnd))
@@ -34,14 +34,14 @@ int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patte
     auto* parent = patternWnd->GetParent();
     if (!parent || !IS_KIND_OF(parent, Wnd))
     {
-        M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent for paternWnd");
+        M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd: error to create - invalid parent wnd");
         return 0;
     }
 
-    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
-    if (res == 0)
+    auto* imageWnd = static_cast<ImageWnd*>(patternWnd);
+    if (!CreateImageWnd(patternWnd->GetBounds(), imageWnd->GetImage()))
     {
-        M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern error - cannot create window");
+        M3D_LOG_INFO("DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern error - error to create");
         return 0;
     }
 
@@ -55,7 +55,7 @@ int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patte
 
     SetFormatMode(patternWnd->GetFormatMode());
     SetColor(patternWnd->GetColor());
-    SetTextColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetTextColor());
     SetTextColorDisabled(patternWnd->GetTextColorDisabled());
     SetClientEdges(patternWnd->GetClientEdges());
     SetPane(patternWnd->GetPaneName());
@@ -70,29 +70,27 @@ int DurabilityIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patte
     SetOnShowAnimation(patternWnd->GetOnShowAnimation());
     SetOnHideAnimation(patternWnd->GetOnHideAnimation());
 
-    auto* imageWnd = (ImageWnd*)patternWnd;
     SetImage(imageWnd->GetImage());
 
-    parent->AddChild(this);
+    // The pattern is destroyed outright (its deleting destructor, not a reference release),
+    // before this window takes its place in the parent.
     if (deleteSrc)
     {
         parent->RemoveChild(patternWnd);
-        // TODO: check this obj delete
-        patternWnd->DecRef();
+        delete patternWnd;
     }
+    parent->AddChild(this);
 
     m_strCabinDurability =
         M3D_APP->GetStringByStringId0(DurabilityIndicatorInMainInterfaceWnd::m_aif.m_strCabinDurabilityId);
     m_strBasketDurability =
         M3D_APP->GetStringByStringId0(DurabilityIndicatorInMainInterfaceWnd::m_aif.m_strBasketDurabilityId);
-
-    m_gameDataFlags |= 1u;
     return 1;
 }
 
 void DurabilityIndicatorInMainInterfaceWnd::SetType(Type type, CStr const& partName)
 {
-    // RVA 0x11CE30
+    // RVA 0x51CE30
     m_partName = partName;
     m_type = type;
 
@@ -105,7 +103,7 @@ void DurabilityIndicatorInMainInterfaceWnd::SetType(Type type, CStr const& partN
 
 m3d::Object* DurabilityIndicatorInMainInterfaceWnd::Clone()
 {
-    // RVA 0x11BFE0
+    // RVA 0x51BFE0
     return new DurabilityIndicatorInMainInterfaceWnd(*this);
 }
 
@@ -142,7 +140,7 @@ void DurabilityIndicatorInMainInterfaceWnd::SetVehicleId(int vehicleId)
 
 DurabilityIndicatorInMainInterfaceWnd::~DurabilityIndicatorInMainInterfaceWnd()
 {
-    // RVA 0x11C240 - m_partName/m_strCabinDurability/m_strBasketDurability
+    // RVA 0x51C240 - m_partName/m_strCabinDurability/m_strBasketDurability
     // and the ImageWnd base clean up automatically.
 }
 
@@ -185,7 +183,7 @@ unsigned DurabilityIndicatorInMainInterfaceWnd::GetColorByValue(float curVal, fl
 
 int DurabilityIndicatorInMainInterfaceWnd::GameDataUpdate(void* data, int dataType)
 {
-    // RVA 0x11C6B0
+    // RVA 0x51C6B0
     if (dataType == 65)
     {
         OnVehiclePartChanged(data);
@@ -200,7 +198,7 @@ int DurabilityIndicatorInMainInterfaceWnd::GameDataUpdate(void* data, int dataTy
 
 int DurabilityIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    // RVA 0x11C690
+    // RVA 0x51C690
     SetVehicleId(-1);
     return 1;
 }
@@ -223,7 +221,7 @@ DurabilityIndicatorInMainInterfaceWnd::DurabilityIndicatorInMainInterfaceWnd(
     DurabilityIndicatorInMainInterfaceWnd const&) :
     DurabilityIndicatorInMainInterfaceWnd()
 {
-    // NOTE: the shipped copy ctor (RVA 0x11C1F0) default-constructs the base
+    // NOTE: the shipped copy ctor (RVA 0x51C1F0) default-constructs the base
     // and resets m_partName/m_strCabinDurability/m_strBasketDurability to
     // empty, but leaves m_vehiclePartId/m_vehicleId/m_type/m_prevCurVal/
     // m_prevMaxVal uninitialized; delegating to the default ctor here avoids
@@ -232,7 +230,7 @@ DurabilityIndicatorInMainInterfaceWnd::DurabilityIndicatorInMainInterfaceWnd(
 
 void DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip(float val, float maxVal)
 {
-    // RVA 0x11C840
+    // RVA 0x51C840
     if (m_partName != "CABIN" && m_partName != "BASKET")
     {
         CStr empty;
@@ -247,7 +245,7 @@ void DurabilityIndicatorInMainInterfaceWnd::UpdateTooltip(float val, float maxVa
 
 void DurabilityIndicatorInMainInterfaceWnd::OnVehiclePartChanged(void* data)
 {
-    // RVA 0x11C710
+    // RVA 0x51C710
     if (!data)
     {
         return;
@@ -266,7 +264,7 @@ void DurabilityIndicatorInMainInterfaceWnd::OnVehiclePartChanged(void* data)
 
 void DurabilityIndicatorInMainInterfaceWnd::GetValue(float& curVal, float& maxVal) const
 {
-    // RVA 0x11CE80
+    // RVA 0x51CE80
     curVal = 0.0f;
     maxVal = 0.0f;
     if (ai::VehiclePart const* part = GetVehiclePart())
@@ -302,7 +300,7 @@ void DurabilityIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 
 void DurabilityIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    // RVA 0x11C6F0
+    // RVA 0x51C6F0
     if (m_vehicleId != -1)
     {
         FullUpdate(false);

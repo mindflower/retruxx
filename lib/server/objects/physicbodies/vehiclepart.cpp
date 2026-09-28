@@ -25,6 +25,18 @@
 
 namespace ai
 {
+    namespace
+    {
+        // Inlined into VehiclePart::Update and ~VehiclePart: every node below the splash effect is released, and
+        // the effect itself is removed from the graph once it is free.
+        void ReleaseSplashEffect(m3d::SgNode*& splashEffect)
+        {
+            m3d::ForEachDescendant(splashEffect, [](m3d::SgNode* node) { node->CanBeFree(); });
+            splashEffect->GetGraph()->InsertInRemoveIfFree(splashEffect);
+            splashEffect = nullptr;
+        }
+    }  // namespace
+
     RT_CLASS_EXPORTS_BEGIN(VehiclePart)
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(VehiclePart);
@@ -565,41 +577,11 @@ namespace ai
 
     void VehiclePart::Update(float elapsedTime, unsigned workTime)
     {
+        // RVA 0x6D4F90 - a splash effect lives until an update passes without a new splash.
         Obj::Update(elapsedTime, workTime);
-        if (!m_MakeSplash)
+        if (!m_MakeSplash && m_SplashEffect)
         {
-            if (m_SplashEffect)
-            {
-                // TODO: check this
-                // Process children using iterative DFS
-                std::vector<m3d::Object*> stack;
-                stack.push_back(dynamic_cast<m3d::Object*>(m_SplashEffect));
-
-                while (!stack.empty())
-                {
-                    m3d::Object* current = stack.back();
-                    stack.pop_back();
-
-                    // Process all siblings of the current node
-                    m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-                    while (sibling)
-                    {
-                        sibling->CanBeFree();
-
-                        // If this sibling has children, add to stack for processing
-                        if (sibling->GetFirstChild())
-                        {
-                            stack.push_back(sibling->GetFirstChild());
-                        }
-
-                        // Move to next sibling
-                        sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
-                    }
-                }
-
-                m_SplashEffect->GetGraph()->InsertInRemoveIfFree(m_SplashEffect);
-                m_SplashEffect = nullptr;
-            }
+            ReleaseSplashEffect(m_SplashEffect);
         }
         m_MakeSplash = false;
     }
@@ -654,26 +636,22 @@ namespace ai
 
     bool VehiclePart::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        // TODO: check and refactor
-        if (propertyId == 19)
+        // RVA 0x6D0380
+        // NOTE: durability is stored unchecked (no clamping, no notification), unlike its maximum and the price.
+        switch (propertyId)
         {
+        case 19:
             m_durability.value().SetUnsafe(newValue.GetAsFloat());
+            return true;
+        case 20:
+            m_durability.maxValue().set(newValue.GetAsFloat());
+            return true;
+        case 21:
+            m_price.set(newValue.GetAsFloat());
+            return true;
+        default:
+            return ai::Obj::SetPropertyById(propertyId, newValue);
         }
-        else
-        {
-            if (propertyId == 20)
-            {
-                m_durability.maxValue().set(newValue.GetAsFloat());
-            }
-            else
-            {
-                if (propertyId != 21)
-                    return ai::Obj::SetPropertyById(propertyId, newValue);
-
-                m_price.set(newValue.GetAsFloat());
-            }
-        }
-        return 1;
     }
 
     m3d::Class* VehiclePart::GetBaseClass()
@@ -1175,13 +1153,14 @@ namespace ai
 
     void VehiclePart::_InternalCreateVisualPart()
     {
+        // RVA 0x6DA860
         PhysicBody::_InternalCreateVisualPart();
         DefineSuppressedLPs();
         if (m_Node)
         {
             if (GetPassedToAnotherMapStatus())
             {
-                // RVA 0x6DA860 - rebuild what SetPassedToAnotherMapStatus saved off before the old map's scene
+                // Rebuild what SetPassedToAnotherMapStatus saved off before the old map's scene
                 // nodes went away: the smoke effects on the broken pieces, and every decal the part was wearing.
                 M3D_ASSERT(m_passToAnotherMapData);
 
@@ -1246,13 +1225,22 @@ namespace ai
             }
             else
             {
-                // TODO: check this!!
-                for (int i = 0; i < m_loadDecalsData.size(); ++i)
+                // A freshly created node: re-attach the broken pieces' smoke and the decals, and apply the decals
+                // read by LoadRuntimeValues.
+                for (auto& modelPart : m_modelParts)
                 {
-                    auto& data = m_loadDecalsData[i];
+                    if (modelPart.jadedEffect && !modelPart.jadedEffect->GetParent())
+                    {
+                        m_Node->AddChild(modelPart.jadedEffect);
+                        modelPart.jadedEffect->UpdateXForm(false, true);
+                    }
+                }
+
+                for (auto& data : m_loadDecalsData)
+                {
+                    // A skinned mesh moves with its bone, so the decal has to follow that transform.
                     m3d::AnimInfo* anim = nullptr;
                     m_Node->GetProperty(1u, &anim);
-
                     data.dd.toPutOn.transform = nullptr;
                     if (anim && !anim->IsEmpty())
                     {
@@ -1262,14 +1250,15 @@ namespace ai
                             data.dd.toPutOn.transform = &anim->GetBoneAnim(mesh.m_numNode).m_curMatrix;
                         }
                     }
+                    data.node->SetProperty(10497u, &data.dd);
+                }
 
-                    for (auto& decal : m_decals)
+                for (auto& decal : m_decals)
+                {
+                    if (decal.second && !decal.second->GetParent())
                     {
-                        if (decal.second)
-                        {
-                            m_Node->AddChild(decal.second);
-                            decal.second->UpdateXForm(false, true);
-                        }
+                        m_Node->AddChild(decal.second);
+                        decal.second->UpdateXForm(false, true);
                     }
                 }
             }
@@ -1305,37 +1294,10 @@ namespace ai
 
     VehiclePart::~VehiclePart()
     {
+        // RVA 0x6D6910
         if (m_SplashEffect)
         {
-            // TODO: check this
-            // Process children using iterative DFS
-            std::vector<m3d::Object*> stack;
-            stack.push_back(dynamic_cast<m3d::Object*>(m_SplashEffect));
-
-            while (!stack.empty())
-            {
-                m3d::Object* current = stack.back();
-                stack.pop_back();
-
-                // Process all siblings of the current node
-                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current->GetFirstChild());
-                while (sibling)
-                {
-                    sibling->CanBeFree();
-
-                    // If this sibling has children, add to stack for processing
-                    if (sibling->GetFirstChild())
-                    {
-                        stack.push_back(sibling->GetFirstChild());
-                    }
-
-                    // Move to next sibling
-                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
-                }
-            }
-
-            m_SplashEffect->GetGraph()->InsertInRemoveIfFree(m_SplashEffect);
-            m_SplashEffect = nullptr;
+            ReleaseSplashEffect(m_SplashEffect);
         }
     }
 

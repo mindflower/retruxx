@@ -15,13 +15,13 @@ void TwinklingLampWnd::SetValue(float value, float maxValue)
 
 m3d::Object* TwinklingLampWnd::Clone()
 {
-    // RVA 0x137010
+    // RVA 0x537010
     return new TwinklingLampWnd(*this);
 }
 
 void TwinklingLampWnd::SetTwinklePeriod(unsigned period)
 {
-    // RVA 0x137170
+    // RVA 0x537170
     m_twinklePeriod = period;
 }
 
@@ -32,7 +32,7 @@ m3d::Class* TwinklingLampWnd::GetBaseClass()
 
 int TwinklingLampWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    // RVA 0x137190
+    // RVA 0x537190
     using namespace m3d::ui;
 
     if (!patternWnd || !patternWnd->IsKindOf(&ImageWnd::m_classImageWnd))
@@ -41,17 +41,18 @@ int TwinklingLampWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc
         return 0;
     }
 
+    // NOTE: unlike the indicator windows, the parent is not checked to be a Wnd.
     auto* parent = patternWnd->GetParent();
-    if (!parent || !IS_KIND_OF(parent, Wnd))
+    if (!parent)
     {
-        M3D_LOG_INFO("TwinklingLampWnd::CreateFromPattern error - null parent");
+        M3D_LOG_INFO("TwinklingLampWnd: error to create - invalid parent wnd");
         return 0;
     }
 
-    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
-    if (res == 0)
+    auto* imageWnd = static_cast<ImageWnd*>(patternWnd);
+    if (!CreateImageWnd(patternWnd->GetBounds(), imageWnd->GetImage()))
     {
-        M3D_LOG_INFO("TwinklingLampWnd::CreateFromPattern error - cannot create window");
+        M3D_LOG_INFO("TwinklingLampWnd: error create");
         return 0;
     }
 
@@ -65,7 +66,7 @@ int TwinklingLampWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc
 
     SetFormatMode(patternWnd->GetFormatMode());
     SetColor(patternWnd->GetColor());
-    SetTextColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetTextColor());
     SetTextColorDisabled(patternWnd->GetTextColorDisabled());
     SetClientEdges(patternWnd->GetClientEdges());
     SetPane(patternWnd->GetPaneName());
@@ -80,16 +81,15 @@ int TwinklingLampWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc
     SetOnShowAnimation(patternWnd->GetOnShowAnimation());
     SetOnHideAnimation(patternWnd->GetOnHideAnimation());
 
-    auto* imageWnd = (ImageWnd*)patternWnd;
     SetImage(imageWnd->GetImage());
 
-    parent->AddChild(this);
+    // The pattern is destroyed outright (its deleting destructor, not a reference release); its
+    // destructor detaches it from the parent.
     if (deleteSrc)
     {
-        parent->RemoveChild(patternWnd);
-        // TODO: check this obj delete
-        patternWnd->DecRef();
+        delete patternWnd;
     }
+    parent->AddChild(this);
 
     m_gameDataFlags |= 1u;
     return 1;
@@ -102,13 +102,13 @@ m3d::Object* TwinklingLampWnd::CreateObject()
 
 void TwinklingLampWnd::SetThreshold(float threshold)
 {
-    // RVA 0x137180
+    // RVA 0x537180
     m_threshold = threshold;
 }
 
 TwinklingLampWnd::~TwinklingLampWnd()
 {
-    // RVA 0x137140 - the ImageWnd base cleans up automatically.
+    // RVA 0x537140 - the ImageWnd base cleans up automatically.
 }
 
 m3d::Class* TwinklingLampWnd::GetClass() const
@@ -118,7 +118,7 @@ m3d::Class* TwinklingLampWnd::GetClass() const
 
 TwinklingLampWnd::TwinklingLampWnd(TwinklingLampWnd const&) : TwinklingLampWnd()
 {
-    // NOTE: the shipped copy ctor (RVA 0x137130) default-constructs the
+    // NOTE: the shipped copy ctor (RVA 0x537130) default-constructs the
     // ImageWnd base only, leaving m_threshold/m_value/m_maxValue/
     // m_twinklePeriod uninitialized; delegating to the default ctor here
     // reproduces "nothing copied from source" without relying on garbage
@@ -172,13 +172,13 @@ void TwinklingLampWnd::UpdateLamp()
 
 bool TwinklingLampWnd::Visible() const
 {
-    // RVA 0x137560
+    // RVA 0x537560
     return (m_style & 0x200) != 0;
 }
 
 void TwinklingLampWnd::Show(bool bShow)
 {
-    // RVA 0x137540
+    // RVA 0x537540
     if ((m_gameDataFlags & 1) != 0)
     {
         ShowWindow(bShow);
@@ -187,7 +187,7 @@ void TwinklingLampWnd::Show(bool bShow)
 
 void TwinklingLampWnd::Twinkle()
 {
-    // RVA 0x137570
+    // RVA 0x537570
     unsigned int const t = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
     bool const show = (t / m_twinklePeriod) & 1;
     ShowWindow(show);

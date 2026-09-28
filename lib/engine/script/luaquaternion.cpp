@@ -14,85 +14,35 @@ extern "C"
 
 int ext_quatConstructor(lua_State* L)
 {
-    // TODO: check this
-    int result = 0;
-    auto v2 = lua_gettop(L);
-    auto quaternion = ext_createQuaternion(L);
-    if (v2 == 1)
+    // RVA 0x898B50
+    int const argc = lua_gettop(L);
+    Quaternion* const quat = ext_createQuaternion(L);
+
+    // Copy construction from another quaternion.
+    if (argc == 1 && lua_type(L, 1) == LUA_TUSERDATA)
     {
-        if (lua_type(L, 1) == 7)
+        if (ext_checkTag(L, 1, tag_luaQuaternion))
         {
-            if (ext_checkTag(L, 1, tag_luaQuaternion))
-            {
-                auto v4 = (float*)lua_touserdata(L, 1);
-                quaternion->x = *v4;
-                quaternion->y = v4[1];
-                quaternion->z = v4[2];
-                quaternion->w = v4[3];
-            }
-            else
-            {
-                lua_settop(L, -2);
-            }
-            return 1;
+            auto const* const src = static_cast<Quaternion const*>(lua_touserdata(L, 1));
+            quat->x = src->x;
+            quat->y = src->y;
+            quat->z = src->z;
+            quat->w = src->w;
         }
+        else
+        {
+            // NOTE: any other userdata pops the new quaternion, so the argument itself is returned.
+            lua_settop(L, -2);
+        }
+        return 1;
     }
-    else if (v2 < 1)
-    {
-        auto v6 = 0.0;
-        auto v7 = 0.0;
-        auto v8 = 0.0;
-        quaternion->x = v6;
-        if (v2 >= 2 && lua_type(L, 2))
-            v7 = luaL_checknumber(L, 2);
-        else
-            v7 = 0.0;
-        quaternion->y = v7;
-        if (v2 >= 3 && lua_type(L, 3))
-            v8 = luaL_checknumber(L, 3);
-        else
-            v8 = 0.0;
-        quaternion->z = v8;
-        if (v2 >= 4 && lua_type(L, 4))
-        {
-            quaternion->w = luaL_checknumber(L, 4);
-            return 1;
-        }
-        else
-        {
-            result = 1;
-            quaternion->w = 0.0;
-        }
-        return result;
-    }
-    if (lua_type(L, 1))
-    {
-        auto v6 = luaL_checknumber(L, 1);
-        auto v7 = 0.0;
-        auto v8 = 0.0;
-        quaternion->x = v6;
-        if (v2 >= 2 && lua_type(L, 2))
-            v7 = luaL_checknumber(L, 2);
-        else
-            v7 = 0.0;
-        quaternion->y = v7;
-        if (v2 >= 3 && lua_type(L, 3))
-            v8 = luaL_checknumber(L, 3);
-        else
-            v8 = 0.0;
-        quaternion->z = v8;
-        if (v2 >= 4 && lua_type(L, 4))
-        {
-            quaternion->w = luaL_checknumber(L, 4);
-            return 1;
-        }
-        else
-        {
-            result = 1;
-            quaternion->w = 0.0;
-        }
-        return result;
-    }
+
+    // Components; a missing or nil argument is 0.
+    quat->x = argc >= 1 && lua_type(L, 1) != LUA_TNIL ? static_cast<float>(luaL_checknumber(L, 1)) : 0.0f;
+    quat->y = argc >= 2 && lua_type(L, 2) != LUA_TNIL ? static_cast<float>(luaL_checknumber(L, 2)) : 0.0f;
+    quat->z = argc >= 3 && lua_type(L, 3) != LUA_TNIL ? static_cast<float>(luaL_checknumber(L, 3)) : 0.0f;
+    quat->w = argc >= 4 && lua_type(L, 4) != LUA_TNIL ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
+    return 1;
 }
 
 void ext_initQuaternion(lua_State* L)
@@ -253,23 +203,22 @@ int ext_quatFromYPR(lua_State* L)
 
 int ext_quatGet(lua_State* L)
 {
-    // TODO: generated code
-    Quaternion* quat = static_cast<Quaternion*>(lua_touserdata(L, 1));
-
-    // Get the property name being accessed
-    const char* propertyName = luaL_checklstring(L, 2, nullptr);
-
-    // Handle special internal tag
-    if (strcmp(propertyName, "internalTag") == 0)
+    // RVA 0x8987C0
+    auto const* const quat = static_cast<Quaternion const*>(lua_touserdata(L, 1));
+    char const* const name = luaL_checklstring(L, 2, nullptr);
+    if (!strcmp(name, "internalTag"))
     {
         lua_pushnumber(L, 1003.0);
         return 1;
     }
 
-    // Handle single-character properties (x, y, z, w)
-    if (strlen(propertyName) == 1)
+    if (!name[1])
     {
-        switch (propertyName[0]) {
+        switch (name[0])
+        {
+        case 'w':
+            lua_pushnumber(L, quat->w);
+            return 1;
         case 'x':
             lua_pushnumber(L, quat->x);
             return 1;
@@ -279,64 +228,63 @@ int ext_quatGet(lua_State* L)
         case 'z':
             lua_pushnumber(L, quat->z);
             return 1;
-        case 'w':
-            lua_pushnumber(L, quat->w);
-            return 1;
+        default:
+            // NOTE: any other one-letter name returns nothing (not 0, unlike an unknown longer name).
+            return 0;
         }
     }
 
-    // Handle method calls (return closure functions)
-    if (strcmp(propertyName, "Identity") == 0)
+    if (!strcmp(name, "Identity"))
     {
         lua_pushcclosure(L, ext_quatIdentity, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "Zero") == 0)
+    if (!strcmp(name, "Zero"))
     {
         lua_pushcclosure(L, ext_quatZero, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "Norm") == 0)
+    if (!strcmp(name, "Norm"))
     {
         lua_pushcclosure(L, ext_quatNorm, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "Normalize") == 0)
+    if (!strcmp(name, "Normalize"))
     {
         lua_pushcclosure(L, ext_quatNormalize, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "RotX") == 0)
+    if (!strcmp(name, "RotX"))
     {
         lua_pushcclosure(L, ext_quatRotX, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "RotY") == 0)
+    if (!strcmp(name, "RotY"))
     {
         lua_pushcclosure(L, ext_quatRotY, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "RotZ") == 0)
+    if (!strcmp(name, "RotZ"))
     {
         lua_pushcclosure(L, ext_quatRotZ, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "FromAxisAngle") == 0)
+    if (!strcmp(name, "FromAxisAngle"))
     {
         lua_pushcclosure(L, ext_quatFromAxisAngle, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "getConjugated") == 0)
+    if (!strcmp(name, "getConjugated"))
     {
         lua_pushcclosure(L, ext_quatGetConjugated, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "getInversed") == 0)
+    if (!strcmp(name, "getInversed"))
     {
         lua_pushcclosure(L, ext_quatGetInversed, 0);
         return 1;
     }
-    else if (strcmp(propertyName, "fromYPR") == 0)
+    if (!strcmp(name, "fromYPR"))
     {
         lua_pushcclosure(L, ext_quatFromYPR, 0);
         return 1;

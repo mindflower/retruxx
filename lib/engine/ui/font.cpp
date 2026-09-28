@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cmath>
 #include <config.h>
 #include <m3dapp.h>
 #include <stdexcept>
@@ -502,13 +504,15 @@ namespace m3d
 
         int Font::CreateFromTtf(CStr const& name, float heightUnscaled, unsigned style, unsigned charset)
         {
+            // RVA 0x8B8FC0 - renders every character of the dictionary with GDI into
+            // as many 24-bit DIBs as needed and uploads each as an RGBA texture.
             Clear();
             m_type = FONT_TYPE_WINDOWS;
             m_style = style;
             auto viewport = M3D_APP->m_renderer->GetViewport();
             m_nameShort = name;
             m_nameFull = CreateNameFull(name, style, FontManager::GetCodePageByCharset(charset));
-            auto y = (viewport.m_width * heightUnscaled) * 0.0009765625;
+            float const y = (static_cast<float>(viewport.m_width) * heightUnscaled) * 0.0009765625f;
             PointBase<int> texSz;
             if (FontManager::NeedCharSetWChars(charset))
             {
@@ -545,10 +549,13 @@ namespace m3d
             m_scaleTex = 1.0;
             auto hDc = ::CreateCompatibleDC(NULL);
             ::SetMapMode(hDc, 1);
-            //TODO: check this
-            auto height = static_cast<int>((::GetDeviceCaps(hDc, 90) * y) * 0.013888889);
+            // Points to pixels at the DC's LOGPIXELSY, rounded to nearest (a bare fistp).
+            // The height is passed negated, so it is the character height rather than
+            // the cell height.
+            float const pixelHeight = (static_cast<float>(::GetDeviceCaps(hDc, LOGPIXELSY)) * y) * 0.013888889f;
+            int const height = static_cast<int>(lrintf(pixelHeight));
             auto hFont = CreateFontA(
-                height,
+                -height,
                 0,
                 0,
                 0,
@@ -646,31 +653,19 @@ namespace m3d
                         m_symbols[sym] = symbolInfo;
                         ++i;
                     } while (i < dictSize);
-                    //TODO: check this and refactor
-                    auto mem = new unsigned char[4 * texSzXy];
-                    auto v30 = texSzXy;
-                    auto v32 = bits;
-                    auto yb = mem;
-                    if (v30 > 0)
+                    // Expand the 24-bit DIB into RGBA8888, taking the blue byte of each
+                    // pixel (the glyphs are drawn white on black) for all four channels.
+                    auto* const rgba = new unsigned char[4 * texSzXy];
+                    auto const* src = reinterpret_cast<unsigned char const*>(bits);
+                    for (int px = 0; px < texSzXy; ++px, src += 3)
                     {
-                        auto v33 = mem + 2;
-                        do
-                        {
-                            char v34 = *v32;
-                            v33[1] = *v32;
-                            *v33 = v34;
-                            *(v33 - 1) = v34;
-                            *(v33 - 2) = v34;
-                            v32 = (unsigned int*)((char*)v32 + 3);
-                            v33 += 4;
-                            --v30;
-                        } while (v30);
+                        std::fill_n(rgba + 4 * px, 4, *src);
                     }
                     auto dynTex = M3D_APP->m_renderer->AddDynamicTexture("$FontTex", texSz.x, texSz.y, 4);
                     m_textures.push_back(dynTex);
                     M3D_APP->m_renderer->SetTextureParameter(dynTex, rend::TM_TEX_FILTER, 1);
-                    M3D_APP->m_renderer->UploadTexImage(dynTex, texSz.x, texSz.y, yb, rend::TM_DTF_RGBA8888, 0);
-                    delete[] yb;
+                    M3D_APP->m_renderer->UploadTexImage(dynTex, texSz.x, texSz.y, rgba, rend::TM_DTF_RGBA8888, 0);
+                    delete[] rgba;
                     ::DeleteObject(hBmp);
                     ++texId;
                 }
@@ -686,28 +681,29 @@ namespace m3d
 
         CStr Font::CreateNameFull(CStr const& name, unsigned style, unsigned codePage) const
         {
+            // RVA 0x8B46E0 - "<name>_<style>_<codePage>", or the short name for a
+            // self-made font.
             if (m_type == FONT_TYPE_SELFMAKING)
             {
                 return m_nameShort;
             }
-            //TODO: check this
             return name + "_" + CStr(style) + "_" + CStr(codePage);
         }
 
         PointBase<float> Font::CalcGlyphSz(unsigned char c) const
         {
-            //TODO: check this
-            if (m_symbols[c])
+            // RVA 0x8B5750 - the glyph's texture rectangle in texels, scaled.
+            SymbolInfo const* const symbol = m_symbols[c];
+            if (!symbol)
             {
-                PointBase<float> res;
-                auto texSize = GetTexSz();
-                res.x = ((m_symbols[c]->m_tcs.m_coordinates[2] - m_symbols[c]->m_tcs.m_coordinates[0]) * texSize.x) *
-                    m_scaleTex;
-                res.y = ((m_symbols[c]->m_tcs.m_coordinates[3] - m_symbols[c]->m_tcs.m_coordinates[1]) * texSize.y) *
-                    m_scaleTex;
-                return res;
+                return {0.0, 0.0};
             }
-            return {0.0, 0.0};
+            float const* const tc = symbol->m_tcs.m_coordinates;
+            PointBase<int> const texSz = GetTexSz();
+            PointBase<float> res;
+            res.x = ((tc[2] - tc[0]) * static_cast<float>(texSz.x)) * m_scaleTex;
+            res.y = ((tc[3] - tc[1]) * static_cast<float>(texSz.y)) * m_scaleTex;
+            return res;
         }
 
         unsigned Font::GetStyle() const
@@ -868,15 +864,17 @@ namespace m3d
 
         void Font::PrecalcSymbolsSizes()
         {
-            //TODO: check this
-            for (int i = 0; i < FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
+            // RVA 0x8B5EF0 - caches the glyph size and full advance of every
+            // dictionary character the font has.
+            TCharDictionary const& dict = FontManager::GetTCharDictionary();
+            for (int i = 0; i < dict.GetNumOfTChars(); ++i)
             {
-                auto sym = FontManager::GetTCharDictionary().GetTCharAtPos(i);
-                if (m_symbols[sym])
+                unsigned char const sym = dict.GetTCharAtPos(i);
+                if (SymbolInfo* const symbol = m_symbols[sym])
                 {
-                    m_symbols[sym]->m_precalcedGlyphSz = CalcGlyphSz(sym);
-                    m_symbols[sym]->m_precalcedABCWidth =
-                        m_symbols[sym]->m_abc.m_A + m_symbols[sym]->m_abc.m_B + m_symbols[sym]->m_abc.m_C;
+                    symbol->m_precalcedGlyphSz = CalcGlyphSz(sym);
+                    // Summed in this order: (B + C) + A.
+                    symbol->m_precalcedABCWidth = (symbol->m_abc.m_B + symbol->m_abc.m_C) + symbol->m_abc.m_A;
                 }
             }
         }
@@ -932,33 +930,37 @@ namespace m3d
         int FontManager::ValidateFontId(int& id)
         {
             // RVA 0x8BA010
-            if (id < 0 || id >= m_fonts.size())
+            if (id < 0 || id >= static_cast<int>(m_fonts.size()))
             {
                 return 0;
             }
-            auto viewport = Application::g_pApp->m_renderer->GetViewport();
-            //TODO: float strict comparison
-            if (viewport.m_width * m_fonts[id]->m_heightUnscaled * 0.0009765625 == m_fonts[id]->m_heightScaled)
+            Font const* const font = m_fonts[id];
+            auto const viewport = Application::g_pApp->m_renderer->GetViewport();
+            // Exact comparison on purpose: m_heightScaled was computed with this same
+            // float expression when the font was rasterised, so any difference means
+            // the viewport width has changed since.
+            float const heightScaled = (static_cast<float>(viewport.m_width) * font->m_heightUnscaled) * 0.0009765625f;
+            if (heightScaled == font->m_heightScaled)
             {
                 return 1;
             }
 
             FontParams params;
-            //TODO: check this
-            if (m_fonts[id]->m_type == FONT_TYPE_SELFMAKING)
+            if (font->m_type == FONT_TYPE_SELFMAKING)
             {
+                // NOTE: the shipped code leaves the code page uninitialised here; a
+                // self-made font's id does not depend on it, so 0 is used.
                 params.ttfParams.codePage = 0;
                 params.ttfParams.style = 1;
             }
             else
             {
                 params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
-                params.ttfParams.style = m_fonts[id]->m_style;
+                params.ttfParams.style = font->m_style;
             }
             // The font was rasterised for another resolution: swap the caller's id for the
             // matching font at the current one.
-            auto resId =
-                GetFontId(m_fonts[id]->m_nameShort, m_fonts[id]->m_heightUnscaled, m_fonts[id]->m_type, params);
+            int const resId = GetFontId(font->m_nameShort, font->m_heightUnscaled, font->m_type, params);
             if (resId == -1)
             {
                 return 0;
@@ -1079,27 +1081,29 @@ namespace m3d
 
         void FontManager::RearrangeFonts(int id1, int id2)
         {
-            //TODO: check this
-            if (id1 >= 0 && id1 < m_fonts.size() && id1 != id2)
+            // RVA 0x8B79F0 - moves font id1 to slot id2. When id2 is past the end, the
+            // list is first padded with copies of font id1 up to id2, and the last copy
+            // is then swapped into id2 (a no-op swap when it already is there).
+            if (id1 < 0 || id1 >= static_cast<int>(m_fonts.size()) || id1 == id2)
             {
-                if (id1 <= id2)
+                return;
+            }
+            if (id1 <= id2)
+            {
+                // NOTE: this pads with at least one copy even when id2 is already a
+                // valid slot, and then swaps that copy into id2, so the font that was
+                // at id2 ends up at the end of the list rather than at id1.
+                do
                 {
-                    do
-                    {
-                        auto font = new Font;
-                        font->CreateFromPrototype(m_fonts[id1], m_fonts[id1]->m_heightUnscaled);
-                        m_fonts.push_back(font);
-                    } while (m_fonts.size() <= id2);
-                    auto temp = m_fonts.back();
-                    m_fonts.back() = m_fonts[id2];
-                    m_fonts[id2] = temp;
-                }
-                else
-                {
-                    auto temp = m_fonts[id1];
-                    m_fonts[id1] = m_fonts[id2];
-                    m_fonts[id2] = temp;
-                }
+                    auto* const font = new Font;
+                    font->CreateFromPrototype(m_fonts[id1], m_fonts[id1]->m_heightUnscaled);
+                    m_fonts.push_back(font);
+                } while (static_cast<int>(m_fonts.size()) <= id2);
+                std::swap(m_fonts.back(), m_fonts[id2]);
+            }
+            else
+            {
+                std::swap(m_fonts[id1], m_fonts[id2]);
             }
         }
 

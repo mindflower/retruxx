@@ -36,17 +36,17 @@ namespace ai
 
         void regenerate(T time)
         {
-            // TODO: check this
-            auto regeneration = (m_regeneration.get() * time) + value().get();
-            if (m_BeforeRegenerate(regeneration))
+            // RVA 0x5D3840 (float) - advances the value by rate * time. The value is stored without the range
+            // clamp of its BeforeChange guard; only m_BeforeRegenerate can veto or adjust it.
+            T newValue = m_regeneration.get() * time + value().get();
+            if (m_BeforeRegenerate(newValue))
             {
                 return;
             }
 
-            auto oldValue = value().get();
-            value().SetUnsafe(regeneration);
+            T const oldValue = value().get();
+            value().SetUnsafe(newValue);
             value().m_AfterChange(oldValue);
-
         }
 
         void assign(const ai::NumericInRangeRegenerating<T>&);

@@ -321,39 +321,41 @@ namespace ai
 
     void ObjPrefab::AddChild(ai::Obj* pObj)
     {
-        // TODO: check and refactor
+        // RVA 0x844E80 - vehicles belong to the prefab's team (queued until the team is added) and are not kept
+        // as the prefab's own children; everything else is sorted by kind and linked to the prefab.
         Obj::AddChild(pObj);
-        if (pObj)
+        if (!pObj)
         {
-            if (pObj->IsKindOf(&ai::Vehicle::m_classVehicle))
+            return;
+        }
+
+        if (IS_KIND_OF(pObj, Vehicle))
+        {
+            if (m_team)
             {
-                if (m_team)
-                {
-                    m_team->AddChild(pObj);
-                }
-                else
-                {
-                    m_VehiclesForAdd.push_back(pObj->GetId());
-                }
-                getAllChildren().erase(pObj->GetId());
+                m_team->AddChild(pObj);
             }
             else
             {
-                if (pObj->IsKindOf(&ai::Team::m_classTeam))
-                {
-                    m_team = (Team*)pObj;
-                }
-                else if (pObj->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
-                {
-                    m_physicObjs.insert((PhysicObj*)pObj);
-                }
-                else
-                {
-                    m_otherChildren.insert(pObj);
-                }
-                pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+                m_VehiclesForAdd.push_back(pObj->GetId());
             }
+            getAllChildren().erase(pObj->GetId());
+            return;
         }
+
+        if (IS_KIND_OF(pObj, Team))
+        {
+            m_team = static_cast<Team*>(pObj);
+        }
+        else if (IS_KIND_OF(pObj, PhysicObj))
+        {
+            m_physicObjs.insert(static_cast<PhysicObj*>(pObj));
+        }
+        else
+        {
+            m_otherChildren.insert(pObj);
+        }
+        pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
     }
 
     m3d::Class* ObjPrefab::GetBaseClass()

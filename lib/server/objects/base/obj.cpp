@@ -1388,7 +1388,7 @@ namespace ai
 
     void Obj::SetBelong(int newBelong)
     {
-        //TODO: check tis
+        // RVA 0x68D0D0
         m_belong = newBelong;
         for (auto& [i, child] : m_allChildren)
         {
@@ -1469,12 +1469,12 @@ namespace ai
 
     void Obj::Update(float elapsedTime, unsigned workTime)
     {
+        // RVA 0x68EE40 - applies and drops the modifiers queued since the last update.
         for (auto const& modifier : m_modifiers)
         {
             ApplyModifier(modifier);
         }
-        //TODO: check tis
-        m_modifiers.resize(0, {});
+        m_modifiers.clear();
     }
 
     void Obj::GetPropertiesNames(retruxx::set<CStr>& props) const
@@ -1496,7 +1496,7 @@ namespace ai
 
     CStr Obj::GetPropertyName(int id) const
     {
-        //TODO: check correctness
+        // RVA 0x68DD90 - a linear search: the map is keyed by name.
         auto const it = std::find_if(
             std::begin(m_propertiesMap),
             std::end(m_propertiesMap),
@@ -1552,7 +1552,7 @@ namespace ai
 
     void Obj::SetParentRepository(GeomRepository* parentRepository)
     {
-        //TODO: check logic
+        // RVA 0x68A6D0
         M3D_ASSERT(!parentRepository || !m_parentRepository || m_parentRepository == parentRepository);
         m_parentRepository = parentRepository;
     }
@@ -1591,6 +1591,7 @@ namespace ai
 
     void Obj::Subscribe(eGameEvent eventId, int objId)
     {
+        // RVA 0x692940 - the parent never subscribes to its child; an object is subscribed once per event.
         if (objId != m_parentId)
         {
             if (auto const idx = _GetIndexByEventId(eventId); idx == -1)
@@ -1603,7 +1604,6 @@ namespace ai
             else
             {
                 auto& eventRecipient = m_eventRecipients.at(idx);
-                //TODO: check this
                 if (std::find(std::begin(eventRecipient.m_objIds), std::end(eventRecipient.m_objIds), objId) ==
                     std::end(eventRecipient.m_objIds))
                 {
@@ -1615,18 +1615,15 @@ namespace ai
 
     void Obj::Unsubscribe(eGameEvent eventId, int objId)
     {
-        //TODO: check correctness
+        // RVA 0x68CE90
+        // NOTE: an event whose last recipient unsubscribes keeps its (now empty) entry.
         if (auto const idx = _GetIndexByEventId(eventId); idx != -1)
         {
-            auto& eventRecipient = m_eventRecipients.at(idx);
-            auto const it = std::find(std::begin(eventRecipient.m_objIds), std::end(eventRecipient.m_objIds), objId);
-            if (it != std::end(eventRecipient.m_objIds))
+            auto& objIds = m_eventRecipients.at(idx).m_objIds;
+            auto const it = std::find(std::begin(objIds), std::end(objIds), objId);
+            if (it != std::end(objIds))
             {
-                eventRecipient.m_objIds.erase(it);
-            }
-            if (eventRecipient.m_objIds.empty())
-            {
-                m_eventRecipients.erase(std::begin(m_eventRecipients) + idx);
+                objIds.erase(it);
             }
         }
     }
@@ -1717,6 +1714,7 @@ namespace ai
 
     bool Obj::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
+        // RVA 0x690C80
         switch (propertyId)
         {
         case 0:
@@ -1741,8 +1739,7 @@ namespace ai
         }
         default:
         {
-            M3D_LOG_ERR("Error: getting invalid property");
-            //TODO: add debug description
+            M3D_LOG_ERR("Error: getting invalid property " + CStr(propertyId) + CStr(" of ") + GetDebugDescription());
             return false;
         }
         }
@@ -1758,6 +1755,7 @@ namespace ai
 
     bool Obj::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
+        // RVA 0x691180
         switch (propertyId)
         {
         case 0:
@@ -1782,8 +1780,8 @@ namespace ai
         }
         default:
         {
-            M3D_LOG_ERR("Error: getting invalid default property");
-            //TODO: add debug description
+            M3D_LOG_ERR(
+                "Error: getting invalid default property " + CStr(propertyId) + CStr(" of ") + GetDebugDescription());
             return false;
         }
         }
@@ -1797,7 +1795,7 @@ namespace ai
 
     int Obj::_GetIndexByEventId(eGameEvent eventId) const
     {
-        //TODO: check correctness
+        // RVA 0x68C320
         auto const it = std::find_if(
             std::begin(m_eventRecipients),
             std::end(m_eventRecipients),

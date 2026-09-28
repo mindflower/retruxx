@@ -34,7 +34,7 @@ m3d::Class* FuelIndicatorInMainInterfaceWnd::GetBaseClass()
 
 m3d::Object* FuelIndicatorInMainInterfaceWnd::Clone()
 {
-    // RVA 0x1237A0
+    // RVA 0x5237A0
     return new FuelIndicatorInMainInterfaceWnd(*this);
 }
 
@@ -46,32 +46,32 @@ void FuelIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 
 FuelIndicatorInMainInterfaceWnd::~FuelIndicatorInMainInterfaceWnd()
 {
-    // RVA 0x123B10 - m_strFuel and the Wnd base (which owns/destroys the
+    // RVA 0x523B10 - m_strFuel and the Wnd base (which owns/destroys the
     // child m_wndLowFuelLamp/m_wndProgressBar/m_wndValue windows) clean up
     // automatically.
 }
 
 int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
+    // RVA 0x523B50
     using namespace m3d::ui;
 
     if (!patternWnd)
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
+        M3D_LOG_INFO("FuelIndicatorInMainInterfaceWnd: error to create - invalid pattern wnd");
         return 0;
     }
 
     auto* parent = patternWnd->GetParent();
     if (!parent || !IS_KIND_OF(parent, Wnd))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent");
+        M3D_LOG_INFO("FuelIndicatorInMainInterfaceWnd: error to create - invalid parent wnd");
         return 0;
     }
 
-    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
-    if (res == 0)
+    if (!Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId()))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - cannot create window");
+        M3D_LOG_INFO("FuelIndicatorInMainInterfaceWnd::CreateFromPattern error - error to create");
         return 0;
     }
 
@@ -85,7 +85,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
 
     SetFormatMode(patternWnd->GetFormatMode());
     SetColor(patternWnd->GetColor());
-    SetTextColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetTextColor());
     SetTextColorDisabled(patternWnd->GetTextColorDisabled());
     SetClientEdges(patternWnd->GetClientEdges());
     SetPane(patternWnd->GetPaneName());
@@ -135,7 +135,7 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
     }
     else
     {
-        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndLowFuelLampName + " is not found or incorrect type");
+        M3D_LOG_INFO("Make control error: control " + m_aif.m_wndLowFuelLampName + " is not found or incorrect type");
     }
 
     if (m_wndLowFuelLamp)
@@ -207,24 +207,27 @@ int FuelIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd,
         m_wndValue->SetDigitalSize(ElectronicDigitalWnd::DIGITAL_SIZE_LARGE);
     }
 
-    parent->AddChild(this);
+    // The pattern is destroyed outright (its deleting destructor, not a reference release); its
+    // destructor detaches it from the parent.
     if (deleteSrc)
     {
-        parent->RemoveChild(patternWnd);
-        // TODO: check this obj delete
-        patternWnd->DecRef();
+        delete patternWnd;
     }
+    parent->AddChild(this);
 
     m_strFuel = M3D_APP->GetStringByStringId0(m_aif.m_strFuelId);
     FullUpdate(true);
 
+    // NOTE: the original then tests a result flag the compiler kept in the low byte of a reused
+    // argument slot; it is non-zero whenever this point is reached, so the "was inited with
+    // errors" branch is dead and the function returns non-zero.
     m_gameDataFlags |= 1u;
     return 1;
 }
 
 void FuelIndicatorInMainInterfaceWnd::UpdateProgressBar(float curFuel, float maxFuel)
 {
-    // RVA 0x124870
+    // RVA 0x524870
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndProgressBar->SetMaxValue(maxFuel);
@@ -234,7 +237,7 @@ void FuelIndicatorInMainInterfaceWnd::UpdateProgressBar(float curFuel, float max
 
 void FuelIndicatorInMainInterfaceWnd::GetFuel(float& curFuel, float& maxFuel) const
 {
-    // RVA 0x124970
+    // RVA 0x524970
     curFuel = 0.0f;
     maxFuel = 0.0f;
     if (ai::Vehicle const* vehicle = GetVehicle())
@@ -246,7 +249,7 @@ void FuelIndicatorInMainInterfaceWnd::GetFuel(float& curFuel, float& maxFuel) co
 
 void FuelIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    // RVA 0x124710
+    // RVA 0x524710
     if (m_vehicleId != -1)
     {
         FullUpdate(false);
@@ -288,7 +291,7 @@ void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 
 void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float curFuel)
 {
-    // RVA 0x1248D0
+    // RVA 0x5248D0
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndValue->ShowNumber(static_cast<int>(curFuel), false, 4u, false);
@@ -302,7 +305,7 @@ ai::Vehicle const* FuelIndicatorInMainInterfaceWnd::GetVehicle() const
 
 void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float curFuel, float maxFuel)
 {
-    // RVA 0x1249C0
+    // RVA 0x5249C0
     if ((m_gameDataFlags & 1) != 0)
     {
         CStr text = m_strFuel + ": " + CStr(static_cast<int>(curFuel)) + "/" + CStr(static_cast<int>(maxFuel));
@@ -325,7 +328,7 @@ FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd()
 FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd(FuelIndicatorInMainInterfaceWnd const&) :
     FuelIndicatorInMainInterfaceWnd()
 {
-    // NOTE: the shipped copy ctor (RVA 0x123AE0) default-constructs the base
+    // NOTE: the shipped copy ctor (RVA 0x523AE0) default-constructs the base
     // and resets m_strFuel to empty, but leaves m_type/m_wndLowFuelLamp/
     // m_wndProgressBar/m_wndValue/m_vehicleId/m_prevCurVal/m_prevMaxVal
     // uninitialized; delegating to the default ctor here avoids reading
@@ -334,7 +337,7 @@ FuelIndicatorInMainInterfaceWnd::FuelIndicatorInMainInterfaceWnd(FuelIndicatorIn
 
 int FuelIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    // RVA 0x1246C0
+    // RVA 0x5246C0
     m_vehicleId = -1;
     FullUpdate(true);
     return 1;
@@ -355,7 +358,7 @@ int FuelIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int dataType)
 
 void FuelIndicatorInMainInterfaceWnd::UpdateLowFuelLamp(float curFuel, float maxFuel)
 {
-    // RVA 0x1248A0
+    // RVA 0x5248A0
     if ((m_gameDataFlags & 1) != 0)
     {
         m_wndLowFuelLamp->SetValue(curFuel, maxFuel);

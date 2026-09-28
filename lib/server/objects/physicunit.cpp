@@ -103,12 +103,13 @@ namespace ai
 
     PhysicUnit::PhysicUnit(PhysicUnitPrototypeInfo const& prototype) :
         SimplePhysicObj(prototype),
+        m_walkSpeed(prototype.m_walkSpeed),
+        m_turnSpeed(prototype.m_turnSpeed),
+        m_maxStandTime(prototype.m_maxStandTime),
         m_standTtl(0.0, 0.0, m_maxStandTime, -1.0),
         m_walkTtl(0.0, 0.0, 1.0, 0.0)
     {
-        m_walkSpeed = prototype.m_walkSpeed;
-        m_turnSpeed = prototype.m_turnSpeed;
-        m_maxStandTime = prototype.m_maxStandTime;
+        // RVA 0x80DD80 - a unit whose model's first geom is a box gets that box as its body.
         m_State = LIVE;
         m_causePos = ZeroVector;
         m_causeForce = 0.0f;
@@ -127,7 +128,6 @@ namespace ai
         serverAnimatedModels.GetItemProperty(itemByName, m3d::PROP_INTERNAL_GETMODEL, &mdl);
         if (mdl)
         {
-            // TODO: check this
             auto* geom = mdl->GetGeom(0);
             if (geom && geom->Type == m3d::DRAFT_GeomType::BOX)
             {
@@ -441,7 +441,7 @@ namespace ai
 
     bool PhysicUnit::AddWalkPathByName(char const* name)
     {
-        // TODO: check this
+        // RVA 0x80CB70 - adds a level path (2D) as a walk path on the ground plane (y = 0).
         CStr const nameStr = name;
         auto it = m_pathsMap.find(nameStr);
         if (it != m_pathsMap.end())

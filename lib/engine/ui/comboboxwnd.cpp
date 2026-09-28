@@ -174,8 +174,9 @@ namespace m3d
 
         void ComboBoxWnd::SetSelTextFixedHeight(float height)
         {
+            // RVA 0x71F1F0 - the layout only depends on the height when combo style
+            // bit 4 is set.
             m_selTextFixedH = height;
-            //TODO: check this
             if ((m_comboStyle & 4) != 0)
             {
                 RecalcLayot();
@@ -184,6 +185,7 @@ namespace m3d
 
         int ComboBoxWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
+            // RVA 0x71EF60
             auto res = Create(style, rc, id, 0, 0.0, 0.0);
             if (res)
             {
@@ -194,6 +196,9 @@ namespace m3d
 
         int ComboBoxWnd::Create(unsigned style, BoundsBase<float> const& b, int id, unsigned comboStyle, float listMaxH, float selTextFixedH)
         {
+            // RVA 0x71FC90 - builds the toggle button, the selected-text window and
+            // the drop-down list as children. Only the origin and width of b are
+            // used: the height follows from the layout.
             auto rect = b;
             m_btnToggle = dynamic_cast<ButtonWnd*>(g_Kernel->New("ButtonWnd"));
             if (!m_btnToggle)
@@ -220,8 +225,10 @@ namespace m3d
             {
                 return 0;
             }
-            //TODO: check style
-            if (m_wndSelText->Create({}, 4196896, rc, 0) == 0)
+            // 0x400A20
+            if (m_wndSelText->Create({}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_TEXT_CENTERED_Y | WS_IS_VISIBLE |
+                                             WS_REFLECT_MS_AND_KEYS_TO_PARENT,
+                                     rc, 0) == 0)
             {
                 return 0;
             }
@@ -232,8 +239,9 @@ namespace m3d
             {
                 return 0;
             }
-            //TODO: check style
-            if (m_wndStringList->Create({}, 4456960, rc, 6) == 0)
+            // 0x440200
+            if (m_wndStringList->Create({}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_SEND_NOTIFY_MESSAGES | WS_IS_VISIBLE,
+                                        rc, 6) == 0)
             {
                 return 0;
             }
@@ -242,7 +250,7 @@ namespace m3d
 
             if (!style)
             {
-                style = 262720;
+                style = WS_SEND_NOTIFY_MESSAGES | WS_IS_VISIBLE | WS_NOFRAME;  // 0x40240
             }
             if (Wnd::Create({}, style, rc, id) == 0)
             {
@@ -398,12 +406,12 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetSelTextBounds() const
         {
+            // RVA 0x71F750
             if (Valid())
             {
                 return m_wndSelText->GetBounds();
             }
-            //TODO: check this
-            return {};
+            return BoundsBase<float>(0.0f, 0.0f, 0.0f, 0.0f);
         }
 
         BoundsBase<float> ComboBoxWnd::GetFullMaxBounds() const
@@ -597,15 +605,17 @@ namespace m3d
 
         void ComboBoxWnd::UpdateToggleButtonPane()
         {
+            // RVA 0x71F1B0 - the button shows the "close" pane while the list is open.
             if (m_btnToggle)
             {
-                //TODO: check this
                 m_btnToggle->SetPane(m_state != STATE_OPEN ? m_toggleButtonOpenPaneName : m_toggleButtonClosePaneName);
             }
         }
 
         void ComboBoxWnd::SetState(State state, bool bForceUpdate)
         {
+            // RVA 0x720650 - posts message 47 when the list opens and 48 when it
+            // closes (also on a forced update without a change).
             auto const oldState = m_state;
             m_state = state;
             if (oldState != state || bForceUpdate)
@@ -613,60 +623,57 @@ namespace m3d
                 RecalcListBounds();
                 RecalcSelfBounds();
                 UpdateToggleButtonPane();
-                //TODO: check this!!!!
-                Application::g_pApp->EnqueueMessage((m_state != STATE_OPEN) + 47, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                int const msg = m_state == STATE_OPEN ? 47 : 48;
+                Application::g_pApp->EnqueueMessage(msg, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
             }
         }
 
         void ComboBoxWnd::RecalcLayot()
         {
-            //TODO: check this
-            if (Valid())
+            // RVA 0x71F440 - lays out the selected-text window across the full width
+            // and the square toggle button at its right end. Combo style bit 4 fixes
+            // the text height; bit 2 lets the button cover the pane's frame instead
+            // of sitting inside it.
+            if (!Valid())
             {
-                int paneW = 0;
-                auto pane = GetGfxServer()->GetPane(m_paneName);
-                if (pane && pane->m_frame[0])
-                {
-                    paneW = pane->m_frame[0]->m_barUsedWidth;
-                }
-                auto selTextH = this->m_selTextFixedH;
-                if ((m_comboStyle & 4) == 0)
-                {
-                    selTextH = m_aif.m_space * 2.0 + GetGfxServer()->MeasureText("Ap", m_defFont, TW_NOWRAP, 100.0).y + (paneW * 2.0);
-                }
-
-                auto btnH = selTextH;
-                if ((m_comboStyle & 2) == 0)
-                {
-                    btnH -= paneW * 2.0;
-                }
-                auto x = m_bounds.width - selTextH;
-                if ((m_comboStyle & 2) != 0)
-                {
-                    paneW = 0.0;
-                }
-                else
-                {
-                    x -= paneW;
-                }
-                BoundsBase<float> btnB;
-                btnB.x0 = x;
-                btnB.y0 = paneW;
-                btnB.width = (x + btnH) - x;
-                btnB.height = (paneW + btnH) - paneW;
-                m_btnToggle->SetBounds(btnB, true);
-
-                BoundsBase<float> textB;
-                textB.x0 = 0.0;
-                textB.y0 = 0.0;
-                textB.width = m_bounds.width;
-                textB.height = selTextH;
-                m_wndSelText->SetBounds(textB, true);
-
-                m_wndSelText->SetClientEdges(m_aif.m_space, m_aif.m_space, m_bounds.width - btnB.x0, m_aif.m_space);
-                RecalcListBounds();
-                RecalcSelfBounds();
+                return;
             }
+            float paneW = 0.0f;
+            Pane const* const pane = GetGfxServer()->GetPane(m_paneName);
+            if (pane && pane->m_frame[0])
+            {
+                paneW = static_cast<float>(pane->m_frame[0]->m_barUsedWidth);
+            }
+
+            float selTextH = m_selTextFixedH;
+            if ((m_comboStyle & 4) == 0)
+            {
+                float const textH = GetGfxServer()->MeasureText("Ap", m_defFont, TW_NOWRAP, 100.0f).y;
+                selTextH = (m_aif.m_space * 2.0f + textH) + paneW * 2.0f;
+            }
+
+            bool const coverFrame = (m_comboStyle & 2) != 0;
+            float const btnSz = coverFrame ? selTextH : selTextH - paneW * 2.0f;
+            float const btnX = coverFrame ? m_bounds.width - btnSz : (m_bounds.width - btnSz) - paneW;
+            float const btnY = coverFrame ? 0.0f : paneW;
+            BoundsBase<float> btnB;
+            btnB.x0 = btnX;
+            btnB.y0 = btnY;
+            btnB.width = (btnX + btnSz) - btnX;
+            btnB.height = (btnY + btnSz) - btnY;
+            m_btnToggle->SetBounds(btnB, true);
+
+            BoundsBase<float> textB;
+            textB.x0 = 0.0f;
+            textB.y0 = 0.0f;
+            textB.width = m_bounds.width;
+            textB.height = selTextH;
+            m_wndSelText->SetBounds(textB, true);
+
+            // Keep the text clear of the button.
+            m_wndSelText->SetClientEdges(m_aif.m_space, m_aif.m_space, m_bounds.width - btnB.x0, m_aif.m_space);
+            RecalcListBounds();
+            RecalcSelfBounds();
         }
 
         void ComboBoxWnd::SelectItem()
@@ -725,21 +732,18 @@ namespace m3d
 
         void ComboBoxWnd::RecalcListBounds()
         {
-            //TODO: check this
-            if (Valid())
+            // RVA 0x71F610 - a closed combo box collapses its list to an empty rect.
+            if (!Valid())
             {
-                if (m_state)
-                {
-                    if (m_state == STATE_OPEN)
-                    {
-                        m_wndStringList->SetBounds(GetListBounds(), true);
-                    }
-                }
-                else
-                {
-                    //TODO; check this
-                    m_wndStringList->SetBounds(BoundsBase<float>{0.0, 0.0, 0.0, 0.0}, true);
-                }
+                return;
+            }
+            if (m_state == STATE_CLOSE)
+            {
+                m_wndStringList->SetBounds(BoundsBase<float>(0.0f, 0.0f, 0.0f, 0.0f), true);
+            }
+            else if (m_state == STATE_OPEN)
+            {
+                m_wndStringList->SetBounds(GetListBounds(), true);
             }
         }
 

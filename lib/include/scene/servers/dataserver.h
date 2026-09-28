@@ -1,5 +1,6 @@
 #pragma once
 #include <scene/nodes/sgnode.h>
+#include <renderer/i_renderer_vertex.h>
 
 namespace m3d
 {
@@ -124,6 +125,23 @@ namespace m3d
         /* 0x0000 */ int m_action;
         /* 0x0004 */ float m_attackFrameTime;
     }; /* size: 0x0008 */
+
+    // PROP_INTERNAL_GET_MESH_POINTS / PROP_INTERNAL_FREE_MESH_POINTS: a copy of a model's meshes, used by particle
+    // systems that emit from a mesh.
+    struct PropInternalGetMeshPoints
+    {
+        /* 0x0000 */ int m_numMesh;
+        /* 0x0004 */ m3d::SgNode* m_node;
+        /* 0x0008 */ void** m_verts;
+        /* 0x000c */ retruxx::vector<m3d::rend::VertexType> m_VertexTypes;
+        /* 0x001c */ retruxx::vector<unsigned int> m_VertexTypeSizes;
+        /* 0x002c */ int* m_numVerts;
+        /* 0x0030 */ unsigned short** m_indxs;
+        /* 0x0034 */ int* m_numIndxs;
+        /* 0x0038 */ bool* m_strips;
+        /* 0x003c */ CMatrix** m_localmatr;
+        /* 0x0040 */ int m_numSkinMesh;
+    }; /* size: 0x0044 */
     enum RenderNodeType
     {
         RNT_SIMPLE = 0x0,

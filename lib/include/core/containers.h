@@ -90,9 +90,10 @@ namespace m3d
             return true;
         }
 
+        // Inlined in the binary as lower_bound, insert if missing, then assign: an existing key is overwritten.
         void addValueByKey(unsigned int key, T const& val)
         {
-            m_hash.insert(retruxx::pair<unsigned int, T>(key, val));
+            m_hash[key] = val;
         }
 
         //using tHashFunction = stdext::hash_compare<unsigned int, std::less<unsigned int> >;

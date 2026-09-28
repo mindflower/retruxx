@@ -18,93 +18,41 @@ namespace m3d
 
     bool TraceLineManager::TraceLine(CVector const& v1, CVector const& v2)
     {
-        // TODO: generated code TraceLineManager::TraceLine
-        // Check if we need to update the trace (throttle updates based on time)
-        float currentTime = M3D_KERNEL->GetTimer().GetCurTime();
-        if (currentTime - m_LastTimeUpdated > m_Dt)
+        // RVA 0x864060 - traces at most once every m_Dt ms and otherwise returns the last verdict.
+        static dContact contact;
+
+        // The raw current time: the shipped code does not notch the timer here.
+        if (M3D_KERNEL->GetTimer()._GetCurTime() - m_LastTimeUpdated > m_Dt)
         {
-            // Handle exception IDs for the current node
             if (m_presentNode)
             {
-                m3d::SgNode* parentNode = static_cast<m3d::SgNode*>(m_presentNode->GetParent());
-                if (parentNode)
+                // The first ancestor that belongs to a game object is excluded from the trace.
+                ai::PhysicBody* body = nullptr;
+                for (auto* node = static_cast<SgNode*>(m_presentNode->GetParent()); node;
+                     node = static_cast<SgNode*>(node->GetParent()))
                 {
-                    // Traverse up the parent hierarchy to find a physics body
-                    m3d::SgNode* currentNode = parentNode;
-                    ai::PhysicBody* foundBody = nullptr;
-
-                    while (currentNode)
+                    body = nullptr;
+                    node->GetProperty(PROP_NODE_PHYSICBODY, &body);
+                    if (body && body->GetOwner())
                     {
-                        // Query for physics body component
-                        ai::PhysicBody* body = nullptr;
-                        currentNode->GetProperty(PROP_NODE_PHYSICBODY, &body);  // Some interface ID
-
-                        if (body && body->GetOwner())
-                        {
-                            foundBody = body;
-                            break;
-                        }
-
-                        currentNode = static_cast<m3d::SgNode*>(currentNode->GetParent());
-                    }
-
-                    // If we found a physics body, set up exception IDs
-                    if (foundBody)
-                    {
-                        // Clean up previous exception callback
-                        if (m_exceptionIds)
-                        {
-                            delete m_exceptionIds;
-                            m_exceptionIds = nullptr;
-                        }
-
-                        // Get the object ID from the physics body owner
-                        int objId = foundBody->GetOwner()->GetId();
-
-                        // Create exception list with this object ID
-                        std::vector<int> exceptionIds;
-                        exceptionIds.push_back(objId);
-
-                        // Create callback for exceptional trace line handling
-                        m_exceptionIds = new ai::ObjIdExceptionalTraceLineCallback(exceptionIds);
+                        delete m_exceptionIds;
+                        m_exceptionIds = nullptr;
+                        m_exceptionIds = new ai::ObjIdExceptionalTraceLineCallback(
+                            std::vector<int>(1, body->GetOwner()->GetId()));
+                        break;
                     }
                 }
-
-                m_presentNode = nullptr;  // Reset present node after processing
+                m_presentNode = nullptr;
             }
 
-            // Update the trace line
-            m_LastTimeUpdated = currentTime;
+            m_LastTimeUpdated = M3D_KERNEL->GetTimer()._GetCurTime();
 
-            // Calculate direction vector
-            CVector dir;
-            dir.x = v2.x - v1.x;
-            dir.y = v2.y - v1.y;
-            dir.z = v2.z - v1.z;
-
-            // Set ray position and direction
+            CVector const dir(v2.x - v1.x, v2.y - v1.y, v2.z - v1.z);
             dGeomSetPosition(m_traceLineRay->GetGeomId(), v1.x, v1.y, v1.z);
             m_traceLineRay->SetDirection(dir);
-
-            // Calculate and set ray length
-            float length = sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-            m_traceLineRay->SetLength(length);
-
-            static dContact contact_0;
-            // Perform the actual trace line
-            m_LastVerdict = ai::TraceLine(
-                *m_traceLineRay,
-                contact_0,      // Contact result
-                0,               // Some flags
-                0,               // Additional parameters
-                0,               // More parameters
-                1,               // Probably a boolean flag
-                m_exceptionIds,  // Exception handling
-                0,               // Unknown
-                0                // Unknown
-            );
+            m_traceLineRay->SetLength(sqrt(dir.z * dir.z + dir.x * dir.x + dir.y * dir.y));
+            m_LastVerdict = ai::TraceLine(*m_traceLineRay, contact, false, false, false, true, m_exceptionIds, false, false);
         }
-
         return m_LastVerdict;
     }
 

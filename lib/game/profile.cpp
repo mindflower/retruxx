@@ -806,10 +806,11 @@ int ProfileManager::SaveProfile(Profile const* profile) const
 
 Profile* ProfileManager::_GetProfileByName(CStr const& profileName) const
 {
-    //TODO: check correctness
+    // RVA 0x40FCD0
     for (auto* profile : m_profiles)
     {
-        if (profileName == profile->GetName())
+        // Empty slots in the list are skipped.
+        if (profile && profile->GetName() == profileName)
         {
             return profile;
         }

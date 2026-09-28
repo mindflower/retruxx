@@ -102,193 +102,96 @@ namespace m3d
             unsigned int clr0,
             unsigned int clr1,
             CVector const& camOrg,
-            unsigned int u0,
-            unsigned int v0,
+            float u0,
+            float v0,
             float u1,
             float v1,
             int ptIdx)
         {
-            // TODO: generated code addStripePart
+            // RVA 0x8E4830 - queues one camera-facing quad of a stripe, from org0 to org1: each end is widened across
+            // the segment, perpendicular to the view ray to its world position (gorg), by its size. Past the first
+            // segment the near end reuses the previous segment's far end, so the quads join.
             static CVector prevUp;
-            // Calculate direction vector between the two segment points
-            CVector segmentDir = org1 - org0;
+            CVector const dir = org1 - org0;
+            auto const side = [&dir, &camOrg](CVector const& gorg, float size) {
+                CVector const toCam = gorg - camOrg;
+                CVector const up(
+                    toCam.z * dir.y - toCam.y * dir.z, dir.z * toCam.x - toCam.z * dir.x, toCam.y * dir.x - dir.y * toCam.x);
+                float const invLength =
+                    static_cast<float>(1.0 / sqrt(up.x * up.x + up.y * up.y + up.z * up.z + 0.00000011920929));
+                return CVector(invLength * up.x * size, invLength * up.y * size, invLength * up.z * size);
+            };
 
-            // Calculate vector from camera to second global origin
-            CVector camToGorg1 = gorg1 - camOrg;
-
-            // Calculate up vector for the second point using cross product
-            CVector up1;
-            up1.x = (segmentDir.z * camToGorg1.y) - (segmentDir.y * camToGorg1.z);
-            up1.y = (segmentDir.x * camToGorg1.z) - (segmentDir.z * camToGorg1.x);
-            up1.z = (segmentDir.y * camToGorg1.x) - (segmentDir.x * camToGorg1.y);
-
-            // Normalize and scale the up vector for second point
-            float invLength1 = 1.0f / sqrtf(up1.x * up1.x + up1.y * up1.y + up1.z * up1.z + 1.1920929e-7f);
-            up1 = up1 * invLength1 * sz1;
-
-            CVector up0;
-
-            // Calculate up vector for first point
-            if (ptIdx != 0)
-            {
-                // Use previous up vector (stored in global)
-                up0 = prevUp;
-            }
-            else
-            {
-                // Calculate up vector for first point from scratch
-                CVector camToGorg0 = gorg0 - camOrg;
-
-                up0.x = (camToGorg0.z * segmentDir.y) - (camToGorg0.y * segmentDir.z);
-                up0.y = (camToGorg0.x * segmentDir.z) - (camToGorg0.z * segmentDir.x);
-                up0.z = (camToGorg0.y * segmentDir.x) - (camToGorg0.x * segmentDir.y);
-
-                // Normalize and scale the up vector for first point
-                float invLength0 = 1.0f / sqrtf(up0.x * up0.x + up0.y * up0.y + up0.z * up0.z + 1.1920929e-7f);
-                up0 = up0 * invLength0 * sz0;
-            }
-
-            // Store current up vector for next iteration
+            CVector const up1 = side(gorg1, sz1);
+            CVector const up0 = ptIdx ? prevUp : side(gorg0, sz0);
             prevUp = up1;
 
-            // Calculate quad vertices
-            CVector quadVertices[4];
+            rend::VertexXYZCT1* vertices = M3D_APP->RenderQuadXyzct1GetNextPtr();
+            auto const setVertex = [vertices](int i, CVector const& pos, unsigned int clr, float u, float v) {
+                vertices[i].x = pos.x;
+                vertices[i].y = pos.y;
+                vertices[i].z = pos.z;
+                vertices[i].c = clr;
+                vertices[i].tu = u;
+                vertices[i].tv = v;
+            };
+            setVertex(0, org0 - up0, clr0, u0, v0);
+            setVertex(1, org0 + up0, clr0, u1, v0);
+            setVertex(2, org1 + up1, clr1, u1, v1);
+            setVertex(3, org1 - up1, clr1, u0, v1);
+        }
+        // The particle systems' shared 1200-index pool fields, filled once with a fixed pattern over their vertices.
+        template <typename F>
+        void FillIbPoolField(rend::IbPoolField& field, F fill)
+        {
+            field = M3D_RENDERER->AddIbPoolField(1200);
+            fill(static_cast<uint16_t*>(M3D_RENDERER->LockIbPoolField(field)));
+            M3D_RENDERER->UnlockIbPoolField(field);
+        }
 
-            // First point - left side
-            quadVertices[0] = org0 - up0;
-            // First point - right side
-            quadVertices[1] = org0 + up0;
-            // Second point - right side
-            quadVertices[2] = org1 + up1;
-            // Second point - left side
-            quadVertices[3] = org1 - up1;
-
-            // Get render buffer and set up quad
-            m3d::rend::VertexXYZCT1* vertices = M3D_APP->RenderQuadXyzct1GetNextPtr();
-
-            // Vertex 0: First point, left side
-            vertices[0].x = quadVertices[0].x;
-            vertices[0].y = quadVertices[0].y;
-            vertices[0].z = quadVertices[0].z;
-            vertices[0].c = clr0;
-            vertices[0].tu = static_cast<float>(u0);
-            vertices[0].tv = static_cast<float>(v0);
-
-            // Vertex 1: First point, right side
-            vertices[1].x = quadVertices[1].x;
-            vertices[1].y = quadVertices[1].y;
-            vertices[1].z = quadVertices[1].z;
-            vertices[1].c = clr0;
-            vertices[1].tu = u1;
-            vertices[1].tv = static_cast<float>(v0);
-
-            // Vertex 2: Second point, right side
-            vertices[2].x = quadVertices[2].x;
-            vertices[2].y = quadVertices[2].y;
-            vertices[2].z = quadVertices[2].z;
-            vertices[2].c = clr1;
-            vertices[2].tu = u1;
-            vertices[2].tv = v1;
-
-            // Vertex 3: Second point, left side
-            vertices[3].x = quadVertices[3].x;
-            vertices[3].y = quadVertices[3].y;
-            vertices[3].z = quadVertices[3].z;
-            vertices[3].c = clr1;
-            vertices[3].tu = static_cast<float>(u0);
-            vertices[3].tv = v1;
+        // Two triangles (v, v+1, v+2), (v+2, v+3, v) per quad of 4 vertices, for 200 quads.
+        void FillQuadTriangles(rend::IbPoolField& field)
+        {
+            FillIbPoolField(field, [](uint16_t* indices) {
+                for (uint16_t v = 0; v < 800; v += 4, indices += 6)
+                {
+                    indices[0] = v;
+                    indices[1] = v + 1;
+                    indices[2] = v + 2;
+                    indices[3] = v + 2;
+                    indices[4] = v + 3;
+                    indices[5] = v;
+                }
+            });
         }
     }  // namespace
     void Particle::Step(float dt)
     {
-        // TODO: generated code Particle::Step
-        // Update velocity with acceleration
+        // RVA 0x8E1F50 - integrates velocity and local position, and angular velocity; a spinning particle's local
+        // position is then turned by this step's angles, as rotY * rotX * rotZ. The accelerations are consumed.
         m_vel.x += m_accel.x * dt;
         m_vel.y += m_accel.y * dt;
         m_vel.z += m_accel.z * dt;
-
-        // Update position with velocity
         m_locorigin.x += m_vel.x * dt;
         m_locorigin.y += m_vel.y * dt;
         m_locorigin.z += m_vel.z * dt;
-
-        // Update rotational velocity with rotational acceleration
         m_rotvel.x += m_rotaccel.x * dt;
         m_rotvel.y += m_rotaccel.y * dt;
         m_rotvel.z += m_rotaccel.z * dt;
 
-        // Apply rotation if rotational velocity is significant
-        float rotSpeedSquared = m_rotvel.x * m_rotvel.x + m_rotvel.y * m_rotvel.y + m_rotvel.z * m_rotvel.z;
-
-        if (rotSpeedSquared > 0.0000001f)
+        if (m_rotvel.x * m_rotvel.x + m_rotvel.y * m_rotvel.y + m_rotvel.z * m_rotvel.z > 0.0000001)
         {
-            CMatrix matX, matY, matZ;
-
-            // Initialize matrices as identity
-            std::memset(&matX, 0, sizeof(matX));
-            std::memset(&matY, 0, sizeof(matY));
-            std::memset(&matZ, 0, sizeof(matZ));
-
-            matX._11 = matX._22 = matX._33 = matX._44 = 1.0f;
-            matY._11 = matY._22 = matY._33 = matY._44 = 1.0f;
-            matZ._11 = matZ._22 = matZ._33 = matZ._44 = 1.0f;
-
-            // Create rotation matrices for each axis
-            float rotX = dt * m_rotvel.x;
-            float rotY = dt * m_rotvel.y;
-            float rotZ = dt * m_rotvel.z;
-
-            float sinX = std::sin(rotX);
-            float cosX = std::cos(rotX);
-            float sinY = std::sin(rotY);
-            float cosY = std::cos(rotY);
-            float sinZ = std::sin(rotZ);
-            float cosZ = std::cos(rotZ);
-
-            // X-axis rotation matrix
-            matX._22 = cosX;
-            matX._23 = -sinX;
-            matX._32 = sinX;
-            matX._33 = cosX;
-
-            // Y-axis rotation matrix
-            matY._11 = cosY;
-            matY._13 = sinY;
-            matY._31 = -sinY;
-            matY._33 = cosY;
-
-            // Z-axis rotation matrix
-            matZ._11 = cosZ;
-            matZ._12 = -sinZ;
-            matZ._21 = sinZ;
-            matZ._22 = cosZ;
-
-            // Combine rotations. The shipped build folds this into one expression
-            // with the stores to the three matrices elided; it multiplies in the
-            // opposite order under its own transposed matrix indexing, which is
-            // this order here. The previous code multiplied a single element of
-            // matX through a (matZ*matY) term, which is not a matrix product at
-            // all, so any particle with angular velocity was displaced instead
-            // of rotated.
-            CMatrix const result = matZ * matY * matX;
-
-            // Apply rotation to position
-            float newX = result._11 * m_locorigin.x + result._21 * m_locorigin.y + result._31 * m_locorigin.z;
-            float newY = result._12 * m_locorigin.x + result._22 * m_locorigin.y + result._32 * m_locorigin.z;
-            float newZ = result._13 * m_locorigin.x + result._23 * m_locorigin.y + result._33 * m_locorigin.z;
-
-            m_locorigin.x = newX;
-            m_locorigin.y = newY;
-            m_locorigin.z = newZ;
+            CMatrix matX;
+            CMatrix matY;
+            CMatrix matZ;
+            matX.rotX(dt * m_rotvel.x);
+            matY.rotY(dt * m_rotvel.y);
+            matZ.rotZ(dt * m_rotvel.z);
+            m_locorigin = (matY * matX * matZ).vecRot(m_locorigin);
         }
 
-        // Reset accelerations for next frame
-        m_accel.x = 0.0f;
-        m_accel.y = 0.0f;
-        m_accel.z = 0.0f;
-        m_rotaccel.x = 0.0f;
-        m_rotaccel.y = 0.0f;
-        m_rotaccel.z = 0.0f;
+        m_accel = CVector(0.0f, 0.0f, 0.0f);
+        m_rotaccel = CVector(0.0f, 0.0f, 0.0f);
     }
 
     Particle::Particle()
@@ -376,8 +279,8 @@ namespace m3d
 
     void ParticlesList::SetAutoMeshEmitterPoints(int mode, int numVerts, float radius, CVector point1, CVector point2)
     {
-        // TODO: generated code ParticlesList::SetAutoMeshEmitterPoints check this!!!!
-        // Clean up existing mesh emitter data if auto-emitted
+        // RVA 0x8E7CE0 - replaces the mesh emitter with numVerts generated points in a single VERTEX_XYZNT1 mesh:
+        // evenly spaced from point1 to point2 when radius is 0, else a ring of that radius in the x/z plane.
         if (this->m_meshAutoEmitted)
         {
             delete m_numMeshEmitterVerts;
@@ -464,11 +367,12 @@ namespace m3d
             // A ring of the given radius in the x/z plane.
             for (int i = 0; i < numVerts; ++i)
             {
-                float const angle = static_cast<float>(i) * 6.2831855f / static_cast<float>(numVerts);
+                // Computed at x87 precision.
+                double const angle = static_cast<double>(i) * 6.2831855f / static_cast<float>(numVerts);
                 float* v = vertexAt(i);
-                v[0] = std::cos(angle) * radius;
+                v[0] = static_cast<float>(std::cos(angle) * radius);
                 v[1] = 0.0f;
-                v[2] = std::sin(angle) * radius;
+                v[2] = static_cast<float>(std::sin(angle) * radius);
             }
         }
     }
@@ -495,19 +399,12 @@ namespace m3d
 
     void ParticlesList::Step(float dt)
     {
-        // TODO: generated code ParticlesList::Step
-        // Linear motion integration
-        CVector linearAcceleration = m_accel;
-        m_vel += linearAcceleration * dt;
+        // RVA 0x8E2970 - integrates velocity and origin, and the angular acceleration into m_mrotvel and that
+        // into m_rotvel (the accumulated angles); the accelerations are consumed.
+        m_vel += m_accel * dt;
         m_origin += m_vel * dt;
-
-        // Rotational motion integration
-        CVector angularAcceleration = m_rotaccel;
-        m_mrotvel += angularAcceleration * dt;
+        m_mrotvel += m_rotaccel * dt;
         m_rotvel += m_mrotvel * dt;
-
-        // Clear accumulated forces for next frame
-        // (forces will be re-applied based on physics simulation)
         m_accel = ZeroVector;
         m_rotaccel = ZeroVector;
     }
@@ -2114,23 +2011,8 @@ namespace m3d
 
     void StripOnePS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        short* base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc;
-            *(base - 2) = inc - 2;
-            base[2] = inc + 1;
-            base[3] = inc - 2;
-            inc += 4;
-            base += 6;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E60E0
+        FillQuadTriangles(m_IbPoolField);
     }
 
     int PhysicModelPS::Update(ParticlesList* parts, float lastFrameSecs, float)
@@ -2322,21 +2204,13 @@ namespace m3d
 
     void PolyPS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        short* base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 2) = inc - 2;
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc + 1;
-            inc += 4;
-            base += 4;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E5E30 - the 4 vertices of each of 200 quads in order.
+        FillIbPoolField(m_IbPoolField, [](uint16_t* indices) {
+            for (uint16_t v = 0; v < 800; ++v)
+            {
+                indices[v] = v;
+            }
+        });
     }
 
     int PolyPS::Render(CMatrix const* local, ParticlesList* parts)
@@ -2619,21 +2493,13 @@ namespace m3d
 
     void Poly1PS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        short* base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 2) = inc - 2;
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc + 1;
-            inc += 4;
-            base += 4;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E5EE0 - the 4 vertices of each of 200 quads in order.
+        FillIbPoolField(m_IbPoolField, [](uint16_t* indices) {
+            for (uint16_t v = 0; v < 800; ++v)
+            {
+                indices[v] = v;
+            }
+        });
     }
 
     int Poly1PS::Render(CMatrix const* local, ParticlesList* parts)
@@ -2750,216 +2616,74 @@ namespace m3d
 
     int StripAllPS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        // TODO: generated code StripAllPS::Render
-        m3d::rend::IRenderer* renderer = M3D_RENDERER;
-
-        // Get camera position for billboarding
-        CVector camOrg = renderer->MatGetOrgInv();
-
-        CVector localOrigin = *(CVector*)&local->m[3][0];  // Extract position from matrix
+        // RVA 0x8E4CA0 - with a trail length of 10 each particle is one stripe quad from its position to its forward
+        // point; otherwise each particle draws a stripe through its trail, newest to oldest, the texture running
+        // from v = 1 down in equal steps. Positions are local (through the system's matrix) under m_updateXForm,
+        // else world (origin + local offset).
+        CVector const camOrg = M3D_RENDERER->MatGetOrgInv();
+        CVector const localOrigin(local->_41, local->_42, local->_43);
         parts->m_renderCalled = true;
-
-        // Early out if not in valid phase or no particles
         if (parts->m_start1 > parts->m_PhaseTime || !parts->m_numParticles)
+        {
             return 1;
+        }
 
-        // Create local copy of transformation matrix
-        CMatrix renderMatrix(*local);
+        CMatrix const rmat(*local);
+        auto const toWorld = [&rmat, &localOrigin](CVector const& v) { return rmat.vecRot(v) + localOrigin; };
 
-        // Set up rendering state
         ApplyBlending();
         M3D_APP->SetFlushQuadsShader(m_shader);
-        renderer->SetTexture(0, m_texAdd, -1.0f);
-        renderer->SetCull(rend::M3DCULL_CW, 0);
-
-        // Start quad batch rendering
+        M3D_RENDERER->SetTexture(0, m_texAdd, -1.0f);
+        M3D_RENDERER->SetCull(rend::M3DCULL_CW, 0);
         M3D_APP->StartQuads(rend::VERTEX_XYZCT1);
 
         if (m_trailLen == 10)
         {
-            // Render particles as simple strips (no trails)
-            for (m3d::Particle* particle = parts->m_particles; particle; particle = particle->m_next)
+            for (Particle* p = parts->m_particles; p; p = p->m_next)
             {
                 if (m_updateXForm)
                 {
-                    // Transform particle positions using the render matrix
-                    CVector transformedPos;
-                    transformedPos.x = (renderMatrix._11 * particle->m_locorigin.x) +
-                        (renderMatrix._21 * particle->m_locorigin.y) + (renderMatrix._31 * particle->m_locorigin.z);
-                    transformedPos.y = (renderMatrix._12 * particle->m_locorigin.x) +
-                        (renderMatrix._22 * particle->m_locorigin.y) + (renderMatrix._32 * particle->m_locorigin.z);
-                    transformedPos.z = (renderMatrix._13 * particle->m_locorigin.x) +
-                        (renderMatrix._23 * particle->m_locorigin.y) + (renderMatrix._33 * particle->m_locorigin.z);
-
-                    // Transform forward origin
-                    CVector transformedForward;
-                    transformedForward.x = (renderMatrix._11 * particle->m_forigin.x) +
-                        (renderMatrix._21 * particle->m_forigin.y) + (renderMatrix._31 * particle->m_forigin.z) +
-                        localOrigin.x;
-                    transformedForward.y = (renderMatrix._12 * particle->m_forigin.x) +
-                        (renderMatrix._22 * particle->m_forigin.y) + (renderMatrix._32 * particle->m_forigin.z) +
-                        localOrigin.y;
-                    transformedForward.z = (renderMatrix._13 * particle->m_forigin.x) +
-                        (renderMatrix._23 * particle->m_forigin.y) + (renderMatrix._33 * particle->m_forigin.z) +
-                        localOrigin.z;
-
-                    // Add transformed position
-                    transformedPos.x += localOrigin.x;
-                    transformedPos.y += localOrigin.y;
-                    transformedPos.z += localOrigin.z;
-
-                    // Add stripe part for this particle
                     addStripePart(
-                        particle->m_origin,  // startPos1
-                        particle->m_origin,  // startPos2
-                        transformedPos,      // endPos1
-                        transformedForward,  // endPos2
-                        particle->m_size,    // startSize
-                        particle->m_size,    // endSize
-                        particle->m_curClr,  // startColor
-                        particle->m_curClr,  // endColor
-                        camOrg,              // camera position
-                        0,                   // texture coordinate U
-                        0,                   // texture coordinate V
-                        1.0f,                // texture scale U
-                        1.0f,                // texture scale V
-                        0                    // flags
-                    );
+                        p->m_origin, p->m_origin, toWorld(p->m_locorigin), toWorld(p->m_forigin), p->m_size, p->m_size,
+                        p->m_curClr, p->m_curClr, camOrg, 0.0f, 0.0f, 1.0f, 1.0f, 0);
                 }
                 else
                 {
-                    // Use world coordinates directly
-                    CVector worldPos;
-                    worldPos.x = particle->m_origin.x + particle->m_locorigin.x;
-                    worldPos.y = particle->m_origin.y + particle->m_locorigin.y;
-                    worldPos.z = particle->m_origin.z + particle->m_locorigin.z;
-
-                    CVector worldForward;
-                    worldForward.x = particle->m_origin.x + particle->m_forigin.x;
-                    worldForward.y = particle->m_origin.y + particle->m_forigin.y;
-                    worldForward.z = particle->m_origin.z + particle->m_forigin.z;
-
-                    // Add stripe part for this particle
+                    CVector const pos = p->m_origin + p->m_locorigin;
+                    CVector const forward = p->m_origin + p->m_forigin;
                     addStripePart(
-                        worldPos,            // startPos1
-                        worldPos,            // startPos2
-                        worldPos,            // endPos1
-                        worldForward,        // endPos2
-                        particle->m_size,    // startSize
-                        particle->m_size,    // endSize
-                        particle->m_curClr,  // startColor
-                        particle->m_curClr,  // endColor
-                        camOrg,              // camera position
-                        0,                   // texture coordinate U
-                        0,                   // texture coordinate V
-                        1.0f,                // texture scale U
-                        1.0f,                // texture scale V
-                        0                    // flags
-                    );
+                        pos, pos, pos, forward, p->m_size, p->m_size, p->m_curClr, p->m_curClr, camOrg, 0.0f, 0.0f,
+                        1.0f, 1.0f, 0);
                 }
             }
         }
         else
         {
-            // Render particles with trails
-            for (m3d::Particle* particle = parts->m_particles; particle; particle = particle->m_next)
+            for (Particle* p = parts->m_particles; p; p = p->m_next)
             {
-                int trailSize = particle->m_trailSize;
-                if (trailSize >= 1)
+                if (p->m_trailSize < 1)
                 {
-                    float textureIncrement = 1.0f / (trailSize + 1);
-                    float currentTexCoord = 1.0f;
-
-                    // Render trail segments
-                    for (int segment = 0; segment < trailSize; segment++)
-                    {
-                        int trailIndex = trailSize - 1 - segment;
-                        auto* trail = &particle->m_trail[trailIndex];
-
-                        if (m_updateXForm)
-                        {
-                            // Transform trail positions
-                            CVector transformedCurrent;
-                            transformedCurrent.x = (renderMatrix._11 * particle->m_locorigin.x) +
-                                (renderMatrix._21 * particle->m_locorigin.y) +
-                                (renderMatrix._31 * particle->m_locorigin.z) + localOrigin.x;
-                            transformedCurrent.y = (renderMatrix._12 * particle->m_locorigin.x) +
-                                (renderMatrix._22 * particle->m_locorigin.y) +
-                                (renderMatrix._32 * particle->m_locorigin.z) + localOrigin.y;
-                            transformedCurrent.z = (renderMatrix._13 * particle->m_locorigin.x) +
-                                (renderMatrix._23 * particle->m_locorigin.y) +
-                                (renderMatrix._33 * particle->m_locorigin.z) + localOrigin.z;
-
-                            // Transform trail position
-                            CVector transformedTrail;
-                            transformedTrail.x = (renderMatrix._11 * trail->m_locorigin.x) +
-                                (renderMatrix._21 * trail->m_locorigin.y) + (renderMatrix._31 * trail->m_locorigin.z) +
-                                localOrigin.x;
-                            transformedTrail.y = (renderMatrix._12 * trail->m_locorigin.x) +
-                                (renderMatrix._22 * trail->m_locorigin.y) + (renderMatrix._32 * trail->m_locorigin.z) +
-                                localOrigin.y;
-                            transformedTrail.z = (renderMatrix._13 * trail->m_locorigin.x) +
-                                (renderMatrix._23 * trail->m_locorigin.y) + (renderMatrix._33 * trail->m_locorigin.z) +
-                                localOrigin.z;
-
-                            addStripePart(
-                                transformedCurrent,                  // startPos1
-                                transformedTrail,                    // startPos2
-                                transformedCurrent,                  // endPos1
-                                transformedTrail,                    // endPos2
-                                particle->m_size,                    // startSize
-                                trail->m_size,                       // endSize
-                                particle->m_curClr,                  // startColor
-                                trail->m_curClr,                     // endColor
-                                camOrg,                              // camera position
-                                0,                                   // texture coordinate U
-                                currentTexCoord + textureIncrement,  // texture coordinate V
-                                1.0f,                                // texture scale U
-                                currentTexCoord,                     // texture scale V
-                                segment                              // segment index
-                            );
-                        }
-                        else
-                        {
-                            // Use world coordinates directly for trail
-                            CVector worldCurrent;
-                            worldCurrent.x = particle->m_origin.x + particle->m_locorigin.x;
-                            worldCurrent.y = particle->m_origin.y + particle->m_locorigin.y;
-                            worldCurrent.z = particle->m_origin.z + particle->m_locorigin.z;
-
-                            CVector worldTrail;
-                            worldTrail.x = particle->m_origin.x + trail->m_locorigin.x;
-                            worldTrail.y = particle->m_origin.y + trail->m_locorigin.y;
-                            worldTrail.z = particle->m_origin.z + trail->m_locorigin.z;
-
-                            addStripePart(
-                                worldCurrent,                        // startPos1
-                                worldTrail,                          // startPos2
-                                worldCurrent,                        // endPos1
-                                worldTrail,                          // endPos2
-                                particle->m_size,                    // startSize
-                                trail->m_size,                       // endSize
-                                particle->m_curClr,                  // startColor
-                                trail->m_curClr,                     // endColor
-                                camOrg,                              // camera position
-                                0,                                   // texture coordinate U
-                                currentTexCoord + textureIncrement,  // texture coordinate V
-                                1.0f,                                // texture scale U
-                                currentTexCoord,                     // texture scale V
-                                segment                              // segment index
-                            );
-                        }
-
-                        currentTexCoord -= textureIncrement;
-                    }
+                    continue;
+                }
+                float const tadd = 1.0f / static_cast<float>(p->m_trailSize + 1);
+                float tu = 1.0f;
+                ParticleBase const* from = p;
+                for (int segment = 0; segment < p->m_trailSize; ++segment)
+                {
+                    ParticleBase const* to = &p->m_trail[p->m_trailSize - 1 - segment];
+                    CVector const a = m_updateXForm ? toWorld(from->m_locorigin) : from->m_origin + from->m_locorigin;
+                    CVector const b = m_updateXForm ? toWorld(to->m_locorigin) : to->m_locorigin + to->m_origin;
+                    addStripePart(
+                        a, b, a, b, from->m_size, to->m_size, from->m_curClr, to->m_curClr, camOrg, 0.0f, tu + tadd,
+                        1.0f, tu, segment);
+                    from = to;
+                    tu -= tadd;
                 }
             }
         }
 
-        // Finish quad batch rendering
         M3D_APP->FinishQuads();
         M3D_APP->SetFlushQuadsShader(nullptr);
-
         return 1;
     }
 
@@ -2972,23 +2696,8 @@ namespace m3d
 
     void StripAllPS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        short* base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc;
-            *(base - 2) = inc - 2;
-            base[2] = inc + 1;
-            base[3] = inc - 2;
-            inc += 4;
-            base += 6;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E6030
+        FillQuadTriangles(m_IbPoolField);
     }
 
     bool StripAllPS::IsLocal()
@@ -3171,196 +2880,91 @@ namespace m3d
 
     int SpritePS::Render(CMatrix const* local, ParticlesList* parts)
     {
-        // TODO generated code SpritePS::Render
-        // Early return if particles shouldn't be rendered
-        if (parts->m_start1 > parts->m_PhaseTime || parts->m_numParticles == 0)
+        // RVA 0x8E35E0 - one flat quad per particle, lying in the x/z plane: corners (+-size, 0, +-size) turned
+        // about y by the list's sprite angle. m_Specific sprites sit on the water surface (in world space, then
+        // back into local space under m_updateXForm).
+        parts->m_renderCalled = true;
+        if (parts->m_start1 > parts->m_PhaseTime || !parts->m_numParticles)
         {
-            parts->m_renderCalled = true;
-            return true;
+            return 1;
         }
 
-        parts->m_renderCalled = true;
-
-        // Set up rendering state
         if (m_updateXForm)
         {
-            m3d::Application::g_pApp->m_renderer->MatPush(*local);
+            M3D_RENDERER->MatPush(*local);
         }
-
         ApplyBlending();
-        m3d::Application::g_pApp->m_renderer->SetTexture(0, m_texAdd, -1.0f);
-        m3d::Application::g_pApp->m_renderer->SetCull(rend::M3DCULL_NONE, 0);
+        M3D_RENDERER->SetTexture(0, m_texAdd, -1.0f);
+        M3D_RENDERER->SetCull(rend::M3DCULL_NONE, 0);
 
-        // Get vertex buffer for streaming
-        int vertexOffset = 0;
+        rend::VbHandle const partsVb = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZCT1);
+        int vofs = 0;
+        auto* vertex = static_cast<rend::VertexXYZCT1*>(
+            M3D_RENDERER->LockVbStreaming(partsVb, 4 * parts->m_numParticles, vofs, 0));
 
-        m3d::rend::VbHandle vbHandle = m3d::Application::g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+        CMatrix rot;
+        rot.rotY(parts->m_spriteAngle);
+        CVector const quad[4] = {
+            rot.vecRot(CVector(1.0f, 0.0f, -1.0f)), rot.vecRot(CVector(1.0f, 0.0f, 1.0f)),
+            rot.vecRot(CVector(-1.0f, 0.0f, 1.0f)), rot.vecRot(CVector(-1.0f, 0.0f, -1.0f))};
+        float const uv[4][2] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}};
 
-        // Lock vertex buffer for writing
-        int vertexCount = 4 * parts->m_numParticles;  // 4 vertices per particle (quad)
-        m3d::rend::VertexXYZCT1* vertices = static_cast<m3d::rend::VertexXYZCT1*>(
-            m3d::Application::g_pApp->m_renderer->LockVbStreaming(vbHandle, vertexCount, vertexOffset, 0));
-
-        if (!vertices)
-        {
-            if (m_updateXForm)
-            {
-                m3d::Application::g_pApp->m_renderer->MatPop(1);
-            }
-            return false;
-        }
-
-        // Calculate sprite rotation matrix
-        float sinAngle = sin(parts->m_spriteAngle);
-        float cosAngle = cos(parts->m_spriteAngle);
-
-        // Define quad corners (before rotation)
-        CVector quadCorners[4];
-        quadCorners[0] = CVector(-1.0f, -1.0f, 0.0f);  // bottom-left
-        quadCorners[1] = CVector(1.0f, -1.0f, 0.0f);   // bottom-right
-        quadCorners[2] = CVector(1.0f, 1.0f, 0.0f);    // top-right
-        quadCorners[3] = CVector(-1.0f, 1.0f, 0.0f);   // top-left
-
-        // Apply rotation to quad corners
-        for (int i = 0; i < 4; ++i)
-        {
-            float x = quadCorners[i].x;
-            float y = quadCorners[i].y;
-            quadCorners[i].x = x * cosAngle - y * sinAngle;
-            quadCorners[i].y = x * sinAngle + y * cosAngle;
-        }
-
-        // Get inverse matrix if needed for water height calculation
-        CMatrix inverseMatrix;
+        CMatrix localInv;
         if (m_updateXForm && m_Specific)
         {
-            inverseMatrix = local->getInverseRotTranslate();
+            localInv = local->getInverseRotTranslate();
         }
 
-        // Process each particle
-        m3d::Particle* currentParticle = parts->m_particles;
-        m3d::rend::VertexXYZCT1* currentVertex = vertices;
-
-        while (currentParticle)
+        auto const waterHeight = [](CVector const& pos) {
+            return pClient->GetWorld().GetLandscape().getWaterHeight(
+                static_cast<int>(pos.x * 0.03125f), static_cast<int>(pos.z * 0.03125f));
+        };
+        for (Particle* p = parts->m_particles; p; p = p->m_next)
         {
-            // Calculate particle position
-            CVector particlePos;
-            if (m_updateXForm)
-            {
-                particlePos = currentParticle->m_locorigin;
-            }
-            else
-            {
-                particlePos = currentParticle->m_origin + currentParticle->m_locorigin;
-            }
-
-            // Handle water height for specific particles
+            CVector org = m_updateXForm ? p->m_locorigin : p->m_origin + p->m_locorigin;
             if (m_Specific)
             {
                 if (m_updateXForm)
                 {
-                    // Transform to world space for water height lookup
-                    CVector worldPos = local->vecMul(particlePos);
-                    float waterHeight = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
-                        static_cast<int>(worldPos.x * 0.03125f), static_cast<int>(worldPos.z * 0.03125f));
-
-                    // Apply water height and transform back
-                    CVector waterAdjustedPos(worldPos.x, waterHeight, worldPos.z);
-                    particlePos = inverseMatrix.vecMul(waterAdjustedPos);
+                    CVector const world = local->vecMul(org);
+                    org = localInv.vecMul(CVector(world.x, waterHeight(world), world.z));
                 }
                 else
                 {
-                    // Simple water height adjustment
-                    particlePos.y = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
-                        static_cast<int>(particlePos.x * 0.03125f), static_cast<int>(particlePos.z * 0.03125f));
+                    org.y = waterHeight(org);
                 }
             }
 
-            // Generate quad vertices for this particle
-            for (int corner = 0; corner < 4; ++corner)
+            for (int i = 0; i < 4; ++i, ++vertex)
             {
-                // Calculate vertex position (particle center + scaled quad corner)
-                CVector vertexPos = particlePos + quadCorners[corner] * currentParticle->m_size;
-
-                currentVertex->x = vertexPos.x;
-                currentVertex->y = vertexPos.y;
-                currentVertex->z = vertexPos.z;
-
-                // Set vertex color (particle color)
-                currentVertex->c = currentParticle->m_curClr;
-
-                // Set texture coordinates for quad corners
-                switch (corner)
-                {
-                case 0:  // bottom-left
-                    currentVertex->tu = 0.0f;
-                    currentVertex->tv = 0.0f;
-                    break;
-                case 1:  // top-left
-                    currentVertex->tu = 0.0f;
-                    currentVertex->tv = 1.0f;
-                    break;
-                case 2:  // top-right
-                    currentVertex->tu = 1.0f;
-                    currentVertex->tv = 1.0f;
-                    break;
-                case 3:  // bottom-right
-                    currentVertex->tu = 1.0f;
-                    currentVertex->tv = 0.0f;
-                    break;
-                }
-
-                ++currentVertex;
+                vertex->x = quad[i].x * p->m_size + org.x;
+                vertex->y = quad[i].y * p->m_size + org.y;
+                vertex->z = quad[i].z * p->m_size + org.z;
+                vertex->c = p->m_curClr;
+                vertex->tu = uv[i][0];
+                vertex->tv = uv[i][1];
             }
-
-            currentParticle = currentParticle->m_next;
         }
 
-        // Unlock and render
-        m3d::Application::g_pApp->m_renderer->UnlockVb(vbHandle);
-        m3d::Application::g_pApp->m_renderer->SetToStream0(vbHandle);
-        m3d::Application::g_pApp->m_renderer->SetIndices(m_IbPoolField, vertexOffset);
-
-        // Draw the particles
-        m3d::Application::g_pApp->m_renderer->DrawIndexedPrimitiveEffect(
-            rend::M3DPT_TRIANGLELIST,
-            m_shader,
-            0,
-            vertexCount,
-            m_IbPoolField.RealOffset,
-            2 * parts->m_numParticles  // 2 triangles per particle
-        );
-
-        // Clean up
+        M3D_RENDERER->UnlockVb(partsVb);
+        M3D_RENDERER->SetToStream0(partsVb);
+        M3D_RENDERER->SetIndices(m_IbPoolField, vofs);
+        M3D_RENDERER->DrawIndexedPrimitiveEffect(
+            rend::M3DPT_TRIANGLELIST, m_shader, 0, 4 * parts->m_numParticles, m_IbPoolField.RealOffset,
+            2 * parts->m_numParticles);
         if (m_updateXForm)
         {
-            m3d::Application::g_pApp->m_renderer->MatPop(1);
+            M3D_RENDERER->MatPop(1);
         }
-
-        return true;
+        return 1;
     }
 
     rend::IbPoolField SpritePS::m_IbPoolField;
 
     void SpritePS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        auto base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc;
-            *(base - 2) = inc - 2;
-            base[2] = inc + 1;
-            base[3] = inc - 2;
-            inc += 4;
-            base += 6;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E5D80
+        FillQuadTriangles(m_IbPoolField);
     }
 
     float SpritePS::GetBoundRadius() const
@@ -3643,23 +3247,8 @@ namespace m3d
 
     void GlowQuadPS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        auto base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc;
-            *(base - 2) = inc - 2;
-            base[2] = inc + 1;
-            base[3] = inc - 2;
-            inc += 4;
-            base += 6;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E5CD0
+        FillQuadTriangles(m_IbPoolField);
     }
 
     float GlowQuadPS::GetBoundRadius() const
@@ -3676,18 +3265,13 @@ namespace m3d
 
     void RainPS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<int*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 0;
-        do
-        {
-            *ptr = inc;
-            ptr[1] = inc + 1;
-            inc += 2;
-            ptr += 2;
-        } while (inc < 0x190);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E5F90 - 200 line segments (v, v+1).
+        FillIbPoolField(m_IbPoolField, [](uint16_t* indices) {
+            for (uint16_t v = 0; v < 400; ++v)
+            {
+                indices[v] = v;
+            }
+        });
     }
 
     void RainPS::ReleaseIb()
@@ -3884,23 +3468,8 @@ namespace m3d
 
     void QuadPS::CreateIb()
     {
-        //TODO: recreate normal logic
-        m_IbPoolField = Application::g_pApp->m_renderer->AddIbPoolField(1200);
-        auto ptr = static_cast<char*>(Application::g_pApp->m_renderer->LockIbPoolField(m_IbPoolField));
-        auto inc = 2;
-        short* base = reinterpret_cast<short*>(ptr + 4);
-        do
-        {
-            *(base - 1) = inc - 1;
-            *base = inc;
-            base[1] = inc;
-            *(base - 2) = inc - 2;
-            base[2] = inc + 1;
-            base[3] = inc - 2;
-            inc += 4;
-            base += 6;
-        } while (inc < 0x322);
-        Application::g_pApp->m_renderer->UnlockIbPoolField(m_IbPoolField);
+        // RVA 0x8E6360
+        FillQuadTriangles(m_IbPoolField);
     }
 
     void QuadPS::ReleaseIb()

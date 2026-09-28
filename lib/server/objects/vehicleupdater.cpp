@@ -40,117 +40,49 @@ namespace ai
 
     void VehicleUpdater::Update(float elapsedTime)
     {
-        // TODO: generated code
+        // RVA 0x7C0C10 - moves the point-mass model, then turns the vehicle about its up axis as a bicycle model
+        // would: yaw rate = speed / turning radius, the radius following from the steer angle and the wheel base.
         _UpdateForceAndVelocity(elapsedTime);
 
-        float steer = m_vehicle->GetCurrentSteerAngle();
-        CVector vehicleDir = m_vehicle->GetDirection();
+        float const steer = m_vehicle->GetCurrentSteerAngle();
+        CVector const vehicleDir = m_vehicle->GetDirection();
+        Quaternion const vehicleRot = m_vehicle->GetRotation();
+        CVector const pos = m_vehicle->GetPosition();  // NOTE: fetched and unused, as shipped.
+        (void)pos;
 
-        Quaternion vehicleRot = m_vehicle->GetRotation();
-
-        CVector pos = m_vehicle->GetPosition();
-
-        auto& wheels = m_vehicle->m_wheels;
-        if (!wheels.empty() && std::fabs(steer) > 0.0099999998f && m_vehicle->m_brake < 0.5f)
+        auto const& wheels = m_vehicle->m_wheels;
+        if (wheels.empty() || fabs(steer) <= 0.0099999998f || m_vehicle->m_brake >= 0.5f)
         {
-            // Calculate wheel base (distance between front and rear wheels)
-            float wheelBase = wheels.front().m_initialPos.z - wheels.back().m_initialPos.z;
-
-            // Normalize velocity and calculate forward multiplier
-            CVector normalizedVel = m_velocity.getNormalized();
-
-            float forwardMult = normalizedVel.x * vehicleDir.x + normalizedVel.y * vehicleDir.y + normalizedVel.z * vehicleDir.z;
-
-            // Calculate turning parameters
-            float turnRadiusFactor = 2.0f / (1.0f - std::cos(steer));
-            int turnDirection = (steer >= 0.0f) ? 1 : -1;
-
-            // Build rotation matrix from quaternion
-            CMatrix rotationMatrix;
-            rotationMatrix._11 = 1.0f - 2.0f * (vehicleRot.y * vehicleRot.y + vehicleRot.z * vehicleRot.z);
-            rotationMatrix._12 = 2.0f * (vehicleRot.x * vehicleRot.y + vehicleRot.w * vehicleRot.z);
-            rotationMatrix._13 = 2.0f * (vehicleRot.x * vehicleRot.z - vehicleRot.w * vehicleRot.y);
-            rotationMatrix._14 = 0.0f;
-
-            rotationMatrix._21 = 2.0f * (vehicleRot.x * vehicleRot.y - vehicleRot.w * vehicleRot.z);
-            rotationMatrix._22 = 1.0f - 2.0f * (vehicleRot.x * vehicleRot.x + vehicleRot.z * vehicleRot.z);
-            rotationMatrix._23 = 2.0f * (vehicleRot.y * vehicleRot.z + vehicleRot.w * vehicleRot.x);
-            rotationMatrix._24 = 0.0f;
-
-            rotationMatrix._31 = 2.0f * (vehicleRot.x * vehicleRot.z + vehicleRot.w * vehicleRot.y);
-            rotationMatrix._32 = 2.0f * (vehicleRot.y * vehicleRot.z - vehicleRot.w * vehicleRot.x);
-            rotationMatrix._33 = 1.0f - 2.0f * (vehicleRot.x * vehicleRot.x + vehicleRot.y * vehicleRot.y);
-            rotationMatrix._34 = 0.0f;
-
-            rotationMatrix._41 = 0.0f;
-            rotationMatrix._42 = 0.0f;
-            rotationMatrix._43 = 0.0f;
-            rotationMatrix._44 = 1.0f;
-
-            // Transform up vector by rotation matrix
-            CVector INITIAL_UP_DIRECTION_35{0.0, 1.0, 0.0};
-            CVector up;
-            up.x = rotationMatrix._11 * INITIAL_UP_DIRECTION_35.x + rotationMatrix._21 * INITIAL_UP_DIRECTION_35.y +
-                rotationMatrix._31 * INITIAL_UP_DIRECTION_35.z;
-            up.y = rotationMatrix._12 * INITIAL_UP_DIRECTION_35.x + rotationMatrix._22 * INITIAL_UP_DIRECTION_35.y +
-                rotationMatrix._32 * INITIAL_UP_DIRECTION_35.z;
-            up.z = rotationMatrix._13 * INITIAL_UP_DIRECTION_35.x + rotationMatrix._23 * INITIAL_UP_DIRECTION_35.y +
-                rotationMatrix._33 * INITIAL_UP_DIRECTION_35.z;
-
-            // Calculate rotation angle based on turning
-            float speed = std::sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z);
-
-            float turnRate = std::sqrt(turnRadiusFactor);
-            float rotationAngle = speed / (turnRate * -turnDirection * wheelBase) * forwardMult * elapsedTime;
-
-            // Normalize up vector for rotation axis
-            CVector rotationAxis = up.getNormalized();
-
-            // Create rotation quaternion
-            float halfAngle = rotationAngle * 0.5f;
-            float sinHalf = std::sin(halfAngle);
-            float cosHalf = std::cos(halfAngle);
-
-            Quaternion rotationQuat;
-            rotationQuat.x = rotationAxis.x * sinHalf;
-            rotationQuat.y = rotationAxis.y * sinHalf;
-            rotationQuat.z = rotationAxis.z * sinHalf;
-            rotationQuat.w = cosHalf;
-
-            // Combine rotations (rotationQuat * vehicleRot)
-            Quaternion fullRot;
-            fullRot.x = rotationQuat.w * vehicleRot.x + rotationQuat.x * vehicleRot.w + rotationQuat.y * vehicleRot.z -
-                rotationQuat.z * vehicleRot.y;
-            fullRot.y = rotationQuat.w * vehicleRot.y - rotationQuat.x * vehicleRot.z + rotationQuat.y * vehicleRot.w +
-                rotationQuat.z * vehicleRot.x;
-            fullRot.z = rotationQuat.w * vehicleRot.z + rotationQuat.x * vehicleRot.y - rotationQuat.y * vehicleRot.x +
-                rotationQuat.z * vehicleRot.w;
-            fullRot.w = rotationQuat.w * vehicleRot.w - rotationQuat.x * vehicleRot.x - rotationQuat.y * vehicleRot.y -
-                rotationQuat.z * vehicleRot.z;
-
-            // Normalize the resulting quaternion
-            float lengthSq = fullRot.x * fullRot.x + fullRot.y * fullRot.y + fullRot.z * fullRot.z + fullRot.w * fullRot.w;
-
-            if (lengthSq > 0.0f)
-            {
-                float invLength = 1.0f / std::sqrt(lengthSq);
-                fullRot.x *= invLength;
-                fullRot.y *= invLength;
-                fullRot.z *= invLength;
-                fullRot.w *= invLength;
-            }
-            else
-            {
-                // Identity quaternion if invalid
-                fullRot.x = 0.0f;
-                fullRot.y = 0.0f;
-                fullRot.z = 0.0f;
-                fullRot.w = 1.0f;
-            }
-
-            // Apply the new rotation
-            m_vehicle->SetRotation(fullRot);
+            return;
         }
+
+        float const wheelBase = wheels.front().m_initialPos.z - wheels.back().m_initialPos.z;
+        CVector const velocityDir = m_velocity.getNormalized();
+        float const forwardMult = velocityDir.y * vehicleDir.y + velocityDir.z * vehicleDir.z + velocityDir.x * vehicleDir.x;
+        float const turnFactor = static_cast<float>(2.0 / (1.0 - cos(steer)));
+        int const turnDirection = steer >= 0.0f ? 1 : -1;
+
+        CMatrix rot;
+        rot.rotTranslate(vehicleRot, ZeroVector);
+        CVector const up(rot._21, rot._22, rot._23);
+        double const speed = sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z);
+        float const yaw =
+            static_cast<float>(speed / (sqrt(turnFactor) * -turnDirection * wheelBase) * forwardMult * elapsedTime);
+
+        // NOTE: the shipped build inlines the product and the normalisation with its own summation order.
+        Quaternion turn;
+        turn.FromAxisAngle(up.getNormalized(), yaw);
+        Quaternion newRot = turn * vehicleRot;
+        float const lengthSq = newRot.w * newRot.w + newRot.z * newRot.z + newRot.y * newRot.y + newRot.x * newRot.x;
+        if (lengthSq > 0.0f)
+        {
+            newRot *= static_cast<float>(1.0 / sqrt(lengthSq));
+        }
+        else
+        {
+            newRot = IdentityQuaternion;
+        }
+        m_vehicle->SetRotation(newRot);
     }
 
     CVector VehicleUpdater::GetLinearVelocity() const
@@ -173,25 +105,25 @@ namespace ai
 
     float VehicleUpdater::_CalcWheelAVel() const
     {
-        // TODO: check and refactor
+        // RVA 0x7BFAA0 - the wheels' angular velocity for rolling at the velocity's forward component (signed:
+        // negative when moving backwards).
+        if (m_vehicle->m_wheels.empty())
+        {
+            return 0.0f;
+        }
         auto* wheel = m_vehicle->GetFirstExistingWheel();
         if (!wheel)
         {
-            return 0.0;
+            return 0.0f;
         }
 
-        auto const dir = m_vehicle->GetDirection();
-        auto v6 = (float)((float)(this->m_velocity.y * dir.y) + (float)(this->m_velocity.z * dir.z)) + (float)(dir.x * this->m_velocity.x);
-        auto v9 =
-            (float)((float)((float)(dir.y * v6) * dir.y) + (float)((float)(dir.z * v6) * dir.z)) + (float)((float)(dir.x * v6) * dir.x);
-        auto v11 = (float)((float)((float)(dir.z * v6) * (float)(dir.z * v6)) + (float)((float)(dir.y * v6) * (float)(dir.y * v6))) +
-            (float)((float)(dir.x * v6) * (float)(dir.x * v6));
-        auto radius = wheel->GetRadius();
-        auto v8 = v9 >= 0.0;
-        auto v10 = -1;
-        if (v8)
-            v10 = 1;
-        return sqrt(v11) * ((double)v10 / radius);
+        CVector const dir = m_vehicle->GetDirection();
+        float const forwardSpeed = m_velocity.y * dir.y + m_velocity.z * dir.z + dir.x * m_velocity.x;
+        CVector const forward(dir.x * forwardSpeed, dir.y * forwardSpeed, dir.z * forwardSpeed);
+        float const alongDir = forward.y * dir.y + forward.z * dir.z + forward.x * dir.x;
+        float const lengthSq = forward.z * forward.z + forward.y * forward.y + forward.x * forward.x;
+        int const sign = alongDir >= 0.0f ? 1 : -1;
+        return static_cast<float>(sqrt(lengthSq) * (static_cast<double>(sign) / wheel->GetRadius()));
     }
 
     void VehicleUpdater::_UpdateForceAndVelocity(float elapsedTime)

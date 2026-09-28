@@ -158,6 +158,20 @@ namespace ai
     namespace
     {
         retruxx::set<m3d::Class*> standardTargetClasses;
+
+        // v rotated by rot (row-vector convention), as the shipped build inlines it: the rotation matrix of the
+        // quaternion, then v * M.
+        // NOTE: the inlined products are summed in a slightly different order per call site, so the last bit of the
+        // result can differ from the shipped code.
+        CVector Rotate(Quaternion const& rot, CVector const& v)
+        {
+            CMatrix m;
+            m.rotTranslate(rot, ZeroVector);
+            return CVector(
+                v.x * m._11 + v.y * m._21 + v.z * m._31,
+                v.x * m._12 + v.y * m._22 + v.z * m._32,
+                v.x * m._13 + v.y * m._23 + v.z * m._33);
+        }
     }
 
     extern AIManager* theAIManager;
@@ -181,27 +195,19 @@ namespace ai
 
     void PhysicObj::SetDirections(CVector const& forward, CVector const& up)
     {
-        // TODO: generated code
-        // Create rotation matrix directly from forward and up vectors
+        // RVA 0x5FA590 - the rotation whose basis rows are (up x forward, up, forward).
         CMatrix mat;
         mat.zero();
+        mat._11 = up.y * forward.z - forward.y * up.z;
+        mat._12 = forward.x * up.z - up.x * forward.z;
+        mat._13 = forward.y * up.x - forward.x * up.y;
+        mat._21 = up.x;
+        mat._22 = up.y;
+        mat._23 = up.z;
+        mat._31 = forward.x;
+        mat._32 = forward.y;
+        mat._33 = forward.z;
 
-        // Calculate the right vector (x-axis) as cross product of up and forward
-        mat.m[0][0] = up.y * forward.z - up.z * forward.y;  // right.x
-        mat.m[0][1] = up.z * forward.x - up.x * forward.z;  // right.y
-        mat.m[0][2] = up.x * forward.y - up.y * forward.x;  // right.z
-
-        // Use provided up vector for y-axis
-        mat.m[1][0] = up.x;
-        mat.m[1][1] = up.y;
-        mat.m[1][2] = up.z;
-
-        // Use provided forward vector for z-axis
-        mat.m[2][0] = forward.x;
-        mat.m[2][1] = forward.y;
-        mat.m[2][2] = forward.z;
-
-        // Convert to quaternion and set rotation
         Quaternion rotation;
         rotation.FromMatrix(mat);
         SetRotation(rotation);
@@ -475,30 +481,9 @@ namespace ai
 
     void PhysicObj::SetPositionSelf(CVector const& pos)
     {
-        // TODO: generated code
-        Quaternion rotation = GetRotation();
-        CMatrix rotationMatrix = rotation.ToMatrix();
-
-        // Transform mass center by rotation matrix
-        float transformedX =
-            (m_massCenter.x * rotationMatrix._11) + (m_massCenter.y * rotationMatrix._21) + (m_massCenter.z * rotationMatrix._31);
-
-        float transformedY =
-            (m_massCenter.x * rotationMatrix._12) + (m_massCenter.y * rotationMatrix._22) + (m_massCenter.z * rotationMatrix._32);
-
-        float transformedZ =
-            (m_massCenter.x * rotationMatrix._13) + (m_massCenter.y * rotationMatrix._23) + (m_massCenter.z * rotationMatrix._33);
-
-        // Calculate final position (position + transformed mass center)
-        CVector realPos;
-        realPos.x = pos.x + transformedX;
-        realPos.y = pos.y + transformedY;
-        realPos.z = pos.z + transformedZ;
-
-        // Set body position
+        // RVA 0x5FC180 - the body sits at the mass center, so it is placed at pos plus the rotated mass-center offset.
+        CVector const realPos = pos + Rotate(GetRotation(), m_massCenter);
         dBodySetPosition(m_body->id(), realPos.x, realPos.y, realPos.z);
-
-        // Update enabled cells counter
         PhysicObj::SetCorrectEnabledCellsCounter();
     }
 
@@ -777,75 +762,10 @@ namespace ai
 
     CVector PhysicObj::GetPosition() const
     {
-        // TODO: generated code
-        Quaternion rotation = GetRotation();
-
-        // Extract quaternion components for clarity
-        float const x = rotation.x;
-        float const y = rotation.y;
-        float const z = rotation.z;
-        float const w = rotation.w;
-
-        // Calculate quaternion products
-        float const xx = x * x;
-        float const xy = x * y;
-        float const xz = x * z;
-        float const xw = x * w;
-
-        float const yy = y * y;
-        float const yz = y * z;
-        float const yw = y * w;
-
-        float const zz = z * z;
-        float const zw = z * w;
-
-        // Build rotation matrix from quaternion
-        CMatrix rotationMatrix;
-
-        // First row
-        rotationMatrix._11 = 1.0f - 2.0f * (yy + zz);
-        rotationMatrix._12 = 2.0f * (xy + zw);
-        rotationMatrix._13 = 2.0f * (xz - yw);
-        rotationMatrix._14 = 0.0f;
-
-        // Second row
-        rotationMatrix._21 = 2.0f * (xy - zw);
-        rotationMatrix._22 = 1.0f - 2.0f * (xx + zz);
-        rotationMatrix._23 = 2.0f * (yz + xw);
-        rotationMatrix._24 = 0.0f;
-
-        // Third row
-        rotationMatrix._31 = 2.0f * (xz + yw);
-        rotationMatrix._32 = 2.0f * (yz - xw);
-        rotationMatrix._33 = 1.0f - 2.0f * (xx + yy);
-        rotationMatrix._34 = 0.0f;
-
-        // Fourth row (translation/identity)
-        rotationMatrix._41 = 0.0f;
-        rotationMatrix._42 = 0.0f;
-        rotationMatrix._43 = 0.0f;
-        rotationMatrix._44 = 1.0f;
-
-        // Transform mass center by rotation matrix
-        float const transformedX =
-            m_massCenter.x * rotationMatrix._11 + m_massCenter.y * rotationMatrix._21 + m_massCenter.z * rotationMatrix._31;
-
-        float const transformedY =
-            m_massCenter.x * rotationMatrix._12 + m_massCenter.y * rotationMatrix._22 + m_massCenter.z * rotationMatrix._32;
-
-        float const transformedZ =
-            m_massCenter.x * rotationMatrix._13 + m_massCenter.y * rotationMatrix._23 + m_massCenter.z * rotationMatrix._33;
-
-        // Get body position (assuming dBodyGetPosition returns a pointer to 3 floats)
-        float const* bodyPosition = dBodyGetPosition(m_body->id());
-
-        // Calculate final position: body position - transformed mass center
-        CVector result;
-        result.x = bodyPosition[0] - transformedX;
-        result.y = bodyPosition[1] - transformedY;
-        result.z = bodyPosition[2] - transformedZ;
-
-        return result;
+        // RVA 0x5FC410 - the inverse of SetPositionSelf: the body's position less the rotated mass-center offset.
+        CVector const offset = Rotate(GetRotation(), m_massCenter);
+        dReal const* bodyPos = dBodyGetPosition(m_body->id());
+        return CVector(bodyPos[0] - offset.x, bodyPos[1] - offset.y, bodyPos[2] - offset.z);
     }
 
     void PhysicObj::PostCollide()
@@ -1189,71 +1109,8 @@ namespace ai
 
     CVector PhysicObj::GetDirection() const
     {
-        // TODO: generated code
-        // Get the object's current rotation as a quaternion
-        Quaternion rotation = GetRotation();
-
-        // Extract quaternion components for readability
-        float x = rotation.x;
-        float y = rotation.y;
-        float z = rotation.z;
-        float w = rotation.w;
-
-        // Calculate squared components (used in matrix diagonal)
-        float x2 = x * x;
-        float y2 = y * y;
-        float z2 = z * z;
-
-        // Calculate cross terms (used in matrix off-diagonals)
-        float xy = x * y;
-        float xz = x * z;
-        float xw = x * w;
-        float yz = y * z;
-        float yw = y * w;
-        float zw = z * w;
-
-        // Construct rotation matrix from quaternion
-        CMatrix rotationMatrix;
-
-        // First row
-        rotationMatrix._11 = 1.0f - 2.0f * (y2 + z2);
-        rotationMatrix._12 = 2.0f * (xy + zw);
-        rotationMatrix._13 = 2.0f * (xz - yw);
-        rotationMatrix._14 = 0.0f;
-
-        // Second row
-        rotationMatrix._21 = 2.0f * (xy - zw);
-        rotationMatrix._22 = 1.0f - 2.0f * (x2 + z2);
-        rotationMatrix._23 = 2.0f * (yz + xw);
-        rotationMatrix._24 = 0.0f;
-
-        // Third row
-        rotationMatrix._31 = 2.0f * (xz + yw);
-        rotationMatrix._32 = 2.0f * (yz - xw);
-        rotationMatrix._33 = 1.0f - 2.0f * (x2 + y2);
-        rotationMatrix._34 = 0.0f;
-
-        // Fourth row (identity for homogeneous coordinates)
-        rotationMatrix._41 = 0.0f;
-        rotationMatrix._42 = 0.0f;
-        rotationMatrix._43 = 0.0f;
-        rotationMatrix._44 = 1.0f;
-
-        CVector INITIAL_OBJECTS_DIRECTION_5(0.0, 0.0, 1.0);
-
-        // Transform the initial forward direction by the rotation matrix
-        // This gives us the object's current forward direction in world space
-        CVector result;
-        result.x = rotationMatrix._11 * INITIAL_OBJECTS_DIRECTION_5.x + rotationMatrix._21 * INITIAL_OBJECTS_DIRECTION_5.y +
-            rotationMatrix._31 * INITIAL_OBJECTS_DIRECTION_5.z;
-
-        result.y = rotationMatrix._12 * INITIAL_OBJECTS_DIRECTION_5.x + rotationMatrix._22 * INITIAL_OBJECTS_DIRECTION_5.y +
-            rotationMatrix._32 * INITIAL_OBJECTS_DIRECTION_5.z;
-
-        result.z = rotationMatrix._13 * INITIAL_OBJECTS_DIRECTION_5.x + rotationMatrix._23 * INITIAL_OBJECTS_DIRECTION_5.y +
-            rotationMatrix._33 * INITIAL_OBJECTS_DIRECTION_5.z;
-
-        return result;
+        // RVA 0x5FA360 - the forward vector (0, 0, 1) in world space.
+        return Rotate(GetRotation(), CVector(0.0f, 0.0f, 1.0f));
     }
 
     bool PhysicObj::GetGeomEnabledBit() const

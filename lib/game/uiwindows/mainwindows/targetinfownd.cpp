@@ -486,57 +486,35 @@ bool TargetInfoWnd::NeedUpdate() const
 
 void TargetInfoWnd::UpdateResistance()
 {
-    // TODO: generated code TargetInfoWnd::UpdateResistance
+    // RVA 0x536720
     using namespace ai;
 
-    // Only update if game data flag is set
     if ((m_gameDataFlags & 1) == 0)
     {
         return;
     }
 
-    // First hide all resistance windows
-    for (int i = 0; i < 3; ++i)
+    for (auto* wnd : m_wndResistance)
     {
-        m_wndResistance[i]->ShowWindow(false);
+        wnd->ShowWindow(false);
     }
 
-    // Check if we have a valid target
     if (m_targetObjId == -1)
     {
         return;
     }
-
-    // Get the target vehicle object
     auto* target = GetTargetObj();
-    if (!target)
+    if (!target || !thePlayer || !thePlayer->GetVehicle() || !IS_KIND_OF(target, Vehicle))
     {
         return;
     }
 
-    // Only show resistance for vehicles when player exists and has a vehicle
-    if (!ai::thePlayer || !ai::thePlayer->GetVehicle())
+    // One icon per damage type the target vehicle resists at least tenfold.
+    auto const* targetVehicle = static_cast<Vehicle const*>(target);
+    for (int type = DAMAGE_PIERCING; type < DAMAGE_WATER; ++type)
     {
-        return;
-    }
-
-    if (!IS_KIND_OF(target, Vehicle))
-    {
-        return;
-    }
-
-    auto* targetVehicle = RT_DYNCAST(target, Vehicle const);
-
-    // Update visibility for each damage type based on durability coefficient
-    for (ai::DamageType damageType = DAMAGE_PIERCING; damageType < DAMAGE_WATER;
-         damageType = static_cast<ai::DamageType>(damageType + 1))
-    {
-        int resistanceIndex = damageType - DAMAGE_PIERCING;
-        double durabilityCoeff = targetVehicle->GetFullDurabilityCoeffForDamageType(damageType);
-
-        // Show resistance window only if durability coefficient is significant
-        bool shouldShow = (durabilityCoeff >= 10.0);
-        m_wndResistance[resistanceIndex]->ShowWindow(shouldShow);
+        auto const coeff = targetVehicle->GetFullDurabilityCoeffForDamageType(static_cast<DamageType>(type));
+        m_wndResistance[type]->ShowWindow(coeff >= 10.0f);
     }
 }
 

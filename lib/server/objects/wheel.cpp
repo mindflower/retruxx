@@ -152,84 +152,36 @@ namespace ai
 
     bool Wheel::AttachToPhysicObj(PhysicObj const* physicObj)
     {
-        // TODO: check and refactor this
+        // RVA 0x5EEC30 - joins the wheel to the vehicle with a hinge-2 joint at the wheel's current position: axis 1
+        // (steering/suspension) is the vehicle's up, axis 2 (spin) is AXIS_FOR_WHEEL in the vehicle's frame.
         if (!physicObj)
-            return 0;
+        {
+            return false;
+        }
 
-        auto protoInfo = this->GetPrototypeInfo();
+        auto const* protoInfo = GetPrototypeInfo();
         LinkToParent(physicObj->GetId(), HIERARCHY_CHILD);
-        auto hinge = dJointCreateHinge2(ai::gGlobalWorld, 0);
+        m_jointID = dJointCreateHinge2(ai::gGlobalWorld, 0);
+        dJointAttach(m_jointID, physicObj->GetBody()->id(), m_body->id());
 
-        this->m_jointID = hinge;
-        dJointAttach(hinge, physicObj->GetBody()->id(), m_body->id());
+        CVector const anchorPos = GetPosition();
+        CMatrix rot;
+        rot.rotTranslate(physicObj->GetRotation(), ZeroVector);
+        dJointSetHinge2Axis1(m_jointID, rot._21, rot._22, rot._23);
+        dJointSetHinge2Axis2(
+            m_jointID,
+            rot._31 * AXIS_FOR_WHEEL.z + rot._21 * AXIS_FOR_WHEEL.y + rot._11 * AXIS_FOR_WHEEL.x,
+            rot._32 * AXIS_FOR_WHEEL.z + rot._22 * AXIS_FOR_WHEEL.y + rot._12 * AXIS_FOR_WHEEL.x,
+            rot._33 * AXIS_FOR_WHEEL.z + rot._23 * AXIS_FOR_WHEEL.y + rot._13 * AXIS_FOR_WHEEL.x);
+        dJointSetHinge2Anchor(m_jointID, anchorPos.x, anchorPos.y, anchorPos.z);
+        dJointSetHinge2Param(m_jointID, dParamSuspensionCFM, protoInfo->m_suspensionCFM);
+        dJointSetHinge2Param(m_jointID, dParamSuspensionERP, protoInfo->m_suspensionERP);
+        dJointSetHinge2Param(m_jointID, dParamFMax, 1000000.0f);
 
-        auto anchorPos = GetPosition();
-        auto rot = physicObj->GetRotation();
-
-        CMatrix vv;
-        vv._11 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.y * rot.y)) * 2.0);
-        vv._21 = (float)((float)(rot.x * rot.y) - (float)(rot.w * rot.z)) * 2.0;
-        vv._31 = (float)((float)(rot.w * rot.y) + (float)(rot.z * rot.x)) * 2.0;
-        vv._12 = (float)((float)(rot.w * rot.z) + (float)(rot.x * rot.y)) * 2.0;
-        vv._22 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.x * rot.x)) * 2.0);
-        vv._33 = 1.0 - (float)((float)((float)(rot.y * rot.y) + (float)(rot.x * rot.x)) * 2.0);
-        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
-        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.w * rot.y)) * 2.0;
-        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
-        vv._14 = 0.0;
-        vv._24 = 0.0;
-        memset(&vv.m[2][3], 0, 16);
-        vv._44 = 1.0;
-
-        auto x = (vv._31 + vv._11) * 0.0 + vv._21;
-        auto y = (vv._32 + vv._12) * 0.0 + vv._22;
-        auto z = (vv._33 + vv._13) * 0.0 + vv._23;
-
-        dJointSetHinge2Axis1(this->m_jointID, x, y, z);
-
-        auto v6 = rot.z;
-        vv._11 = 1.0 - (float)((float)((float)(v6 * v6) + (float)(rot.y * rot.y)) * 2.0);
-        vv._21 = (float)((float)(rot.x * rot.y) - (float)(rot.w * rot.z)) * 2.0;
-        vv._31 = (float)((float)(rot.w * rot.y) + (float)(rot.z * rot.x)) * 2.0;
-        vv._12 = (float)((float)(rot.w * rot.z) + (float)(rot.x * rot.y)) * 2.0;
-        vv._22 = 1.0 - (float)((float)((float)(v6 * v6) + (float)(rot.x * rot.x)) * 2.0);
-        vv._33 = 1.0 - (float)((float)((float)(rot.y * rot.y) + (float)(rot.x * rot.x)) * 2.0);
-        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
-        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.w * rot.y)) * 2.0;
-        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
-        vv._14 = 0.0;
-        vv._24 = 0.0;
-        memset(&vv.m[2][3], 0, 16);
-        vv._44 = 1.0;
-
-        auto xa = vv._31 * ai::Wheel::AXIS_FOR_WHEEL.z
-            + vv._21 * ai::Wheel::AXIS_FOR_WHEEL.y
-            + vv._11 * ai::Wheel::AXIS_FOR_WHEEL.x;
-        auto ya = vv._32 * ai::Wheel::AXIS_FOR_WHEEL.z
-            + vv._22 * ai::Wheel::AXIS_FOR_WHEEL.y
-            + vv._12 * ai::Wheel::AXIS_FOR_WHEEL.x;
-        auto za = vv._33 * ai::Wheel::AXIS_FOR_WHEEL.z
-            + vv._23 * ai::Wheel::AXIS_FOR_WHEEL.y
-            + vv._13 * ai::Wheel::AXIS_FOR_WHEEL.x;
-
-        dJointSetHinge2Axis2(this->m_jointID, xa, ya, za);
-        dJointSetHinge2Anchor(this->m_jointID, anchorPos.x, anchorPos.y, anchorPos.z);
-        dJointSetHinge2Param(this->m_jointID, 10, protoInfo->m_suspensionCFM);
-        dJointSetHinge2Param(this->m_jointID, 9, protoInfo->m_suspensionERP);
-        dJointSetHinge2Param(this->m_jointID, 3, 1000000.0);
-
-        if (this->m_steering)
-        {
-            dJointSetHinge2Param(m_jointID, 0, -3.1415927);
-            dJointSetHinge2Param(this->m_jointID, 1, 3.1415927);
-        }
-        else
-        {
-            dJointSetHinge2Param(m_jointID, 0, 0.0);
-            dJointSetHinge2Param(this->m_jointID, 1, 0.0);
-        }
-        return 1;
-
+        // A steering wheel may turn freely; the others are locked straight.
+        dJointSetHinge2Param(m_jointID, dParamLoStop, m_steering ? -3.1415927f : 0.0f);
+        dJointSetHinge2Param(m_jointID, dParamHiStop, m_steering ? 3.1415927f : 0.0f);
+        return true;
     }
 
     float Wheel::GetWidth() const
@@ -239,93 +191,14 @@ namespace ai
 
     CVector Wheel::GetDirection() const
     {
-        // TODO: generated code
-        // Get the inverse of the wheel's initial rotation
-        Quaternion initialRotInv = m_initialRotation.getInversed();
-
-        // Get the wheel's current rotation
-        Quaternion currentRot = GetRotation();
-
-        // Calculate the relative rotation: currentRot * initialRotInv
-        // This gives the rotation from initial orientation to current orientation
-        Quaternion relativeRot;
-        relativeRot.x = (currentRot.x * initialRotInv.w) +
-            (currentRot.y * initialRotInv.z) +
-            (currentRot.w * initialRotInv.x) -
-            (currentRot.z * initialRotInv.y);
-
-        relativeRot.y = (initialRotInv.x * currentRot.z) +
-            (currentRot.y * initialRotInv.w) +
-            (currentRot.w * initialRotInv.y) -
-            (currentRot.x * initialRotInv.z);
-
-        relativeRot.z = (currentRot.w * initialRotInv.z) +
-            (currentRot.z * initialRotInv.w) +
-            (currentRot.x * initialRotInv.y) -
-            (initialRotInv.x * currentRot.y);
-
-        relativeRot.w = (currentRot.w * initialRotInv.w) -
-            (currentRot.x * initialRotInv.x) -
-            (currentRot.y * initialRotInv.y) -
-            (currentRot.z * initialRotInv.z);
-
-        // Convert the relative rotation quaternion to a rotation matrix
-        float x = relativeRot.x;
-        float y = relativeRot.y;
-        float z = relativeRot.z;
-        float w = relativeRot.w;
-
-        // Precompute squared components for matrix calculation
-        float x2 = x * x;
-        float y2 = y * y;
-        float z2 = z * z;
-        float xy = x * y;
-        float xz = x * z;
-        float yz = y * z;
-        float wx = w * x;
-        float wy = w * y;
-        float wz = w * z;
-
-        // Build rotation matrix from quaternion
-        CMatrix rotationMatrix;
-        rotationMatrix._11 = 1.0f - 2.0f * (y2 + z2);
-        rotationMatrix._12 = 2.0f * (xy + wz);
-        rotationMatrix._13 = 2.0f * (xz - wy);
-        rotationMatrix._14 = 0.0f;
-
-        rotationMatrix._21 = 2.0f * (xy - wz);
-        rotationMatrix._22 = 1.0f - 2.0f * (x2 + z2);
-        rotationMatrix._23 = 2.0f * (yz + wx);
-        rotationMatrix._24 = 0.0f;
-
-        rotationMatrix._31 = 2.0f * (xz + wy);
-        rotationMatrix._32 = 2.0f * (yz - wx);
-        rotationMatrix._33 = 1.0f - 2.0f * (x2 + y2);
-        rotationMatrix._34 = 0.0f;
-
-        rotationMatrix._41 = 0.0f;
-        rotationMatrix._42 = 0.0f;
-        rotationMatrix._43 = 0.0f;
-        rotationMatrix._44 = 1.0f;
-
-        // Transform the wheel's forward axis by the rotation matrix
-        // This gives the current direction vector in world space
-        CVector wheelForwardAxis = ai::Wheel::AXIS_FOR_WHEEL; // Typically (1, 0, 0) or (0, 0, -1) depending on coordinate system
-
-        CVector result;
-        result.x = wheelForwardAxis.x * rotationMatrix._11 +
-            wheelForwardAxis.y * rotationMatrix._21 +
-            wheelForwardAxis.z * rotationMatrix._31;
-
-        result.y = wheelForwardAxis.x * rotationMatrix._12 +
-            wheelForwardAxis.y * rotationMatrix._22 +
-            wheelForwardAxis.z * rotationMatrix._32;
-
-        result.z = wheelForwardAxis.x * rotationMatrix._13 +
-            wheelForwardAxis.y * rotationMatrix._23 +
-            wheelForwardAxis.z * rotationMatrix._33;
-
-        return result;
+        // RVA 0x5EE040 - the wheel's axle: AXIS_FOR_WHEEL turned by the wheel's rotation relative to its initial one.
+        // NOTE: the shipped build inlines the product with its own summation order (last-bit differences possible).
+        CMatrix rot;
+        rot.rotTranslate(GetRotation() * m_initialRotation.getInversed(), ZeroVector);
+        return CVector(
+            rot._31 * AXIS_FOR_WHEEL.z + rot._21 * AXIS_FOR_WHEEL.y + rot._11 * AXIS_FOR_WHEEL.x,
+            rot._32 * AXIS_FOR_WHEEL.z + rot._22 * AXIS_FOR_WHEEL.y + rot._12 * AXIS_FOR_WHEEL.x,
+            rot._33 * AXIS_FOR_WHEEL.z + rot._23 * AXIS_FOR_WHEEL.y + rot._13 * AXIS_FOR_WHEEL.x);
     }
 
     void Wheel::CreateSuspensionNode()

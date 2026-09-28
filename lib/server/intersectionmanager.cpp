@@ -260,31 +260,25 @@ namespace ai
         bool bCheckBoxes,
         bool bCheckPlayerPassmap)
     {
-        // TODO: generated code
+        // RVA 0x7E9DD0 - calls nearCallback for every physic object and obstacle in the collision cells under
+        // pLookSphere whose intersection sphere overlaps it; the callback collects them through tmpObstacles.
         if (!pLookSphere)
         {
             return;
         }
 
         tmpObstacles = &objIds;
+        objIds.clear();
         tmpTargetClasses = &targetClasses;
         bPlayerPassCellCollided = false;
 
+        auto const cellAabb = pLookSphere->CountCellAabb();
+        m3d::Landscape& landscape = pServer->GetWorld()->GetLandscape();
         cntIntersectionCalls->IncI();
 
-        // Clear the result set
-        objIds.clear();
-
-        // Get sphere properties
-        CVector lookCenter = (float*)dGeomGetPosition(pLookSphere->GetGeomId());
+        CVector const lookCenter = (float*)dGeomGetPosition(pLookSphere->GetGeomId());
         float const lookRadius = pLookSphere->GetRadius();
 
-        // Calculate grid cells to check
-        auto const cellAabb = pLookSphere->CountCellAabb();
-
-        m3d::Landscape& landscape = pServer->GetWorld()->GetLandscape();
-
-        // Iterate through grid cells
         for (int x = cellAabb.x0; x <= cellAabb.x1; ++x)
         {
             for (int z = cellAabb.z0; z <= cellAabb.z1; ++z)
@@ -295,7 +289,6 @@ namespace ai
                     continue;
                 }
 
-                // Check physic objects in this cell
                 for (int objId : cellItem->m_physicObjIds)
                 {
                     cntObjectsChecked->IncI();
@@ -306,22 +299,18 @@ namespace ai
                         if (obj->IsKindOf(&ai::PhysicObj::m_classPhysicObj))
                         {
                             auto* object = (PhysicObj*)obj;
-                            // Check sphere intersection with physic object
                             if (object->m_intersectionObstacle)
                             {
                                 if (object->m_intersectionObstacle->bIsEnabled())
                                 {
                                     auto* objSphere = object->m_intersectionObstacle->GetSphere();
-                                    CVector sphereCenter = (float*)dGeomGetPosition(objSphere->GetGeomId());
-                                    float sphereRadius = objSphere->GetRadius();
+                                    CVector const sphereCenter = (float*)dGeomGetPosition(objSphere->GetGeomId());
+                                    float const sphereRadius = objSphere->GetRadius();
 
-                                    CVector diff;
-                                    diff.x = sphereCenter.x - lookCenter.x;
-                                    diff.y = sphereCenter.y - lookCenter.y;
-                                    diff.z = sphereCenter.z - lookCenter.z;
-
-                                    float distanceSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
-                                    float combinedRadius = sphereRadius + lookRadius;
+                                    CVector const diff = sphereCenter - lookCenter;
+                                    // The shipped summation order: x, z, y.
+                                    float const distanceSq = diff.x * diff.x + diff.z * diff.z + diff.y * diff.y;
+                                    float const combinedRadius = sphereRadius + lookRadius;
 
                                     cntIntersectingObjectsChecked->IncI();
 
@@ -347,14 +336,13 @@ namespace ai
                     }
                 }
 
-                // Check obstacles in this cell
                 for (auto const& obstacle : *cellItem->m_obstacles)
                 {
                     cntObjectsChecked->IncI();
 
+                    // NOTE: the shipped ref_ptr asserts on a null pointer before this check is reached.
                     if (!obstacle)
                     {
-                        // Log error: NULL obstacle
                         M3D_LOG_ERR("Error: NULL obstacle is linked to collision cell x = " + CStr(x) + ", y = " + CStr(z));
                         continue;
                     }
@@ -362,16 +350,13 @@ namespace ai
                     if (obstacle->bIsEnabled())
                     {
                         auto* obstacleSphere = obstacle->GetSphere();
-                        CVector sphereCenter = (float*)dGeomGetPosition(obstacleSphere->GetGeomId());
-                        float sphereRadius = obstacleSphere->GetRadius();
+                        CVector const sphereCenter = (float*)dGeomGetPosition(obstacleSphere->GetGeomId());
+                        float const sphereRadius = obstacleSphere->GetRadius();
 
-                        CVector diff;
-                        diff.x = sphereCenter.x - lookCenter.x;
-                        diff.y = sphereCenter.y - lookCenter.y;
-                        diff.z = sphereCenter.z - lookCenter.z;
-
-                        float distanceSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
-                        float combinedRadius = sphereRadius + lookRadius;
+                        CVector const diff = sphereCenter - lookCenter;
+                        // The shipped summation order: z, y, x.
+                        float const distanceSq = diff.z * diff.z + diff.y * diff.y + diff.x * diff.x;
+                        float const combinedRadius = sphereRadius + lookRadius;
 
                         cntIntersectingObjectsChecked->IncI();
 
@@ -391,9 +376,9 @@ namespace ai
                     }
                 }
 
-                // Check player passmap if requested
                 if (bCheckPlayerPassmap)
                 {
+                    // Every pass cell geom is tested, even after a hit.
                     for (auto* geomObject : cellItem->m_geomsList)
                     {
                         dContact contact;
@@ -401,7 +386,6 @@ namespace ai
                             dCollide(pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, 104))
                         {
                             bPlayerPassCellCollided = true;
-                            break;
                         }
                     }
                 }

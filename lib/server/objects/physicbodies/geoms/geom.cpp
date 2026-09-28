@@ -26,9 +26,8 @@ namespace ai
 
     Quaternion Geom::GetRotation() const
     {
+        // RVA 0x616DA0 - ODE stores quaternions as (w, x, y, z).
         float dq[4];
-
-        // TODO: check order
         dGeomGetQuaternion(this->m_geomId, dq);
 
         Quaternion result;

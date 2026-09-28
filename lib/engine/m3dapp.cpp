@@ -194,6 +194,7 @@ namespace m3d
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)
     {
+        // RVA 0x5A8CD0
         M3D_LOG_INFO(m_strWindowTitle);
 
         m_cmdLine.Init(cmdLine.c_str());
@@ -219,13 +220,13 @@ namespace m3d
             {
                 return 0;
             }
-            if (!m_renderer->Create(logDeviceFunc, g_Kernel))  //TODO: logFunc
+            if (!m_renderer->Create(logDeviceFunc, g_Kernel))
             {
                 M3D_LOG_ERR("ERROR! Application::init -- cannot create device");
-                return false;
+                return 0;
             }
             RegisterConsoleCommands();
-            //TODO: forcedWnd is right?
+            // Render into the caller's window when one is forced (editor embedding), else create our own.
             g_Kernel->GetEngineCfg().m_mainWnd = forcedWnd;
             if (!g_Kernel->GetEngineCfg().m_mainWnd)
             {
@@ -233,9 +234,10 @@ namespace m3d
                 wndClass.lpfnWndProc = &Application::WndProc;
                 wndClass.cbClsExtra = 0;
                 wndClass.cbWndExtra = 0;
-                wndClass.hInstance = hInstance;  //TODO: not sure about hInstance
+                wndClass.hInstance = hInstance;
                 wndClass.hIcon = hIcon;
-                wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+                // NOTE: the original registers the class without a cursor; MsgProc answers WM_SETCURSOR itself.
+                wndClass.hCursor = NULL;
                 wndClass.hbrBackground = 0;
                 wndClass.lpszMenuName = 0;
                 wndClass.lpszClassName = TEXT("Miracle3d");
@@ -309,10 +311,11 @@ namespace m3d
                     doneRenderer();
                     return 0;
                 }
-                else if (!createSound())
+                if (!createSound())
                 {
-                    g_Kernel->GetEngineCfg().m_snd_Enable.SetB(false);
-                    g_Kernel->GetEngineCfg().m_mus_Enable.SetB(false);
+                    // Unlike createSound, these respect CVAR_READONLY.
+                    g_Kernel->GetEngineCfg().m_snd_Enable.SetI(0, false);
+                    g_Kernel->GetEngineCfg().m_mus_Enable.SetI(0, false);
                 }
                 createSprite();
                 createProcTexThread();
@@ -349,7 +352,7 @@ namespace m3d
                 if (!InitImpulses())
                 {
                     M3D_LOG_ERR("Error: fail to init impulses");
-                    //TODO: doneRenderer???
+                    // NOTE: unlike the other failure paths, the original releases nothing here.
                     return 0;
                 }
 
@@ -378,8 +381,10 @@ namespace m3d
                 doneRenderer();
                 return 0;
             }
-            g_Kernel->MessageBox(NULL, TEXT("error"), TEXT("cannot initialize 3d"), MB_ICONHAND);
+            // NOTE: the original passes the caption as the text and vice versa.
+            g_Kernel->MessageBox(NULL, TEXT("error"), TEXT("cannot initialize 3d"), MB_OK);
             M3D_LOG_ERR("ERROR! Application::init -- cannot initialize 3d");
+            doneRenderer();
             return 0;
         }
         M3D_LOG_ERR("ERROR! Application::init -- cannot open cfg: " + configName);
@@ -394,9 +399,11 @@ namespace m3d
 
     int Application::ImmediateMessage(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
     {
+        // RVA 0x5A71F0
         Event ev;
-        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
-        ev.m_eventType = msg;  //TODO: check this
+        // Reads the timer's current time as is, without advancing it, and converts it to seconds.
+        ev.m_timeStamp = g_Kernel->GetTimer()._GetCurTime() * 0.001;
+        ev.m_eventType = msg;
         ev.m_intEv[0] = p0;
         ev.m_intEv[1] = p1;
         ev.m_intEv[2] = p2;
@@ -413,6 +420,7 @@ namespace m3d
 
     int Application::OneFrame()
     {
+        // RVA 0x5A3AD0
         if (M3dVideoPlayer->IsVideoPlaing())
         {
             m_enginePlayingVideo = true;
@@ -440,7 +448,6 @@ namespace m3d
                     FrameProfilerPtr renderProfilerPtr(renderProfiler);
                     if (m_renderer->BeginScene())
                     {
-                        //TODO: ClearViewport second arg
                         if (m_renderer->IsFeatureSupported(rend::FEATURE_STENCIL))
                         {
                             m_renderer->ClearViewport(rend::M3DCLEAR_CZS, m_frameClearColor);
@@ -449,7 +456,7 @@ namespace m3d
                         {
                             m_renderer->ClearViewport(rend::M3DCLEAR_CZ, m_frameClearColor);
                         }
-                        //TODO: check this
+                        // A CanRender() result of 2 forces a full redraw, like m_appNeedToRedraw.
                         if (rend == 2 || m_appNeedToRedraw)
                         {
                             Render(true);
@@ -459,11 +466,13 @@ namespace m3d
                         {
                             Render(false);
                         }
-                        auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
-                        FrameProfilerPtr uiProfilerPtr(uiProfiler);
-                        Repaint();
-                        FlushGfx(m_renderer);
-                        //TODO: theck this
+                        {
+                            auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
+                            FrameProfilerPtr uiProfilerPtr(uiProfiler);
+                            Repaint();
+                            FlushGfx(m_renderer);
+                        }
+                        // The debug overlays below are drawn without depth testing.
                         g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
                         if (m_bDrawGraph)
                         {
@@ -804,8 +813,11 @@ namespace m3d
                     }
                     m_renderer->PresentScene();
                 }
-                //TODO: add strings
-                CStr fps = " fps [";
+                // Header line of the render stats overlay, e.g. "60.0 fps [1024x768x32]".
+                auto const viewportWidth = m_renderer->GetViewport().m_width;
+                auto const viewportHeight = m_renderer->GetViewport().m_height;
+                m_frameStats = CStr(g_Kernel->GetTimer().GetRawFPS()) + CStr(" fps [") + CStr(viewportWidth) +
+                    CStr("x") + CStr(viewportHeight) + CStr("x") + CStr(m_renderer->GetCurBppStr(nullptr)) + CStr("]");
             }
         }
         return 1;
@@ -846,33 +858,31 @@ namespace m3d
 
     int Application::processWinMessages()
     {
-        //TODO: wmquitmsg - static atomic or what?
+        // RVA 0x59FA20
+        // The original keeps this flag in a plain file-scope byte: once WM_QUIT has been seen, every later
+        // call reports it again. Only the main thread pumps messages, so no synchronisation is needed.
         static bool wmQuitMsg = false;
         m_mouseInfo.ResetDelta();
         MSG msg;
-        if (!PeekMessage(&msg, 0, 0, 0, 1))
+        while (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            return !wmQuitMsg;
-        }
-        while (msg.message != 18)
-        {
-            if (!m_isAppActive && GetMessage(&msg, 0, 0, 0))
+            if (msg.message == WM_QUIT)
             {
-                do
+                wmQuitMsg = true;
+                return 0;
+            }
+            if (!m_isAppActive)
+            {
+                // While the app is inactive, block in GetMessage until it is activated again.
+                while (::GetMessageA(&msg, NULL, 0, 0) && !m_isAppActive)
                 {
-                    if (m_isAppActive)
-                        break;
-                    DispatchMessageA(&msg);
-                } while (GetMessageA(&msg, 0, 0, 0));
+                    ::DispatchMessageA(&msg);
+                }
             }
-            DispatchMessage(&msg);
-            if (!PeekMessage(&msg, 0, 0, 0, 1))
-            {
-                return !wmQuitMsg;
-            }
+            // NOTE: the original never calls TranslateMessage, so no WM_CHAR is generated here.
+            ::DispatchMessageA(&msg);
         }
-        wmQuitMsg = true;
-        return 0;
+        return !wmQuitMsg;
     }
 
     int Application::FillEngineMessages()
@@ -1146,84 +1156,74 @@ namespace m3d
 
     long Application::MsgProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
     {
-        //TODO: check this and refactor
-        int result;                  // eax
-        PointBase<int> curMousePos;  // [esp+8h] [ebp-30h] BYREF
-        CStr param4;                 // [esp+10h] [ebp-28h] BYREF
-
-        if (uMsg <= 0x21)
+        // RVA 0x5A7D80
+        switch (uMsg)
         {
-            if (uMsg < 0x20)
+        case WM_DESTROY:
+            ::PostQuitMessage(0);
+            return 0;
+        case WM_CLOSE:
+            ::DestroyWindow(hWnd);
+            return 0;
+        case WM_ACTIVATEAPP:
+            ImmediateMessage(2, wParam, 0, 0, 0, {}, {});
+            return 0;
+        case WM_ACTIVATE:
+        case WM_SETFOCUS:
+        case WM_SETCURSOR:
+        case WM_MOUSEACTIVATE:
+        case WM_NCACTIVATE:
+            // Hide the system cursor; the DX cursor, when enabled, is drawn instead.
+            ::SetCursor(NULL);
+            if (m_bDXCursorEnabled && M3D_RENDERER)
             {
-                switch (uMsg)
-                {
-                case 2u:
-                    PostQuitMessage(0);
-                    result = 0;
-                    break;
-                case 6u:
-                case 7u:
-                    goto $L141541;
-                case 0x10u:
-                    DestroyWindow(hWnd);
-                    result = 0;
-                    break;
-                case 0x1Cu:
-                    ImmediateMessage(2, wParam, 0, 0, 0, {}, {});
-                    result = 0;
-                    break;
-                default:
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-                }
-                return result;
-            }
-        $L141541:
-            SetCursor(0);
-            if (this->m_bDXCursorEnabled)
-            {
-                if (M3D_RENDERER)
-                    M3D_RENDERER->ShowDXCursor(1);
+                M3D_RENDERER->ShowDXCursor(1);
             }
             return 1;
-        }
-        if (uMsg > 0x200)
-        {
-            if (uMsg == 536)
-                return 1112363332;
-            return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-        }
-        if (uMsg != 512)
-        {
-            if (uMsg == 134)
-                goto $L141541;
-            if (uMsg == 274 && ((wParam & 0xFFF0) == 61760 || (wParam & 0xFFF0) == 61808))
+        case WM_SYSCOMMAND:
+            // Keep the screen saver and monitor power-off from kicking in.
+            if ((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
+            {
                 return 0;
-            return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-        }
-        if (!this->m_isAppActive || !this->m_bDXCursorEnabled)
+            }
+            break;
+        case WM_MOUSEMOVE:
+        {
+            if (!m_isAppActive || !m_bDXCursorEnabled)
+            {
+                return 0;
+            }
+            PointBase<int> const curMousePos(LOWORD(lParam), HIWORD(lParam));
+            m_mouseInfo.SetUpForCurPos(curMousePos);
+            if (m_bDXCursorEnabled && M3D_RENDERER)
+            {
+                M3D_RENDERER->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
+            }
             return 0;
-        curMousePos.x = LOWORD(lParam);
-        curMousePos.y = HIWORD(lParam);
-        m_mouseInfo.SetUpForCurPos(curMousePos);
-        if (this->m_bDXCursorEnabled && M3D_RENDERER)
-            M3D_RENDERER->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
-        return 0;
+        }
+        case WM_POWERBROADCAST:
+            // Refuse suspend requests.
+            return BROADCAST_QUERY_DENY;
+        }
+        return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
     }
 
     void Application::SetCodepage()
     {
-        //TODO: check this
+        // RVA 0x5A7450
+        // NOTE: the installed code pages are collected but never used afterwards.
         retruxx::set<size_t> codePagesStrings;
         codePagesStringsPtr = &codePagesStrings;
         ::EnumSystemCodePages(EnumCodePagesProc, CP_INSTALLED);
         CStr const codePageName = g_Kernel->GetEngineCfg().m_ui_codePageName.GetS();
-        UINT codePage = 0;
+        UINT codePage = CP_ACP;
         if (codePageName == CStr("CP_UTF8"))
         {
             codePage = CP_UTF8;
         }
-        else if (auto const offset = codePageName.findsubstr("windows-"); offset != CStr_npos)
+        else if (codePageName.findsubstr("windows-") != CStr_npos)
         {
+            // NOTE: "windows-" is searched anywhere, but the number is always read right after the first 8 chars.
             codePage = std::atoi(codePageName.substr(strlen("windows-")).c_str());
         }
         if (::GetCPInfoEx(codePage, 0, &g_pApp->m_codePage) == FALSE)
@@ -1231,13 +1231,14 @@ namespace m3d
             M3D_LOG_INFO(
                 "SetCodepage -- code page is not supported : " + codePageName +
                 " forcing ANSI, some chars will be not available");
-            //TODO: handle this
-            if (::GetCPInfoEx(0, 0, &g_pApp->m_codePage) == FALSE)
+            if (::GetCPInfoEx(CP_ACP, 0, &g_pApp->m_codePage) == FALSE)
             {
-                SYS_ERROR("GetCPInfoEx ANSI failed");
+                SYS_ERROR("res");
             }
         }
-        M3D_LOG_INFO(CStr("SetCodepage -- using codepage ") + g_pApp->m_codePage.CodePageName);
+        M3D_LOG_INFO(
+            CStr("SetCodepage -- using codepage ") + CStr(g_pApp->m_codePage.CodePage) + CStr(" '") +
+            CStr(g_pApp->m_codePage.CodePageName) + CStr("'"));
     }
 
     int Application::createRenderer()
@@ -1320,31 +1321,36 @@ namespace m3d
 
     int Application::createSound()
     {
-        //TODO: check correctness
+        // RVA 0x5A0200
+        CStr const soundDriverName("sound.dll");
+        m_sound = nullptr;
         auto& config = g_Kernel->GetEngineCfg();
         if (!config.m_snd_Enable.GetB() && !config.m_mus_Enable.GetB())
         {
             return 1;
         }
-        CStr inputDriverName("sound.dll");
-        m_hSoundDll = ::LoadLibrary(inputDriverName.c_str());
+        auto const disableSound = [&config]()
+        {
+            config.m_snd_Enable.SetI(0, true);
+            config.m_mus_Enable.SetI(0, true);
+        };
+
+        m_hSoundDll = ::LoadLibraryA(soundDriverName.c_str());
         if (m_hSoundDll == NULL)
         {
-            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + inputDriverName);
-            M3D_LOG_ERR("GetLastError() = " + CStr(::GetLastError()));
-            config.m_snd_Enable.SetB(false);
-            config.m_mus_Enable.SetB(false);
+            // NOTE: this path leaves the cvars alone; init() turns sound off after the failure.
+            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + soundDriverName);
             return 0;
         }
         auto createISound = reinterpret_cast<CreateISoundType>(::GetProcAddress(m_hSoundDll, "createISound"));
         if (createISound == NULL)
         {
             M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot get factory");
-            config.m_snd_Enable.SetB(false);
-            config.m_mus_Enable.SetB(false);
+            disableSound();
             return 0;
         }
-        for (int trial = 0; trial < 3; ++trial)
+
+        for (int trial = 1; trial <= 3; ++trial)
         {
             m_sound = createISound(g_Kernel);
             if (m_sound != nullptr)
@@ -1354,38 +1360,40 @@ namespace m3d
             M3D_LOG_INFO("Warning: sound was not created after trial " + CStr(trial));
             ::Sleep(1000);
         }
-        if (m_sound != nullptr)
+        if (m_sound == nullptr)
         {
-            m_sound->IncRef();
-            M3D_LOG_INFO("NOTE! sound is bind to " + inputDriverName);
-            auto isSoundInit = false;
-            for (int trial = 0; trial < 3; ++trial)
+            disableSound();
+            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot instantiate sound");
+            return 0;
+        }
+
+        m_sound->IncRef();
+        M3D_LOG_INFO("NOTE! sound is bind to " + soundDriverName);
+        for (int trial = 1; trial <= 3; ++trial)
+        {
+            if (m_sound->Init(
+                    logSoundFunc,
+                    config.m_snd_SampleRate.GetI(),
+                    config.m_snd_BitsPerSample.GetI(),
+                    config.m_snd_MaxSounds.GetI(),
+                    config.m_snd_pathToSoundGroups.GetS()))
             {
-                auto const sampleRate = config.m_snd_SampleRate.GetI();
-                auto const maxSounds = config.m_snd_MaxSounds.GetI();
-                auto const pathToSoundGroup = config.m_snd_pathToSoundGroups.GetS();
-                auto const bitsPerSample = config.m_snd_BitsPerSample.GetI();
-                if (m_sound->Init(logSoundFunc, sampleRate, bitsPerSample, maxSounds, pathToSoundGroup))
-                {
-                    isSoundInit = true;
-                    break;
-                }
-                M3D_LOG_INFO("Warning: sound was not inited after trial " + CStr(trial));
-                ::Sleep(1000);
-            }
-            if (isSoundInit)
-            {
-                //TODO: improve logic
+                // Volume cvars forward their changes to the sound driver.
                 m_soundConHandler = new SoundConHandler{};
                 config.m_mus_Volume.SetHandler(m_soundConHandler);
                 config.m_snd_2dVolume.SetHandler(m_soundConHandler);
                 config.m_snd_3dVolume.SetHandler(m_soundConHandler);
-                return true;
+                return 1;
             }
+            M3D_LOG_INFO("Warning: sound was not inited after trial " + CStr(trial));
+            ::Sleep(1000);
         }
-        config.m_snd_Enable.SetB(false);
-        config.m_mus_Enable.SetB(false);
-        return false;
+
+        M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot init sound");
+        disableSound();
+        m_sound->DecRef();
+        m_sound = nullptr;
+        return 0;
     }
 
     void Application::doneSprite()
@@ -1669,12 +1677,12 @@ namespace m3d
 
     int Application::OnLoosingFocus()
     {
+        // RVA 0x59C4C0
         if (m_pImpulses)
         {
             m_pImpulses->ResetAllImpulses(false);
         }
         m_gotFocus = false;
-        //TODO: check this
         m_mouseDown = 0;
         return 1;
     }
@@ -1825,41 +1833,15 @@ namespace m3d
 
     void Application::DrawCross(CVector const& org, float size, unsigned color)
     {
-        // TODO: generated code Application::DrawCross
-        // Draw a 3D cross centered at 'org' with arms of length 'size' in each axis
-
-        // Loop through each axis (X, Y, Z)
+        // RVA 0x7B04A0
+        // One line of length 2 * size along each world axis, centred on org.
         for (int axis = 0; axis < 3; ++axis)
         {
-            // Create vectors for the positive and negative ends of this axis
             CVector positiveEnd = ZeroVector;
             CVector negativeEnd = ZeroVector;
-
-            // Set the appropriate component for this axis
-            switch (axis)
-            {
-            case 0:  // X-axis
-                positiveEnd.x = size;
-                negativeEnd.x = -size;
-                break;
-
-            case 1:  // Y-axis
-                positiveEnd.y = size;
-                negativeEnd.y = -size;
-                break;
-
-            case 2:  // Z-axis
-                positiveEnd.z = size;
-                negativeEnd.z = -size;
-                break;
-            }
-
-            // Calculate the actual world positions
-            CVector from = org + negativeEnd;
-            CVector to = org + positiveEnd;
-
-            // Draw the line for this axis
-            DrawLine(from, to, color);
+            (&positiveEnd.x)[axis] = size;
+            (&negativeEnd.x)[axis] = 0.0f - size;
+            g_pApp->DrawLine(org + negativeEnd, org + positiveEnd, color);
         }
     }
 
@@ -1949,14 +1931,16 @@ namespace m3d
 
     bool Application::StartPlayingMusic(char const* musicName, bool bDoLoop, bool bImmediate)
     {
+        // RVA 0x59F370
         auto item = M3D_APP->m_serverMusic->GetItemByName(musicName, true);
         if (item == -1)
         {
+            // An unknown name is only reported while music is enabled, but always fails.
             if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
             {
                 M3D_LOG_ERR("Error: invalid music name: '" + CStr(musicName) + "'");
-                return false;
             }
+            return false;
         }
 
         struct RenderInfo
@@ -1972,6 +1956,7 @@ namespace m3d
         ri.m_bImmediate = bImmediate;
         ri.m_channelId = -1;
         M3D_APP->m_serverMusic->RenderItem(item, &ri);
+        return true;
     }
 
     DataServer& Application::GetProjectorsServer()
@@ -2380,96 +2365,68 @@ namespace m3d
         float imageRotationCenterX,
         float imageRotationCenterY)
     {
-        // TODO: generated code Application::PutSpriteRelRot
-        // Initialize vertex positions (unrotated quad centered at origin)
-        float x0 = -sizeX;
-        float y0 = -sizeY;
-        float x1 = sizeX;
-        float y1 = -sizeY;
-        float x2 = sizeX;
-        float y2 = sizeY;
-        float x3 = -sizeX;
-        float y3 = sizeY;
-
-        // Apply vertex rotation if needed
+        // RVA 0x672FF0
+        // Quad corners around the centre, in relative units, optionally rotated about the vertex rotation centre.
+        float x[4] = {0.0f - sizeX, sizeX, sizeX, 0.0f - sizeX};
+        float y[4] = {0.0f - sizeY, 0.0f - sizeY, sizeY, sizeY};
         if (vertexAngle != 0.0f)
         {
-            float sinVert = std::sin(vertexAngle);
-            float cosVert = std::cos(vertexAngle);
-
-            // Rotate each vertex around the vertex rotation center
-            auto rotatePoint = [&](float& x, float& y)
+            float const s = std::sin(vertexAngle);
+            float const c = std::cos(vertexAngle);
+            for (int i = 0; i < 4; ++i)
             {
-                float dx = x - vertexRotationCenterX;
-                float dy = y - vertexRotationCenterY;
-                x = dx * cosVert - dy * sinVert + vertexRotationCenterX;
-                y = dy * cosVert + dx * sinVert + vertexRotationCenterY;
-            };
-
-            rotatePoint(x0, y0);
-            rotatePoint(x1, y1);
-            rotatePoint(x2, y2);
-            rotatePoint(x3, y3);
+                float const dx = x[i] - vertexRotationCenterX;
+                float const dy = y[i] - vertexRotationCenterY;
+                x[i] = dx * c - dy * s + vertexRotationCenterX;
+                y[i] = dy * c + dx * s + vertexRotationCenterY;
+            }
         }
 
-        // Initialize texture coordinates (unrotated)
-        float u0 = 0.0f, v0 = 0.0f;  // top-left
-        float u1 = 1.0f, v1 = 0.0f;  // top-right
-        float u2 = 1.0f, v2 = 1.0f;  // bottom-right
-        float u3 = 0.0f, v3 = 1.0f;  // bottom-left
-
-        // Convert all coordinates from relative to absolute
+        float u[4] = {0.0f, 1.0f, 1.0f, 0.0f};
+        float v[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+        // NOTE: sizeX/sizeY are converted but no longer used, and the image rotation centre is converted
+        // to pixels before it rotates texture coordinates in the 0..1 range. Both as in the original.
         m_renderer->RelToAbs(centerX, centerY);
-        m_renderer->RelToAbs(sizeX, sizeY);  // Note: sizeX/sizeY not used after this
-        m_renderer->RelToAbs(x0, y0);
-        m_renderer->RelToAbs(x1, y1);
-        m_renderer->RelToAbs(x2, y2);
-        m_renderer->RelToAbs(x3, y3);
+        m_renderer->RelToAbs(sizeX, sizeY);
+        for (int i = 0; i < 4; ++i)
+        {
+            m_renderer->RelToAbs(x[i], y[i]);
+        }
         m_renderer->RelToAbs(vertexRotationCenterX, vertexRotationCenterY);
         m_renderer->RelToAbs(imageRotationCenterX, imageRotationCenterY);
-
-        // Apply texture rotation if needed
         if (imageAngle != 0.0f)
         {
-            float sinImg = std::sin(imageAngle);
-            float cosImg = std::cos(imageAngle);
-
-            // Rotate each texture coordinate around the image rotation center
-            auto rotateTexCoord = [&](float& u, float& v)
+            float const s = std::sin(imageAngle);
+            float const c = std::cos(imageAngle);
+            for (int i = 0; i < 4; ++i)
             {
-                float du = u - imageRotationCenterX;
-                float dv = v - imageRotationCenterY;
-                u = du * cosImg - dv * sinImg + imageRotationCenterX;
-                v = dv * cosImg + du * sinImg + imageRotationCenterY;
-            };
-
-            rotateTexCoord(u0, v0);
-            rotateTexCoord(u1, v1);
-            rotateTexCoord(u2, v2);
-            rotateTexCoord(u3, v3);
+                float const du = u[i] - imageRotationCenterX;
+                float const dv = v[i] - imageRotationCenterY;
+                u[i] = du * c - dv * s + imageRotationCenterX;
+                v[i] = dv * c + du * s + imageRotationCenterY;
+            }
         }
 
-        // Call the absolute positioning function with translated vertices
+        // PutSprite2Abs takes the corners in strip order: 0, 1, 3, 2.
         PutSprite2Abs(
-            x0 + centerX,
-            y0 + centerY,  // vertex 0
-            x1 + centerX,
-            y1 + centerY,  // vertex 1
-            x3 + centerX,
-            y3 + centerY,  // vertex 3
-            x2 + centerX,
-            y2 + centerY,  // vertex 2
-            u0,
-            v0,  // texcoord 0
-            u1,
-            v1,  // texcoord 1
-            u3,
-            v3,  // texcoord 3
-            u2,
-            v2,    // texcoord 2
-            0.0f,  // unknown parameter (possibly z-coordinate)
-            color  // color
-        );
+            x[0] + centerX,
+            y[0] + centerY,
+            x[1] + centerX,
+            y[1] + centerY,
+            x[3] + centerX,
+            y[3] + centerY,
+            x[2] + centerX,
+            y[2] + centerY,
+            u[0],
+            v[0],
+            u[1],
+            v[1],
+            u[3],
+            v[3],
+            u[2],
+            v[2],
+            0.0f,
+            color);
     }
 
     void Application::SetMouseXAxisFlipped(bool bFlip)
@@ -2496,11 +2453,15 @@ namespace m3d
 
     rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
     {
-        // TODO: check this
-        if ((unsigned int)(this->m_numPointsVerts + 4) >= 0xFA0)
+        // RVA 0x7AFED0
+        // Reserves the next four vertices of the quad batch, flushing it first when it is full.
+        if (static_cast<unsigned>(m_numPointsVerts + 4) >= 4000)
+        {
             FlushQuads();
-        this->m_numPointsVerts = m_numPointsVerts + 4;
-        return &this->m_pointsVertsCt1[m_numPointsVerts];
+        }
+        auto* const quad = &m_pointsVertsCt1[m_numPointsVerts];
+        m_numPointsVerts += 4;
+        return quad;
     }
 
     void Application::LoadFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -2793,208 +2754,187 @@ namespace m3d
 
     int Application::GetTextFit(CStr const& strText, PointBase<float>& size, float maxX, TextWrapFlags flags)
     {
-        // TODO: generated code
+        // RVA 0x6878D0
         if (flags == TW_NOWRAP)
         {
             GetTextExtent(strText, size, -1, 0, 0, 0, 0, 0);
             return 1;
         }
 
-        std::vector<ui::FormattedLine> linesOfText;
-        CStr src = strText;
-
-        CStr line;
-        CStr lhs;
-        float x = 0.0f;
-        float lineHeight = 0.0f;
-        float totalHeight = 0.0f;
-        //float maxLineWidth = 0.0f;
-        int lastColor = 0;
-        int wordCount = 0;
-        int lastWordPos = 0;
-
-        int textLen = src.length();
-        int currentPos = 0;
-
-        float availableWidth = maxX + 0.01f;  // Small epsilon
-
-        while (currentPos < textLen)
+        // Breaks the text into lines no wider than wrapWidth (the same inlined layout loop appears twice in
+        // the original).
+        auto const wrapLines = [this, &strText, flags](float wrapWidth)
         {
-            CStr word;
-            int nextWordPos;
+            std::vector<ui::FormattedLine> lines;
+            CStr const src = strText;
+            CStr line;
+            CStr prevWord;
+            float lineWidth = 0.0f;
+            float lineHeight = 0.0f;
+            float originY = 0.0f;
+            unsigned lastColor = 0xFFFFFFFF;
+            int numWords = 0;
+            int prevNextWordPos = -1;
+            int pos = 0;
+            int const textLen = static_cast<int>(src.length());
+            double const maxLineWidth = static_cast<double>(wrapWidth) + 0.01;
+            // A separating space goes between words unless the line is empty or either side is a space.
+            auto const separator = [&](CStr const& word)
+            { return (line.length() != 0 && !(prevWord == " ") && !(word == " ")) ? " " : ""; };
 
-            GetWord(src, currentPos, flags, word, nextWordPos);
-
-            bool forceBreak = false;
-            if (lastWordPos != -1)
+            while (pos < textLen)
             {
-                int prevPos = currentPos - 1;
-                if (prevPos < textLen && prevPos > 0 && src[prevPos] == '|')
+                CStr word;
+                int nextWordPos = -1;
+                GetWord(src, pos, flags, word, nextWordPos);
+
+                // An unescaped '|' right before this word forces a line break.
+                bool forceBreak = false;
+                if (prevNextWordPos != -1)
                 {
-                    forceBreak = !IsEscSymbolBeforeSymbol(src, prevPos);
+                    int const barPos = pos - 1;
+                    if (barPos < textLen && barPos > 0 && src[barPos] == '|')
+                    {
+                        forceBreak = !IsEscSymbolBeforeSymbol(src, barPos);
+                    }
                 }
-            }
 
-            // Update position
-            if (nextWordPos == 0)
-            {
-                currentPos++;
-            }
-            else if (nextWordPos == -1)
-            {
-                currentPos = textLen;
-            }
-            else
-            {
-                int newPos = currentPos + nextWordPos;
-                if (newPos < textLen && src[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                if (nextWordPos == -1)
                 {
-                    currentPos = newPos + 1;
+                    pos = textLen;
                 }
                 else
                 {
-                    currentPos = newPos;
-                }
-            }
-
-            PointBase<float> wordSize;
-            if (flags == TW_CHAR_WRAP)
-            {
-                GetTextExtent(word, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-            else
-            {
-                // Handle word wrapping with spaces
-                CStr temp = word;
-                if (line.c_str()[0] != '\0' && !(lhs == " ") && !(word == " "))
-                {
-                    temp += " ";
-                }
-                GetTextExtent(temp, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-
-            if (wordSize.x + x > availableWidth || forceBreak)
-            {
-                // Create new line
-                ui::FormattedLine newLine;
-                newLine.m_origin.x = 0.0f;
-                newLine.m_origin.y = totalHeight;
-
-                if (wordCount > 0)
-                {
-                    newLine.m_text = line;
-                }
-                else
-                {
-                    newLine.m_text = word;
+                    int const wordEnd = pos + nextWordPos;
+                    if (wordEnd >= 0 && wordEnd < textLen && src[wordEnd] == '|' &&
+                        !IsEscSymbolBeforeSymbol(src, wordEnd))
+                    {
+                        pos = wordEnd + 1;  // skip the line-break marker
+                    }
+                    else if (nextWordPos == 0)
+                    {
+                        ++pos;
+                    }
+                    else
+                    {
+                        pos = wordEnd;
+                    }
                 }
 
-                newLine.m_color = static_cast<unsigned int>(lastColor);
-                newLine.m_isHieroglyphic = false;
-                newLine.m_format = TF_LEFT;
-
-                linesOfText.push_back(newLine);
-
-                // Update color tracking
-                int foundColor = FindLastColorInStr(line);
-                if (foundColor != 0)
-                {
-                    lastColor = foundColor;
-                }
-
-                if (lineHeight == 0.0f)
-                {
-                    lineHeight = wordSize.y;
-                }
-                totalHeight += lineHeight;
-
-                // Reset line
-                if (wordCount > 0)
-                {
-                    line = word;
-                    wordCount = 1;
-                }
-                else
-                {
-                    line = "";
-                    wordCount = 0;
-                }
-
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                x = wordSize.x;
-                lineHeight = wordSize.y;
-            }
-            else
-            {
-                // Add to current line
+                // NOTE: in word-wrap mode the fit test measures the word with a trailing separator.
+                PointBase<float> ext;
                 if (flags == TW_CHAR_WRAP)
                 {
-                    line += word;
+                    GetTextExtent(word, ext, -1, 0, 0, 0, 0, 0);
                 }
                 else
                 {
-                    if (line.c_str()[0] != '\0' && !(lhs == " ") && !(word == " "))
-                    {
-                        line += " ";
-                    }
-                    line += word;
+                    GetTextExtent(word + CStr(separator(word)), ext, -1, 0, 0, 0, 0, 0);
                 }
-                wordCount++;
 
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                x = wordSize.x;
-                if (wordSize.y > lineHeight)
+                if (ext.x + lineWidth > maxLineWidth || forceBreak)
                 {
-                    lineHeight = wordSize.y;
+                    ui::FormattedLine newLine;
+                    newLine.m_origin.x = 0.0f;
+                    newLine.m_origin.y = originY;
+                    newLine.m_text = numWords ? line : word;
+                    newLine.m_color = lastColor;
+                    if (unsigned const color = FindLastColorInStr(line))
+                    {
+                        lastColor = color;
+                    }
+                    newLine.m_isHieroglyphic = false;
+                    newLine.m_format = TF_LEFT;
+                    lines.push_back(newLine);
+
+                    if (lineHeight == 0.0f)
+                    {
+                        lineHeight = ext.y;
+                    }
+                    originY += lineHeight;
+                    // NOTE: when the line was empty, the overlong word went into the pushed line and the next
+                    // line starts empty.
+                    if (numWords)
+                    {
+                        line = word;
+                        numWords = 1;
+                    }
+                    else
+                    {
+                        line = CStr("");
+                    }
+                    GetTextExtent(line, ext, -1, 0, 0, 0, 0, 0);
+                    lineWidth = ext.x;
+                    lineHeight = ext.y;
                 }
+                else
+                {
+                    if (flags == TW_CHAR_WRAP)
+                    {
+                        line += word;
+                    }
+                    else
+                    {
+                        line += CStr(separator(word)) + word;
+                    }
+                    ++numWords;
+                    GetTextExtent(line, ext, -1, 0, 0, 0, 0, 0);
+                    lineWidth = ext.x;
+                    if (ext.y > lineHeight)
+                    {
+                        lineHeight = ext.y;
+                    }
+                }
+                prevWord = word;
+                prevNextWordPos = nextWordPos;
             }
 
-            lhs = word;
-            lastWordPos = nextWordPos;
-        }
-
-        // Handle remaining text
-        if (line.c_str()[0] != '\0')
-        {
-            ui::FormattedLine newLine;
-            newLine.m_origin.x = 0.0f;
-            newLine.m_origin.y = totalHeight;
-            newLine.m_text = line;
-            newLine.m_color = static_cast<unsigned int>(lastColor);
-            newLine.m_isHieroglyphic = false;
-            newLine.m_format = TF_LEFT;
-            linesOfText.push_back(newLine);
-        }
-
-        // Calculate final dimensions
-        float maxWidth = 0.0f;
-        float totalTextHeight = 0.0f;
-
-        for (auto const& formattedLine : linesOfText)
-        {
-            PointBase<float> lineSize;
-            if (formattedLine.m_text.c_str()[0] != '\0')
+            if (line.length() != 0)
             {
-                GetTextExtent(formattedLine.m_text, lineSize, -1, 0, 0, 0, 0, 0);
+                ui::FormattedLine newLine;
+                newLine.m_origin.x = 0.0f;
+                newLine.m_origin.y = originY;
+                newLine.m_text = line;
+                newLine.m_color = lastColor;
+                newLine.m_isHieroglyphic = false;
+                newLine.m_format = TF_LEFT;
+                lines.push_back(newLine);
+            }
+            return lines;
+        };
+
+        // First pass: find the widest line when wrapping at maxX.
+        float maxWidth = 0.0f;
+        for (auto const& formattedLine : wrapLines(maxX))
+        {
+            PointBase<float> ext;
+            GetTextExtent(formattedLine.m_text, ext, -1, 0, 0, 0, 0, 0);
+            maxWidth = (std::max)(maxWidth, ext.x);
+        }
+        size.x = maxWidth;
+
+        // NOTE: second pass wraps again at that width. Because the fit test above includes a trailing
+        // space, this can wrap more tightly than the first pass; the result is kept as in the original.
+        maxWidth = 0.0f;
+        float height = 0.0f;
+        for (auto const& formattedLine : wrapLines(size.x))
+        {
+            PointBase<float> ext;
+            if (formattedLine.m_text.length() != 0)
+            {
+                GetTextExtent(formattedLine.m_text, ext, -1, 0, 0, 0, 0, 0);
             }
             else
             {
-                // Measure a single character for empty lines
-                CStr singleChar("A");
-                GetTextExtent(singleChar, lineSize, -1, 0, 0, 0, 0, 0);
-                lineSize.x = 0.0f;
+                // An empty line still takes the height of one character.
+                GetTextExtent(CStr("A"), ext, -1, 0, 0, 0, 0, 0);
+                ext.x = 0.0f;
             }
-
-            if (lineSize.x > maxWidth)
-            {
-                maxWidth = lineSize.x;
-            }
-            totalTextHeight += lineSize.y;
+            maxWidth = (std::max)(maxWidth, ext.x);
+            height += ext.y;
         }
-
         size.x = maxWidth;
-        size.y = totalTextHeight;
-
+        size.y = height;
         return 1;
     }
 
@@ -4072,8 +4012,11 @@ namespace m3d
 
     rend::VertexXYZWCT1* Application::RenderQuadXyzwct1GetNextPtr()
     {
-        if (this->m_numPointsVerts + 4 >= 0xFA0)
-            m3d::Application::FlushQuads();
+        // RVA 0x7AFD80
+        if (static_cast<unsigned>(m_numPointsVerts + 4) >= 4000)
+        {
+            FlushQuads();
+        }
 
         auto result = &this->m_pointsVertsWct1[m_numPointsVerts];
         this->m_numPointsVerts = m_numPointsVerts + 4;
@@ -4088,75 +4031,41 @@ namespace m3d
 
     int Application::FindLastColorInStr(CStr const& line)
     {
-        // TODO: check this
+        // RVA 0x6851B0
+        // Colour tags are "@AARRGGBB"; a '#' escapes the next character.
         if (line.empty())
         {
             return 0;
         }
-
-        int nColor = 0;
-        bool bEsc = false;
-        int v3 = 0;  // position index
-        int v4 = 8;  // some offset counter
-
-        while (true)
+        int color = 0;
+        bool escaped = false;
+        int pos = 0;
+        while (pos < static_cast<int>(line.length()))
         {
-            int v6 = line.length();
-
-            if (v3 >= v6)
-                return nColor;
-
-            char v7 = line[v3];
-
-            if (v7 == '#')
+            char const ch = line[pos];
+            if (ch == '#' && !escaped)
             {
-                if (bEsc)
+                escaped = true;
+                ++pos;
+            }
+            else if (ch == '@' && !escaped && pos + 8 < static_cast<int>(line.length()))
+            {
+                char hex[9];
+                for (int i = 0; i < 8; ++i)
                 {
-                    bEsc = false;
-                    v3++;
-                    v4++;
-                    continue;
+                    hex[i] = line[pos + 1 + i];
                 }
-                ++v3;
-                bEsc = true;
-                ++v4;
+                hex[8] = '\0';
+                sscanf(hex, "%x", &color);
+                pos += 9;
             }
             else
             {
-                if (v7 != '@' || bEsc)
-                {
-                    bEsc = false;
-                    v3++;
-                    v4++;
-                    continue;
-                }
-
-                int v8 = v6;
-                if (v8 <= v4)
-                {
-                    v3++;
-                    v4++;
-                    continue;
-                }
-
-                // Extract color code
-                char color[9];  // 8 chars + null terminator
-                color[0] = line[v3 + 1];
-                color[1] = line[v3 + 2];
-                color[2] = line[v3 + 3];
-                color[3] = line[v3 + 4];
-                color[4] = line[v3 + 5];
-                color[5] = line[v3 + 6];
-                color[6] = line[v3 + 7];
-                color[7] = line[v3 + 8];
-                color[8] = 0;
-
-                sscanf(color, "%x", &nColor);
-                v3 += 9;
-                v4 += 9;
+                escaped = false;
+                ++pos;
             }
         }
-        return 0;
+        return color;
     }
 
     void Application::PutSplashMainMenuLevelLoad(int, void*)
@@ -4819,26 +4728,23 @@ namespace m3d
 
     void Application::ClearViewportToBlack()
     {
-        //TODO: check this and refactor
-        int v2;  // edi
-        int v3;  // esi
-
-        auto& config = g_Kernel->GetEngineCfg();
-        if (IsWindow(config.m_mainWnd))
+        // RVA 0x59C370
+        if (!::IsWindow(g_Kernel->GetEngineCfg().m_mainWnd))
         {
-            v2 = M3D_RENDERER->InScene();
-            v3 = 0;
-            if (v2 || (v3 = M3D_RENDERER->BeginScene()) != 0)
-            {
-                M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, -16777216u);
-                if (!v2)
-                {
-                    if (v3)
-                        M3D_RENDERER->EndScene();
-                }
-            }
-            M3D_RENDERER->PresentScene();
+            return;
         }
+        // Open a scene only if none is in progress, and close only the one opened here.
+        bool const wasInScene = M3D_RENDERER->InScene() != 0;
+        bool const sceneBegun = !wasInScene && M3D_RENDERER->BeginScene() != 0;
+        if (wasInScene || sceneBegun)
+        {
+            M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0xFF000000);
+            if (sceneBegun)
+            {
+                M3D_RENDERER->EndScene();
+            }
+        }
+        M3D_RENDERER->PresentScene();
     }
 
     CStr const& Application::GetStartupFolder() const
@@ -5487,21 +5393,52 @@ namespace m3d
         }
     }
 
-    //TODO: return MHZ?
-    long long Application::GetCpuFrequency(unsigned)
+    long long Application::GetCpuFrequency(unsigned uiMeasureMSecs)
     {
+        // RVA 0x78B190
+        // Measures the time-stamp counter rate in Hz against the performance counter over uiMeasureMSecs.
         int cpuInfo[4] = {0};
-        __cpuid(cpuInfo, 0);
-        if (cpuInfo[0] >= 0x16)
+        __cpuid(cpuInfo, 1);
+        LARGE_INTEGER freq;
+        if (!(cpuInfo[3] & 0x10) || !::QueryPerformanceFrequency(&freq))  // no TSC
         {
-            __cpuid(cpuInfo, 0x16);
-            return cpuInfo[0];
+            return 0;
         }
-        return 0;
+
+        // Pin to the first CPU at the highest priority while measuring.
+        HANDLE const process = ::GetCurrentProcess();
+        HANDLE const thread = ::GetCurrentThread();
+        DWORD const priorityClass = ::GetPriorityClass(process);
+        int const threadPriority = ::GetThreadPriority(thread);
+        DWORD_PTR processMask = 0;
+        DWORD_PTR systemMask = 0;
+        ::GetProcessAffinityMask(process, &processMask, &systemMask);
+        ::SetPriorityClass(process, REALTIME_PRIORITY_CLASS);
+        ::SetThreadPriority(thread, THREAD_PRIORITY_TIME_CRITICAL);
+        ::SetProcessAffinityMask(process, 1);
+
+        __cpuid(cpuInfo, 0);  // serialise before reading the TSC
+        LARGE_INTEGER startTime;
+        ::QueryPerformanceCounter(&startTime);
+        unsigned __int64 const startTicks = __rdtsc();
+        ::Sleep(uiMeasureMSecs);
+        LARGE_INTEGER endTime;
+        ::QueryPerformanceCounter(&endTime);
+        unsigned __int64 const endTicks = __rdtsc();
+
+        ::SetProcessAffinityMask(process, processMask);
+        ::SetThreadPriority(thread, threadPriority);
+        ::SetPriorityClass(process, priorityClass);
+
+        double const ticks = static_cast<double>(static_cast<__int64>(endTicks - startTicks));
+        double const seconds =
+            static_cast<double>(endTime.QuadPart - startTime.QuadPart) / static_cast<double>(freq.QuadPart);
+        return static_cast<long long>(ticks / seconds);
     }
 
     void Application::FlushQuads()
     {
+        // RVA 0x7AF8C0
         int vOfs = 0;
         if (m_numPointsVerts)
         {
@@ -5509,7 +5446,7 @@ namespace m3d
             memcpy(vbStream, m_sourceVerts, this->m_numPointsVerts * this->m_pointsVertsSz);
 
             M3D_RENDERER->UnlockVb(this->m_pointsVertsVb);
-            // TODO: check this
+            // The shared quad index buffer is based at the vertex offset the streaming lock returned.
             M3D_RENDERER->SetIndices(this->m_pointsVertsIb, vOfs);
             M3D_RENDERER->SetToStream0(this->m_pointsVertsVb);
             if (m_flushQuadsShader)
@@ -5975,6 +5912,7 @@ namespace m3d
 
     void Application::CaptureAndClipSystemCursor(bool bState)
     {
+        // RVA 0x59C6A0
         if (bState)
         {
             if (m_renderWindow)
@@ -5983,7 +5921,7 @@ namespace m3d
 
                 RECT rect;
                 ::GetClientRect(m_renderWindow, &rect);
-                //TODO: check this
+                // Convert both corners of the client rect to screen coordinates.
                 ::ClientToScreen(this->m_renderWindow, reinterpret_cast<LPPOINT>(&rect.left));
                 ::ClientToScreen(this->m_renderWindow, reinterpret_cast<LPPOINT>(&rect.right));
                 ::ClipCursor(&rect);
@@ -6003,27 +5941,22 @@ namespace m3d
 
     void Application::DiscardAllEvents()
     {
-        // TODO: check this
-        while (true)
+        // RVA 0x5A7CB0
+        // Resets every queued event (releasing its string and AIParam) and empties the ring buffer.
+        Event const emptyEvent;
+        while (m_eventsQueueTail != m_eventsQueueHead)
         {
-            if (m_eventsQueueTail == m_eventsQueueHead)
-            {
-                break;
-            }
-
-            m_eventsQueue[m_eventsQueueTail] = {};
-
-            auto v3 = m_eventsQueueTail + 1;
-            if (v3 >= 5000)
-                v3 = 0;
-            m_eventsQueueTail = v3;
+            m_eventsQueue[m_eventsQueueTail] = emptyEvent;
+            m_eventsQueueTail = (m_eventsQueueTail + 1 >= 5000) ? 0 : m_eventsQueueTail + 1;
         }
     }
 
     unsigned long Application::GetStyleForRenderWindow(bool bFullScreen) const
     {
-        //TODO: consts
-        return bFullScreen ? -1878523904 : -1865547776;
+        // RVA 0x59BC30
+        // 0x90080000 fullscreen, 0x90CE0000 windowed (caption, sizing border, minimise box).
+        return bFullScreen ? (WS_POPUP | WS_VISIBLE | WS_SYSMENU)
+                           : (WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX);
     }
 
     DbgCounterStack& Application::GetDbgCounterStack()
@@ -6050,10 +5983,11 @@ namespace m3d
         CStr const& param4,
         AIParam const& param5)
     {
+        // RVA 0x5A70C0
         Event ev;
-        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+        // Reads the timer's current time as is, without advancing it.
+        ev.m_timeStamp = g_Kernel->GetTimer()._GetCurTime() * 0.001;
         ev.m_eventType = msg;
-        //TODO: check order
         ev.m_intEv[0] = param0;
         ev.m_intEv[1] = param1;
         ev.m_intEv[2] = p2;

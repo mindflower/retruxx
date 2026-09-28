@@ -314,40 +314,41 @@ CStr TruxxUiManager::GetPathToQuestInfoFileGlobal() const
 
 int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::Wnd* causeWnd)
 {
-    // TODO: check this and refactor
-    if ((this->IsWindowVisible(166) || this->IsWindowVisible(19)) && !this->GUI_IsModalEqualWndRunning())
+    // RVA 0x5479A0
+    if ((IsWindowVisible(166) || IsWindowVisible(19)) && !GUI_IsModalEqualWndRunning())
     {
         return 0;
     }
 
-    m3d::ui::Wnd* v5 = 0;
+    // The window the impulse is forced to: the top modal window while one runs, otherwise the
+    // cause window itself if it is modal-equal or an edit box.
+    m3d::ui::Wnd* forceWnd = nullptr;
     if (causeWnd)
     {
-        auto Station = M3D_APP->GetStation();
-        if (Station->HasChildModalRunning())
+        if (M3D_APP->GetStation()->HasChildModalRunning())
         {
-            auto TopModal = Station->GetTopModal();
-            if (TopModal)
-                v5 = TopModal;
+            if (auto* topModal = M3D_APP->GetStation()->GetTopModal())
+            {
+                forceWnd = topModal;
+            }
         }
-        else if (this->GUI_IsWndModalEqual(causeWnd) || causeWnd->IsKindOf(&m3d::ui::EditWnd::m_classEditWnd))
+        else if (GUI_IsWndModalEqual(causeWnd) || causeWnd->IsKindOf(&m3d::ui::EditWnd::m_classEditWnd))
         {
-            v5 = causeWnd;
+            forceWnd = causeWnd;
         }
     }
 
-    int v9 = 0;
-    if (impInfo.m_state)
+    int res = 0;
+    if (impInfo.m_state && (!M3D_APP->GetStation()->HasChildModalRunning() || forceWnd))
     {
-        auto Station = M3D_APP->GetStation();
-        if (!Station->HasChildModalRunning() || v5)
-            v9 = this->GUI_ProcessEvent(GUI_EVENT_FROM_IMPULSE, impInfo.m_impId, (void*)&impInfo, v5);
+        res = GUI_ProcessEvent(
+            GUI_EVENT_FROM_IMPULSE,
+            impInfo.m_impId,
+            const_cast<m3d::AuxImpulseInfo*>(&impInfo),
+            forceWnd);
     }
 
-    auto v11 = !this->GUI_IsModalEqualWndRunning();
-    if (v11)
-        return v9;
-    return 1;
+    return GUI_IsModalEqualWndRunning() ? 1 : res;
 }
 
 TruxxUiManager::TruxxUiManager()
@@ -631,9 +632,9 @@ RepliesManager* TruxxUiManager::GetRepliesManager() const
 
 int TruxxUiManager::Reset(bool beforeContinuousLevel)
 {
-    auto clearRes = GUI_Clear(beforeContinuousLevel);
-    // TODO: check this
-    m_msgManager->Clear(true);
+    // RVA 0x5478A0
+    auto const clearRes = GUI_Clear(beforeContinuousLevel);
+    m_msgManager->Clear(false);
     m_helpManager->HideCurrentHelpWindow();
     if (!beforeContinuousLevel)
     {
@@ -984,9 +985,9 @@ void TruxxUiManager::OnGameModeChanged(void* data)
 
 void TruxxUiManager::OnBeforeStartLevel()
 {
-    //TODO: check and refactor this
-    bool bOldFirstLevelResourcesLoaded = m_bFirstLevelResourcesLoaded;
-    if (!m_bFirstLevelResourcesLoaded && !GUI_IsCurrentLevelMainMenuLevel())
+    // RVA 0x548780
+    bool const wereFirstLevelResourcesLoaded = m_bFirstLevelResourcesLoaded;
+    if (!wereFirstLevelResourcesLoaded && !GUI_IsCurrentLevelMainMenuLevel())
     {
         if (m_repliesManager)
         {
@@ -995,7 +996,7 @@ void TruxxUiManager::OnBeforeStartLevel()
 
         if (m_navPointManager)
         {
-            m_navPointManager->Init();
+            m_navPointManager->Clear();
         }
 
         if (m_weaponGroupManager)
@@ -1013,26 +1014,27 @@ void TruxxUiManager::OnBeforeStartLevel()
             m_msgManager->Init(true);
         }
     }
+    // The main menu level loads no level resources and always counts as a success.
     auto res = 1;
-    if (GUI_IsCurrentLevelMainMenuLevel())
+    if (!GUI_IsCurrentLevelMainMenuLevel())
     {
-        goto LABEL_18;
+        if (!m_bFirstLevelResourcesLoaded)
+        {
+            res = GUI_LoadResources(ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START) & 1;
+            m_bFirstLevelResourcesLoaded = true;
+        }
+        res &= GUI_LoadResources(ResourceInfo::LOADTYPE_AT_LEVEL_START);
     }
-    if (!m_bFirstLevelResourcesLoaded)
+
+    if (res)
     {
-        res = GUI_LoadResources(ResourceInfo::LOADTYPE_AT_FIRST_LEVEL_START) & 1;
-        m_bFirstLevelResourcesLoaded = true;
-    }
-    if ((GUI_LoadResources(ResourceInfo::LOADTYPE_AT_LEVEL_START) & res) != 0)
-    {
-    LABEL_18:
         M3D_LOG_INFO("Interface: is loaded successfully");
     }
     else
     {
-        M3D_LOG_INFO("Interface: is loaded with errors");
+        M3D_LOG_ERR("Interface: is loaded with errors");
     }
-    if (!bOldFirstLevelResourcesLoaded && m_bFirstLevelResourcesLoaded)
+    if (!wereFirstLevelResourcesLoaded && m_bFirstLevelResourcesLoaded)
     {
         GUI_RegisterScriptGlobals();
     }
@@ -1844,7 +1846,7 @@ void* TruxxUiManager::QueryIface(char const* ifaceName)
 
 void TruxxUiManager::GUI_RegisterEvents()
 {
-    // TODO: check this
+    // RVA 0x54C5A0
     m_eventToEvent[41] = 0;
     m_impulseToEvent[42] = 2;
     m_impulseToEvent[43] = 3;

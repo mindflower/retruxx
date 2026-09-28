@@ -23,15 +23,16 @@ namespace ai
 
     GlobalProperties::CoeffsForDifficultyLevel const& GlobalProperties::GetCoeffsForCurrentDifficultyLevel() const
     {
-        // TODO: check this
-        auto curLevel = M3D_APP->GetCurDifficultyLevel();
+        // RVA 0x720D90 - the current difficulty level, clamped to the levels described.
+        int const maxLevel = static_cast<int>(m_difficultyLevelCoeffs.size()) - 1;
+        int curLevel = M3D_APP->GetCurDifficultyLevel();
         if (curLevel < 0)
         {
             curLevel = 0;
         }
-        if (curLevel > m_difficultyLevelCoeffs.size() - 1)
+        if (curLevel > maxLevel)
         {
-            curLevel = m_difficultyLevelCoeffs.size() - 1;
+            curLevel = maxLevel;
         }
         return m_difficultyLevelCoeffs[curLevel];
     }

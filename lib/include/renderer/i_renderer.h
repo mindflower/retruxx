@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <cstring>
 #include "i_renderer_colors.h"
 #include "i_renderer_handles.h"
 #include "i_renderer_vertex.h"
@@ -368,6 +369,15 @@ namespace m3d
             TM_MIP_LOD_MAX = 0x8,
             TM_MAX_ANISOTROPY = 0x9,
         };
+
+        // SetTextureParameter takes its value as an unsigned int; float parameters (TM_MIP_LOD_BIAS) are passed
+        // as the float's bit pattern.
+        inline unsigned int FloatTexParam(float value)
+        {
+            unsigned int bits;
+            std::memcpy(&bits, &value, sizeof(bits));
+            return bits;
+        }
 
 #pragma pack(push, 4)
         struct Viewport

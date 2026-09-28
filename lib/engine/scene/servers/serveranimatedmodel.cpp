@@ -622,19 +622,16 @@ namespace m3d
 
             bool operator()(unsigned int meshIdx1, unsigned int meshIdx2) const
             {
-                // TODO: check this
-                auto& material1 = m_meshes[meshIdx1].material;
-                auto& material2 = m_meshes[meshIdx2].material;
-                if (material1->Shader.Handle < material2->Shader.Handle)
+                // RVA 0x8F1F70 - by effect, then by where the material's texture list lives.
+                // NOTE: the tie-break compares the addresses of the first texture handles, not the handles, as
+                // shipped; comparing the list pointers orders the same and allows an empty list.
+                auto const* material1 = m_meshes[meshIdx1].material;
+                auto const* material2 = m_meshes[meshIdx2].material;
+                if (material1->Shader.Handle != material2->Shader.Handle)
                 {
-                    return true;
+                    return material1->Shader.Handle < material2->Shader.Handle;
                 }
-                if (material1->Shader.Handle == material2->Shader.Handle)
-                {
-                    return &material1->Textures.front().Handle < &material2->Textures.front().Handle;
-                }
-
-                return false;
+                return material1->Textures.data() < material2->Textures.data();
             }
             /* 0x0000 */ const MeshInfo* m_meshes;
         }; /* size: 0x0004 */
@@ -682,8 +679,9 @@ namespace m3d
 
     int AnimatedModelsServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, RenderNodeInfo rni)
     {
-        // TODO: generated code
-        // Profile timing start
+        // RVA 0x8F6210 - draws the nodes' meshes for one render pass, sorted by material. In the simple (colour)
+        // pass, a node beyond the impostor distance (or past 150 when culling is inverted) that allows impostors
+        // is instead drawn afterwards as a billboard, batched by model; the rest pick a LOD by distance.
         m_profiler->StartCountdown();
 
         int numMeshes = 0;
@@ -746,11 +744,9 @@ namespace m3d
             m3d::SgNode* currentNode = nodes[nodeIndex];
             DynamicModel* modelData = (DynamicModel*)this->m_models[currentNode->GetServerHandle()].m_ptr;
 
-            // Calculate distance squared to view position
-            distSq =
-                ((currentNode->GetOriginWorldAbs().x - viewPos.x) * (currentNode->GetOriginWorldAbs().x - viewPos.x) +
-                 (currentNode->GetOriginWorldAbs().y - viewPos.y) * (currentNode->GetOriginWorldAbs().y - viewPos.y) +
-                 (currentNode->GetOriginWorldAbs().z - viewPos.z) * (currentNode->GetOriginWorldAbs().z - viewPos.z));
+            CVector const& org = currentNode->GetOriginWorldAbs();
+            distSq = (org.x - viewPos.x) * (org.x - viewPos.x) + (org.z - viewPos.z) * (org.z - viewPos.z) +
+                (org.y - viewPos.y) * (org.y - viewPos.y);
 
             // Determine LOD level based on distance
             unsigned int lodLevel = false;
@@ -791,11 +787,11 @@ namespace m3d
                 {
                     lodLevel = 3;
                 }
-
-                // Clamp LOD level
-                unsigned int maxLod = modelData->m_numLods;
-                if (lodLevel >= maxLod)
-                    lodLevel = maxLod - 1;
+            }
+            unsigned int const maxLod = modelData->m_numLods;
+            if (lodLevel >= maxLod)
+            {
+                lodLevel = maxLod - 1;
             }
 
             // Get model and instances
@@ -1026,6 +1022,7 @@ namespace m3d
                 ("impostors tris = " + CStr(impostorTris)).c_str());
             M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
                 ("impostors dips = " + CStr(impostorDips)).c_str());
+            M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
         }
 
         m_profiler->EndCountdown();
@@ -1176,6 +1173,8 @@ namespace m3d
 
     int AnimatedModelsServer::GenerateImpostorsIfNeeded()
     {
+        // RVA 0x8F5700 - renders every impostor-using model from 25 angles into a 5x5 grid of 51-pixel cells of a
+        // 256x256 texture, copied into the model's impostor texture. Runs once: it marks the weather as actual.
         pClient->GetWorld().m_isWeatherActual = true;
 
         bool wasInScene = false;
@@ -1284,7 +1283,6 @@ namespace m3d
                 }
 
                 M3D_RENDERER->RenderToTexFinish();
-                // TODO: check this
                 M3D_RENDERER->TexCopy(dynamicModel->m_impostorTex, impostorTmpTex);
             }
         }
@@ -1349,6 +1347,9 @@ namespace m3d
 
     void AnimatedModelsServer::RegisterNode(SgNode* node)
     {
+        // RVA 0x771F70 - gives the node a fresh AnimInfo and, for a valid model id, binds it to the model's first
+        // LOD with an effect list, its configuration and impostor setting; an animated node joins the think list.
+        // NOTE: the node's previous AnimInfo is read and then overwritten without being released, as shipped.
         AnimInfo* anim = nullptr;
         node->GetProperty(1u, &anim);
         anim = new AnimInfo;
@@ -1377,9 +1378,10 @@ namespace m3d
                 animModel->FromCfgNum(*cfg);
                 animModel->CalculateMeshes(*cfg);
 
-                void* temp = nullptr;
-                node->GetProperty(8706u, &temp);
-                node->SetProperty(8706u, &temp);
+                // Re-applies the skin to the new configuration.
+                int skinNumber = 0;
+                node->GetProperty(8706u, &skinNumber);
+                node->SetProperty(8706u, &skinNumber);
 
                 bool useImpostors = true;
                 node->GetProperty(8720u, &useImpostors);
@@ -1396,7 +1398,6 @@ namespace m3d
 
         if (!anim->IsEmpty())
         {
-            // TODO: check this
             node->GetGraph()->LinkThinkNode(node);
         }
     }
@@ -1476,7 +1477,9 @@ namespace m3d
 
     void AnimatedModelsServer::AddItemsList(retruxx::vector<ServerItem>& itemslist)
     {
-        // TODO: generated code
+        // RVA 0x7755F0 - keeps the loaded models still listed (reloading their skins) and drops the rest, then
+        // loads the new ones from the first item's models XML: the model and its _lod1.._lod4 files, sounds and
+        // per-action load point effects.
         if (itemslist.empty())
             return;
 
@@ -1545,6 +1548,10 @@ namespace m3d
                 delete it->m_ptr;
                 it->m_ptr = nullptr;
             }
+            else
+            {
+                M3D_LOG_INFO("Warning: Something goes wrong!");
+            }
             it = m_models.erase(it);
         }
 
@@ -1588,9 +1595,21 @@ namespace m3d
         ref_ptr modelNode = xmlFile->CreateNode();
         modelsNode->GetFirstChild(modelNode, "model");
 
+        // Models already present or loaded so far, for the progress callback.
+        int processed = 0;
         for (; !modelNode->IsEmpty(); modelNode->GetNextSibling(modelNode, "model"))
         {
             CStr modelId = modelNode->GetAttribute("id");
+            int const existing = GetItemByName(modelId.c_str(), false);
+            if (m_fnLoadCallback && processed < numitems)
+            {
+                m_fnLoadCallback(100 * processed / numitems, m_fnLoadCallbackData);
+            }
+            if (existing != -1)
+            {
+                ++processed;
+                continue;
+            }
 
             // Check if this model is in our items list
             int itemIndex = -1;
@@ -1705,18 +1724,18 @@ namespace m3d
                     lodFilename = baseFilename + "_lod" + CStr(lod) + ".sam";
                 }
 
+                // NOTE: a missing LOD file is skipped (leaving its slot empty while later ones still count), but a
+                // LOD that fails to load ends the search, as shipped.
                 if (M3D_KERNEL->GetFileServer().FileExists(lodFilename.c_str()))
                 {
                     m3d::AnimatedModel* lodModel = new m3d::AnimatedModel();
-                    if (lodModel->Load(lodFilename.c_str(), true))
-                    {
-                        dynamicModel->m_mdl[lod] = lodModel;
-                        dynamicModel->m_numLods++;
-                    }
-                    else
+                    if (!lodModel->Load(lodFilename.c_str(), true))
                     {
                         delete lodModel;
+                        break;
                     }
+                    dynamicModel->m_mdl[lod] = lodModel;
+                    dynamicModel->m_numLods++;
                 }
             }
 
@@ -1733,8 +1752,8 @@ namespace m3d
                 CStr soundId;
                 SafeStrAttrib(soundId, soundNode, "id");
 
-                bool looped = false;
-                SafeBoolAttrib(looped, soundNode, "looped");
+                int looped = 0;
+                SafeIntAttrib(looped, soundNode, "looped");
 
                 // Find action index and assign sound
                 for (size_t i = 0; i < AT_NUMTYPES; i++)
@@ -1742,7 +1761,7 @@ namespace m3d
                     if (actions[i].m_name == action)
                     {
                         dynamicModel->m_soundIds[i] = soundId;
-                        dynamicModel->m_soundsLooped[i] = looped;
+                        dynamicModel->m_soundsLooped[i] = looped != 0;
                         m3d::Application::g_pApp->m_cachedSoundIDs.insert(soundId);
                         break;
                     }
@@ -1846,6 +1865,7 @@ namespace m3d
             SetItemProperty(modelIndex, 2, &trans);
 
             itemslist[itemIndex].m_fileWasRead = true;
+            ++processed;
         }
 
         // Log unread files
@@ -2210,186 +2230,161 @@ void DeleteEffectNode(m3d::SgNode* parent, m3d::SgNode* node, bool immediateRemo
     node->GetGraph()->InsertInRemoveIfFree(node);
 }
 
+void AddEffectNode(m3d::SgNode* parent, m3d::SgNode*& node, int effectId, bool immediateRemove)
+{
+    // RVA 0x76DEF0 - a new transient effect node under parent, or none for effect id -1.
+    if (effectId == -1)
+    {
+        node = nullptr;
+        return;
+    }
+    node = m3d::pClient->CreateServerControlledNode(effectId);
+    parent->AddChild(node);
+    node->RemoveImmediateAfterParent(immediateRemove);
+    node->SetPersistance(false);
+}
+
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect>>& newEffectList)
 {
-    // TODO: generated code ModelEffectList::adjustModelEffects
-    std::vector<ModelEffectList::tEffect>& currentEffects = m_curEffectList;
-    size_t currentSize = currentEffects.size();
-    size_t newSize = newEffectList.size();
+    // RVA 0x772150 - moves from the current effects to newEffectList. Both are sorted by loadpoint, then effect id:
+    // they are merged, keeping (and optionally restarting) the node of an effect in both, deleting the ones only
+    // in the current list and creating the ones only in the new list. Entries left without a node are dropped.
+    retruxx::vector<ModelEffectList::tEffect>& current = m_curEffectList;
+    size_t const oldSize = current.size();
+    size_t const newSize = newEffectList.size();
+    size_t cur = 0;
+    size_t nw = 0;
+    auto const deleteCurrent = [&]() {
+        DeleteEffectNode(realModel, current[cur].m_effectNode, current[cur].m_desc->m_immediateRemove);
+        ++cur;
+    };
+    auto const addNew = [&]() {
+        ModelEffectList::tEffect& effect = newEffectList[nw];
+        AddEffectNode(realModel, effect.m_effectNode, effect.m_desc->m_effectId, effect.m_desc->m_immediateRemove);
+        ++nw;
+    };
 
-    size_t currentIdx = 0;
-    size_t newIdx = 0;
-
-    // Process both lists in order (sorted by lpId and effectId)
-    while (currentIdx < currentSize && newIdx < newSize)
+    while (cur < oldSize && nw < newSize)
     {
-        ModelEffectList::tEffect& currentEffect = currentEffects[currentIdx];
-        ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
-
-        int currentLpId = currentEffect.m_desc->m_lpId;
-        int newLpId = newEffect.m_desc->m_lpId;
-
-        if (newLpId < currentLpId)
+        int const curLp = current[cur].m_desc->m_lpId;
+        int const lp = newEffectList[nw].m_desc->m_lpId;
+        if (lp < curLp)
         {
-            // Add new effect with lower lpId
-            if (newEffect.m_desc->m_effectId == -1)
+            addNew();
+            continue;
+        }
+        if (lp > curLp)
+        {
+            while (cur < oldSize && current[cur].m_desc->m_lpId < lp)
             {
-                newEffect.m_effectNode = nullptr;
+                deleteCurrent();
+            }
+            continue;
+        }
+
+        // The same loadpoint: merge by effect id.
+        while (cur < oldSize && nw < newSize && current[cur].m_desc->m_lpId == lp &&
+               newEffectList[nw].m_desc->m_lpId == lp)
+        {
+            int const curEffect = current[cur].m_desc->m_effectId;
+            int const effect = newEffectList[nw].m_desc->m_effectId;
+            if (effect < curEffect)
+            {
+                addNew();
+            }
+            else if (effect > curEffect)
+            {
+                while (cur < oldSize && current[cur].m_desc->m_lpId == lp && current[cur].m_desc->m_effectId < effect)
+                {
+                    deleteCurrent();
+                }
             }
             else
             {
-                m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
-                newEffect.m_effectNode = effectNode;
-                realModel->AddChild(effectNode);
-                effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
-                effectNode->SetPersistance(false);
+                // NOTE: a restart reaches only the nodes below the effect node, not the effect node itself.
+                m3d::SgNode* const node = current[cur].m_effectNode;
+                if (current[cur].m_desc->m_restartOnAnimChange && node)
+                {
+                    m3d::ForEachDescendant(node, [](m3d::SgNode* child) { child->Restart(); });
+                }
+                newEffectList[nw++].m_effectNode = node;
+                ++cur;
             }
-            newIdx++;
         }
-        else if (newLpId > currentLpId)
+        while (cur < oldSize && current[cur].m_desc->m_lpId == lp)
         {
-            // Remove current effect with lower lpId
-            DeleteEffectNode(realModel, currentEffect.m_effectNode, currentEffect.m_desc->m_immediateRemove);
-            currentIdx++;
+            deleteCurrent();
         }
-        else
+        while (nw < newSize && newEffectList[nw].m_desc->m_lpId == lp)
         {
-            // Same lpId - process by effectId
-            int currentLpId = newLpId;  // Store for later use
-
-            while (currentIdx < currentSize && newIdx < newSize)
-            {
-                ModelEffectList::tEffect& currentEffect = currentEffects[currentIdx];
-                ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
-
-                // Check if we're still processing the same lpId
-                if (currentEffect.m_desc->m_lpId != currentLpId || newEffect.m_desc->m_lpId != currentLpId)
-                {
-                    break;
-                }
-
-                int currentEffectId = currentEffect.m_desc->m_effectId;
-                int newEffectId = newEffect.m_desc->m_effectId;
-
-                if (newEffectId < currentEffectId)
-                {
-                    // Add new effect with lower effectId
-                    if (newEffect.m_desc->m_effectId == -1)
-                    {
-                        newEffect.m_effectNode = nullptr;
-                    }
-                    else
-                    {
-                        m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
-                        newEffect.m_effectNode = effectNode;
-                        realModel->AddChild(effectNode);
-                        effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
-                        effectNode->SetPersistance(false);
-                    }
-                    newIdx++;
-                }
-                else if (newEffectId > currentEffectId)
-                {
-                    // Remove current effect with lower effectId
-                    DeleteEffectNode(realModel, currentEffect.m_effectNode, currentEffect.m_desc->m_immediateRemove);
-                    currentIdx++;
-                }
-                else
-                {
-                    // Same effectId - reuse existing node
-                    newEffect.m_effectNode = currentEffect.m_effectNode;
-
-                    // Restart animation if needed
-                    if (currentEffect.m_desc->m_restartOnAnimChange && currentEffect.m_effectNode)
-                    {
-                        std::vector<m3d::SgNode*> nodeStack;
-                        nodeStack.push_back(currentEffect.m_effectNode);
-
-                        while (!nodeStack.empty())
-                        {
-                            m3d::SgNode* currentNode = nodeStack.back();
-                            nodeStack.pop_back();
-
-                            // Restart current node animation
-                            currentNode->Restart();
-
-                            // Process children
-                            m3d::SgNode* child = static_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-                            while (child)
-                            {
-                                nodeStack.push_back(child);
-                                child = static_cast<m3d::SgNode*>(child->GetNextSibling());
-                            }
-                        }
-                    }
-
-                    currentIdx++;
-                    newIdx++;
-                }
-            }
-
-            // Remove any remaining current effects with this lpId
-            while (currentIdx < currentSize && currentEffects[currentIdx].m_desc->m_lpId == currentLpId)
-            {
-                DeleteEffectNode(realModel, currentEffects[currentIdx].m_effectNode, currentEffects[currentIdx].m_desc->m_immediateRemove);
-                currentIdx++;
-            }
-
-            // Add any remaining new effects with this lpId
-            while (newIdx < newSize && (newEffectList)[newIdx].m_desc->m_lpId == currentLpId)
-            {
-                ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
-                if (newEffect.m_desc->m_effectId == -1)
-                {
-                    newEffect.m_effectNode = nullptr;
-                }
-                else
-                {
-                    m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
-                    newEffect.m_effectNode = effectNode;
-                    realModel->AddChild(effectNode);
-                    effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
-                    effectNode->SetPersistance(false);
-                }
-                newIdx++;
-            }
+            addNew();
         }
     }
-
-    // Remove any remaining current effects
-    while (currentIdx < currentSize)
+    while (cur < oldSize)
     {
-        DeleteEffectNode(realModel, currentEffects[currentIdx].m_effectNode, currentEffects[currentIdx].m_desc->m_immediateRemove);
-        currentIdx++;
+        deleteCurrent();
     }
-
-    // Add any remaining new effects
-    while (newIdx < newSize)
+    while (nw < newSize)
     {
-        ModelEffectList::tEffect& newEffect = (newEffectList)[newIdx];
-        if (newEffect.m_desc->m_effectId == -1)
-        {
-            newEffect.m_effectNode = nullptr;
-        }
-        else
-        {
-            m3d::SgNode* effectNode = m3d::pClient->CreateServerControlledNode(newEffect.m_desc->m_effectId);
-            newEffect.m_effectNode = effectNode;
-            realModel->AddChild(effectNode);
-            effectNode->RemoveImmediateAfterParent(newEffect.m_desc->m_immediateRemove);
-            effectNode->SetPersistance(false);
-        }
-        newIdx++;
+        addNew();
     }
 
-    // Filter out invalid effects from the new list
-    auto newEnd = std::remove_if(newEffectList.begin(), newEffectList.end(), [](const ModelEffectList::tEffect& effect) { return !effect.IsValid(); });
-    newEffectList.erase(newEnd, newEffectList.end());
-
-    // Update current effect list
+    newEffectList.erase(
+        std::remove_if(
+            newEffectList.begin(), newEffectList.end(),
+            [](ModelEffectList::tEffect const& effect) { return !effect.IsValid(); }),
+        newEffectList.end());
     m_curEffectList = newEffectList;
 }
+
+namespace
+{
+    // RVA 0x7745C0 - std::stable_sort with SortPred as the shipped (VC7.1) library runs it. Lists of up to 32 go
+    // through its insertion sort (0x770DD0): each entry is rotated to the front if it sorts before the first,
+    // else back past the entries it sorts before. Reproduced exactly, since SortPred is inconsistent and the
+    // order depends on the algorithm (and the modern library's debug checks would reject it).
+    void StableSortEffects(retruxx::vector<ModelEffectList::tEffect>& effects)
+    {
+        if (effects.size() > 32)
+        {
+            // NOTE: longer lists take VC7.1's buffered merge sort, whose result under SortPred is not reproduced;
+            // they are sorted by loadpoint, then effect id.
+            std::stable_sort(
+                effects.begin(), effects.end(),
+                [](ModelEffectList::tEffect const& a, ModelEffectList::tEffect const& b) {
+                    if (a.m_desc->m_lpId != b.m_desc->m_lpId)
+                    {
+                        return a.m_desc->m_lpId < b.m_desc->m_lpId;
+                    }
+                    return a.m_desc->m_effectId < b.m_desc->m_effectId;
+                });
+            return;
+        }
+        if (effects.size() < 2)
+        {
+            return;
+        }
+        ModelEffectList::SortPred pred;
+        auto const first = effects.begin();
+        for (auto next = first + 1; next != effects.end(); ++next)
+        {
+            auto pos = next;
+            if (pred(*next, *first))
+            {
+                pos = first;
+            }
+            else
+            {
+                while (pred(*next, *(pos - 1)))
+                {
+                    --pos;
+                }
+            }
+            std::rotate(pos, next, next + 1);
+        }
+    }
+}  // namespace
 
 void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     const retruxx::vector<ActionType, retruxx::allocator<ActionType>>& newActions)
@@ -2417,7 +2412,7 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
 
     if (!newEffectList.empty())
     {
-        std::stable_sort(newEffectList.begin(), newEffectList.end(), SortPred());
+        StableSortEffects(newEffectList);
     }
     adjustModelEffects(realModel, newEffectList);
 }
@@ -2455,20 +2450,21 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newA
 
     if (!newEffectList.empty())
     {
-        std::stable_sort(newEffectList.begin(), newEffectList.end(), SortPred());
+        StableSortEffects(newEffectList);
     }
     adjustModelEffects(realModel, newEffectList);
 }
 
 bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
 {
-    // TODO: check this
-    if (a.m_desc->m_lpId == b.m_desc->m_lpId)
+    // RVA 0x76D250
+    // NOTE: not a strict weak ordering, as shipped: a lower loadpoint sorts first, but otherwise the effect ids
+    // decide, even when a's loadpoint is the higher one. See StableSortEffects.
+    if (a.m_desc->m_lpId < b.m_desc->m_lpId)
     {
-        return a.m_desc->m_effectId < b.m_desc->m_effectId;
+        return true;
     }
-    return a.m_desc->m_lpId < b.m_desc->m_lpId;
-    //return a.m_desc->m_lpId < b.m_desc->m_lpId || a.m_desc->m_effectId < b.m_desc->m_effectId;
+    return a.m_desc->m_effectId < b.m_desc->m_effectId;
 }
 
 DynamicModel::DynamicModel()
@@ -2486,88 +2482,63 @@ DynamicModel::DynamicModel()
 
 DynamicModel::~DynamicModel()
 {
-    // TODO: check this
-    if (this->m_useImpostors)
+    // RVA 0x772A60
+    if (m_useImpostors)
+    {
         _releaseImpostorShit();
+    }
     for (auto& mdl : m_mdl)
     {
         delete mdl;
+        mdl = nullptr;
     }
 }
 
 void DynamicModel::_createImpostorShit()
 {
-    auto v2 = this->m_mdl[0];
-    auto v4 = v2->m_box.m_box[3] - v2->m_box.m_box[0];
-    auto v5 = v2->m_box.m_box[5] - v2->m_box.m_box[2];
-    auto sy = v2->m_box.m_box[4] - v2->m_box.m_box[1];
-    this->m_impostorDisplacement = v2->m_box.m_box[1];
-    auto boxSizeMaxXZ2 = sqrt(v5 * v5 + v4 * v4) * 0.5;
+    // RVA 0x76EBD0 - the impostor billboards: 60 instances of a quad as wide as the model's x/z diagonal and as
+    // tall as its box, standing on the box bottom (x, y, instance index as z, then u, v), their index buffer, and
+    // the 256x256 texture the views are rendered into.
+    Aabb const& box = m_mdl[0]->m_box;
+    float const mx = box.m_box[3] - box.m_box[0];
+    float const mz = box.m_box[5] - box.m_box[2];
+    float const sy = box.m_box[4] - box.m_box[1];
+    m_impostorDisplacement = box.m_box[1];
+    float const halfWidth = static_cast<float>(sqrt(mz * mz + mx * mx) * 0.5);
 
-    this->m_impostorVb = M3D_RENDERER->AddVb(m3d::rend::VertexType::VERTEX_IMPOSTORTEST, 240, "Impostors", 0);
-    int* v6 = (int*)M3D_RENDERER->LockVb(m_impostorVb, 0, 0, 0);
-    
-    // TODO: check and refactor this
-    auto v7 = 0.0 - boxSizeMaxXZ2;
-    auto v8 = 0;
-    auto v9 = 60;
-    do
+    m_impostorVb = M3D_RENDERER->AddVb(m3d::rend::VertexType::VERTEX_IMPOSTORTEST, 240, "Impostors", 0);
+    auto* vertex = static_cast<float*>(M3D_RENDERER->LockVb(m_impostorVb, 0, 0, 0));
+    for (int i = 0; i < 60; ++i)
     {
-        *(float*)v6 = v7;
-        v6[1] = 0;
-        v6[3] = 0;
-        v6[4] = 1.0;
-        auto v10 = (char*)(v6 + 5);
-        *((float*)v10 - 3) = (float)v8;
-        *((float*)v10 + 2) = (float)v8;
-        *(float*)v10 = v7;
-        *((float*)v10 + 1) = sy;
-        *((int*)v10 + 3) = 0;
-        *((int*)v10 + 4) = 0;
-        v10 += 20;
-        *((float*)v10 + 2) = (float)v8;
-        *(float*)v10 = boxSizeMaxXZ2;
-        *((int*)v10 + 1) = 0;
-        *((float*)v10 + 3) = 1.0;
-        *((float*)v10 + 4) = 1.0;
-        v10 += 20;
-        *((float*)v10 + 2) = (float)v8;
-        *(float*)v10 = boxSizeMaxXZ2;
-        *((float*)v10 + 1) = sy;
-        *((float*)v10 + 3) = 1.0;
-        *((int*)v10 + 4) = 0;
-        v6 = (int*)(v10 + 20);
-        ++v8;
-        --v9;
-    } while (v9);
-
+        float const quad[4][5] = {
+            {-halfWidth, 0.0f, static_cast<float>(i), 0.0f, 1.0f},
+            {-halfWidth, sy, static_cast<float>(i), 0.0f, 0.0f},
+            {halfWidth, 0.0f, static_cast<float>(i), 1.0f, 1.0f},
+            {halfWidth, sy, static_cast<float>(i), 1.0f, 0.0f}};
+        memcpy(vertex, quad, sizeof(quad));
+        vertex += 20;
+    }
     M3D_RENDERER->UnlockVb(m_impostorVb);
 
-    this->m_impostorIb = M3D_RENDERER->AddIb(360, 0);
-    char* v11 = (char*)M3D_RENDERER->LockIb(m_impostorIb, 0, 0, 0);
-
-    auto v12 = 1;
-    do
+    // Triangles (v, v+1, v+2) and (v+2, v+1, v+3) per quad.
+    m_impostorIb = M3D_RENDERER->AddIb(360, 0);
+    auto* index = static_cast<uint16_t*>(M3D_RENDERER->LockIb(m_impostorIb, 0, 0, 0));
+    for (uint16_t v = 0; v < 240; v += 4, index += 6)
     {
-        auto v13 = v11 + 2;
-        *(v13 - 1) = v12 - 1;
-        *v13++ = v12;
-        *v13++ = v12 + 1;
-        *v13++ = v12 + 1;
-        *v13++ = v12;
-        *v13 = v12 + 2;
-        v12 += 4;
-        v11 = (char*)(v13 + 1);
-    } while ((unsigned __int16)v12 < 241u);
-
+        index[0] = v;
+        index[1] = v + 1;
+        index[2] = v + 2;
+        index[3] = v + 2;
+        index[4] = v + 1;
+        index[5] = v + 3;
+    }
     M3D_RENDERER->UnlockIb(m_impostorIb);
 
-
-    M3D_RENDERER->AddDynamicTexture((CStr("$ImpostorTex.") + m_mdl[0]->GetName()).c_str(), 256, 256, 1);
+    m_impostorTex = M3D_RENDERER->AddDynamicTexture(
+        (CStr("$ImpostorTex.") + CStr(m_mdl[0]->GetName())).c_str(), 256, 256, 1);
     M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_WRAP_S, 3);
     M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_WRAP_T, 3);
     M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_TEX_FILTER, 1);
-
 }
 
 void DynamicModel::_releaseImpostorShit()

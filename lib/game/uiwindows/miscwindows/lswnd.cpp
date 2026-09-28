@@ -1325,7 +1325,7 @@ int LSWnd::SetScreenshotForSave(int saveIdx)
 
     auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
 
-    // TODO: check original logic
+    // TODO: for some reason renderer can't find file by absolute path 
     CStr const localScreenshotFile = savesManager->GetSaveFolderPathByFolderName(btn->GetSaveFolderName()) + "\\" +
         savesManager->GetConstatntSaveInfo().m_screenshotFileName;
     CStr const absoluteScreenshotFile = M3D_APP->GetStartupFolder() + "\\" + localScreenshotFile;

@@ -147,7 +147,7 @@ namespace m3d
 
     Class* Kernel::FindClass(char const* className)
     {
-        //TODO: check correctness
+        // RVA 0x58AF00
         auto const it = m_classes->find(className);
         if (it != m_classes->end())
         {
@@ -250,7 +250,8 @@ namespace m3d
 
     Object* Kernel::RegisterGlobal(Object* object, char const* name)
     {
-        //TODO: check this
+        // RVA 0x58C290 - the first registration under a name wins: a later one gets the
+        // already registered object back and does not replace it.
         auto const it = m_lGlobals->find(name);
         if (it != m_lGlobals->end())
         {

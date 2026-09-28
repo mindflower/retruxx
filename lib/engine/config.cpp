@@ -116,7 +116,7 @@ namespace m3d
 
     EngineConfig::EngineConfig()
     {
-        //TODO: check all this shit!!
+        // RVA 0x74BBF0 - creates the console and registers every engine cvar with its default.
         g_Kernel->AddClass(RT_CLASS_LOCAL(IConsole));
         m_console = ConsoleFactory();
         m_console->IncRef();
@@ -629,45 +629,29 @@ namespace m3d
         m_fadingTimeBeforeNextMap.Init("fadingTimeBeforeNextMap", "2.f", CVar::CVAR_FLOAT, CVar::CVAR_READONLY);
         m_console->RegisterCVar(&m_fadingTimeBeforeNextMap, 0);
 
-        unsigned int markerColors[16] = { 0 };
-        markerColors[0] = 0;
-        markerColors[1] = 128;
-        markerColors[2] = 0x8000;
-        markerColors[3] = 32896;
-        markerColors[4] = 0x7FFFFF; //TODO: check this
-        markerColors[5] = 0x80007F; //TODO: check this
-        markerColors[6] = 0x807FFF; //TODO: check this
-        markerColors[7] = 0x808080; //TODO: check this
-        markerColors[8] = 0x808080; //TODO: check this
-        markerColors[9] = 255;
-        markerColors[10] = 65280;
-        markerColors[11] = 0xFFFF;
-        markerColors[12] = 16711680;
-        markerColors[13] = 16711935;
-        markerColors[14] = 16776960;
-        markerColors[15] = 0xFFFFFF;
-
-        int i = 0;
-        for (auto& color : m_markerColors)
+        // The marker colours, as "r g b a" of 0x00RRGGBB values. All are initialised before any is registered,
+        // and they are registered after the video cvars.
+        unsigned int const markerColors[16] = {0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080,
+                                               0x808000, 0x808080, 0x808080, 0x0000FF, 0x00FF00, 0x00FFFF,
+                                               0xFF0000, 0xFF00FF, 0xFFFF00, 0xFFFFFF};
+        for (int i = 0; i < 16; ++i)
         {
-            auto const name = "markerColor" + CStr(i);
-            char sn[32] = { 0 };
-
-            //TODO: check and refactor this shit!!!
-            auto colorComponents = reinterpret_cast<unsigned __int8*>(&markerColors[i]);
-            sprintf(sn, "%d %d %d %d", colorComponents[2], colorComponents[1], colorComponents[0], colorComponents[3]);
-            color.Init(name.c_str(), sn, CVar::CVAR_COLOR, CVar::CVAR_ARCHIVE);
-
-            m_console->RegisterCVar(&color, 0);
-            ++i;
+            unsigned int const color = markerColors[i];
+            char value[32] = {0};
+            sprintf(value, "%d %d %d %d", (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, color >> 24);
+            m_markerColors[i].Init(("markerColor" + CStr(i)).c_str(), value, CVar::CVAR_COLOR, CVar::CVAR_ARCHIVE);
         }
 
         m_console->RegisterCVar(&m_video[0], 0);
         m_console->RegisterCVar(&m_video[1], 0);
         m_console->RegisterCVar(&m_video[2], 0);
         m_console->RegisterCVar(&m_video[3], 0);
+        for (auto& color : m_markerColors)
+        {
+            m_console->RegisterCVar(&color, 0);
+        }
 
-        i = 0;
+        int i = 0;
         for (auto& macro : m_r_shadersMacros)
         {
             auto const name = "shaderMacro" + CStr(i);

@@ -18,6 +18,7 @@ namespace m3d
 
         void FillTraceBuffer(m3d::rend::VertexXYZCT1* write, m3d::SkidQuad const& sq, unsigned int opaque, float texLength)
         {
+            // RVA 0x697BE0 - one cross section of a strip: two vertices across the wheel.
             write->x = sq.p1.x;
             write->y = sq.p1.y;
             write->z = sq.p1.z;
@@ -32,29 +33,31 @@ namespace m3d
             write[1].c = opaque;
         }
 
-        
         void EmbraceSphere(CVector& org, float& rad, CVector const& newPoint)
         {
-            // TODO: check and refactor this
-            auto v4 = org.y - newPoint.y;
-            auto v5 = org.z - newPoint.z;
-            auto v6 = org.x - newPoint.x;
-            if ((float)(rad * rad) <= (float)((float)((float)(v5 * v5) + (float)(v4 * v4)) + (float)(v6 * v6)))
+            // RVA 0x697A70 - grows the sphere just enough to take in newPoint: the new
+            // sphere spans from the far side of the old one to the point.
+            CVector const away(org.x - newPoint.x, org.y - newPoint.y, org.z - newPoint.z);
+            float const distSq = away.z * away.z + away.y * away.y + away.x * away.x;
+            if (rad * rad > distSq)
             {
-                auto newPointa = 1.0 / sqrt((float)((float)((float)(v5 * v5) + (float)(v4 * v4)) + (float)(v6 * v6)) + 0.00000011920929);
-                auto v7 = org.x + (float)((float)(newPointa * v6) * rad);
-                auto v8 = org.y + (float)((float)(v4 * newPointa) * rad);
-                auto v9 = (float)((float)(v5 * newPointa) * rad) + org.z;
-                auto z = newPoint.z;
-                auto v11 = v8 + newPoint.y;
-                org.x = (float)(newPoint.x + v7) * 0.5;
-                org.y = v11 * 0.5;
-                org.z = (float)(z + v9) * 0.5;
-                rad = sqrt(
-                          (float)(newPoint.z - v9) * (float)(newPoint.z - v9) + (float)(newPoint.y - v8) * (float)(newPoint.y - v8) +
-                          (float)(newPoint.x - v7) * (float)(newPoint.x - v7)) *
-                    0.5;
+                return;
             }
+
+            // The epsilon is FLT_EPSILON, so a point at the centre does not divide by zero.
+            float const invDist = static_cast<float>(1.0 / sqrt(distSq + 1.1920929e-7));
+            CVector const farSide(
+                org.x + invDist * away.x * rad, org.y + away.y * invDist * rad, away.z * invDist * rad + org.z);
+
+            org.x = (newPoint.x + farSide.x) * 0.5f;
+            org.y = (farSide.y + newPoint.y) * 0.5f;
+            org.z = (newPoint.z + farSide.z) * 0.5f;
+
+            CVector const diameter(newPoint.x - farSide.x, newPoint.y - farSide.y, newPoint.z - farSide.z);
+            // Summed on the x87 stack in the original, hence the doubles.
+            double const diameterSq = static_cast<double>(diameter.z) * diameter.z +
+                static_cast<double>(diameter.y) * diameter.y + static_cast<double>(diameter.x) * diameter.x;
+            rad = static_cast<float>(sqrt(diameterSq) * 0.5);
         }
     }
 
@@ -88,65 +91,52 @@ namespace m3d
 
     void WheelTraceMgr::Render()
     {
-        // TODO: generated code WheelTraceMgr::Render
+        // RVA 0x698730 - every strip owns 64 cross sections (128 vertices) of the vertex
+        // buffer and is drawn as one triangle strip through the shared 0..129 index buffer,
+        // rebased onto the strip's first vertex.
         m_profiler->StartCountdown();
 
-        // Save render states
         M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
         M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
-        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
-        M3D_RENDERER->PushFog(true);
-
-        // Configure render states for wheel traces
         M3D_RENDERER->TgDisable(0);
         M3D_RENDERER->TgSetTcSource(1, rend::TC_FROM_VERTEX, 0);
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE2X);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        M3D_RENDERER->PushBlend(rend::BM_ALPHA);
         M3D_RENDERER->SetAlphaTest(1);
         M3D_RENDERER->DisableTextureStages(1);
-
-        // Set vertex buffer
+        M3D_RENDERER->PushFog(true);
         M3D_RENDERER->SetToStream0(m_vb);
 
-        auto* viewFrustum = &m3d::pClient->GetWorld().GetLandscape().m_frustumCull;
-        uint32_t baseIndex = 0;
-
-        // Render all skid strips
-        for (int i = 0; i < 512; ++i)
+        CClipper const& frustum = m3d::pClient->GetWorld().GetLandscape().m_frustumCull;
+        int baseVertex = 0;
+        for (int i = 0; i < 512; ++i, baseVertex += 128)
         {
-            SkidStrip& strip = m_skidStrips[i];
-
-            // Skip if strip has insufficient vertices or is outside view frustum
-            if (strip.m_stripSize >= 2 && viewFrustum->testSphere(strip.m_boundCenter, strip.m_boundRadius))
+            SkidStrip const& strip = m_skidStrips[i];
+            if (strip.m_stripSize < 2 || !frustum.testSphere(strip.m_boundCenter, strip.m_boundRadius))
             {
-                // Set appropriate texture based on soil type
-                if (strip.m_soilType >= 0 && strip.m_soilType < static_cast<int>(m_texHandles.size()))
-                {
-                    M3D_RENDERER->SetTexture(0, m_texHandles[strip.m_soilType], -1.0f);
-                }
-                else
-                {
-                    // Use white texture as fallback
-                    if (!m_texHandles.empty())
-                    {
-                        M3D_RENDERER->SetTexture(0, m_texHandles.back(), -1.0f);
-                    }
-                    else
-                    {
-                        M3D_RENDERER->SetWhiteTexture(0);
-                    }
-                }
-
-                // Render the strip
-                uint32_t vertexCount = 2 * strip.m_stripSize;
-                M3D_RENDERER->SetIndices(m_ib, baseIndex);
-                M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, vertexCount, 0, vertexCount - 2);
+                continue;
             }
 
-            baseIndex += 128;
+            // An unknown soil type falls back to the last texture, or to white when there are none.
+            if (strip.m_soilType >= 0 && strip.m_soilType < static_cast<int>(m_texHandles.size()))
+            {
+                M3D_RENDERER->SetTexture(0, m_texHandles[strip.m_soilType], -1.0);
+            }
+            else if (!m_texHandles.empty())
+            {
+                M3D_RENDERER->SetTexture(0, m_texHandles.back(), -1.0);
+            }
+            else
+            {
+                M3D_RENDERER->SetWhiteTexture(0);
+            }
+
+            unsigned const numVertices = 2 * strip.m_stripSize;
+            M3D_RENDERER->SetIndices(m_ib, baseVertex);
+            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, numVertices, 0, numVertices - 2);
         }
 
-        // Restore render states
         M3D_RENDERER->PopFog();
         M3D_RENDERER->PopBlend();
         M3D_RENDERER->PopCull();
@@ -172,42 +162,28 @@ namespace m3d
 
     int WheelTraceMgr::EndSkidding(void* owner, bool smoothEnd)
     {
-        // TODO: generated code WheelTraceMgr::EndSkidding
-        // Find the skid strip for this owner
-        auto it = m_ownersToIdxMap.find(owner);
+        // RVA 0x698630 - frees the owner's strip. The strip keeps its geometry and is only
+        // recycled by StartSkidding, oldest first, by the time stamp set here.
+        auto const it = m_ownersToIdxMap.find(owner);
         if (it == m_ownersToIdxMap.end())
-            return 0;
-
-        int stripIndex = it->second;
-        SkidStrip* strip = &m_skidStrips[stripIndex];
-
-        // Mark the strip as unused and remove from owner mapping
-        strip->m_binUse = 0;
-        m_ownersToIdxMap.erase(it);
-
-        // Update timestamp
-        unsigned int currentTime = g_Kernel->GetTimer().GetCurTime();
-        strip->m_timeStamp = currentTime;
-
-        // Handle smooth ending by updating vertex colors
-        if (smoothEnd)
         {
-            int stripSize = strip->m_stripSize;
-            if (stripSize > 0)
-            {
-                // Calculate vertex buffer offset
-                int vertexOffset = 2 * (stripSize - 1 + (stripIndex << 6));
+            return 0;
+        }
 
-                // Lock vertex buffer
-                auto* vertices = static_cast<m3d::rend::VertexXYZCT1*>(M3D_RENDERER->LockVb(m_vb, 2, vertexOffset, 0));
+        int const stripIdx = it->second;
+        SkidStrip& strip = m_skidStrips[stripIdx];
+        strip.m_binUse = false;
+        m_ownersToIdxMap.erase(it);
+        strip.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
 
-                // Update colors for smooth ending (fade out effect)
-                vertices[0].c = 0x7F7F7F;  // First vertex color
-                vertices[1].c = 0x7F7F7F;  // Second vertex color
-
-                // Unlock vertex buffer
-                M3D_RENDERER->UnlockVb(m_vb);
-            }
+        if (smoothEnd && strip.m_stripSize > 0)
+        {
+            // Fades the trace out: the last cross section becomes fully transparent.
+            auto* vertices = static_cast<rend::VertexXYZCT1*>(
+                M3D_RENDERER->LockVb(m_vb, 2, 2 * (stripIdx * 64 + strip.m_stripSize - 1), 0));
+            vertices[0].c = 0x7F7F7F;
+            vertices[1].c = 0x7F7F7F;
+            M3D_RENDERER->UnlockVb(m_vb);
         }
 
         return 1;
@@ -215,34 +191,32 @@ namespace m3d
 
     int WheelTraceMgr::StartSkidding(void* owner, int type)
     {
-        // TODO: generated code WheelTraceMgr::StartSkidding
-        int bestIndex = 511;               // Default to invalid index
-        int oldestTimestamp = 0x7FFFFFFF;  // MAX_INT
-
+        // RVA 0x698BB0 - takes the free strip that was released longest ago.
+        // NOTE: when all 512 strips are in use the last one is taken anyway, from under its
+        // owner. And if the owner already has a strip, the map keeps the old index while the
+        // strip returned here is reset regardless.
+        int stripIdx = 511;
+        int oldestTimeStamp = 0x7FFFFFFF;
         for (int i = 0; i < 512; ++i)
         {
-            if (!m_skidStrips[i].m_binUse && m_skidStrips[i].m_timeStamp < oldestTimestamp)
+            if (!m_skidStrips[i].m_binUse && m_skidStrips[i].m_timeStamp < oldestTimeStamp)
             {
-                bestIndex = i;
-                oldestTimestamp = m_skidStrips[i].m_timeStamp;
+                stripIdx = i;
+                oldestTimeStamp = m_skidStrips[i].m_timeStamp;
             }
         }
 
-        // Insert owner-to-index mapping
-        std::pair<void*, int> newEntry(owner, bestIndex);
-        auto result = m_ownersToIdxMap.insert(newEntry);
+        m_ownersToIdxMap.insert({owner, stripIdx});
 
-        // Initialize the skid strip
-        int usedIndex = bestIndex;
-        m_skidStrips[usedIndex].m_binUse = true;
-        m_skidStrips[usedIndex].m_texCoord = 0.0f;
-        m_skidStrips[usedIndex].m_stripSize = 0;
-        m_skidStrips[usedIndex].m_lastFramestamp = g_Kernel->GetTimer().GetCurFrame();
-        m_skidStrips[usedIndex].m_soilType = type;
-        m_skidStrips[usedIndex].m_boundCenter = ZeroVector;
-        m_skidStrips[usedIndex].m_boundRadius = 0.0f;
-
-        return bestIndex;
+        SkidStrip& strip = m_skidStrips[stripIdx];
+        strip.m_binUse = true;
+        strip.m_texCoord = 0.0f;
+        strip.m_stripSize = 0;
+        strip.m_lastFramestamp = g_Kernel->GetTimer().GetCurFrame();
+        strip.m_soilType = type;
+        strip.m_boundCenter = ZeroVector;
+        strip.m_boundRadius = 0.0f;
+        return stripIdx;
     }
 
     void WheelTraceMgr::ClearTraces()
@@ -263,23 +237,25 @@ namespace m3d
 
     WheelTraceMgr::WheelTraceMgr()
     {
-        //TODO: check this
+        // RVA 0x699670 - 512 strips of up to 64 cross sections each. The index buffer is
+        // just 0..129, shared by every strip through the base vertex of SetIndices.
         m_skidStrips = new SkidStrip[512];
-        this->m_vb = M3D_RENDERER->AddVb(
-            rend::VERTEX_XYZCT1,
-            0x10000,
-            "WheelTrace",
-            0);
-        this->m_ib = M3D_RENDERER->AddIb(130, 0);
-        //TODO: check this
-        auto ibPtr = static_cast<WORD*>(M3D_RENDERER->LockIb(this->m_ib, 0, 0, 0));
+        m_vb = M3D_RENDERER->AddVb(rend::VERTEX_XYZCT1, 0x10000, "WheelTrace", 0);
+        m_ib = M3D_RENDERER->AddIb(130, 0);
+
+        auto* indices = static_cast<uint16_t*>(M3D_RENDERER->LockIb(m_ib, 0, 0, 0));
         for (int i = 0; i < 130; ++i)
-            ibPtr[i] = i;
-        M3D_RENDERER->UnlockIb(this->m_ib);
-        this->m_shader = M3D_RENDERER->NewEffect("data/shaders/wheeltrace.fx", true);
+        {
+            indices[i] = static_cast<uint16_t>(i);
+        }
+        M3D_RENDERER->UnlockIb(m_ib);
+
+        m_shader = M3D_RENDERER->NewEffect("data/shaders/wheeltrace.fx", true);
         M3D_ASSERT(m_shader);
-        this->m_shader->SetDefaultTechnique(true);
-        m_profiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(m3d::Application::g_pApp->GetProfilerStack().AddProfiler("wheeltraces", 0x1Eu));
+        m_shader->SetDefaultTechnique(true);
+
+        ProfilerStack& profilers = m3d::Application::g_pApp->GetProfilerStack();
+        m_profiler = profilers.GetProfiler(profilers.AddProfiler("wheeltraces", 0x1Eu));
     }
 
     void WheelTraceMgr::Init(int numSoilTypes)
@@ -296,173 +272,111 @@ namespace m3d
 
     void WheelTraceMgr::AddTrace(CVector const& org, Quaternion const& quat, float scale, void* owner, int soilType, bool smoothStart)
     {
-        // TODO: generated code WheelTraceMgr::AddTrace 
-        // Find existing skid strip for this owner
-        auto it = m_ownersToIdxMap.find(owner);
-        if (it == m_ownersToIdxMap.end())
-            return;
-
-        int stripIndex = it->second;
-        SkidStrip* strip = &m_skidStrips[stripIndex];
-
-        // Check if we should end skidding (frame gap or soil type change)
-        unsigned int currentFrame = g_Kernel->GetTimer().GetCurFrame();
-        if ((int)(currentFrame - strip->m_lastFramestamp) > 1 || strip->m_soilType != soilType)
+        // RVA 0x698CE0 - appends a cross section at the wheel's contact point. A new
+        // section is only started once the wheel is skidMinDist past the one before the
+        // last; until then the last section is moved along with the wheel.
+        for (;;)
         {
-            EndSkidding(owner, true);
-            return;
-        }
-
-        strip->m_lastFramestamp = currentFrame;
-
-        // Calculate wheel width from scale
-        float wheelWidth = scale * 0.33333334f;
-
-        // Create rotation matrix from quaternion
-        float xx = quat.x * quat.x;
-        float xy = quat.x * quat.y;
-        float xz = quat.x * quat.z;
-        float xw = quat.x * quat.w;
-        float yy = quat.y * quat.y;
-        float yz = quat.y * quat.z;
-        float yw = quat.y * quat.w;
-        float zz = quat.z * quat.z;
-        float zw = quat.z * quat.w;
-
-        CMatrix rot;
-        rot._11 = 1.0f - 2.0f * (yy + zz);
-        rot._12 = 2.0f * (xy + zw);
-        rot._13 = 2.0f * (xz - yw);
-        rot._14 = 0.0f;
-        rot._21 = 2.0f * (xy - zw);
-        rot._22 = 1.0f - 2.0f * (xx + zz);
-        rot._23 = 2.0f * (yz + xw);
-        rot._24 = 0.0f;
-        rot._31 = 2.0f * (xz + yw);
-        rot._32 = 2.0f * (yz - xw);
-        rot._33 = 1.0f - 2.0f * (xx + yy);
-        rot._34 = 0.0f;
-        rot._41 = 0.0f;
-        rot._42 = 0.0f;
-        rot._43 = 0.0f;
-        rot._44 = 1.0f;
-
-        // Calculate skid quad points
-        SkidQuad sq;
-
-        // First point (right side of wheel)
-        sq.p1.x = org.x + (rot._11 * wheelWidth + rot._31 * 0.0f + rot._21 * 0.0f);
-        sq.p1.y = org.y;
-        sq.p1.z = org.z + (rot._13 * wheelWidth + rot._33 * 0.0f + rot._23 * 0.0f);
-
-        // Second point (left side of wheel)
-        sq.p2.x = org.x + (rot._11 * -wheelWidth + rot._31 * 0.0f + rot._21 * 0.0f);
-        sq.p2.y = org.y;
-        sq.p2.z = org.z + (rot._13 * -wheelWidth + rot._33 * 0.0f + rot._23 * 0.0f);
-
-        // Get skid opacity from engine config
-        unsigned int opaqueColor = 0x7F7F7F | (M3D_ENGINE_CFG.m_skidOpaque.GetI() << 24);
-
-        // Handle strip capacity
-        if (strip->m_stripSize >= 63)
-        {
-            // Strip is full, end current and start new one
-            void* newOwner = owner;
-            EndSkidding(newOwner, false);
-            int newIndex = StartSkidding(newOwner, strip->m_soilType);
-            SkidStrip* newStrip = &m_skidStrips[newIndex];
-
-            // Initialize new strip with current quad
-            int vertexOffset = 2 * (newStrip->m_stripSize + (newIndex << 6));
-            auto* vertices = M3D_RENDERER->LockVb(m_vb, 2, vertexOffset, 0);
-            FillTraceBuffer((rend::VertexXYZCT1*)vertices, sq, opaqueColor, 0.0f);
-            M3D_RENDERER->UnlockVb(m_vb);
-
-            newStrip->m_last[1] = newStrip->m_last[0];
-            newStrip->m_last[0] = sq;
-            newStrip->m_stripSize++;
-            newStrip->m_boundCenter = CVector(sq.p1.x, sq.p1.y, sq.p1.z);
-            newStrip->m_boundRadius = 0.0f;
-            smoothStart = false;
-
-            // Update iterator for the new strip
-            it = m_ownersToIdxMap.find(owner);
+            auto const it = m_ownersToIdxMap.find(owner);
             if (it == m_ownersToIdxMap.end())
-                return;
-
-            stripIndex = it->second;
-            strip = &m_skidStrips[stripIndex];
-        }
-
-        // Add quad to strip based on strip size
-        if (strip->m_stripSize <= 1)
-        {
-            // Add first quads to the strip
-            int vertexOffset = 2 * (strip->m_stripSize + (stripIndex << 6));
-            auto* vertices = M3D_RENDERER->LockVb(m_vb, 2, vertexOffset, 0);
-
-            // TODO: this is wrong
-            unsigned int color = owner ? opaqueColor : static_cast<unsigned int>(opaqueColor);
-            FillTraceBuffer((rend::VertexXYZCT1*)vertices, sq, color, 0.0f);
-            M3D_RENDERER->UnlockVb(m_vb);
-
-            // Update strip data
-            strip->m_last[1] = strip->m_last[0];
-            strip->m_last[0] = sq;
-            strip->m_stripSize++;
-
-            strip->m_boundCenter = org;
-            strip->m_boundRadius = 0.0f;
-        }
-        else
-        {
-            // Add subsequent quad with distance checking
-            CVector prevMidpoint(
-                (strip->m_last[1].p1.x + strip->m_last[1].p2.x) * 0.5f,
-                (strip->m_last[1].p1.y + strip->m_last[1].p2.y) * 0.5f,
-                (strip->m_last[1].p1.z + strip->m_last[1].p2.z) * 0.5f);
-
-            CVector currentMidpoint(
-                (strip->m_last[0].p1.x + strip->m_last[0].p2.x) * 0.5f,
-                (strip->m_last[0].p1.y + strip->m_last[0].p2.y) * 0.5f,
-                (strip->m_last[0].p1.z + strip->m_last[0].p2.z) * 0.5f);
-
-            CVector newMidpoint((sq.p1.x + sq.p2.x) * 0.5f, (sq.p1.y + sq.p2.y) * 0.5f, (sq.p1.z + sq.p2.z) * 0.5f);
-
-            // Calculate distances for texture coordinates
-            CVector deltaCurrent = currentMidpoint - newMidpoint;
-            strip->m_texCoord += deltaCurrent.length() / strip->m_texCoord;
-
-            // Check minimum distance threshold
-            float minDist = M3D_ENGINE_CFG.m_skidMinDist.GetF();
-            CVector deltaPrev = prevMidpoint - newMidpoint;
-            float prevDistSq = deltaPrev.lengthSq();
-
-            if (prevDistSq <= minDist * minDist)
             {
-                // Update existing vertices (close enough to previous point)
-                int vertexOffset = 2 * (strip->m_stripSize + (stripIndex << 6)) - 2;
-                auto* vertices = M3D_RENDERER->LockVb(m_vb, 2, vertexOffset, 0);
-                FillTraceBuffer((rend::VertexXYZCT1*)vertices, sq, opaqueColor, strip->m_texCoord);
+                return;
+            }
+
+            int const stripIdx = it->second;
+            SkidStrip& strip = m_skidStrips[stripIdx];
+
+            // A skipped frame or a change of soil ends the trace.
+            unsigned const curFrame = g_Kernel->GetTimer().GetCurFrame();
+            if (static_cast<int>(curFrame - strip.m_lastFramestamp) > 1 || strip.m_soilType != soilType)
+            {
+                EndSkidding(owner, true);
+                return;
+            }
+            strip.m_lastFramestamp = curFrame;
+
+            // The section runs across the wheel along its local x axis, a third of the
+            // wheel's scale to each side, at the height of the contact point.
+            float const halfWidth = scale * 0.33333334f;
+            CMatrix const rot = quat.ToMatrix();
+            SkidQuad sq;
+            sq.p1.x = org.x + (rot._11 * halfWidth + rot._31 * 0.0f + rot._21 * 0.0f);
+            sq.p1.y = org.y;
+            sq.p1.z = (rot._13 * halfWidth + rot._33 * 0.0f + rot._23 * 0.0f) + org.z;
+            sq.p2.x = org.x + ((0.0f - halfWidth) * rot._11 + rot._31 * 0.0f + rot._21 * 0.0f);
+            sq.p2.y = org.y;
+            sq.p2.z = (rot._13 * (0.0f - halfWidth) + rot._33 * 0.0f + rot._23 * 0.0f) + org.z;
+
+            unsigned const opaque = 0x7F7F7F | (M3D_ENGINE_CFG.m_skidOpaque.GetI() << 24);
+
+            if (strip.m_stripSize >= 63)
+            {
+                // The strip is full: the trace goes on in a fresh strip that starts with
+                // the full strip's last section, and this section is added on the next pass.
+                EndSkidding(owner, false);
+                int const newIdx = StartSkidding(owner, strip.m_soilType);
+                SkidStrip& newStrip = m_skidStrips[newIdx];
+                SkidQuad const& lastQuad = strip.m_last[0];
+
+                auto* vertices = static_cast<rend::VertexXYZCT1*>(
+                    M3D_RENDERER->LockVb(m_vb, 2, 2 * (newIdx * 64 + newStrip.m_stripSize), 0));
+                FillTraceBuffer(vertices, lastQuad, opaque, 0.0f);
+                M3D_RENDERER->UnlockVb(m_vb);
+
+                newStrip.m_last[1] = newStrip.m_last[0];
+                newStrip.m_last[0] = lastQuad;
+                ++newStrip.m_stripSize;
+                newStrip.m_boundCenter = lastQuad.p1;
+                newStrip.m_boundRadius = 0.0f;
+                smoothStart = false;
+                continue;
+            }
+
+            if (strip.m_stripSize <= 1)
+            {
+                // A smooth start fades the trace in from a transparent first section.
+                auto* vertices = static_cast<rend::VertexXYZCT1*>(
+                    M3D_RENDERER->LockVb(m_vb, 2, 2 * (stripIdx * 64 + strip.m_stripSize), 0));
+                FillTraceBuffer(vertices, sq, smoothStart ? 0x7F7F7F : opaque, 0.0f);
+                M3D_RENDERER->UnlockVb(m_vb);
+
+                ++strip.m_stripSize;
+                strip.m_last[1] = strip.m_last[0];
+                strip.m_last[0] = sq;
+                strip.m_boundCenter = org;
+                strip.m_boundRadius = 0.0f;
+                return;
+            }
+
+            CVector const beforeLastMid = (strip.m_last[1].p1 + strip.m_last[1].p2) * 0.5f;
+            CVector const lastMid = (strip.m_last[0].p1 + strip.m_last[0].p2) * 0.5f;
+            CVector const mid = (sq.p1 + sq.p2) * 0.5f;
+            double const minDist = M3D_ENGINE_CFG.m_skidMinDist.GetF();
+
+            // The texture repeats once per half width of wheel travelled.
+            strip.m_texCoord = static_cast<float>(static_cast<double>((lastMid - mid).length()) / halfWidth + strip.m_texCoord);
+
+            int const nextVertex = 2 * (stripIdx * 64 + strip.m_stripSize);
+            if ((beforeLastMid - mid).lengthSq() <= minDist * minDist)
+            {
+                // Too close to the section before: move the last section here instead.
+                auto* vertices = static_cast<rend::VertexXYZCT1*>(M3D_RENDERER->LockVb(m_vb, 2, nextVertex - 2, 0));
+                FillTraceBuffer(vertices, sq, opaque, strip.m_texCoord);
                 M3D_RENDERER->UnlockVb(m_vb);
             }
             else
             {
-                // Add new vertices
-                int vertexOffset = 2 * (strip->m_stripSize + (stripIndex << 6));
-                auto* vertices = M3D_RENDERER->LockVb(m_vb, 2, vertexOffset, 0);
-                FillTraceBuffer((rend::VertexXYZCT1*)vertices, sq, opaqueColor, strip->m_texCoord);
+                auto* vertices = static_cast<rend::VertexXYZCT1*>(M3D_RENDERER->LockVb(m_vb, 2, nextVertex, 0));
+                FillTraceBuffer(vertices, sq, opaque, strip.m_texCoord);
                 M3D_RENDERER->UnlockVb(m_vb);
 
-                strip->m_stripSize++;
-                strip->m_last[1] = strip->m_last[0];
+                ++strip.m_stripSize;
+                strip.m_last[1] = strip.m_last[0];
             }
+            strip.m_last[0] = sq;
 
-            // Update current quad
-            strip->m_last[0] = sq;
-
-            // Update bounding sphere
-            EmbraceSphere(strip->m_boundCenter, strip->m_boundRadius, org);
+            EmbraceSphere(strip.m_boundCenter, strip.m_boundRadius, org);
+            return;
         }
     }
 

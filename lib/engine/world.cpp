@@ -316,38 +316,40 @@ namespace m3d
 
     void CWorld::UpdateSun()
     {
-        // TODO: check this
-        auto m_curDayTime = this->m_weatherManager.GetCurrentDayTime();
-        float m_sunRiseAscention = 0.0;
-        if (m_curDayTime == GTP_SUNRISE_TIME)
+        // RVA 0x5C7760 - the sun's elevation comes from the level, per time of day; any
+        // other time of day puts the sun on the horizon. The trigonometry runs on the x87
+        // stack in the original, hence the doubles.
+        switch (m_weatherManager.GetCurrentDayTime())
         {
-            m_sunRiseAscention = this->m_level->m_sunRiseAscention;
-            this->m_sunAscention = m_sunRiseAscention;
-        }
-        auto v2 = m_curDayTime - 1;
-        if (!v2)
-        {
-            m_sunRiseAscention = this->m_level->m_sunDayAscention;
-            this->m_sunAscention = m_sunRiseAscention;
-        }
-        if (v2 == 1)
-        {
-            m_sunRiseAscention = this->m_level->m_sunSetAscention;
-            this->m_sunAscention = m_sunRiseAscention;
+            case GTP_SUNRISE_TIME:
+                m_sunAscention = m_level->m_sunRiseAscention;
+                break;
+            case GTP_DAY_TIME:
+                m_sunAscention = m_level->m_sunDayAscention;
+                break;
+            case GTP_SUNSET_TIME:
+                m_sunAscention = m_level->m_sunSetAscention;
+                break;
+            default:
+                m_sunAscention = 0.0f;
+                break;
         }
 
-        auto v4 = this->m_sunAscention * 0.017453292;
-        m_sunAzimuth = this->m_level->m_sunAzimuth;
-        auto v6 = cos(v4);
-        this->m_sunDir.x = cos(m_sunAzimuth * 0.017453292) * v6 * 20000.0;
-        this->m_sunDir.z = sin(this->m_sunAzimuth * 0.017453292) * v6 * 20000.0;
-        this->m_sunDir.y = sin(v4) * 20000.0;
-        auto v7 = sqrt(
-            this->m_sunDir.x * this->m_sunDir.x + this->m_sunDir.y * this->m_sunDir.y +
-            this->m_sunDir.z * this->m_sunDir.z + 0.00000011920929);
-        this->m_sunDir.x = 1.0 / v7 * this->m_sunDir.x;
-        this->m_sunDir.y = 1.0 / v7 * this->m_sunDir.y;
-        this->m_sunDir.z = 1.0 / v7 * this->m_sunDir.z;
+        float const degToRad = 0.017453292f;
+        double const ascention = static_cast<double>(m_sunAscention) * degToRad;
+        m_sunAzimuth = m_level->m_sunAzimuth;
+        double const cosAscention = cos(ascention);
+        m_sunDir.x = static_cast<float>(cos(static_cast<double>(m_sunAzimuth) * degToRad) * cosAscention * 20000.0);
+        m_sunDir.z = static_cast<float>(sin(static_cast<double>(m_sunAzimuth) * degToRad) * cosAscention * 20000.0);
+        m_sunDir.y = static_cast<float>(sin(ascention) * 20000.0);
+
+        double const x = m_sunDir.x;
+        double const y = m_sunDir.y;
+        double const z = m_sunDir.z;
+        double const invLength = 1.0 / sqrt(x * x + y * y + z * z + 1.1920929e-7);
+        m_sunDir.x = static_cast<float>(invLength * m_sunDir.x);
+        m_sunDir.y = static_cast<float>(invLength * m_sunDir.y);
+        m_sunDir.z = static_cast<float>(invLength * m_sunDir.z);
     }
 
     void CWorld::ReleasePrefabs()
@@ -553,66 +555,48 @@ namespace m3d
 
     void CWorld::ProcessCollisionStuff()
     {
-        // TODO: generated code
-        // Clear collision triangles from landscape
+        // RVA 0x5C9E20 - drops every collision triangle tag, then visits every node below
+        // the root (the root itself excluded).
         m_landscape.RemoveCollisionTris(-1);
 
-        // Stack for depth-first traversal of scene graph
-        std::vector<m3d::Object*> stack;
-
-        // Start with the root node
-        m3d::Object* rootNode = &m_sceneGraph.m_rootNode;
-        stack.push_back(rootNode);
-
-        // Depth-first traversal
+        retruxx::vector<Object*> stack;
+        stack.push_back(&m_sceneGraph.m_rootNode);
         while (!stack.empty())
         {
-            // Pop the last node from stack
-            m3d::Object* currentNode = stack.back();
+            Object* const parent = stack.back();
             stack.pop_back();
 
-            // Process all children of current node
-            m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-
-            while (child != nullptr)
+            for (auto* child = static_cast<SgNode*>(parent->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
             {
-                // Process collision for this child node
                 ProcessCollisionStuffOnNode(child);
-
-                // If child has children of its own, push to stack for processing
-                if (child->GetFirstChild() != nullptr)
+                if (child->GetFirstChild())
                 {
                     stack.push_back(child);
                 }
-
-                // Move to next sibling
-                child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
             }
         }
     }
 
     int CWorld::CreatePrefabsFromFile(char const* fileName)
     {
-        // TODO: generated code
+        // RVA 0x7AE710 - the file lists the prefab files, each of which holds "Node" elements.
+        // A "multi" node groups variants that CreatePrefabsNode picks from at random.
         std::vector<CStr> PrefabFiles;
 
-        // Create file stream
         m3d::fs::FileServer& fileServer = M3D_KERNEL->GetFileServer();
         scoped_ptr fileStream = fileServer.CreateFileStream();
 
-        // Open file
         if (!fileStream->Open(fileName, m3d::fs::IStream::OpenFlags::OPEN_READ))
         {
             return 0;
         }
 
-        // Create XML file and parse
         ref_ptr<m3d::cmn::XmlFile> xmlFile = m3d::g_Kernel->CreateXmlFile();
 
         xmlFile->Read(*fileStream);
         fileStream->Close();
 
-        // Check for XML parsing errors
         char const* error = xmlFile->GetError();
         if (error)
         {
@@ -621,11 +605,9 @@ namespace m3d
             return 0;
         }
 
-        // Get PrefabFiles section
         ref_ptr<m3d::cmn::XmlNode> filesNode = xmlFile->CreateNode();
         xmlFile->GetFirstChild(filesNode, "PrefabFiles");
 
-        // Iterate through all Item nodes
         filesNode->GetFirstChild(filesNode, "Item");
 
         while (!filesNode->IsEmpty())
@@ -635,34 +617,29 @@ namespace m3d
             filesNode->GetNextSibling(filesNode, "Item");
         }
 
-        // Process each prefab file
         for (unsigned int i = 0; i < PrefabFiles.size(); ++i)
         {
             CStr const& prefabFile = PrefabFiles[i];
 
-            // Reopen file stream for this prefab file
             if (!fileStream->Open(prefabFile.c_str(), m3d::fs::IStream::OpenFlags::OPEN_READ))
                 continue;
 
-            // Parse prefab XML
             ref_ptr<m3d::cmn::XmlFile> prefabXml = m3d::g_Kernel->CreateXmlFile();
 
             prefabXml->Read(*fileStream);
             fileStream->Close();
 
-            // Check for errors
-            if (prefabXml->GetError())
+            if (char const* const error = prefabXml->GetError())
             {
-                CStr errorMsg = "Can't parse: " + CStr(prefabXml->GetError());
-                M3D_APP->RunMsgBoxDlg("error", errorMsg, 1, false);
+                // NOTE: the original builds "Can't parse: " and then assigns the parser's
+                // error over it, so the box shows the bare error text.
+                M3D_APP->RunMsgBoxDlg("error", CStr(error), 1, false);
                 return 0;
             }
 
-            // Get Prefabs section
             ref_ptr<m3d::cmn::XmlNode> prefabsNode = prefabXml->CreateNode();
             prefabXml->GetFirstChild(prefabsNode, "Prefabs");
 
-            // Process each Node
             prefabsNode->GetFirstChild(prefabsNode, "Node");
 
             while (!prefabsNode->IsEmpty())
@@ -672,13 +649,11 @@ namespace m3d
 
                 if (isMulti)
                 {
-                    // Multi-effect prefab
                     char const* name = prefabsNode->GetAttribute("name");
 
                     m3d::CWorld::EffectsData effData;
                     effData.onlyOne = false;
 
-                    // Process child nodes
                     ref_ptr<m3d::cmn::XmlNode> childNode = prefabXml->CreateNode();
                     prefabsNode->GetFirstChild(childNode, "Node");
 
@@ -689,7 +664,6 @@ namespace m3d
                         {
                             effData.effects.push_back(prefab);
 
-                            // Validate name matching
                             if (!strstr(prefab->GetName(), name))
                             {
                                 CStr warning =
@@ -709,7 +683,6 @@ namespace m3d
                 }
                 else
                 {
-                    // Single effect prefab
                     m3d::SgNode* prefab = ReadPrefab(prefabXml, prefabsNode);
                     if (prefab)
                     {
@@ -726,7 +699,6 @@ namespace m3d
             }
         }
 
-        // Rebuild FX remap table
         fxRemap.clear();
         for (unsigned int i = 0; i < fxNames.size(); ++i)
         {
@@ -783,252 +755,178 @@ namespace m3d
 
     SgNode* CWorld::ReadPrefab(ref_ptr<cmn::XmlFile> file, ref_ptr<cmn::XmlNode> pnode)
     {
-        // TODO: generated code
-        // Get node attributes
-        char const* name = pnode->GetAttribute("name");
-        char const* className = pnode->GetAttribute("class");
+        // RVA 0x7ADD00 - a prefab is a template for CreatePrefabsNode to clone, so neither it
+        // nor anything below it may think.
+        char const* const name = pnode->GetAttribute("name");
+        SgNode* prefab = static_cast<SgNode*>(g_Kernel->New(pnode->GetAttribute("class")));
 
-        // Create new node instance
-        m3d::SgNode* loader = dynamic_cast<m3d::SgNode*>(m3d::g_Kernel->New(className));
-
-        // Try to load from XML
-        if (loader->ReadFromXmlNode(file, pnode) && loader->ReadFromXmlNodeAfterAdd(file, pnode))
+        if (!prefab->ReadFromXmlNode(file, pnode) || !prefab->ReadFromXmlNodeAfterAdd(file, pnode))
         {
-            // Successfully loaded - process the node hierarchy
-            m3d::SceneGraph* graph = loader->GetGraph();
-
-            // Remove loader from think list temporarily
-            graph->UnlinkThinkNode(loader);
-
-            // Process children using iterative DFS
-            std::vector<m3d::Object*> stack;
-            stack.push_back(dynamic_cast<m3d::Object*>(loader->GetFirstChild()));
-
-            while (!stack.empty())
-            {
-                m3d::Object* current = stack.back();
-                stack.pop_back();
-
-                // Process all siblings of the current node
-                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
-                while (sibling)
-                {
-                    // Link the sibling node
-                    graph->UnlinkThinkNode(sibling);
-
-                    // If this sibling has children, add to stack for processing
-                    if (sibling->GetFirstChild())
-                    {
-                        stack.push_back(sibling->GetFirstChild());
-                    }
-
-                    // Move to next sibling
-                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
-                }
-            }
-        }
-        else
-        {
-            CStr errorMsg =
-                "Error: Couldn't load prefab '" + CStr(name) + "'. Check if you have child nodes with duplicate names.";
-
-            M3D_LOG_ERR(errorMsg);
-
-            // Remove the failed node from the scene graph
-            GetGraph().RemoveNode(loader);
-
+            // NOTE: the message has no closing quote after the name, as in the original.
+            M3D_LOG_ERR(
+                CStr("Error: Couldn't load prefab '") + CStr(name) +
+                CStr(". Check if you have child nodes with duplicate names."));
+            GetGraph().RemoveNode(prefab);
             return nullptr;
         }
 
-        return loader;
+        SceneGraph* const graph = prefab->GetGraph();
+        graph->UnlinkThinkNode(prefab);
+
+        retruxx::vector<Object*> stack;
+        stack.push_back(prefab);
+        while (!stack.empty())
+        {
+            Object* const parent = stack.back();
+            stack.pop_back();
+
+            for (auto* child = static_cast<SgNode*>(parent->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
+            {
+                graph->UnlinkThinkNode(child);
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+
+        return prefab;
     }
 
     bool CWorld::LoadWorld(CStr const& filename)
     {
-        // TODO: check this!!!
-        M3D_LOG_INFO("LoadWorld begin...");
+        // RVA 0x5C9380 - reads the scene graph, registers the static obstacles and the
+        // impassable pass map cells with the collision cells, links the top level nodes and
+        // works out the id for the next new node.
+        M3D_LOG_INFO(CStr("LoadWorld begin..."));
+        unsigned const readStart = M3D_KERNEL->GetTimer().GetCurTime();
 
-        // Start timing
-        unsigned int startTime = M3D_KERNEL->GetTimer().GetCurTime();
-
-        // Read XML file
         CStr err;
-        ref_ptr<m3d::cmn::XmlFile> xmlFile = m3d::ReadXmlFile(filename.c_str(), &err);
-        if (xmlFile)
+        ref_ptr<cmn::XmlFile> xmlFile = ReadXmlFile(filename.c_str(), &err);
+        if (!xmlFile)
         {
-            // Log XML parsing time
-            CStr fileName("%%%% read/parse xml: ");
-
-            unsigned int parseTime = M3D_KERNEL->GetTimer().GetCurTime();
-            CStr timeStr(parseTime - startTime);
-            CStr name(fileName);
-            name += timeStr;
-
-            CStr logMsg(name);
-            M3D_LOG_INFO(logMsg);
-
-            // Get root node
-            ref_ptr<m3d::cmn::XmlNode> root = xmlFile->CreateNode();
-            xmlFile->GetFirstChild(root, "World");
-
-            // Get last saved ID if available
-            int lastId = 0;
-            SafeIntAttrib(lastId, root, "LastId");
-
-            // Load world data from XML
-            unsigned int loadStartTime = M3D_KERNEL->GetTimer().GetCurTime();
-
-            m3d::SgNode* rootNode = GetGraph().GetRootNode();
-            rootNode->ReadFromXmlNode(xmlFile, root);
-
-            // Log loading time
-            CStr loadTimeMsg("%%%% read from xml: ");
-            unsigned int loadEndTime = M3D_KERNEL->GetTimer().GetCurTime();
-
-            CStr loadTimeStr(loadEndTime - loadStartTime);
-            CStr loadMsg(loadTimeMsg + loadTimeStr);
-            M3D_LOG_INFO(loadMsg);
-
-            // Process static obstacles if enabled
-            unsigned int processStartTime = M3D_KERNEL->GetTimer().GetCurTime();
-
-            if (M3D_KERNEL->GetEngineCfg().m_ai_static_obstacles_enabled.GetB())
-            {
-                std::vector<m3d::SgNode*> stack;
-                stack.push_back(rootNode);
-
-                while (!stack.empty())
-                {
-                    m3d::SgNode* currentNode = stack.back();
-                    stack.pop_back();
-
-                    m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-                    while (child)
-                    {
-                        char isObstacle = 1;
-                        if (child->GetProperty(8717u, &isObstacle))
-                        {
-                            child->UpdateXForm(0, 1);
-                            child->SetProperty(8717u, &isObstacle);
-                            m_landscape.LinkNodeObstacleToCells(child);
-                        }
-
-                        if (child->GetFirstChild())
-                        {
-                            stack.push_back(child);
-                        }
-
-                        child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
-                    }
-                }
-
-                LoadStaticObstacles();
-            }
-
-            // Load player pass map
-            ai::PlayerPassMap playerPassMap;
-            CStr pathSep("\\");
-            CStr levelPath(m_level->m_levelPath);
-            levelPath += pathSep;
-
-            CStr passMapPath(levelPath);
-            passMapPath += m_level->m_playerPassMapFileName;
-
-            playerPassMap.LoadFromBinaryFile(passMapPath);
-
-            // Process pass map
-            int tileSize = 2 * m_landscape.GetTileSize();
-            if (!playerPassMap.IsEmpty())
-            {
-                for (int j = 0; j < tileSize; ++j)
-                {
-                    for (int k = 0; k < tileSize; ++k)
-                    {
-                        if (!playerPassMap.GetValue(j, k))
-                        {
-                            PointBase<int> point(j, k);
-                            m_landscape.LinkPassMapCellToCollisionCell(point);
-                        }
-                    }
-                }
-            }
-
-            playerPassMap.Clear();
-
-            // Process scene graph nodes
-            m3d::SgNode* firstChild = dynamic_cast<m3d::SgNode*>(GetGraph().GetRootNode()->GetFirstChild());
-            m_lastId = 0;
-            int maxIdNode = 0;
-            int nodeCount = 0;
-
-            while (firstChild)
-            {
-                firstChild->UpdateXForm(0, 1);
-                m_sceneGraph.LinkNode(firstChild);
-                m_landscape.LinkNodeAndChildrenCollisionGeomsToCell(firstChild);
-
-                // Extract ID from node name
-                CStr nameStr(firstChild->GetName());
-                for (size_t m = 0; m < nameStr.length(); ++m)
-                {
-                    // TODO: refactor this shit
-                    char c = nameStr[m];
-                    if (c < '0' || c > '9')
-                    {
-                        nameStr.del(m, 1);
-                        --m;
-                    }
-                }
-
-                int idNode = 0;
-                if (nameStr.length() > 0)
-                {
-                    int id;
-                    sscanf(nameStr.c_str(), "%d", &id);
-                    idNode = id;
-                }
-
-                if (idNode > maxIdNode)
-                    maxIdNode = idNode;
-
-                nodeCount++;
-                firstChild = dynamic_cast<m3d::SgNode*>(firstChild->GetNextSibling());
-            }
-
-            // Set last ID
-            int lastSavedId = lastId;
-            int maxId = std::max(nodeCount, std::max(lastSavedId, maxIdNode));
-            m_lastId = maxId;
-
-            // Log processing time
-
-            CStr processMsg("%%%% link nodes: ");
-            unsigned int processEndTime = M3D_KERNEL->GetTimer().GetCurTime();
-
-            CStr processTimeStr(processEndTime - processStartTime);
-            CStr finalMsg(processMsg);
-            finalMsg += processTimeStr;
-
-            CStr finalLogMsg(finalMsg);
-            M3D_LOG_INFO(finalLogMsg);
-
-            // Cleanup
-            return 1;
+            M3D_LOG_INFO(CStr("LoadWorld: ") + err);
+            return false;
         }
-        else
+        M3D_LOG_INFO(CStr("%%%% read/parse xml: ") + CStr(M3D_KERNEL->GetTimer().GetCurTime() - readStart));
+
+        ref_ptr<cmn::XmlNode> root = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(root, "World");
+        int lastSavedId = 0;
+        SafeIntAttrib(lastSavedId, root, "LastId");
+
+        unsigned const parseStart = M3D_KERNEL->GetTimer().GetCurTime();
+        SgNode* const rootNode = &m_sceneGraph.m_rootNode;
+        rootNode->ReadFromXmlNode(xmlFile, root);
+        M3D_LOG_INFO(CStr("%%%% read from xml: ") + CStr(M3D_KERNEL->GetTimer().GetCurTime() - parseStart));
+
+        unsigned const linkStart = M3D_KERNEL->GetTimer().GetCurTime();
+        if (M3D_KERNEL->GetEngineCfg().m_ai_static_obstacles_enabled.GetB())
         {
-            // Error handling
-            CStr errorMsg("LoadWorld: ");
-            errorMsg += err;
+            // Every node below the root that answers the "is obstacle" property is one.
+            retruxx::vector<SgNode*> stack;
+            stack.push_back(rootNode);
+            while (!stack.empty())
+            {
+                SgNode* const parent = stack.back();
+                stack.pop_back();
 
-            M3D_LOG_INFO(errorMsg);
+                for (auto* child = static_cast<SgNode*>(parent->GetFirstChild()); child;
+                     child = static_cast<SgNode*>(child->GetNextSibling()))
+                {
+                    char isObstacle = 1;
+                    if (child->GetProperty(8717, &isObstacle))
+                    {
+                        child->UpdateXForm(0, 1);
+                        child->SetProperty(8717, &isObstacle);
+                        m_landscape.LinkNodeObstacleToCells(child);
+                    }
+                    if (child->GetFirstChild())
+                    {
+                        stack.push_back(child);
+                    }
+                }
+            }
 
-            return 0;
+            LoadStaticObstacles();
         }
+
+        // The pass map has two cells per tile side.
+        ai::PlayerPassMap playerPassMap;
+        playerPassMap.LoadFromBinaryFile(m_level->m_levelPath + CStr("\\") + m_level->m_playerPassMapFileName);
+        int const passMapSize = 2 * m_landscape.GetTileSize();
+        if (!playerPassMap.IsEmpty())
+        {
+            for (int x = 0; x < passMapSize; ++x)
+            {
+                for (int y = 0; y < passMapSize; ++y)
+                {
+                    if (!playerPassMap.GetValue(x, y))
+                    {
+                        m_landscape.LinkPassMapCellToCollisionCell(PointBase<int>(x, y));
+                    }
+                }
+            }
+        }
+        playerPassMap.Clear();
+
+        // The next id is past the saved one, the number of top level nodes and the largest
+        // id in their names.
+        m_lastId = 0;
+        int maxNameId = 0;
+        int numNodes = 0;
+        int nameId = 0;
+        for (auto* node = static_cast<SgNode*>(m_sceneGraph.m_rootNode.GetFirstChild()); node;
+             node = static_cast<SgNode*>(node->GetNextSibling()))
+        {
+            node->UpdateXForm(0, 1);
+            m_sceneGraph.LinkNode(node);
+            m_landscape.LinkNodeAndChildrenCollisionGeomsToCell(node);
+
+            // NOTE: the index moves on after a deletion too, so of two non-digits in a row
+            // the second survives ("ab12" leaves "b12"), and sscanf then fails and leaves
+            // the previous node's id in place.
+            CStr digits(node->GetName());
+            for (int i = 0; i < static_cast<int>(digits.length()); ++i)
+            {
+                if (digits[i] < '0' || digits[i] > '9')
+                {
+                    digits.del(i, 1);
+                }
+            }
+            if (digits.length() == 0)
+            {
+                nameId = 0;
+            }
+            else
+            {
+                sscanf(digits.c_str(), "%d", &nameId);
+            }
+
+            if (nameId > maxNameId)
+            {
+                maxNameId = nameId;
+            }
+            ++numNodes;
+        }
+
+        m_lastId = std::max(std::max(lastSavedId, numNodes), maxNameId);
+        if (lastSavedId == 0)
+        {
+            // NOTE: without a saved LastId the original adds the address of the root node
+            // (lea eax, [eax + this + 319158h]), so the next id depends on where the world
+            // happens to be allocated.
+            m_lastId += static_cast<int>(reinterpret_cast<intptr_t>(&m_sceneGraph.m_rootNode));
+        }
+
+        M3D_LOG_INFO(CStr("%%%% link nodes: ") + CStr(M3D_KERNEL->GetTimer().GetCurTime() - linkStart));
+        return true;
     }
 
     void CWorld::LoadStaticObstacles()
     {
+        // RVA 0x5C8670 - each Box of the static obstacles file becomes an oriented box obstacle.
         scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
         if (fileStream->Open(
                 m_level->GetFullPathNameA(m_level->m_staticObstaclesFileName).c_str(), fs::IStream::OPEN_READ))
@@ -1046,16 +944,16 @@ namespace m3d
                     {
                         CStr buf;
 
-                        SafeStrAttrib(buf, node, "min");
+                        SafeStrAttrib(buf, box, "min");
                         auto min = strToVec(buf);
 
-                        SafeStrAttrib(buf, node, "max");
+                        SafeStrAttrib(buf, box, "max");
                         auto max = strToVec(buf);
 
-                        SafeStrAttrib(buf, node, "origin");
+                        SafeStrAttrib(buf, box, "origin");
                         auto origin = strToVec(buf);
 
-                        SafeStrAttrib(buf, node, "rotation");
+                        SafeStrAttrib(buf, box, "rotation");
                         auto rotation = strToQuat(buf);
 
                         CMatrix mat;

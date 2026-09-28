@@ -93,8 +93,10 @@ namespace m3d
             int Activate(m3d::ui::Wnd* wnd);
             m3d::ui::Wnd* GetActive() const;
 
-            // TODO: check if this virtual or not
-            /* virtual */ int Create(const CStr& stringsName, const CStr& schemaName) /* 0x00 */;
+            // Not virtual, although the PDB class dump lists it as an override: the mangled
+            // name (?Create@WndStation@ui@m3d@@QAEHABVCStr@@0@Z, RVA 0x58DC50) is a plain
+            // public member.
+            int Create(const CStr& stringsName, const CStr& schemaName);
 
             virtual int Create(const CStr& caption, unsigned int style, const BoundsBase<float>& rc, unsigned int id) override /* 0x00 */;
             int Done();

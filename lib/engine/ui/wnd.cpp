@@ -498,336 +498,100 @@ namespace m3d
 
         int Wnd::StartAnimation(AnimationInfo const& animationInfo, bool interpolateWithPrevious)
         {
-            // TODO: generated code Wnd::StartAnimation
-            // Create a copy of the current animation before modifying it
-            AnimationInfo prevAnimation = m_currentAnimation;
-
-            // Copy the new animation info
+            // RVA 0x678590 - "TO_x" animations slide the window in from beyond the
+            // x edge of its parent to its base origin, "TO_BEYOND_x" ones slide it
+            // from the base origin out past that edge. With interpolateWithPrevious
+            // the slide starts from wherever the window is now.
+            // (The shipped code also copies the previous animation into a local it
+            // never reads.)
             m_currentAnimation = animationInfo;
+            AnimationInfo& anim = m_currentAnimation;
 
-            // Check if current animation is valid and enabled
-            if (m_currentAnimation.m_animationType != AnimationInfo::ANIMATIONTYPE_INVALID &&
-                m_currentAnimation.m_bEnabled)
+            if (anim.m_animationType == AnimationInfo::ANIMATIONTYPE_INVALID || !anim.m_bEnabled)
             {
-                // Get the station this window belongs to
-                WndStation* station = GetStation();
-
-                // Check if window is a child of the station
-                if (!m3d::Object::IsChildOf(station))
-                {
-                    // Invalid animation - window not attached to station
-                    m_currentAnimation.m_animationType = AnimationInfo::ANIMATIONTYPE_INVALID;
-                    m_currentAnimation.m_purpose = AnimationInfo::PURPOSE_UNKNOWN;
-                    return false;
-                }
+                return false;
             }
-            else
+            if (!IsChildOf(GetStation()))
             {
-                // Animation is invalid or disabled
+                anim.m_animationType = AnimationInfo::ANIMATIONTYPE_INVALID;
+                anim.m_purpose = AnimationInfo::PURPOSE_UNKNOWN;
                 return false;
             }
 
-            if (m_currentAnimation.m_bImmediate)
+            if (anim.m_bImmediate)
             {
-                // Immediate animation - jump to end position
-                m_bounds.x0 = m_currentAnimation.m_endPt.x;
-                m_bounds.y0 = m_currentAnimation.m_endPt.y;
+                m_bounds.x0 = anim.m_endPt.x;
+                m_bounds.y0 = anim.m_endPt.y;
                 OnEndAnimation(false);
+                return true;
             }
-            else
+
+            auto* const parent = static_cast<Wnd*>(GetParent());
+            if (!parent)
             {
-                // Animated transition
-                auto* parent = RT_DYNCAST(GetParent(), Wnd);
-                if (!parent)
-                    return false;
+                return false;
+            }
+            anim.m_curSpeed = anim.m_startSpeed;
+            anim.m_startTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+            BoundsBase<float> const parentB = parent->GetBounds();
 
-                // Initialize animation parameters
-                m_currentAnimation.m_curSpeed = m_currentAnimation.m_startSpeed;
-                m_currentAnimation.m_startTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+            // Positions just beyond each edge of the parent.
+            float const beyondLeft = 0.0f - m_bounds.width;
+            float const beyondTop = 0.0f - m_bounds.height;
+            float const beyondRight = parentB.width;
+            float const beyondBottom = parentB.height;
+            float const x0 = m_bounds.x0;
+            float const y0 = m_bounds.y0;
+            PointBase<float> const cur{x0, y0};
 
-                // Get parent bounds for relative positioning
-                BoundsBase<float> parentB = parent->GetBounds();
+            // Slide in from "from" to the base origin.
+            auto const slideIn = [&](float fromX, float fromY) {
+                anim.m_startPt = interpolateWithPrevious ? cur : PointBase<float>{fromX, fromY};
+                anim.m_endPt = m_baseOrigin;
+            };
+            // Slide out from the base origin to "to".
+            auto const slideOut = [&](float toX, float toY) {
+                anim.m_startPt = interpolateWithPrevious ? cur : m_baseOrigin;
+                anim.m_endPt = PointBase<float>{toX, toY};
+            };
 
-                // Handle different animation types
-                switch (m_currentAnimation.m_animationType)
+            switch (anim.m_animationType)
+            {
+            case AnimationInfo::ANIMATIONTYPE_USER:
+                if (interpolateWithPrevious)
                 {
-                case AnimationInfo::ANIMATIONTYPE_USER:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_LEFT:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = parentB.width;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = 0.0f - m_bounds.width;
-                    m_currentAnimation.m_endPt.y = m_bounds.y0;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_RIGHT:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = 0.0f - m_bounds.width;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = parentB.width;
-                    m_currentAnimation.m_endPt.y = m_bounds.y0;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_TOP:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = parentB.height;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = m_bounds.x0;
-                    m_currentAnimation.m_endPt.y = 0.0f - m_bounds.height;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = 0.0f - m_bounds.height;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = m_bounds.x0;
-                    m_currentAnimation.m_endPt.y = parentB.height;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = parentB.width;
-                        m_currentAnimation.m_startPt.y = parentB.height;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = 0.0f - m_bounds.width;
-                    m_currentAnimation.m_endPt.y = 0.0f - m_bounds.height;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = parentB.width;
-                        m_currentAnimation.m_startPt.y = 0.0f - m_bounds.height;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = 0.0f - m_bounds.width;
-                    m_currentAnimation.m_endPt.y = parentB.height;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = 0.0f - m_bounds.width;
-                        m_currentAnimation.m_startPt.y = parentB.height;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = parentB.width;
-                    m_currentAnimation.m_endPt.y = 0.0f - m_bounds.height;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = 0.0f - m_bounds.width;
-                        m_currentAnimation.m_startPt.y = 0.0f - m_bounds.height;
-                    }
-                    m_currentAnimation.m_endPt.x = m_baseOrigin.x;
-                    m_currentAnimation.m_endPt.y = m_baseOrigin.y;
-                    break;
-
-                case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM:
-                    if (interpolateWithPrevious)
-                    {
-                        m_currentAnimation.m_startPt.x = m_bounds.x0;
-                        m_currentAnimation.m_startPt.y = m_bounds.y0;
-                    }
-                    else
-                    {
-                        m_currentAnimation.m_startPt.x = m_baseOrigin.x;
-                        m_currentAnimation.m_startPt.y = m_baseOrigin.y;
-                    }
-                    m_currentAnimation.m_endPt.x = parentB.width;
-                    m_currentAnimation.m_endPt.y = parentB.height;
-                    break;
-
-                default:
-                    break;
+                    anim.m_startPt = cur;
                 }
-
-                // Set current position to animation start point
-                m_bounds.x0 = m_currentAnimation.m_startPt.x;
-                m_bounds.y0 = m_currentAnimation.m_startPt.y;
-
-                // Handle animation sound
-                StopAnimationMoveSound();
-                if (m_currentAnimation.m_bSoundMoveEnabled)
-                {
-                    CStr soundName;
-                    CStr const* pSoundName = nullptr;
-
-                    if (m_currentAnimation.m_soundMoveName.empty())
-                    {
-                        soundName = "CONTROL_SOUND_ANIMATION_MOVE_DEFAULT";
-                        pSoundName = &soundName;
-                    }
-                    else
-                    {
-                        pSoundName = &m_currentAnimation.m_soundMoveName;
-                    }
-
-                    m_animationSoundMoveChannelId = m_gfx->PlayControlSound(*pSoundName, 0);
-                }
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFT: slideIn(beyondRight, y0); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT: slideOut(beyondLeft, y0); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHT: slideIn(beyondLeft, y0); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT: slideOut(beyondRight, y0); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_TOP: slideIn(x0, beyondBottom); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP: slideOut(x0, beyondTop); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM: slideIn(x0, beyondTop); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM: slideOut(x0, beyondBottom); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP: slideIn(beyondRight, beyondBottom); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP: slideOut(beyondLeft, beyondTop); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM: slideIn(beyondRight, beyondTop); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM: slideOut(beyondLeft, beyondBottom); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP: slideIn(beyondLeft, beyondBottom); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP: slideOut(beyondRight, beyondTop); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM: slideIn(beyondLeft, beyondTop); break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM: slideOut(beyondRight, beyondBottom); break;
+            default: break;
             }
 
+            m_bounds.x0 = anim.m_startPt.x;
+            m_bounds.y0 = anim.m_startPt.y;
+
+            StopAnimationMoveSound();
+            if (anim.m_bSoundMoveEnabled)
+            {
+                CStr const soundName =
+                    anim.m_soundMoveName.empty() ? CStr("CONTROL_SOUND_ANIMATION_MOVE_DEFAULT") : anim.m_soundMoveName;
+                m_animationSoundMoveChannelId = m_gfx->PlayControlSound(soundName, nullptr);
+            }
             return true;
         }
 
@@ -861,6 +625,7 @@ namespace m3d
 
         int Wnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
         {
+            // RVA 0x6751C0
             m_bounds = strToBounds(xmlNode->GetAttribute("org"));
             CStr strBaseOrigin = xmlNode->GetAttribute("baseOrigin");
             if (!strBaseOrigin.empty())
@@ -872,9 +637,18 @@ namespace m3d
                 m_baseOrigin.x = m_bounds.x0;
                 m_baseOrigin.y = m_bounds.y0;
             }
-            SafeUintAttrib(m_style, xmlNode, "style");
+
+            // Integer attributes are parsed with atoi and left untouched when absent.
+            int value = 0;
+            if (SafeIntAttrib(value, xmlNode, "style"))
+            {
+                m_style = value;
+            }
             SafeIntAttrib(m_activationOrder, xmlNode, "order");
-            SafeUintAttrib(m_id, xmlNode, "id");
+            if (SafeIntAttrib(value, xmlNode, "id"))
+            {
+                m_id = value;
+            }
 
             CStr caption;
             CStr tip;
@@ -882,12 +656,19 @@ namespace m3d
             SafeStrAttrib(tip, xmlNode, "tip");
             SetText(GetStation()->InitializeStringUsingIds(caption));
             m_toolTipText = GetStation()->InitializeStringUsingIds(tip);
-            SafeStrAttrib(m_bgTextureName, xmlNode, "backimage");
+            bool const hasBackImage = SafeStrAttrib(m_bgTextureName, xmlNode, "backimage") != 0;
             SafeStrAttrib(m_paneName, xmlNode, "paneName");
-            SafeIntAttrib(m_paneFlags, xmlNode, "paneFlags");
+
+            // Pane flags and the font are always set (through the virtual setters),
+            // falling back to 0 when the attribute is absent.
+            int paneFlags = 0;
+            SafeIntAttrib(paneFlags, xmlNode, "paneFlags");
+            SetPaneFlags(paneFlags);
             SafeEnumAttrib(m_textWrap, xmlNode, "wrap");
             SafeEnumAttrib(m_textFormat, xmlNode, "format");
-            SafeIntAttrib(m_defFont, xmlNode, "font");
+            int font = 0;
+            SafeIntAttrib(font, xmlNode, "font");
+            SetDefaultFont(font);
 
             retruxx::vector<float> vecClientEdges;
             CStr strClientEdges;
@@ -910,8 +691,9 @@ namespace m3d
 
             Create(m_caption, m_style, m_bounds, m_id);
 
-            //TODO: check this
-            if (!m_bgTextureName.empty())
+            // Keyed on the attribute being present, not on the name being non-empty:
+            // backimage="" releases the current background.
+            if (hasBackImage)
             {
                 SetBackground(m_bgTextureName);
             }
@@ -1303,24 +1085,22 @@ namespace m3d
 
         PointBase<float> Wnd::ToScreen(PointBase<float> const& pt) const
         {
-            //TODO: check this!!!
+            // RVA 0x41C420 - adds the origins of this window and all its ancestors.
+            // The shipped code treats every ancestor as a Wnd without checking.
             PointBase<float> res = pt;
-            for (auto obj = this; obj; obj = dynamic_cast<Wnd const*>(obj->GetParent()))
+            for (Object const* obj = this; obj; obj = obj->GetParent())
             {
-                res.x += obj->m_bounds.x0;
-                res.y += obj->m_bounds.y0;
+                res.x += static_cast<Wnd const*>(obj)->m_bounds.x0;
+                res.y += static_cast<Wnd const*>(obj)->m_bounds.y0;
             }
             return res;
         }
 
         BoundsBase<float> Wnd::ToScreen(BoundsBase<float> const& b) const
         {
-            //TODO: check this!
-            PointBase<float> pt;
-            pt.x = b.x0;
-            pt.y = b.y0;
-            auto tl = ToScreen(pt);
-
+            // RVA 0x444F60 - the extents are rebuilt from the mapped corners, with the
+            // matching float rounding.
+            PointBase<float> const tl = ToScreen(PointBase<float>{b.x0, b.y0});
             BoundsBase<float> result;
             result.x0 = tl.x;
             result.y0 = tl.y;
@@ -1708,111 +1488,68 @@ namespace m3d
 
         int Wnd::ProcessAnimation(int curTime, int deltaTime)
         {
-            // TODO: generated code Wnd::ProcessAnimation
-            // Check if animation is valid and enabled
-            if (m_currentAnimation.m_animationType == AnimationInfo::ANIMATIONTYPE_INVALID ||
-                !m_currentAnimation.m_bEnabled)
+            // RVA 0x678CF0 - moves the window towards the animation's end point at
+            // the current (accelerating) speed, and snaps it there once it has
+            // overshot or is close enough.
+            //
+            // The shipped code works on 3D vectors with z = 0 and normalises them as
+            // v / sqrt(|v|^2 + FLT_EPSILON). The z terms always vanish, so they are
+            // left out here, but the order of the remaining additions is kept.
+            // NOTE: those sums and square roots run on the x87 FPU, whose precision
+            // depends on the control word the renderer leaves behind; this float
+            // version can differ from them in the last bit.
+            AnimationInfo& anim = m_currentAnimation;
+            if (anim.m_animationType == AnimationInfo::ANIMATIONTYPE_INVALID || !anim.m_bEnabled)
             {
                 return false;
             }
-
-            // Check if delay time has passed
-            if (curTime - m_currentAnimation.m_startTime >= m_currentAnimation.m_delayTime)
+            if (curTime - anim.m_startTime < anim.m_delayTime)
             {
-                // Get animation points
-                float const endX = m_currentAnimation.m_endPt.x;
-                float const endY = m_currentAnimation.m_endPt.y;
-                float const startX = m_currentAnimation.m_startPt.x;
-                float const startY = m_currentAnimation.m_startPt.y;
-
-                // Calculate current position delta
-                float const deltaX = endX - m_bounds.x0;
-                float const deltaY = endY - m_bounds.y0;
-
-                // Update speed with acceleration
-                float accelerationEffect = (m_currentAnimation.m_acceleration * static_cast<float>(deltaTime)) * 0.001f;
-                m_currentAnimation.m_curSpeed += accelerationEffect;
-
-                // Calculate movement for this frame
-                float const speedFactor = (m_currentAnimation.m_curSpeed * static_cast<float>(deltaTime)) * 0.001f;
-
-                // Normalize movement vector
-                float distance = sqrtf(deltaX * deltaX + deltaY * deltaY + 1.1920929e-7f);
-                if (distance < 1.0e-12f)
-                {
-                    // Already at destination
-                    m_bounds.x0 = endX;
-                    m_bounds.y0 = endY;
-                    OnEndAnimation(false);
-                    return true;
-                }
-
-                float invDistance = 1.0f / distance;
-
-                // Calculate new position
-                float newX = m_bounds.x0 + (deltaX * invDistance) * speedFactor;
-                float newY = m_bounds.y0 + (deltaY * invDistance) * speedFactor;
-
-                // Check if animation should end
-                if (startX == endX && startY == endY)
-                {
-                    // Start and end points are the same
-                    m_bounds.x0 = endX;
-                    m_bounds.y0 = endY;
-                    OnEndAnimation(false);
-                    return true;
-                }
-
-                // Calculate vector from new position to end point
-                float toEndX = endX - newX;
-                float toEndY = endY - newY;
-
-                // Calculate normalized direction vector to end point
-                float toEndDistance = sqrtf(toEndX * toEndX + toEndY * toEndY + 1.1920929e-7f);
-                float invToEndDistance = 1.0f / toEndDistance;
-                float normToEndX = toEndX * invToEndDistance;
-                float normToEndY = toEndY * invToEndDistance;
-
-                // Calculate normalized direction vector from start to end
-                float startToEndX = endX - startX;
-                float startToEndY = endY - startY;
-                float startToEndDistance = sqrtf(startToEndX * startToEndX + startToEndY * startToEndY + 1.1920929e-7f);
-                float invStartToEndDistance = 1.0f / startToEndDistance;
-                float normStartToEndX = startToEndX * invStartToEndDistance;
-                float normStartToEndY = startToEndY * invStartToEndDistance;
-
-                // Check if we've passed the end point or are very close to it
-                float directionDifference = (normStartToEndX - normToEndX) * (normStartToEndX - normToEndX) +
-                    (normStartToEndY - normToEndY) * (normStartToEndY - normToEndY);
-
-                bool shouldEndAnimation = false;
-
-                if (directionDifference > 0.001f)
-                {
-                    // Direction has changed significantly (passed the end point)
-                    shouldEndAnimation = true;
-                }
-                else if (normToEndX * normToEndX + normToEndY * normToEndY <= 0.001f)
-                {
-                    // Very close to the end point
-                    shouldEndAnimation = true;
-                }
-
-                if (shouldEndAnimation)
-                {
-                    // Snap to end point and finish animation
-                    m_bounds.x0 = endX;
-                    m_bounds.y0 = endY;
-                    OnEndAnimation(false);
-                }
-                else
-                {
-                    // Update to interpolated position
-                    m_bounds.x0 = newX;
-                    m_bounds.y0 = newY;
-                }
+                return true;
             }
 
+            float constexpr eps = 1.1920929e-7f;
+            PointBase<float> const endPt = anim.m_endPt;
+            PointBase<float> const startPt = anim.m_startPt;
+
+            float const toEndX = endPt.x - m_bounds.x0;
+            float const toEndY = endPt.y - m_bounds.y0;
+            anim.m_curSpeed += (anim.m_acceleration * static_cast<float>(deltaTime)) * 0.001f;
+            float const step = (anim.m_curSpeed * static_cast<float>(deltaTime)) * 0.001f;
+            float const invLen = 1.0f / sqrtf(toEndY * toEndY + toEndX * toEndX + eps);
+            PointBase<float> curPt{(invLen * toEndX) * step + m_bounds.x0, (toEndY * invLen) * step + m_bounds.y0};
+
+            // NOTE: a zero-length animation ends here, but the shipped code does not
+            // return: it carries on, and the check below always snaps it to the end
+            // point (the second OnEndAnimation call is then a no-op).
+            if (startPt.x == endPt.x && startPt.y == endPt.y)
+            {
+                OnEndAnimation(false);
+            }
+
+            // Direction from the new position to the end point...
+            float const restX = endPt.x - curPt.x;
+            float const restY = endPt.y - curPt.y;
+            float const invRest = 1.0f / sqrtf(restY * restY + restX * restX + eps);
+            float const restDirX = invRest * restX;
+            float const restDirY = restY * invRest;
+
+            // ...against the direction of the whole path.
+            float const pathX = endPt.x - startPt.x;
+            float const pathY = endPt.y - startPt.y;
+            float const invPath = 1.0f / sqrtf(pathY * pathY + pathX * pathX + eps);
+            float const diffY = pathY * invPath - restDirY;
+            float const diffX = invPath * pathX - restDirX;
+
+            bool const overshot = diffY * diffY + diffX * diffX > 0.001;
+            bool const arrived = restDirY * restDirY + restDirX * restDirX <= 0.001;
+            if (overshot || arrived)
+            {
+                curPt = endPt;
+                OnEndAnimation(false);
+            }
+            m_bounds.x0 = curPt.x;
+            m_bounds.y0 = curPt.y;
             return true;
         }
 
@@ -1973,66 +1710,51 @@ namespace m3d
 
         void Wnd::OnNcPaint(DrawInfo const& di, unsigned clr)
         {
-            //TODO: check this and refactor
-            BoundsBase<float> v4;    // eax
-            float v5;                // xmm1_4
-            float v6;                // xmm3_4
-            ui::Wnd* v7;             // ecx
-            BoundsBase<float> v8;    // eax
-            BoundsBase<float> v9;    // eax
-            float v10;               // xmm0_4
-            float v11;               // xmm1_4
-            int v12;                 // eax
-            int v13[2];              // [esp+8h] [ebp-94h] BYREF
-            float v14;               // [esp+10h] [ebp-8Ch]
-            float v15;               // [esp+14h] [ebp-88h]
-            BoundsBase<float> b;     // [esp+18h] [ebp-84h] BYREF
-            BoundsBase<float> rect;  // [esp+28h] [ebp-74h] BYREF
-            BoundsBase<float> bb;    // [esp+38h] [ebp-64h] BYREF
-            char v19[16];            // [esp+48h] [ebp-54h] BYREF
-
+            // RVA 0x6771F0 - an optional drop shadow (a strip down the right edge and
+            // one along the bottom, offset by 15), then the background: the image
+            // when one is set, otherwise the pane.
+            float constexpr shadowOffset = 15.0f;
+            // The binary tests bit 0x8000; the WS_DROPSHADOW enumerator reads 0xffff8000
+            // (sign-extended), so it cannot be used as a mask here.
             if ((m_style & 0x8000) != 0)
             {
-                v4 = GetBounds();
-                v5 = v4.width;
-                v6 = v4.height;
-                rect.x0 = v5;
-                rect.width = (v5 + 15.0) - v5;
-                rect.y0 = 15.0;
-                rect.height = (v6 + 15.0) - 15.0;
-                bb.x0 = 15.0;
-                bb.y0 = v6;
-                bb.width = v5 - 15.0;
-                bb.height = (v6 + 15.0) - v6;
+                BoundsBase<float> const bounds = GetBounds();
+                float const w = bounds.width;
+                float const h = bounds.height;
+                // NOTE: the shipped code builds these from corners, so the widths and
+                // heights carry that rounding; the right strip also starts at y = 15
+                // but is only h tall (its height is (h + 15) - 15).
+                BoundsBase<float> rightStrip;
+                rightStrip.x0 = w;
+                rightStrip.y0 = shadowOffset;
+                rightStrip.width = (w + shadowOffset) - w;
+                rightStrip.height = (h + shadowOffset) - shadowOffset;
+                BoundsBase<float> bottomStrip;
+                bottomStrip.x0 = shadowOffset;
+                bottomStrip.y0 = h;
+                bottomStrip.width = w - shadowOffset;
+                bottomStrip.height = (h + shadowOffset) - h;
 
-                ui::DrawInfo new_di(di);
-                v7 = dynamic_cast<Wnd*>(GetParent());
-                if (v7)
+                // The shadow falls outside the window, so it is clipped to the
+                // parent's extents instead.
+                DrawInfo shadowDi(di);
+                if (auto* const parent = static_cast<Wnd*>(GetParent()))
                 {
-                    v8 = v7->GetBounds();
-                    v13[0] = 0;
-                    v13[1] = 0;
-                    v14 = v8.width;
-                    v15 = v8.height;
-                    new_di.m_clippedRect.x0 = 0.0;
-                    new_di.m_clippedRect.y0 = 0.0;
-                    new_di.m_clippedRect.width = v14;
-                    new_di.m_clippedRect.height = v15;
+                    shadowDi.m_clippedRect = parent->GetBounds().SizeRect();
                 }
-                GetGfxServer()->AddFlatAxialQuad(new_di, rect, 0x80000000);
-                GetGfxServer()->AddFlatAxialQuad(new_di, bb, 0x80000000);
+                GetGfxServer()->AddFlatAxialQuad(shadowDi, rightStrip, 0x80000000);
+                GetGfxServer()->AddFlatAxialQuad(shadowDi, bottomStrip, 0x80000000);
             }
-            v9 = GetBounds();
-            v10 = v9.height;
-            v11 = v9.width;
-            b.x0 = 0.0;
-            b.y0 = 0.0;
-            b.width = v11;
-            b.height = v10;
+
+            BoundsBase<float> const b = GetBounds().SizeRect();
             if (!m_bgTexture.IsValid())
+            {
                 GetGfxServer()->AddFlatAxialPane0(di, b, clr, m_paneFlags, m_paneName, m_bgFlags);
+            }
             else
+            {
                 GetGfxServer()->AddImagedRect(di, b, clr, m_bgTexture);
+            }
         }
 
         void Wnd::Unregister()
@@ -2053,18 +1775,22 @@ namespace m3d
 
         int Wnd::DestroyWnd()
         {
-            //TODO: check this and refactor
-            auto v2 = GetParent();
-            if (v2)
-                v2->RemoveChild(this);
+            // RVA 0x611930
+            if (Object* const parent = GetParent())
+            {
+                parent->RemoveChild(this);
+            }
             RemoveAllChildren();
             if (m_toolTipWnd)
+            {
                 RemoveTooltip();
+            }
             if (m_bgTexture.IsValid())
+            {
                 M3D_RENDERER->ReleaseTexture(m_bgTexture);
+            }
             StopAnimationMoveSound();
-            if (ui::Wnd::m_wndStation)
-                m_wndStation->UnregisterWnd(this);
+            Unregister();
             m_created = 0;
             return 1;
         }
@@ -2209,6 +1935,7 @@ namespace m3d
 
         int Wnd::SetProperty(unsigned propId, void* prop)
         {
+            // RVA 0x676D10 - property 0x4000 is the tooltip text.
             if (Object::SetProperty(propId, prop))
             {
                 return 1;
@@ -2217,7 +1944,9 @@ namespace m3d
             {
                 return 0;
             }
-            //TODO: check this
+            // NOTE: deliberate deviation. The shipped code takes a char const* here
+            // (m_toolTipText = CStr(static_cast<char const*>(prop))); this codebase's
+            // callers pass a CStr* instead, so the convention is kept as it is.
             m_toolTipText = *static_cast<CStr*>(prop);
             return 1;
         }
@@ -2378,60 +2107,50 @@ namespace m3d
 
         int Wnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
         {
-            //TODO: check and refactor this
-            if ((m_style & 0x40000) != 0)
+            // RVA 0x6781D0 - tracks the pressed state for notifying windows (a
+            // release after a press is a click, unless the window waits for
+            // double clicks, when the click comes from the station instead),
+            // reflects to the parent, then handles drag-moving and activation.
+            if ((m_style & WS_SEND_NOTIFY_MESSAGES) != 0)
             {
-                if ((m_style & 0x20000) != 0)
+                if (state)
                 {
-                    if (!state)
-                    {
-                    LABEL_6:
-                        m_mouseDown &= 0xFEu;
-                        goto LABEL_7;
-                    }
+                    m_mouseDown |= 1;
                 }
-                else if (!state)
+                else
                 {
-                    if ((m_mouseDown & 1) != 0)
+                    if ((m_style & WS_DBLCLICK_REACT) == 0 && (m_mouseDown & 1) != 0)
                     {
                         AIParam const param{CVector2{at.x, at.y}};
-                        CallParentNotify(1u, param, false);
+                        CallParentNotify(1, param, false);
                     }
-                    goto LABEL_6;
+                    m_mouseDown &= ~1;
                 }
-                m_mouseDown |= 1u;
             }
-        LABEL_7:
-            auto parentWnd = dynamic_cast<Wnd*>(GetParent());
-            if ((m_style & 0x20) != 0 && parentWnd)
+
+            if ((m_style & WS_REFLECT_MS_AND_KEYS_TO_PARENT) != 0 && GetParent())
             {
-                auto const att = ToParent(at);
-                parentWnd->OnMouseButton0(state, att);
+                // The shipped code treats the parent as a Wnd without checking.
+                static_cast<Wnd*>(GetParent())->OnMouseButton0(state, ToParent(at));
             }
-            auto const bounds = GetBounds();
+
+            BoundsBase<float> const bounds = GetBounds();
             if (at.x < 0.0 || bounds.width <= at.x || at.y < 0.0 || bounds.height <= at.y)
             {
                 return 0;
             }
-            if ((m_style & 8) != 0)
+            if ((m_style & WS_MOVABLE) != 0)
             {
-                if (!state || m_dragMode)
-                {
-                    if (m_dragMode == DRAG_MOVE)
-                    {
-                        DoDragMove(at);
-                        GetStation()->CaptureMouse(nullptr);
-                        m_bounds.x0 = m_dragCurPt.x;
-                        m_bounds.y0 = m_dragCurPt.y;
-                        m_dragMode = DRAG_NONE;
-                    }
-                }
-                else
+                if (state && !m_dragMode)
                 {
                     StartDragMove(at);
                 }
+                else if (m_dragMode == DRAG_MOVE)
+                {
+                    FinishDragMove(true, at);
+                }
             }
-            if ((m_style & 0x2000) != 0)
+            if ((m_style & WS_ACTIVATABLE) != 0)
             {
                 GetStation()->Activate(this);
             }
@@ -2464,41 +2183,42 @@ namespace m3d
 
         Wnd* Wnd::GetNextActivatableChild(Wnd* first, int back)
         {
-            //TODO: check this and refactor
-            auto result = (Wnd*)GetFirstChild();
-            auto v4 = 0;
-            auto v5 = result;
-            for (auto maxOrder = 0; v5; v5 = (Wnd*)v5->GetNextSibling())
+            // RVA 0x6769D0 - the activatable child whose activation order follows
+            // (or, with back == 1, precedes) that of "first", wrapping around at
+            // both ends; with no "first", the one with order 0.
+            int maxOrder = 0;
+            for (Object* child = GetFirstChild(); child; child = child->GetNextSibling())
             {
-                if ((v5->m_style & 0x2000) != 0)
+                auto* const wnd = static_cast<Wnd*>(child);
+                if ((wnd->m_style & WS_ACTIVATABLE) != 0 && wnd->m_activationOrder > maxOrder)
                 {
-                    auto v6 = &v5->m_activationOrder;
-                    if (v4 >= v5->m_activationOrder)
-                        v6 = &maxOrder;
-                    v4 = *v6;
-                    maxOrder = *v6;
+                    maxOrder = wnd->m_activationOrder;
                 }
             }
-            auto v7 = 0;
+
+            int order = 0;
             if (first)
             {
-                v7 = first->m_activationOrder + 2 * (back != 1) - 1;
-                if (v7 < 0)
+                order = first->m_activationOrder + (back == 1 ? -1 : 1);
+            }
+            if (order < 0)
+            {
+                order = maxOrder;
+            }
+            else if (order > maxOrder)
+            {
+                order = 0;
+            }
+
+            for (Object* child = GetFirstChild(); child; child = child->GetNextSibling())
+            {
+                auto* const wnd = static_cast<Wnd*>(child);
+                if ((wnd->m_style & WS_ACTIVATABLE) != 0 && wnd->m_activationOrder == order)
                 {
-                    v7 = v4;
-                    goto LABEL_13;
+                    return wnd;
                 }
             }
-            if (v7 > v4)
-                v7 = 0;
-        LABEL_13:
-            while (result)
-            {
-                if ((result->m_style & 0x2000) != 0 && result->m_activationOrder == v7)
-                    break;
-                result = (Wnd*)result->GetNextSibling();
-            }
-            return result;
+            return nullptr;
         }
 
         int Wnd::OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt)
@@ -2727,19 +2447,19 @@ namespace m3d
 
         int ModalWnd::OnPaint(DrawInfo const& clipToIt)
         {
-            if ((m_style & 0x40) == 0)
+            // RVA 0x676CA0
+            if ((m_style & WS_NOFRAME) == 0)
             {
-                auto color = m_curClr;
-                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
-                {
-                    color = 3;
-                }
+                unsigned const color = (m_style & WS_DISABLE) != 0 || (m_style & WS_GRAYED) != 0 ? 3 : m_curClr;
                 OnNcPaint(clipToIt, color);
             }
             DrawWndText(clipToIt);
-            //TODO: check this
-            //if (m_curControl)
-            //    m_curControl->GetBounds(m_curControl, &rc);
+            if (m_curControl)
+            {
+                // NOTE: the shipped code fetches the current control's bounds here
+                // and never uses them (a leftover); the virtual call is kept.
+                m_curControl->GetBounds();
+            }
             return 1;
         }
 
@@ -2751,78 +2471,43 @@ namespace m3d
 
         int ModalWnd::OnKey(unsigned short key, unsigned char, unsigned state)
         {
-            // TODO: generated code
-            // Handle style 0x4000 when key is pressed (state == 1)
-            if ((m_style & WS_ACTIVATION_REFLECT_TO_CHILDREN) != 0 && state == 1)
+            // RVA 0x676BA0 - Tab (key 3, with or without the 0x3000 modifier bits)
+            // cycles the active child, Enter (key 4) presses the default child with
+            // a synthetic space, and Esc (key 1) closes a running modal with 3.
+            if ((m_style & WS_ACTIVATION_REFLECT_TO_CHILDREN) != 0 && state == 1 && (key & ~0x3000) == 3)
             {
-                unsigned char keyLow = static_cast<unsigned char>(key & 0xFF);
-                unsigned char keyHigh = static_cast<unsigned char>((key >> 8) & 0xFF);
-
-                // Mask out certain bits from the high byte (likely modifier bits)
-                keyHigh &= 0xCF;  // Clear specific bits
-
-                // Reconstruct the key with masked high byte
-                unsigned short maskedKey = static_cast<unsigned short>(keyLow | (keyHigh << 8));
-
-                // Check if it's the Tab key (key == 3)
-                if (maskedKey == 3)
+                Wnd* const active = GetStation()->GetActive();
+                if (active && active->IsChildOf(this))
                 {
-                    WndStation* station = GetStation();
-                    Wnd* activeWnd = station->GetActive();
-
-                    if (activeWnd && activeWnd->IsChildOf(this))
+                    Wnd* const next = GetNextActivatableChild(active, (key & 0x3000) != 0);
+                    if (next && next != active)
                     {
-                        Wnd* nextActivatable = GetNextActivatableChild(
-                            activeWnd,
-                            (key & 0x3000) != 0  // Shift key check
-                        );
-
-                        if (nextActivatable && activeWnd != nextActivatable)
-                        {
-                            station->Activate(nextActivatable);
-                        }
+                        GetStation()->Activate(next);
                     }
-                    return 1;  // Key handled
                 }
-            }
-            else if (state == 0)
-            {
-                // Key released - proceed to other checks
-            }
-            else
-            {
-                // State is not 0 or 1, or style doesn't match
+                return 1;
             }
 
-            // Handle key code 4 (likely Enter/OK button)
-            if (key == 4)
+            // Only presses reach the default child, never releases.
+            if (state && key == 4)
             {
-                auto* firstChild = RT_DYNCAST(GetFirstChild(), Wnd);
-
-                // Look for a child with style 0x10000 (likely a default button)
-                while (firstChild)
+                for (Object* child = GetFirstChild(); child; child = child->GetNextSibling())
                 {
-                    if ((firstChild->GetStyle() & 0x10000) != 0)
+                    auto* const wnd = static_cast<Wnd*>(child);
+                    if ((wnd->m_style & WS_DEFAULT) != 0)
                     {
-                        // Found default button - simulate space key press on it
-                        WndStation* station = GetStation();
-                        Wnd* targetWnd = static_cast<Wnd*>(firstChild);
-                        station->PulseKeyForWindow(targetWnd, 0x20u, 0x39u);
-                        return 1;  // Key handled
+                        GetStation()->PulseKeyForWindow(wnd, 0x20, 0x39);
+                        return 1;
                     }
-                    firstChild = RT_DYNCAST(firstChild->GetNextSibling(), Wnd);
                 }
             }
 
-            // Handle Escape key (key == 1) for modal window
-            WndStation* station = GetStation();
-            if (station->IsModal(this) && state != 0 && key == 1)
+            if (GetStation()->IsModal(this) && state && key == 1)
             {
-                CloseModal(3);  // Close with result code 3 (cancelled)
-                return 1;       // Key handled
+                CloseModal(3);
+                return 1;
             }
-
-            return 0;  // Key not handled
+            return 0;
         }
 
         int ModalWnd::OnWndNotify(Wnd* from, unsigned idFrom, unsigned msg, AIParam const& data)

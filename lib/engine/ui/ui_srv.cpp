@@ -327,13 +327,15 @@ namespace m3d
 
     ui::GfxServer::~GfxServer()
     {
+        // RVA 0x682A40 - everything after this block in the binary is the
+        // compiler-generated destruction of the members.
         if (m_created)
         {
             ReleaseSchema();
             delete m_fontManager;
+            m_fontManager = nullptr;
             m_created = false;
         }
-        //TODO: check additional
     }
 
     float ui::GfxServer::GetGlyphHeight()
@@ -956,6 +958,8 @@ namespace m3d
 
     int ui::GfxServer::SetSchema(CStr const& name)
     {
+        // RVA 0x684070 (only the font flag and font id sections have been
+        // checked against the binary)
         if (name.empty())
         {
             return 0;
@@ -1092,15 +1096,18 @@ namespace m3d
                 m_fontSizes[i] = 12;
             }
         }
+        // Font flags: absent is 0; otherwise, compared case-insensitively,
+        // normal = 0, bold = 1, italic = 2, and anything else 3.
         char const* fontFlags[] = {"titleFontFlag", "wndFontFlag", "tooltipFontFlag", "miscFontFlag"};
-        CStr flag;
         for (size_t i = 0; i < 4; ++i)
         {
-            //TODO: check tis
+            CStr flag;
             if (!SafeStrAttrib(flag, node, fontFlags[i]))
             {
                 m_fontFlags[i] = 0;
+                continue;
             }
+            flag.toLower();
             if (flag == "normal")
             {
                 m_fontFlags[i] = 0;
@@ -1109,9 +1116,9 @@ namespace m3d
             {
                 m_fontFlags[i] = 1;
             }
-            else if (flag == "italic")
+            else
             {
-                m_fontFlags[i] = 3;
+                m_fontFlags[i] = flag == "italic" ? 2 : 3;
             }
         }
         char const* fontTypes[] = {"titleFontType", "wndFontType", "tooltipFontType", "miscFontType"};
@@ -1124,22 +1131,24 @@ namespace m3d
         }
 
         m_fontManager->Init();
-        CStr font;
-        for (size_t i = 0; i < 4; ++i)
+        // NOTE: a self-made font takes style 1 and whatever code page the previous
+        // font used. For a self-made font before any Windows font the shipped code
+        // passes an uninitialised stack value; 0 is used for that case here.
+        unsigned codePage = 0;
+        for (int i = 0; i < 4; ++i)
         {
-            //TODO: chcek this!!!
             FontParams params;
             if (m_fontTypes[i] == FONT_TYPE_SELFMAKING)
             {
                 params.ttfParams.style = 1;
-                params.ttfParams.codePage = 0;
             }
             else
             {
                 params.ttfParams.style = m_fontFlags[i];
-                params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
+                codePage = Application::g_pApp->m_codePage.CodePage;
             }
-            auto id = m_fontManager->GetFontId(m_fontFaces[i], m_fontSizes[i], m_fontTypes[i], params);
+            params.ttfParams.codePage = codePage;
+            int const id = m_fontManager->GetFontId(m_fontFaces[i], static_cast<float>(m_fontSizes[i]), m_fontTypes[i], params);
             if (id != i)
             {
                 m_fontManager->RearrangeFonts(id, i);

@@ -11,6 +11,40 @@
 
 namespace
 {
+    // Virtual keys past the DirectInput scan codes, see l_keyNames.
+    constexpr int VKEY_CONTROL = 0x105;
+    constexpr int VKEY_ALT = 0x106;
+    constexpr int VKEY_SHIFT = 0x107;
+
+    // One modifier step of GameImpulse::FilterShifts (inlined three times in the shipped code). Returns false when
+    // the key is one of the two variants but the combined state did not change.
+    bool FoldModifierKey(
+        int& key, bool& state, int leftKey, int rightKey, int combinedKey, bool& leftDown, bool& rightDown, bool& wasDown)
+    {
+        if (key != leftKey && key != rightKey)
+        {
+            return true;
+        }
+        if (key == leftKey)
+        {
+            leftDown = state;
+        }
+        else
+        {
+            rightDown = state;
+        }
+
+        bool const down = leftDown || rightDown;
+        if (down == wasDown)
+        {
+            return false;
+        }
+        wasDown = down;
+        key = combinedKey;
+        state = down;
+        return true;
+    }
+
     struct KeyToId
     {
         int m_keyId;
@@ -327,22 +361,22 @@ namespace m3d
 
     void AuxImpulseInfo::UnpackXy(float* x, float* y, float* dx, float* dy) const
     {
-        // TODO: generated code
+        // RVA 0x5944A0 - each coordinate is a signed 16-bit half of m_info0 (x, y) or m_info1 (dx, dy).
         if (x)
         {
-            *x = static_cast<float>(static_cast<int16_t>(m_info0 & 0xFFFF));
+            *x = static_cast<int16_t>(m_info0 & 0xFFFF);
         }
         if (y)
         {
-            *y = static_cast<float>(static_cast<int16_t>((m_info0 >> 16) & 0xFFFF));
+            *y = static_cast<int16_t>(m_info0 >> 16);
         }
         if (dx)
         {
-            *dx = static_cast<float>(static_cast<int16_t>(m_info1 & 0xFFFF));
+            *dx = static_cast<int16_t>(m_info1 & 0xFFFF);
         }
         if (dy)
         {
-            *dy = static_cast<float>(static_cast<int16_t>((m_info1 >> 16) & 0xFFFF));
+            *dy = static_cast<int16_t>(m_info1 >> 16);
         }
     }
 
@@ -513,33 +547,30 @@ namespace m3d
 
     int GameImpulse::SetImpulsesStateBySet(KeysSet impSet, bool state, int curGameMode, ui::Wnd* causeWnd)
     {
+        // RVA 0x59ABB0 - sets the state of every impulse bound to a subset of impSet, longest combos first.
         if (!m_isInited || impSet.empty())
         {
             return 0;
         }
 
-        auto it = m_bindings.find(curGameMode);
+        auto const it = m_bindings.find(curGameMode);
         if (it == m_bindings.end())
         {
             return 0;
         }
 
-        // TODO: check this!!!
-
         auto& bindStation = it->second;
         while (!impSet.empty())
         {
-            KeysSet ks;
-            auto imp = bindStation.FindImpulseByLongestSetPossible(impSet, 0xFFFFFFFF, ks);
-            if (imp == -1)
+            KeysSet impulseKeys;
+            int const impId = bindStation.FindImpulseByLongestSetPossible(impSet, -1, impulseKeys);
+            if (impId == -1)
             {
                 break;
             }
 
-            AuxImpulseInfo info(imp, state, curGameMode, 0, 0);
-            SetImpulseState(info, causeWnd);
-
-            impSet = impSet - ks;
+            SetImpulseState(AuxImpulseInfo(impId, state, curGameMode, 0, 0), causeWnd);
+            impSet = impSet - impulseKeys;
         }
         return 1;
     }
@@ -587,13 +618,13 @@ namespace m3d
 
     bool GameImpulse::GetImpulseState(int impId)
     {
-        // TODO: check this
+        // RVA 0x597250
         if (!m_isInited)
         {
             return false;
         }
 
-        auto it = m_impulseStates.find(impId);
+        auto const it = m_impulseStates.find(impId);
         if (it == m_impulseStates.end())
         {
             return false;
@@ -604,17 +635,18 @@ namespace m3d
             m_impulseResetAfterRead[impId] = false;
         }
 
+        // The state is read before a one-time impulse is reset, so the caller still sees it raised once.
+        bool const state = it->second;
         if (m_impulseResetAfterRead[impId])
         {
-            if (it->second)
+            if (state)
             {
-                m3d::AuxImpulseInfo impInfo(impId, false, -1, 0, 0);
-                auto v6 = !M3D_APP->HasChildModalRunning() ? M3D_APP : 0;
-                SetImpulseState(impInfo, v6);
+                SetImpulseState(
+                    AuxImpulseInfo(impId, false, -1, 0, 0), !M3D_APP->HasChildModalRunning() ? M3D_APP : nullptr);
             }
             m_impulseResetAfterRead[impId] = false;
         }
-        return it->second;
+        return state;
     }
 
     int GameImpulse::GetImpulseForKeys(std::vector<int, std::allocator<int>> keys, int modeId)
@@ -710,6 +742,7 @@ namespace m3d
 
     int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
+        // RVA 0x59B400
         if (!m_isInited)
         {
             return 0;
@@ -724,6 +757,8 @@ namespace m3d
 
         auto& bindStation = it->second;
 
+        // NOTE: the shipped code leaves the key uninitialised for other event types (it holds a stale stack
+        // value, which is never among the pressed keys), so such events do nothing. 0 behaves the same.
         int keyToSearchBy = 0;
         bool state = false;
         bool onlyDown = false;
@@ -814,7 +849,6 @@ namespace m3d
             break;
         }
 
-        // TODO: check this
         if (FilterShifts(keyToSearchBy, state))
         {
             if (state)
@@ -858,122 +892,29 @@ namespace m3d
 
     int GameImpulse::FilterShifts(int& keyToSearchBy, bool& state)
     {
-        // TODO: generated code
-        if (!m_isInited)
+        // RVA 0x594590 - folds the left and right variants of Shift, Alt and Control into KEY_SHIFT, KEY_ALT and
+        // KEY_CONTROL. Returns 0 for a -1 key, and for a modifier press or release that leaves the combined
+        // modifier state unchanged.
+        if (!m_isInited || keyToSearchBy == -1)
         {
-            return false;
+            return 0;
         }
 
-        // Shift key states
-        static bool downL_1 = false;  // Left Shift
-        static bool downR_1 = false;  // Right Shift
-        static bool prevS_1 = false;  // Previous Shift state
+        static bool shiftLDown = false;
+        static bool shiftRDown = false;
+        static bool shiftDown = false;
+        static bool altLDown = false;
+        static bool altRDown = false;
+        static bool altDown = false;
+        static bool controlLDown = false;
+        static bool controlRDown = false;
+        static bool controlDown = false;
 
-        static bool downL_0 = false;  // Left Alt
-        static bool downR_0 = false;  // Right Alt
-        static bool prevS_0 = false;  // Previous Alt state
-
-        static bool downL = false;  // Left Control
-        static bool downR = false;  // Right Control
-        static bool prevS = false;  // Previous Control state
-
-        int keyCode = keyToSearchBy;
-
-        // Check for invalid key
-        if (keyCode == -1)
-        {
-            return false;
-        }
-
-        // Handle Shift keys (left and right)
-        if (keyCode == KEY_LSHIFT || keyCode == KEY_RSHIFT)
-        {
-            // Update individual shift key state
-            if (keyCode == KEY_LSHIFT)
-            {
-                downL_1 = state;
-            }
-            else if (keyCode == KEY_RSHIFT)
-            {
-                downR_1 = state;
-            }
-
-            // Calculate combined shift state
-            bool currentShiftState = downL_1 || downR_1;
-
-            // Only process if state changed
-            if (currentShiftState == prevS_1)
-            {
-                return false;
-            }
-
-            // Update previous state and modify output
-            prevS_1 = currentShiftState;
-            keyToSearchBy = (KEY_RSHIFT | KEY_LSHIFT);
-            state = currentShiftState;
-            return true;
-        }
-
-        // Handle Alt keys (left and right)
-        if (keyCode == KEY_LALT || keyCode == KEY_RALT)
-        {
-            // Update individual alt key state
-            if (keyCode == KEY_LALT)
-            {
-                downL_0 = state;
-            }
-            else if (keyCode == KEY_RALT)
-            {
-                downR_0 = state;
-            }
-
-            // Calculate combined alt state
-            bool currentAltState = downL_0 || downR_0;
-
-            // Only process if state changed
-            if (currentAltState == prevS_0)
-            {
-                return false;
-            }
-
-            // Update previous state and modify output
-            prevS_0 = currentAltState;
-            keyToSearchBy = (KEY_RALT | KEY_LALT);
-            state = currentAltState;
-            return true;
-        }
-
-        // Handle Control keys (left and right)
-        if (keyCode == KEY_LCONTROL || keyCode == KEY_RCONTROL)
-        {
-            // Update individual control key state
-            if (keyCode == KEY_LCONTROL)
-            {
-                downL = state;
-            }
-            else if (keyCode == KEY_RCONTROL)
-            {
-                downR = state;
-            }
-
-            // Calculate combined control state
-            bool currentControlState = downL || downR;
-
-            // Only process if state changed
-            if (currentControlState != prevS)
-            {
-                // Update previous state and modify output
-                keyToSearchBy = (KEY_LCONTROL | KEY_RCONTROL);
-                prevS = currentControlState;
-                state = currentControlState;
-                return true;
-            }
-
-            return false;
-        }
-
-        // For all other keys, allow processing
-        return true;
+        // A folded key no longer matches the later checks, so they fall through.
+        return FoldModifierKey(keyToSearchBy, state, KEY_LSHIFT, KEY_RSHIFT, VKEY_SHIFT, shiftLDown, shiftRDown, shiftDown) &&
+               FoldModifierKey(keyToSearchBy, state, KEY_LALT, KEY_RALT, VKEY_ALT, altLDown, altRDown, altDown) &&
+               FoldModifierKey(
+                   keyToSearchBy, state, KEY_LCONTROL, KEY_RCONTROL, VKEY_CONTROL, controlLDown, controlRDown, controlDown);
     }
 
     int GameImpulse::BindKey2(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strImp)

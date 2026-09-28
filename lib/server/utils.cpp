@@ -24,49 +24,77 @@
 
 namespace ai
 {
+    namespace
+    {
+        bool IsFloatChar(char c)
+        {
+            return (c >= '0' && c <= '9') || c == '.' || c == '-';
+        }
+
+        bool IsIntChar(char c)
+        {
+            return c >= '0' && c <= '9';
+        }
+
+        // Shared scan of StrToFloatVector and StrToIntVector (inlined in both in the shipped code): each run of
+        // number characters is parsed with sscanf.
+        // NOTE: trailing non-number characters after the last number yield one extra 0 (sscanf of an empty
+        // string leaves the value at 0), e.g. "1 2 " gives {1, 2, 0}.
+        template <typename T>
+        void ScanNumbers(CStr const& str, retruxx::vector<T>& numbers, char const* format, bool (*isNumberChar)(char))
+        {
+            numbers.clear();
+            char const* p = str.c_str();
+            while (*p)
+            {
+                while (*p && !isNumberChar(*p))
+                {
+                    ++p;
+                }
+                T number = 0;
+                sscanf(p, format, &number);
+                numbers.push_back(number);
+
+                while (*p && isNumberChar(*p))
+                {
+                    ++p;
+                }
+            }
+        }
+    }  // namespace
+
     void StrToStringVector(CStr const& str, retruxx::vector<CStr>& stringVector)
     {
-        //TODO: check this
+        // RVA 0x6AB070 - splits at spaces; runs of spaces count as one separator and leading ones are skipped.
+        // NOTE: trailing spaces yield one extra empty string at the end.
         stringVector.clear();
-        if (!str.empty())
+        char const* p = str.c_str();
+        while (*p)
         {
-            std::istringstream ss(str.c_str());
-            std::string s;
-            while (getline(ss, s, ' '))
+            while (*p == ' ')
             {
-                stringVector.push_back(s.c_str());
+                ++p;
             }
+            char const* const word = p;
+            while (*p && *p != ' ')
+            {
+                ++p;
+            }
+            stringVector.push_back(CStr(word, static_cast<int>(p - word)));
         }
     }
 
     void StrToFloatVector(CStr const& str, retruxx::vector<float>& floatVector)
     {
-        //TODO: check this
-        floatVector.clear();
-        if (!str.empty())
-        {
-            std::istringstream ss(str.c_str());
-            std::string s;
-            while (getline(ss, s, ' '))
-            {
-                floatVector.push_back(atof(s.c_str()));
-            }
-        }
+        // RVA 0x6AAF20 - digits, '.' and '-' make up a number; anything else separates.
+        ScanNumbers(str, floatVector, "%f", IsFloatChar);
     }
 
     void StrToIntVector(CStr const& str, retruxx::vector<int>& intVector)
     {
-        //TODO: check this
-        intVector.clear();
-        if (!str.empty())
-        {
-            std::istringstream ss(str.c_str());
-            std::string s;
-            while (getline(ss, s, ' '))
-            {
-                intVector.push_back(atoi(s.c_str()));
-            }
-        }
+        // RVA 0x6AADB0 - only digits make up a number; anything else separates.
+        // NOTE: '-' is a separator here, so negative numbers come out positive.
+        ScanNumbers(str, intVector, "%d", IsIntChar);
     }
 
     CStr StringVectorToStr(retruxx::vector<CStr> const& stringVector)
@@ -124,34 +152,17 @@ namespace ai
 
     void DebugCircle(CVector const& center, float radius, unsigned int color)
     {
-        // TODO: generated code DebugCircle
-        int const SEGMENTS = 40;                          // Number of line segments to approximate circle
-        float const ANGLE_STEP = 2.0f * M_PI / SEGMENTS;  // Angle between segments
-
-        // Start with the first point (at angle 0)
-        CVector previousPoint;
-        previousPoint.x = center.x + radius;  // cos(0) = 1, sin(0) = 0
-        previousPoint.y = center.y;
-        previousPoint.z = center.z;
-
-        // Draw circle using line segments
-        for (int i = 1; i <= SEGMENTS; ++i)
+        // RVA 0x6AAB20 - a horizontal circle of 40 segments, drawn on the ground.
+        CVector prev(center.x + radius, center.y, center.z);
+        for (int i = 1; i <= 40; ++i)
         {
-            float angle = i * ANGLE_STEP;
-            float cosAngle = cos(angle);
-            float sinAngle = sin(angle);
-
-            // Calculate current point on circle
-            CVector currentPoint;
-            currentPoint.x = center.x + (cosAngle * radius);
-            currentPoint.y = center.y;
-            currentPoint.z = center.z + (sinAngle * radius);  // Circle in XZ plane
-
-            // Draw line segment from previous point to current point
-            ai::DebugLineOnGround(currentPoint, previousPoint, 0.5, color);
-
-            // Current point becomes previous point for next iteration
-            previousPoint = currentPoint;
+            double const angle = i * static_cast<double>(0.15707964f);  // 2 * pi / 40
+            float const c = static_cast<float>(cos(angle));
+            float const s = static_cast<float>(sin(angle));
+            // NOTE: the shipped code adds radius * 0 to the height (a leftover of a rotated circle).
+            CVector const cur(center.x + c * radius, center.y + radius * 0.0f, center.z + s * radius);
+            DebugLineOnGround(cur, prev, 0.5f, color);
+            prev = cur;
         }
     }
 
@@ -174,28 +185,12 @@ namespace ai
 
     void DebugLineOnGround(CVector const& p1, CVector const& p2, float hover, unsigned int color)
     {
-        // TODO: check and refactor
-        CVector pp1;
-        CVector pp2;
-        auto x = p1.x;
-        auto y = p1.y;
-        pp1.z = p1.z;
-        auto z = p2.z;
-        pp1.x = x;
-        auto v7 = p2.x;
-        pp1.y = y;
-        auto v8 = p2.y;
-        pp2.z = z;
-        pp2.x = v7;
-        pp2.y = v8;
-
-        auto v10 = M3D_ENGINE_CFG.GetHeight(pp1.x, pp1.z);
-        pp1.y = v10 + hover;
-        auto v12 = M3D_ENGINE_CFG.GetHeight(pp2.x, pp2.z);
-        auto v13 = v12 + hover;
-        pp2.y = v13;
-
-        M3D_RENDERER->SetTexture(0, {}, -1.0);
+        // RVA 0x6AA840 - both ends are put `hover` above the landscape.
+        CVector pp1 = p1;
+        CVector pp2 = p2;
+        pp1.y = M3D_ENGINE_CFG.GetHeight(pp1.x, pp1.z) + hover;
+        pp2.y = M3D_ENGINE_CFG.GetHeight(pp2.x, pp2.z) + hover;
+        M3D_RENDERER->SetTexture(0, m3d::rend::TexHandle(), -1.0);
         M3D_APP->DrawLine(pp1, pp2, color);
     }
 

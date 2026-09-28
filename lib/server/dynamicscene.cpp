@@ -633,7 +633,7 @@ namespace ai
                 hitPhysicObj->InflictDamage(info);
             }
         }
-        // TODO: check this!!!!
+        // Anything else hit (nothing, or the shooter itself) only consumes the shell when it met another shell.
         else if (!isShellHit)
         {
             return 0;
@@ -667,18 +667,18 @@ namespace ai
             axis *= shell->GetMass();
             hitPhysicObj->SetAngularVelocity(axis);
         }
-        // TODO: check this!!!
+        // Impact effects only where both sides are simulated by ODE (not by the simplified updaters).
         if (body && (!hitPhysicObj || hitPhysicObj->bIsUpdatingByODE()) &&
             (!attackerObj || attackerObj->bIsUpdatingByODE()))
         {
             if (IS_KIND_OF(body, GeomObjectLandscape))
             {
-                auto const landSize = 4 * ai::pServer->GetWorld()->m_level->land_size;
-                auto const levelSize = pServer->GetLevelSize();
-                auto const scale = levelSize / landSize;
-
-                int gridX = static_cast<int>((contact->geom.pos[0] * (1.0 / scale)) + 0.5f);
-                int gridZ = static_cast<int>((contact->geom.pos[2] * (1.0 / scale)) + 0.5f);
+                // The soil grid has 4 cells per landscape tile.
+                int const landSize = 4 * ai::pServer->GetWorld()->m_level->land_size;
+                double const scale = pServer->GetLevelSize() / static_cast<double>(landSize);
+                float const invScale = static_cast<float>(1.0 / scale);
+                int const gridX = static_cast<int>(contact->geom.pos[0] * invScale + 0.5f);
+                int const gridZ = static_cast<int>(contact->geom.pos[2] * invScale + 0.5f);
 
                 SoilProps const& soilProps = ai::gDynamicScene->GetSoilProps(gridX, gridZ);
                 unsigned short splashType = soilProps.m_splashType;
@@ -747,20 +747,22 @@ namespace ai
 
     void DynamicScene::ReadSoilProps(char const* fileName)
     {
-        // TODO: check this!!!
+        // RVA 0x60FE20 - the soil of every landscape texture: <types> defines soil types, <tiles> maps each texture
+        // (by file name without extension) to a type, optionally overriding its values.
         scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(fileName, m3d::fs::IStream::OPEN_READ))
         {
-            M3D_LOG_ERR("[Error] DynamicScene::ReadSoilProps : Can't open file " + CStr(fileName));
+            M3D_LOG_ERR("[Error] DynamicScene::ReadSoilProps : Can't open file. ");
             return;
         }
 
         ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
-            M3D_LOG_ERR("[Error] DynamicScene::ReadSoilProps : Can't read file " + CStr(fileName));
+            M3D_LOG_ERR("[Error] DynamicScene::ReadSoilProps : Can't read file. ");
             return;
         }
+        stream->Close();
 
         ref_ptr tilepropsNode = xmlFile->CreateNode();
         xmlFile->GetFirstChild(tilepropsNode, "tileprops");
@@ -796,9 +798,10 @@ namespace ai
         ref_ptr tilesNode = xmlFile->CreateNode();
         tilepropsNode->GetFirstChild(tilesNode, "tiles");
         ref_ptr texPropsNode = xmlFile->CreateNode();
+        // NOTE: texName is shared by the whole loop, so a tile without a texture reuses the previous tile's name.
+        CStr texName;
         for (int i = 0; i < numTiles; ++i)
         {
-            CStr texName;
             auto texHandle = landscape.GetTexHandleFromList(i);
             if (texHandle.IsValid())
             {
@@ -821,15 +824,14 @@ namespace ai
                 m3d::SafeStrAttrib(tileType, texPropsNode, "type");
             }
 
-            auto const soilIt = soilProps.find(tileType);
-            if (soilIt == soilProps.end())
+            if (soilProps.find(tileType) == soilProps.end())
             {
-                M3D_LOG_ERR("Error: invalid tile type: '" + tileType + "'" + "' for texture '" + texName + "'");
+                M3D_LOG_ERR("Error: invalid tile type: '" + tileType + "' for texture '" + texName + "'");
                 M3D_ASSERT(!"Error reading tileprops, see log");
             }
 
-            auto const& soilProp = soilIt->second;
-            m_soilProps[i] = soilProp;
+            // NOTE: an unknown type gets a default-constructed entry (map operator[]), as shipped.
+            m_soilProps[i] = soilProps[tileType];
             m_soilProps[i].LoadFromXml(texPropsNode);
             m_soilProps[i].m_idx = i;
             m_soilSplashTypeNames[i] = m_soilProps[i].m_splashTypeName;
@@ -839,16 +841,11 @@ namespace ai
         auto const last = std::unique(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end());
         m_soilSplashTypeNames.erase(last, m_soilSplashTypeNames.end());
 
-        // TODO: check this!!!
-        // Update splash type indices
-        for (size_t i = 0; i < m_soilProps.size(); ++i)
+        // Each soil's splash type is the index of its splash type name among the sorted unique names.
+        for (auto& props : m_soilProps)
         {
-            auto it =
-                std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), m_soilProps[i].m_splashTypeName);
-            if (it != m_soilSplashTypeNames.end())
-            {
-                m_soilProps[i].m_splashType = static_cast<int>(std::distance(m_soilSplashTypeNames.begin(), it));
-            }
+            auto const it = std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), props.m_splashTypeName);
+            props.m_splashType = static_cast<short>(std::distance(m_soilSplashTypeNames.begin(), it));
         }
 
         // Initialize wheel traces
@@ -1146,6 +1143,7 @@ namespace ai
 
     void DynamicScene::RenderDebugInfo()
     {
+        // RVA 0x60A700
         bool const bWaypointDebug = M3D_ENGINE_CFG.m_ai_waypoint_debug.GetB();
         bool const bDebugPhysicObjects = M3D_ENGINE_CFG.m_ai_physicobject_debug.GetB();
         bool const bDebugTeams = M3D_ENGINE_CFG.m_ai_team_debug.GetB();
@@ -1212,7 +1210,13 @@ namespace ai
                     }
                 }
             }
-            // TODO: implement other debug info
+            // NOTE: not reimplemented yet (debug cvars only). After the per-object pass, the shipped code
+            // (RVA 0x60A700) walks the visible scene cells (SceneGraph::SortedCellsFetch, radius from
+            // m_lsViewDistanceDivider * 8 + 4, clamped to 4..12) and draws: for ai_passmap_debug a DebugCross per
+            // global-map cell 5 above the ground (white = 0x80, green = 0xA0, blue = 0xFF, grey otherwise), for
+            // ai_playerpassmap_debug a green/red cross per player-passmap cell, and for ai_obstacles_debug every
+            // obstacle of the cell's collision item; then for ai_mouse_debug the ray under the mouse cursor, and
+            // finally Cinematic::RenderDebugInfo.
         }
 
         if (debugAnything)
@@ -1266,35 +1270,14 @@ namespace ai
 
     void DynamicScene::CreateBoShellEffectNames()
     {
-        // TODO: generated code
-        // Clear existing effect names
+        // RVA 0x60F7B0 - m_BoShellEffectNames[effect type][shell type] = "ET_PS_<shell><effect>HIT".
         m_BoShellEffectNames.clear();
-
-        // For each effect type
-        for (size_t effectTypeIndex = 0; effectTypeIndex < m_BoEffectTypeNames.size(); ++effectTypeIndex)
+        for (CStr const& effectType : m_BoEffectTypeNames)
         {
-            CStr const& effectType = m_BoEffectTypeNames[effectTypeIndex];
-
-            // Create a new vector for this effect type with the same size as shell types
-            std::vector<CStr> effectNames;
-            effectNames.resize(m_shellTypesNames.size());
-
-            // Add the new vector to the main container
-            m_BoShellEffectNames.push_back(effectNames);
-
-            // For each shell type, generate the effect name
-            for (size_t shellTypeIndex = 0; shellTypeIndex < m_shellTypesNames.size(); ++shellTypeIndex)
+            auto& names = m_BoShellEffectNames.emplace_back(m_shellTypesNames.size());
+            for (size_t shell = 0; shell < m_shellTypesNames.size(); ++shell)
             {
-                CStr const& shellType = m_shellTypesNames[shellTypeIndex];
-
-                // Build effect name: "ET_PS_" + shellTypeName + effectTypeName + "HIT"
-                CStr effectName = "ET_PS_";
-                effectName += shellType;
-                effectName += effectType;
-                effectName += "HIT";
-
-                // Store the generated effect name
-                m_BoShellEffectNames[effectTypeIndex][shellTypeIndex] = effectName;
+                names[shell] = CStr("ET_PS_") + m_shellTypesNames[shell] + effectType + CStr("HIT");
             }
         }
     }
@@ -1586,69 +1569,29 @@ namespace ai
 
     short DynamicScene::GetExplosionType(CStr const& shellTypeName)
     {
-        // TODO: generated code
-        // Check if shell type already exists
+        // RVA 0x611040 - the index of a shell type, registering it (and all its effect names) on first use.
         for (size_t i = 0; i < m_shellTypesNames.size(); ++i)
         {
             if (m_shellTypesNames[i] == shellTypeName)
             {
-                return static_cast<int>(i);
+                return static_cast<short>(i);
             }
         }
 
-        // If not found, add new shell type
+        CStr const prefix = CStr("ET_PS_") + shellTypeName;
         m_shellTypesNames.push_back(shellTypeName);
-
-        // Add new empty effects vector for this shell type
-        std::vector<CStr> newEffects;
-        size_t soilPropsCount = m_soilProps.size();
-        newEffects.resize(soilPropsCount);
-        m_shellsEffectsNames.push_back(newEffects);
-
-        // Generate effect names for each soil type
+        auto& soilEffects = m_shellsEffectsNames.emplace_back(m_soilProps.size());
         for (size_t i = 0; i < m_soilProps.size(); ++i)
         {
-            SoilProps const& soilProp = m_soilProps[i];
-
-            // Build effect name: "ET_PS_" + shellTypeName + soilSplashTypeName + "EXPLOSION"
-            CStr effectName = "ET_PS_";
-            effectName += shellTypeName;
-            effectName += soilProp.m_splashTypeName;
-            effectName += "EXPLOSION";
-
-            // Store in the effects vector
-            m_shellsEffectsNames.back()[i] = effectName;
+            soilEffects[i] = prefix + m_soilProps[i].m_splashTypeName + CStr("EXPLOSION");
         }
-
-        // Generate water splash effect name
-        CStr waterEffectName = "ET_PS_";
-        waterEffectName += shellTypeName;
-        waterEffectName += "WATERSPLASH";
-        m_shellWaterEffectNames.push_back(waterEffectName);
-
-        // Generate road explosion effect name
-        CStr roadEffectName = "ET_PS_";
-        roadEffectName += shellTypeName;
-        roadEffectName += "ROADEXPLOSION";
-        m_shellsRoadEffNames.push_back(roadEffectName);
-
-        // Generate statics explosion effect name
-        CStr staticsEffectName = "ET_PS_";
-        staticsEffectName += shellTypeName;
-        staticsEffectName += "STATICSEXPLOSION";
-        m_shellsStaticsEffNames.push_back(staticsEffectName);
-
-        // Generate vehicle explosion effect name
-        CStr vehicleEffectName = "ET_PS_";
-        vehicleEffectName += shellTypeName;
-        vehicleEffectName += "VEHICLEEXPLOSION";
-        m_shellsVehiclesEffNames.push_back(vehicleEffectName);
-
-        // Create additional shell effect names
+        m_shellWaterEffectNames.push_back(prefix + CStr("WATERSPLASH"));
+        m_shellsRoadEffNames.push_back(prefix + CStr("ROADEXPLOSION"));
+        m_shellsStaticsEffNames.push_back(prefix + CStr("STATICSEXPLOSION"));
+        m_shellsVehiclesEffNames.push_back(prefix + CStr("VEHICLEEXPLOSION"));
         CreateBoShellEffectNames();
 
-        // Return the index of the newly added shell type
-        return static_cast<int>(m_shellTypesNames.size() - 1);
+        return static_cast<short>(m_shellTypesNames.size() - 1);
     }
 
     bool DynamicScene::SaveSceneToFile(char const* fileName)
@@ -1877,48 +1820,33 @@ namespace ai
 
     void DynamicScene::_InitWheelTraces()
     {
-        // TODO: generated code DynamicScene::_InitWheelTraces
-        m3d::RoadManager& roadManager = m3d::pClient->GetWorld().GetRoadManager();
-        m3d::WheelTraceMgr& wheelTraceMgr = pServer->GetWorld()->GetWheelTracesMgr();
+        // RVA 0x60DC00 - one wheel-trace texture per soil, followed by one per distinct road trace texture; road sets
+        // get the soil type of their texture's slot.
+        auto& roadManager = m3d::pClient->GetWorld().GetRoadManager();
+        auto& wheelTraceMgr = pServer->GetWorld()->GetWheelTracesMgr();
 
-        // Collect all unique wheel trace texture names from road sets
         std::set<CStr> roadWheelTraces;
-
-        for (size_t i = 0; i < roadManager.m_roadSets.size(); ++i)
+        for (auto* roadSet : roadManager.m_roadSets)
         {
-            roadWheelTraces.insert(roadManager.m_roadSets[i]->m_wheeltraceTexName);
+            roadWheelTraces.insert(roadSet->m_wheeltraceTexName);
         }
 
-        // Calculate total number of soil types (soil props + road wheel traces)
-        size_t soilPropsCount = m_soilProps.size();
-        size_t totalTypes = soilPropsCount + roadWheelTraces.size();
-
-        // Initialize wheel trace manager with the total number of types
-        wheelTraceMgr.Init(totalTypes);
-
-        // Add soil properties textures to wheel trace manager
-        for (size_t i = 0; i < soilPropsCount; ++i)
+        wheelTraceMgr.Init(roadWheelTraces.size() + m_soilProps.size());
+        for (auto const& props : m_soilProps)
         {
-            wheelTraceMgr.AddTextureBySoilType(m_soilProps[i].m_idx, m_soilProps[i].m_wheelTraceTextureName);
+            wheelTraceMgr.AddTextureBySoilType(props.m_idx, props.m_wheelTraceTextureName);
         }
 
-        // Add road wheel trace textures and update road set soil types
-        int roadTypeIndex = 0;
-        for (auto it = roadWheelTraces.begin(); it != roadWheelTraces.end(); ++it, ++roadTypeIndex)
+        int roadIndex = 0;
+        for (CStr const& traceName : roadWheelTraces)
         {
-            CStr const& wheelTraceName = *it;
-
-            // Add to wheel trace manager
-            wheelTraceMgr.AddTextureBySoilType(static_cast<int>(soilPropsCount + roadTypeIndex), wheelTraceName);
-
-            // Update road sets that use this wheel trace texture
-            for (size_t j = 0; j < roadManager.m_roadSets.size(); ++j)
+            int const soilType = static_cast<int>(m_soilProps.size()) + roadIndex++;
+            wheelTraceMgr.AddTextureBySoilType(soilType, traceName);
+            for (auto* roadSet : roadManager.m_roadSets)
             {
-                m3d::RoadSet* roadSet = roadManager.m_roadSets[j];
-
-                if (roadSet->m_wheeltraceTexName == wheelTraceName)
+                if (roadSet->m_wheeltraceTexName == traceName)
                 {
-                    roadSet->m_soilType = static_cast<int>(soilPropsCount + roadTypeIndex);
+                    roadSet->m_soilType = soilType;
                 }
             }
         }
@@ -1967,15 +1895,8 @@ namespace ai
 
     bool ObjIdExceptionalTraceLineCallback::CollideId(int objId) const
     {
-        // TODO: check this
-        for (auto const& exception : m_Exceptions)
-        {
-            if (exception == objId)
-            {
-                return false;
-            }
-        }
-        return true;
+        // RVA 0x605660 - everything except the listed objects.
+        return std::find(m_Exceptions.begin(), m_Exceptions.end(), objId) == m_Exceptions.end();
     }
 
     bool ObjIdExceptionalTraceLineCallback::CollidePhysicObj(ai::PhysicObj const* physicObj) const

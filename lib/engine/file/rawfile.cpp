@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <core/log.h>
@@ -18,120 +19,119 @@ namespace m3d
 
         int RawFile::FSeek(long offset, int origin)
         {
-            //TODO: check and refactor
+            // RVA 0x8B13C0 - origin is SEEK_SET, SEEK_CUR or SEEK_END. Seeks are clamped to the
+            // file; the size is compared signed throughout.
             if (m_hFile == INVALID_HANDLE_VALUE)
             {
                 return -1;
             }
-            if (!m_Data)
+
+            long const fileSize = static_cast<long>(m_FileSize);
+            char* const data = static_cast<char*>(m_Data);
+            if (!data)
             {
-                DWORD moveMethod = 0;
-                if (origin)
+                // Unmapped: out-of-range seeks are redirected to the nearest end of the file.
+                long distance = offset;
+                DWORD moveMethod;
+                switch (origin)
                 {
-                    if (origin == 1)
+                case SEEK_SET:
+                    // NOTE: only the upper bound is clamped here; a negative offset makes
+                    // SetFilePointer fail.
+                    moveMethod = FILE_BEGIN;
+                    if (offset > fileSize)
                     {
-                        moveMethod = 1;
-                        if (offset <= 0)
+                        distance = fileSize;
+                    }
+                    break;
+
+                case SEEK_CUR:
+                    moveMethod = FILE_CURRENT;
+                    if (offset <= 0)
+                    {
+                        if (-offset > FTell())
                         {
-                            if (-offset > FTell())
-                            {
-                                offset = 0;
-                                moveMethod = 0;
-                            }
-                        }
-                        else if (offset + FTell() > m_FileSize)
-                        {
-                            offset = 0;
-                            moveMethod = 2;
+                            distance = 0;
+                            moveMethod = FILE_BEGIN;
                         }
                     }
-                    else
+                    else if (offset + FTell() > fileSize)
                     {
-                        if (origin != 2)
-                        {
-                            return -1;
-                        }
-                        moveMethod = 2;
-                        if (offset <= 0)
-                        {
-                            if (-offset > m_FileSize)
-                            {
-                                offset = 0;
-                                moveMethod = 0;
-                            }
-                        }
-                        else
-                        {
-                            offset = 0;
-                        }
+                        distance = 0;
+                        moveMethod = FILE_END;
                     }
+                    break;
+
+                case SEEK_END:
+                    moveMethod = FILE_END;
+                    if (offset > 0)
+                    {
+                        distance = 0;
+                    }
+                    else if (-offset > fileSize)
+                    {
+                        distance = 0;
+                        moveMethod = FILE_BEGIN;
+                    }
+                    break;
+
+                default:
+                    return -1;
                 }
-                else
-                {
-                    moveMethod = 0;
-                    if (offset > m_FileSize)
-                    {
-                        offset = m_FileSize;
-                    }
-                }
-                if (::SetFilePointer(m_hFile, offset, 0, moveMethod) != -1)
+
+                if (::SetFilePointer(m_hFile, distance, nullptr, moveMethod) != INVALID_SET_FILE_POINTER)
                 {
                     return 0;
                 }
+                m_lastError = ::GetLastError();
                 M3D_LOG_ERR("Error: could not set file pointer, fileSize = " + CStr(m_FileSize));
                 return -1;
             }
-            if (!origin)
+
+            // Mapped: seeking past either end stops at it, and past the end also flags an error.
+            char*& curr = reinterpret_cast<char*&>(m_CurrData);
+            switch (origin)
             {
-                if (offset < 0)
+            case SEEK_SET:
+            {
+                long pos = offset < 0 ? 0 : offset;
+                if (pos > fileSize)
                 {
-                    offset = 0;
+                    pos = fileSize;
+                    m_lastError = ERROR_PAST_END;
                 }
-                if (offset > m_FileSize)
-                {
-                    offset = m_FileSize;
-                    m_lastError = 38;
-                }
-                m_CurrData = static_cast<char*>(m_Data) + offset;
+                curr = data + pos;
                 return 0;
             }
-            if (origin != 1)
-            {
-                if (origin != 2)
+
+            case SEEK_CUR:
+                if (offset <= 0)
                 {
-                    return -1;
+                    curr = -offset <= curr - data ? curr + offset : data;
                 }
+                else if (offset < data + fileSize - curr)
+                {
+                    curr += offset;
+                }
+                else
+                {
+                    curr = data + fileSize;
+                    m_lastError = ERROR_PAST_END;
+                }
+                return 0;
+
+            case SEEK_END:
                 if (offset > 0)
                 {
                     offset = 0;
-                    m_lastError = 38;
+                    m_lastError = ERROR_PAST_END;
                 }
-                if (-offset < m_FileSize)
-                {
-                    m_CurrData = static_cast<char*>(m_Data) + m_FileSize + offset;
-                    return 0;
-                }
-                m_CurrData = m_Data;
+                curr = -offset < fileSize ? data + fileSize + offset : data;
                 return 0;
+
+            default:
+                return -1;
             }
-            if (offset <= 0)
-            {
-                if (-offset <= static_cast<char*>(m_CurrData) - m_Data)
-                {
-                    m_CurrData = static_cast<char*>(m_CurrData) + offset;
-                    return 0;
-                }
-                m_CurrData = m_Data;
-                return 0;
-            }
-            if (offset < static_cast<char*>(m_Data) + m_FileSize - m_CurrData)
-            {
-                m_CurrData = static_cast<char*>(m_CurrData) + offset;
-                return 0;
-            }
-            m_CurrData = static_cast<char*>(m_Data) + m_FileSize;
-            m_lastError = 38;
-            return 0;
         }
 
         int RawFile::ReadLine(CStr& s)

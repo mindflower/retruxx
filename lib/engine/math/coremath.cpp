@@ -96,149 +96,124 @@ int CBrezLine::step(int& curx, int& cury)
 
 Quaternion Exp(const Quaternion& q)
 {
-    // TODO: check this
+    // RVA 0x5FF430 - the exponential of a pure quaternion (w is ignored): rotation by the
+    // angle |xyz| about xyz. When sin(angle) is tiny, xyz is passed through unscaled.
+    float const angle = sqrtf(q.x * q.x + q.y * q.y + q.z * q.z);
+    float const sinAngle = sinf(angle);
+
     Quaternion result;
-    auto v3 = sqrt(q.x * q.x + q.y * q.y + q.z * q.z);
-    auto Angle = v3;
-    auto v4 = sin(v3);
-    auto sinAngle = v4;
-    auto v5 = fabs(v4);
-    auto v6 = cos(Angle);
-    if (v5 <= 0.0000099999997)
+    result.w = cosf(angle);
+    if (fabsf(sinAngle) > 1e-5f)
     {
-        auto x = q.x;
-        auto z = q.z;
-        auto y = q.y;
-        result.w = v6;
-        result.x = x;
-        result.y = y;
-        result.z = z;
+        float const scale = sinAngle / angle;
+        result.x = q.x * scale;
+        result.y = q.y * scale;
+        result.z = q.z * scale;
     }
     else
     {
-        auto v7 = q.x;
-        auto v8 = (sinAngle / Angle) * q.z;
-        auto v9 = (sinAngle / Angle) * q.y;
-        result.w = v6;
-        result.x = v7 * (sinAngle / Angle);
-        result.y = v9;
-        result.z = v8;
+        result.x = q.x;
+        result.y = q.y;
+        result.z = q.z;
     }
     return result;
 }
 
 Quaternion Ln(const Quaternion& q)
 {
-    // TODO: check this
-    Quaternion a1;
-    auto v2 = acos(q.w);
-    auto fAngle = v2;
-    auto fSinAngle = sin(v2);
-    if (fabs(q.w) >= 1.0 || fSinAngle <= 0.0000099999997)
+    // RVA 0x5FF4D0 - the logarithm of a unit quaternion: a pure quaternion angle * axis.
+    // For |w| >= 1 or a tiny sin(angle), xyz is passed through unscaled.
+    Quaternion result;
+    float angle = 0.0f;
+    float sinAngle = 0.0f;
+    if (fabsf(q.w) < 1.0f)
     {
-        auto z = q.z;
-        auto y = q.y;
-        a1.x = q.x;
-        a1.y = y;
-        a1.z = z;
+        angle = acosf(q.w);
+        sinAngle = sinf(angle);
+    }
+
+    if (fabsf(q.w) < 1.0f && sinAngle > 1e-5f)
+    {
+        float const scale = angle / sinAngle;
+        result.x = q.x * scale;
+        result.y = q.y * scale;
+        result.z = q.z * scale;
     }
     else
     {
-        auto v3 = q.z * (fAngle / fSinAngle);
-        auto v4 = q.y * (fAngle / fSinAngle);
-        a1.x = q.x * (fAngle / fSinAngle);
-        a1.y = v4;
-        a1.z = v3;
+        result.x = q.x;
+        result.y = q.y;
+        result.z = q.z;
     }
-    a1.w = 0.0;
-    return a1;
+    result.w = 0.0f;
+    return result;
 }
 
-Quaternion getTangent(Quaternion const& q1, Quaternion const& q2, Quaternion const& q3)
+Quaternion getTangent(Quaternion const& prevQuat, Quaternion const& currentQuat, Quaternion const& nextQuat)
 {
-    // TODO: check this
-    auto Inversed = q2.getInversed();
-    auto v8 = Inversed.z * q3.x;
+    // RVA 0x5FF600 - the SQUAD control point at currentQuat:
+    //   current * exp(-(ln(current^-1 * next) + ln(current^-1 * prev)) / 4)
+    // The two products are written out because the binary sums their terms in an order
+    // that differs from Quaternion::operator*; keeping it keeps the rounding identical.
+    Quaternion const inv = currentQuat.getInversed();
+    Quaternion const& n = nextQuat;
+    Quaternion toNext;
+    toNext.x = ((n.z * inv.y + n.w * inv.x) + inv.w * n.x) - inv.z * n.y;
+    toNext.y = ((inv.w * n.y + inv.z * n.x) + n.w * inv.y) - n.z * inv.x;
+    toNext.z = ((inv.w * n.z + n.w * inv.z) + n.y * inv.x) - n.x * inv.y;
+    toNext.w = ((inv.w * n.w - n.x * inv.x) - inv.y * n.y) - n.z * inv.z;
+    Quaternion const lnNext = Ln(toNext);
 
-    Quaternion q;
-    q.x = (((q3.z * Inversed.y) + (q3.w * Inversed.x)) + (Inversed.w * q3.x)) - (Inversed.z * q3.y);
-    auto v9 = (((Inversed.w * q3.y) + v8) + (q3.w * Inversed.y)) - (q3.z * Inversed.x);
-    auto v10 = q3.w * Inversed.z;
-    q.y = v9;
-    auto v11 = (((Inversed.w * q3.z) + v10) + (q3.y * Inversed.x)) - (q3.x * Inversed.y);
-    auto v12 = q3.x * Inversed.x;
-    q.z = v11;
-    q.w = (((Inversed.w * q3.w) - v12) - (Inversed.y * q3.y)) - (q3.z * Inversed.z);
+    Quaternion const& p = prevQuat;
+    Quaternion toPrev;
+    toPrev.x = ((inv.x * p.w + p.x * inv.w) + inv.y * p.z) - inv.z * p.y;
+    toPrev.y = ((inv.y * p.w + inv.z * p.x) + p.y * inv.w) - inv.x * p.z;
+    toPrev.z = ((inv.x * p.y + inv.z * p.w) + inv.w * p.z) - inv.y * p.x;
+    toPrev.w = ((inv.w * p.w - inv.x * p.x) - inv.y * p.y) - inv.z * p.z;
+    Quaternion const lnPrev = Ln(toPrev);
 
-    Quaternion l1 = Ln(q);
-    auto v13 = q2.getInversed();
-    auto z = v13.z;
-    q.x = (((v13.x * q1.w) + (q1.x * v13.w)) + (v13.y * q1.z)) - (z * q1.y);
-    auto v15 = (((v13.y * q1.w) + (z * q1.x)) + (q1.y * v13.w)) - (v13.x * q1.z);
-    auto v16 = v13.z * q1.w;
-    q.y = v15;
-    auto v17 = (((v13.x * q1.y) + v16) + (v13.w * q1.z)) - (v13.y * q1.x);
-    auto v18 = v13.x * q1.x;
-    q.z = v17;
-    q.w = (((v13.w * q1.w) - v18) - (v13.y * q1.y)) - (v13.z * q1.z);
+    Quaternion exponent;
+    exponent.x = (lnPrev.x + lnNext.x) * -0.25f;
+    exponent.y = (lnPrev.y + lnNext.y) * -0.25f;
+    exponent.z = (lnPrev.z + lnNext.z) * -0.25f;
+    exponent.w = (lnPrev.w + lnNext.w) * -0.25f;
 
-    auto e = Ln(q);
-    q.x = (e.x + l1.x) * -0.25;
-    q.y = (e.y + l1.y) * -0.25;
-    q.z = (e.z + l1.z) * -0.25;
-    q.w = (e.w + l1.w) * -0.25;
-    e = q;
-    auto v19 = Exp(e);
-    auto v20 = (((v19.w * q2.y) + (q2.w * v19.y)) + (q2.z * v19.x)) - (v19.z * q2.x);
-    auto v21 = (((q2.x * v19.y) + (v19.w * q2.z)) + (v19.z * q2.w)) - (v19.x * q2.y);
-    auto v22 = (((v19.w * q2.w) - (v19.x * q2.x)) - (v19.y * q2.y)) - (q2.z * v19.z);
-
-    Quaternion a1;
-    a1.x = (((v19.z * q2.y) + (v19.x * q2.w)) + (v19.w * q2.x)) - (q2.z * v19.y);
-    a1.y = v20;
-    a1.z = v21;
-    a1.w = v22;
-    return a1;
+    // This product matches Quaternion::operator*= term for term.
+    Quaternion result = currentQuat;
+    result *= Exp(exponent);
+    return result;
 }
+
 float CalculateAngle(CVector2 const& a, CVector2 const& b)
 {
-    // TODO: check and refactor this
-    long double v2;  // st7
-    long double v3;  // st7
-    float angle;     // [esp+0h] [ebp-10h]
-    float anglea;    // [esp+0h] [ebp-10h]
-    float angleb;    // [esp+0h] [ebp-10h]
-    float v8;        // [esp+4h] [ebp-Ch]
-    float v9;        // [esp+8h] [ebp-8h]
-    float v10;       // [esp+Ch] [ebp-4h]
+    // RVA 0x5C0980 - the signed angle from a to b in radians, positive counter-clockwise.
+    // A vector shorter than sqrt(1e-5) counts as zero, which gives an angle of pi/2.
+    float bx = 0.0f;
+    float by = 0.0f;
+    float const bLenSq = b.x * b.x + b.y * b.y;
+    if (bLenSq > 1e-5f)
+    {
+        float const inv = 1.0f / sqrtf(bLenSq);
+        bx = inv * b.x;
+        by = inv * b.y;
+    }
 
-    if ((float)((float)(b.x * b.x) + (float)(b.y * b.y)) <= 0.0000099999997)
+    float ax = 0.0f;
+    float ay = 0.0f;
+    float const aLenSq = a.x * a.x + a.y * a.y;
+    if (aLenSq > 1e-5f)
     {
-        v10 = 0.0;
-        v9 = 0.0;
+        float const inv = 1.0f / sqrtf(aLenSq);
+        ax = inv * a.x;
+        ay = inv * a.y;
     }
-    else
+
+    float const angle = acosf(ay * by + ax * bx);
+    if (a.x * b.y - a.y * b.x < 0.0f)
     {
-        v2 = 1.0 / sqrt((float)((float)(b.x * b.x) + (float)(b.y * b.y)));
-        v9 = v2 * b.x;
-        v10 = v2 * b.y;
+        return 0.0f - angle;
     }
-    angle = (float)(a.x * a.x) + (float)(a.y * a.y);
-    if (angle <= 0.0000099999997)
-    {
-        v8 = 0.0;
-        anglea = 0.0;
-    }
-    else
-    {
-        v3 = 1.0 / sqrt(angle);
-        anglea = v3 * a.x;
-        v8 = v3 * a.y;
-    }
-    angleb = acos(v8 * v10 + anglea * v9);
-    if ((float)((float)(a.x * b.y) - (float)(a.y * b.x)) < 0.0)
-        return (float)(0.0 - angleb);
-    return angleb;
+    return angle;
 }
 
 Quaternion SLerp(Quaternion const& a, Quaternion const& b, float t)
@@ -275,118 +250,31 @@ Quaternion SLerp(Quaternion const& a, Quaternion const& b, float t)
 
 Quaternion SLerpAcc(Quaternion const& a, Quaternion const& b, float t)
 {
-    // TODO: check this
-    auto v5 = (a.x * b.x) + (b.z * a.z);
-    auto v6 = b.y * a.y;
-    auto x = b.x;
-    auto y = b.y;
-    auto z = b.z;
-    auto w = b.w;
-    auto v12 = (v5 + v6) + (w * a.w);
-
-    Quaternion realB;
-    realB.x = b.x;
-    realB.y = y;
-    realB.z = z;
-    realB.w = w;
-    if (v12 < 0.0)
+    // RVA 0x5FF050 - SLerp along the shorter arc: b is negated when it lies in the other
+    // hemisphere. The rest is SLerp inlined.
+    // NOTE: the binary computes the inlined SLerp's cosine on the x87 stack (w, x, y, z
+    // order, extended precision); SLerp sums it in float, so the last bit can differ.
+    float const dot = ((a.x * b.x + b.z * a.z) + b.y * a.y) + b.w * a.w;
+    if (dot < 0.0f)
     {
-        x = 0.0 - b.x;
-        y = 0.0 - b.y;
-        z = 0.0 - b.z;
-        w = 0.0 - b.w;
-        realB.x = x;
-        realB.y = y;
-        realB.z = z;
-        realB.w = w;
+        return SLerp(a, Quaternion(0.0f - b.x, 0.0f - b.y, 0.0f - b.z, 0.0f - b.w), t);
     }
-    auto v13 = realB.w * a.w + realB.x * a.x + realB.y * a.y + realB.z * a.z;
-    auto ba = v13;
-    if (fabs(v13 + 1.0) <= 0.059999999 || fabs(ba - 1.0) <= 0.059999999)
-    {
-        float v16 = 0.0;
-        if (ba <= 0.0)
-            v16 = t - 1.0;
-        else
-            v16 = 1.0 - t;
-
-        Quaternion v33;
-        v33.y = y * t;
-        auto v17 = a.x;
-        v33.x = x * t;
-        v33.z = z * t;
-        auto v18 = a.y;
-        auto v19 = v17;
-        auto v20 = a.w;
-        v33.w = w * t;
-        auto result_8a = a.z * v16;
-        realB.y = (y * t) + (v18 * v16);
-        realB.z = (z * t) + result_8a;
-        realB.w = (w * t) + (v20 * v16);
-        auto result = v33.x + (v19 * v16);
-        auto cosTheta = (((realB.w * realB.w) + (realB.z * realB.z)) + (realB.y * realB.y)) + (result * result);
-
-        auto resulta = 0.0;
-        auto result_4 = 0.0;
-        auto result_8 = 0.0;
-        auto result_12 = 0.0;
-        if (cosTheta <= 0.0)
-        {
-            resulta = 0.0;
-            result_4 = 0.0;
-            result_8 = 0.0;
-            result_12 = 1.0;
-        }
-        else
-        {
-            auto v21 = 1.0 / sqrt(cosTheta);
-            resulta = result * v21;
-            result_4 = realB.y * v21;
-            result_8 = realB.z * v21;
-            result_12 = realB.w * v21;
-        }
-        Quaternion a1;
-        a1.x = resulta;
-        a1.y = result_4;
-        a1.z = result_8;
-        a1.w = result_12;
-        return a1;
-    }
-    else
-    {
-        auto theta = acos(ba);
-        auto bb = 1.0 / sqrt(1.0 - ba * ba);
-        auto v = sin(theta * t) * bb;
-        auto va = realB *  v;
-        auto v22 = sin((1.0 - t) * theta) * bb;
-        auto v14 = a * v22;
-        return v14 + va;
-    }
+    return SLerp(a, b, t);
 }
 
 Quaternion SQuad(float t, Quaternion const& p, Quaternion const& a, Quaternion const& b, Quaternion const& q)
 {
-    // TODO: check this
-    auto c = SLerpAcc( p, q, t);
-    auto d = SLerpAcc(a, b, t);
-    auto res = SLerpAcc(c, d, ((1.0 - t) * t) * 2.0);
-    auto y = res.y;
-
-    Quaternion result;
-    result.x = res.x;
-    auto z = res.z;
-    result.y = y;
-    auto w = res.w;
-    result.z = z;
-    result.w = w;
-    return result;
+    // RVA 0x5FF570 - spherical quadrangle interpolation from p to q with control points a
+    // and b.
+    Quaternion const outer = SLerpAcc(p, q, t);
+    Quaternion const inner = SLerpAcc(a, b, t);
+    return SLerpAcc(outer, inner, (1.0f - t) * t * 2.0f);
 }
 
 Quaternion CubicInterpolation(float t, Quaternion const& q1, Quaternion const& q2, Quaternion const& q3, Quaternion const& q4)
 {
-    // TODO: check this
-    auto tangent = getTangent(q2, q3, q4);
-    auto v8 = getTangent(q1, q2, q3);
-    
-    return SQuad(t, q2, v8, tangent, q3);
+    // RVA 0x5FF9F0 - SQUAD between q2 and q3, with q1 and q4 shaping the tangents.
+    Quaternion const outTangent = getTangent(q2, q3, q4);
+    Quaternion const inTangent = getTangent(q1, q2, q3);
+    return SQuad(t, q2, inTangent, outTangent, q3);
 }

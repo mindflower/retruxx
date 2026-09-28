@@ -8,6 +8,7 @@
 #include "retruxx/common.h"
 
 #include <cmath>
+#include <utility>
 
 CVector CMatrix::vecRot(CVector const& v) const
 {
@@ -324,8 +325,8 @@ void CMatrix::getYPR(float& y, float& p, float& r) const
 
 void CMatrix::rotTranslate(Quaternion const& rot, CVector const& pos)
 {
-    // TODO: generated code
-    // Calculate intermediate values for the rotation matrix
+    // RVA 0x512F30 - the rotation matrix of a unit quaternion (row-vector convention), with
+    // pos as the translation row.
     float const xx = rot.x * rot.x;
     float const yy = rot.y * rot.y;
     float const zz = rot.z * rot.z;
@@ -336,8 +337,6 @@ void CMatrix::rotTranslate(Quaternion const& rot, CVector const& pos)
     float const yw = rot.y * rot.w;
     float const zw = rot.z * rot.w;
 
-    // Build the rotation matrix from quaternion
-    // First row
     _11 = 1.0f - 2.0f * (yy + zz);
     _12 = 2.0f * (xy + zw);
     _13 = 2.0f * (xz - yw);
@@ -458,122 +457,103 @@ void CMatrix::FromBasis(CVector const& x, CVector const& y, CVector const& z)
 
 CMatrix CMatrix::getInverse() const
 {
-    // TODO: generated code
-    CMatrix result;
-    // Temporary arrays for the augmented matrix [A|I]
-    float r1[8], r2[8], r3[8], r4[8];
-    float* s[4] = {r1, r2, r3, r4};
-
-    // Initialize augmented matrix: original matrix + identity matrix
+    // RVA 0x512490 - Gauss-Jordan elimination on the augmented matrix [M | I] with scaled
+    // partial pivoting. A row of zeros, or a zero last pivot, gives the identity.
+    // NOTE: only the last pivot is checked for zero. A zero pivot earlier on is divided by
+    // and the result fills with infinities and NaNs, as in the shipped code.
+    float rows[4][8];
+    float* s[4];
     for (int i = 0; i < 4; ++i)
     {
-        float* row = s[i];
-
-        // Copy original matrix row
-        row[0] = this->m[i][0];
-        row[1] = this->m[i][1];
-        row[2] = this->m[i][2];
-        row[3] = this->m[i][3];
-
-        // Add identity matrix columns
+        s[i] = rows[i];
         for (int j = 0; j < 4; ++j)
         {
-            row[4 + j] = (i == j) ? 1.0f : 0.0f;
+            s[i][j] = m[i][j];
+            s[i][4 + j] = i == j ? 1.0f : 0.0f;
         }
     }
 
-    // Scale factors for each row (for pivoting)
-    float scp[4];
+    CMatrix identityResult;
+    identityResult.identity();
+
+    // Each row's largest magnitude, used to scale the pivot search.
+    float scale[4];
     for (int i = 0; i < 4; ++i)
     {
-        float* row = s[i];
-        scp[i] = std::max(std::max(std::abs(row[0]), std::abs(row[1])), std::max(std::abs(row[2]), std::abs(row[3])));
-
-        if (scp[i] == 0.0f)
+        scale[i] = std::fabs(s[i][0]);
+        for (int j = 1; j < 4; ++j)
         {
-            // Matrix is singular, return identity
-            result.identity();
-            return result;
+            float const a = std::fabs(s[i][j]);
+            if (a > scale[i])
+            {
+                scale[i] = a;
+            }
+        }
+        if (scale[i] == 0.0f)
+        {
+            return identityResult;
         }
     }
 
-    // Gaussian elimination with partial pivoting
-    for (int pivot = 0; pivot < 4; ++pivot)
+    // Forward elimination.
+    for (int p = 0; p < 4; ++p)
     {
-        // Find pivot row with maximum scaled value in current column
-        int maxRow = pivot;
-        float maxVal = std::abs(s[pivot][pivot] / scp[pivot]);
-
-        for (int row = pivot + 1; row < 4; ++row)
+        int best = p;
+        float bestVal = std::fabs(s[p][p] / scale[p]);
+        for (int r = p + 1; r < 4; ++r)
         {
-            float scaledVal = std::abs(s[row][pivot] / scp[row]);
-            if (scaledVal > maxVal)
+            float const val = std::fabs(s[r][p] / scale[r]);
+            if (val > bestVal)
             {
-                maxVal = scaledVal;
-                maxRow = row;
+                bestVal = val;
+                best = r;
             }
         }
-
-        // Swap rows if necessary
-        if (maxRow != pivot)
+        if (best != p)
         {
-            std::swap(s[pivot], s[maxRow]);
-            std::swap(scp[pivot], scp[maxRow]);
+            std::swap(s[p], s[best]);
+            std::swap(scale[p], scale[best]);
         }
 
-        // Check if pivot element is zero (matrix is singular)
-        if (s[pivot][pivot] == 0.0f)
+        for (int r = p + 1; r < 4; ++r)
         {
-            result.identity();
-            return result;
-        }
-
-        // Eliminate entries below the pivot
-        for (int row = pivot + 1; row < 4; ++row)
-        {
-            float factor = s[row][pivot] / s[pivot][pivot];
-            s[row][pivot] = 0.0f;
-
-            // Subtract factor * pivot row from current row
-            for (int col = pivot + 1; col < 8; ++col)
+            float const factor = s[r][p] / s[p][p];
+            s[r][p] = 0.0f;
+            for (int col = p + 1; col < 8; ++col)
             {
-                s[row][col] -= factor * s[pivot][col];
+                s[r][col] = s[r][col] - s[p][col] * factor;
             }
         }
     }
 
-    // Check if last pivot is zero
     if (s[3][3] == 0.0f)
     {
-        result.identity();
-        return result;
+        return identityResult;
     }
 
-    // Back substitution
-    CMatrix minv;
-    for (int i = 3; i >= 0; --i)
+    // Back substitution on the unnormalised rows; each row is divided by its pivot last.
+    for (int c = 3; c > 0; --c)
     {
-        float* row = s[i];
-        float pivotInverse = 1.0f / row[i];
-
-        // Solve for identity matrix columns
-        for (int j = 0; j < 4; ++j)
+        for (int r = c - 1; r >= 0; --r)
         {
-            minv.m[i][j] = row[4 + j] * pivotInverse;
-        }
-
-        // Eliminate entries above the pivot
-        for (int rowAbove = 0; rowAbove < i; ++rowAbove)
-        {
-            float factor = s[rowAbove][i];
-            for (int col = 0; col < 4; ++col)
+            float const factor = s[r][c] / s[c][c];
+            for (int col = r + 1; col < 8; ++col)
             {
-                s[rowAbove][4 + col] -= factor * minv.m[i][col];
+                s[r][col] = s[r][col] - s[c][col] * factor;
             }
         }
     }
 
-    return minv;
+    CMatrix inverse;
+    for (int i = 0; i < 4; ++i)
+    {
+        float const invPivot = 1.0f / s[i][i];
+        for (int j = 0; j < 4; ++j)
+        {
+            inverse.m[i][j] = s[i][4 + j] * invPivot;
+        }
+    }
+    return inverse;
 }
 
 CMatrix& CMatrix::operator*=(CMatrix const& lhs)

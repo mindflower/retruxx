@@ -4,6 +4,7 @@
 #include "m3dapp.h"
 #include "core/log.h"
 #include "game/m3dgame.h"
+#include "game/uimanager/uidefs.h"
 #include "ui/slider.h"
 
 RT_CLASS_EXPORTS_BEGIN(ControlOptionsWnd)
@@ -148,6 +149,7 @@ void ControlOptionsWnd::OnBtnMouseSensitivityNextClick(m3d::AIParam const&)
 
 int ControlOptionsWnd::GameDataSetup()
 {
+    // RVA 0x4B03C0
     using namespace m3d::ui;
     int res = 1;
     if ((m_gameDataFlags & 2) == 0)
@@ -207,25 +209,27 @@ int ControlOptionsWnd::GameDataSetup()
             res = 0;
         }
 
-        auto wndKeyBindings = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp)->m_pInterfaceManager->GetWindow(0);
-        if (wndKeyBindings)
+        // The shared key-bindings window (gui id 0) is adopted as a child as it is: the original
+        // does not move it, rebase its bounds or change anything else about it. If it is missing
+        // the window stays uninitialised, and no error is logged for that particular case.
+        ref_ptr wndKeyBindings = M3D_APP->m_pInterfaceManager->GetWindow(IW_DLG_BINDKEYS);
+        if (auto* bindKeysWnd = RT_DYNCAST(wndKeyBindings.get(), BindKeysWnd))
         {
-	        if (wndKeyBindings->IsKindOf(RT_CLASS_LOCAL(BindKeysWnd)))
-	        {
-                //TODO: check this!!!!!!!!!q
-                m_wndKeyBindings = dynamic_cast<BindKeysWnd*>(&*wndKeyBindings);
-                AddChild(m_wndKeyBindings);
-                if (res)
-                {
-                    m_gameDataFlags |= 1u;
-                    InitMouseSensitivityControls();
-                }
-	        }
+            m_wndKeyBindings = bindKeysWnd;
+            AddChild(m_wndKeyBindings.get());
+            if (res)
+            {
+                m_gameDataFlags |= 1u;
+                InitMouseSensitivityControls();
+            }
         }
     }
-    if ((this->m_gameDataFlags & 1) != 0)
+
+    if ((m_gameDataFlags & 1) != 0)
+    {
         return 1;
-	M3D_LOG_INFO("ControlOptionsWnd: error - fail to init because of a bad resource");
+    }
+    M3D_LOG_INFO("ControlOptionsWnd: error - fail to init because of a bad resource");
     return 0;
 }
 

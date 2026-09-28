@@ -191,36 +191,16 @@ void Quaternion::Zero()
 
 Quaternion Quaternion::getInversed() const
 {
-    // TODO: generated code
-    Quaternion result;
-
-    // Calculate the squared length (magnitude) of the quaternion
-    float squaredLength = (w * w) + (x * x) + (y * y) + (z * z);
-
-    // Check for zero length quaternion to avoid division by zero
-    if (squaredLength <= 0.0f)
+    // RVA 0x5CC930 - the conjugate, normalised; a zero quaternion inverts to the identity.
+    Quaternion const conj(0.0f - x, 0.0f - y, 0.0f - z, w);
+    float const lenSq = ((conj.w * conj.w + conj.z * conj.z) + conj.y * conj.y) + conj.x * conj.x;
+    if (lenSq <= 0.0f)
     {
-        // Return identity quaternion for zero-length input
-        result.x = 0.0f;
-        result.y = 0.0f;
-        result.z = 0.0f;
-        result.w = 1.0f;
-    }
-    else
-    {
-        // Calculate inverse length (1 / magnitude)
-        float invLength = 1.0f / sqrt(squaredLength);
-
-        // For a unit quaternion, inverse is conjugate (negate x,y,z) divided by squared length
-        // Since we're normalizing, we multiply conjugate by invLength
-        result.x = -x * invLength;
-        result.y = -y * invLength;
-        result.z = -z * invLength;
-        result.w = w * invLength;
+        return Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    return result;
-
+    float const invLen = 1.0f / sqrtf(lenSq);
+    return Quaternion(conj.x * invLen, conj.y * invLen, conj.z * invLen, conj.w * invLen);
 }
 
 float& Quaternion::operator[](unsigned int i)

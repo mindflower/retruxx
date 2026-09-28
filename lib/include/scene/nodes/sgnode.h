@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <math/matrix.h>
 #include <math/point2d.h>
 #include <math/quaternion.h>
@@ -210,4 +211,26 @@ namespace m3d
     protected:
         void InternalInit();
     }; /* size: 0x01d4 */
+
+    // Calls f(node) for every node below root (not root itself), as the engine's inlined subtree walks do: a stack
+    // of nodes whose children are still to be visited, each popped node's children visited in sibling order.
+    template<class F>
+    void ForEachDescendant(SgNode* root, F&& f)
+    {
+        std::vector<SgNode*> stack{root};
+        while (!stack.empty())
+        {
+            SgNode* const node = stack.back();
+            stack.pop_back();
+            for (auto* child = static_cast<SgNode*>(node->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
+            {
+                f(child);
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+    }
 }

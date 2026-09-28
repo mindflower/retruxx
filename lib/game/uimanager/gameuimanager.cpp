@@ -3,6 +3,7 @@
 #include <config.h>
 #include <level.h>
 #include <m3dapp.h>
+#include <iterator>
 #include <stdexcept>
 #include <world.h>
 #include <ui/wnd.h>
@@ -295,7 +296,7 @@ int GameUiManager::GUI_SetMinDynamicId(int id)
 
 int GameUiManager::GUI_SetEventsForWindow(int wndId, retruxx::vector<int> const& events)
 {
-    //TODO: check this
+    // RVA 0x541C90
     for (auto const ev : events)
     {
         m_eventMap[ev].insert(wndId);
@@ -424,7 +425,7 @@ void GameUiManager::GUI_GetResourceInfosByLoadType(
     retruxx::vector<ResourceInfo*> const& srcInfos,
     retruxx::vector<ResourceInfo*>& dstInfos) const
 {
-    //TODO: check this
+    // RVA 0x544120
     dstInfos.clear();
     for (auto* info : srcInfos)
     {
@@ -875,6 +876,7 @@ int GameUiManager::GUI_Load(ref_ptr<m3d::cmn::XmlFile> xmlFile, ref_ptr<m3d::cmn
 
 int GameUiManager::GUI_Clear(bool beforeContinuousLevel)
 {
+    // RVA 0x541120
     M3D_LOG_INFO("Interface: is clearing...");
 
     int res = 1;
@@ -887,21 +889,20 @@ int GameUiManager::GUI_Clear(bool beforeContinuousLevel)
         }
     }
 
-    // TODO: check this
+    // Drop every non-persistent window. The next node is taken before the current one is touched,
+    // because GUI_RemoveWindow erases it from m_windows.
     for (auto it = m_windows.begin(); it != m_windows.end();)
     {
-        if (it->second)
+        auto const next = std::next(it);
+        if (!it->second)
         {
-            if ((it->second->GetGameDataFlags() & 8) == 0)
-            {
-                GUI_RemoveWindow(it->second);
-            }
-            ++it;
+            m_windows.erase(it);
         }
-        else
+        else if ((it->second->GetGameDataFlags() & 8) == 0)
         {
-            it = m_windows.erase(it);
+            GUI_RemoveWindow(it->first);
         }
+        it = next;
     }
 
     for (auto wnd : m_onScreenWindows)
@@ -911,16 +912,15 @@ int GameUiManager::GUI_Clear(bool beforeContinuousLevel)
         {
             if (it->second->IsKindOf(&m3d::ui::ModalWnd::m_classModalWnd))
             {
-                auto* modalWnd = (m3d::ui::ModalWnd*)&(*it->second);
+                auto* modalWnd = static_cast<m3d::ui::ModalWnd*>(it->second.get());
                 if (modalWnd->GetStation()->IsModal(modalWnd))
                 {
-                    modalWnd->GetStation()->EndModal(modalWnd, 0);
+                    M3D_APP->GetStation()->EndModal(modalWnd, 0);
                 }
             }
         }
     }
 
-    // TODO: check this
     m_icons->Clear(false);
     M3D_APP->UnPause();
     m_isInited = false;
@@ -1239,6 +1239,7 @@ int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bo
 
 int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool isPersistent, bool needShow)
 {
+    // RVA 0x541B10
     if (!w)
     {
         return 0;
@@ -1253,16 +1254,12 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
         if (isPersistent)
         {
             w->SetGameDataFlags(w->GetGameDataFlags() | 8);
-            //w->m_gameDataFlags |= 8;
         }
         else
         {
-            w->SetGameDataFlags(w->GetGameDataFlags() & 0xFFFFFFF7);
-            //w->m_gameDataFlags & 0xFFFFFFF7;
+            w->SetGameDataFlags(w->GetGameDataFlags() & ~8);
         }
         m_windows.insert(retruxx::pair<int, ref_ptr<m3d::ui::Wnd>>(wndId, w));
-        //TODO: check this
-        //w->m_guiId = wndId;
         w->SetGuiId(wndId);
     }
     else
@@ -1274,12 +1271,10 @@ int GameUiManager::GUI_AddWindowById(ref_ptr<m3d::ui::Wnd> w, int wndId, bool is
         if (isPersistent)
         {
             w->SetGameDataFlags(w->GetGameDataFlags() | 8);
-            //w->m_gameDataFlags |= 8;
         }
         else
         {
-            //w->m_gameDataFlags & 0xFFFFFFF7;
-            w->SetGameDataFlags(w->GetGameDataFlags() & 0xFFFFFFF7);
+            w->SetGameDataFlags(w->GetGameDataFlags() & ~8);
         }
     }
     if (needShow)

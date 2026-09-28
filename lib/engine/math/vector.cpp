@@ -115,21 +115,16 @@ float const& CVector::operator[](int const index) const
 
 CVector CVector::clampLength(float const clampTo) const
 {
-    CVector res = *this;
-    float const len = length();
+    // RVA 0x405A50 - despite the name, the vector is rescaled to length clampTo whether it
+    // is longer or shorter. A vector with a squared length up to 1e-5 becomes zero.
+    float const lenSq = lengthSq();
+    if (lenSq <= THRESHOLD_EPS)
+    {
+        return CVector(0.0f, 0.0f, 0.0f);
+    }
 
-    if (len <= THRESHOLD_EPS)
-    {
-        res.zero();
-    }
-    else
-    {
-        //TODO: check if right
-        res.x *= clampTo / sqrt(len);
-        res.y *= clampTo / sqrt(len);
-        res.z *= clampTo / sqrt(len);
-    }
-    return res;
+    float const scale = clampTo / sqrtf(lenSq);
+    return CVector(scale * x, scale * y, scale * z);
 }
 
 CVector CVector::getNormalized() const

@@ -55,54 +55,56 @@ namespace
 
     HRESULT RenderOutputPins(IGraphBuilder* pGB, IBaseFilter* pFilter)
     {
-        //TODO: check correctness
-        IEnumPins* pEnumPin = NULL;
-        IPin* pConnectedPin = NULL, * pPin = NULL;
-        PIN_DIRECTION PinDirection;
-        ULONG     ulFetched;
+        // RVA 0x6A4580 - renders every unconnected output pin of pFilter.
+        IEnumPins* pEnumPin = nullptr;
+        IPin* pConnectedPin = nullptr;
+        IPin* pPin = nullptr;
+        PIN_DIRECTION pinDirection;
+        ULONG fetched;
 
-        // Enumerate all pins on the filter
-        auto hr = pFilter->EnumPins(&pEnumPin);
-
-        if (SUCCEEDED(hr))
+        HRESULT hr = pFilter->EnumPins(&pEnumPin);
+        if (FAILED(hr))
         {
-            // Step through every pin, looking for the output pins
-            while ((hr = pEnumPin->Next(1L, &pPin, &ulFetched)) == S_OK)
+            M3D_LOG_INFO("FAILED(hr=" + CStr::format_("%x", hr) + ") in EnumPins\n");
+        }
+        else
+        {
+            bool failureLogged = false;
+            while ((hr = pEnumPin->Next(1, &pPin, &fetched)) == S_OK)
             {
-                // Is this pin connected?  We're not interested in connected pins.
                 hr = pPin->ConnectedTo(&pConnectedPin);
                 if (pConnectedPin)
                 {
                     pConnectedPin->Release();
-                    pConnectedPin = NULL;
+                    pConnectedPin = nullptr;
                 }
 
-                // If this pin is not connected, render it.
                 if (hr == VFW_E_NOT_CONNECTED)
                 {
-                    hr = pPin->QueryDirection(&PinDirection);
-                    if (hr == S_OK && PinDirection == PINDIR_OUTPUT)
+                    hr = pPin->QueryDirection(&pinDirection);
+                    if (hr == S_OK && pinDirection == PINDIR_OUTPUT)
                     {
                         hr = pGB->Render(pPin);
-                        if (FAILED(hr))
-                        {
-                            M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in pGB->Render");
-                        }
                     }
                 }
                 pPin->Release();
 
-                // If there was an error, stop enumerating
                 if (FAILED(hr))
+                {
+                    // NOTE: also logged when ConnectedTo fails with an error other than VFW_E_NOT_CONNECTED.
+                    M3D_LOG_INFO("FAILED(hr=" + CStr::format_("%x", hr) + ") in pGB->Render\n");
+                    failureLogged = true;
                     break;
+                }
+            }
+
+            if (FAILED(hr) && !failureLogged)
+            {
+                M3D_LOG_INFO("FAILED(hr=" + CStr::format_("%x", hr) + ") in pEnumPin->Next\n");
             }
         }
-        else
-        { 
-            M3D_LOG_INFO("FAILED(hr=" + CStr(hr) + ") in EnumPins");
-        }
 
-        // Release pin enumerator
+        // NOTE: when EnumPins fails, the shipped code still releases the null enumerator.
         pEnumPin->Release();
         return hr;
     }

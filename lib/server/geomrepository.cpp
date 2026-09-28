@@ -122,7 +122,7 @@ namespace ai
 
     bool GeomRepository::SetGeomSize(PointBase<int> const& geomSize)
     {
-        // TODO: generated code
+        // RVA 0x6CAA30 - resizes and repacks; if the items no longer fit, the old size and layout are restored.
         // Save the current slots and geometry size
         std::vector<GeomRepositoryItem> oldSlots = m_slots;
         PointBase<int> oldGeomSize = m_geomSize;
@@ -758,7 +758,7 @@ namespace ai
 
     void GeomRepository::TransferToRepository(GeomRepository* targetRepository)
     {
-        // TODO: generated code
+        // RVA 0x6CB400 - moves every item to targetRepository; what doesn't fit there comes back here.
         // Early return if no target repository
         if (targetRepository == nullptr)
         {
@@ -948,7 +948,7 @@ namespace ai
 
     bool GeomRepository::_RepackItems(SortStyle sortStyle)
     {
-        // TODO: generated code
+        // RVA 0x6CA7E0 - re-adds all items from scratch; false if any of them no longer fits.
         // If there are no slots to repack, return success
         if (m_slots.empty())
             return true;

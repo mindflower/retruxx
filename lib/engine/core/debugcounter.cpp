@@ -61,11 +61,12 @@ namespace m3d
 
     DbgCounter* DbgCounterStack::GetCounter(unsigned id)
     {
-        if (id >= m_stack.size())
+        // RVA 0x5A39F0
+        if (id >= m_numCounters)
         {
-            return 0;
+            return nullptr;
         }
-        return m_stack.at(id);
+        return m_stack[id];
     }
 
     DbgCounterStack::~DbgCounterStack()
@@ -75,22 +76,19 @@ namespace m3d
 
     unsigned DbgCounterStack::AddCounter(char const* name)
     {
-        //TODO: check this
-        std::string_view nameView(name);
-        for (unsigned i = 0; i < m_stack.size(); ++i)
+        // RVA 0x7A06C0 - a name that is already registered returns its existing id.
+        for (unsigned i = 0; i < m_numCounters; ++i)
         {
-            if (nameView == m_stack[i]->GetName())
+            if (!strcmp(m_stack[i]->m_name.c_str(), name))
             {
                 return i;
             }
         }
 
-        auto counter = new DbgCounter;
-        counter->SetName(name);
+        auto* counter = new DbgCounter;
+        counter->m_name = name;
         m_stack.push_back(counter);
-
-        m_numCounters++;
-        return m_stack.size() - 1;
+        return m_numCounters++;
     }
 
     void DbgCounterStack::ClearStringStack()
@@ -146,17 +144,21 @@ namespace m3d
 
     void DbgCounterStack::Clear()
     {
-        //TODO: check correctness
-        for (auto* counter : m_stack)
+        // RVA 0x7A0590 - deletes the counters and releases the stack's storage.
+        // NOTE: m_numCounters is not reset, so the stack is not usable after a Clear; the
+        // destructor is its only caller.
+        for (unsigned i = 0; i < m_numCounters; ++i)
         {
-            delete counter;
+            delete m_stack[i];
+            m_stack[i] = nullptr;
         }
-        m_stack.clear();
+        decltype(m_stack)().swap(m_stack);
     }
 
     unsigned DbgCounterStack::GetNumCounters() const
     {
-        return m_stack.size();
+        // RVA 0x59C9D0
+        return m_numCounters;
     }
 
     void DbgCounterStack::DrawStringThisFrame(char const* str)

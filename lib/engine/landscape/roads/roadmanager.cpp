@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include "roadmanager.h"
 #include <algorithm>
+#include <cassert>
 #include <stdexcept>
 #include <math/coremath.h>
 #include <ode/collision.h>
@@ -238,209 +239,155 @@ namespace m3d
         RoadTestCallBack const* rnTest,
         bool bForRoadMap)
     {
-        // TODO: generated code RoadManager::RenderRoads
-
-        // Early exits if no roads to render
-        if (m_coveredCells == 0)
+        // RVA 0x7B7D80 - draws every road node visible this frame in the listed cells, each
+        // once even when it covers several of them. visList packs a cell as x | (z << 16).
+        if (!m_coveredCells || m_roadSets.empty())
+        {
             return 0;
+        }
 
-        if (m_roadSets.empty())
-            return 0;
-
-        // Initialize rendering data
-        std::vector<m3d::RoadNode*> roadsToDraw;
-        roadsToDraw.reserve(400);  // 0x190 = 400
-
-        int curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        retruxx::vector<RoadNode*> roadsToDraw;
+        roadsToDraw.reserve(400);
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
         int numRoadPolys = 0;
 
-        // Get weather and lighting information
-        m3d::CWorld* world = m_owner->m_owner;
+        CWorld* const world = m_owner->m_owner;
+        rend::Colorf const ambient(world->GetWeatherAmbientColor());
+        CVector const colorAmbient(ambient.r, ambient.g, ambient.b);
+        rend::Colorf const diffuse(world->GetWeatherDiffuseColor());
+        CVector const colorDiffuse(diffuse.r, diffuse.g, diffuse.b);
 
-        rend::Colorf ambientColor = world->GetWeatherAmbientColor();
-        CVector colorAmbient;
-        colorAmbient.x = ambientColor.r;
-        colorAmbient.y = ambientColor.g;
-        colorAmbient.z = ambientColor.b;
-
-        rend::Colorf diffuseColor = world->GetWeatherDiffuseColor();
-        CVector colorDiffuse;
-        colorDiffuse.x = diffuseColor.r;
-        colorDiffuse.y = diffuseColor.g;
-        colorDiffuse.z = diffuseColor.b;
-
-        // Get fog parameters
-        float fogStart, fogEnd;
+        float fogStart;
+        float fogEnd;
         world->GetLandscape().GetFogStartAndEnd(fogStart, fogEnd);
-
-        float fogReduceFactor = world->GetWeatherManager().GetFogReduceFactorFromWeather();
+        float const fogReduce = world->GetWeatherManager().GetFogReduceFactorFromWeather();
         CVector fogTerm;
-        fogTerm.x = fogReduceFactor * fogEnd;
-        fogTerm.z = fogReduceFactor * fogStart;
-        fogTerm.y = 1.0f / (fogTerm.x - fogTerm.z);
+        fogTerm.x = fogReduce * fogEnd;
+        fogTerm.z = fogReduce * fogStart;
+        fogTerm.y = 1.0f / (fogReduce * fogEnd - fogReduce * fogStart);
 
         float const VISCELL_EDGE_LENGTH_30 = 128.0;
+        SceneGraph& graph = m3d::pClient->GetWorld().GetGraph();
+        graph.LightSetupSunForWorld();
 
-        // Setup lighting
-        m3d::pClient->GetWorld().GetGraph().LightSetupSunForWorld();
-
-        // Process visible cells
-        for (unsigned int i = 0; i < visList.size(); ++i)
+        int const landSize = world->m_level->land_size;
+        for (unsigned const cell : visList)
         {
-            unsigned int cellIndex = visList[i];
-            unsigned short xCoord = static_cast<unsigned short>(cellIndex);
-            unsigned short yCoord = static_cast<unsigned short>(cellIndex >> 16);
-
-            std::vector<m3d::RoadNode*>* cellRoads =
-                &m_coveredCells[xCoord + m_owner->m_owner->m_level->land_size * yCoord];
-
-            // Process each road node in the cell
-            for (unsigned int j = 0; j < cellRoads->size(); ++j)
+            auto const& cellRoads = m_coveredCells[(cell & 0xFFFF) + landSize * (cell >> 16)];
+            for (RoadNode* const roadNode : cellRoads)
             {
-                m3d::RoadNode* roadNode = (*cellRoads)[j];
-
-                // Check if road node should be rendered
-                if (!roadNode->m_bRoadDrawn && roadNode->m_frameVisible == curFrame &&
-                    (!rnTest || rnTest->TestRoadNode(roadNode)))
+                if (roadNode->m_bRoadDrawn || roadNode->m_frameVisible != curFrame ||
+                    (rnTest && !rnTest->TestRoadNode(roadNode)))
                 {
-                    roadNode->m_bRoadDrawn = true;
-                    roadsToDraw.push_back(roadNode);
+                    continue;
+                }
 
-                    // Get the road model for this node
-                    m3d::RoadSet* roadSet = m_roadSets[roadNode->m_roadSetHandle];
-                    m3d::AnimatedModel* roadModel = roadSet->m_roadModels[roadNode->m_type][roadNode->m_modelNum];
+                roadNode->m_bRoadDrawn = true;
+                roadsToDraw.push_back(roadNode);
+                AnimatedModel* const model =
+                    m_roadSets[roadNode->m_roadSetHandle]->m_roadModels[roadNode->m_type][roadNode->m_modelNum];
 
-                    // Setup render states for simple road rendering
-                    if (rrt == RRT_SIMPLE)
+                if (rrt == RRT_SIMPLE)
+                {
+                    M3D_RENDERER->SetFog(true, false);
+                    M3D_RENDERER->SetCull(rend::M3DCULL_CCW, false);
+                    M3D_RENDERER->SetFillMode(rend::M3DFILL_SOLID, false);
+                    M3D_RENDERER->SetBlend(rend::BM_ALPHA, false);
+                    M3D_RENDERER->SetAlphaTest(10);
+                    M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
+                }
+                if (bForRoadMap)
+                {
+                    M3D_RENDERER->SetFog(false, false);
+                    M3D_RENDERER->SetBlend(rend::BM_NONE, false);
+                    M3D_RENDERER->SetAlphaTest(0);
+                }
+
+                for (unsigned meshIdx = 0; meshIdx < model->GetNumMeshes(); ++meshIdx)
+                {
+                    auto& mesh = model->GetMesh(meshIdx);
+                    M3D_RENDERER->SetIndices(roadNode->m_IbPoolField, roadNode->m_VbPoolField.RealOffset);
+                    M3D_RENDERER->SetToStream0(roadNode->m_VbPoolField);
+
+                    rend::IEffect* effect = nullptr;
+                    switch (rrt)
                     {
-                        M3D_RENDERER->SetFog(1, 0);
-                        M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);
-                        M3D_RENDERER->SetFillMode(rend::M3DFILL_SOLID, 0);
-                        M3D_RENDERER->SetBlend(rend::BM_ALPHA, 0);
-                        M3D_RENDERER->SetAlphaTest(10);
-                        M3D_RENDERER->PushZbState(rend::ZB_ENABLE);
-                    }
-
-                    // Special rendering for road map
-                    if (bForRoadMap)
-                    {
-                        M3D_RENDERER->SetFog(0, 0);
-                        M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
-                        M3D_RENDERER->SetAlphaTest(0);
-                    }
-
-                    // Render all meshes in the road model
-                    if (roadModel->GetNumMeshes() > 0)
-                    {
-                        for (unsigned int meshIndex = 0; meshIndex < roadModel->GetNumMeshes(); ++meshIndex)
+                        case 1:
+                            effect = graph.GetRoadShadowShader();
+                            break;
+                        case 2:
+                            effect = graph.GetRoadProjectorShader();
+                            break;
+                        case 3:
+                            effect = graph.GetRoadDetShadowShader();
+                            break;
+                        case 4:
+                            effect = graph.GetRoadLightShader();
+                            break;
+                        case 5:
+                            effect = graph.GetRoadSpriteShader();
+                            break;
+                        default:
                         {
-                            auto& mesh = roadModel->GetMesh(meshIndex);
-
-                            // Set vertex and index buffers
-                            M3D_RENDERER->SetIndices(roadNode->m_IbPoolField, roadNode->m_VbPoolField.RealOffset);
-                            M3D_RENDERER->SetToStream0(roadNode->m_VbPoolField);
-
-                            // Select appropriate shader based on rendering mode
-                            m3d::rend::IEffect* effect = nullptr;
-
-                            auto& graph = m3d::pClient->GetWorld().GetGraph();
-                            switch (rrt)
-                            {
-                            case 1:
-                                effect = graph.GetRoadShadowShader();
-                                break;
-                            case 2:
-                                effect = graph.GetRoadProjectorShader();
-                                break;
-                            case 3:
-                                effect = graph.GetRoadDetShadowShader();
-                                break;
-                            case 4:
-                                effect = graph.GetRoadLightShader();
-                                break;
-                            case 5:
-                                effect = graph.GetRoadSpriteShader();
-                                break;
-                            default:
-                                // Use material-based shader
-                                if (roadNode->m_skinNumber < roadModel->GetNumSkins())
-                                {
-                                    std::vector<m3d::DSurfaceMaterial>& skin =
-                                        roadModel->GetSkin(roadNode->m_skinNumber);
-                                    int materialIndex = mesh.m_MaterialNumber;
-                                    effect = roadModel->ApplyMaterial(skin[materialIndex]);
-                                }
-                                else
-                                {
-                                    std::vector<m3d::DSurfaceMaterial>& defaultSkin = roadModel->GetSkin(0);
-                                    int materialIndex = mesh.m_MaterialNumber;
-                                    effect = roadModel->ApplyMaterial(defaultSkin[materialIndex]);
-                                }
-                                break;
-                            }
-
-                            if (!effect)
-                            {
-                                // Handle error - drawing road without shader
-                                continue;
-                            }
-
-                            // Set shader parameters
-                            if (effect->IsParameterUsed(rend::IEffect::LightAmbient))
-                                effect->SetVector3(rend::IEffect::LightAmbient, colorAmbient);
-
-                            if (effect->IsParameterUsed(rend::IEffect::LightDiffuse))
-                                effect->SetVector3(rend::IEffect::LightDiffuse, colorDiffuse);
-
-                            if (effect->IsParameterUsed(rend::IEffect::FogTerm))
-                                effect->SetVector3(rend::IEffect::FogTerm, fogTerm);
-
-                            // Set lightmap if needed
-                            if (effect->IsParameterUsed(rend::IEffect::LightMap0))
-                            {
-                                // The lightmap is addressed as (x, -z) in world units scaled to the whole map.
-                                float scale = 1.0f / (m_owner->m_owner->m_level->land_size * VISCELL_EDGE_LENGTH_30);
-                                CVector lightmapScale(scale, 0.0f - scale, 0.0f);
-                                effect->SetVector3(rend::IEffect::User_float3_param, lightmapScale);
-
-                                m3d::rend::TexHandle lightmap = m_owner->GetLightmapTexture();
-                                effect->SetTexture(rend::IEffect::LightMap0, &lightmap);
-                            }
-
-                            // Draw the mesh
-                            M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                                rend::M3DPT_TRIANGLELIST,
-                                effect,
-                                0,
-                                mesh.m_numDrawVerts,
-                                roadNode->m_IbPoolField.RealOffset,
-                                mesh.m_numFaces);
-
-                            numRoadPolys += mesh.m_numFaces;
+                            // A skin the model lacks falls back to the first one.
+                            unsigned const skin = roadNode->m_skinNumber < model->GetNumSkins() ? roadNode->m_skinNumber : 0;
+                            effect = model->ApplyMaterial(model->GetSkin(skin)[mesh.m_MaterialNumber]);
+                            break;
                         }
                     }
 
-                    // Restore render states for simple road rendering
-                    if (rrt == RRT_SIMPLE)
+                    // NOTE: without a shader the original only asserts, and then draws with
+                    // no effect and none of the parameters set.
+                    if (!effect)
                     {
-                        M3D_RENDERER->PopZbState();
+                        assert(!"by plus: drawing road w/o shader");
                     }
+                    else
+                    {
+                        if (effect->IsParameterUsed(rend::IEffect::LightAmbient))
+                        {
+                            effect->SetVector3(rend::IEffect::LightAmbient, colorAmbient);
+                        }
+                        if (effect->IsParameterUsed(rend::IEffect::LightDiffuse))
+                        {
+                            effect->SetVector3(rend::IEffect::LightDiffuse, colorDiffuse);
+                        }
+                        if (effect->IsParameterUsed(rend::IEffect::FogTerm))
+                        {
+                            effect->SetVector3(rend::IEffect::FogTerm, fogTerm);
+                        }
+                        if (effect->IsParameterUsed(rend::IEffect::LightMap0))
+                        {
+                            // The lightmap is addressed as (x, -z) in world units scaled to the whole map.
+                            float const scale = 1.0f / (static_cast<float>(landSize) * VISCELL_EDGE_LENGTH_30);
+                            effect->SetVector3(rend::IEffect::User_float3_param, CVector(scale, 0.0f - scale, 0.0f));
+                            rend::TexHandle lightmap = m_owner->GetLightmapTexture();
+                            effect->SetTexture(rend::IEffect::LightMap0, &lightmap);
+                        }
+                    }
+
+                    M3D_RENDERER->DrawIndexedPrimitiveEffect(
+                        rend::M3DPT_TRIANGLELIST, effect, 0, mesh.m_numDrawVerts, roadNode->m_IbPoolField.RealOffset,
+                        mesh.m_numFaces);
+                    numRoadPolys += mesh.m_numFaces;
+                }
+
+                if (rrt == RRT_SIMPLE)
+                {
+                    M3D_RENDERER->PopZbState();
                 }
             }
         }
 
-        // Display debug information for simple road rendering
         if (rrt == RRT_SIMPLE)
         {
-            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("# road tris = " + CStr(numRoadPolys)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame((CStr("# road tris = ") + CStr(numRoadPolys)).c_str());
         }
 
-        // Reset visibility flags for rendered road nodes
-        for (m3d::RoadNode* roadNode : roadsToDraw)
+        for (RoadNode* const roadNode : roadsToDraw)
         {
             roadNode->m_bRoadDrawn = false;
         }
-
         return 1;
     }
 
@@ -467,6 +414,7 @@ namespace m3d
 
     int RoadSet::ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node)
     {
+        // RVA 0x7BA040
         Clear();
 
         m3d::SafeVectorAttrib(m_scale, node, "scale");
@@ -495,11 +443,10 @@ namespace m3d
                     float maxX = -10000.0;
                     float maxZ = -10000.0;
 
+                    // The first piece of a type gives the bounds of all its pieces.
                     auto& firstMesh = model->GetMesh(0);
                     float* verts = static_cast<float*>(firstMesh.m_verts);
                     auto const vertexStride = firstMesh.m_VertexTypeSize / sizeof(float);
-
-                    // TODO: check this
                     for (int i = 0; i < firstMesh.m_numVertices; ++i)
                     {
                         minX = std::min(minX, verts[0]);
@@ -520,239 +467,106 @@ namespace m3d
             }
             else
             {
-                M3D_LOG_ERR("RoadManager error( model not loaded ): " + CStr(fileName));
+                M3D_LOG_INFO(CStr("RoadManager error( model not loaded ): ") + fileName);
                 delete model;
             }
         }
 
-        // TODO: generated code
-        // Process road boundaries and indices
-        float const BOUNDARY_TOLERANCE = 0.1f;
-        float const VERTEX_MATCH_TOLERANCE = 0.01f;
-
-        for (unsigned int roadType = 0; roadType < 4; ++roadType)
+        // Sorts the border vertices of every piece by side, so that LinkRoadNodes can stitch
+        // the pieces together: [0] the far end (max z), [1] the near end (min z), [2] the
+        // left side (min x) and [3] the right side (max x). The ends are ordered by x and
+        // the sides by z. A vertex that duplicates one already on the side goes to the fake
+        // list instead. The bounds used are those of the type's first piece.
+        for (int type = 0; type < 4; ++type)
         {
-            auto& models = m_roadModels[roadType];
-
-            for (unsigned int modelIndex = 0; modelIndex < models.size(); ++modelIndex)
+            for (unsigned modelIdx = 0; modelIdx < m_roadModels[type].size(); ++modelIdx)
             {
-                auto* model = models[modelIndex];
-                if (!model)
-                {
-                    continue;
-                }
+                AnimatedModel* const model = m_roadModels[type][modelIdx];
 
-                // Initialize boundary data structures
-                m_boundVerts[roadType].resize(modelIndex + 1);
-                m_boundVerts[roadType][modelIndex].resize(4);
+                m_boundVerts[type].push_back({});
+                auto& boundVerts = m_boundVerts[type].back();
+                boundVerts.resize(4);
+                m_fakeBoundVerts[type].push_back({});
+                auto& fakeBoundVerts = m_fakeBoundVerts[type].back();
+                fakeBoundVerts.resize(4);
+                m_cliffBorders[type].push_back({});
+                auto& cliffBorders = m_cliffBorders[type].back();
+                cliffBorders.resize(1);
 
-                m_fakeBoundVerts[roadType].resize(modelIndex + 1);
-                m_fakeBoundVerts[roadType][modelIndex].resize(4);
-
-                m_cliffBorders[roadType].resize(modelIndex + 1);
-                m_cliffBorders[roadType][modelIndex].resize(1);
-
-                // Process mesh vertices for boundary detection
                 auto& mesh = model->GetMesh(0);
-                int numVertices = mesh.m_numVertices;
-                float* vertices = static_cast<float*>(mesh.m_verts);
-                auto const vertexStride = mesh.m_VertexTypeSize / sizeof(float);
-
-                float minX = m_minX[roadType];
-                float maxX = m_maxX[roadType];
-                float minZ = m_minZ[roadType];
-                float maxZ = m_maxZ[roadType];
-
-                for (int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
+                auto const vertexAt = [&mesh](unsigned idx)
                 {
-                    float x = vertices[0];
-                    float y = vertices[1];
-                    float z = vertices[2];
+                    return reinterpret_cast<float const*>(static_cast<char const*>(mesh.m_verts) + idx * mesh.m_VertexTypeSize);
+                };
 
-                    // Check which boundary this vertex belongs to
-                    if (std::fabs(z - minZ) < BOUNDARY_TOLERANCE)
+                // Walks the side up to the first vertex past the new one along sortAxis,
+                // which is where it is inserted unless one of the vertices passed, or the
+                // one stopped at, lies within tolerance of it.
+                auto const addToSide = [&](int side, int sortAxis, double tolerance, unsigned idx, float const* v)
+                {
+                    auto& verts = boundVerts[side];
+                    bool isNew = true;
+                    auto it = verts.begin();
+                    for (; it != verts.end(); ++it)
                     {
-                        // Bottom boundary
-                        auto& boundary = m_boundVerts[roadType][modelIndex][1];  // BOTTOM
-                        auto& fakeBoundary = m_fakeBoundVerts[roadType][modelIndex][1];
-
-                        bool found = false;
-                        for (unsigned int existingIndex : boundary)
+                        float const* other = vertexAt(*it);
+                        double const dx = static_cast<double>(other[0]) - v[0];
+                        double const dy = static_cast<double>(other[1]) - v[1];
+                        double const dz = static_cast<double>(other[2]) - v[2];
+                        if (fabs(sqrt(dz * dz + dy * dy + dx * dx)) < tolerance)
                         {
-                            float* existingVertex = reinterpret_cast<float*>(
-                                static_cast<char*>(mesh.m_verts) + existingIndex * mesh.m_VertexTypeSize);
-
-                            float dx = existingVertex[0] - x;
-                            float dy = existingVertex[1] - y;
-                            float dz = existingVertex[2] - z;
-                            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-                            if (distance < VERTEX_MATCH_TOLERANCE)
-                            {
-                                found = true;
-                                break;
-                            }
+                            isNew = false;
                         }
-
-                        if (!found)
+                        if (other[sortAxis] > v[sortAxis])
                         {
-                            auto it = boundary.begin();
-                            while (it != boundary.end())
-                            {
-                                float* existingVertex = reinterpret_cast<float*>(
-                                    static_cast<char*>(mesh.m_verts) + (*it) * mesh.m_VertexTypeSize);
-
-                                if (x < existingVertex[0])
-                                    break;
-                                ++it;
-                            }
-                            boundary.insert(it, vertexIndex);
-                        }
-                        else
-                        {
-                            fakeBoundary.push_back(vertexIndex);
-                        }
-
-                        // Add to cliff borders
-                        if (std::fabs(x - maxX) < BOUNDARY_TOLERANCE)
-                        {
-                            m_cliffBorders[roadType][modelIndex][0].push_back(vertexIndex);
+                            break;
                         }
                     }
-                    else if (std::fabs(z - maxZ) < BOUNDARY_TOLERANCE)
+
+                    if (isNew)
                     {
-                        // Top boundary
-                        std::vector<unsigned int>& boundary = m_boundVerts[roadType][modelIndex][0];  // TOP
-                        std::vector<unsigned int>& fakeBoundary = m_fakeBoundVerts[roadType][modelIndex][0];
-
-                        bool found = false;
-                        for (unsigned int existingIndex : boundary)
-                        {
-                            float* existingVertex = reinterpret_cast<float*>(
-                                static_cast<char*>(mesh.m_verts) + existingIndex * mesh.m_VertexTypeSize);
-
-                            float dx = existingVertex[0] - x;
-                            float dy = existingVertex[1] - y;
-                            float dz = existingVertex[2] - z;
-                            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-                            if (distance < VERTEX_MATCH_TOLERANCE)
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found)
-                        {
-                            auto it = boundary.begin();
-                            while (it != boundary.end())
-                            {
-                                float* existingVertex = reinterpret_cast<float*>(
-                                    static_cast<char*>(mesh.m_verts) + (*it) * mesh.m_VertexTypeSize);
-
-                                if (x < existingVertex[0])
-                                    break;
-                                ++it;
-                            }
-                            boundary.insert(it, vertexIndex);
-                        }
-                        else
-                        {
-                            fakeBoundary.push_back(vertexIndex);
-                        }
+                        verts.insert(it, idx);
                     }
-                    else if (std::fabs(x - minX) < BOUNDARY_TOLERANCE)
+                    else
                     {
-                        // Left boundary
-                        std::vector<unsigned int>& boundary = m_boundVerts[roadType][modelIndex][2];  // LEFT
-                        std::vector<unsigned int>& fakeBoundary = m_fakeBoundVerts[roadType][modelIndex][2];
-
-                        bool found = false;
-                        for (unsigned int existingIndex : boundary)
-                        {
-                            float* existingVertex = reinterpret_cast<float*>(
-                                static_cast<char*>(mesh.m_verts) + existingIndex * mesh.m_VertexTypeSize);
-
-                            float dx = existingVertex[0] - x;
-                            float dy = existingVertex[1] - y;
-                            float dz = existingVertex[2] - z;
-                            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-                            if (distance < VERTEX_MATCH_TOLERANCE)
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found)
-                        {
-                            auto it = boundary.begin();
-                            while (it != boundary.end())
-                            {
-                                float* existingVertex = reinterpret_cast<float*>(
-                                    static_cast<char*>(mesh.m_verts) + (*it) * mesh.m_VertexTypeSize);
-
-                                if (z < existingVertex[2])
-                                    break;
-                                ++it;
-                            }
-                            boundary.insert(it, vertexIndex);
-                        }
-                        else
-                        {
-                            fakeBoundary.push_back(vertexIndex);
-                        }
+                        fakeBoundVerts[side].push_back(idx);
                     }
-                    else if (std::fabs(x - maxX) < BOUNDARY_TOLERANCE)
+                };
+
+                for (int idx = 0; idx < mesh.m_numVertices; ++idx)
+                {
+                    float const* const v = vertexAt(idx);
+                    if (fabs(v[2] - m_minZ[type]) < 0.1)
                     {
-                        // Right boundary
-                        std::vector<unsigned int>& boundary = m_boundVerts[roadType][modelIndex][3];  // RIGHT
-                        std::vector<unsigned int>& fakeBoundary = m_fakeBoundVerts[roadType][modelIndex][3];
-
-                        bool found = false;
-                        for (unsigned int existingIndex : boundary)
-                        {
-                            float* existingVertex = reinterpret_cast<float*>(
-                                static_cast<char*>(mesh.m_verts) + existingIndex * mesh.m_VertexTypeSize);
-
-                            float dx = existingVertex[0] - x;
-                            float dy = existingVertex[1] - y;
-                            float dz = existingVertex[2] - z;
-                            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-                            if (distance < VERTEX_MATCH_TOLERANCE)
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (!found)
-                        {
-                            auto it = boundary.begin();
-                            while (it != boundary.end())
-                            {
-                                float* existingVertex = reinterpret_cast<float*>(
-                                    static_cast<char*>(mesh.m_verts) + (*it) * mesh.m_VertexTypeSize);
-
-                                if (z < existingVertex[2])
-                                    break;
-                                ++it;
-                            }
-                            boundary.insert(it, vertexIndex);
-                        }
-                        else
-                        {
-                            fakeBoundary.push_back(vertexIndex);
-                        }
-
-                        // Add to cliff borders
-                        m_cliffBorders[roadType][modelIndex][0].push_back(vertexIndex);
+                        addToSide(1, 0, 0.1, idx, v);
+                    }
+                    else if (fabs(v[2] - m_maxZ[type]) < 0.1)
+                    {
+                        // NOTE: the far end matches duplicates within 0.01, the other sides within 0.1.
+                        addToSide(0, 0, 0.0099999998, idx, v);
+                    }
+                    else if (fabs(v[0] - m_minX[type]) < 0.1)
+                    {
+                        addToSide(2, 2, 0.1, idx, v);
+                        continue;
+                    }
+                    else if (fabs(v[0] - m_maxX[type]) < 0.1)
+                    {
+                        addToSide(3, 2, 0.1, idx, v);
+                        cliffBorders[0].push_back(idx);
+                        continue;
+                    }
+                    else
+                    {
+                        continue;
                     }
 
-                    vertices += vertexStride;
+                    // NOTE: for both ends the test has no fabs, so every end vertex left of
+                    // the right side also counts as a cliff border.
+                    if (v[0] - m_maxX[type] < 0.1f)
+                    {
+                        cliffBorders[0].push_back(idx);
+                    }
                 }
             }
         }
@@ -878,19 +692,22 @@ namespace m3d
 
     int RoadManager::ReadRoadsFromXmlFile(char const* name)
     {
+        // RVA 0x7B8550 - the errors are logged as info.
         M3D_ASSERT(m_roadRoot);
 
         scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(name, fs::IStream::OPEN_READ))
         {
-            M3D_LOG_ERR("Error: RoadManager can't read the file: " + CStr(name));
+            M3D_LOG_INFO(CStr("Error: RoadManager can't read the file: ") + CStr(name));
             return 0;
         }
 
         ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
-            M3D_LOG_ERR("Error: RoadManager: error in parsing: " + CStr(name) + "(" + CStr(xmlFile->GetError()) + ")");
+            M3D_LOG_INFO(
+                CStr("Error: RoadManager: error in parsing: ") + CStr(name) + CStr(" (") + CStr(xmlFile->GetError()) +
+                CStr(") "));
             return 0;
         }
 
@@ -898,7 +715,7 @@ namespace m3d
         xmlFile->GetFirstChild(roadsNode, "Roads");
         if (roadsNode->IsEmpty())
         {
-            M3D_LOG_ERR("Error: RoadManager can't find Root node in " + CStr(name));
+            M3D_LOG_INFO(CStr("Error: RoadManager can't find Root node in ") + CStr(name));
             return 0;
         }
 
@@ -917,7 +734,7 @@ namespace m3d
             }
             else
             {
-                // TODO: refcountedbase delete
+                // The original destroys it through the virtual destructor, as delete does.
                 delete obj;
             }
         }
@@ -1077,171 +894,128 @@ namespace m3d
 
     void RoadManager::LinkRoadNodes()
     {
-        // TODO: generated code
-        // Find friend nodes first
+        // RVA 0x7B6570 - resolves the linked node names and derives each node's piece from
+        // the number of links: an end, a straight piece, a T junction or a crossroad.
         FindFriends();
 
-        // Iterate through all road nodes
-        for (RoadNode* node = dynamic_cast<RoadNode*>(m_roadRoot->GetFirstChild()); node != nullptr;
-             node = dynamic_cast<RoadNode*>(node->GetNextSibling()))
+        for (auto* node = static_cast<RoadNode*>(m_roadRoot->GetFirstChild()); node;
+             node = static_cast<RoadNode*>(node->GetNextSibling()))
         {
             node->m_owner = this;
-            int linkCounter = 0;
 
-            // Process all 4 possible linked nodes
-            for (int linkIndex = 0; linkIndex < 4; ++linkIndex)
+            int numLinks = 0;
+            for (int link = 0; link < 4; ++link)
             {
-                CStr const& linkedName = node->m_linkedNames[linkIndex];
-                if (!linkedName.empty())
+                CStr const& linkedName = node->m_linkedNames[link];
+                if (linkedName.empty())
                 {
-                    // Search for the linked node by name
-                    RoadNode* foundNode = nullptr;
-                    for (RoadNode* child = dynamic_cast<RoadNode*>(m_roadRoot->GetFirstChild()); child != nullptr;
-                         child = dynamic_cast<RoadNode*>(child->GetNextSibling()))
-                    {
-                        if (child->GetName() == linkedName)
-                        {
-                            foundNode = child;
-                            break;
-                        }
-                    }
+                    node->m_linkedNodes[link] = nullptr;
+                    continue;
+                }
 
-                    node->m_linkedNodes[linkIndex] = foundNode;
-                    if (foundNode != nullptr)
+                RoadNode* found = nullptr;
+                for (auto* other = static_cast<RoadNode*>(m_roadRoot->GetFirstChild()); other;
+                     other = static_cast<RoadNode*>(other->GetNextSibling()))
+                {
+                    if (other->GetName() == linkedName)
                     {
-                        ++linkCounter;
+                        found = other;
+                        break;
                     }
                 }
-                else
+                node->m_linkedNodes[link] = found;
+                if (found)
                 {
-                    node->m_linkedNodes[linkIndex] = nullptr;
+                    ++numLinks;
                 }
             }
 
-            // Special case: if first link exists but has no name, don't count it
-            RoadNode* firstLinked = node->m_linkedNodes[0];
-            if (firstLinked != nullptr)
+            // A next node that leads nowhere is the end of the road and does not count.
+            RoadNode* next = node->m_linkedNodes[0];
+            if (next && next->m_linkedNames[0].empty())
             {
-                if (firstLinked->m_linkedNames[0].empty())
-                {
-                    --linkCounter;
-                }
+                --numLinks;
             }
 
             node->m_bInverted = false;
-
-            // Determine node type based on link count
-            switch (linkCounter)
+            switch (numLinks)
             {
-            case 0:
-                node->m_type = 3;  // Dead end
-                break;
-
-            case 1:
-                node->m_type = 3;  // Dead end
-                if (firstLinked && node->m_linkedNodes[1] != nullptr)
-                {
-                    node->m_bInverted = true;
-                }
-                break;
-
-            case 2:
-                node->m_type = 0;  // Straight road
-                break;
-
-            case 3:
-                node->m_type = 1;  // T-junction
-                {
-                    // Determine inversion based on cross product of vectors
-                    RoadNode* link1 = node->m_linkedNodes[1];
-                    RoadNode* link2 = node->m_linkedNodes[2];
-                    RoadNode* link3 = node->m_linkedNodes[3];
-
-                    // If link1 is null, use current node as reference
-                    if (link1 == nullptr)
+                case 0:
+                    node->m_type = 3;
+                    break;
+                case 1:
+                    // An end piece faces the way of its only link.
+                    node->m_type = 3;
+                    if (next && node->m_linkedNodes[1])
                     {
-                        firstLinked = node;
+                        node->m_bInverted = true;
                     }
-
-                    if (link2 != nullptr && link3 != nullptr && firstLinked != nullptr)
+                    break;
+                case 2:
+                    node->m_type = 0;
+                    break;
+                case 3:
+                {
+                    // A T junction is mirrored when its stem, taken from the side links, turns
+                    // the other way. Without a previous node the node itself stands in for the next.
+                    node->m_type = 1;
+                    if (!node->m_linkedNodes[1])
                     {
-                        // Calculate cross product to determine winding order
-                        float dx1 = link3->m_origin.z - link2->m_origin.z;
-                        float dz1 = firstLinked->m_origin.x - link2->m_origin.x;
-                        float dx2 = firstLinked->m_origin.z - link2->m_origin.z;
-                        float dz2 = link3->m_origin.x - link2->m_origin.x;
-
-                        float crossProduct = (dx1 * dz1) - (dx2 * dz2);
-
-                        if (crossProduct < 0.0f)
-                        {
-                            node->m_bInverted = true;
-                        }
+                        next = node;
                     }
+                    RoadNode const* left = node->m_linkedNodes[2];
+                    RoadNode const* right = node->m_linkedNodes[3];
+                    if (left && right && next &&
+                        (right->m_origin.z - left->m_origin.z) * (next->m_origin.x - left->m_origin.x) -
+                                (next->m_origin.z - left->m_origin.z) * (right->m_origin.x - left->m_origin.x) <
+                            0.0f)
+                    {
+                        node->m_bInverted = true;
+                    }
+                    break;
                 }
-                break;
-
-            case 4:
-                node->m_type = 2;  // Crossroad
-                break;
-
-            default:
-                M3D_LOG_INFO("RoadNode not connected: " + CStr(node->GetName()));
-                node->m_type = 3;  // Default to dead end
-                break;
+                case 4:
+                    node->m_type = 2;
+                    break;
+                default:
+                    M3D_LOG_INFO(CStr("RoadNode not connected: ") + CStr(node->GetName()));
+                    node->m_type = 3;
+                    break;
             }
 
-            // Validate and clamp model number
-            RoadSet* roadSet = m_roadSets[node->m_roadSetHandle];
-            if (roadSet != nullptr)
+            // NOTE: nothing guards against a road set without pieces of this type: the
+            // clamp wraps around and the lookup reads past the end. And the skin number is
+            // clamped to the number of skins, one past the last; RenderRoads then falls
+            // back to the first skin.
+            RoadSet* const roadSet = m_roadSets[node->m_roadSetHandle];
+            auto const& models = roadSet->m_roadModels[node->m_type];
+            unsigned const lastModel = static_cast<unsigned>(models.size()) - 1;
+            if (node->m_modelNum > lastModel)
             {
-                std::vector<AnimatedModel*>& models = roadSet->m_roadModels[node->m_type];
-
-                if (!models.empty())
-                {
-                    unsigned int maxModelIndex = models.size() - 1;
-                    if (node->m_modelNum > maxModelIndex)
-                    {
-                        node->m_modelNum = maxModelIndex;
-                    }
-
-                    // Validate and clamp skin number
-                    AnimatedModel* model = models[node->m_modelNum];
-                    if (model != nullptr)
-                    {
-                        unsigned int maxSkinIndex = model->GetNumSkins() - 1;
-                        if (node->m_skinNumber > maxSkinIndex)
-                        {
-                            node->m_skinNumber = maxSkinIndex;
-                        }
-                    }
-                }
+                node->m_modelNum = lastModel;
+            }
+            unsigned const numSkins = models[node->m_modelNum]->GetNumSkins();
+            if (node->m_skinNumber > numSkins)
+            {
+                node->m_skinNumber = numSkins;
             }
 
-            // Override type for friend nodes
-            if (node->m_friend != nullptr)
+            // Nodes paired with a friend, or leading into one, are straight pieces.
+            if (node->m_friend)
             {
-                node->m_type = 0;  // Force straight road
+                node->m_type = 0;
+                node->m_bInverted = false;
+            }
+            if (node->m_linkedNodes[0] && node->m_linkedNodes[0]->m_friend)
+            {
+                node->m_type = 0;
                 node->m_bInverted = false;
             }
 
-            // Override type for nodes with specific linked node properties
-            RoadNode* firstLink = node->m_linkedNodes[0];
-            if (firstLink != nullptr && !firstLink->m_linkedNames[0].empty())
+            if (static_cast<unsigned>(node->m_roadSetHandle) < m_roadSets.size())
             {
-                node->m_type = 0;  // Force straight road
-                node->m_bInverted = false;
-            }
-
-            // Set bounds from road set
-            if (node->m_roadSetHandle < m_roadSets.size())
-            {
-                RoadSet* currentSet = m_roadSets[node->m_roadSetHandle];
-                if (currentSet != nullptr)
-                {
-                    node->m_minX = currentSet->m_minX[node->m_type];
-                    node->m_maxX = currentSet->m_maxX[node->m_type];
-                }
+                node->m_minX = m_roadSets[node->m_roadSetHandle]->m_minX[node->m_type];
+                node->m_maxX = m_roadSets[node->m_roadSetHandle]->m_maxX[node->m_type];
             }
         }
     }

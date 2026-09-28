@@ -56,6 +56,7 @@ namespace m3d
 
     void TownMusicManager::Init()
     {
+        // RVA 0x42CB40
         m_ambientShopSounds.clear();
         m_ambientWorkshopSounds.clear();
         if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
@@ -73,7 +74,7 @@ namespace m3d
             for (rootNode->GetFirstChild(node, "Sound"); !node->IsEmpty(); node->GetNextSibling(node, "Sound"))
             {
                 auto pathAttr = node->GetAttribute("path");
-                //TODO: check this!!
+                // Same arguments as the original: (path, 2D, 1, 1, normal priority).
                 auto snd = Application::g_pApp->m_sound->AddSound(
                     pathAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
                 auto typeAttr = node->GetAttribute("type");
@@ -89,7 +90,7 @@ namespace m3d
         }
         else
         {
-            M3D_LOG_ERR("Error: reading file: " + CStr(fileName));
+            M3D_LOG_ERR("Error: reading file: " + CStr(fileName) + err);
         }
     }
 

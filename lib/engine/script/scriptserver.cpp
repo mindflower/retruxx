@@ -287,162 +287,138 @@ namespace
 
     int _callNativeGlobalFunction(lua_State* L)
     {
-        // TODO: check this
-        auto* func = *(int(__thiscall**)(m3d::sArgStack*))lua_touserdata(L, 1);
+        // RVA 0x6205A0 - __call of a native global function: (func userdata, args...)
+        auto const func = *static_cast<int(__thiscall**)(m3d::sArgStack*)>(lua_touserdata(L, 1));
+
         m3d::sArgStack stack;
         for (int i = 2; i <= lua_gettop(L); ++i)
         {
             switch (lua_type(L, i))
             {
-            case 0:
+            case LUA_TNIL:
                 stack.newIn()->SetB(false);
                 break;
-
-            case 1:  // boolean
+            case LUA_TBOOLEAN:
                 stack.newIn()->SetB(lua_toboolean(L, i) != 0);
                 break;
-
-            case 3:  // number
-                stack.newIn()->SetF(static_cast<float>(lua_tonumber(L, i)));
-                break;
-
-            case 4:  // string
-                stack.newIn()->SetS(lua_tostring(L, i));
-                break;
-
-            case 5:
-                if (ext_getTag(L, i) == tag_instance)
-                {
-                    lua_rawgeti(L, i, 0);
-                    auto obj = (m3d::Object*)lua_touserdata(L, -1);
-                    lua_settop(L, -2);
-                    stack.newIn()->SetO(obj);
-                }
-
-            case 2:
-            case 7:  // userdata
+            case LUA_TLIGHTUSERDATA:
+            case LUA_TUSERDATA:
                 if (ext_getTag(L, i) == tag_luaVector)
                 {
-                    auto vec = reinterpret_cast<CVector*>(lua_touserdata(L, i));
-                    stack.newIn()->SetV(*vec);
+                    stack.newIn()->SetV(*static_cast<CVector*>(lua_touserdata(L, i)));
                 }
                 else if (ext_getTag(L, i) == tag_luaQuaternion)
                 {
-                    auto quat = reinterpret_cast<Quaternion*>(lua_touserdata(L, i));
-                    stack.newIn()->SetQ(*quat);
+                    stack.newIn()->SetQ(*static_cast<Quaternion*>(lua_touserdata(L, i)));
                 }
                 break;
-
+            case LUA_TNUMBER:
+                stack.newIn()->SetF(static_cast<float>(lua_tonumber(L, i)));
+                break;
+            case LUA_TSTRING:
+                stack.newIn()->SetS(lua_tostring(L, i));
+                break;
+            case LUA_TTABLE:
+                if (ext_getTag(L, i) == tag_instance)
+                {
+                    lua_rawgeti(L, i, 0);
+                    auto* const obj = static_cast<m3d::Object*>(lua_touserdata(L, -1));
+                    lua_settop(L, -2);
+                    stack.newIn()->SetO(obj);
+                }
+                break;
             default:
                 break;
             }
         }
 
-        if (func(&stack))
-        {
-            for (int i = 0; i < stack.getNumOutArgs(); ++i)
-            {
-                auto out = stack.getOut(i);
-
-                switch (out->GetType())
-                {
-                case m3d::sArg::ARGTYPE_INT:
-                    lua_pushnumber(L, out->GetI());
-                    break;
-                case m3d::sArg::ARGTYPE_FLOAT:
-                    lua_pushnumber(L, out->GetF());
-                    break;
-                case m3d::sArg::ARGTYPE_BOOL:
-                    lua_pushboolean(L, out->GetB() ? 1 : 0);
-                    break;
-                case m3d::sArg::ARGTYPE_STRING:
-                    lua_pushstring(L, out->GetS());
-                    break;
-                case m3d::sArg::ARGTYPE_VECTOR:
-                {
-                    auto vec = ext_createVector(L);
-                    *vec = out->GetV();
-                    break;
-                }
-                case m3d::sArg::ARGTYPE_QUATERNION:
-                {
-                    auto quat = ext_createQuaternion(L);
-                    *quat = out->GetQ();
-                    break;
-                }
-                case m3d::sArg::ARGTYPE_OBJECT:
-                {
-                    auto obj = out->GetO();
-                    if (obj)
-                    {
-                        lua_rawgeti(L, -10000, m3d::ScriptServer::_getScriptObject(obj));
-                    }
-                    else
-                    {
-                        lua_pushnil(L);
-                    }
-                    break;
-                }
-                default:
-                    lua_pushnil(L);
-                    break;
-                }
-            }
-            return stack.getNumOutArgs();
-        }
-        else
+        if (!func(&stack))
         {
             return 0;
         }
+
+        for (unsigned i = 0; i < stack.getNumOutArgs(); ++i)
+        {
+            m3d::sArg* const out = stack.popOut();
+            switch (out->GetType())
+            {
+            case m3d::sArg::ARGTYPE_INT:
+                lua_pushnumber(L, out->GetI());
+                break;
+            case m3d::sArg::ARGTYPE_FLOAT:
+                lua_pushnumber(L, out->GetF());
+                break;
+            case m3d::sArg::ARGTYPE_BOOL:
+                // Script booleans are 1 or nil.
+                if (out->GetB())
+                {
+                    lua_pushnumber(L, 1.0);
+                }
+                else
+                {
+                    lua_pushnil(L);
+                }
+                break;
+            case m3d::sArg::ARGTYPE_STRING:
+                lua_pushstring(L, out->GetS());
+                break;
+            case m3d::sArg::ARGTYPE_VECTOR:
+                *ext_createVector(L) = out->GetV();
+                break;
+            case m3d::sArg::ARGTYPE_QUATERNION:
+                *ext_createQuaternion(L) = out->GetQ();
+                break;
+            case m3d::sArg::ARGTYPE_OBJECT:
+                if (m3d::Object* const obj = out->GetO())
+                {
+                    lua_rawgeti(L, LUA_REGISTRYINDEX, m3d::ScriptServer::_getScriptObject(obj));
+                }
+                else
+                {
+                    lua_pushnil(L);
+                }
+                break;
+            default:
+                // NOTE: an output of any other type pushes nothing, although it is still counted in the result.
+                break;
+            }
+        }
+        return stack.getNumOutArgs();
     }
 
     void _addExports(m3d::Class* pClass)
     {
-        //TODO: check this and refactor!!!
-        lua_State* v1;        // esi
-        m3d::Class* v3;       // eax
-        m3d::ExportInfo* v4;  // edi
-        m3d::ExportInfo* v5;  // ebx
-        m3d::eExportType v6;  // eax
-        int v7;               // edx
-
-        v1 = m3d::ScriptServer::L;
-        if (pClass)
+        // RVA 0x61F970 - adds the exports of pClass and its bases to the export table on top of the stack, base
+        // classes first so that derived classes override them.
+        lua_State* const L = m3d::ScriptServer::L;
+        if (!pClass)
         {
-            v3 = pClass->m_fnGetBaseClass();
-            _addExports(v3);
-            v4 = pClass->m_lExports;
-            if (v4)
+            return;
+        }
+        _addExports(pClass->m_fnGetBaseClass());
+
+        if (!pClass->m_lExports)
+        {
+            return;
+        }
+        for (m3d::ExportInfo const* exp = pClass->m_lExports; exp->name; ++exp)
+        {
+            lua_pushstring(L, exp->name);
+
+            // Each method is a userdata holding its address, called through the metatable's __call.
+            // NOTE: an export of any other type pushes no value, so lua_settable below would take the name as
+            // the value. Only METHOD and NATIVE_METHOD exist.
+            if (exp->type == m3d::METHOD || exp->type == m3d::NATIVE_METHOD)
             {
-                if (v4->name)
-                {
-                    v5 = v4;
-                    while (1)
-                    {
-                        lua_pushstring(v1, v4->name);
-                        v6 = v4->type;
-                        if (v6 == m3d::METHOD)
-                            break;
-                        if (v6 == m3d::NATIVE_METHOD)
-                        {
-                            auto newData = reinterpret_cast<void**>(lua_newuserdata(v1, 4u));
-                            *newData = v4->addr1;
-                            v7 = m3d::ScriptServer::m_metatable_ClassNativeMethod;
-                        LABEL_9:
-                            lua_rawgeti(v1, -10000, v7);
-                            lua_setmetatable(v1, -2);
-                        }
-                        lua_settable(v1, -3);
-                        v4 = ++v5;
-                        if (!v5->name)
-                            return;
-                    }
-                    auto data = reinterpret_cast<void**>(lua_newuserdata(v1, 4u));
-                    *data = v4->addr1;
-                    v7 = m3d::ScriptServer::m_metatable_ClassMethod;
-                    goto LABEL_9;
-                }
+                *static_cast<void**>(lua_newuserdata(L, sizeof(void*))) = exp->addr1;
+                lua_rawgeti(
+                    L,
+                    LUA_REGISTRYINDEX,
+                    exp->type == m3d::METHOD ? m3d::ScriptServer::m_metatable_ClassMethod
+                                             : m3d::ScriptServer::m_metatable_ClassNativeMethod);
+                lua_setmetatable(L, -2);
             }
+            lua_settable(L, -3);
         }
     }
 
@@ -624,157 +600,122 @@ namespace m3d
 
     eScriptError ScriptServer::callScriptFunc(char const* funcName, sArgStack& stack, int nresults)
     {
-        // TODO: generated code
-        if (!this->m_bInitialized)
+        // RVA 0x6216F0 - calls the global Lua function funcName with the input arguments of `stack` and appends up
+        // to nresults of its results (all of them, up to 100, for -1) to the stack's outputs.
+        if (!m_bInitialized)
         {
             return NOT_INITIALIZED;
         }
 
-        // Create temporary string for function name
+        errDesc.sourceString = CStr(funcName);
 
-        // Get the function from Lua registry
         lua_pushstring(L, funcName);
         lua_gettable(L, LUA_GLOBALSINDEX);
-
         if (lua_type(L, -1) == LUA_TNIL)
         {
-            lua_settop(L, -2);        // Clean up stack
-            return NO_SUCH_FUNCTION;  // Function not found
+            lua_settop(L, -2);
+            return NO_SUCH_FUNCTION;
         }
 
-        // Push arguments to Lua stack
-        for (unsigned int i = 0; i < stack.getNumInArgs(); ++i)
+        for (unsigned i = 0; i < stack.getNumInArgs(); ++i)
         {
-            m3d::sArg* arg = stack.popIn();
-
+            sArg* const arg = stack.popIn();
             switch (arg->GetType())
             {
             case sArg::ARGTYPE_INT:
                 lua_pushnumber(L, arg->GetI());
                 break;
-
             case sArg::ARGTYPE_FLOAT:
                 lua_pushnumber(L, arg->GetF());
                 break;
-
             case sArg::ARGTYPE_BOOL:
-                lua_pushboolean(L, arg->GetB());
-                break;
-
-            case sArg::ARGTYPE_STRING:
-                lua_pushstring(L, arg->GetS());
-                break;
-
-            case sArg::ARGTYPE_VECTOR:
-            {
-                CVector* vec = ext_createVector(L);
-                *vec = arg->GetV();
-                break;
-            }
-
-            case sArg::ARGTYPE_OBJECT:
-            {
-                m3d::Object* obj = arg->GetO();
-                if (obj)
+                // Script booleans are 1 or nil.
+                if (arg->GetB())
                 {
-                    int scriptObject = _getScriptObject(obj);
-                    lua_rawgeti(L, LUA_REGISTRYINDEX, scriptObject);
+                    lua_pushnumber(L, 1.0);
                 }
                 else
                 {
                     lua_pushnil(L);
                 }
                 break;
-            }
-
-            case sArg::ARGTYPE_QUATERNION:
-            {
-                Quaternion* quat = ext_createQuaternion(L);
-                *quat = arg->GetQ();
+            case sArg::ARGTYPE_STRING:
+                lua_pushstring(L, arg->GetS());
                 break;
-            }
-
+            case sArg::ARGTYPE_VECTOR:
+                *ext_createVector(L) = arg->GetV();
+                break;
+            case sArg::ARGTYPE_OBJECT:
+                if (Object* const obj = arg->GetO())
+                {
+                    lua_rawgeti(L, LUA_REGISTRYINDEX, _getScriptObject(obj));
+                }
+                else
+                {
+                    lua_pushnil(L);
+                }
+                break;
+            case sArg::ARGTYPE_QUATERNION:
+                *ext_createQuaternion(L) = arg->GetQ();
+                break;
             default:
-                return OTHER_ERROR;  // Unknown argument type
+                // NOTE: the function and the arguments pushed so far are left on the Lua stack.
+                return OTHER_ERROR;
             }
         }
 
-        // Call the Lua function
-        int callResult = lua_pcall(L, stack.getNumInArgs(), nresults, 0);
-        if (callResult)
+        switch (lua_pcall(L, stack.getNumInArgs(), nresults, 0))
         {
-            // Handle Lua errors
-            switch (callResult)
-            {
-            case LUA_ERRRUN:
-                return RUNTIME_ERROR;  // Runtime error
-            case LUA_ERRMEM:
-                return MEMORY_ERROR;  // Memory error
-            case LUA_ERRSYNTAX:
-                return SYNTAX_ERROR;  // Error handler error
-            default:
-                return OTHER_ERROR;  // Unknown error
-            }
+        case 0:
+            break;
+        case LUA_ERRRUN:
+            return RUNTIME_ERROR;
+        case LUA_ERRSYNTAX:
+            return SYNTAX_ERROR;
+        case LUA_ERRMEM:
+            return MEMORY_ERROR;
+        default:
+            return OTHER_ERROR;
         }
 
-        // Process return values
         if (nresults == -1)
         {
             nresults = 100;
         }
 
-        for (int j = 0; j < nresults; ++j)
+        // The results are taken from the top of the stack down, i.e. the last result becomes the first output.
+        for (int j = 0; j < nresults && lua_gettop(L); ++j)
         {
-            if (lua_gettop(L) == 0)
-                break;  // No more results
-
-            int luaType = lua_type(L, -1);
-
-            switch (luaType)
+            switch (lua_type(L, -1))
             {
             case LUA_TNIL:
-            {
-                m3d::sArg* outArg = stack.newOut();
-                outArg->SetB(false);
+                stack.newOut()->SetB(false);
                 break;
-            }
             case LUA_TNUMBER:
-            {
-                m3d::sArg* outArg = stack.newOut();
-                outArg->SetF(lua_tonumber(L, -1));
+                stack.newOut()->SetF(static_cast<float>(lua_tonumber(L, -1)));
                 break;
-            }
             case LUA_TSTRING:
-            {
-                m3d::sArg* outArg = stack.newOut();
-                outArg->SetS(lua_tostring(L, -1));
+                stack.newOut()->SetS(lua_tostring(L, -1));
                 break;
-            }
             case LUA_TTABLE:
             {
-                // Check if it's an object
+                // A script object: its native Object is stored at index 0.
                 lua_rawgeti(L, -1, 0);
-                auto userdata = lua_touserdata(L, -1);
-                m3d::sArg* outArg = stack.newOut();
-                outArg->SetO((Object*)userdata);
+                auto* const obj = static_cast<Object*>(lua_touserdata(L, -1));
+                stack.newOut()->SetO(obj);
                 lua_settop(L, -2);
                 break;
             }
             case LUA_TUSERDATA:
-            {
-                auto userdata = (CVector*)lua_touserdata(L, -1);
-                m3d::sArg* outArg = stack.newOut();
-                outArg->SetV(*userdata);
+                // NOTE: any full userdata is read as a vector, without checking its tag.
+                stack.newOut()->SetV(*static_cast<CVector*>(lua_touserdata(L, -1)));
                 break;
-            }
             default:
                 break;
             }
-
-            lua_settop(L, -2);  // Remove processed value
+            lua_settop(L, -2);
         }
-
-        return SUCCESS;  // Success
+        return SUCCESS;
     }
 
     eScriptError ScriptServer::done()
@@ -895,14 +836,22 @@ namespace m3d
 
     CStr ScriptServer::getFormatedScriptErrorDesc(eScriptError err) const
     {
-        // TODO: implement ScriptServer::getFormatedScriptErrorDes
+        // RVA 0x621500 - "(source/name @ line): error\ndescription"
+        CStr desc;
         if (err)
         {
-            CStr res = "(" + errDesc.sourceString + "/" + errDesc.nameString + "@ " + CStr(errDesc.lineNumber) +
-                "):" + CStr(ScriptErrorDesc[err]) + "\n" + errDesc.descriptionString;
-            return res;
+            desc = CStr("(");
+            desc += errDesc.sourceString;
+            desc += CStr("/");
+            desc += errDesc.nameString;
+            desc += CStr(" @ ");
+            desc += CStr(errDesc.lineNumber);
+            desc += CStr("): ");
+            desc += CStr(ScriptErrorDesc[err]);
+            desc += CStr("\n");
+            desc += errDesc.descriptionString;
         }
-        return {};
+        return desc;
     }
 
     auxScriptErrorDesc const& ScriptServer::getLastErrorDesc() const
@@ -1060,32 +1009,23 @@ namespace m3d
 
 ext_InternalTags ext_getTag(lua_State* L, int pos)
 {
-    //TODO: check this and refactor
-    int v4;               // eax
-    int v5;               // eax
-    int v7;               // edx
-    ext_InternalTags v8;  // edi
-
-    v4 = lua_type(L, pos) - 2;
-    if (v4)
+    // RVA 0x61F870 - the "internalTag" field of a table or (light) userdata; tag_Unknown for anything else.
+    int const type = lua_type(L, pos);
+    if (type != LUA_TLIGHTUSERDATA && type != LUA_TTABLE && type != LUA_TUSERDATA)
     {
-        v5 = v4 - 3;
-        if (v5)
-        {
-            if (v5 != 2)
-                return tag_Unknown;
-        }
+        return tag_Unknown;
     }
+
     lua_pushstring(L, "internalTag");
-    v7 = pos - 1;
-    if (pos >= 0)
-        v7 = pos;
-    lua_gettable(L, v7);
-    v8 = tag_Unknown;
+    // A relative index moves down by one once the key is pushed.
+    lua_gettable(L, pos >= 0 ? pos : pos - 1);
+    ext_InternalTags tag = tag_Unknown;
     if (lua_isnumber(L, -1))
-        v8 = static_cast<ext_InternalTags>(lua_tonumber(L, -1));
+    {
+        tag = static_cast<ext_InternalTags>(static_cast<int>(lua_tonumber(L, -1)));
+    }
     lua_settop(L, -2);
-    return v8;
+    return tag;
 }
 
 bool ext_checkTag(lua_State* L, int pos, ext_InternalTags tag)

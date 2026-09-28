@@ -113,6 +113,7 @@ int ext_AIParamCmp(lua_State* L)
 
 int ext_AIParamGet(lua_State* L)
 {
+    // RVA 0x9460B0
     auto aiParam  = (m3d::AIParam*)lua_touserdata(L, 1);
     auto param = luaL_checklstring(L, 2, 0);
     if (!strcmp(param, "internalTag"))
@@ -152,25 +153,27 @@ int ext_AIParamGet(lua_State* L)
     }
     if (!strcmp(param, "AsRange"))
     {
-        auto vec = aiParam->GetAsRange();
         auto res = ext_createVector(L);
+        auto vec = aiParam->GetAsRange();
         res->x = vec.x;
         res->y = vec.y;
+        res->z = 0.0f;
+        // NOTE: the shipped code returns a light userdata pointing at the new vector, not the vector itself,
+        // so the result has no vector metatable.
         lua_pushlightuserdata(L, res);
         return 1;
     }
     if (!strcmp(param, "AsNumList"))
     {
-        // TODO: check this
-        lua_gettop(L);
+        // A table indexed from 0 (not the Lua convention of 1).
         lua_newtable(L);
-        auto top = lua_gettop(L);
-        auto idList = aiParam->GetAsIdList();
-        for (int i = 0; i < idList.size(); ++i)
+        int const table = lua_gettop(L);
+        auto const idList = aiParam->GetAsIdList();
+        for (unsigned i = 0; i < idList.size(); ++i)
         {
             lua_pushnumber(L, i);
             lua_pushnumber(L, idList[i]);
-            lua_rawset(L, top);
+            lua_rawset(L, table);
         }
         return 1;
     }
@@ -235,7 +238,8 @@ int ext_AIParamLe(lua_State* L)
 
 m3d::AIParam* ext_createAIParam(lua_State* L)
 {
-    auto* buff = (char*)lua_newuserdata(L, sizeof(m3d::AIParam));
+    // RVA 0x946690
+    auto* buff = lua_newuserdata(L, sizeof(m3d::AIParam));
     lua_newtable(L);
     lua_pushstring(L, "__gc");
     lua_pushcclosure(L, ext_AIParamDestructor, 0);
@@ -257,7 +261,6 @@ m3d::AIParam* ext_createAIParam(lua_State* L)
     lua_settable(L, -3);
     lua_setmetatable(L, -2);
 
-    // TODO: check this
-    auto* res = new (buff) m3d::AIParam;
-    return res;
+    // The AIParam lives in the userdata block and is destroyed by ext_AIParamDestructor (__gc).
+    return new (buff) m3d::AIParam;
 }

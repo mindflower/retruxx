@@ -131,27 +131,16 @@ namespace m3d
 
     void CConsoleParams::Set(char const* buf)
     {
-        //TODO: check this and refactor
-        int v3;          // edi
-        char* v4;        // edx
-        char const* v5;  // ecx
-        char v6;         // al
-
-        v3 = strlen(buf) + 1;
-        if (v3 > this->length)
+        // RVA 0x694220 - copies buf, growing the buffer when it is too small.
+        int const needed = static_cast<int>(strlen(buf)) + 1;
+        if (needed > length)
         {
             delete[] string;
-            this->length = v3;
-            this->string = new char[length];
+            length = needed;
+            string = new char[length];
         }
-        v4 = this->string;
-        v5 = buf;
-        do
-        {
-            v6 = *v5;
-            *v4++ = *v5++;
-        } while (v6);
-        this->numTokens = 0;
+        strcpy(string, buf);
+        numTokens = 0;
     }
 
     char const* CConsoleParams::UnsafeStringToken(int num, char delim) const
@@ -188,6 +177,10 @@ namespace m3d
 
     CConsoleParams::CConsoleParams(char const* buf)
     {
+        // RVA 0x6942B0
+        length = 0;
+        numTokens = 0;
+        string = nullptr;
         Set(buf);
     }
 
@@ -202,105 +195,76 @@ namespace m3d
 
     int CConsoleParams::NumOfTokens(char delim) const
     {
-        //TODO: check this and refactor
-        int result;  // eax
-        char* v3;    // esi
-        char v4;     // dl
-        char v5;     // bl
-        int v6;      // edi
-        char i;      // al
-
-        result = this->numTokens;
-        if (result)
-            return result;
-        v3 = this->string;
-        v4 = *this->string;
-        v5 = 1;
-        v6 = 1;
-        for (i = 1; v4; ++v3)
+        // RVA 0x694050 - the number of delim-separated tokens, cached.
+        // NOTE: an empty or all-delimiter string counts as one token, as shipped.
+        if (numTokens)
         {
-            if (v4 == delim)
+            return numTokens;
+        }
+        int count = 1;
+        bool seenToken = false;
+        bool inToken = true;
+        for (char const* c = string; *c; ++c)
+        {
+            if (*c == delim)
             {
-                if (!i)
-                    v5 = 0;
+                if (seenToken)
+                {
+                    inToken = false;
+                }
             }
             else
             {
-                i = 0;
-                if (!v5)
+                seenToken = true;
+                if (!inToken)
                 {
-                    ++v6;
-                    v5 = 1;
+                    ++count;
+                    inToken = true;
                 }
             }
-            v4 = v3[1];
         }
-        this->numTokens = v6;
-        return v6;
+        numTokens = count;
+        return count;
     }
 
     char* CConsoleParams::StringToken(int num, char* outString, int stringlen, char delim) const
     {
-        char* v5;      // edx
-        char v6;       // cl
-        char* v7;      // esi
-        char v8;       // al
-        int v9;        // edi
-        char v10;      // bl
-        char* result;  // eax
-        char i;        // cl
-
-        v5 = this->string;
-        v6 = *this->string;
-        v7 = outString;
-        v8 = 0;
-        v9 = 0;
-        if (v6)
+        // RVA 0x6940A0 - copies token num (tokens are runs of non-delim characters) into outString, at most
+        // stringlen - 1 characters; a token opening with a double quote runs to the closing quote. Empty when
+        // there is no such token.
+        char* out = outString;
+        bool inToken = false;
+        int index = 0;
+        for (char const* c = string; *c; ++c)
         {
-            v10 = delim;
-            while (1)
+            if (*c == delim)
             {
-                if (v6 == delim)
-                {
-                    v8 = 0;
-                }
-                else if (!v8)
-                {
-                    if (v9 == num)
-                    {
-                        if (*v5 == 34)
-                        {
-                            v10 = 34;
-                            ++v5;
-                        }
-                        for (i = *v5; *v5; ++v7)
-                        {
-                            auto temp = reinterpret_cast<int>(&v7[1 - reinterpret_cast<int>(outString)]);
-                            if (reinterpret_cast<int>(&v7[1 - reinterpret_cast<int>(outString)]) >= stringlen)
-                                break;
-                            if (i == v10)
-                                break;
-                            ++v5;
-                            *v7 = i;
-                            i = *v5;
-                        }
-                        break;
-                    }
-                    ++v9;
-                    v8 = 1;
-                }
-                v6 = *++v5;
-                if (!v6)
-                {
-                    result = outString;
-                    *outString = 0;
-                    return result;
-                }
+                inToken = false;
+                continue;
             }
+            if (inToken)
+            {
+                continue;
+            }
+            if (index == num)
+            {
+                char end = delim;
+                if (*c == '"')
+                {
+                    end = '"';
+                    ++c;
+                }
+                for (; *c && out + 1 - outString < stringlen && *c != end; ++c)
+                {
+                    *out++ = *c;
+                }
+                break;
+            }
+            ++index;
+            inToken = true;
         }
-        result = outString;
-        *v7 = 0;
-        return result;
+        *out = 0;
+        return outString;
     }
 
     float CConsoleParams::FloatToken(int num, char delim) const
@@ -571,9 +535,10 @@ m3d::Object* ConsoleImp::CreateObject()
 
 void ConsoleImp::executeCommand(CStr const& command)
 {
-    //TODO: check this!!!!!!!!1
+    // RVA 0x8DA430 - runs a console line (after its leading character): a command, or a cvar name alone (shows it)
+    // or with a value (sets it; string and colour cvars take the rest of the line).
     m3d::CConsoleParams params(command.c_str() + 1);
-    auto cmdName = params.UnsafeStringToken(0, 32);
+    char const* const cmdName = params.UnsafeStringToken(0, ' ');
 
     bool found = false;
     for (auto& cmd : m_lCmds)
@@ -586,52 +551,40 @@ void ConsoleImp::executeCommand(CStr const& command)
         }
     }
 
-    if (!found)
+    for (auto it = m_lCVars.begin(); !found && it != m_lCVars.end(); ++it)
     {
-        for (auto cvar : m_lCVars)
+        m3d::CVar* const cvar = *it;
+        if (strcmp(cvar->GetName(), cmdName) != 0)
         {
-            CStr name = cvar->GetName();
-            if (name == cmdName)
+            continue;
+        }
+        found = true;
+        CStr const name = cvar->GetName();
+        if (cvar->GetFlags() & m3d::CVar::CVAR_READONLY)
+        {
+            PrintF(name + " is a read-only variable\n");
+        }
+        else if (!cvar->GetHandler() || cvar->GetHandler()->HandleCVar(cvar, params))
+        {
+            int const numTokens = params.NumOfTokens(' ');
+            if (numTokens > 1)
             {
-                found = true;
-                if ((cvar->GetFlags() & 2) != 0)
+                CStr value = params.UnsafeStringToken(1, ' ');
+                auto const type = cvar->GetType();
+                if (type == m3d::CVar::CVAR_STRING || type == m3d::CVar::CVAR_COLOR)
                 {
-                    PrintF(name + " is a read-only variable\n");
-                }
-                else
-                {
-                    if (!cvar->GetHandler() || cvar->GetHandler()->HandleCVar(cvar, params))
+                    for (int i = 2; i < numTokens; ++i)
                     {
-                        auto numOfTokens = params.NumOfTokens(' ');
-                        if (numOfTokens > 1)
-                        {
-                            auto token = params.UnsafeStringToken(1, ' ');
-                            auto type = cvar->GetType();
-                            if (type == m3d::CVar::CVAR_STRING || type == m3d::CVar::CVAR_COLOR)
-                            {
-                                CStr newstr = token;
-                                for (int i = 2; i < numOfTokens; ++i)
-                                {
-                                    token = params.UnsafeStringToken(i, ' ');
-                                    newstr += " ";
-                                    newstr += token;
-                                }
-                                if ((cvar->GetFlags() & 2) == 0)
-                                {
-                                    cvar->Set(newstr.c_str(), true);
-                                }
-                            }
-                            else if ((cvar->GetFlags() & 2) == 0)
-                            {
-                                cvar->Set(token, true);
-                            }
-                            PrintF(name + " changed to \"" + CStr(token) + "\"\n");
-                        }
+                        value += " ";
+                        value += params.UnsafeStringToken(i, ' ');
                     }
                 }
+                cvar->Set(value.c_str(), true);
+                PrintF(name + " changed to \"" + CStr(cvar->GetS()) + "\"\n");
                 break;
             }
         }
+        PrintF("\"" + name + "\" = \"" + CStr(cvar->GetS()) + "\" default: \"" + CStr(cvar->GetDefault()) + "\"\n");
     }
     if (!found)
     {
@@ -678,57 +631,45 @@ void ConsoleImp::Init(int width, int height)
 
 int ConsoleImp::Load(CStr const& fname)
 {
+    // RVA 0x94F130 - applies the attributes of the file's config node to the cvars of those names. Each name's
+    // first loaded value is also remembered (later ones for the same name are not).
     CStr err;
-    if (ref_ptr xmlFile = m3d::ReadXmlFile(fname.c_str(), &err))
+    ref_ptr xmlFile = m3d::ReadXmlFile(fname.c_str(), &err);
+    if (!xmlFile)
     {
-        ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild(node, "config");
-        if (node->IsEmpty())
-        {
-            M3D_LOG_INFO("Config::cannot find 'config' node");
-            return 0;
-        }
-
-        ref_ptr attrib = node->CreateAttribute();
-        for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextSibling(attrib))
-        {
-            CVarLoadedValue val;
-            val.m_name = attrib->GetName();
-            val.m_stringValue = attrib->GetValue();
-
-            //TODO: check this
-            auto itVars = std::find_if(
-                m_lCVars.begin(),
-                m_lCVars.end(),
-                [&val](auto const* elem)
-                {
-                    return elem->GetName() == val.m_name;
-                });
-            if (itVars != m_lCVars.end())
-            {
-                (*itVars)->Set(val.m_stringValue.c_str(), true);
-            }
-
-            auto itLoaded = std::find_if(
-                m_loadedValues.begin(),
-                m_loadedValues.end(),
-                [&val](auto const& elem)
-                {
-                    return elem.m_name == val.m_name;
-                });
-            if (itLoaded != m_loadedValues.end())
-            {
-                *itLoaded = val;
-            }
-            else
-            {
-                m_loadedValues.push_back(val);
-            }
-        }
-        return 1;
+        M3D_LOG_INFO("Console:: cannot load " + fname);
+        return 0;
     }
-    M3D_LOG_INFO("Console:: cannot load " + fname);
-    return 0;
+    ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+    xmlFile->GetFirstChild(node, "config");
+    if (node->IsEmpty())
+    {
+        M3D_LOG_INFO("Config:: cannot find 'config' node");
+        return 0;
+    }
+
+    ref_ptr attrib = node->CreateAttribute();
+    for (node->GetFirstAttribute(attrib); !attrib->IsEmpty(); attrib->GetNextSibling(attrib))
+    {
+        CVarLoadedValue val;
+        val.m_name = attrib->GetName();
+        val.m_stringValue = attrib->GetValue();
+
+        auto const itLoaded = std::find_if(
+            m_loadedValues.begin(), m_loadedValues.end(), [&val](auto const& elem) { return elem.m_name == val.m_name; });
+        if (itLoaded == m_loadedValues.end())
+        {
+            m_loadedValues.push_back(val);
+        }
+
+        auto const itVars = std::find_if(
+            m_lCVars.begin(), m_lCVars.end(), [&val](auto const* elem) { return val.m_name == elem->GetName(); });
+        if (itVars != m_lCVars.end())
+        {
+            (*itVars)->Set(val.m_stringValue.c_str(), true);
+        }
+    }
+    return 1;
 }
 
 void ConsoleImp::SetScreenSize(float size)
@@ -1624,103 +1565,69 @@ bool ConsoleImp::HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&)
 
 void ConsoleImp::Print(char const* txt)
 {
+    // RVA 0x8D9380 - appends text to the console's line ring, tabs expanded to four spaces. A word that does not
+    // fit the rest of the line starts a new one; a carriage return makes the next line overwrite the current one.
     static int cr = 0;
-    if (txt)
+    if (!txt)
     {
-        CStr str;
-        if (txt[0] == '\t')
-        {
-            str = "    ";
-        }
-        auto text = new char[strlen(txt) + 1];
-        strcpy(text, txt);
-        auto token = strtok(text, "\t");
+        return;
+    }
+
+    CStr str;
+    if (txt[0] == '\t')
+    {
+        str = "    ";
+    }
+    auto* const text = new char[strlen(txt) + 1];
+    strcpy(text, txt);
+    for (char* token = strtok(text, "\t"); token;)
+    {
+        str += token;
+        token = strtok(nullptr, "\t");
         if (token)
         {
-            while (1)
+            str += "    ";
+        }
+    }
+    delete[] text;
+
+    for (char const* c = str.c_str(); *c; ++c)
+    {
+        int const width = m_con.linewidth;
+        int wordLength = 0;
+        while (wordLength < width && c[wordLength] > ' ')
+        {
+            ++wordLength;
+        }
+        if (wordLength != width && wordLength + m_con.x > width)
+        {
+            m_con.x = 0;
+        }
+        if (cr)
+        {
+            --m_con.current;
+            cr = 0;
+        }
+        if (!m_con.x)
+        {
+            if (m_con.display == m_con.current)
             {
-                str += token;
-                token = strtok(nullptr, "\t");
-                if (!token)
-                {
-                    break;
-                }
-                str += "    ";
+                ++m_con.display;
             }
+            ++m_con.current;
+            memset(&m_con.text[width * (m_con.current % m_con.totallines)], ' ', width);
         }
 
-        delete[] text;
-
-        //TODO: check this and refactor!!!
-        char const* v5;  // ecx
-        char v6;         // bl
-        char const* v7;  // ebp
-        int v8;          // ecx
-        int v9;          // eax
-        int v10;         // eax
-        int v11;         // edx
-        int v12;         // eax
-        CStr v13;        // [esp+Ch] [ebp-24h] BYREF
-
-        v5 = str.c_str();
-        v6 = *str.c_str();
-        v7 = str.c_str();
-        if (*str.c_str())
+        if (*c == '\n' || *c == '\r')
         {
-            while (1)
-            {
-                v8 = this->m_con.linewidth;
-                v9 = 0;
-                if (v8 > 0)
-                {
-                    do
-                    {
-                        if (v7[v9] <= 32)
-                            break;
-                        ++v9;
-                    } while (v9 < this->m_con.linewidth);
-                }
-                if (v9 != v8 && v9 + this->m_con.x > v8)
-                    this->m_con.x = 0;
-                ++v7;
-                if (cr)
-                {
-                    --this->m_con.current;
-                    cr = 0;
-                }
-                if (!this->m_con.x)
-                {
-                    v10 = this->m_con.current;
-                    this->m_con.x = 0;
-                    v11 = this->m_con.display;
-                    if (v11 == v10)
-                        this->m_con.display = v11 + 1;
-                    v12 = v10 + 1;
-                    this->m_con.current = v12;
-                    memset(&this->m_con.text[v8 * (v12 % this->m_con.totallines)], 0x20u, v8);
-                }
-                if (v6 != 10)
-                {
-                    if (v6 != 13)
-                    {
-                        this->m_con.text
-                            [this->m_con.x + this->m_con.linewidth * (this->m_con.current % this->m_con.totallines)] =
-                            v6;
-                        if (++this->m_con.x >= this->m_con.linewidth)
-                            this->m_con.x = 0;
-                        goto LABEL_32;
-                    }
-                    cr = 1;
-                }
-                this->m_con.x = 0;
-            LABEL_32:
-                v6 = *v7;
-                if (!*v7)
-                {
-                    v5 = str.c_str();
-                    break;
-                }
-            }
+            cr = *c == '\r' ? 1 : cr;
+            m_con.x = 0;
+            continue;
+        }
+        m_con.text[m_con.x + m_con.linewidth * (m_con.current % m_con.totallines)] = *c;
+        if (++m_con.x >= m_con.linewidth)
+        {
+            m_con.x = 0;
         }
     }
 }

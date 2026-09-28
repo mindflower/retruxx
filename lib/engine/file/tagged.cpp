@@ -291,7 +291,13 @@ namespace m3d
 
         auxTaggedFile::eError auxTaggedFile::Open(char const* _fname, eOpenFlag _flag)
         {
-            //TODO: check this
+            // RVA 0x7A3A10 - CREATE opens the file for writing (the chunks go out on Close);
+            // PROCESS_NORMAL reads the whole file into memory through the file server, so it
+            // also finds packed files; PROCESS_MAPPED maps a plain file from disk. Either way
+            // the chunk table is indexed and the format name (tag 0xF001) and version (tag
+            // 0xF002) are read.
+            // NOTE: a failure after the chunk table has been read leaves the file marked open
+            // with its chunks listed but its data freed, as in the shipped code.
             if (_flag != PROCESS_MAPPED && _flag != PROCESS_MAPPED_IGNORE_CRC)
             {
                 if (_flag != PROCESS_NORMAL && _flag != PROCESS_NORMAL_IGNORE_CRC)
@@ -340,9 +346,9 @@ namespace m3d
                     return BAD_NUM_CHUNKS;
                 }
                 auto fileData = reinterpret_cast<unsigned*>(static_cast<char*>(m_pFileData) + 12);
+                // Each table entry is tag, size, offset, crc; the offset is turned into a pointer.
                 for (unsigned i = 0; i < _header->numChunks; ++i)
                 {
-                    //TODO: check this
                     mChunk chunk;
                     chunk.chunk_header.tag = fileData[0];
                     chunk.chunk_header.size = fileData[1];
@@ -351,6 +357,8 @@ namespace m3d
                     mChunkData data;
                     data.is_copy = false;
                     data.size = fileData[1];
+                    // NOTE: the shipped code leaves data uninitialised here; nothing reads it for
+                    // a chunk that is not a copy.
                     data.data = nullptr;
                     chunk.chunk_header.offset += reinterpret_cast<unsigned>(m_pFileData);
                     chunk.chunk_data.push_back(data);
@@ -367,13 +375,13 @@ namespace m3d
                 }
                 m_format_name = new char[strlen(formatName) + 1];
                 strcpy(m_format_name, formatName);
-                m_format_name[strlen(formatName)] = '\0';
                 if (getChunkDataCopy(0xF002, &m_format_version) == SUCCESS)
                 {
                     return SUCCESS;
                 }
                 delete[] m_pFileData;
                 delete[] m_format_name;
+                m_format_name = nullptr;
                 return BAD_FORMAT;
             }
             m_hFile = ::CreateFileA(_fname, 0x80000000, 1u, 0, 3u, 0x80u, 0);
@@ -417,7 +425,6 @@ namespace m3d
             auto fileData = reinterpret_cast<unsigned*>(static_cast<char*>(m_pFileData) + 12);
             for (unsigned i = 0; i < _header->numChunks; ++i)
             {
-                //TODO: check this
                 mChunk chunk;
                 chunk.chunk_header.tag = fileData[0];
                 chunk.chunk_header.size = fileData[1];
@@ -434,6 +441,8 @@ namespace m3d
             }
             m_bOpened = true;
             m_openflag = _flag;
+            // NOTE: unlike the in-memory path, a missing format name or version is not checked
+            // for here; a file without a 0xF001 chunk crashes on the strlen.
             char* formatName = nullptr;
             getChunkData(0xF001, reinterpret_cast<void**>(&formatName));
             m_format_name = new char[strlen(formatName) + 1];

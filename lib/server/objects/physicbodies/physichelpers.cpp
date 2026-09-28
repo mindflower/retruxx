@@ -8,6 +8,7 @@
 #include "level.h"
 #include "physicbody.h"
 #include "world.h"
+#include "config.h"
 #include "core/kernel.h"
 #include "core/timer.h"
 #include "core/log.h"
@@ -87,7 +88,8 @@ namespace ai
 
     bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
     {
-        // TODO: generated code
+        // RVA 0x7D3DB0 - collision primitives for a model: its collision trimesh (when allowed) and its geoms, or
+        // a box around the model when it has neither. Degenerate sizes are replaced with defaults.
         auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
 
         // Clear existing collision infos
@@ -232,7 +234,9 @@ namespace ai
                 if (boxSizeSq < 0.0001f)
                 {
                     // Log warning about zero-sized box
-                    M3D_LOG_INFO("Warning: size of box in model is zero. Setting to (0.5, 0.5, 0.5)");
+                    M3D_LOG_INFO(
+                        "Warning: size of box in model '" + M3D_ENGINE_CFG.GetNameByModelId(serverHandle + 0x200000) +
+                        "' is zero. Setting to ( 0.5, 0.5, 0.5 )");
                     collInfo.m_size = CVector(0.5f, 0.5f, 0.5f);
                 }
                 break;
@@ -242,7 +246,9 @@ namespace ai
                 if (collInfo.m_radius < 0.0001f)
                 {
                     // Log warning about zero-radius sphere
-                    M3D_LOG_INFO("Warning: size of sphere in model is zero. Setting to 0.5");
+                    M3D_LOG_INFO(
+                        "Warning: size of sphere in model '" +
+                        M3D_ENGINE_CFG.GetNameByModelId(serverHandle + 0x200000) + "' is zero. Setting to 0.5");
                     collInfo.m_radius = 0.5f;
                 }
                 break;
@@ -255,7 +261,11 @@ namespace ai
                 if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
                 {
                     // Log warning about invalid cylinder sizes
-                    M3D_LOG_INFO("Warning: sizes of cylinder in model are invalid. Setting to (0.5, 0.5)");
+                    // NOTE: "cyliner" is the shipped spelling.
+                    M3D_LOG_INFO(
+                        "Warning: sizes of cyliner in model '" +
+                        M3D_ENGINE_CFG.GetNameByModelId(serverHandle + 0x200000) +
+                        "' are invalid. Setting to ( 0.5, 0.5 )");
                     collInfo.m_size = CVector(0.0f, 0.5f, 0.0f);
                     collInfo.m_radius = 0.5f;
                 }
@@ -651,7 +661,6 @@ namespace ai
         // Traverse through grid cells along the ray
         int cellX = 0;
         int cellZ = 0;
-        // TODO: check this
         while (line.step(cellX, cellZ))
         {
             // Check if we're still within level bounds
@@ -786,70 +795,54 @@ namespace ai
                         continue;
                     }
 
-                    // Special handling for towns with smart collision
+                    // A town is hit at its N-th farthest contact along the ray (N = collision layers below
+                    // vehicles), so the ray passes through the layers a vehicle drives over.
                     if (smartCollideWithTowns && object->IsKindOf(&ai::Town::m_classTown))
                     {
-                        auto* protoInfo = dynamic_cast<Town*>(object)->GetPrototypeInfo();
-                        unsigned int maxContacts = protoInfo->m_numCollisionLayersBelowVehicle;
-                        if (maxContacts > 0)
+                        unsigned const numLayers = static_cast<Town*>(object)->GetPrototypeInfo()->m_numCollisionLayersBelowVehicle;
+                        if (numLayers > 0)
                         {
                             std::vector<CVector> contactPoints;
-
-                            // Collect all contact points with the town
-                            dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id());
-                            while (geom)
+                            for (dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id()); geom; geom = dGeomGetBodyNext(geom))
                             {
-                                if (!IsLittle(geom))
+                                if (dontCollideWithLittle && IsLittle(geom))
                                 {
-                                    dxSpace* space = dGeomGetSpace(geom);
-                                    if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
+                                    continue;
+                                }
+                                dxSpace* space = dGeomGetSpace(geom);
+                                if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
+                                {
+                                    int const contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
+                                    for (int i = 0; i < contactCount; i++)
                                     {
-                                        int contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
-
-                                        for (int i = 0; i < contactCount; i++)
-                                        {
-                                            CVector contactPos(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
-                                            contactPoints.push_back(contactPos);
-                                        }
+                                        contactPoints.emplace_back(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
                                     }
                                 }
-                                geom = dGeomGetBodyNext(geom);
                             }
 
-                            // Sort contacts by distance and use only the farthest ones (town optimization)
                             if (!contactPoints.empty())
                             {
+                                // Nearest first.
                                 std::sort(
                                     contactPoints.begin(),
                                     contactPoints.end(),
-                                    [&](CVector const& a, CVector const& b)
+                                    [&start](CVector const& a, CVector const& b)
                                     {
-                                        return (start - a).lengthSq() < (start - b).lengthSq();
+                                        return (b - start).lengthSq() > (a - start).lengthSq();
                                     });
-
-                                // Use only the most distant contacts (town optimization)
-                                size_t startIndex = 0;
-                                if (contactPoints.size() > maxContacts)
+                                size_t const pick = contactPoints.size() > numLayers ? contactPoints.size() - numLayers : 0;
+                                CVector const& point = contactPoints[pick];
+                                float const distanceSq = (start - point).lengthSq();
+                                if (distanceSq < minDistanceSq)
                                 {
-                                    startIndex = contactPoints.size() - maxContacts;
-                                }
-
-                                for (size_t i = startIndex; i < contactPoints.size(); i++)
-                                {
-                                    CVector delta = start - contactPoints[i];
-                                    float distanceSq = delta.lengthSq();
-
-                                    if (distanceSq < minDistanceSq)
-                                    {
-                                        minDistanceSq = distanceSq;
-                                        closestContact.geom.pos[0] = contactPoints[i].x;
-                                        closestContact.geom.pos[1] = contactPoints[i].y;
-                                        closestContact.geom.pos[2] = contactPoints[i].z;
-                                        closestContact.geom.pos[3] = 0.0f;
-                                        closestContact.geom.g1 = 0;
-                                        closestContact.geom.g2 = 0;
-                                        foundContact = true;
-                                    }
+                                    minDistanceSq = distanceSq;
+                                    closestContact.geom.pos[0] = point.x;
+                                    closestContact.geom.pos[1] = point.y;
+                                    closestContact.geom.pos[2] = point.z;
+                                    closestContact.geom.pos[3] = 0.0f;
+                                    closestContact.geom.g1 = nullptr;
+                                    closestContact.geom.g2 = nullptr;
+                                    foundContact = true;
                                 }
                             }
                         }
@@ -930,82 +923,61 @@ namespace ai
         bool bForPlayerVehicle,
         std::set<m3d::Class*> const& targetClasses)
     {
-        // TODO: generated code GetValidPosition
-        float minDist = 1.0e20f;
+        // RVA 0x6AA040 - a free spot for a sphere of the given radius: the position itself if free, else the first
+        // free one of 8 directions on rings of growing radius (steps of `radius`, up to 100).
+        static CVector const DirOffset[8] = {
+            {1.0f, 0.0f, 0.0f},
+            {-1.0f, 0.0f, 0.0f},
+            {0.0f, 0.0f, 1.0f},
+            {0.0f, 0.0f, -1.0f},
+            {0.70709997f, 0.0f, 0.70709997f},
+            {-0.70709997f, 0.0f, 0.70709997f},
+            {0.70709997f, 0.0f, -0.70709997f},
+            {-0.70709997f, 0.0f, -0.70709997f},
+        };
 
-        // Create intersection sphere
-        scoped_ptr<ai::SphereForIntersection> sphere = ai::SphereForIntersection::CreateObject(
-            radius, ai::SphereForIntersection::SpherePurpose::LOOKING, 0);  // LOOKING constant assumed to be 0
+        scoped_ptr<ai::SphereForIntersection> sphere =
+            ai::SphereForIntersection::CreateObject(radius, ai::SphereForIntersection::SpherePurpose::LOOKING, 0);
+        auto const isFree = [&](CVector const& pos) {
+            dGeomSetPosition(sphere->GetGeomId(), pos.x, pos.y, pos.z);
+            return ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
+                (!bCheckPassMap ||
+                 !Map::theGlobalMap->IsCircleBlocked(CVector2{pos.x, pos.z}, radius, blockingValue));
+        };
 
-        // Set initial position
-        dGeomSetPosition(sphere->GetGeomId(), position.x, position.y, position.z);
-
-        // Check if initial position is valid
-        if (!ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) ||
-            (bCheckPassMap && Map::theGlobalMap->IsCircleBlocked(CVector2{position.x, position.z}, radius, blockingValue)))
+        if (isFree(position))
         {
-            // Initial position is invalid, search for a valid one
-            float currentRadius = radius;
-            float dist = radius;
-
-            if (radius <= 100.0f)
-            {
-                while (dist <= 100.0f)
-                {
-                    // Try 8 directions around the circle
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        static CVector const DirOffset[] = {
-                            {1.0, 0.0, 0.0},
-                            {-1.0, 0.0, 0.0},
-                            {0.0, 0.0, 1.0},
-                            {0.0, 0.0, -1.0},
-                            {0.70709997, 0.0, 0.70709997},
-                            {-0.70709997, 0.0, 0.70709997},
-                            {0.70709997, 0.0, -0.70709997},
-                            {-0.70709997, 0.0, -0.70709997},
-                        };
-                        auto const& offset = DirOffset[i];
-
-                        // Calculate new position
-                        float newX = position.x + offset.x * dist;
-                        float newY = position.y + offset.y * dist;
-                        float newZ = position.z + offset.z * dist;
-
-                        // Update sphere position
-                        dGeomSetPosition(sphere->GetGeomId(), newX, newY, newZ);
-
-                        // Check if this position is better than current best
-                        if (minDist > dist && ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle))
-                        {
-                            if (!bCheckPassMap ||
-                                !ai::Map::theGlobalMap->IsCircleBlocked(CVector2{newX, newZ}, radius, blockingValue))
-                            {
-                                minDist = dist;
-                                availablePosition = CVector{newX, newY, newZ};
-                            }
-                        }
-                    }
-
-                    // Increase search radius
-                    dist += radius;
-                    currentRadius = dist;
-                }
-            }
-
-            // Check if we found a valid position
-            if (minDist >= 1.0e19f)
-            {
-                return false;
-            }
-            return true;
-        }
-        else
-        {
-            // Initial position is valid
             availablePosition = position;
             return true;
         }
+
+        // NOTE: minDist only ever takes a ring's radius, so once a ring has a free spot the larger rings are still
+        // tried (their spheres placed) but can no longer win.
+        float minDist = 1.0e20f;
+        CVector newPos;
+        for (float dist = radius; dist <= 100.0f; dist += radius)
+        {
+            for (CVector const& offset : DirOffset)
+            {
+                CVector const candidate(
+                    position.x + offset.x * dist, position.y + offset.y * dist, position.z + dist * offset.z);
+                dGeomSetPosition(sphere->GetGeomId(), candidate.x, candidate.y, candidate.z);
+                if (minDist > dist && ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
+                    (!bCheckPassMap ||
+                     !Map::theGlobalMap->IsCircleBlocked(CVector2{candidate.x, candidate.z}, radius, blockingValue)))
+                {
+                    minDist = dist;
+                    newPos = candidate;
+                }
+            }
+        }
+
+        if (minDist >= 1.0e19f)
+        {
+            return false;
+        }
+        availablePosition = newPos;
+        return true;
     }
 
     void SetUniversalJointParams(dxJoint* joint)
@@ -1169,8 +1141,11 @@ namespace ai
 
     CVector GetRandomDeviatedVector(CVector const& axis, float maxDeviationAngle)
     {
-        // TODO: generated code GetRandomDeviatedVector
-        // Generate random deviation angles
+        // RVA 0x7D34E0 - a random direction within maxDeviationAngle of axis: the forward vector (0, 0, 1) is
+        // tilted by a random angle in [0, maxDeviationAngle] about Y and spun by a random angle about Z
+        // (q = spin * tilt), then rotated from forward onto axis.
+        // The quaternion-to-matrix steps are written out as the shipped build inlines them, to keep its float
+        // evaluation order.
         float minAngle = 0.0f;
         float maxAngle = maxDeviationAngle;
 
