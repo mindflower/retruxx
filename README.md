@@ -54,5 +54,3 @@ retruxx_tests.exe --gtest_filter=CMatrixGetYPRTest.*
 ### Running the game
 
 `retruxx.exe` is only the game executable. You need an installed copy of Ex Machina / Hard Truck Apocalypse for the game data and the driver DLLs (for example `dxrender9.dll`). Start `retruxx.exe` with the game's install directory as the working directory.
-
-Much of the game is not reimplemented yet. Code that reaches an unimplemented function stops in the debugger and exits, so run it under a debugger.

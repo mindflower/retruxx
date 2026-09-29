@@ -105,21 +105,7 @@ namespace m3d
         {
             auxChunkHeader* const chunk = reinterpret_cast<auxChunkHeader*>(block) - 1;
             block->m_size = 0;
-            m_memAllocated += -16 - chunk->m_bnum * chunk->m_bsize;
-            if (chunk->m_nextChunk)
-            {
-                chunk->m_nextChunk->m_prevChunk = chunk->m_prevChunk;
-            }
-            if (chunk->m_prevChunk)
-            {
-                chunk->m_prevChunk->m_nextChunk = chunk->m_nextChunk;
-            }
-            if (m_chunks == chunk)
-            {
-                m_chunks = chunk->m_prevChunk;
-            }
-            m_memOverhead -= 16;
-            free(chunk);
+            FreeChunk(chunk);
             return;
         }
         // m_nextBlock of a pooled block holds the index of its size class while the block is in use.

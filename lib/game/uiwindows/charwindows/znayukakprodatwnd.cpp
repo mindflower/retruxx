@@ -2605,7 +2605,7 @@ void ZnayuKakProdatWnd::UpdateTransferButtonsTooltips()
         M3D_APP->GetStringByStringId0(m_aif.m_strIdTooltipTransferItemsFromWorkshopToPlayer[m_tradeType]);
 
     m_btnTransferItemsFromPlayerToWorkshop->SetProperty(
-        PROP_WND_TOOLTIP, const_cast<char*>(tipFromPlayer.c_str()));
+        PROP_WND_TOOLTIP, &tipFromPlayer);
     m_btnTransferItemsFromWorkshopToPlayer->SetProperty(
-        PROP_WND_TOOLTIP, const_cast<char*>(tipFromWorkshop.c_str()));
+        PROP_WND_TOOLTIP, &tipFromWorkshop);
 }
