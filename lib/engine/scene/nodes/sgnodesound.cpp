@@ -24,6 +24,8 @@ namespace m3d
 
     void SgSoundSourceNode::CanBeFree()
     {
+        // RVA 0x6617E0 - a multi-part sound moves on to its last part (a triple sound's third, unlooped; a double
+        // sound's second); the playing channel stops looping.
         if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             int channelId = -1;
@@ -35,9 +37,8 @@ namespace m3d
             GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_TRIPLE, &bIsTripleSound);
 
             int bIsDoubleSound = 0;
-            GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_DOUBLE, &bIsTripleSound);
+            GetServer()->GetItemProperty(m_srvId, PROP_SRV_SND_DOUBLE, &bIsDoubleSound);
 
-            // TODO: check all this!!!
             if (bIsTripleSound && m_currentSoundNum < 2)
             {
                 m_currentSoundNum = 2;

@@ -214,7 +214,8 @@ namespace m3d
         ParseProto(params, &proto, &paramsPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_INFO("Protocol is not supported: " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_INFO(CStr("protocol is not supported " + static_cast<int>(proto)));
             return -1;
         }
 

@@ -259,25 +259,34 @@ namespace m3d
 
     int Object::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
     {
+        // RVA 0x665EE0 - writes name and class, then each persistent child as a "Node" element, skipping children
+        // whose server item (property 4360) is -1.
         if (m_name.empty())
         {
             M3D_LOG_INFO("Warning: node have no name, added default");
-            m_name = "Node";
-            m_name += CStr(g_Kernel->GetUniqueId());
+            // NOTE: the shipped code adds the unique id to the "Node" literal as a pointer, not a number, giving
+            // "ode", "de", "e", "" and then whatever follows the literal in the executable; past 4 it is empty.
+            static char const nodeLiteral[] = "Node";
+            int const id = g_Kernel->GetUniqueId();
+            m_name = id >= 0 && id < 5 ? nodeLiteral + id : "";
         }
         writeTo->SetAttribute("name", m_name.c_str());
         writeTo->SetAttribute("class", GetClassNameA());
+
+        // NOTE: the child's item id is read into the same variable as the parent XML node, as shipped: a child
+        // without property 4360 keeps the previous value, so the -1 test can carry over between siblings.
+        void* itemId = writeTo;
         for (auto* it = GetFirstChild(); it != nullptr; it = it->GetNextSibling())
         {
-            //TODO: magic number
-            it->GetProperty(4360, &writeTo);
-            if (it->m_persistant && writeTo != reinterpret_cast<cmn::XmlNode*>(-1))
+            it->GetProperty(4360, &itemId);
+            if (it->m_persistant && itemId != reinterpret_cast<void*>(-1))
             {
                 ref_ptr node = file->CreateNode(cmn::XmlNodeType::XML_NODE_ELEMENT, "Node");
                 it->WriteToXmlNode(file, node);
+                writeTo->AddChild(node);
             }
         }
-        return true;
+        return 1;
     }
 
     Object* Object::GetFirstChild() const
@@ -296,7 +305,7 @@ namespace m3d
         {
             return nullptr;
         }
-        //TODO: check correctness
+        // RVA 0x435700
         for (auto* it = m_firstChild; it; it = it->m_nextSibling)
         {
             if (it->m_name == str)
@@ -422,48 +431,27 @@ namespace m3d
 
     int Object::UnlinkChild(Object* node)
     {
-        // TODO: generated code Object::UnlinkChild
-        if (!node)
-        {
-            return m_numChildren;  // Or throw an exception
-        }
-
-        // Case 1: Only child
+        // RVA 0x405400 - node must be a child of this object.
         if (m_firstChild == node && m_lastChild == node)
         {
             m_firstChild = nullptr;
             m_lastChild = nullptr;
-            node->m_parent = nullptr;
-            node->m_nextSibling = nullptr;
-            node->m_prevSibling = nullptr;
-            return --m_numChildren;
         }
-
-        // Case 2: First child (but not only child)
-        if (m_firstChild == node)
+        else if (m_firstChild == node)
         {
-            m_firstChild->m_nextSibling->m_prevSibling = nullptr;
-            m_firstChild = m_firstChild->m_nextSibling;
-            node->m_parent = nullptr;
-            node->m_nextSibling = nullptr;
-            node->m_prevSibling = nullptr;
-            return --m_numChildren;
+            node->m_nextSibling->m_prevSibling = nullptr;
+            m_firstChild = node->m_nextSibling;
         }
-
-        // Case 3: Last child (but not only child)
-        if (m_lastChild == node)
+        else if (m_lastChild == node)
         {
-            m_lastChild->m_prevSibling->m_nextSibling = nullptr;
-            m_lastChild = m_lastChild->m_prevSibling;
-            node->m_parent = nullptr;
-            node->m_nextSibling = nullptr;
-            node->m_prevSibling = nullptr;
-            return --m_numChildren;
+            node->m_prevSibling->m_nextSibling = nullptr;
+            m_lastChild = node->m_prevSibling;
         }
-
-        // Case 4: Middle child
-        node->m_nextSibling->m_prevSibling = node->m_prevSibling;
-        node->m_prevSibling->m_nextSibling = node->m_nextSibling;
+        else
+        {
+            node->m_nextSibling->m_prevSibling = node->m_prevSibling;
+            node->m_prevSibling->m_nextSibling = node->m_nextSibling;
+        }
         node->m_parent = nullptr;
         node->m_nextSibling = nullptr;
         node->m_prevSibling = nullptr;

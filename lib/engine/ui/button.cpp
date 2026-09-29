@@ -307,53 +307,28 @@ namespace m3d
 
         int ButtonWnd::OnPaint(DrawInfo const& di)
         {
-            //TODO: check and refactor this
+            // RVA 0x6B15E0 - the frame (unless hidden) and the text. A button drawn with images or a pane, but with no
+            // distinct disabled image or disabled-state pane graphics, uses colour 3 for its frame.
             if ((m_style & 0x40) == 0)
             {
-                auto clr = m_curClr;
-                if ((m_style & 2) == 0 && (m_style & 0x80000) == 0)
+                unsigned int clr = m_curClr;
+                if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
                 {
-                    DrawNonClient(di, clr);
-                    DrawWndText(di);
-                    return 1;
-                }
-                if (m_isImaged)
-                {
-                    if (m_imageDisabled.IsValid())
+                    bool hasDisabledLook = false;
+                    if (m_isImaged)
                     {
-                        if (m_image == m_imageDisabled)
-                        {
-                            clr = 3;
-                        }
-                        DrawNonClient(di, clr);
-                        DrawWndText(di);
-                        return 1;
+                        hasDisabledLook = m_imageDisabled.IsValid() && !(m_image == m_imageDisabled);
+                    }
+                    else if (auto const* pane = GetGfxServer()->GetPane(m_paneName))
+                    {
+                        hasDisabledLook = pane->m_frame[3] || pane->m_bg[3];
+                    }
+                    if (!hasDisabledLook)
+                    {
+                        clr = 3;
                     }
                 }
-                else
-                {
-                    auto pane = GetGfxServer()->GetPane(m_paneName);
-                    if (pane)
-                    {
-                        if (pane->m_frame[3])
-                        {
-                            DrawNonClient(di, clr);
-                            DrawWndText(di);
-                            return 1;
-                        }
-                        if (pane->m_bg[3] == 0)
-                        {
-                            clr = 3;
-                        }
-                        DrawNonClient(di, clr);
-                        DrawWndText(di);
-                        return 1;
-                    }
-                }
-                clr = 3;
                 DrawNonClient(di, clr);
-                DrawWndText(di);
-                return 1;
             }
             DrawWndText(di);
             return 1;

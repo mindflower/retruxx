@@ -1,8 +1,6 @@
 #pragma once
 #include "quaternion.h"
 
-//TODO: add static functions
-
 struct CVector2;
 class CBrezLine
 {

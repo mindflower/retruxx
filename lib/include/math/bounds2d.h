@@ -237,43 +237,28 @@ BoundsBase<T>::BoundsBase(PointBase<T> const& topLeft, PointBase<T> const& botto
 template <class T>
 BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
 {
-    //TODO: check this and refactor
-    T v3; // xmm2_4
-    T v4; // xmm1_4
-    T v5; // xmm4_4
-    T v6; // xmm0_4
-    T v7; // xmm3_4
-    T v8; // xmm2_4
-    BoundsBase<T> result; // eax
-
-    v3 = b.width + b.x0;
-    if (this->x0 > v3
-        || (v4 = this->width + this->x0, b.x0 > v4)
-        || (v5 = b.height + b.y0, this->y0 > v5)
-        || (v6 = this->height + this->y0, b.y0 > v6))
+    // RVA 0x46E3A0 - the overlap of the two rectangles; all zero when they do not touch.
+    T const bx1 = b.width + b.x0;
+    T const x1 = width + x0;
+    T const by1 = b.height + b.y0;
+    T const y1 = height + y0;
+    BoundsBase<T> result;
+    if (x0 > bx1 || b.x0 > x1 || y0 > by1 || b.y0 > y1)
     {
         result.x0 = 0.0;
         result.y0 = 0.0;
         result.width = 0.0;
         result.height = 0.0;
+        return result;
     }
-    else
-    {
-        v7 = this->x0;
-        if (this->x0 <= b.x0)
-            v7 = b.x0;
-        if (v3 <= v4)
-            v4 = b.width + b.x0;
-        v8 = this->y0;
-        if (v8 <= b.y0)
-            v8 = b.y0;
-        if (v5 <= v6)
-            v6 = b.height + b.y0;
-        result.x0 = v7;
-        result.y0 = v8;
-        result.width = v4 - v7;
-        result.height = v6 - v8;
-    }
+    T const left = x0 <= b.x0 ? b.x0 : x0;
+    T const right = bx1 <= x1 ? bx1 : x1;
+    T const top = y0 <= b.y0 ? b.y0 : y0;
+    T const bottom = by1 <= y1 ? by1 : y1;
+    result.x0 = left;
+    result.y0 = top;
+    result.width = right - left;
+    result.height = bottom - top;
     return result;
 }
 

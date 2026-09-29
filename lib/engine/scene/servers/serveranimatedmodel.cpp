@@ -1568,7 +1568,8 @@ namespace m3d
 
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_ERR("Error protocol: " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_ERR(CStr("Error: protocol is not supported " + static_cast<int>(proto)));
             return;
         }
 

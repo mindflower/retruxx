@@ -8,14 +8,8 @@
 
 namespace
 {
-    // Every comparison in the 1D and 2D geometry uses the same tolerance.
-    float constexpr EPS = 0.000099999997f;
-
-    template<class T>
-    T Abs(T v)
-    {
-        return v < 0.0f ? 0.0f - v : v;
-    }
+    float const EPS = geom1d::EPSILON<float>();
+    using geom1d::Abs;
 }  // namespace
 
 namespace geom1d
@@ -33,13 +27,8 @@ namespace geom1d
     template<class T>
     bool Segment1<T>::isPointOn(T const& point) const
     {
-        // Inlined into geom2d::AABBIntersects and geom2d::Segment2::isPointOn. The ends may come
-        // in either order.
-        if (end <= begin)
-        {
-            return !(point < end - EPS) && begin + EPS >= point;
-        }
-        return !(point < begin - EPS) && end + EPS >= point;
+        // RVA 0x83BA30 - inlined into geom2d::AABBIntersects and geom2d::Segment2::isPointOn.
+        return Between(begin, end, point);
     }
 
     template<class T>
@@ -249,7 +238,7 @@ namespace geom2d
         Line2<T> const line1(seg1.begin, seg1.end);
         T const w1 = line1.pointWeight(seg2.begin);
         T const w2 = line1.pointWeight(seg2.end);
-        if (!((w1 <= EPS && w2 >= -EPS) || (w1 >= -EPS && w2 <= EPS)))
+        if (!geom1d::DifferentSigned(w1, w2))
         {
             return false;
         }
@@ -257,7 +246,7 @@ namespace geom2d
         Line2<T> const line2(seg2.begin, seg2.end);
         T const w3 = line2.pointWeight(seg1.begin);
         T const w4 = line2.pointWeight(seg1.end);
-        return (w3 <= EPS && w4 >= -EPS) || (w3 >= -EPS && w4 <= EPS);
+        return geom1d::DifferentSigned(w3, w4);
     }
 
     template class Point2<float>;

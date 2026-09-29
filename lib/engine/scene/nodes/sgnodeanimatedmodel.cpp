@@ -428,7 +428,7 @@ namespace m3d
         if (SgNode::GetProperty(propId, property))
             return 1;
 
-        // TODO: check this
+        // RVA 0x730C50
         switch (propId)
         {
         case 0x1108u:

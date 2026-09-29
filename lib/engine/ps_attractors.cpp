@@ -116,26 +116,25 @@ namespace m3d
 
     void Attr::SetState(float Time)
     {
-        // TODO: check and refactor this
-        if (!this->m_On)
+        // RVA 0x950150 - off unless on and inside the working part of its period; then by force mode.
+        if (!m_On || !IsWork(Time))
         {
-            this->m_State = OFF;
-            return;
-        }
-
-        auto v2 = Time - this->m_wtime.m_start;
-        if (v2 < 0.0 || this->m_wtime.m_length <= (float)(v2 - (float)((float)(int)(float)(v2 / this->m_wtime.m_repeat) * this->m_wtime.m_repeat)))
-        {
-            this->m_State = OFF;
+            m_State = OFF;
             return;
         }
         switch (m_mode)
         {
-        case PS_FORCE_ACCEL: this->m_State = ACCELERATION; return;
-        case PS_FORCE_VEL: this->m_State = SPEED; return;
-        case PS_FORCE_POS: this->m_State = WMPOSITION; break;
+        case PS_FORCE_ACCEL:
+            m_State = ACCELERATION;
+            break;
+        case PS_FORCE_VEL:
+            m_State = SPEED;
+            break;
+        case PS_FORCE_POS:
+            m_State = WMPOSITION;
+            break;
         default:
-            this->m_State = OFF;
+            m_State = OFF;
             break;
         }
     }
@@ -663,70 +662,58 @@ namespace m3d
 
     unsigned int Emitter::Emit(double time, float lastFrameSecs)
     {
-        // TODO: generated code Emitter::Emit
-        int particlesToEmit = 0;
-
-        // Handle special case for time = 0 with specific wavelength
+        // RVA 0x9537F0 - how many particles to emit this frame: a 0.1 window emits its whole count at time 0;
+        // otherwise one per boundary of the emission interval (length / count) crossed this frame, or several
+        // for a long frame, and at least one at time 0. None outside the working part of the repeat period.
+        // NOTE: the phase in the period is a fraction (0..1) but is compared with and added to lengths in
+        // seconds, as shipped.
+        double const length = m_wtime.m_length;
         if (time == 0.0 && m_wtime.m_length == 0.1f)
         {
             return static_cast<int>(m_emitAtPeriod);
         }
-
-        // Main emission logic for positive time values
+        int count = 0;
         if (time >= 0.0 && m_wtime.m_length != 0.1f)
         {
-            // Calculate position within current wave period
-            double cycles = time / m_wtime.m_length;
-            double frameStart = (cycles - floor(cycles)) * m_wtime.m_length;
-
-            if (frameStart < m_wtime.m_length)
+            double const phase =
+                (time - static_cast<int>(static_cast<int64_t>(1.0 / length * time)) * length) * (1.0 / length);
+            if (length > phase)
             {
-                // Calculate fraction of period covered this frame
-                double frameFraction = lastFrameSecs / m_wtime.m_length;
-                frameFraction = std::min(frameFraction, 1.0);  // Clamp to 1.0
-
-                // Adjust if we're crossing period boundary
-                if (frameStart + frameFraction > m_wtime.m_length)
+                double frame = lastFrameSecs / length;
+                if (frame > 1.0)
                 {
-                    frameFraction = m_wtime.m_length - frameStart;
+                    frame = 1.0;
                 }
-
-                // Calculate emission rate (particles per period)
-                double particlesPerPeriod = m_wtime.m_length / m_emitAtPeriod;
-
-                if (frameFraction <= particlesPerPeriod)
+                if (phase + frame > length)
                 {
-                    // Check if we crossed an emission boundary
-                    unsigned int startInterval = static_cast<unsigned int>(frameStart / particlesPerPeriod);
-                    unsigned int endInterval = static_cast<unsigned int>((frameStart + frameFraction) / particlesPerPeriod);
-
-                    if (startInterval != endInterval)
+                    frame = length - phase;
+                }
+                double const interval = m_wtime.m_length / m_emitAtPeriod;
+                if (frame <= interval)
+                {
+                    if (static_cast<unsigned>(static_cast<int64_t>(1.0 / interval * phase)) !=
+                        static_cast<unsigned>(static_cast<int64_t>((phase + frame) * (1.0 / interval))))
                     {
-                        particlesToEmit = 1;
+                        count = 1;
                     }
                 }
                 else
                 {
-                    // Emit multiple particles for larger time steps
-                    particlesToEmit = static_cast<int>(frameFraction / particlesPerPeriod);
+                    count = static_cast<int>(static_cast<int64_t>(frame / interval));
                 }
             }
         }
-
-        // Always emit at least one particle at time = 0
-        if (time == 0.0 && particlesToEmit == 0)
+        if (time == 0.0 && !count)
         {
-            particlesToEmit = 1;
+            count = 1;
         }
-
-        // Check if we're outside the active emission time window
-        float timeInRepeatCycle = time - (floor(time / m_wtime.m_repeat) * m_wtime.m_repeat);
-        if (time < 0.0 || m_wtime.m_length <= timeInRepeatCycle)
+        float const t = static_cast<float>(time);
+        if (t < 0.0f ||
+            m_wtime.m_length <= t - static_cast<float>(static_cast<int>(t / m_wtime.m_repeat)) * m_wtime.m_repeat)
         {
             return 0;
         }
-
-        return particlesToEmit;
+        return count;
     }
     void RotAttractor::ReadFromXmlNode(cmn::XmlFile* m_file, ref_ptr<cmn::XmlNode>& prattr)
     {
@@ -1071,29 +1058,21 @@ namespace m3d
 
     void SAttractor::InitParticlesList(ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
     {
-        // TODO: check and refactor this
-        if (m_State == SPEED && m_emitterOn)
+        // RVA 0x951B40 - a speed attractor working on the whole list pushes the list's velocity by its force
+        // (rotated by the local matrix when oriented).
+        if (m_State != SPEED || !m_emitterOn)
         {
-            auto time = parts->m_time;
-
-            CVector dir = ZeroVector;
-
-            auto forces = CalcForces(m_csType, m_force, time, dir);
-            if (Orient)
-            {
-                auto v6 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) + (float)(Local._12 * forces.x);
-                auto v7 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) + (float)(Local._13 * forces.x);
-                dir.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
-                dir.y = v6;
-                dir.z = v7;
-                forces.x = dir.x;
-                forces.y = v6;
-                forces.z = v7;
-            }
-            parts->m_vel.x = parts->m_vel.x + (float)(forces.x * ForceCoeff);
-            parts->m_vel.y = (float)(forces.y * ForceCoeff) + parts->m_vel.y;
-            parts->m_vel.z = (float)(forces.z * ForceCoeff) + parts->m_vel.z;
+            return;
         }
+        CVector dir = ZeroVector;
+        CVector forces = CalcForces(m_csType, m_force, parts->m_time, dir);
+        if (Orient)
+        {
+            forces = Local.vecRot(forces);
+        }
+        parts->m_vel.x = parts->m_vel.x + forces.x * ForceCoeff;
+        parts->m_vel.y = forces.y * ForceCoeff + parts->m_vel.y;
+        parts->m_vel.z = forces.z * ForceCoeff + parts->m_vel.z;
     }
 
     void SAttractor::AffectParticle(Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)

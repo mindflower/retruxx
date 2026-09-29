@@ -509,149 +509,128 @@ namespace m3d
 
     void StaticModelsServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
-        // TODO: generated code
+        // RVA 0x7792E0 - replaces every model with the listed ones found in the first item's models XML (skipping
+        // ids already present), each with its .raw shot, and reports progress through the load callback.
         if (itemslist.empty())
         {
             return;
         }
-
-        // Clear existing models and shots
+        for (size_t i = 0; i < m_models.size(); ++i)
+        {
+            delete static_cast<CGSModel*>(m_models[i].m_ptr);
+            delete[] m_shots[i];
+        }
         m_models.clear();
         m_shots.clear();
 
-        // Parse protocol from the first item
-        m3d::DataServer::Proto proto;
-        int paramsPos;
-        m3d::DataServer::ParseProto(itemslist[0].m_filename.c_str(), &proto, &paramsPos);
-
+        Proto proto;
+        int paramsPos = 0;
+        ParseProto(itemslist.front().m_filename.c_str(), &proto, &paramsPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_INFO("Protocol is not supported: " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_INFO(CStr("protocol is not supported " + static_cast<int>(proto)));
             return;
         }
-
-        // Parse XML file
-        const char* xmlPath = itemslist[0].m_filename.c_str() + paramsPos;
-        CStr errorStr;
-
-        ref_ptr<m3d::cmn::XmlFile> xmlFile = m3d::ReadXmlFile(xmlPath, &errorStr);
+        char const* const pp = itemslist.front().m_filename.c_str() + paramsPos;
+        CStr err;
+        ref_ptr<cmn::XmlFile> xmlFile = ReadXmlFile(pp, &err);
         if (!xmlFile)
         {
-            M3D_LOG_INFO("StaticModelsServer: " + errorStr);
+            M3D_LOG_INFO("StaticModelsServer: " + err);
+            return;
+        }
+        ref_ptr<cmn::XmlNode> node = xmlFile->CreateNode();
+        xmlFile->GetFirstChild(node, "StaticModels");
+        if (node->IsEmpty())
+        {
             return;
         }
 
-        // Process XML nodes
-        ref_ptr<m3d::cmn::XmlNode> rootNode = xmlFile->CreateNode();
-        xmlFile->GetFirstChild(rootNode, "StaticModels");
-
-        if (rootNode->IsEmpty())
+        unsigned int processed = 0;
+        for (node->GetFirstChild(node, "model"); !node->IsEmpty(); node->GetNextSibling(node, "model"))
         {
-            return;
-        }
-
-        ref_ptr<m3d::cmn::XmlNode> modelNode = xmlFile->CreateNode();
-        rootNode->GetFirstChild(modelNode, "model");
-
-        int processedCount = 0;
-
-        while (!modelNode->IsEmpty())
-        {
-            const char* modelId = modelNode->GetAttribute("id");
-
-            // Check if item already exists
-            int existingItem = m3d::DataServer::GetItemByName(modelId, 0);
-
-            // Call load callback if specified
-            if (m_fnLoadCallback)
+            char const* const id = node->GetAttribute("id");
+            int const existing = GetItemByName(id, false);
+            if (m_fnLoadCallback && processed < itemslist.size())
             {
-                float progress = static_cast<float>(processedCount) / itemslist.size();
-                m_fnLoadCallback(progress, m_fnLoadCallbackData);
+                m_fnLoadCallback(static_cast<int>(100 * processed / itemslist.size()), m_fnLoadCallbackData);
+            }
+            if (existing != -1)
+            {
+                ++processed;
+                continue;
             }
 
-            if (existingItem == -1)
+            CStr const strID(node->GetAttribute("id"));
+            size_t item = 0;
+            while (item < itemslist.size() &&
+                   (itemslist[item].m_fileWasRead || strcmp(itemslist[item].m_id.c_str(), strID.c_str())))
             {
-                // Process new model
-                CStr modelFile = modelNode->GetAttribute("file");
-
-                int shadow = 0;
-                int windWavy = 0;
-                int trans = 0;
-                int twoSided = 0;
-                int tessellate = 0;
-                int trackLand = 0;
-
-                m3d::SafeIntAttrib(shadow, modelNode, "shadow");
-                m3d::SafeIntAttrib(windWavy, modelNode, "windwavy");
-                m3d::SafeIntAttrib(trans, modelNode, "trans");
-                m3d::SafeIntAttrib(twoSided, modelNode, "twosided");
-                m3d::SafeIntAttrib(tessellate, modelNode, "tessellate");
-                m3d::SafeIntAttrib(trackLand, modelNode, "trackland");
-
-                // Load model
-                m3d::CGSModel* model = new m3d::CGSModel();
-                if (model->Load(modelFile))
-                {
-                    // Create model data and add to collection
-                    m3d::DataServer::Model modelData(
-                        (void*)model,
-                        modelFile.c_str(),
-                        itemslist[0].m_filename.c_str(),
-                        modelId
-                    );
-
-                    m_models.push_back(modelData);
-
-                    // Load shot data
-                    CStr shotFile = modelFile.substr(0, modelFile.rfind('.')) + ".raw";
-
-                    scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
-                    if (fileStream->Open(shotFile.c_str(), fs::IStream::OPEN_READ))
-                    {
-                        size_t fileSize = fileStream->GetSize();
-                        unsigned char* shotData = new unsigned char[fileSize + 2];
-                        fileStream->ReadBytes(shotData + 2, fileSize);
-                        fileStream->Close();
-
-                        // Calculate dimensions (simplified)
-                        size_t dimension = static_cast<size_t>(std::sqrt(fileSize));
-                        shotData[0] = static_cast<unsigned char>(dimension);
-                        shotData[1] = static_cast<unsigned char>(dimension);
-
-                        m_shots.push_back(shotData);
-
-                        // Set model properties
-                        size_t modelIndex = m_models.size() - 1;
-                        SetItemProperty(modelIndex, 0, &shadow);
-                        SetItemProperty(modelIndex, 1, &windWavy);
-                        SetItemProperty(modelIndex, 2, &trans);
-                        SetItemProperty(modelIndex, 3, &twoSided);
-                        SetItemProperty(modelIndex, 4, &tessellate);
-                        SetItemProperty(modelIndex, 5, &trackLand);
-
-                        m_preparedToRender = false;
-                    }
-                }
-                else
-                {
-                    // Log error
-                    M3D_LOG_INFO("StaticModelsServer::AddItem: cannot load model " + modelFile);
-                    delete model;
-                }
+                ++item;
+            }
+            if (item == itemslist.size())
+            {
+                continue;
             }
 
-            processedCount++;
-            modelNode->GetNextSibling(modelNode, "model");
+            int shadow = 1;
+            int windwavy = 0;
+            int trans = 1;
+            int twosided = 0;
+            int tessellate = 0;
+            int trackland = 0;
+            CStr const modelFileName(node->GetAttribute("file"));
+            SafeIntAttrib(shadow, node.get(), "shadow");
+            SafeIntAttrib(windwavy, node.get(), "windwavy");
+            SafeIntAttrib(trans, node.get(), "trans");
+            SafeIntAttrib(twosided, node.get(), "twosided");
+            SafeIntAttrib(tessellate, node.get(), "tessellate");
+            SafeIntAttrib(trackland, node.get(), "trackland");
+
+            auto* const model = new CGSModel();
+            if (!model->Load(modelFileName))
+            {
+                M3D_LOG_INFO(CStr("StaticModelsServer::AddItem: cannot load model ") + modelFileName);
+                delete model;
+                continue;
+            }
+            m_models.push_back(Model(model, modelFileName.c_str(), pp, id));
+
+            CStr const passfilename = modelFileName.substr(0, static_cast<int>(strlen(modelFileName.c_str())) - 4) +
+                CStr(".raw");
+            unsigned char* shot = nullptr;
+            scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            if (stream->Open(passfilename.c_str(), fs::IStream::OPEN_READ))
+            {
+                unsigned int const size = stream->GetSize();
+                shot = new unsigned char[size + 2];
+                stream->ReadBytes(shot + 2, size);
+                stream->Close();
+                unsigned char const side = static_cast<unsigned char>(
+                    static_cast<__int64>(std::sqrt(static_cast<double>(static_cast<int>(size)))));
+                shot[1] = side;
+                shot[0] = side;
+            }
+            m_shots.push_back(shot);
+
+            int const sh = static_cast<int>(m_models.size()) - 1;
+            SetItemProperty(sh, PROP_MODEL_CAST_SHADOW, &shadow);
+            SetItemProperty(sh, PROP_MODEL_WIND_WAVY, &windwavy);
+            SetItemProperty(sh, PROP_MODEL_TRANS, &trans);
+            SetItemProperty(sh, PROP_MODEL_2SIDED, &twosided);
+            SetItemProperty(sh, PROP_MODEL_TESSELLATE, &tessellate);
+            SetItemProperty(sh, PROP_MODEL_TRACK_LAND, &trackland);
+            ++processed;
+            m_preparedToRender = false;
+            itemslist[item].m_fileWasRead = true;
         }
 
-        // Check for unread files
-        for (size_t i = 0; i < itemslist.size(); ++i)
+        for (auto const& listed : itemslist)
         {
-            if (!itemslist.at(i).m_fileWasRead)
+            if (!listed.m_fileWasRead)
             {
-                M3D_LOG_INFO("DataServer: cannot read file: " +
-                    itemslist.at(i).m_filename + " id = " +
-                    itemslist.at(i).m_id);
+                M3D_LOG_INFO("DataServer: cannot read file:" + listed.m_filename + " id = " + listed.m_id);
             }
         }
     }

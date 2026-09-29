@@ -248,149 +248,105 @@ namespace m3d
 
     void CameraPath::GetCameraForTime(float curTime, CVector& pos, Quaternion& rot, float& zoom) const
     {
-        // TODO: generated code
-        // Find the segment that contains the current time
-        int segmentIndex = 1;
-        for (; segmentIndex < this->m_cameraPathStates.size(); ++segmentIndex)
+        // RVA 0x6269D0 - the camera at curTime: past the last point it stays there; otherwise the segment is
+        // found, moved back so it has a point on each side, and the camera follows the Catmull-Rom spline with
+        // the time eased by the two points' speeds.
+        auto const& states = m_cameraPathStates;
+        int segment = 1;
+        while (segment < static_cast<int>(states.size()) && curTime > states[segment].m_flyTime)
         {
-            if (curTime <= this->m_cameraPathStates[segmentIndex].m_flyTime)
-                break;
+            ++segment;
         }
-
-        // Handle case where time is beyond the last keyframe
-        if (segmentIndex == this->m_cameraPathStates.size())
+        if (segment == static_cast<int>(states.size()))
         {
-            pos = this->m_cameraPathStates.back().m_point;
-            rot = this->m_cameraPathStates.back().m_rotation;
-            zoom = this->m_cameraPathStates.back().m_zoom;
+            pos = states.back().m_point;
+            rot = states.back().m_rotation;
+            zoom = states.back().m_zoom;
             return;
         }
-        // Adjust segment index to ensure we have enough points for interpolation
-        if (segmentIndex > 1)
-            segmentIndex--;
-
-        // Ensure we have valid control points for Catmull-Rom interpolation
-        while (segmentIndex > 0)
+        if (segment > 1)
         {
-            if (segmentIndex + 2 < this->m_cameraPathStates.size())
-                break;
-            segmentIndex--;
+            --segment;
+        }
+        while (segment > 0 && segment + 2 >= static_cast<int>(states.size()))
+        {
+            --segment;
         }
 
-        // Get the four control points for Catmull-Rom interpolation
-        auto const& p0 = this->m_cameraPathStates[segmentIndex - 1];
-        auto const& p1 = this->m_cameraPathStates[segmentIndex];
-        auto const& p2 = this->m_cameraPathStates[segmentIndex + 1];
-        auto const& p3 = this->m_cameraPathStates[segmentIndex + 2];
-
-        // Calculate normalized time within the segment [0,1]
-        float segmentStartTime = p1.m_flyTime;
-        float segmentEndTime = p2.m_flyTime;
-        float normalizedTime = (curTime - segmentStartTime) / (segmentEndTime - segmentStartTime);
-
-        // Calculate speed-based interpolation parameter
-        float speedFactor = ((p2.m_speed - p1.m_speed) * normalizedTime + (p1.m_speed * 2.0f)) * normalizedTime;
-        speedFactor /= (p1.m_speed + p2.m_speed);
-
-        // Check if points are too close (degenerate case)
-        float distance = (p1.m_point - p2.m_point).length();
-        if (distance <= 0.001f)
+        auto const& p0 = states[segment - 1];
+        auto const& p1 = states[segment];
+        auto const& p2 = states[segment + 1];
+        auto const& p3 = states[segment + 2];
+        float const t = (curTime - p1.m_flyTime) / (p2.m_flyTime - p1.m_flyTime);
+        float const s = ((p2.m_speed - p1.m_speed) * t + p1.m_speed * 2.0f) * t / (p1.m_speed + p2.m_speed);
+        if ((p1.m_point - p2.m_point).length() <= 0.001f)
         {
-            // Use exact point if too close
             pos = p1.m_point;
             zoom = p1.m_zoom;
         }
         else
         {
-            // Interpolate position using Catmull-Rom spline
-            pos = CatmullRomSubdivide(speedFactor, p0.m_point, p1.m_point, p2.m_point, p3.m_point);
-
-            // Interpolate zoom using Catmull-Rom spline
-            zoom = CatmullRomSubdivide(speedFactor, p0.m_zoom, p1.m_zoom, p2.m_zoom, p3.m_zoom);
+            pos = CatmullRomSubdivide(s, p0.m_point, p1.m_point, p2.m_point, p3.m_point);
+            zoom = CatmullRomSubdivide(s, p0.m_zoom, p1.m_zoom, p2.m_zoom, p3.m_zoom);
         }
-
-        // Interpolate rotation using cubic interpolation
-        rot = CubicInterpolation(speedFactor, p0.m_rotation, p1.m_rotation, p2.m_rotation, p3.m_rotation);
+        rot = CubicInterpolation(s, p0.m_rotation, p1.m_rotation, p2.m_rotation, p3.m_rotation);
     }
 
     bool CameraPath::empty() const
     {
-        return m_cameraPathStates.size();
+        // RVA 0x626320
+        return m_cameraPathStates.empty();
     }
 
     void CameraPath::CalcFlyTimes(unsigned pointNum, bool recalcFullLength)
     {
+        // RVA 0x629250 - the first pointNum points start at 0 and the inner ones are spread evenly up to the full
+        // time; then each step is scaled by the average segment speed over the speed of the step's two points.
         M3D_ASSERT(pointNum >= 1);
         if (recalcFullLength)
         {
             CalcFullLength(pointNum);
         }
-
-        // TODO: generated code
-
-        // Get the camera path states
-        auto& states = this->m_cameraPathStates;
-        if (states.empty())
+        auto& states = m_cameraPathStates;
+        int const size = static_cast<int>(states.size());
+        for (int i = 0; i < static_cast<int>(pointNum) && i < size; ++i)
+        {
+            states[i].m_flyTime = 0.0f;
+        }
+        for (int i = pointNum, step = 0; i < size - 2; ++i, ++step)
+        {
+            states[i].m_flyTime =
+                static_cast<float>(static_cast<double>(step) * m_fullTime / static_cast<double>(static_cast<unsigned>(size - pointNum - 2)));
+        }
+        if (size >= 1)
+        {
+            states[size - 1].m_flyTime = m_fullTime;
+        }
+        if (size >= 2)
+        {
+            states[size - 2].m_flyTime = m_fullTime;
+        }
+        M3D_ASSERT(empty() || size >= 4);
+        if (size < 4)
+        {
             return;
-
-        // Reset fly times for the specified number of points
-        if (pointNum < 4)
-        {
-            for (int i = 0; i < pointNum && i < states.size(); ++i)
-            {
-                states[i].m_flyTime = 0.0f;
-            }
-        }
-        else
-        {
-            // For larger point counts, distribute times evenly
-            // Set fly times for intermediate points using linear interpolation
-            int startIndex = pointNum;
-            for (unsigned int i = 0; startIndex < (states.size() - 2); ++i)
-            {
-                states[startIndex].m_flyTime = (i * this->m_fullTime) / (states.size() - pointNum - 2);
-                ++startIndex;
-            }
         }
 
-        // Set fly times for the last two points
-        states.back().m_flyTime = this->m_fullTime;
-        if (states.size() >= 2)
+        float speedSum = 0.0f;
+        for (int i = 1; i < size - 2; ++i)
         {
-            states[states.size() - 2].m_flyTime = this->m_fullTime;
+            speedSum = (states[i + 1].m_speed + states[i].m_speed) * 0.5f + speedSum;
         }
-
-        // Validate minimum state count
-        M3D_ASSERT(empty() || size() >= 4);
-
-        // Calculate average speed for time adjustment
-        float totalSpeed = 0.0f;
-        int speedCount = 0;
-
-        // Sum speeds of intermediate points (excluding first and last two points)
-        for (int i = 1; i < (states.size() - 2); ++i)
+        double const averageSpeed = speedSum / static_cast<double>(size - 3);
+        float previous = states[1].m_flyTime;
+        for (int i = 2; i < size - 2; ++i)
         {
-            totalSpeed += states[i].m_speed;
-            ++speedCount;
-        }
-
-        if (speedCount > 0)
-        {
-            float averageSpeed = totalSpeed / speedCount;
-            float previousFlyTime = states[1].m_flyTime;
-
-            // Adjust fly times based on speed variations
-            for (int i = 2; i < (states.size() - 2); ++i)
-            {
-                float currentFlyTime = states[i].m_flyTime;
-                float segmentSpeed = (states[i].m_speed + states[i - 1].m_speed) * 0.5f;
-
-                // Adjust time based on speed ratio
-                states[i].m_flyTime =
-                    states[i - 1].m_flyTime + ((currentFlyTime - previousFlyTime) * averageSpeed / segmentSpeed) * 2.0f;
-
-                previousFlyTime = currentFlyTime;
-            }
+            float const current = states[i].m_flyTime;
+            states[i].m_flyTime =
+                static_cast<float>((current - previous) * averageSpeed) / (states[i].m_speed + states[i - 1].m_speed) *
+                    2.0f +
+                states[i - 1].m_flyTime;
+            previous = current;
         }
     }
 
@@ -576,84 +532,40 @@ namespace m3d
 
     float CameraPath::_CalcSplineSegmentLength(unsigned startPointIndex, unsigned endPointIndex) const
     {
-        // TODO: generated code
-        auto& states = this->m_cameraPathStates;
-        // Get references to start and end points
-        auto const& startState = states[startPointIndex];
-        auto const& endState = states[endPointIndex];
-
-        // Calculate direct distance between points
-        CVector delta = startState.m_point - endState.m_point;
-        float directDistance = sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
-
-        // If points are very close, return 0 length
-        if (directDistance < 0.001f)
-            return 0.0f;
-
-        // Calculate step size for numerical integration
-        float stepSize = fabs(1.0f - 1.0f / directDistance) * 0.01f;
-        int numSteps = static_cast<int>(1.0f / stepSize);
-
-        // Initialize position tracking
-        CVector currentPos = startState.m_point;
-        float t = 0.0f;
-        float totalLength = 0.0f;
-
-        // Get control points for cubic Hermite spline
-        auto const& prevControlPoint = states[startPointIndex - 1];  // Previous control point
-        auto const& nextControlPoint = states[endPointIndex + 1];    // Next control point
-
-        // Numerical integration along the spline
-        for (int step = 0; step < numSteps; ++step)
+        // RVA 0x626C30 - the length of the Catmull-Rom segment between two points, summed over straight steps of
+        // about 1/100 of the parameter (finer the longer the chord), ending on the end point.
+        auto const& states = m_cameraPathStates;
+        CVector const& p1 = states[startPointIndex].m_point;
+        CVector const& p2 = states[endPointIndex].m_point;
+        float const chord = (p1 - p2).length();
+        if (chord < 0.001f)
         {
-            // Calculate cubic Hermite spline basis functions
-            float t2 = t * t;
-            float t3 = t2 * t;
-
-            // Basis functions for cubic Hermite spline:
-            // h1 = 2t� - 3t� + 1  (h00)
-            // h2 = -2t� + 3t�      (h01)
-            // h3 = t� - 2t� + t    (h10)
-            // h4 = t� - t�         (h11)
-
-            float h1 = 2.0f * t3 - 3.0f * t2 + 1.0f;
-            float h2 = -2.0f * t3 + 3.0f * t2;
-            float h3 = t3 - 2.0f * t2 + t;
-            float h4 = t3 - t2;
-
-            // Calculate spline position using Hermite interpolation
-            CVector newPos;
-            newPos.x = 0.5f *
-                ((prevControlPoint.m_point.x * h3) + (startState.m_point.x * h1) + (endState.m_point.x * h2) +
-                 (nextControlPoint.m_point.x * h4));
-
-            newPos.y = 0.5f *
-                ((prevControlPoint.m_point.y * h3) + (startState.m_point.y * h1) + (endState.m_point.y * h2) +
-                 (nextControlPoint.m_point.y * h4));
-
-            newPos.z = 0.5f *
-                ((prevControlPoint.m_point.z * h3) + (startState.m_point.z * h1) + (endState.m_point.z * h2) +
-                 (nextControlPoint.m_point.z * h4));
-
-            // Calculate segment length from previous position
-            CVector segmentDelta = currentPos - newPos;
-            float segmentLength = sqrt(
-                segmentDelta.x * segmentDelta.x + segmentDelta.y * segmentDelta.y + segmentDelta.z * segmentDelta.z);
-
-            totalLength += segmentLength;
-
-            // Update for next iteration
-            currentPos = newPos;
-            t += stepSize;
+            return 0.0f;
         }
-
-        // Add final segment to reach exact end point
-        CVector finalDelta = currentPos - endState.m_point;
-        float finalSegmentLength =
-            sqrt(finalDelta.x * finalDelta.x + finalDelta.y * finalDelta.y + finalDelta.z * finalDelta.z);
-        totalLength += finalSegmentLength;
-
-        return totalLength;
+        // The neighbours are only read here: the first and last segments join the guard points _Fix duplicates,
+        // so they have no length and return above without looking past either end.
+        CVector const& p0 = states[startPointIndex - 1].m_point;
+        CVector const& p3 = states[endPointIndex + 1].m_point;
+        float const step = static_cast<float>(fabs(1.0 - 1.0 / chord) * 0.0099999998);
+        CVector previous = p1;
+        float length = 0.0f;
+        float t = 0.0f;
+        for (int steps = static_cast<int>(1.0f / step); steps; --steps, t = step + t)
+        {
+            float const t2 = t * t;
+            float const t3 = t2 * t;
+            float const w0 = (2.0f - t) * t * t - t;
+            float const w1 = t3 * 3.0f - t2 * 5.0f + 2.0f;
+            float const w2 = ((4.0f - t * 3.0f) * t + 1.0f) * t;
+            float const w3 = t3 - t2;
+            CVector const point(
+                (p0.x * w0 + p1.x * w1 + p2.x * w2 + w3 * p3.x) * 0.5f,
+                (w0 * p0.y + p1.y * w1 + w2 * p2.y + w3 * p3.y) * 0.5f,
+                (w0 * p0.z + p1.z * w1 + w2 * p2.z + w3 * p3.z) * 0.5f);
+            length = length + (previous - point).length();
+            previous = point;
+        }
+        return length + (previous - p2).length();
     }
 
     void CameraPath::_DeFix()
@@ -671,40 +583,27 @@ namespace m3d
 
     void CameraPath::_Fix()
     {
+        // RVA 0x62A8D0 - duplicates the first and the last point (again when that leaves fewer than 4) so the
+        // spline passes through the ends, and flips rotations to the same hemisphere as the one before.
         if (!m_cameraPathStates.empty())
         {
-            // TODO: check this
-            m_cameraPathStates.insert(m_cameraPathStates.begin(), m_cameraPathStates.front());
+            CameraPathState const first = m_cameraPathStates.front();
+            m_cameraPathStates.insert(m_cameraPathStates.begin(), first);
+            CameraPathState const last = m_cameraPathStates.back();
+            m_cameraPathStates.push_back(last);
             if (m_cameraPathStates.size() < 4)
             {
-                m_cameraPathStates.push_back(this->m_cameraPathStates.back());
-                if (m_cameraPathStates.size() < 4)
-                {
-                    m_cameraPathStates.push_back(this->m_cameraPathStates.back());
-                }
+                m_cameraPathStates.push_back(last);
             }
         }
-
-        // TODO: generated code
-        // Fix quaternion continuity by ensuring consecutive rotations have positive dot product
-        for (size_t i = 1; i < this->m_cameraPathStates.size(); ++i)
+        for (size_t i = 1; i < m_cameraPathStates.size(); ++i)
         {
-            m3d::CameraPathState& prevState = this->m_cameraPathStates[i - 1];
-            m3d::CameraPathState& currentState = this->m_cameraPathStates[i];
-
-            // Calculate dot product between consecutive quaternions
-            float dotProduct = (prevState.m_rotation.x * currentState.m_rotation.x) +
-                (prevState.m_rotation.y * currentState.m_rotation.y) +
-                (prevState.m_rotation.z * currentState.m_rotation.z) +
-                (prevState.m_rotation.w * currentState.m_rotation.w);
-
-            // If dot product is negative, flip the current quaternion to maintain continuity
-            if (dotProduct < 0.0f)
+            Quaternion const& previous = m_cameraPathStates[i - 1].m_rotation;
+            Quaternion& current = m_cameraPathStates[i].m_rotation;
+            if (previous.w * current.w + previous.z * current.z + previous.y * current.y + current.x * previous.x <
+                0.0f)
             {
-                currentState.m_rotation.x = -currentState.m_rotation.x;
-                currentState.m_rotation.y = -currentState.m_rotation.y;
-                currentState.m_rotation.z = -currentState.m_rotation.z;
-                currentState.m_rotation.w = -currentState.m_rotation.w;
+                current = Quaternion(0.0f - current.x, 0.0f - current.y, 0.0f - current.z, 0.0f - current.w);
             }
         }
     }

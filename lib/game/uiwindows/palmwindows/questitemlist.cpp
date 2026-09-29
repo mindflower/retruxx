@@ -33,12 +33,17 @@ namespace
         return help::GetQuestUnifyStatusByQuestId(help::QUESTTYPE_STATIC, questId) == help::QUESTSTATUS_NONCOMPLETE;
     }
 
-    // ExMachina 1.02 NoCD: help::DynamicQuestLessByTakeGameTime - orders dynamic quests by the game
-    // time at which the player took them (oldest first).
-    // TODO: needs the per-quest "taken" timestamp; falls back to quest-id order for now.
+    // RVA 0x555170 (help::DynamicQuestLessByTakeGameTime) - orders dynamic quests by the game time at which
+    // the player took them, oldest first; false unless both ids are live dynamic quests.
     bool DynamicQuestLessByTakeGameTime(int lhsQuestId, int rhsQuestId)
     {
-        return lhsQuestId < rhsQuestId;
+        auto const* lhs = RT_DYNCAST(ai::theObjects->GetEntityByObjId(lhsQuestId), ai::DynamicQuest);
+        auto const* rhs = RT_DYNCAST(ai::theObjects->GetEntityByObjId(rhsQuestId), ai::DynamicQuest);
+        if (!lhs || !rhs)
+        {
+            return false;
+        }
+        return lhs->GetTakeGameTime().asInt64() < rhs->GetTakeGameTime().asInt64();
     }
 }  // namespace
 

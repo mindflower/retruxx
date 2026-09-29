@@ -94,102 +94,84 @@ namespace m3d
 
     void Sound3DServer::RenderItem(int id, void* params)
     {
-        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        // RVA 0x762A70 - -3 places the listener at the camera; an item starts its node's sound (2D at full
+        // volume, else 3D at the node), restarts a finished looped 3D sound or keeps it at the node, and stops
+        // the sound of a node whose sound is disabled.
+        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB() || id == -2 || id == -4)
         {
-            if (id != -2)
+            return;
+        }
+        if (id == -3)
+        {
+            CVector const pos = M3D_RENDERER->MatGetOrgInv();
+            CVector right;
+            CVector up;
+            CVector front;
+            M3D_RENDERER->MatGetBasis(right, up, front);
+            // NOTE: the second (velocity) argument is zero, not the camera's right vector.
+            M3D_APP->m_sound->SetListenerPosition(pos, CVector(0.0f, 0.0f, 0.0f), front, up);
+            return;
+        }
+
+        struct RenderInfo
+        {
+            /* 0x0000 */ m3d::SgNode* m_node;
+            /* 0x0004 */ int m_currentSoundNum;
+        };
+        auto* const renderInfo = static_cast<RenderInfo*>(params);
+        SgNode* const node = renderInfo->m_node;
+        int channelId = 0;
+        int looped = 0;
+        int maxvolume = 0;
+        int soundEnabled = 0;
+        node->GetProperty(PROP_SND_CHANNELID, &channelId);
+        node->GetProperty(PROP_SND_LOOPED, &looped);
+        node->GetProperty(PROP_SND_MAXVOLUME, &maxvolume);
+        node->GetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
+        int const soundId = static_cast<SoundItem*>(m_models[id].m_ptr)->soundIds[renderInfo->m_currentSoundNum];
+
+        if (!soundEnabled)
+        {
+            if (channelId != -1)
             {
-                if (id == -3)
+                M3D_APP->m_sound->StopChannel(channelId);
+                channelId = -1;
+                node->SetProperty(PROP_SND_CHANNELID, &channelId);
+            }
+            return;
+        }
+
+        int newChannel = -1;
+        if (maxvolume)
+        {
+            if (channelId != -1)
+            {
+                return;
+            }
+            newChannel = M3D_APP->m_sound->PlaySound2D(soundId, looped != 0);
+        }
+        else
+        {
+            CVector const org = node->GetOriginWorldAbs();
+            if (channelId != -1)
+            {
+                if (!looped)
                 {
-                    auto pos = M3D_RENDERER->MatGetOrgInv();
-
-                    CVector up;
-                    CVector front;
-                    CVector r;
-                    M3D_RENDERER->MatGetBasis(r, up, front);
-
-                    // TODO: check this
-                    M3D_APP->m_sound->SetListenerPosition(pos, r, front, up);
                     return;
                 }
-                if (id != -4)
+                if (M3D_APP->m_sound->IsChannelPlaying(channelId))
                 {
-                    // TODO: check and refactor this
-                    struct RenderInfo
-                    {
-                        /* 0x0000 */ m3d::SgNode* m_node;
-                        /* 0x0004 */ int m_currentSoundNum;
-                    };
-                    /* size: 0x0008 */
-
-                    auto* renderInfo = (RenderInfo*)(params);
-
-                    int channelId;
-                    int looped;
-                    int soundEnabled;
-                    int maxvolume;
-
-                    renderInfo->m_node->GetProperty(PROP_SND_CHANNELID, &channelId);
-                    renderInfo->m_node->GetProperty(PROP_SND_LOOPED, &looped);
-                    renderInfo->m_node->GetProperty(PROP_SND_MAXVOLUME, &maxvolume);
-                    renderInfo->m_node->GetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
-
-                    auto soundId = ((SoundItem*)m_models[id].m_ptr)->soundIds[renderInfo->m_currentSoundNum];
-                    if (soundEnabled)
-                    {
-                        if (maxvolume)
-                        {
-                            if (channelId != -1)
-                            {
-                                return;
-                            }
-                            channelId = M3D_APP->m_sound->PlaySound2D(soundId, looped != 0);
-                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-
-                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
-                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
-                            return;
-                        }
-
-                        const auto& org = renderInfo->m_node->GetOriginWorldAbs();
-                        if (channelId == -1)
-                        {
-                            channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
-                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-
-                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
-                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
-                            return;
-                        }
-
-                        if (!looped)
-                        {
-                            return;
-                        }
-
-                        if (!M3D_APP->m_sound->IsChannelPlaying(channelId))
-                        {
-                            channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
-                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-
-                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
-                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
-                            return;
-                        }
-
-                        if (looped)
-                        {
-                            M3D_APP->m_sound->SetPosition(channelId, org, {});
-                        }
-                    }
-                    else if (channelId != -1)
-                    {
-                        M3D_APP->m_sound->StopChannel(channelId);
-                        channelId = -1;
-                        renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-                    }
+                    M3D_APP->m_sound->SetPosition(channelId, org, CVector(0.0f, 0.0f, 0.0f));
+                    return;
                 }
             }
+            newChannel = M3D_APP->m_sound->PlaySound3D(soundId, org, CVector(0.0f, 0.0f, 0.0f), looped != 0);
         }
+        node->SetProperty(PROP_SND_CHANNELID, &newChannel);
+        // NOTE: the base frequency is read from the node's previous channel (-1 for a first start), not the new
+        // one, as shipped.
+        int frequency = M3D_APP->m_sound->GetChannelFrequency(channelId);
+        node->SetProperty(PROP_SND_BASE_FREQUENCY, &frequency);
     }
 
     int Sound3DServer::Release()
@@ -285,7 +267,8 @@ namespace m3d
         ParseProto(itemsList.front().m_filename.c_str(), &proto, &protoPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_ERR("Error: protocol is not supported " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_ERR(CStr("Error: protocol is not supported " + static_cast<int>(proto)));
             return;
         }
 

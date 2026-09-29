@@ -453,7 +453,8 @@ namespace m3d
 
         auxTaggedFile::eError auxTaggedFile::Close()
         {
-            //TODO: generated code
+            // RVA 0x7A3FD0 - a created file gets its format chunks and is written out (header, chunk table, then
+            // the chunk data, freeing the copies); an opened one releases its image and chunk list.
             if (!m_bOpened)
                 return eError::NOT_INITIALIZED;
 
@@ -542,13 +543,10 @@ namespace m3d
                     delete[] m_pFileData;
                 }
 
-                // Clean up chunk data
+                // NOTE: only the lists are released, as shipped: data added to an opened file with a copy is
+                // leaked (the loaded chunks point into the file image).
                 for (auto& chunk : m_lAllChunks)
                 {
-                    for (auto& data : chunk.chunk_data)
-                    {
-                        delete[] data.data;
-                    }
                     chunk.chunk_data.clear();
                 }
 

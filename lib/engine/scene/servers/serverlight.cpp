@@ -292,7 +292,7 @@ namespace m3d
 
     int LightsServer::GetItemProperty(int id, int prop, void* dest)
     {
-        // TODO: check this
+        // RVA 0x76BDB0 - property 8449 is the light's radius.
         if (prop != 8449)
             return m3d::DataServer::GetItemProperty(id, prop, dest);
         *(float*)dest = ((PointLightModel*)m_models[id].m_ptr)->m_radius;

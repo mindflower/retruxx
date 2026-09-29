@@ -4,29 +4,32 @@ namespace m3d
 {
     unsigned int CmdLine::Init(char const* cmdStr)
     {
-        //TODO: check correctness
+        // RVA 0x5A6750 - splits the command line into parameters at control characters, spaces, DEL and bytes
+        // above 127 (signed chars).
         m_cmdLine = cmdStr;
-        for (size_t i = 0; i < m_cmdLine.length(); ++i)
+        m_params.clear();
+        auto const isSeparator = [](char c) { return c <= ' ' || c == 127; };
+        for (char const* c = cmdStr; *c;)
         {
-            CStr param;
-            auto const first = m_cmdLine[i];
-            if (first > 32 && first < 127)
+            if (isSeparator(*c))
             {
-                for (size_t j = i; j < m_cmdLine.length(); ++j)
-                {
-                    auto const second = m_cmdLine[j];
-                    if (second > 32 && second < 127)
-                    {
-                        param += CStr(second);
-                    }
-                    else
-                    {
-                        i = j;
-                        break;
-                    }
-                }
+                ++c;
+                continue;
             }
-            m_params.push_back(param);
+            CStr param;
+            for (; *c && !isSeparator(*c); ++c)
+            {
+                char const one[2] = {*c, 0};
+                param += one;
+            }
+            if (!param.empty())
+            {
+                m_params.push_back(param);
+            }
+            if (*c)
+            {
+                ++c;
+            }
         }
         return m_params.size();
     }

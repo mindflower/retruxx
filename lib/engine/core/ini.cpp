@@ -203,7 +203,7 @@ namespace m3d
         return 1;
     }
 
-    bool SafeQuaternionAttrib(Quaternion& v, m3d::cmn::XmlNode const* node, char const* attrib)
+    int SafeQuaternionAttrib(Quaternion& v, m3d::cmn::XmlNode const* node, char const* attrib)
     {
         if (node->IsEmpty())
         {

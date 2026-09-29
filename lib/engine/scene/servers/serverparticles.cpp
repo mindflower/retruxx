@@ -48,16 +48,14 @@ namespace
 
         bool operator()(unsigned int partIdx1, unsigned int partIdx2) const
         {
-            // TODO: check and refactor this
-            auto pSystem = this->m_particles[partIdx1].pSystem;
-            auto v4 = this->m_particles[partIdx2].pSystem;
-            auto m_shader = pSystem->m_shader;
-            auto v6 = v4->m_shader;
-            if (m_shader < v6)
-                return true;
-            if (m_shader == v6)
-                return &pSystem->m_texAdd < &v4->m_texAdd;
-            return false;
+            // RVA 0x764D70 - by effect, then by system (the address of its texture handle, as shipped).
+            m3d::ParticleSystem const* const a = m_particles[partIdx1].pSystem;
+            m3d::ParticleSystem const* const b = m_particles[partIdx2].pSystem;
+            if (a->m_shader != b->m_shader)
+            {
+                return a->m_shader < b->m_shader;
+            }
+            return &a->m_texAdd < &b->m_texAdd;
         }
         /* 0x0000 */ ParticlesInfo* m_particles;
     }; /* size: 0x0004 */
@@ -85,6 +83,8 @@ namespace m3d
 
     int ParticlesServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, m3d::RenderNodeInfo rni)
     {
+        // RVA 0x769AA0 - the colour pass only: the particle systems sorted by effect, each effect's ambient,
+        // diffuse and fog parameters set once from the weather and the landscape fog.
         m_profiler->StartCountdown();
         assert(numNodes < MAX_NODES_PER_CLASS);
         if (!numNodes || rni.rnt)
@@ -117,8 +117,6 @@ namespace m3d
             M3D_RENDERER->SetFillMode(rend::M3DFILL_WIREFRAME, false);
         }
 
-        
-        // TODO: check this!!!!
         pClient->GetWorld().GetGraph().LightSetupSunForWorld();
         rend::Colorf ambientColor = pClient->GetWorld().GetWeatherAmbientColor();
         rend::Colorf diffuseColor = pClient->GetWorld().GetWeatherDiffuseColor();
@@ -226,7 +224,8 @@ namespace m3d
 
     void ParticlesServer::UpdateItem(int id, void* params)
     {
-        // TODO: generated code ParticlesServer::UpdateItem
+        // RVA 0x767BF0 - advances the node's particle list by the frame time, with the node's world velocity since
+        // the last update.
 
         struct RenderInfo
         {
@@ -258,9 +257,9 @@ namespace m3d
             const auto prevPos = particlesList->m_curXFormToWorld.getOrg();
 
             // Calculate velocity as (current_pos - previous_pos) / delta_time
-            particlesList->m_worldVel.x = (currentPos.x - prevPos.x) / deltaTime;
-            particlesList->m_worldVel.y = (currentPos.y - prevPos.y) / deltaTime;
-            particlesList->m_worldVel.z = (currentPos.z - prevPos.z) / deltaTime;
+            particlesList->m_worldVel.x = (currentPos.x - prevPos.x) * (1.0f / deltaTime);
+            particlesList->m_worldVel.y = (currentPos.y - prevPos.y) * (1.0f / deltaTime);
+            particlesList->m_worldVel.z = (currentPos.z - prevPos.z) * (1.0f / deltaTime);
         }
         else
         {
@@ -484,7 +483,8 @@ namespace m3d
         ParseProto(params, &proto, &paramsPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_INFO("Protocol is not supported: " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_INFO(CStr("protocol is not supported " + static_cast<int>(proto)));
             return -1;
         }
 
@@ -503,7 +503,8 @@ namespace m3d
 
     void ParticlesServer::RegisterNode(m3d::SgNode* node)
     {
-        // TODO: check this!!
+        // RVA 0x769190 - gives the node a pooled particle list; a mesh emitter takes its points from the mesh of
+        // the nearest game unit above it.
         auto* info = Info_PoolManager.New();
         auto* particlesList = PL_PoolManager.New();
         info->m_list = particlesList;

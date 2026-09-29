@@ -125,62 +125,34 @@ int CClipper::clipPolyInPlace(CVector* verts, int nverts)
 
 int CClipper::testBBox(tbEnum test, float* minmaxs, const CVector& ofs) const
 {
-    // TODO: generated code
-    float* v4 = minmaxs;
-    unsigned int m_nfrustums = this->m_nfrustums;
-    unsigned int v7 = 0;
-
-    if (m_nfrustums) {
-        const float* v8 = &this->m_planes[0][1];
-        const unsigned int* v9 = &this->m_indices[4];
-
-        while (true) {
-            v4 = minmaxs;
-            if (((1 << v7) & this->m_enabled) != 0 &&
-                ((float)((float)((float)((float)(minmaxs[v9[1]] + ofs.z) * v8[1]) +
-                    (float)((float)(minmaxs[*(v9 - 1)] + ofs.x) * *(v8 - 1))) +
-                    (float)((float)(minmaxs[*v9] + ofs.y) * *v8)) - v8[2]) > 50.0f) {
-                return 0;
-            }
-
-            ++v7;
-            v9 += 6;
-            v8 += 4;
-
-            if (v7 >= m_nfrustums) {
-                break;
-            }
+    // RVA 0x8A0740 - 0 when the box (min/max corners, moved by ofs) lies in front of an enabled plane; otherwise,
+    // for a full test, 2 when it is wholly behind every enabled plane (inside), else 1.
+    // NOTE: the outside test allows the box's nearest corner to be up to 50 units in front of a plane, as shipped.
+    auto const corner = [&](unsigned int const* idx) {
+        return CVector(minmaxs[idx[0]] + ofs.x, minmaxs[idx[1]] + ofs.y, minmaxs[idx[2]] + ofs.z);
+    };
+    auto const distance = [](float const* plane, CVector const& p) {
+        return p.z * plane[2] + p.x * plane[0] + p.y * plane[1] - plane[3];
+    };
+    for (unsigned int i = 0; i < m_nfrustums; ++i)
+    {
+        if ((1 << i) & m_enabled && distance(m_planes[i], corner(&m_indices[6 * i + 3])) > 50.0f)
+        {
+            return 0;
         }
     }
-
-    if (test == tbFullTest) {
-        unsigned int v10 = 0;
-        if (m_nfrustums == 0) {
-            return 2;
-        }
-
-        const float* v11 = &this->m_planes[0][1];
-        const unsigned int* i = &this->m_indices[1];
-
-        while (true) {
-            if (((1 << v10) & this->m_enabled) != 0 &&
-                ((float)((float)((float)((float)(v4[i[1]] + ofs.z) * v11[1]) +
-                    (float)((float)(v4[*(i - 1)] + ofs.x) * *(v11 - 1))) +
-                    (float)((float)(v4[*i] + ofs.y) * *v11)) - v11[2] > 0.0f)) {
-                break;
-            }
-
-            ++v10;
-            i += 6;
-            v11 += 4;
-
-            if (v10 >= m_nfrustums) {
-                return 2;
-            }
+    if (test != tbFullTest)
+    {
+        return 1;
+    }
+    for (unsigned int i = 0; i < m_nfrustums; ++i)
+    {
+        if ((1 << i) & m_enabled && distance(m_planes[i], corner(&m_indices[6 * i])) > 0.0f)
+        {
+            return 1;
         }
     }
-
-    return 1;
+    return 2;
 }
 
 void CClipper::buildfrustum(float* fr, CVector const& n, CMatrix const& m, CVector const& org, float offset)
@@ -272,52 +244,17 @@ int CClipper::enableSetFromBox(float* minmaxs, CVector const& ofs)
 
 void CClipper::createIndices()
 {
-    //TODO: cehck this and refactor
-    unsigned int v1; // edx
-    unsigned int* v2; // eax
-    float* v3; // esi
-
-    v1 = 0;
-    if (this->m_nfrustums)
+    // RVA 0x8A0600 - per plane, the minmaxs indices of the box corner farthest along the normal (the first three)
+    // and of the one farthest against it (the last three).
+    for (unsigned int i = 0; i < m_nfrustums; ++i)
     {
-        v2 = &this->m_indices[3];
-        v3 = &this->m_planes[0][2];
-        do
+        unsigned int* const idx = &m_indices[6 * i];
+        for (int axis = 0; axis < 3; ++axis)
         {
-            if (*(v3 - 2) >= 0.0)
-            {
-                *(v2 - 3) = 3;
-                *v2 = 0;
-            }
-            else
-            {
-                *(v2 - 3) = 0;
-                *v2 = 3;
-            }
-            if (*(v3 - 1) >= 0.0)
-            {
-                *(v2 - 2) = 4;
-                v2[1] = 1;
-            }
-            else
-            {
-                *(v2 - 2) = 1;
-                v2[1] = 4;
-            }
-            if (*v3 >= 0.0)
-            {
-                *(v2 - 1) = 5;
-                v2[2] = 2;
-            }
-            else
-            {
-                *(v2 - 1) = 2;
-                v2[2] = 5;
-            }
-            ++v1;
-            v3 += 4;
-            v2 += 6;
-        } while (v1 < this->m_nfrustums);
+            bool const positive = m_planes[i][axis] >= 0.0f;
+            idx[axis] = positive ? axis + 3 : axis;
+            idx[axis + 3] = positive ? axis : axis + 3;
+        }
     }
 }
 
@@ -337,97 +274,31 @@ int CClipper::clipPolyInPlaceZ(CVector* verts, int nverts)
     return clipFrontSideInPlace(verts, nverts, m_planes[m_nfrustums - 1]);
 }
 
-void CClipper::createScreenFrustums(CVector const& origin, CMatrix const& rotMat, float fovx, float fovy, float znear, float zfar)
+void CClipper::createScreenFrustums(
+    CVector const& origin, CMatrix const& rotMat, float fovx, float fovy, float znear, float zfar)
 {
-    //TODO: check this and refactor
-    float v9; // xmm7_4
-    float v10; // xmm0_4
-    float v11; // xmm3_4
-    float v12; // xmm0_4
-    float v13; // xmm3_4
-    float v14; // xmm7_4
-    CVector n; // [esp+10h] [ebp-3Ch] BYREF
-    float v16; // [esp+1Ch] [ebp-30h]
-    CVector v[3]; // [esp+28h] [ebp-24h] BYREF
-    float fovxa; // [esp+58h] [ebp+Ch]
-    float rx; // [esp+5Ch] [ebp+10h]
-    float ry; // [esp+60h] [ebp+14h]
-
-    v[0].x = 0.0;
-    v[0].y = 0.0;
-    v[0].z = 0.0;
-    v[2].z = znear;
-    v[1].z = znear;
-    rx = tan(fovy * 0.5) * znear;
-    fovxa = tan(fovx * 0.5) * znear;
-    v9 = 0.0 - fovxa;
-    v[2].x = 0.0 - fovxa;
-    v[2].y = rx;
-    v[1].x = fovxa;
-    v16 = (float)(0.0 - fovxa) - fovxa;
-    v[1].y = rx;
-    n.x = (float)((float)(0.0 - rx) * (float)(znear - znear)) - (float)((float)(0.0 - znear) * (float)(rx - rx));
-    n.y = (float)((float)(0.0 - znear) * v16) - (float)((float)(znear - znear) * (float)(0.0 - fovxa));
-    n.z = (float)((float)(rx - rx) * (float)(0.0 - fovxa)) - (float)((float)(0.0 - rx) * v16);
-    CClipper::buildfrustum(m_planes[0], n, rotMat, origin, 0.0);
-    ry = 0.0 - rx;
-    v[1].x = v9;
-    v[1].z = znear;
-    v[1].y = 0.0 - rx;
-    v[2].x = fovxa;
-    v16 = fovxa - (float)(0.0 - fovxa);
-    v[2].y = 0.0 - rx;
-    v10 = (float)(0.0 - rx) - (float)(0.0 - rx);
-    v[2].z = znear;
-    n.y = v[0].y - (float)(0.0 - rx);
-    v11 = (float)(n.y * (float)(znear - znear)) - (float)((float)(v[0].z - znear) * v10);
-    v12 = (float)(v10 * (float)(v[0].x - v9)) - (float)(n.y * (float)(fovxa - v9));
-    n.x = v11;
-    n.y = (float)((float)(v[0].z - znear) * (float)(fovxa - v9)) - (float)((float)(znear - znear) * (float)(v[0].x - v9));
-    n.z = v12;
-    CClipper::buildfrustum(m_planes[1], n, rotMat, origin, 0.0);
-    v[2].x = 0.0 - fovxa;
-    v[2].y = 0.0 - rx;
-    v[2].z = znear;
-    v[1].x = 0.0 - fovxa;
-    v16 = v9 - v9;
-    v[1].z = znear;
-    v[1].y = rx;
-    v13 = (float)(v[0].y - rx) * (float)(v9 - v9);
-    v14 = v[0].x - (float)(0.0 - fovxa);
-    n.x = (float)((float)(v[0].y - rx) * (float)(znear - znear))
-        - (float)((float)(v[0].z - znear) * (float)((float)(0.0 - rx) - rx));
-    n.y = (float)((float)(v[0].z - znear) * v16) - (float)((float)(znear - znear) * v14);
-    n.z = (float)((float)((float)(0.0 - rx) - rx) * v14) - v13;
-    CClipper::buildfrustum(m_planes[2], n, rotMat, origin, 0.0);
-    v[1].x = fovxa;
-    v[1].y = 0.0 - rx;
-    v[1].z = znear;
-    v[2].x = fovxa;
-    v[2].y = rx;
-    v[2].z = znear;
-    n.x = (float)((float)(v[0].y - ry) * (float)(znear - znear)) - (float)((float)(v[0].z - znear) * (float)(rx - ry));
-    n.y = (float)((float)(v[0].z - znear) * (float)(fovxa - fovxa))
-        - (float)((float)(znear - znear) * (float)(v[0].x - fovxa));
-    n.z = (float)((float)(rx - ry) * (float)(v[0].x - fovxa)) - (float)((float)(v[0].y - ry) * (float)(fovxa - fovxa));
-    CClipper::buildfrustum(m_planes[3], n, rotMat, origin, 0.0);
-    n.x = 0.0;
-    v[0].x = 0.0;
-    n.z = 1.0;
-    n.y = 0.0;
-    v[0].y = 0.0;
-    v[0].z = 1.0;
-    CClipper::buildfrustum(m_planes[4], v[0], rotMat, origin, zfar);
-    n.x = 0.0;
-    n.y = 0.0;
-    n.z = -1.0;
-    v[0].x = 0.0;
-    v[0].y = 0.0;
-    v[0].z = -1.0;
-    CClipper::buildfrustum(m_planes[5], v[0], rotMat, origin, 0.0 - znear);
-    this->m_nfrustums = 6;
-    CClipper::createIndices();
-    this->m_enabled = -1;
+    // RVA 0x8A1040 - the view frustum: top, bottom, left and right planes through the eye and the near plane's
+    // edges, then the far and near planes.
+    float const halfHeight = static_cast<float>(tan(fovy * 0.5) * znear);
+    float const halfWidth = static_cast<float>(tan(fovx * 0.5) * znear);
+    CVector const eye(0.0f, 0.0f, 0.0f);
+    CVector const topRight(halfWidth, halfHeight, znear);
+    CVector const topLeft(0.0f - halfWidth, halfHeight, znear);
+    CVector const bottomLeft(0.0f - halfWidth, 0.0f - halfHeight, znear);
+    CVector const bottomRight(halfWidth, 0.0f - halfHeight, znear);
+    CVector const top[3] = {eye, topRight, topLeft};
+    CVector const bottom[3] = {eye, bottomLeft, bottomRight};
+    CVector const left[3] = {eye, topLeft, bottomLeft};
+    CVector const right[3] = {eye, bottomRight, topRight};
+    buildfrustum(m_planes[0], top, rotMat, origin, 0.0f);
+    buildfrustum(m_planes[1], bottom, rotMat, origin, 0.0f);
+    buildfrustum(m_planes[2], left, rotMat, origin, 0.0f);
+    buildfrustum(m_planes[3], right, rotMat, origin, 0.0f);
+    buildfrustum(m_planes[4], CVector(0.0f, 0.0f, 1.0f), rotMat, origin, zfar);
+    buildfrustum(m_planes[5], CVector(0.0f, 0.0f, -1.0f), rotMat, origin, 0.0f - znear);
+    m_nfrustums = 6;
+    createIndices();
+    m_enabled = 0xFFFFFFFF;
 }
 
 void CClipper::CreateScreenFrustums(float farz, float lessen, float nearz, float fov)
@@ -470,25 +341,17 @@ void CClipper::enableAll()
 
 void CClipper::enableUpdateFromBox(float* minmaxs, const CVector& ofs)
 {
-    // TODO: check and refactor this
-    int v4 = 0;
-    if (this->m_nfrustums)
+    // RVA 0x8A09D0 - disables the planes the box (min/max corners, moved by ofs) lies wholly behind.
+    for (unsigned int i = 0; i < m_nfrustums; ++i)
     {
-        auto v5 = &this->m_planes[0][1];
-        auto v6 = &this->m_indices[1];
-        do
+        float const* const plane = m_planes[i];
+        unsigned int const* const idx = &m_indices[6 * i];
+        if ((1 << i) & m_enabled &&
+            (minmaxs[idx[2]] + ofs.z) * plane[2] + (minmaxs[idx[0]] + ofs.x) * plane[0] +
+                    (minmaxs[idx[1]] + ofs.y) * plane[1] - plane[3] <=
+                0.0f)
         {
-            if (((1 << v4) & this->m_enabled) != 0
-                && (float)((float)((float)((float)((float)(minmaxs[v6[1]] + ofs.z) * v5[1])
-                    + (float)((float)(minmaxs[*(v6 - 1)] + ofs.x) * *(v5 - 1)))
-                    + (float)((float)(minmaxs[*v6] + ofs.y) * *v5))
-                    - v5[2]) <= 0.0)
-            {
-                this->m_enabled &= ~(1 << v4);
-            }
-            ++v4;
-            v6 += 6;
-            v5 += 4;
-        } while (v4 < this->m_nfrustums);
+            m_enabled &= ~(1 << i);
+        }
     }
 }
