@@ -10,6 +10,7 @@
 #include <core/ini.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
+#include <config.h>
 #include <m3dapp.h>
 #include <landscape.h>
 #include <world.h>
@@ -154,6 +155,7 @@ namespace ai
         m_GunAffixGeneratorPrototypeId = ai::thePrototypeManager->GetPrototypeId(m_gunAffixGeneratorPrototypeName);
         m_CabinsAndBasketsAffixGeneratorPrototypeId =
             ai::thePrototypeManager->GetPrototypeId(m_cabinsAndBasketsAffixGeneratorPrototypeName);
+
         for (auto& article : m_Articles)
         {
             article.PostLoad();
@@ -163,7 +165,14 @@ namespace ai
     void TownPrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         SimplePhysicObjPrototypeInfo::RefreshFromXml(xmlFile, xmlNode);
-        // Not emitted in the shipped binary: this override adds nothing to the base version.
+
+        int const itemByName = M3D_APP->GetAnimatedModelsServer().GetItemByName(m_gateModelName.c_str(), true);
+        if (itemByName != -1)
+        {
+            int const itemMasked = itemByName + 0x200000;
+            m_gateClosingTime = M3D_ENGINE_CFG.GetAnimationLength(itemMasked, 14);
+            m_gateOpeningTime = M3D_ENGINE_CFG.GetAnimationLength(itemMasked, 15);
+        }
     }
 
     bool TownPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -432,7 +441,8 @@ namespace ai
             {
                 PrepareVehicleForPath(pVehicle, vehiclePoints, false);
                 m_PlayerPathIndex = pVehicle->SetExternalPath(vehiclePoints);
-                theProcessManager->PostMessageA(2, pVehicle->GetId(), GetId(), 0.0f, m3d::AIParam(51), m3d::AIParam(), 1);
+                theProcessManager->PostMessageA(
+                    2, pVehicle->GetId(), GetId(), 0.0f, m3d::AIParam(51), m3d::AIParam(), 1);
                 if (bQuick)
                 {
                     pVehicle->PlaceToEndOfPath();
@@ -715,8 +725,8 @@ namespace ai
         m_playerEnteringTownCount = 1;
         M3D_APP->EnqueueMessage(66540, GetId(), 0, 0, 0, CStr(), m3d::AIParam());
         CVector const pos = GetPosition();
-        M3D_APP->m_curCamera.m_worldOrigin =
-            CVector(m_PointOfViewInInterface.x + pos.x, m_PointOfViewInInterface.y + pos.y, m_PointOfViewInInterface.z + pos.z);
+        M3D_APP->m_curCamera.m_worldOrigin = CVector(
+            m_PointOfViewInInterface.x + pos.x, m_PointOfViewInInterface.y + pos.y, m_PointOfViewInInterface.z + pos.z);
         M3D_APP->m_curCamera.lookAt(pVehicle->GetPosition());
         M3D_APP->m_player.m_cameraMode = CM_CONST;
     }
@@ -737,7 +747,8 @@ namespace ai
         return SimplePhysicObj::SetPropertyById(propertyId, newValue);
     }
 
-    void Town::GetPath(TownPath path, retruxx::vector<CVector2>& vehiclePoints, retruxx::vector<CVector>& cameraPoints) const
+    void Town::GetPath(TownPath path, retruxx::vector<CVector2>& vehiclePoints, retruxx::vector<CVector>& cameraPoints)
+        const
     {
         // RVA 0x6F2110 - the stored camera points are relative to the town, so they come back shifted into the world.
         CinematicPath const* cinematicPath = nullptr;
@@ -1026,6 +1037,9 @@ namespace ai
         m_gateNode->SetRotation(rot);
         m_gateNode->SetOriginAbs(CVector(mat._41, mat._42, mat._43));
         m_gateNode->SetName(CStr(m_physicBody->m_Node->GetName()) + CStr("Gate"));
+        m_gateNode->UpdateXForm(false, true);
+        pServer->GetWorld()->GetLandscape().LinkNodeAndChildrenCollisionGeomsToCell(m_gateNode);
+        _SynchronizeGatesState();
     }
 
     Town::~Town() = default;
@@ -1187,7 +1201,8 @@ namespace ai
         }
 
         retruxx::vector<int> waresPrototypes;
-        thePrototypeManager->GetPrototypeIdsByResourceId(theResourceManager->GetResourceId(CStr("GOODS")), waresPrototypes);
+        thePrototypeManager->GetPrototypeIdsByResourceId(
+            theResourceManager->GetResourceId(CStr("GOODS")), waresPrototypes);
         for (int const prototypeId : waresPrototypes)
         {
             if (Workshop* const workshop = GetWorkshopByPrototypeId(prototypeId))
@@ -1246,7 +1261,8 @@ namespace ai
             Vehicle* const playerVehicle = thePlayer ? thePlayer->GetVehicle() : nullptr;
             if (playerVehicle && team->GetDistToPhysicObj(playerVehicle) <= theGlobProp.m_distanceFromPlayerToMoveout)
             {
-                theProcessManager->PostMessageA(51, GetId(), evn.m_senderObjId, 5.0f, m3d::AIParam(), m3d::AIParam(), 1);
+                theProcessManager->PostMessageA(
+                    51, GetId(), evn.m_senderObjId, 5.0f, m3d::AIParam(), m3d::AIParam(), 1);
             }
             else
             {
@@ -1308,8 +1324,10 @@ namespace ai
     {
         // RVA 0x6F2920 - flies the camera along the given points while looking at the vehicle. With no points the
         // camera simply stays where it is.
-        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(IE_EV_UM_HELP), m3d::AIParam(), 1);
-        theProcessManager->PostMessageA(2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(IE_EV_SM_TOWN), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(
+            2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(IE_EV_UM_HELP), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(
+            2, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(IE_EV_SM_TOWN), m3d::AIParam(), 1);
 
         m3d::Cinematic* const cinematic = M3D_APP->m_cinematic;
         cinematic->LoadDefaults();
@@ -1366,8 +1384,8 @@ namespace ai
 
         M3D_APP->EnqueueMessage(66540, GetId(), 0, 0, 0, CStr(), m3d::AIParam());
         CVector const pos = GetPosition();
-        M3D_APP->m_curCamera.m_worldOrigin =
-            CVector(m_PointOfViewInInterface.x + pos.x, m_PointOfViewInInterface.y + pos.y, m_PointOfViewInInterface.z + pos.z);
+        M3D_APP->m_curCamera.m_worldOrigin = CVector(
+            m_PointOfViewInInterface.x + pos.x, m_PointOfViewInInterface.y + pos.y, m_PointOfViewInInterface.z + pos.z);
         if (playerVehicle)
         {
             M3D_APP->m_curCamera.lookAt(playerVehicle->GetPosition());
@@ -1481,8 +1499,8 @@ namespace ai
                     retruxx::vector<Obj*> candidates;
                     for (Obj* obj : *theObjects)
                     {
-                        if (obj->GetClass() != &Vehicle::m_classVehicle || !obj->IsAlive() || obj->GetParentRepository() ||
-                            !obj->IsUpdating())
+                        if (obj->GetClass() != &Vehicle::m_classVehicle || !obj->IsAlive() ||
+                            obj->GetParentRepository() || !obj->IsUpdating())
                         {
                             continue;
                         }
@@ -1521,7 +1539,9 @@ namespace ai
                 if (!towns.empty())
                 {
                     res = DynamicQuestManager::CreateQuest(
-                        DynamicQuestManager::TYPE_REACH, towns[IntRandom(static_cast<int>(towns.size()))]->GetId(), GetId());
+                        DynamicQuestManager::TYPE_REACH,
+                        towns[IntRandom(static_cast<int>(towns.size()))]->GetId(),
+                        GetId());
                 }
                 break;
             }

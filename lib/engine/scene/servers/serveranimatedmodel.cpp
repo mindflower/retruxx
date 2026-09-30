@@ -34,13 +34,13 @@ namespace m3d
 
     void AnimatedModelsServer::PostLoad()
     {
-        for (const auto& model : m_models)
+        for (auto const& model : m_models)
         {
             auto* dynamicModel = (DynamicModel*)model.m_ptr;
             for (auto& actionEffect : dynamicModel->m_effects)
             {
                 std::vector<DynamicModel::auxEffectDesc> newEffectList;
-                for (const auto& effect : actionEffect.lpEffects)
+                for (auto const& effect : actionEffect.lpEffects)
                 {
                     DynamicModel::auxEffectDesc desc = effect;
                     auto id = M3D_KERNEL->GetEngineCfg().GetModelIdByName(effect.m_effectName);
@@ -323,7 +323,8 @@ namespace m3d
         *stream << "Total models count: " << static_cast<int>(m_models.size()) << "\n\n";
         *stream << "** Models **\n";
         *stream << "   Id                          InstanceCount   MeshCount   PolyCount   FileName\n";
-        *stream << "--------------------------------------------------------------------------------------------------\n";
+        *stream
+            << "--------------------------------------------------------------------------------------------------\n";
 
         unsigned totalInstanceCount = 0;
         unsigned totalMeshCount = 0;
@@ -361,7 +362,8 @@ namespace m3d
             totalMeshCountPerInstance += modelStats[i].instanceCount * mdl->m_numMeshes;
         }
 
-        *stream << "--------------------------------------------------------------------------------------------------\n\n";
+        *stream
+            << "--------------------------------------------------------------------------------------------------\n\n";
         *stream << "Total instance count: " << totalInstanceCount << "\n";
         *stream << "Total mesh count (for 1 instance of every model): " << totalMeshCount << "\n";
         *stream << "Total mesh count (for each instance of every model): " << totalMeshCountPerInstance << "\n";
@@ -371,16 +373,19 @@ namespace m3d
 
     int AnimatedModelsServer::Init()
     {
-        auto const logoFileName = g_Kernel->GetEngineCfg().m_loadFromGAM.GetB() ? "data\\models\\Logos\\Logos.gam" : "data\\models\\Logos\\Logos.sam";
+        auto const logoFileName = g_Kernel->GetEngineCfg().m_loadFromGAM.GetB() ? "data\\models\\Logos\\Logos.gam" :
+                                                                                  "data\\models\\Logos\\Logos.sam";
         m_MeshMaterialManager.Init(logoFileName, g_Kernel->GetEngineCfg().m_pathToBelongsToLogos.GetS());
 
-        m_impostorVs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_vs11.vs", "ImpostorVS", rend::IHlslShader::VS_1_1);
+        m_impostorVs = Application::g_pApp->m_renderer->NewHlslShader(
+            "data/shaders/impostorTest_vs11.vs", "ImpostorVS", rend::IHlslShader::VS_1_1);
         if (!m_impostorVs)
         {
             return 0;
         }
 
-        m_impostorPs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::PS_1_1);
+        m_impostorPs = Application::g_pApp->m_renderer->NewHlslShader(
+            "data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::PS_1_1);
         if (!m_impostorPs)
         {
             return 0;
@@ -407,7 +412,11 @@ namespace m3d
         return result;
     }
 
-    int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(char const* modelname, CStr const& boneName, CMatrix& res, bool theLastOneOnly)
+    int AnimatedModelsServer::GetBoneMatrixByNameFromModelName(
+        char const* modelname,
+        CStr const& boneName,
+        CMatrix& res,
+        bool theLastOneOnly)
     {
         auto itemByName = m3d::DataServer::GetItemByName(modelname, 1);
         if (itemByName != -1)
@@ -591,7 +600,7 @@ namespace m3d
 
         struct MeshImposteredSortPred
         {
-            MeshImposteredSortPred(const ImpostoredMeshInfo* meshes) : m_meshes(meshes)
+            MeshImposteredSortPred(ImpostoredMeshInfo const* meshes) : m_meshes(meshes)
             {
             }
 
@@ -601,9 +610,9 @@ namespace m3d
             bool operator()(unsigned int meshIdx1, unsigned int meshIdx2) const
             {
                 return m_meshes[meshIdx1].nodeLookup->GetServerHandle() <
-                       m_meshes[meshIdx2].nodeLookup->GetServerHandle();
+                    m_meshes[meshIdx2].nodeLookup->GetServerHandle();
             }
-            /* 0x0000 */ const ImpostoredMeshInfo* m_meshes;
+            /* 0x0000 */ ImpostoredMeshInfo const* m_meshes;
         }; /* size: 0x0004 */
 
         struct MeshInfo
@@ -616,7 +625,7 @@ namespace m3d
 
         struct MeshSortPred
         {
-            MeshSortPred(const MeshInfo* meshes) : m_meshes(meshes)
+            MeshSortPred(MeshInfo const* meshes) : m_meshes(meshes)
             {
             }
 
@@ -633,20 +642,20 @@ namespace m3d
                 }
                 return material1->Textures.data() < material2->Textures.data();
             }
-            /* 0x0000 */ const MeshInfo* m_meshes;
+            /* 0x0000 */ MeshInfo const* m_meshes;
         }; /* size: 0x0004 */
 
         // Orders nodes by squared distance from the camera, nearest first.
         struct SortByDist
         {
-            explicit SortByDist(const CVector& org) : m_org(org)
+            explicit SortByDist(CVector const& org) : m_org(org)
             {
             }
 
             bool operator()(m3d::SgNode* a, m3d::SgNode* b) const
             {
-                const CVector da = a->GetOriginWorldAbsForSphere() - m_org;
-                const CVector db = b->GetOriginWorldAbsForSphere() - m_org;
+                CVector const da = a->GetOriginWorldAbsForSphere() - m_org;
+                CVector const db = b->GetOriginWorldAbsForSphere() - m_org;
                 return (db.x * db.x + db.y * db.y + db.z * db.z) > (da.x * da.x + da.y * da.y + da.z * da.z);
             }
 
@@ -656,13 +665,13 @@ namespace m3d
         // A material contributes an alpha-tested diffuse texture when it has any
         // texture at all and either carries no shader or its first technique is
         // flagged as alpha-using.
-        bool HasAlphaTestedTexture(const m3d::DSurfaceMaterial& material)
+        bool HasAlphaTestedTexture(m3d::DSurfaceMaterial const& material)
         {
             return !material.Textures.empty() &&
-                   (!material.Shader.Handle || material.Shader.Handle->GetTechniqueDesc(0).useAlpha);
+                (!material.Shader.Handle || material.Shader.Handle->GetTechniqueDesc(0).useAlpha);
         }
 
-        void BindAlphaTestedTexture(const m3d::DSurfaceMaterial& material, int stage, int alphaTest)
+        void BindAlphaTestedTexture(m3d::DSurfaceMaterial const& material, int stage, int alphaTest)
         {
             if (HasAlphaTestedTexture(material))
             {
@@ -913,8 +922,7 @@ namespace m3d
                 meshesShiftsImpostered + numMeshesImpostered,
                 MeshImposteredSortPred(meshesImpostered));
 
-            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
-                ("impostors = " + CStr(numMeshesImpostered)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("impostors = " + CStr(numMeshesImpostered)).c_str());
 
             M3D_RENDERER->SetCull(rend::M3DCULL_NONE, 0);
 
@@ -1004,8 +1012,7 @@ namespace m3d
                         dst[1] = dm->m_impostorDisplacement * scale + org.y;
                         dst[2] = org.z;
                         dst[3] = static_cast<float>(
-                            (1 - static_cast<int>(angle * -3.9788735f)) % 25 -
-                            100 * static_cast<int>(scale * -100.0f));
+                            (1 - static_cast<int>(angle * -3.9788735f)) % 25 - 100 * static_cast<int>(scale * -100.0f));
                     }
 
                     M3D_RENDERER->SetVsFloatConst(20, instanceConsts, batch);
@@ -1018,10 +1025,8 @@ namespace m3d
                 }
             }
 
-            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
-                ("impostors tris = " + CStr(impostorTris)).c_str());
-            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
-                ("impostors dips = " + CStr(impostorDips)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("impostors tris = " + CStr(impostorTris)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("impostors dips = " + CStr(impostorDips)).c_str());
             M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
         }
 
@@ -1073,7 +1078,7 @@ namespace m3d
                 auto& material = m_MeshMaterialManager.GetMaterial(*node, *mesh);
                 rend::IEffect* shader = model->ApplyMaterial(material);
 
-                const TransparencyParams& params = node->GetTransparencyParams();
+                TransparencyParams const& params = node->GetTransparencyParams();
 
                 if (shader->IsParameterUsed(rend::IEffect::Transparency))
                 {
@@ -1269,12 +1274,15 @@ namespace m3d
                     M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0);
 
                     // Render model from 25 different angles (5x5 grid)
-                    float angles[] = {0.0f,   14.4f,  28.8f,  43.2f,  57.6f,  72.0f,  86.4f,  100.8f, 115.2f, 129.6f, 144.0f, 158.4f, 172.8f,
-                                      187.2f, 201.6f, 216.0f, 230.4f, 244.8f, 259.2f, 273.6f, 288.0f, 302.4f, 316.8f, 331.2f, 345.6f};
+                    float angles[] = {0.0f,   14.4f,  28.8f,  43.2f,  57.6f,  72.0f,  86.4f,  100.8f, 115.2f,
+                                      129.6f, 144.0f, 158.4f, 172.8f, 187.2f, 201.6f, 216.0f, 230.4f, 244.8f,
+                                      259.2f, 273.6f, 288.0f, 302.4f, 316.8f, 331.2f, 345.6f};
 
-                    int offsetsX[] = {0, 51, 102, 153, 204, 0, 51, 102, 153, 204, 0, 51, 102, 153, 204, 0, 51, 102, 153, 204, 0, 51, 102, 153, 204};
+                    int offsetsX[] = {0,   51,  102, 153, 204, 0,   51,  102, 153, 204, 0,   51, 102,
+                                      153, 204, 0,   51,  102, 153, 204, 0,   51,  102, 153, 204};
 
-                    int offsetsY[] = {0, 0, 0, 0, 0, 51, 51, 51, 51, 51, 102, 102, 102, 102, 102, 153, 153, 153, 153, 153, 204, 204, 204, 204, 204};
+                    int offsetsY[] = {0,   0,   0,   0,   0,   51,  51,  51,  51,  51,  102, 102, 102,
+                                      102, 102, 153, 153, 153, 153, 153, 204, 204, 204, 204, 204};
 
                     for (int j = 0; j < 25; j++)
                     {
@@ -1302,6 +1310,7 @@ namespace m3d
 
     int AnimatedModelsServer::GetItemProperty(int id, int prop, void* dest)
     {
+        // TODO rebuild all cases and check everything
         if (DataServer::GetItemProperty(id, prop, dest))
         {
             return 1;
@@ -1341,7 +1350,16 @@ namespace m3d
             }
             return 1;
         }
-        // RVA 0x76F9F0 - properties this server does not know about.
+        if (prop == 12296)
+        {
+            auto* model = (DynamicModel*)m_models[id].m_ptr;
+            auto* animModel = model->m_mdl[0];
+
+            auto* actionTime = (m3d::PropSrvActionTime*)dest;
+            int const frames = animModel->GetFrames(actionTime->m_action, 1);
+            actionTime->m_delta = (animModel->GetFps(actionTime->m_action) * frames) * 0.001;
+            return 1;
+        }
         return 0;
     }
 
@@ -1439,7 +1457,8 @@ namespace m3d
         {
             auto& effectNode = effectDesc.m_effectNode;
             auto currentLoadpointMatrix = anim->GetCurrentLoadpointMatrix(effectDesc.m_desc->m_lpId);
-            effectNode->SetOriginAbs({currentLoadpointMatrix._41, currentLoadpointMatrix._42, currentLoadpointMatrix._43});
+            effectNode->SetOriginAbs(
+                {currentLoadpointMatrix._41, currentLoadpointMatrix._42, currentLoadpointMatrix._43});
 
             Quaternion q;
             q.FromMatrix(currentLoadpointMatrix);
@@ -1453,21 +1472,21 @@ namespace m3d
         void __fastcall DefineSkinsToLoad(m3d::LoadSkins& skinsToLoad, CStr const& paramsStr)
         {
             retruxx::string view(paramsStr.c_str(), paramsStr.length());
-            const auto skinsPos = view.find("skins:");
-            const auto postSkinsPos = skinsPos + 6;
-            const auto semicolonPos = view.find(";", postSkinsPos);
+            auto const skinsPos = view.find("skins:");
+            auto const postSkinsPos = skinsPos + 6;
+            auto const semicolonPos = view.find(";", postSkinsPos);
             if (skinsPos == retruxx::string::npos || semicolonPos == retruxx::string::npos)
             {
                 return;
             }
 
-            const auto params = view.substr(postSkinsPos, semicolonPos - postSkinsPos);
+            auto const params = view.substr(postSkinsPos, semicolonPos - postSkinsPos);
             retruxx::vector<CStr> tokens;
             Tokenize(params.c_str(), tokens, "(), ;\t");
 
             skinsToLoad.loadAllSkins = tokens.empty();
 
-            for (const auto& token : tokens)
+            for (auto const& token : tokens)
             {
                 skinsToLoad.loadSkins.insert(strToInt(token));
             }
@@ -1744,7 +1763,7 @@ namespace m3d
             ref_ptr soundNode = xmlFile->CreateNode();
             modelNode->GetFirstChild(soundNode, "sound");
 
-            const auto actions = GetAnimActions();
+            auto const actions = GetAnimActions();
             while (!soundNode->IsEmpty())
             {
                 CStr action;
@@ -1853,7 +1872,8 @@ namespace m3d
             }
 
             // Add to server models
-            m3d::DataServer::Model newModel((void*)dynamicModel, modelFile.c_str(), itemslist[itemIndex].m_filename.c_str(), modelId.c_str());
+            m3d::DataServer::Model newModel(
+                (void*)dynamicModel, modelFile.c_str(), itemslist[itemIndex].m_filename.c_str(), modelId.c_str());
             m_models.push_back(newModel);
 
             // Update item properties
@@ -1870,7 +1890,7 @@ namespace m3d
         }
 
         // Log unread files
-        for (const auto& item : itemslist)
+        for (auto const& item : itemslist)
         {
             if (!item.m_fileWasRead)
             {
@@ -1886,7 +1906,7 @@ namespace m3d
     int AnimatedModelsServer::RenderMesh(SgAnimatedModelNode* node, AnimatedModel::Mesh& mh, rend::IEffect* shader)
     {
         unsigned beginRenderTime = 0;
-        const bool debugRender = M3D_ENGINE_CFG.m_g_renderMeshesDebug.GetB();
+        bool const debugRender = M3D_ENGINE_CFG.m_g_renderMeshesDebug.GetB();
         if (debugRender)
         {
             beginRenderTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
@@ -1913,7 +1933,10 @@ namespace m3d
 
             auto verts = anim->m_meshesVerts[mh.meshId];
             auto vbHandle = M3D_RENDERER->GetVbStreaming(mh.m_VertexType);
-            memcpy(M3D_RENDERER->LockVbStreaming(vbHandle, mh.m_numVertices, vOfs, nullptr), verts, mh.m_numVertices * mh.m_VertexTypeSize);
+            memcpy(
+                M3D_RENDERER->LockVbStreaming(vbHandle, mh.m_numVertices, vOfs, nullptr),
+                verts,
+                mh.m_numVertices * mh.m_VertexTypeSize);
             M3D_RENDERER->UnlockVb(vbHandle);
             M3D_RENDERER->SetToStream0(vbHandle);
             M3D_RENDERER->SetIndices(mh.m_IbPoolField, vOfs);
@@ -1926,7 +1949,8 @@ namespace m3d
             break;
         }
         // RVA 0x8F3D60 - any other mesh type keeps the buffers the caller set up.
-        default: break;
+        default:
+            break;
         }
 
         if (shader)
@@ -1969,11 +1993,17 @@ namespace m3d
             }
 
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                rend::M3DPT_TRIANGLELIST, shader, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
+                rend::M3DPT_TRIANGLELIST,
+                shader,
+                0,
+                mh.m_numVertices,
+                mh.m_IbPoolField.RealOffset,
+                mh.m_numDrawIndices / 3);
         }
         else
         {
-            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
+            M3D_RENDERER->DrawIndexedPrimitive(
+                rend::M3DPT_TRIANGLELIST, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
         }
 
         if (mh.m_meshType == 1)
@@ -1995,7 +2025,7 @@ namespace m3d
     int AnimatedModelsServer::RenderMesh(AnimInfo* ai, AnimatedModel::Mesh& mh, rend::IEffect* shader)
     {
         unsigned beginRenderTime = 0;
-        const bool debugRender = M3D_KERNEL->GetEngineCfg().m_g_renderMeshesDebug.GetB();
+        bool const debugRender = M3D_KERNEL->GetEngineCfg().m_g_renderMeshesDebug.GetB();
         if (debugRender)
         {
             beginRenderTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
@@ -2070,11 +2100,17 @@ namespace m3d
                 this->m_globalFxParamTreeBendTermNotActuated = 0;
             }
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                rend::M3DPT_TRIANGLELIST, shader, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
+                rend::M3DPT_TRIANGLELIST,
+                shader,
+                0,
+                mh.m_numVertices,
+                mh.m_IbPoolField.RealOffset,
+                mh.m_numDrawIndices / 3);
         }
         else
         {
-            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
+            M3D_RENDERER->DrawIndexedPrimitive(
+                rend::M3DPT_TRIANGLELIST, 0, mh.m_numVertices, mh.m_IbPoolField.RealOffset, mh.m_numDrawIndices / 3);
         }
 
         if (mh.m_meshType == 1)
@@ -2093,11 +2129,14 @@ namespace m3d
             if (ai->m_forModel)
             {
                 M3D_LOG_INFO(
-                    "Critical render time for mesh of impostor '" + CStr(ai->m_forModel->GetName()) + "': " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
+                    "Critical render time for mesh of impostor '" + CStr(ai->m_forModel->GetName()) +
+                    "': " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
             }
             else
             {
-                M3D_LOG_INFO("Critical render time for mesh of unknown impostor: " + CStr(curTimeUnscaled - beginRenderTime) + " ms");
+                M3D_LOG_INFO(
+                    "Critical render time for mesh of unknown impostor: " + CStr(curTimeUnscaled - beginRenderTime) +
+                    " ms");
             }
         }
 
@@ -2176,7 +2215,7 @@ namespace m3d
         this->m_fogTerm.x = reduceFactor * e;
         this->m_fogTerm.z = v7;
         this->m_fogTerm.y = 1.0 / (float)(v8 - v7);
-        const auto& v9 = m3d::g_Kernel->GetTimer();
+        auto const& v9 = m3d::g_Kernel->GetTimer();
         auto v10 = m3d::g_Kernel->GetTimer().GetFrameStartTimeSec() + m3d::g_Kernel->GetTimer().GetFrameStartTimeSec();
         this->m_treeBendTerm.z = 0.0;
         this->m_globalFxParamFogNotActuated = 1;
@@ -2196,8 +2235,7 @@ bool ModelEffectList::tEffect::IsValid() const
     return m_effectNode != 0;
 }
 
-ModelEffectList::ModelEffectList(DynamicModel* meta) :
-    m_dynModel(meta)
+ModelEffectList::ModelEffectList(DynamicModel* meta) : m_dynModel(meta)
 {
 }
 
@@ -2245,7 +2283,8 @@ void AddEffectNode(m3d::SgNode* parent, m3d::SgNode*& node, int effectId, bool i
     node->SetPersistance(false);
 }
 
-void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
+void ModelEffectList::adjustModelEffects(
+    m3d::SgNode* realModel,
     retruxx::vector<ModelEffectList::tEffect, retruxx::allocator<ModelEffectList::tEffect>>& newEffectList)
 {
     // RVA 0x772150 - moves from the current effects to newEffectList. Both are sorted by loadpoint, then effect id:
@@ -2256,11 +2295,13 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
     size_t const newSize = newEffectList.size();
     size_t cur = 0;
     size_t nw = 0;
-    auto const deleteCurrent = [&]() {
+    auto const deleteCurrent = [&]()
+    {
         DeleteEffectNode(realModel, current[cur].m_effectNode, current[cur].m_desc->m_immediateRemove);
         ++cur;
     };
-    auto const addNew = [&]() {
+    auto const addNew = [&]()
+    {
         ModelEffectList::tEffect& effect = newEffectList[nw];
         AddEffectNode(realModel, effect.m_effectNode, effect.m_desc->m_effectId, effect.m_desc->m_immediateRemove);
         ++nw;
@@ -2307,7 +2348,12 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
                 m3d::SgNode* const node = current[cur].m_effectNode;
                 if (current[cur].m_desc->m_restartOnAnimChange && node)
                 {
-                    m3d::ForEachDescendant(node, [](m3d::SgNode* child) { child->Restart(); });
+                    m3d::ForEachDescendant(
+                        node,
+                        [](m3d::SgNode* child)
+                        {
+                            child->Restart();
+                        });
                 }
                 newEffectList[nw++].m_effectNode = node;
                 ++cur;
@@ -2333,8 +2379,12 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
 
     newEffectList.erase(
         std::remove_if(
-            newEffectList.begin(), newEffectList.end(),
-            [](ModelEffectList::tEffect const& effect) { return !effect.IsValid(); }),
+            newEffectList.begin(),
+            newEffectList.end(),
+            [](ModelEffectList::tEffect const& effect)
+            {
+                return !effect.IsValid();
+            }),
         newEffectList.end());
     m_curEffectList = newEffectList;
 }
@@ -2352,8 +2402,10 @@ namespace
             // NOTE: longer lists take VC7.1's buffered merge sort, whose result under SortPred is not reproduced;
             // they are sorted by loadpoint, then effect id.
             std::stable_sort(
-                effects.begin(), effects.end(),
-                [](ModelEffectList::tEffect const& a, ModelEffectList::tEffect const& b) {
+                effects.begin(),
+                effects.end(),
+                [](ModelEffectList::tEffect const& a, ModelEffectList::tEffect const& b)
+                {
                     if (a.m_desc->m_lpId != b.m_desc->m_lpId)
                     {
                         return a.m_desc->m_lpId < b.m_desc->m_lpId;
@@ -2387,8 +2439,9 @@ namespace
     }
 }  // namespace
 
-void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel,
-    const retruxx::vector<ActionType, retruxx::allocator<ActionType>>& newActions)
+void ModelEffectList::adjustModelEffects(
+    m3d::SgNode* realModel,
+    retruxx::vector<ActionType, retruxx::allocator<ActionType>> const& newActions)
 {
     // RVA 0x7748E0 - the effects of all the given actions together, minus those on suppressed loadpoints.
     retruxx::vector<ModelEffectList::tEffect> newEffectList;
@@ -2456,7 +2509,7 @@ void ModelEffectList::adjustModelEffects(m3d::SgNode* realModel, ActionType newA
     adjustModelEffects(realModel, newEffectList);
 }
 
-bool ModelEffectList::SortPred::operator()(const ModelEffectList::tEffect& a, const ModelEffectList::tEffect& b)
+bool ModelEffectList::SortPred::operator()(ModelEffectList::tEffect const& a, ModelEffectList::tEffect const& b)
 {
     // RVA 0x76D250
     // NOTE: not a strict weak ordering, as shipped: a lower loadpoint sorts first, but otherwise the effect ids
@@ -2535,8 +2588,8 @@ void DynamicModel::_createImpostorShit()
     }
     M3D_RENDERER->UnlockIb(m_impostorIb);
 
-    m_impostorTex = M3D_RENDERER->AddDynamicTexture(
-        (CStr("$ImpostorTex.") + CStr(m_mdl[0]->GetName())).c_str(), 256, 256, 1);
+    m_impostorTex =
+        M3D_RENDERER->AddDynamicTexture((CStr("$ImpostorTex.") + CStr(m_mdl[0]->GetName())).c_str(), 256, 256, 1);
     M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_WRAP_S, 3);
     M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_WRAP_T, 3);
     M3D_RENDERER->SetTextureParameter(m_impostorTex, m3d::rend::TexParam::TM_TEX_FILTER, 1);
