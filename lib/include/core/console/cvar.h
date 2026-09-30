@@ -29,10 +29,15 @@ namespace m3d
         };
 
     public:
-        CVar(CVar const&);
+        CVar(CVar const& other);
+        CVar(CVar&& other) noexcept;
+
         CVar(char const* name, char const* value, eType type, eFlags flags);
         CVar();
         ~CVar();
+
+        CVar& operator=(CVar const& other);
+        CVar& operator=(CVar&& other) noexcept;
 
         void Init(char const* name, char const* value, eType type, eFlags flags);
         int GetI() const;
@@ -40,7 +45,6 @@ namespace m3d
         bool GetB() const;
         char const* GetS() const;
         unsigned int GetC() const;
-
 
         void Set(char const* value, bool ignoreFlags = true);
         void SetI(int, bool ignoreFlags = true);
@@ -78,4 +82,4 @@ namespace m3d
     // The original driver DLLs read cvars straight out of EngineConfig: the type at +0x0c and
     // the value at +0x14, so the layout is fixed.
     static_assert(sizeof(CVar) == 0x002c);
-}
+}  // namespace m3d

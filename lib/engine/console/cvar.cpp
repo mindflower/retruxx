@@ -1,16 +1,16 @@
 #include <core/console/cvar.h>
 #include <core/console/console.h>
 #include <cstdio>
-#include <cstring>#include <stdexcept>
+#include <cstring>
 
 namespace m3d
 {
-    CVar::CVar(CVar const& other)
-        : m_name(other.m_name)
-        , m_type(other.m_type)
-        , m_flags(other.m_flags)
-        , m_s(other.m_s)
-        , m_handler(other.m_handler)
+    CVar::CVar(CVar const& other) :
+        m_name(other.m_name),
+        m_type(other.m_type),
+        m_flags(other.m_flags),
+        m_s(other.m_s),
+        m_handler(other.m_handler)
     {
         // Not present in the binary. A member-wise copy, except that the default value is duplicated because the
         // destructor frees it.
@@ -20,6 +20,18 @@ namespace m3d
             m_defaultValue = new char[strlen(other.m_defaultValue) + 1];
             strcpy(m_defaultValue, other.m_defaultValue);
         }
+    }
+
+    CVar::CVar(CVar&& other) noexcept :
+        m_name(other.m_name),
+        m_type(other.m_type),
+        m_flags(other.m_flags),
+        m_s(other.m_s),
+        m_handler(other.m_handler),
+        m_i(other.m_i),
+        m_defaultValue(other.m_defaultValue)
+    {
+        other.m_defaultValue = nullptr;
     }
 
     CVar::CVar()
@@ -42,6 +54,44 @@ namespace m3d
         delete[] m_defaultValue;
     }
 
+    CVar& CVar::operator=(CVar const& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        m_name = other.m_name;
+        m_type = other.m_type;
+        m_flags = other.m_flags;
+        m_s = other.m_s;
+        m_handler = other.m_handler;
+        m_i = other.m_i;
+        if (other.m_defaultValue)
+        {
+            m_defaultValue = new char[strlen(other.m_defaultValue) + 1];
+            strcpy(m_defaultValue, other.m_defaultValue);
+        }
+    }
+
+    CVar& CVar::operator=(CVar&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        m_name = other.m_name;
+        m_type = other.m_type;
+        m_flags = other.m_flags;
+        m_s = other.m_s;
+        m_handler = other.m_handler;
+        m_i = other.m_i;
+
+        m_defaultValue = other.m_defaultValue;
+        other.m_defaultValue = nullptr;
+    }
+
     void CVar::Init(char const* name, char const* value, eType type, eFlags flags)
     {
         m_name = name;
@@ -52,28 +102,28 @@ namespace m3d
 
     void CVar::SetB(bool b, bool ignoreFlags)
     {
-        char buffer[16] = { 0 };
+        char buffer[16] = {0};
         sprintf_s(buffer, "%d", b);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::SetC(unsigned int i, bool ignoreFlags)
     {
-        char buffer[32] = { 0 };
+        char buffer[32] = {0};
         sprintf_s(buffer, "%d", i);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::SetF(float f, bool ignoreFlags)
     {
-        char buffer[16] = { 0 };
+        char buffer[16] = {0};
         sprintf_s(buffer, "%.2f", f);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::SetI(int i, bool ignoreFlags)
     {
-        char buffer[16] = { 0 };
+        char buffer[16] = {0};
         sprintf_s(buffer, "%d", i);
         Set(buffer, ignoreFlags);
     }
@@ -126,10 +176,7 @@ namespace m3d
                 }
                 else
                 {
-                    m_b =
-                        !stricmp(value, "yes") ||
-                        !stricmp(value, "yeah") ||
-                        !stricmp(value, "yep") ||
+                    m_b = !stricmp(value, "yes") || !stricmp(value, "yeah") || !stricmp(value, "yep") ||
                         !stricmp(value, "true");
                     if (m_b)
                     {
@@ -238,4 +285,4 @@ namespace m3d
     {
         return m_type;
     }
-}
+}  // namespace m3d

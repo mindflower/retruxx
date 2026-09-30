@@ -17,12 +17,10 @@
 #include <script/scriptserver.h>
 
 // The global operator new/delete below go straight through g_Kernel->g_mar, so the kernel has
-// to be constructed before any other global object. The shipped build places this file's
-// initializer first in the C++ initializer table (the entry right after __xc_a), ahead of every
-// user-level initializer, which is what init_seg(compiler) does.
+// to be constructed before any other global object - before user segment, but after lib segment.
 #pragma warning(push)
-#pragma warning(disable : 4074)  // initializers put in compiler reserved initialization area
-#pragma init_seg(compiler)
+#pragma warning(disable : 4075)
+#pragma init_seg(".CRT$XCM")
 #pragma warning(pop)
 
 namespace

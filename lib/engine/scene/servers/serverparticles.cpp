@@ -21,9 +21,8 @@ bool loadedViaBPS = false;
 
 namespace
 {
-    constexpr int MAX_NODES_PER_CLASS = 0x7D0;
+    int constexpr MAX_NODES_PER_CLASS = 0x7D0;
 
-    
     struct ParticlesInfo
     {
         /* 0x0000 */ m3d::SgNode* pNode = nullptr;
@@ -44,7 +43,9 @@ namespace
 
     struct ParticlesSortPred
     {
-        ParticlesSortPred(ParticlesInfo* parts) : m_particles(parts){}
+        ParticlesSortPred(ParticlesInfo* parts) : m_particles(parts)
+        {
+        }
 
         bool operator()(unsigned int partIdx1, unsigned int partIdx2) const
         {
@@ -59,10 +60,15 @@ namespace
         }
         /* 0x0000 */ ParticlesInfo* m_particles;
     }; /* size: 0x0004 */
-}
+}  // namespace
 
 namespace m3d
 {
+    PoolManager<ParticleBases> TrailsPool(0);
+    PoolManager<m3d::Particle> ParticlesPool(0);
+    PoolManager<PsInfoForNode> Info_PoolManager(0);
+    PoolManager<m3d::ParticlesList> PL_PoolManager(0);
+
     int ParticlesServer::SetItemProperty(int id, int prop, void* src)
     {
         return m3d::DataServer::SetItemProperty(id, prop, src);
@@ -98,7 +104,7 @@ namespace m3d
         M3D_RENDERER->PushBlend(rend::BM_NONE);
         M3D_RENDERER->PushFog(false);
         M3D_RENDERER->PushLighting(false);
-        M3D_RENDERER->SetAlphaTest (0);
+        M3D_RENDERER->SetAlphaTest(0);
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
@@ -137,7 +143,6 @@ namespace m3d
         fxParams.cDiffuse.x = diffuseColor.r;
         fxParams.cDiffuse.y = diffuseColor.g;
         fxParams.cDiffuse.z = diffuseColor.b;
-
 
         float fogReduceFactor = pClient->GetWorld().GetWeatherManager().GetFogReduceFactorFromWeather();
         fxParams.fogTerm.z = fogReduceFactor * fogStart;                        // fogStart
@@ -253,8 +258,8 @@ namespace m3d
         if (particlesList->m_updateCalled)
         {
             // Extract position from current transform matrices
-            const auto currentPos = ri->m_node->GetCurrentMatrix().getOrg();
-            const auto prevPos = particlesList->m_curXFormToWorld.getOrg();
+            auto const currentPos = ri->m_node->GetCurrentMatrix().getOrg();
+            auto const prevPos = particlesList->m_curXFormToWorld.getOrg();
 
             // Calculate velocity as (current_pos - previous_pos) / delta_time
             particlesList->m_worldVel.x = (currentPos.x - prevPos.x) * (1.0f / deltaTime);
@@ -268,7 +273,10 @@ namespace m3d
         }
 
         // Store current transform for next frame's velocity calculation
-        memcpy(&particlesList->m_curXFormToWorld, &ri->m_node->GetCurrentMatrix(), sizeof(particlesList->m_curXFormToWorld));
+        memcpy(
+            &particlesList->m_curXFormToWorld,
+            &ri->m_node->GetCurrentMatrix(),
+            sizeof(particlesList->m_curXFormToWorld));
 
         // Update the particle system
         particleSystem->Update(particlesList, deltaTime, 1.0f);
@@ -586,8 +594,8 @@ namespace m3d
                 m_fnLoadCallback(static_cast<int>(i * 100 / itemslist.size()), m_fnLoadCallbackData);
             }
 
-            const CStr fn = itemslist[i].m_filename;
-            const CStr id = itemslist[i].m_id;
+            CStr const fn = itemslist[i].m_filename;
+            CStr const id = itemslist[i].m_id;
             if (AddItem(fn.c_str(), id.c_str()) == -1)
             {
                 M3D_LOG_INFO("DataServer: cannot read " + fn + " id = " + id);
@@ -630,7 +638,7 @@ namespace m3d
 
                     unsigned attrNum = 0;
                     fileStream->ReadBytes(&attrNum, 4u);
-                    
+
                     AttrProps attrProps;
                     m_Attractors.resize(attrNum, attrProps);
 
@@ -652,4 +660,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

@@ -91,7 +91,6 @@ namespace m3d
 {
     namespace
     {
-
         void addStripePart(
             CVector const& gorg0,
             CVector const& gorg1,
@@ -113,10 +112,13 @@ namespace m3d
             // segment the near end reuses the previous segment's far end, so the quads join.
             static CVector prevUp;
             CVector const dir = org1 - org0;
-            auto const side = [&dir, &camOrg](CVector const& gorg, float size) {
+            auto const side = [&dir, &camOrg](CVector const& gorg, float size)
+            {
                 CVector const toCam = gorg - camOrg;
                 CVector const up(
-                    toCam.z * dir.y - toCam.y * dir.z, dir.z * toCam.x - toCam.z * dir.x, toCam.y * dir.x - dir.y * toCam.x);
+                    toCam.z * dir.y - toCam.y * dir.z,
+                    dir.z * toCam.x - toCam.z * dir.x,
+                    toCam.y * dir.x - dir.y * toCam.x);
                 float const invLength =
                     static_cast<float>(1.0 / sqrt(up.x * up.x + up.y * up.y + up.z * up.z + 0.00000011920929));
                 return CVector(invLength * up.x * size, invLength * up.y * size, invLength * up.z * size);
@@ -127,7 +129,8 @@ namespace m3d
             prevUp = up1;
 
             rend::VertexXYZCT1* vertices = M3D_APP->RenderQuadXyzct1GetNextPtr();
-            auto const setVertex = [vertices](int i, CVector const& pos, unsigned int clr, float u, float v) {
+            auto const setVertex = [vertices](int i, CVector const& pos, unsigned int clr, float u, float v)
+            {
                 vertices[i].x = pos.x;
                 vertices[i].y = pos.y;
                 vertices[i].z = pos.z;
@@ -141,7 +144,7 @@ namespace m3d
             setVertex(3, org1 - up1, clr1, u0, v1);
         }
         // The particle systems' shared 1200-index pool fields, filled once with a fixed pattern over their vertices.
-        template <typename F>
+        template<typename F>
         void FillIbPoolField(rend::IbPoolField& field, F fill)
         {
             field = M3D_RENDERER->AddIbPoolField(1200);
@@ -152,17 +155,20 @@ namespace m3d
         // Two triangles (v, v+1, v+2), (v+2, v+3, v) per quad of 4 vertices, for 200 quads.
         void FillQuadTriangles(rend::IbPoolField& field)
         {
-            FillIbPoolField(field, [](uint16_t* indices) {
-                for (uint16_t v = 0; v < 800; v += 4, indices += 6)
+            FillIbPoolField(
+                field,
+                [](uint16_t* indices)
                 {
-                    indices[0] = v;
-                    indices[1] = v + 1;
-                    indices[2] = v + 2;
-                    indices[3] = v + 2;
-                    indices[4] = v + 3;
-                    indices[5] = v;
-                }
-            });
+                    for (uint16_t v = 0; v < 800; v += 4, indices += 6)
+                    {
+                        indices[0] = v;
+                        indices[1] = v + 1;
+                        indices[2] = v + 2;
+                        indices[3] = v + 2;
+                        indices[4] = v + 3;
+                        indices[5] = v;
+                    }
+                });
         }
     }  // namespace
     void Particle::Step(float dt)
@@ -197,6 +203,7 @@ namespace m3d
     Particle::Particle()
     {
         m_trail = 0;
+        m_next = 0;
     }
 
     Particle::~Particle()
@@ -227,11 +234,14 @@ namespace m3d
                     m3d::Application::g_pApp->m_renderer->ReleaseIb(m_skinIb[i]);
             }
             delete[] m_skinIb;
+            m_skinIb = nullptr;
         }
         if (m_meshAutoEmitted)
         {
-            delete[] m_numMeshEmitterVerts;
+            delete m_numMeshEmitterVerts;
+            m_numMeshEmitterVerts = nullptr;
             delete[] m_meshEmitterVerts;
+            m_meshEmitterVerts = nullptr;
         }
     }
 
@@ -2205,12 +2215,15 @@ namespace m3d
     void PolyPS::CreateIb()
     {
         // RVA 0x8E5E30 - the 4 vertices of each of 200 quads in order.
-        FillIbPoolField(m_IbPoolField, [](uint16_t* indices) {
-            for (uint16_t v = 0; v < 800; ++v)
+        FillIbPoolField(
+            m_IbPoolField,
+            [](uint16_t* indices)
             {
-                indices[v] = v;
-            }
-        });
+                for (uint16_t v = 0; v < 800; ++v)
+                {
+                    indices[v] = v;
+                }
+            });
     }
 
     int PolyPS::Render(CMatrix const* local, ParticlesList* parts)
@@ -2494,12 +2507,15 @@ namespace m3d
     void Poly1PS::CreateIb()
     {
         // RVA 0x8E5EE0 - the 4 vertices of each of 200 quads in order.
-        FillIbPoolField(m_IbPoolField, [](uint16_t* indices) {
-            for (uint16_t v = 0; v < 800; ++v)
+        FillIbPoolField(
+            m_IbPoolField,
+            [](uint16_t* indices)
             {
-                indices[v] = v;
-            }
-        });
+                for (uint16_t v = 0; v < 800; ++v)
+                {
+                    indices[v] = v;
+                }
+            });
     }
 
     int Poly1PS::Render(CMatrix const* local, ParticlesList* parts)
@@ -2629,7 +2645,10 @@ namespace m3d
         }
 
         CMatrix const rmat(*local);
-        auto const toWorld = [&rmat, &localOrigin](CVector const& v) { return rmat.vecRot(v) + localOrigin; };
+        auto const toWorld = [&rmat, &localOrigin](CVector const& v)
+        {
+            return rmat.vecRot(v) + localOrigin;
+        };
 
         ApplyBlending();
         M3D_APP->SetFlushQuadsShader(m_shader);
@@ -2644,16 +2663,40 @@ namespace m3d
                 if (m_updateXForm)
                 {
                     addStripePart(
-                        p->m_origin, p->m_origin, toWorld(p->m_locorigin), toWorld(p->m_forigin), p->m_size, p->m_size,
-                        p->m_curClr, p->m_curClr, camOrg, 0.0f, 0.0f, 1.0f, 1.0f, 0);
+                        p->m_origin,
+                        p->m_origin,
+                        toWorld(p->m_locorigin),
+                        toWorld(p->m_forigin),
+                        p->m_size,
+                        p->m_size,
+                        p->m_curClr,
+                        p->m_curClr,
+                        camOrg,
+                        0.0f,
+                        0.0f,
+                        1.0f,
+                        1.0f,
+                        0);
                 }
                 else
                 {
                     CVector const pos = p->m_origin + p->m_locorigin;
                     CVector const forward = p->m_origin + p->m_forigin;
                     addStripePart(
-                        pos, pos, pos, forward, p->m_size, p->m_size, p->m_curClr, p->m_curClr, camOrg, 0.0f, 0.0f,
-                        1.0f, 1.0f, 0);
+                        pos,
+                        pos,
+                        pos,
+                        forward,
+                        p->m_size,
+                        p->m_size,
+                        p->m_curClr,
+                        p->m_curClr,
+                        camOrg,
+                        0.0f,
+                        0.0f,
+                        1.0f,
+                        1.0f,
+                        0);
                 }
             }
         }
@@ -2674,8 +2717,20 @@ namespace m3d
                     CVector const a = m_updateXForm ? toWorld(from->m_locorigin) : from->m_origin + from->m_locorigin;
                     CVector const b = m_updateXForm ? toWorld(to->m_locorigin) : to->m_locorigin + to->m_origin;
                     addStripePart(
-                        a, b, a, b, from->m_size, to->m_size, from->m_curClr, to->m_curClr, camOrg, 0.0f, tu + tadd,
-                        1.0f, tu, segment);
+                        a,
+                        b,
+                        a,
+                        b,
+                        from->m_size,
+                        to->m_size,
+                        from->m_curClr,
+                        to->m_curClr,
+                        camOrg,
+                        0.0f,
+                        tu + tadd,
+                        1.0f,
+                        tu,
+                        segment);
                     from = to;
                     tu -= tadd;
                 }
@@ -2905,8 +2960,10 @@ namespace m3d
         CMatrix rot;
         rot.rotY(parts->m_spriteAngle);
         CVector const quad[4] = {
-            rot.vecRot(CVector(1.0f, 0.0f, -1.0f)), rot.vecRot(CVector(1.0f, 0.0f, 1.0f)),
-            rot.vecRot(CVector(-1.0f, 0.0f, 1.0f)), rot.vecRot(CVector(-1.0f, 0.0f, -1.0f))};
+            rot.vecRot(CVector(1.0f, 0.0f, -1.0f)),
+            rot.vecRot(CVector(1.0f, 0.0f, 1.0f)),
+            rot.vecRot(CVector(-1.0f, 0.0f, 1.0f)),
+            rot.vecRot(CVector(-1.0f, 0.0f, -1.0f))};
         float const uv[4][2] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}};
 
         CMatrix localInv;
@@ -2915,7 +2972,8 @@ namespace m3d
             localInv = local->getInverseRotTranslate();
         }
 
-        auto const waterHeight = [](CVector const& pos) {
+        auto const waterHeight = [](CVector const& pos)
+        {
             return pClient->GetWorld().GetLandscape().getWaterHeight(
                 static_cast<int>(pos.x * 0.03125f), static_cast<int>(pos.z * 0.03125f));
         };
@@ -2950,7 +3008,11 @@ namespace m3d
         M3D_RENDERER->SetToStream0(partsVb);
         M3D_RENDERER->SetIndices(m_IbPoolField, vofs);
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
-            rend::M3DPT_TRIANGLELIST, m_shader, 0, 4 * parts->m_numParticles, m_IbPoolField.RealOffset,
+            rend::M3DPT_TRIANGLELIST,
+            m_shader,
+            0,
+            4 * parts->m_numParticles,
+            m_IbPoolField.RealOffset,
             2 * parts->m_numParticles);
         if (m_updateXForm)
         {
@@ -3266,12 +3328,15 @@ namespace m3d
     void RainPS::CreateIb()
     {
         // RVA 0x8E5F90 - 200 line segments (v, v+1).
-        FillIbPoolField(m_IbPoolField, [](uint16_t* indices) {
-            for (uint16_t v = 0; v < 400; ++v)
+        FillIbPoolField(
+            m_IbPoolField,
+            [](uint16_t* indices)
             {
-                indices[v] = v;
-            }
-        });
+                for (uint16_t v = 0; v < 400; ++v)
+                {
+                    indices[v] = v;
+                }
+            });
     }
 
     void RainPS::ReleaseIb()
@@ -3453,12 +3518,7 @@ namespace m3d
         M3D_RENDERER->SetToStream0(vb);
         M3D_RENDERER->SetIndices(m_IbPoolField, vofs);
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
-            rend::M3DPT_TRIANGLELIST,
-            m_shader,
-            0,
-            vertexCount,
-            m_IbPoolField.RealOffset,
-            2 * parts->m_numParticles);
+            rend::M3DPT_TRIANGLELIST, m_shader, 0, vertexCount, m_IbPoolField.RealOffset, 2 * parts->m_numParticles);
 
         if (m_updateXForm)
             M3D_RENDERER->MatPop(true);

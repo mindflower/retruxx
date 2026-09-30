@@ -514,7 +514,10 @@ namespace m3d
         while (auto* child = m_firstChild)
         {
             RemoveChild(child);
-            child->DecRef();
+            if (child->GetRefCount() <= 0)
+            {
+                delete child;
+            }
         }
         m_firstChild = nullptr;
         return 1;

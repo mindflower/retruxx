@@ -27,7 +27,7 @@ namespace m3d
         {
             if ((logFlags & m_logMask) != 0)
             {
-                std::ofstream file(m_fileName.c_str(), std::ios_base::app);
+                std::ofstream file(m_fileName.c_str(), std::ios_base::out | std::ios_base::app);
                 if (file)
                 {
                     auto const header = headerString(logFlags);
@@ -70,7 +70,7 @@ namespace m3d
             return true;
         }
 
-        std::ofstream logStream(m_fileName.c_str(), std::ios_base::app);
+        std::ofstream logStream(m_fileName.c_str(), std::ios_base::out | std::ios_base::app);
         if (logStream)
         {
             auto const timestamp = time(NULL);
@@ -182,7 +182,7 @@ namespace m3d
         AutoLock guard(m_cs);
         if (m_logStarted && (logBits & m_logMask) != 0)
         {
-            std::ofstream logStream(m_fileName.c_str(), std::ios_base::app);
+            std::ofstream logStream(m_fileName.c_str(), std::ios_base::out | std::ios_base::app);
             if (logStream)
             {
                 auto const header = headerString(logBits);
@@ -206,7 +206,7 @@ namespace m3d
             {
                 m_indentCount = 0;
             }
-            std::ofstream logStream(m_fileName.c_str(), std::ios_base::app);
+            std::ofstream logStream(m_fileName.c_str(), std::ios_base::out | std::ios_base::app);
             if (logStream)
             {
                 auto const header = headerString(logBits);
