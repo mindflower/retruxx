@@ -1283,7 +1283,9 @@ namespace ai
             return true;
 
         case 21:
-            retVal = prototypeInfo->m_price;
+            // RVA 0x6D7CE0 - the prototype's integer price as a float, the type the current price is read as, so
+            // an unchanged price compares equal and is not saved.
+            retVal = static_cast<float>(prototypeInfo->m_price);
             return true;
 
         default:

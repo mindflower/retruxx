@@ -311,6 +311,9 @@ namespace ai
 
     GameTime::GameTime()
     {
+        // RVA 0x62D0D0
+        m_milliSeconds = 0;
+        m_milliSeconds0 = 0;
     }
 
     void GameTime::setInt64(long long milliSeconds)

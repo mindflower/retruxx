@@ -223,10 +223,14 @@ namespace ai
         theAIManager->RegisterFunc("AIGetParentID", AIGetParentID);
         theAIManager->RegisterFunc("AIGetOwnerID", AIGetOwnerID);
 
-        m_propertiesMap["Belong"] = 0;
-        m_propertiesMap["Prototype"] = 1;
-        m_propertiesMap["PrototypeId"] = 2;
+        // RVA 0x692310 - the name is written by SaveToXML itself and the prototype by name, never by id.
         m_propertiesMap["Name"] = 3;
+        m_propertiesSaveStatesMap[3] = SAVE_PROP_NEVER;
+        m_propertiesMap["Prototype"] = 1;
+        m_propertiesSaveStatesMap[1] = SAVE_PROP_ALWAYS;
+        m_propertiesMap["PrototypeId"] = 2;
+        m_propertiesSaveStatesMap[2] = SAVE_PROP_NEVER;
+        m_propertiesMap["Belong"] = 0;
     }
 
     m3d::AIParam Obj::AIGetOwnerID(Obj* obj)
