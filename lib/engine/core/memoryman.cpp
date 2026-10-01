@@ -7,9 +7,9 @@
 
 #include "retruxx/common.h"
 
-// NOTE: the port's global allocator (g_mar.AllocMem, see kernel.cpp) goes straight to malloc and never reaches this
-// pool, so the pool only holds the chunks its constructor pre-allocates and the leak report written on shutdown is
-// empty.
+// Every allocation of the game goes through here (g_mar.AllocMem, see kernel.cpp), as in the shipped build. Blocks
+// of up to 1024 bytes come from per-size pools that are never returned to the system; bigger ones get a chunk of
+// their own.
 
 namespace
 {

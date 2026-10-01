@@ -60,30 +60,38 @@ namespace help
 {
     void DeleteAllFilesInDirectory(char const* dir)
     {
-        auto fileMask = dir + CStr("\\*.*");
-        WIN32_FIND_DATAA data;
-        auto file = FindFirstFileA(fileMask.c_str(), &data);
-        if (file = INVALID_HANDLE_VALUE)
+        // RVA 0x552820 - deletes the files (not subfolders) of `dir`, also forgetting them in the file server.
+        WIN32_FIND_DATAA findData;
+        auto const hf = FindFirstFileA((CStr(dir) + CStr("\\*.*")).c_str(), &findData);
+        if (hf == INVALID_HANDLE_VALUE)
         {
-            FindClose(INVALID_HANDLE_VALUE);
+            FindClose(hf);
             return;
         }
-        CStr strDir(dir);
-        assert(strDir.length() > 0);
-        strDir += "\\";
-        do
+
+        CStr strDir = dir;
+        M3D_ASSERT(strDir.length() > 0);
+        if (strDir.c_str()[strDir.length() - 1] != '\\' && strDir.c_str()[strDir.length() - 1] != '/')
         {
-            auto fileName = data.cFileName;
-            if (fileName != "." && fileName != "..")
+            strDir += CStr("\\");
+        }
+
+        // NOTE: the loop starts with FindNextFileA, so the entry returned by
+        // FindFirstFileA is never deleted (normally it is just ".").
+        while (FindNextFileA(hf, &findData))
+        {
+            if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
             {
-                auto fullName = strDir + fileName;
-                auto attr = GetFileAttributesA(fullName.c_str());
-                SetFileAttributesA(fullName.c_str(), attr & 0xFA);
-                DeleteFileA(fullName.c_str());
-                m3d::g_Kernel->GetFileServer().RemoveFile(fullName.c_str());
+                continue;
             }
-        } while (FindNextFileA(file, &data));
-        FindClose(file);
+            CStr const fileName = strDir + CStr(findData.cFileName);
+            // Clear the read-only and system bits so the file can be deleted.
+            auto const attr = GetFileAttributesA(fileName.c_str());
+            SetFileAttributesA(fileName.c_str(), (attr & ~0xFFul) | (attr & 0xFA));
+            DeleteFileA(fileName.c_str());
+            m3d::g_Kernel->GetFileServer().RemoveFile(fileName.c_str());
+        }
+        FindClose(hf);
     }
 
     CStr GetCurrentLevelName()
