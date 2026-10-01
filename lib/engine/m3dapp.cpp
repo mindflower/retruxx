@@ -887,6 +887,7 @@ namespace m3d
 
     int Application::FillEngineMessages()
     {
+        // RVA 0x5A6930
         if (!m_input)
         {
             return 1;
@@ -912,15 +913,14 @@ namespace m3d
                 }
                 ev.m_byteEv[3] = param2;
                 ev.m_eventType = 8 - (param3 != 0);
-                auto oldHead = m_eventsQueueHead;
                 auto head = m_eventsQueueHead + 1;
                 if (head >= 0x1388)
                 {
-                    m_eventsQueueHead = 0;
+                    head = 0;
                 }
                 if (m_eventsQueueTail != head)
                 {
-                    m_eventsQueue[oldHead] = ev;
+                    m_eventsQueue[m_eventsQueueHead] = ev;
                     m_eventsQueueHead = head;
                 }
             } while (m_input->GetLastKbdEvent(key, param2, param3, time, true));

@@ -532,10 +532,12 @@ namespace m3d
 
     void GameImpulse::ResetAllImpulses(bool bClearPressedKeys)
     {
+        // RVA 0x597340 - every impulse is released; with bClearPressedKeys the keys held down are forgotten too.
         if (m_isInited)
         {
-            for (auto const& state : m_impulseStates)
+            for (auto& state : m_impulseStates)
             {
+                state.second = false;
                 m_impulseResetAfterRead[state.first] = false;
             }
             if (bClearPressedKeys)
