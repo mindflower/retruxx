@@ -18,7 +18,7 @@ namespace ai
 
     bool BulletPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        const auto res = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        auto const res = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (res)
         {
             _SetGeomType(GEOM_TYPE_RAY);
@@ -118,6 +118,11 @@ namespace ai
 
     void Bullet::SpecifyTracer(CVector const& endPos)
     {
+        if (!m_tracer)
+        {
+            return;
+        }
+
         static retruxx::vector<CVector> trace(2);
 
         trace[0] = GetPosition();
@@ -168,8 +173,8 @@ namespace ai
             static retruxx::vector<CVector> trace(2);
 
             auto* ray = _Ray();
-            const auto len = ray->GetLength();
-            const auto dir = ray->GetDirection();
+            auto const len = ray->GetLength();
+            auto const dir = ray->GetDirection();
 
             trace[0] = GetPosition();
             trace[1].x = (len * dir.x) + trace[0].x;
@@ -220,7 +225,7 @@ namespace ai
 
     BulletPrototypeInfo const* Bullet::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const BulletPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BulletPrototypeInfo const);
     }
 
     Bullet::~Bullet()
@@ -271,4 +276,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be cloned\"");
         return nullptr;
     }
-}
+}  // namespace ai

@@ -148,7 +148,7 @@ int ObjectsIcons::Load(CStr const& fileName, bool bGlobal)
 
 int ObjectsIcons::AddIcon(CStr const& strId, Icon* ico, bool bGlobal)
 {
-    //TODO: check this
+    // RVA 0x170580 - an existing icon under the same id is deleted and replaced.
     if (!ico || strId.empty())
     {
         return 0;

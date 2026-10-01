@@ -510,84 +510,36 @@ unsigned long dGeomGetCollideBits (dxGeom *g)
 }
 
 
+// retruxx: moves a geom to its space's enabled or disabled list to match its flag.
+static void relinkGeomByEnabledState (dxGeom *g)
+{
+  if (!g->parent_space) return;
+  if (g->next) g->next->tome = g->tome;
+  *g->tome = g->next;
+  dxSpace *space = g->parent_space;
+  dxGeom **first = (g->gflags & GEOM_ENABLED) ? &space->m_firstEnabled : &space->m_firstDisabled;
+  g->next = *first;
+  g->tome = first;
+  if (*first) (*first)->tome = &g->next;
+  *first = g;
+}
+
 void dGeomEnable (dxGeom *g)
 {
-	dAASSERT (g);
-  if ((g->gflags & GEOM_ENABLED) == 0)
-    {
-        // Clear the enabled flag (set to disabled)
-        g->gflags |= GEOM_ENABLED;
-        
-        // Only process if the geometry is in a space
-        if (g->parent_space != nullptr)
-        {
-            // Remove geometry from its current list (enabled list)
-            if (g->next != nullptr)
-            {
-                g->next->tome = g->tome;
-            }
-            *g->tome = g->next;
-            
-            // Add geometry to the disabled list
-            dxSpace* space = g->parent_space;
-            
-            // Determine which list head to use based on enabled state
-            dxGeom** targetListHead = ((g->gflags & GEOM_ENABLED) != 0) 
-                ? &space->m_firstEnabled 
-                : &space->m_firstDisabled;
-            
-            g->next = *targetListHead;
-            g->tome = targetListHead;
-            
-            if (*targetListHead != nullptr)
-            {
-                (*targetListHead)->tome = &g->next;
-            }
-            
-            *targetListHead = g;
-        }
-    }
+  // RVA 0x600530 - retruxx: spaces keep enabled and disabled geoms in separate lists.
+  dAASSERT (g);
+  if (g->gflags & GEOM_ENABLED) return;
+  g->gflags |= GEOM_ENABLED;
+  relinkGeomByEnabledState (g);
 }
 
 void dGeomDisable (dxGeom *g)
 {
-	dAASSERT (g);
-  // TODO: generated code
-  // Check if the geometry is currently enabled (bit 3 = enabled flag)
-    if ((g->gflags & GEOM_ENABLED) != 0)
-    {
-        // Clear the enabled flag (set to disabled)
-        g->gflags &= ~GEOM_ENABLED;
-        
-        // Only process if the geometry is in a space
-        if (g->parent_space != nullptr)
-        {
-            // Remove geometry from its current list (enabled list)
-            if (g->next != nullptr)
-            {
-                g->next->tome = g->tome;
-            }
-            *g->tome = g->next;
-            
-            // Add geometry to the disabled list
-            dxSpace* space = g->parent_space;
-            
-            // Determine which list head to use based on enabled state
-            dxGeom** targetListHead = ((g->gflags & GEOM_ENABLED) != 0) 
-                ? &space->m_firstEnabled 
-                : &space->m_firstDisabled;
-            
-            g->next = *targetListHead;
-            g->tome = targetListHead;
-            
-            if (*targetListHead != nullptr)
-            {
-                (*targetListHead)->tome = &g->next;
-            }
-            
-            *targetListHead = g;
-        }
-    }
+  // RVA 0x600580 - see dGeomEnable.
+  dAASSERT (g);
+  if (!(g->gflags & GEOM_ENABLED)) return;
+  g->gflags &= ~GEOM_ENABLED;
+  relinkGeomByEnabledState (g);
 }
 
 int dGeomIsEnabled (dxGeom *g)

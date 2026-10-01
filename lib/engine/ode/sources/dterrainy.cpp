@@ -479,335 +479,181 @@ int dxTerrainY::dCollideTerrainUnit(
 
 int dCollideTerrainYWithoutSubdivisions(
     dxTerrainY* terrain,
-    dxGeom* o2, 
+    dxGeom* o2,
     unsigned int flags,
     dContactGeom* contact,
     int skip)
 {
-	// TODO: generated code dCollideTerrainYWithoutSubdivisions
-    dxTerrainY* terrainPtr = terrain;
-    int contactCount = 0;
-    
-    // Ensure we have at least 1 contact
-    unsigned int numMaxTerrainContacts = (flags & 0xFFFF);
-    if (numMaxTerrainContacts == 0) {
-        flags = (flags & 0xFFFF0001) | 1;
-        numMaxTerrainContacts = 1;
-    }
-    
-    // Update object AABB if needed
-    if ((o2->gflags & 2) != 0) {
-        o2->computeAABB();
-        o2->gflags &= ~2u;
-    }
-    
-    // Calculate terrain grid bounds from object AABB
-    int nMinX = (int)(floor(terrainPtr->m_vNodeLengthInv * o2->aabb[0]));
-    int nMaxX = (int)(floor(terrainPtr->m_vNodeLengthInv * o2->aabb[1])) + 1;
-    int nMinZ = (int)(floor(terrainPtr->m_vNodeLengthInv * o2->aabb[4]));
-    int nMaxZ = (int)(floor(terrainPtr->m_vNodeLengthInv * o2->aabb[5])) + 1;
-    
-    // Clamp bounds for finite terrain
-    if (terrainPtr->m_bFinite) {
-        nMinX = (nMinX < 0) ? 0 : nMinX;
-        if (nMaxX >= terrainPtr->m_nNumNodesPerSide) {
-            nMaxX = terrainPtr->m_nNumNodesPerSide;
-        }
-        
-        nMinZ = (nMinZ < 0) ? 0 : nMinZ;
-        if (nMaxZ >= terrainPtr->m_nNumNodesPerSide) {
-            nMaxZ = terrainPtr->m_nNumNodesPerSide;
-        }
-    }
-    
-    // Check if bounds are valid
-    if (nMinX >= nMaxX || nMinZ >= nMaxZ) {
-        // No collision possible
-        goto SET_CONTACT_GEOMS;
-    }
-    
-    // Special case for certain geometry types or simple height check
-    if (o2->type == 5) {
-        // Handle specific geometry type
-        goto COLLIDE_WITH_TERRAIN_UNITS;
-    }
-    
-    // Simple height-based collision test
-    {
-        float centerX = (o2->aabb[1] + o2->aabb[0]) * 0.5f;
-        float centerY = o2->aabb[3];  // Top of AABB
-        float centerZ = (o2->aabb[5] + o2->aabb[4]) * 0.5f;
-        
-        float terrainHeight = terrainPtr->GetHeight(centerX, centerZ);
-        float penetrationDepth = terrainHeight - centerY;
-        
-        if (penetrationDepth <= 0.0f) {
-            // No penetration, use detailed collision
-            goto COLLIDE_WITH_TERRAIN_UNITS;
-        }
-        
-        // Create contact for simple height collision
-        contact->depth = penetrationDepth;
-        
-        // Clamp depth to half the object height
-        float halfHeight = (o2->aabb[3] - o2->aabb[2]) * 0.5f;
-        if (penetrationDepth > halfHeight) {
-            contact->depth = halfHeight;
-        }
-        
-        contact->pos[0] = centerX;
-        contact->pos[1] = centerY;
-        contact->pos[2] = centerZ;
-        contact->normal[0] = 0.0f;
-        contact->normal[1] = -1.0f;
-        contact->normal[2] = 0.0f;
-        
-        contactCount = 1;
-        goto SET_CONTACT_GEOMS;
-    }
+	// RVA 0x8895C0 - retruxx: collides o2 (in the terrain's frame) with the terrain cells under its box. A geom
+	// other than a ray whose box top is below the ground under its centre gets a single straight-up contact,
+	// at most half its height deep, instead.
+	// NOTE: the cells are still visited after the contact budget is used up, and only a minimum x above the
+	// maximum (not equal to it) counts as an empty range, as shipped.
+	if ((flags & 0xFFFF) == 0) flags = (flags & 0xFFFF0000) | 1;
+	int const numMaxContacts = flags & 0xFFFF;
+	if (o2->gflags & GEOM_AABB_BAD) {
+		o2->computeAABB();
+		o2->gflags &= ~GEOM_AABB_BAD;
+	}
 
-COLLIDE_WITH_TERRAIN_UNITS:
-    // Detailed collision with terrain grid cells
-    for (int x = nMinX; x < nMaxX; ++x) {
-        for (int z = nMinZ; z < nMaxZ; ++z) {
-            int remainingContacts = numMaxTerrainContacts - contactCount;
-            if (remainingContacts <= 0) {
-                break;
-            }
-            
-            dContactGeom* currentContact = reinterpret_cast<dContactGeom*>(
-                reinterpret_cast<char*>(contact) + skip * contactCount);
-            
-            int newContacts = terrainPtr->dCollideTerrainUnit(
-                x, z,
-                o2,
-                remainingContacts,
-                flags,
-                currentContact,
-                skip);
-            
-            contactCount += newContacts;
-        }
-    }
+	int nMinX = (int) floor (terrain->m_vNodeLengthInv * o2->aabb[0]);
+	int nMaxX = (int) floor (terrain->m_vNodeLengthInv * o2->aabb[1]) + 1;
+	int nMinZ = (int) floor (terrain->m_vNodeLengthInv * o2->aabb[4]);
+	int nMaxZ = (int) floor (terrain->m_vNodeLengthInv * o2->aabb[5]) + 1;
+	if (terrain->m_bFinite) {
+		if (nMinX < 0) nMinX = 0;
+		if (nMaxX >= terrain->m_nNumNodesPerSide) nMaxX = terrain->m_nNumNodesPerSide;
+		if (nMinZ < 0) nMinZ = 0;
+		if (nMaxZ >= terrain->m_nNumNodesPerSide) nMaxZ = terrain->m_nNumNodesPerSide;
+	}
 
-SET_CONTACT_GEOMS:
-    // Set geometry pointers for all contacts
-    if (contactCount > 0) {
-        dContactGeom* currentContact = contact;
-        for (int i = 0; i < contactCount; ++i) {
-            currentContact->g1 = terrainPtr;
-            currentContact->g2 = o2;
-            currentContact = reinterpret_cast<dContactGeom*>(
-                reinterpret_cast<char*>(currentContact) + skip);
-        }
-    }
-    
-    return contactCount;
+	int numContacts = 0;
+	if (nMinX <= nMaxX && nMinZ < nMaxZ) {
+		dReal depth = 0;
+		dReal cx = 0, top = 0, cz = 0;
+		if (o2->type != dRayClass) {
+			top = o2->aabb[3];
+			cx = (o2->aabb[1] + o2->aabb[0]) * REAL(0.5);
+			cz = (o2->aabb[5] + o2->aabb[4]) * REAL(0.5);
+			depth = terrain->GetHeight (cx, cz) - top;
+		}
+		if (o2->type != dRayClass && depth > 0) {
+			contact->depth = depth;
+			dReal const halfHeight = (o2->aabb[3] - o2->aabb[2]) * REAL(0.5);
+			if (depth > halfHeight) contact->depth = halfHeight;
+			contact->pos[0] = cx;
+			contact->pos[1] = top;
+			contact->pos[2] = cz;
+			contact->normal[0] = 0;
+			contact->normal[1] = REAL(-1.0);
+			contact->normal[2] = 0;
+			numContacts = 1;
+		}
+		else {
+			for (int x = nMinX; x < nMaxX; ++x) {
+				for (int z = nMinZ; z < nMaxZ; ++z) {
+					numContacts += terrain->dCollideTerrainUnit (x, z, o2, numMaxContacts - numContacts, flags,
+						CONTACT (contact, skip * numContacts), skip);
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < numContacts; ++i) {
+		dContactGeom *c = CONTACT (contact, skip * i);
+		c->g1 = terrain;
+		c->g2 = o2;
+	}
+	return numContacts;
 }
 
 int dCollideTerrainY(dxGeom *o1, dxGeom *o2, int flags,dContactGeom *contact, int skip)
 {
-	// TODO: generated code dCollideTerrainY
+	// RVA 0x889870 - retruxx: a placed terrain (o1 transformed) sees o2 through temporary local pos/R buffers. A
+	// ray longer than 0.1 across the ground is cast in 32-unit steps (with a sub-ray), stopping at the first
+	// step with contacts; the rest of the ray is cast if no step hit.
 	dIASSERT (skip >= (int)sizeof(dContactGeom));
 	dIASSERT (o1->type == dTerrainYClass);
-	int contactCount = 0;
-    float* originalPos = nullptr;
-    float* originalR = nullptr;
-    int originalGFlags = 0;
-    float originalAABB[6];
 	dxTerrainY *terrain = (dxTerrainY*) o1;
-    
-    // Transform object into terrain's local space if terrain has transform flags
-    if ((o1->gflags & 4) != 0) {
-        // Save original object state
-        originalPos = o2->pos;
-        originalR = o2->R;
-        originalGFlags = o2->gflags;
-        memcpy(originalAABB, o2->aabb, sizeof(originalAABB));
-        
-        // Transform object position into terrain space
-        float delta[3] = {
-            o2->pos[0] - o1->pos[0],
-            o2->pos[1] - o1->pos[1], 
-            o2->pos[2] - o1->pos[2]
-        };
-        
-        float localPos[3];
-        localPos[0] = o1->R[0] * delta[0] + o1->R[4] * delta[1] + o1->R[8] * delta[2];
-        localPos[1] = o1->R[1] * delta[0] + o1->R[5] * delta[1] + o1->R[9] * delta[2];
-        localPos[2] = o1->R[2] * delta[0] + o1->R[6] * delta[1] + o1->R[10] * delta[2];
-        
-        // Transform object rotation into terrain space
-        float localR[12];
-        localR[0] = o1->R[0] * o2->R[0] + o1->R[4] * o2->R[4] + o1->R[8] * o2->R[8];
-        localR[1] = o1->R[0] * o2->R[1] + o1->R[4] * o2->R[5] + o1->R[8] * o2->R[9];
-        localR[2] = o1->R[0] * o2->R[2] + o1->R[4] * o2->R[6] + o1->R[8] * o2->R[10];
-        
-        localR[4] = o1->R[1] * o2->R[0] + o1->R[5] * o2->R[4] + o1->R[9] * o2->R[8];
-        localR[5] = o1->R[1] * o2->R[1] + o1->R[5] * o2->R[5] + o1->R[9] * o2->R[9];
-        localR[6] = o1->R[1] * o2->R[2] + o1->R[5] * o2->R[6] + o1->R[9] * o2->R[10];
-        
-        localR[8] = o1->R[2] * o2->R[0] + o1->R[6] * o2->R[4] + o1->R[10] * o2->R[8];
-        localR[9] = o1->R[2] * o2->R[1] + o1->R[6] * o2->R[5] + o1->R[10] * o2->R[9];
-        localR[10] = o1->R[2] * o2->R[2] + o1->R[6] * o2->R[6] + o1->R[10] * o2->R[10];
-        
-        // Update object to local space
-        o2->pos[0] = localPos[0];
-        o2->pos[1] = localPos[1];
-        o2->pos[2] = localPos[2];
-        
-        memcpy(o2->R, localR, sizeof(localR));
-        
-        // Recompute AABB in local space
-        o2->computeAABB();
-    }
-    
-    // Handle different geometry types
-    if (o2->type != 5) {
-        // Non-ray geometry - use standard collision
-        contactCount = dCollideTerrainYWithoutSubdivisions(terrain, o2, flags, contact, skip);
-    } else {
-        // Ray geometry - use subdivision for better accuracy
-        int maxContacts = static_cast<unsigned short>(flags);
-        int flagsHigh = flags & 0xFFFF0000;
+	bool const transformed = (o1->gflags & GEOM_PLACEABLE) != 0;
 
-		dxRay* ray = (dxRay*)o2;
-        dxRay* subdivisionRay = terrain->m_subdivisionRay;
-        
-        // Get ray parameters
-        float rayPos[3], rayDir[3];
-        dGeomRayGet(o2, rayPos, rayDir);
+	dReal *posBak = 0;
+	dReal *RBak = 0;
+	int gflagsBak = 0;
+	dReal aabbBak[6];
+	dVector3 pos1;
+	dMatrix3 R1;
+	if (transformed) {
+		dVector3 delta;
+		dOP (delta, -, o2->pos, o1->pos);
+		dMULTIPLY1_331 (pos1, o1->R, delta);
+		dMULTIPLY1_333 (R1, o1->R, o2->R);
+		posBak = o2->pos;
+		RBak = o2->R;
+		o2->pos = pos1;
+		o2->R = R1;
+		memcpy (aabbBak, o2->aabb, sizeof(aabbBak));
+		gflagsBak = o2->gflags;
+		o2->computeAABB();
+	}
 
-        // Calculate flat length (projection onto XZ plane)
-        float flatLength = sqrt(rayDir[0] * rayDir[0] + rayDir[2] * rayDir[2]) * ray->length;
-        
-        // If ray is too steep, fall back to standard collision
-        if (flatLength < 0.1f) {
-            contactCount = dCollideTerrainYWithoutSubdivisions(terrain, o2, maxContacts, contact, skip);
-        } else {
-            // Set up subdivision ray
-            dGeomRaySet(subdivisionRay, rayPos[0], rayPos[1], rayPos[2], rayDir[0], rayDir[1], rayDir[2]);
-            
-            // Create step vector for subdivision
-            float stepVector[3] = {rayDir[0], 0.0f, rayDir[2]};
-            dNormalize3(stepVector);
-            
-            float stepSize = 32.0f;
-            float stepScale = 1.0f / flatLength;
-            float rayLength = ray->length;
-            
-            stepVector[0] *= stepSize;
-            stepVector[1] = (rayLength * rayDir[1]) * stepScale * stepSize;
-            stepVector[2] *= stepSize;
-            
-            float segmentLength = (stepScale * rayLength) * stepSize;
-            dGeomRaySetLength(subdivisionRay, segmentLength);
-            
-            // Perform subdivision collision
-            float currentT = 0.0f;
-            float remainingLength = flatLength - stepSize;
-            
-            // Subdivide ray into segments
-            while (remainingLength > 0.0f) {
-                dGeomSetPosition(subdivisionRay, rayPos[0], rayPos[1], rayPos[2]);
-                
-                int segmentContacts = dCollideTerrainYWithoutSubdivisions(
-                    terrain, subdivisionRay, maxContacts | flagsHigh,
-                    reinterpret_cast<dContactGeom*>(reinterpret_cast<char*>(contact) + skip * contactCount),
-                    skip);
-                
-                contactCount += segmentContacts;
-                maxContacts -= contactCount;
-                
-                // Move to next segment
-                rayPos[0] += stepVector[0];
-                rayPos[1] += stepVector[1];
-                rayPos[2] += stepVector[2];
-                
-                // Stop if we have contacts or ran out of contact slots
-                if (contactCount > 0 || maxContacts <= 0) {
-                    break;
-                }
-                
-                // Check if we've processed enough segments
-                if (remainingLength <= currentT + stepSize) {
-                    break;
-                }
-                
-                currentT += stepSize;
-            }
-            
-            // Handle remaining ray segment if we have contact slots available
-            if (maxContacts > 0 && contactCount == 0) {
-                dGeomSetPosition(subdivisionRay, rayPos[0], rayPos[1], rayPos[2]);
-                
-                float remainingSegmentLength = (remainingLength - currentT) * stepScale * rayLength;
-                dGeomRaySetLength(subdivisionRay, remainingSegmentLength);
-                
-                contactCount = dCollideTerrainYWithoutSubdivisions(
-                    terrain, subdivisionRay, maxContacts | flagsHigh, contact, skip);
-            }
-            
-            // Set geometry pointers for all contacts
-            if (contactCount > 0) {
-                dContactGeom* currentContact = contact;
-                for (int i = 0; i < contactCount; ++i) {
-                    currentContact->g1 = o1;
-                    currentContact->g2 = o2;
-                    currentContact = reinterpret_cast<dContactGeom*>(
-                        reinterpret_cast<char*>(currentContact) + skip);
-                }
-            }
-        }
-    }
-    
-    // Restore original object state if we transformed it
-    if ((o1->gflags & 4) != 0) {
-        // Restore object state
-        o2->pos = originalPos;
-        o2->R = originalR;
-        memcpy(o2->aabb, originalAABB, sizeof(originalAABB));
-        o2->gflags = originalGFlags;
-        
-        // Transform contacts back to world space
-        if (contactCount > 0) {
-            dContactGeom* currentContact = contact;
-            for (int i = 0; i < contactCount; ++i) {
-                // Transform contact position back to world space
-                float localPos[3] = {
-                    currentContact->pos[0],
-                    currentContact->pos[1], 
-                    currentContact->pos[2]
-                };
-                
-                currentContact->pos[0] = o1->pos[0] + 
-                    o1->R[0] * localPos[0] + o1->R[4] * localPos[1] + o1->R[8] * localPos[2];
-                currentContact->pos[1] = o1->pos[1] + 
-                    o1->R[1] * localPos[0] + o1->R[5] * localPos[1] + o1->R[9] * localPos[2];
-                currentContact->pos[2] = o1->pos[2] + 
-                    o1->R[2] * localPos[0] + o1->R[6] * localPos[1] + o1->R[10] * localPos[2];
-                
-                // Transform contact normal back to world space
-                float localNormal[3] = {
-                    currentContact->normal[0],
-                    currentContact->normal[1],
-                    currentContact->normal[2]
-                };
-                
-                currentContact->normal[0] = 
-                    o1->R[0] * localNormal[0] + o1->R[4] * localNormal[1] + o1->R[8] * localNormal[2];
-                currentContact->normal[1] = 
-                    o1->R[1] * localNormal[0] + o1->R[5] * localNormal[1] + o1->R[9] * localNormal[2];
-                currentContact->normal[2] = 
-                    o1->R[2] * localNormal[0] + o1->R[6] * localNormal[1] + o1->R[10] * localNormal[2];
-                
-                currentContact = reinterpret_cast<dContactGeom*>(
-                    reinterpret_cast<char*>(currentContact) + skip);
-            }
-        }
-    }
-    
-    return contactCount;
+	int numContacts = 0;
+	if (o2->type != dRayClass) {
+		numContacts = dCollideTerrainYWithoutSubdivisions (terrain, o2, flags, contact, skip);
+	}
+	else {
+		int maxContacts = flags & 0xFFFF;
+		int const flagsHi = flags & 0xFFFF0000;
+		dxGeom *subRay = terrain->m_subdivisionRay;
+		dVector3 pos, dir;
+		dGeomRayGet (o2, pos, dir);
+		dReal const rayLength = ((dxRay*) o2)->length;
+		dReal const flatLength = dSqrt (dir[2] * dir[2] + dir[0] * dir[0]) * rayLength;
+		if (flatLength < REAL(0.1)) {
+			numContacts = dCollideTerrainYWithoutSubdivisions (terrain, o2, maxContacts, contact, skip);
+		}
+		else {
+			dGeomRaySet (subRay, pos[0], pos[1], pos[2], dir[0], dir[1], dir[2]);
+			dVector3 step = { dir[0], 0, dir[2] };
+			dNormalize3 (step);
+			step[0] *= REAL(32.0);
+			step[2] *= REAL(32.0);
+			dReal const invFlat = REAL(1.0) / flatLength;
+			step[1] = rayLength * dir[1] * invFlat * REAL(32.0);
+			dGeomRaySetLength (subRay, invFlat * rayLength * REAL(32.0));
+
+			// NOTE: the remaining budget is reduced by the running total each step, as shipped.
+			dReal t = 0;
+			dReal const lastStart = flatLength - REAL(32.0);
+			bool skipRest = false;
+			if (lastStart > 0) {
+				for (;;) {
+					dGeomSetPosition (subRay, pos[0], pos[1], pos[2]);
+					numContacts += dCollideTerrainYWithoutSubdivisions (terrain, (dxGeom*) subRay, maxContacts | flagsHi,
+						CONTACT (contact, skip * numContacts), skip);
+					maxContacts -= numContacts;
+					pos[0] += step[0];
+					pos[1] += step[1];
+					pos[2] += step[2];
+					if (numContacts > 0) break;
+					if (maxContacts < 0) { skipRest = true; break; }
+					bool const last = lastStart <= t + REAL(32.0);
+					t += REAL(32.0);
+					if (last) break;
+				}
+			}
+			if (!skipRest && maxContacts > 0 && numContacts == 0) {
+				dGeomSetPosition (subRay, pos[0], pos[1], pos[2]);
+				dGeomRaySetLength (subRay, (flatLength - t) * invFlat * rayLength);
+				numContacts = dCollideTerrainYWithoutSubdivisions (terrain, (dxGeom*) subRay, maxContacts | flagsHi, contact, skip);
+			}
+			for (int i = 0; i < numContacts; ++i) {
+				dContactGeom *c = CONTACT (contact, skip * i);
+				c->g1 = o1;
+				c->g2 = o2;
+			}
+		}
+	}
+
+	if (transformed) {
+		o2->pos = posBak;
+		o2->R = RBak;
+		memcpy (o2->aabb, aabbBak, sizeof(aabbBak));
+		o2->gflags = gflagsBak;
+		for (int i = 0; i < numContacts; ++i) {
+			dContactGeom *c = CONTACT (contact, skip * i);
+			dVector3 v;
+			dMULTIPLY0_331 (v, o1->R, c->pos);
+			c->pos[0] = o1->pos[0] + v[0];
+			c->pos[1] = o1->pos[1] + v[1];
+			c->pos[2] = o1->pos[2] + v[2];
+			dMULTIPLY0_331 (v, o1->R, c->normal);
+			c->normal[0] = v[0];
+			c->normal[1] = v[1];
+			c->normal[2] = v[2];
+		}
+	}
+	return numContacts;
 }
 /*
 void dsDrawTerrainY(int x,int z,float vLength,float vNodeLength,int nNumNodesPerSide,float *pHeights,const float *pR,const float *ppos)

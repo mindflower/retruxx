@@ -119,6 +119,17 @@ namespace m3d
         /* 0x0004 */ float m_delta;
     }; /* size: 0x0008 */
 
+    // PROP_DM_CHECK_ACTION: m_action in, what the model defines for it out. The PDB names no type for it; this
+    // follows the bytes the animated models server writes.
+    struct PropDmCheckAction
+    {
+        /* 0x0000 */ int m_action;
+        /* 0x0004 */ bool m_hasFrames;
+        /* 0x0005 */ bool m_hasEffects;
+        /* 0x0006 */ bool m_hasSkin;
+        /* 0x0007 */ bool m_hasCfg;
+    }; /* size: 0x0008 */
+
     // PROP_SRV_ATTACK_FRAMETIME: m_action in, the time of the action's attack frame out.
     struct PropSrvAttackframeTime
     {

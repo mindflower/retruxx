@@ -614,7 +614,7 @@ namespace ai
 
     bool Obj::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        if (!propertyId)
+        if (propertyId == 0)
         {
             SetBelong(newValue.GetAsID());
             return true;

@@ -254,24 +254,23 @@ namespace m3d
             {
                 return 0;
             }
-            auto fSteps = (float)(this->m_curValue - this->m_minValue) / (float)((float)(this->m_maxValue - this->m_minValue) / (float)this->m_numOfSteps);
+            // RVA 0x724EC0 - a value just above the minimum still shows one step. The step count rounds to nearest
+            // (a bare fistp), not down.
+            float const fSteps = (m_curValue - m_minValue) / ((m_maxValue - m_minValue) / static_cast<float>(m_numOfSteps));
             if (fSteps <= 0.001)
             {
                 return 0;
             }
-
-            auto result = (int)fSteps;
-            if (!result)
-                return 1;
-            return result;
+            int const result = static_cast<int>(lrintf(fSteps));
+            return result ? result : 1;
         }
 
         CStr ProgressBarWnd::GetStringValue() const
         {
-            // RVA 0x725520 - "cur/max", rounded down for the integer style.
+            // RVA 0x725520 - "cur/max", rounded to nearest for the integer style (a bare fistp).
             if (m_textStyle == TEXT_INTEGER)
             {
-                return CStr(static_cast<int>(m_curValue)) + "/" + CStr(static_cast<int>(m_maxValue));
+                return CStr(static_cast<int>(lrintf(m_curValue))) + "/" + CStr(static_cast<int>(lrintf(m_maxValue)));
             }
             if (m_textStyle == TEXT_FLOAT)
             {
@@ -336,111 +335,39 @@ namespace m3d
 
         void ProgressBarWnd::CalcTexCoordinates(float& u0, float& v0, float& u1, float& v1) const
         {
-            float* v11 = &u1;
-            float* v12 = &u0;
+            // RVA 0x724FB0 - the bar texture's coordinates along the bar: stretched over it, clamped to the filled
+            // fraction, or repeated (once per step, or once per texture length); an inversed bar runs from the far
+            // end.
             u0 = 0.0f;
-            float* v13 = &v0;
             v0 = 0.0f;
-            float* v15 = &v1;
-            *v11 = 1.0f;
-            *v15 = 1.0f;
+            u1 = 1.0f;
+            v1 = 1.0f;
+            int const curNumOfSteps = GetCurNumOfSteps();
+            int const maxNumOfSteps = m_numOfSteps;
+            BoundsBase<float> const barRect = GetBarRect();
+            bool const horizontal = IsHorizontal();
+            float& start = horizontal ? u0 : v0;
+            float& end = horizontal ? u1 : v1;
+            float const barLength = horizontal ? barRect.width : barRect.height;
 
-            int curNumOfSteps;
-            if (this->m_minValue == this->m_maxValue)
+            int texWidth = 0;
+            int texHeight = 0;
+            Application::g_pApp->m_renderer->GetDims(m_barTexture, texWidth, texHeight);
+            int const texLength = horizontal ? texWidth : texHeight;
+
+            if (m_textureStyle == TEXTURE_CLAMP)
             {
-                curNumOfSteps = 0;
+                end = maxNumOfSteps > 1 ? static_cast<float>(curNumOfSteps) / static_cast<float>(maxNumOfSteps)
+                                        : (m_curValue - m_minValue) / (m_maxValue - m_minValue);
             }
-            else
+            else if (m_textureStyle == TEXTURE_REPEAT)
             {
-                float stepValue = (this->m_curValue - this->m_minValue)
-                    / ((this->m_maxValue - this->m_minValue) / (float)this->m_numOfSteps);
-
-                if (stepValue > 0.001f)
-                {
-                    int v16 = (int)stepValue;
-                    if (v16 == 0)
-                    {
-                        v16 = 1;
-                    }
-                    curNumOfSteps = v16;
-                }
-                else
-                {
-                    curNumOfSteps = 0;
-                }
+                end = maxNumOfSteps > 1 ? static_cast<float>(curNumOfSteps) : barLength / static_cast<float>(texLength);
             }
-
-            int maxNumOfSteps = this->m_numOfSteps;
-
-            BoundsBase<float> barRect =  GetBarRect();
-
-            m3d::ui::ProgressBarWnd::Orientation m_orientation = this->m_orientation;
-            bool v19 = (m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT);
-
-            bool reverseDirection = false;
-            if (m_orientation == ORIENTATION_RIGHT_TO_LEFT || m_orientation == ORIENTATION_BOTTOM_TO_TOP)
+            if (IsInversed())
             {
-                reverseDirection = true;
-            }
-
-            float* v20;
-            float* p_u0;
-
-            if (v19)
-            {
-                v20 = &u1;
-                barRect.width = u0;
-                p_u0 = &u0;
-            }
-            else {
-                barRect.width = v0;
-                v20 = &v1;
-                p_u0 = &v0;
-            }
-
-            int textureWidth = 0;
-            int textureHeight = 0;
-            m3d::Application::g_pApp->m_renderer->GetDims(this->m_barTexture,
-                textureWidth,
-                textureHeight);
-
-            int* p_texH;
-            if (!v19)
-            {
-                p_texH = &textureHeight;
-            }
-            else {
-                p_texH = (int*)&v0;
-            }
-
-            if (this->m_textureStyle == TEXTURE_CLAMP)
-            {
-                float ratio;
-                if (maxNumOfSteps <= 1)
-                {
-                    ratio = (this->m_curValue - this->m_minValue) / (this->m_maxValue - this->m_minValue);
-                }
-                else
-                {
-                    ratio = (float)curNumOfSteps / (float)maxNumOfSteps;
-                }
-                *v20 = ratio;
-            }
-            else if (this->m_textureStyle == TEXTURE_REPEAT)
-            {
-                if (maxNumOfSteps <= 1)
-                {
-                    *v20 = *p_u0 / (float)*p_texH;
-                }
-                else {
-                    *v20 = (float)curNumOfSteps;
-                }
-            }
-
-            if (reverseDirection)
-            {
-                *p_u0 = 1.0f - *v20;
-                *v20 = 1.0f;
+                start = 1.0f - end;
+                end = 1.0f;
             }
         }
 

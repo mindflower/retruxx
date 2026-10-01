@@ -426,11 +426,13 @@ int GameMenuWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d:
             m_curItem = m_curItem->m_parent;
             RecalcLayout();
         }
-        // The shipped build additionally pins m_minItem to the new level, but only
-        // for the "Player Menu" level while an EngineConfig start-level string is
-        // empty. That config field is not mapped in retruxx yet, so the pin (which
-        // would otherwise trap the user at this level) is skipped.
-        // TODO(ExMachina 1.02 NoCD RVA 0x4B5610, case 'f'): m_minItem = m_curItem;
+        // RVA 0x4B5610 - with no profile selected yet, backing out to "Player Menu" makes it the lowest
+        // reachable level, so the player can't leave without picking a profile.
+        if (!CStr::my_strcmp(m_curItem->m_name.c_str(), "Player Menu") &&
+            CStr(M3D_KERNEL->GetEngineCfg().m_profile.GetS()).empty())
+        {
+            m_minItem = m_curItem;
+        }
         handled = 1;
         break;
     }
@@ -537,6 +539,7 @@ int GameMenuWnd::OnActivate(bool on)
 
 int GameMenuWnd::CreateGameMenuWnd()
 {
+    // RVA 0xB4C50
     auto bounds = m3d::Application::g_pApp->GetBounds();
     BoundsBase<float> rc;
     rc.width = 320.0;
@@ -572,7 +575,6 @@ int GameMenuWnd::CreateGameMenuWnd()
     auto line = CreateLineMenuItem();
     MenuItem::AddChild(line);
 
-    //TODO: check this
     auto space2 = CreateBlankSpaceMenuItem();
     MenuItem::AddChild(space2);
 

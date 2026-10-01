@@ -188,79 +188,50 @@ void OptionsWnd::SelectTabButton(Tab tabId)
 
 int OptionsWnd::ApplyTabChanges(Tab tabId)
 {
-    // TODO: generated code
-    // Check if there are any game data changes that need to be applied
-    if ((m_gameDataFlags & 1) != 0)
+    // RVA 0xC3910 - returns 0 to keep the current tab open.
+    if ((m_gameDataFlags & 1) == 0)
     {
-        switch (tabId)
+        return 1;
+    }
+    if (tabId == TAB_VIDEO)
+    {
+        ref_ptr<m3d::ui::Wnd>& videoWindowRef = m_optionWindows[TAB_VIDEO];
+        if (videoWindowRef && videoWindowRef->IsKindOf(&VideoOptionsWnd::m_classVideoOptionsWnd))
         {
-        case TAB_VIDEO:
-        {
-            // Get the video options window
-            ref_ptr<m3d::ui::Wnd>& videoWindowRef = m_optionWindows[0];
-            if (videoWindowRef && videoWindowRef->IsKindOf(&VideoOptionsWnd::m_classVideoOptionsWnd))
+            auto* videoWnd = static_cast<VideoOptionsWnd*>(&*videoWindowRef);
+            if (videoWnd->IsChanged())
             {
-                VideoOptionsWnd* videoWnd = static_cast<VideoOptionsWnd*>(&*videoWindowRef);
-
-                // Check if video settings have been modified
-                if (videoWnd->IsChanged())
+                switch (videoWnd->RunChangeWarningDlg())
                 {
-                    // TOD: check this!
-                    // Show warning dialog about potential performance impact
-                    auto warningResult = videoWnd->RunChangeWarningDlg();
-
-                    switch (warningResult)
-                    {
-                    case m3d::ui::MBX_RET_CANCEL:
-                        // User canceled - don't apply changes
-                        break;
-
-                    case m3d::ui::MBX_RET_USER:
-                    {
-                        // User confirmed - apply all video changes
-                        videoWnd->ApplyResolution();
-                        videoWnd->ApplyGamma();
-                        videoWnd->ApplyFarDistance();
-                        videoWnd->ApplyGrass();
-                        videoWnd->ApplyShadows();
-                        videoWnd->ApplyWaterQuality();
-                        videoWnd->ApplyAntialiasing();
-                        videoWnd->ApplyFiltration();
-                        videoWnd->ApplyBlum();
-
-                        // Reset modified flag
-                        videoWnd->m_bVideoOptionsChanged = false;
-                        break;
-                    }
-                    default:
-                        break;
-                    }
+                // NOTE: "no" leaves the changes pending without applying them, as shipped.
+                case m3d::ui::MBX_RET_NO:
+                    break;
+                case m3d::ui::MBX_RET_CANCEL:
+                    return 0;
+                default:
+                    videoWnd->ApplyResolution();
+                    videoWnd->ApplyGamma();
+                    videoWnd->ApplyFarDistance();
+                    videoWnd->ApplyGrass();
+                    videoWnd->ApplyShadows();
+                    videoWnd->ApplyWaterQuality();
+                    videoWnd->ApplyAntialiasing();
+                    videoWnd->ApplyFiltration();
+                    videoWnd->ApplyBlum();
+                    videoWnd->m_bVideoOptionsChanged = false;
+                    break;
                 }
             }
-            break;
-        }
-
-        case TAB_CONTROL:
-        {
-            // Get the control options window
-            ref_ptr<m3d::ui::Wnd> controlWindowRef = m_optionWindows[2];
-            if (controlWindowRef && controlWindowRef->IsKindOf(&ControlOptionsWnd::m_classControlOptionsWnd))
-            {
-                ControlOptionsWnd* controlWnd = static_cast<ControlOptionsWnd*>(&*controlWindowRef);
-
-                // Apply control changes (no confirmation needed)
-                return controlWnd->ApplyChanges(false);
-            }
-            break;
-        }
-
-        default:
-            // Other tabs (audio, game, etc.) - no special handling needed
-            break;
         }
     }
-
-    // Changes applied successfully or no changes to apply
+    else if (tabId == TAB_CONTROL)
+    {
+        ref_ptr<m3d::ui::Wnd>& controlWindowRef = m_optionWindows[TAB_CONTROL];
+        if (controlWindowRef && controlWindowRef->IsKindOf(&ControlOptionsWnd::m_classControlOptionsWnd))
+        {
+            return static_cast<ControlOptionsWnd*>(&*controlWindowRef)->ApplyChanges(false);
+        }
+    }
     return 1;
 }
 

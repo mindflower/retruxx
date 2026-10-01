@@ -1325,7 +1325,9 @@ int LSWnd::SetScreenshotForSave(int saveIdx)
 
     auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
 
-    // TODO: for some reason renderer can't find file by absolute path 
+    // TODO: the original passes the absolute path to SetImage as well, but here the renderer can't load the texture
+    // from it, so the path relative to the startup folder is used instead. FileServer's absolute-path handling
+    // (FileExists, OpenFileStream) matches the binary, so the difference lies elsewhere.
     CStr const localScreenshotFile = savesManager->GetSaveFolderPathByFolderName(btn->GetSaveFolderName()) + "\\" +
         savesManager->GetConstatntSaveInfo().m_screenshotFileName;
     CStr const absoluteScreenshotFile = M3D_APP->GetStartupFolder() + "\\" + localScreenshotFile;

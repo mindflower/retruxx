@@ -170,23 +170,9 @@ int dxSpace::getNumGeoms()
 
 dxGeom *dxSpace::getGeom (int i)
 {
-  // TODO: check this!
+  // RVA 0x879B30 - retruxx: spaces keep separate enabled and disabled geom lists, and indexed access was
+  // dropped; it always returns null.
   return nullptr;
-  //dUASSERT (i >= 0 && i < count,"index out of range");
-  //if (current_geom && current_index == i-1) {
-  //  current_geom = current_geom->next;
-  //  current_index = i;
-  //  return current_geom;
-  //}
-  //else {
-  //  dxGeom *g=first;
-  //  for (int j=0; j<i; j++) {
-  //    if (g) g = g->next; else return 0;
-  //  }
-  //  current_geom = g;
-  //  current_index = i;
-  //  return g;
-  //}
 }
 
 

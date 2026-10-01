@@ -310,7 +310,12 @@ int GarageWnd::GameDataSetup()
 
     if (res)
     {
+        // The flag goes first: the price updates do nothing until it is set.
         m_gameDataFlags |= 1u;
+        m_aif.m_colorNormal = GetTextColor();
+        UpdateRefuelAllPriceControls(true);
+        UpdateRepairAllPriceControls(true);
+        UpdateRechargeAllPriceControls(true);
         return 1;
     }
 
@@ -733,7 +738,9 @@ void GarageWnd::UpdateServiceSelectState(
 
         auto* btn = static_cast<m3d::ui::ButtonWnd*>(control);
         auto const ico = [&](CStr const& suffix)
-        { return M3D_APP->m_pInterfaceManager->GetIcoByName(texId + suffix, 0); };
+        {
+            return M3D_APP->m_pInterfaceManager->GetIcoByName(texId + suffix, 0);
+        };
 
         if (bSelect)
         {
@@ -742,10 +749,7 @@ void GarageWnd::UpdateServiceSelectState(
         else
         {
             btn->SetImaged(
-                ico(m_aif.m_strEnabled),
-                ico(m_aif.m_strOverrolled),
-                ico(m_aif.m_strPressed),
-                ico(m_aif.m_strDisabled));
+                ico(m_aif.m_strEnabled), ico(m_aif.m_strOverrolled), ico(m_aif.m_strPressed), ico(m_aif.m_strDisabled));
         }
     }
 }
@@ -960,13 +964,13 @@ int GarageWnd::GetTownId() const
 
 int GarageWnd::GetUnitsToRefuel() const
 {
-    // RVA 0x44A1D0
+    // RVA 0x44A1D0 - rounded to nearest (a bare fistp), as are the other unit counts here.
     ai::Vehicle* vehicle = help::GetPlayerVehicle();
     if (!vehicle)
     {
         return 0;
     }
-    return static_cast<int>(vehicle->Fuel().maxValue().get() - vehicle->Fuel().value().get());
+    return static_cast<int>(lrintf(vehicle->Fuel().maxValue().get() - vehicle->Fuel().value().get()));
 }
 
 int GarageWnd::GetUnitsToRepair() const
@@ -979,7 +983,7 @@ int GarageWnd::GetUnitsToRepair() const
         return 0;
     }
 
-    int unitsToRepair = static_cast<int>(vehicle->Health().maxValue().get() - vehicle->Health().value().get());
+    int unitsToRepair = static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
     for (auto it = vehicle->begin(); it != vehicle->end(); ++it)
     {
         auto const& [partName, part] = *it;
@@ -987,7 +991,7 @@ int GarageWnd::GetUnitsToRepair() const
         {
             continue;
         }
-        unitsToRepair += static_cast<int>(part->Durability().maxValue().get() - part->Durability().value().get());
+        unitsToRepair += static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
     }
     return unitsToRepair;
 }
@@ -1013,10 +1017,9 @@ int GarageWnd::GetUnitsToRecharge() const
         {
             continue;
         }
-        units += static_cast<int>(help::GetGunShellsPoolSize(part)) +
-                 static_cast<int>(help::GetGunChargeSize(part)) -
-                 static_cast<int>(help::GetGunShellsInPool(part)) -
-                 static_cast<int>(help::GetGunShellsInCurrentCharge(part));
+        units += static_cast<int>(help::GetGunShellsPoolSize(part)) + static_cast<int>(help::GetGunChargeSize(part)) -
+            static_cast<int>(help::GetGunShellsInPool(part)) -
+            static_cast<int>(help::GetGunShellsInCurrentCharge(part));
     }
     return units;
 }
@@ -1124,15 +1127,16 @@ void GarageWnd::GetPossibleRepair(int& units, int& price) const
             pricePerUnit = 1.0f;
         }
 
-        int const healthUnits =
-            static_cast<int>(vehicle->Health().maxValue().get() - vehicle->Health().value().get());
+        // NOTE: the unit counts and prices round to nearest (a bare fistp), but what the money affords is
+        // truncated, as shipped.
+        int const healthUnits = static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
         units = healthUnits;
-        price = static_cast<int>(static_cast<float>(healthUnits) * pricePerUnit);
+        price = static_cast<int>(lrintf(static_cast<float>(healthUnits) * pricePerUnit));
 
         if (units && money < price)
         {
             units = static_cast<int>(static_cast<float>(money) / pricePerUnit);
-            price = static_cast<int>(static_cast<float>(units) * pricePerUnit);
+            price = static_cast<int>(lrintf(static_cast<float>(units) * pricePerUnit));
         }
         else
         {
@@ -1146,7 +1150,7 @@ void GarageWnd::GetPossibleRepair(int& units, int& price) const
                 int const partPrice = workshop->GetObjectRepairPrice(part);
                 int const moneyLeft = money - price;
                 int const partUnits =
-                    static_cast<int>(part->Durability().maxValue().get() - part->Durability().value().get());
+                    static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
 
                 if (moneyLeft >= partPrice)
                 {
@@ -1208,9 +1212,8 @@ void GarageWnd::GetPossibleRecharge(int& units, int& price) const
             }
 
             int const shellsNeeded = static_cast<int>(help::GetGunChargeSize(gun)) -
-                                     static_cast<int>(help::GetGunShellsInCurrentCharge(gun)) +
-                                     static_cast<int>(help::GetGunShellsPoolSize(gun)) -
-                                     static_cast<int>(help::GetGunShellsInPool(gun));
+                static_cast<int>(help::GetGunShellsInCurrentCharge(gun)) +
+                static_cast<int>(help::GetGunShellsPoolSize(gun)) - static_cast<int>(help::GetGunShellsInPool(gun));
             if (!shellsNeeded)
             {
                 continue;
@@ -1335,8 +1338,8 @@ void GarageWnd::Repair(int units)
         return;
     }
 
-    int const healthUnits =
-        static_cast<int>(vehicle->Health().maxValue().get() - vehicle->Health().value().get());
+    // Rounded to nearest (a bare fistp).
+    int const healthUnits = static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
     if (healthUnits > units)
     {
         vehicle->Health().value().set(vehicle->Health().value().get() + static_cast<float>(units));
@@ -1353,8 +1356,7 @@ void GarageWnd::Repair(int units)
         {
             continue;
         }
-        int const partUnits =
-            static_cast<int>(part->Durability().maxValue().get() - part->Durability().value().get());
+        int const partUnits = static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
         if (partUnits > unitsLeft)
         {
             part->Durability().value().set(part->Durability().value().get() + static_cast<float>(unitsLeft));
@@ -1389,8 +1391,8 @@ void GarageWnd::Recharge(int units)
             continue;
         }
 
-        int const chargeNeeded = static_cast<int>(help::GetGunChargeSize(gun)) -
-                                 static_cast<int>(help::GetGunShellsInCurrentCharge(gun));
+        int const chargeNeeded =
+            static_cast<int>(help::GetGunChargeSize(gun)) - static_cast<int>(help::GetGunShellsInCurrentCharge(gun));
         int const poolNeeded =
             static_cast<int>(help::GetGunShellsPoolSize(gun)) - static_cast<int>(help::GetGunShellsInPool(gun));
 
@@ -1413,8 +1415,7 @@ void GarageWnd::Recharge(int units)
         int const intoPool = (poolNeeded > unitsLeft) ? unitsLeft : poolNeeded;
         if (intoPool > 0)
         {
-            unsigned const shells =
-                static_cast<unsigned>(static_cast<int>(help::GetGunShellsInPool(gun)) + intoPool);
+            unsigned const shells = static_cast<unsigned>(static_cast<int>(help::GetGunShellsInPool(gun)) + intoPool);
             if (auto* g = RT_DYNCAST(gun, ai::Gun))
             {
                 g->SetShellsInPool(shells);
@@ -1511,8 +1512,7 @@ void GarageWnd::UpdateRefuelAllPriceControls(bool bForce)
     }
 
     m_wndRefuelPrice->SetText(CStr(m_refuelPrice));
-    m_wndRefuelPrice->SetTextColor(
-        EnumColor2Color(GetValueColor(m_maxPossibleUnitsToRefuel, m_unitsToRefuel)));
+    m_wndRefuelPrice->SetTextColor(EnumColor2Color(GetValueColor(m_maxPossibleUnitsToRefuel, m_unitsToRefuel)));
 }
 
 void GarageWnd::UpdateRepairAllPriceControls(bool bForce)
@@ -1529,8 +1529,7 @@ void GarageWnd::UpdateRepairAllPriceControls(bool bForce)
     }
 
     m_wndRepairPrice->SetText(CStr(m_repairPrice));
-    m_wndRepairPrice->SetTextColor(
-        EnumColor2Color(GetValueColor(m_maxPossibleUnitsToRepair, m_unitsToRepair)));
+    m_wndRepairPrice->SetTextColor(EnumColor2Color(GetValueColor(m_maxPossibleUnitsToRepair, m_unitsToRepair)));
 }
 
 void GarageWnd::UpdateRechargeAllPriceControls(bool bForce)
@@ -1547,22 +1546,24 @@ void GarageWnd::UpdateRechargeAllPriceControls(bool bForce)
     }
 
     m_wndRechargePrice->SetText(CStr(m_rechargePrice));
-    m_wndRechargePrice->SetTextColor(
-        EnumColor2Color(GetValueColor(m_maxPossibleUnitsToRecharge, m_unitsToRecharge)));
+    m_wndRechargePrice->SetTextColor(EnumColor2Color(GetValueColor(m_maxPossibleUnitsToRecharge, m_unitsToRecharge)));
 }
 
 namespace
 {
     // Shared tooltip shape: "<service>|<State>: <colour><state text>". The state
     // line is omitted entirely when there is nothing to say about it.
-    CStr BuildServiceTooltip(CStr const& strIdService, CStr const& strIdState, CStr const& strIdBuyType,
-                             CStr const& strStateColor)
+    CStr BuildServiceTooltip(
+        CStr const& strIdService,
+        CStr const& strIdState,
+        CStr const& strIdBuyType,
+        CStr const& strStateColor)
     {
         CStr tooltip = M3D_APP->GetStringByStringId0(strIdService);
         if (!strIdBuyType.empty())
         {
             tooltip += CStr("|") + M3D_APP->GetStringByStringId0(strIdState) + ": " + strStateColor +
-                       M3D_APP->GetStringByStringId0(strIdBuyType);
+                M3D_APP->GetStringByStringId0(strIdBuyType);
         }
         return tooltip;
     }
@@ -1596,8 +1597,7 @@ void GarageWnd::UpdateRefuelAllTooltip()
         strIdBuyType = m_aif.m_strIdTooltipRefuelFull;
     }
 
-    CStr tooltip =
-        BuildServiceTooltip(m_aif.m_strIdTooltipRefuel, m_aif.m_strIdState, strIdBuyType, strStateColor);
+    CStr tooltip = BuildServiceTooltip(m_aif.m_strIdTooltipRefuel, m_aif.m_strIdState, strIdBuyType, strStateColor);
     m_btnRefuelAll->SetProperty(PROP_WND_TOOLTIP, &tooltip);
 }
 
@@ -1629,8 +1629,7 @@ void GarageWnd::UpdateRepairAllTooltip()
         strIdBuyType = m_aif.m_strIdTooltipRepairFull;
     }
 
-    CStr tooltip =
-        BuildServiceTooltip(m_aif.m_strIdTooltipRepair, m_aif.m_strIdState, strIdBuyType, strStateColor);
+    CStr tooltip = BuildServiceTooltip(m_aif.m_strIdTooltipRepair, m_aif.m_strIdState, strIdBuyType, strStateColor);
     m_btnRepairAll->SetProperty(PROP_WND_TOOLTIP, &tooltip);
 }
 
@@ -1662,8 +1661,7 @@ void GarageWnd::UpdateRechargeAllTooltip()
         strIdBuyType = m_aif.m_strIdTooltipRechargeFull;
     }
 
-    CStr tooltip =
-        BuildServiceTooltip(m_aif.m_strIdTooltipRecharge, m_aif.m_strIdState, strIdBuyType, strStateColor);
+    CStr tooltip = BuildServiceTooltip(m_aif.m_strIdTooltipRecharge, m_aif.m_strIdState, strIdBuyType, strStateColor);
     m_btnRechargeAll->SetProperty(PROP_WND_TOOLTIP, &tooltip);
 }
 
@@ -1682,23 +1680,22 @@ void GarageWnd::OnNewFrame()
 
     UpdateAllPriceValues();
 
-    if (m_unitsToRefuel != m_prevUnitsToRefuel ||
-        m_maxPossibleUnitsToRefuel != m_prevMaxPossibleUnitsToRefuel || m_refuelPrice != m_prevRefuelPrice)
+    if (m_unitsToRefuel != m_prevUnitsToRefuel || m_maxPossibleUnitsToRefuel != m_prevMaxPossibleUnitsToRefuel ||
+        m_refuelPrice != m_prevRefuelPrice)
     {
         UpdateRefuelAllPriceControls(true);
         UpdateRefuelActiveState();
         UpdateRefuelAllTooltip();
     }
-    if (m_unitsToRepair != m_prevUnitsToRepair ||
-        m_maxPossibleUnitsToRepair != m_prevMaxPossibleUnitsToRepair || m_repairPrice != m_prevRepairPrice)
+    if (m_unitsToRepair != m_prevUnitsToRepair || m_maxPossibleUnitsToRepair != m_prevMaxPossibleUnitsToRepair ||
+        m_repairPrice != m_prevRepairPrice)
     {
         UpdateRepairAllPriceControls(true);
         UpdateRepairActiveState();
         UpdateRepairAllTooltip();
     }
     if (m_unitsToRecharge != m_prevUnitsToRecharge ||
-        m_maxPossibleUnitsToRecharge != m_prevMaxPossibleUnitsToRecharge ||
-        m_rechargePrice != m_prevRechargePrice)
+        m_maxPossibleUnitsToRecharge != m_prevMaxPossibleUnitsToRecharge || m_rechargePrice != m_prevRechargePrice)
     {
         UpdateRechargeAllPriceControls(true);
         UpdateRechargeActiveState();

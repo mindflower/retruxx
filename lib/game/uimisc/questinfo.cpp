@@ -787,7 +787,7 @@ QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int dQuestId) const
 
 void QuestInfoManager::OnStartLevel()
 {
-    //TODO: check this
+    // RVA 0x174330 - static quest infos re-resolve their quest ids for the new level.
     for (auto& info : m_questInfos)
     {
         if (info.second)

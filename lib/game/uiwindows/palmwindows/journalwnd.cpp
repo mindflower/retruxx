@@ -293,32 +293,29 @@ JournalWnd::JournalWnd(JournalWnd const&) : JournalWnd()
 
 int JournalWnd::GameDataSetup()
 {
-    // TODO: generated code JournalWnd::GameDataSetup
-    // m_gameDataFlags @ +0x114 : bit0 = "init OK", bit1 = "don't rebind"
+    // RVA 0xE1CC0
     if ((m_gameDataFlags & 2) == 0)
     {
         int ok = 1;
 
-        // --- 1. bind the five tab buttons by name (loop, i = 0..4) ---
+        // The tab buttons by name...
         for (int i = 0; i < NUM_TABS; ++i)
         {
             m3d::Object* child = GetChildByName(m_aif.m_tabButtonNames[i]);
             if (child && child->IsKindOf(&m3d::ui::ButtonWnd::m_classButtonWnd))
             {
-                m_tabButtons[i] = static_cast<m3d::ui::ButtonWnd*>(child);  // raw ptr, no addref
+                m_tabButtons[i] = static_cast<m3d::ui::ButtonWnd*>(child);
             }
             else
             {
-                // JournalWnd.cpp:112
-                M3D_LOG_ERR(
+                M3D_LOG_INFO(
                     CStr("Get control error: control ") + m_aif.m_tabButtonNames[i] +
                     CStr(" is not found or incorrect type"));
                 ok = 0;
             }
         }
 
-        // --- 2. bind the five tab sub-windows by GUI id ---
-        // ids: IW_WND_HISTORY=95, BOOKS=96, REPUTATION=106, STATS=105, ENCYCLOPAEDIA=97
+        // ...and the tab windows by GUI id (unrolled in the binary).
         static int const kTabWndId[NUM_TABS] = {95, 96, 106, 105, 97};
         m3d::Class* const kTabClass[NUM_TABS] = {
             &HistoryWnd::m_classHistoryWnd,
@@ -328,12 +325,11 @@ int JournalWnd::GameDataSetup()
             &EncyclopaediaWnd::m_classEncyclopaediaWnd,
         };
 
-        // NB: emitted fully unrolled, one block per tab
         for (int i = 0; i < NUM_TABS; ++i)
         {
             ref_ptr<m3d::ui::Wnd> w = M3D_APP->m_pInterfaceManager->GetWindow(kTabWndId[i]);
             if (w && w->IsKindOf(kTabClass[i]))
-                m_tabs[i] = w;  // ref_ptr assign (addref/release)
+                m_tabs[i] = w;
             else
                 ok = 0;
         }
@@ -345,8 +341,7 @@ int JournalWnd::GameDataSetup()
     if ((m_gameDataFlags & 1) != 0)
         return 1;
 
-    // JournalWnd.cpp:150
-    M3D_LOG_ERR("JournalWnd: error - fail to init because of a bad resource");
+    M3D_LOG_INFO("JournalWnd: error - fail to init because of a bad resource");
     return 0;
 }
 

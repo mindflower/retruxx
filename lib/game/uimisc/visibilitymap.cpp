@@ -232,6 +232,7 @@ int VisibilityMap::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlN
 
 int VisibilityMap::SetUpForLevel(CStr const& levelName)
 {
+    // RVA 0x1834C0
     Clear();
     if (levelName.empty())
     {
@@ -239,9 +240,9 @@ int VisibilityMap::SetUpForLevel(CStr const& levelName)
     }
     m_levelName = levelName;
     auto levelInfoManager = M3D_APP->m_pInterfaceManager->GetLevelInfoManager();
-    //TODO: check this!
-    int const levelSize = levelInfoManager->GetLevelSize(m_levelName) * 0.0078125;
-    if (levelSize == 0.0)
+    // One cell per 128 world units, rounded to nearest (a bare fistp).
+    int const levelSize = static_cast<int>(lrintf(levelInfoManager->GetLevelSize(m_levelName) * 0.0078125f));
+    if (levelSize == 0)
     {
         return 0;
     }
@@ -599,23 +600,28 @@ void VisibilityMap::Clear()
 
 int VisibilityMap::CreateCircle()
 {
+    // RVA 0x183D40 - the circle pattern scaled to the visibility diameter in cells (radius / 16, rounded to nearest by
+    // a bare fistp, then doubled). Only the low byte (red) of each texel is kept.
     delete[] m_circleBits;
-    int const size = 2 * M3D_APP->m_pInterfaceManager->GetLevelInfoManager()->GetVisibilityRadius() * 0.0625;
+    m_circleBits = nullptr;
+    m_circleSize = {0, 0};
+    int const radius = M3D_APP->m_pInterfaceManager->GetLevelInfoManager()->GetVisibilityRadius();
+    int const size = 2 * static_cast<int>(lrintf(static_cast<float>(radius) * 0.0625f));
+    int const numPixels = size * size;
     m_circleSize = {size, size};
-    m_circleBits = new unsigned char[size * size];
-    auto data = new unsigned[4 * size * size];
-    //TODO: check this
-    if (M3D_APP->m_renderer->DownloadTexImageRgba8888(data, m_circlePatternTex))
+    m_circleBits = new unsigned char[numPixels];
+    auto* data = new unsigned[numPixels];
+    int res = 0;
+    if (M3D_APP->m_renderer->DownloadTexImageRgba8888(data, &m_circlePatternTex, m_circleSize.x, m_circleSize.y))
     {
-        for (int i = 0; i < size * size; ++i)
+        for (int i = 0; i < numPixels; ++i)
         {
-            m_circleBits[i] = data[i];
+            m_circleBits[i] = static_cast<unsigned char>(data[i]);
         }
-        delete[] data;
-        return 1;
+        res = 1;
     }
     delete[] data;
-    return 0;
+    return res;
 }
 
 bool VisibilityMap::IsValid() const

@@ -30,10 +30,11 @@ RT_CLASS_DEFINE(VideoOptionsWnd);
 
 bool VideoOptionsWnd::ShadowSettings::operator==(ShadowSettings const& shs) const
 {
+    // The differences are taken on the x87 stack, so they are not rounded back to float.
     return this->shadowTexSize == shs.shadowTexSize
         && this->detShadowTexSize == shs.detShadowTexSize
-        && fabs(this->shadowBlurCoeff - shs.shadowBlurCoeff) <= 0.0000099999997
-        && fabs(this->detailRadius - shs.detailRadius) <= 0.1;
+        && fabs(static_cast<double>(this->shadowBlurCoeff) - shs.shadowBlurCoeff) <= 1e-5f
+        && fabs(static_cast<double>(this->detailRadius) - shs.detailRadius) <= 0.1f;
 }
 
 VideoOptionsWnd::ShadowSettings::ShadowSettings(int texSize, int detTexSize, float blurCoeff, float radius) :
@@ -798,7 +799,7 @@ void VideoOptionsWnd::UpdateGammaControls()
 
 void VideoOptionsWnd::UpdateResolutionControls()
 {
-    //TODO: check this
+    // RVA 0xCB530
     if ((m_gameDataFlags & 1) != 0)
     {
         auto const height = M3D_KERNEL->GetEngineCfg().m_r_height.GetI();
@@ -937,163 +938,30 @@ void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
 
 VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() const
 {
-    // TODO: generated code
-    // Create a set to track possible graphic quality levels that match current settings
-    std::set<VideoOptionsWnd::GraphicQuality> possibleGraphicQualities;
-
-    // Check all three graphic quality levels: LOW, MEDIUM, MAX
-    for (int qualityLevel = GRAPHIC_QUALITY_LOW; qualityLevel <= GRAPHIC_QUALITY_MAX; qualityLevel++)
+    // RVA 0xCCEC0 - the preset whose settings all match the current config, or CUSTOM.
+    auto& cfg = M3D_KERNEL->GetEngineCfg();
+    std::set<GraphicQuality> possibleGraphicQualities;
+    for (int gq = GRAPHIC_QUALITY_LOW; gq <= GRAPHIC_QUALITY_MAX; ++gq)
     {
-        GraphicQuality currentQuality = static_cast<GraphicQuality>(qualityLevel);
+        auto const graphicQuality = static_cast<GraphicQuality>(gq);
+        possibleGraphicQualities.insert(graphicQuality);
 
-        // Add this quality level to our set of possibilities
-        possibleGraphicQualities.insert(currentQuality);
-
-        // Get expected view distance divider for this quality level
-        float expectedViewDistanceDivider = 0.0f;
-        switch (currentQuality)
+        float const viewDistanceDivider = graphicQuality == GRAPHIC_QUALITY_LOW ? 0.5f : 1.0f;
+        bool matches = viewDistanceDivider == cfg.m_lsViewDistanceDivider.GetF();
+        matches &= m_grassDistances[gq] == cfg.m_g_grassDrawDist.GetF();
+        matches &= m_shadowSettings[gq] == GetCurrentShadowSettings();
+        matches &= GetDefaultWaterQualityForGraphicQuality(graphicQuality) == cfg.m_r_waterQuality.GetI();
+        // NOTE: every preset is checked against the first (lowest) antialiasing setting, as shipped.
+        matches &= m_antialiasings[0] == cfg.m_r_multiSamplesNum.GetI();
+        matches &= m_filtrations[gq] == cfg.m_g_texturesFilter.GetI();
+        matches &= m_blumQualities[gq] == cfg.m_g_postEffectBloom.GetI();
+        if (!matches)
         {
-        case GRAPHIC_QUALITY_LOW:
-            expectedViewDistanceDivider = 0.5f;
-            break;
-        case GRAPHIC_QUALITY_MEDIUM:
-        case GRAPHIC_QUALITY_MAX:
-            expectedViewDistanceDivider = 1.0f;
-            break;
-        default:
-            assert(false);
-        }
-
-        // Check if actual view distance divider matches expected
-        float actualViewDistanceDivider = m3d::g_Kernel->GetEngineCfg().m_lsViewDistanceDivider.GetF();
-        if (expectedViewDistanceDivider != actualViewDistanceDivider)
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
-        }
-
-        // Get expected grass draw distance for this quality level
-        float expectedGrassDistance = 0.0f;
-        switch (currentQuality)
-        {
-        case GRAPHIC_QUALITY_LOW:
-            expectedGrassDistance = VideoOptionsWnd::m_grassDistances[0];
-            break;
-        case GRAPHIC_QUALITY_MEDIUM:
-            expectedGrassDistance = VideoOptionsWnd::m_grassDistances[1];
-            break;
-        case GRAPHIC_QUALITY_MAX:
-            expectedGrassDistance = VideoOptionsWnd::m_grassDistances[2];
-            break;
-            default:
-                assert(false);
-        }
-
-        // Check if actual grass draw distance matches expected
-        float actualGrassDistance = m3d::g_Kernel->GetEngineCfg().m_g_grassDrawDist.GetF();
-        if (expectedGrassDistance != actualGrassDistance)
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
-        }
-
-        // Get expected shadow settings for this quality level
-        const VideoOptionsWnd::ShadowSettings* expectedShadowSettings = nullptr;
-        switch (currentQuality)
-        {
-        case GRAPHIC_QUALITY_LOW:
-            expectedShadowSettings = &VideoOptionsWnd::m_shadowSettings[0];
-            break;
-        case GRAPHIC_QUALITY_MEDIUM:
-            expectedShadowSettings = &VideoOptionsWnd::m_shadowSettings[1];
-            break;
-        case GRAPHIC_QUALITY_MAX:
-            expectedShadowSettings = &VideoOptionsWnd::m_shadowSettings[2];
-            break;
-        default:
-            assert(false);
-        }
-
-        // Check if actual shadow settings match expected
-        const VideoOptionsWnd::ShadowSettings actualShadowSettings = GetCurrentShadowSettings();
-        if (!(*expectedShadowSettings == actualShadowSettings))
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
-        }
-
-        // Check water quality setting
-        int expectedWaterQuality = GetDefaultWaterQualityForGraphicQuality(currentQuality);
-        int actualWaterQuality = m3d::g_Kernel->GetEngineCfg().m_r_waterQuality.GetI();
-        if (expectedWaterQuality != actualWaterQuality)
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
-        }
-
-        // Check anti-aliasing (multisampling) setting
-        int expectedAntiAliasing = VideoOptionsWnd::m_antialiasings[0]; // Assuming index 0 for basic check
-        int actualAntiAliasing = m3d::g_Kernel->GetEngineCfg().m_r_multiSamplesNum.GetI();
-        if (expectedAntiAliasing != actualAntiAliasing)
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
-        }
-
-        // Check texture filtration setting
-        int expectedTextureFiltration = VideoOptionsWnd::m_filtrations[0]; // Default to lowest
-        switch (currentQuality)
-        {
-        case GRAPHIC_QUALITY_MEDIUM:
-            expectedTextureFiltration = VideoOptionsWnd::m_filtrations[1];
-            break;
-        case GRAPHIC_QUALITY_MAX:
-            expectedTextureFiltration = VideoOptionsWnd::m_filtrations[2];
-            break;
-        default:
-            assert(false);
-        }
-
-        int actualTextureFiltration = m3d::g_Kernel->GetEngineCfg().m_g_texturesFilter.GetI();
-        if (expectedTextureFiltration != actualTextureFiltration)
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
-        }
-
-        // Check bloom quality setting
-        int expectedBloomQuality = VideoOptionsWnd::m_blumQualities[0]; // Default to lowest
-        switch (currentQuality)
-        {
-        case GRAPHIC_QUALITY_MEDIUM:
-            expectedBloomQuality = VideoOptionsWnd::m_blumQualities[1];
-            break;
-        case GRAPHIC_QUALITY_MAX:
-            expectedBloomQuality = VideoOptionsWnd::m_blumQualities[2];
-            break;
-        default:
-                assert(false);
-        }
-
-        int actualBloomQuality = m3d::g_Kernel->GetEngineCfg().m_g_postEffectBloom.GetI();
-        if (expectedBloomQuality != actualBloomQuality)
-        {
-            possibleGraphicQualities.erase(currentQuality);
-            continue;
+            possibleGraphicQualities.erase(graphicQuality);
         }
     }
-
-    // Determine the result based on which quality levels matched
-    if (!possibleGraphicQualities.empty())
-    {
-        // Return the highest matching quality level (since set is ordered)
-        return *possibleGraphicQualities.rbegin();
-    }
-    else
-    {
-        // No preset matches - return CUSTOM quality level
-        return GRAPHIC_QUALITY_CUSTOM;
-    }
+    // NOTE: if several presets match, the lowest one wins.
+    return possibleGraphicQualities.empty() ? GRAPHIC_QUALITY_CUSTOM : *possibleGraphicQualities.begin();
 }
 
 int VideoOptionsWnd::GetDefaultBlumForGraphicQuality(GraphicQuality graphicQuality) const
@@ -1529,7 +1397,7 @@ void VideoOptionsWnd::SetDefaultParamsForGraphicQuality(GraphicQuality graphicQu
 
 void VideoOptionsWnd::InitWaterQualityControls()
 {
-    //TODO: check this!
+    // RVA 0xCC360 - only the qualities the hardware supports are listed.
     if ((m_gameDataFlags & 1) != 0)
     {
         for (int i = 0; i < 3; ++i)
@@ -1559,25 +1427,17 @@ VideoOptionsWnd::BlumQuality VideoOptionsWnd::BlumQualityVal2Enum(int val) const
 
 void VideoOptionsWnd::InitResolutionControls()
 {
-    //TODO: check this and refactor
-    int i; // esi
-    int v4; // ecx
-    CStr* v5; // eax
-    int v6; // edi
-    PointBase<int> wh; // [esp+4h] [ebp-14h] BYREF
-    char* v10; // [esp+Ch] [ebp-Ch]
-    int v11; // [esp+10h] [ebp-8h]
-    char v12; // [esp+14h] [ebp-4h] BYREF
-
-    if ((m_gameDataFlags & 1) != 0)
+    // RVA 0xCC0C0
+    if ((m_gameDataFlags & 1) == 0)
     {
-        for (i = 0; i < 5; ++i)
+        return;
+    }
+    for (int i = 0; i < RESOLUTION_NUM_RESOLUTIONS; ++i)
+    {
+        int const idx = m_cbResolution->AddItem(ScreenWH2Str(m_screenWH[i]));
+        if (idx != -1)
         {
-            wh.x = m_screenWH[i].x;
-            wh.y = m_screenWH[i].y;
-            v6 = m_cbResolution->AddItem(ScreenWH2Str(wh));
-            if (v6 != -1)
-                m_cbResolution->SetItemData(v6, i);
+            m_cbResolution->SetItemData(idx, i);
         }
     }
 }

@@ -1310,57 +1310,86 @@ namespace m3d
 
     int AnimatedModelsServer::GetItemProperty(int id, int prop, void* dest)
     {
-        // TODO rebuild all cases and check everything
-        if (DataServer::GetItemProperty(id, prop, dest))
-        {
-            return 1;
-        }
+        // RVA 0x76F9F0
         if (id == -1)
         {
             return 0;
         }
-        if (prop == 16394)
+        if (DataServer::GetItemProperty(id, prop, dest))
         {
-            auto* model = (DynamicModel*)m_models[id].m_ptr;
-            *(AnimatedModel**)dest = model->m_mdl[0];
             return 1;
         }
-        if (prop == 12288)
+        auto* const model = static_cast<DynamicModel*>(m_models[id].m_ptr);
+        AnimatedModel* const animModel = model->m_mdl[0];
+        switch (prop)
         {
-            auto* model = (DynamicModel*)m_models[id].m_ptr;
-            auto* animModel = model->m_mdl[0];
+        case PROP_INTERNAL_GETMODEL:
+            *static_cast<AnimatedModel**>(dest) = animModel;
+            return 1;
+        case PROP_SRV_BOUNDING_BOX:
+        {
+            // A composite model's box follows its animation.
+            auto* const box = static_cast<PropSrvBoundingBox*>(dest);
             if (animModel->m_composite)
             {
-                auto* box = (m3d::PropSrvBoundingBox*)dest;
-
                 AnimInfo* anim = nullptr;
                 box->m_node->GetProperty(1, &anim);
                 *box->m_destBox = anim->m_curBox;
             }
             else
             {
-                auto* box = (m3d::PropSrvBoundingBox*)dest;
-                auto p_m_box = &animModel->m_box;
-                box->m_destBox->m_box[0] = p_m_box->m_box[0];
-                box->m_destBox->m_box[1] = p_m_box->m_box[1];
-                box->m_destBox->m_box[2] = p_m_box->m_box[2];
-                box->m_destBox->m_box[3] = p_m_box->m_box[3];
-                box->m_destBox->m_box[4] = p_m_box->m_box[4];
-                box->m_destBox->m_box[5] = p_m_box->m_box[5];
+                *box->m_destBox = animModel->m_box;
             }
             return 1;
         }
-        if (prop == 12296)
+        case PROP_SRV_SOUND_FOR_ACTION:
+            return 1;
+        case PROP_SRV_SOUND_IS_LOOPED:
         {
-            auto* model = (DynamicModel*)m_models[id].m_ptr;
-            auto* animModel = model->m_mdl[0];
-
-            auto* actionTime = (m3d::PropSrvActionTime*)dest;
-            int const frames = animModel->GetFrames(actionTime->m_action, 1);
-            actionTime->m_delta = (animModel->GetFps(actionTime->m_action) * frames) * 0.001;
+            int* const value = static_cast<int*>(dest);
+            *value = model->m_soundsLooped[*value];
             return 1;
         }
-        return 0;
+        case PROP_INTERNAL_GET_MESH_POINTS:
+        {
+            auto* const points = static_cast<PropInternalGetMeshPoints*>(dest);
+            AnimInfo* anim = nullptr;
+            points->m_node->GetProperty(1, &anim);
+            anim->CreateCopyMesh(
+                points->m_numMesh, points->m_verts, points->m_numVerts, points->m_indxs, points->m_numIndxs,
+                points->m_strips, points->m_localmatr, points->m_VertexTypes, points->m_VertexTypeSizes,
+                &points->m_numSkinMesh);
+            return 1;
+        }
+        case PROP_SRV_ACTION_TIME:
+        {
+            auto* const actionTime = static_cast<PropSrvActionTime*>(dest);
+            int const frames = animModel->GetFrames(actionTime->m_action, 1);
+            actionTime->m_delta = static_cast<float>(static_cast<float>(animModel->GetFps(actionTime->m_action) * frames) * 0.001);
+            return 1;
+        }
+        case PROP_SRV_ATTACK_FRAMETIME:
+        {
+            auto* const attack = static_cast<PropSrvAttackframeTime*>(dest);
+            int const frame = model->m_effects[attack->m_action].startAttackFrame;
+            attack->m_attackFrameTime = frame == -1
+                ? -1.0f
+                : static_cast<float>(static_cast<float>(animModel->GetFps(attack->m_action)) * static_cast<float>(frame) * 0.001);
+            return 1;
+        }
+        case PROP_DM_CHECK_ACTION:
+        {
+            auto* const check = static_cast<PropDmCheckAction*>(dest);
+            DynamicModel::auxActionEffectsDesc const& effects = model->m_effects[check->m_action];
+            check->m_hasSkin = effects.skinNum >= 0;
+            check->m_hasCfg = effects.cfgNum >= 0;
+            check->m_hasEffects = !effects.lpEffects.empty();
+            check->m_hasFrames = animModel->GetFrames(check->m_action, 1) != 0;
+            return 1;
+        }
+        default:
+            return 0;
+        }
     }
 
     void AnimatedModelsServer::RegisterNode(SgNode* node)

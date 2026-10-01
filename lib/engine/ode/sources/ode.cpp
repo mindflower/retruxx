@@ -27,6 +27,9 @@
 // this source file is mostly concerned with the data structures, not the
 // numerics.
 
+#include <set>
+#include <vector>
+
 #include "objects.h"
 #include <ode/ode.h>
 #include "joint.h"
@@ -70,7 +73,7 @@ static inline void addObjectToList (dObject *obj, dObject **first)
 static inline void removeObjectFromList (dObject *obj)
 {
   if (obj->next) obj->next->tome = obj->tome;
-  *(obj->tome) = obj->next;
+  if (obj->tome) *(obj->tome) = obj->next;
   // safeguard
   obj->next = 0;
   obj->tome = 0;
@@ -313,7 +316,7 @@ void dBodyDestroy (dxBody *b)
     n = next;
   }
   removeObjectFromList (b);
-  b->world->nb--;
+  if (b->world) b->world->nb--;
   delete b;
 }
 
@@ -772,81 +775,38 @@ dJointID dBodyGetJoint (dBodyID b, int index)
 }
 
 
+// retruxx: moves a body to the world's enabled or disabled list to match its flag.
+static void relinkBodyByEnabledState (dxBody *b)
+{
+  if (!b->world) return;
+  removeObjectFromList (b);
+  dxBody **first = (b->flags & dxBodyDisabled) ? &b->world->m_firstDisabledBody : &b->world->m_firstEnabledBody;
+  addObjectToList (b,(dObject**) first);
+}
+
+
 void dBodyEnable (dBodyID b)
 {
+  // RVA 0x7C67D0 - retruxx: the world keeps enabled and disabled bodies in separate lists, and an enable resets
+  // the auto-disable counters and calls the body's state callback.
   dAASSERT (b);
-  // TODO: generated code
-  // Check if the body is currently disabled (bit 2 = disabled flag)
-    if ((b->flags & dxBodyDisabled) != 0)
-    {
-        // Clear the disabled flag (enable the body)
-        b->flags &= ~dxBodyDisabled;
-        
-        // Reset auto-disable timers
-        b->adis_timeleft = b->adis.idle_time;
-        b->adis_stepsleft = b->adis.idle_steps;
-        
-        // Only process if the body is in a world
-        if (b->world != nullptr)
-        {
-            auto next = b->next;
-            auto p_next = &b->next;
-            if ( next )
-              next->tome = b->tome;
-            *b->tome = *p_next;
-            dxBody** body = &b->world->m_firstEnabledBody;
-            if ( (b->flags & dxBodyDisabled) != 0 )
-              body = &b->world->m_firstDisabledBody;
-            *p_next = *body;
-            b->tome = (dObject **)body;
-            if ( *body )
-              (*body)->tome = p_next;
-            *body = b;
-        }
-        
-        // Call the enabled state change callback if set
-        if (b->m_changeEnabledStateCallback != nullptr)
-        {
-            b->m_changeEnabledStateCallback(b);
-        }
-    }
+  if (!(b->flags & dxBodyDisabled)) return;
+  b->flags &= ~dxBodyDisabled;
+  b->adis_timeleft = b->adis.idle_time;
+  b->adis_stepsleft = b->adis.idle_steps;
+  relinkBodyByEnabledState (b);
+  if (b->m_changeEnabledStateCallback) b->m_changeEnabledStateCallback (b);
 }
 
 
 void dBodyDisable (dBodyID b)
 {
+  // RVA 0x7C6840 - retruxx: see dBodyEnable.
   dAASSERT (b);
-    // TODO: generated code
-    // Check if the body is already disabled (bit 2 = disabled flag)
-    if ((b->flags & dxBodyDisabled) == 0)
-    {
-        // Set the disabled flag
-        b->flags |= dxBodyDisabled;
-        
-        // Only process if the body is in a world
-        if (b->world != nullptr)
-        {
-            auto next = b->next;
-            auto p_next = &b->next;
-            if ( next )
-              next->tome = b->tome;
-            *b->tome = *p_next;
-            dxBody** body = &b->world->m_firstEnabledBody;
-            if ( (b->flags & dxBodyDisabled) != 0 )
-              body = &b->world->m_firstDisabledBody;
-            *p_next = *body;
-            b->tome = (dObject **)body;
-            if ( *body )
-              (*body)->tome = p_next;
-            *body = b;
-        }
-        
-        // Call the enabled state change callback if set
-        if (b->m_changeEnabledStateCallback != nullptr)
-        {
-            b->m_changeEnabledStateCallback(b);
-        }
-    }
+  if (b->flags & dxBodyDisabled) return;
+  b->flags |= dxBodyDisabled;
+  relinkBodyByEnabledState (b);
+  if (b->m_changeEnabledStateCallback) b->m_changeEnabledStateCallback (b);
 }
 
 
@@ -974,14 +934,83 @@ dxGeom* dBodyGetFirstGeom (dBodyID b)
     return b->geom;
 }
 
+// retruxx: a body and everything joined to it (other than through contact joints) move into or out of a world
+// together.
 void dBodyAddIslandToWorld (dBodyID b, dxWorld* w)
 {
-    // TODO: implememnt dBodyAddIslandToWorld
+  // RVA 0x7C8140 - adds a body outside any world, and every body reachable through non-contact joints, to w, then
+  // the joints between them.
+  // NOTE: a joint's other body is not checked for null (a joint to the static environment crashes), and a body
+  // reached twice before it is added is added twice, as shipped.
+  if (b->world) return;
+  std::set<dxJoint*> jointsToAdd;
+  std::vector<dxBody*> stack;
+  stack.push_back (b);
+  while (!stack.empty()) {
+    dxBody *body = stack.back();
+    stack.pop_back();
+    dxBody **first = (body->flags & dxBodyDisabled) ? &w->m_firstDisabledBody : &w->m_firstEnabledBody;
+    addObjectToList (body,(dObject**) first);
+    body->world = w;
+    w->nb++;
+    for (dxJointNode *n = body->firstjoint; n; n = n->next) {
+      if (n->joint->vtable->typenum == dJointTypeContact) continue;
+      jointsToAdd.insert (n->joint);
+      if (!n->body->world) stack.push_back (n->body);
+    }
+  }
+  for (dxJoint *j : jointsToAdd) {
+    addObjectToList (j,(dObject**) &w->firstjoint);
+    j->world = w;
+    w->nj++;
+  }
 }
 
 void dBodyRemoveIslandFromWorld (dBodyID b)
 {
-    // TODO: implememnt dBodyRemoveIslandFromWorld
+  // RVA 0x7C7E40 - takes a body and every body reachable through non-contact joints out of their world: their
+  // contact joints are destroyed (unless in a joint group) and the other joints are unlinked but kept.
+  // NOTE: a body reached twice before it is removed is removed twice, as shipped.
+  if (!b->world) return;
+  std::set<dxJoint*> jointsToRemove;
+  std::set<dxJoint*> jointsToDestroy;
+  std::vector<dxBody*> stack;
+  stack.push_back (b);
+  while (!stack.empty()) {
+    dxBody *body = stack.back();
+    stack.pop_back();
+    removeObjectFromList (body);
+    body->world->nb--;
+    body->world = 0;
+    body->next = 0;
+    body->tome = 0;
+    for (dxJointNode *n = body->firstjoint; n; n = n->next) {
+      if (n->joint->vtable->typenum == dJointTypeContact) {
+        jointsToDestroy.insert (n->joint);
+        continue;
+      }
+      jointsToRemove.insert (n->joint);
+      if (n->body && n->body->world) stack.push_back (n->body);
+    }
+  }
+  for (dxJoint *j : jointsToDestroy) {
+    if (j->flags & dJOINT_INGROUP) continue;
+    removeJointReferencesFromAttachedBodies (j);
+    if (j->next) j->next->tome = j->tome;
+    if (j->tome) *j->tome = j->next;
+    j->next = 0;
+    j->tome = 0;
+    delete j->breakInfo;
+    if (j->world) j->world->nj--;
+    dFree (j,j->vtable->size);
+  }
+  for (dxJoint *j : jointsToRemove) {
+    removeObjectFromList (j);
+    j->world->nj--;
+    j->world = 0;
+    j->next = 0;
+    j->tome = 0;
+  }
 }
 
 dxWorld* dBodyGetWorld (dxBody* b)
@@ -1105,7 +1134,9 @@ void dJointDestroy (dxJoint *j)
   if (j->flags & dJOINT_INGROUP) return;
   removeJointReferencesFromAttachedBodies (j);
   removeObjectFromList (j);
-  j->world->nj--;
+
+  delete j->breakInfo;
+  if (j->world) j->world->nj--;
   dFree (j,j->vtable->size);
 }
 

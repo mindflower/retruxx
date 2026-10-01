@@ -367,7 +367,11 @@ int NpcButton::CreateChildren()
         }
         CopyWndPropsFromPattern(m_wndNpcIco.get(), patIco);
         m_wndNpcIco->SetImage(patIco->GetImage());
-        m_wndNpcIco->SetDefaultTranslation(patIco->Translation());
+        m_wndNpcIco->Translation() = patIco->Translation();
+        m_wndNpcIco->Rotation() = patIco->Rotation();
+        m_wndNpcIco->Scale() = patIco->Scale();
+        m_wndNpcIco->SetDefaultTranslation(m_wndNpcIco->Translation());
+
         m_wndNpcIco->SetGameDataFlags(m_wndNpcIco->GetGameDataFlags() | 1);
         AddChild(m_wndNpcIco.get());
 
