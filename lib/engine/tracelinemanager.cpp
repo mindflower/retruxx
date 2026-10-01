@@ -13,7 +13,9 @@ namespace m3d
 {
     TraceLineManager::~TraceLineManager()
     {
+        // RVA 0x863F20
         delete m_exceptionIds;
+        m_exceptionIds = nullptr;
     }
 
     bool TraceLineManager::TraceLine(CVector const& v1, CVector const& v2)

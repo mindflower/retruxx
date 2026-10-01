@@ -7,6 +7,8 @@ target_include_directories(retruxx_lib PUBLIC
 	"${PROJECT_SOURCE_DIR}/lib/include/script/lua"
     "${PROJECT_SOURCE_DIR}/lib/engine/opcode"
 	"${PROJECT_SOURCE_DIR}/lib/engine/video")
+
+target_link_libraries(retruxx_lib PUBLIC winmm strmiids)
 	
 if(MSVC)
     # Apply __fastcall to a specific target's compilation

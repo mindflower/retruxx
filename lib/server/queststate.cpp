@@ -529,7 +529,7 @@ namespace ai
             return false;
         }
         ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        xmlFile->GetFirstChild(rootNode, nullptr);
+        xmlFile->GetFirstChild(rootNode, "quests");
         LoadFromXml(xmlFile, rootNode);
         return true;
     }

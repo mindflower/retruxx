@@ -24,9 +24,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Team, SetDestination)
     return 1;
 }
 
-RT_CLASS_EXPORT_METHOD_DEFINE(Team, AdjustBehaviour)
+RT_CLASS_EXPORT_METHOD_DEFINE(Team, _AdjustBehaviour)
 {
-    // RVA 0x659CF0
+    // RVA 0x659CF0 - exported to scripts as "_AdjustBehaviour", with the underscore.
     auto* team = (ai::Team*)context->asObject(0, "Team");
     team->_AdjustBehaviour();
     return 1;
@@ -60,7 +60,7 @@ namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Team)
     RT_CLASS_EXPORT(Team, m3d::METHOD, SetDestination, "", "", "")
-    RT_CLASS_EXPORT(Team, m3d::METHOD, AdjustBehaviour, "", "", "")
+    RT_CLASS_EXPORT(Team, m3d::METHOD, _AdjustBehaviour, "", "", "")
     RT_CLASS_EXPORT(Team, m3d::METHOD, HoldFire, "", "", "")
     RT_CLASS_EXPORT(Team, m3d::METHOD, GetNumVehicles, "", "", "")
     RT_CLASS_EXPORT(Team, m3d::METHOD, GetVehicle, "", "", "")
