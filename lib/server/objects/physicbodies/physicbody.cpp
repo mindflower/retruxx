@@ -266,15 +266,18 @@ namespace ai
             }
             }
 
+            // The offset belongs to the primitive inside the transform: the transform itself follows the body.
+            // NOTE: the shipped code dereferences the inner geom without checking it (an invalid type has none).
+            dGeomID const inner = obj->GetGeom()->GetGeomId();
             dGeomSetPosition(
-                obj->GetGeomId(), collisionInfo.m_relTranslation.x, collisionInfo.m_relTranslation.y, collisionInfo.m_relTranslation.z);
+                inner, collisionInfo.m_relTranslation.x, collisionInfo.m_relTranslation.y, collisionInfo.m_relTranslation.z);
 
             dQuaternion q;
             q[0] = collisionInfo.m_relRotation.w;
             q[1] = collisionInfo.m_relRotation.x;
             q[2] = collisionInfo.m_relRotation.y;
             q[3] = collisionInfo.m_relRotation.z;
-            dGeomSetQuaternion(obj->GetGeomId(), q);
+            dGeomSetQuaternion(inner, q);
         }
         SetOwnerBodyToGeoms();
         m_collisionInfos = collisionInfos;

@@ -72,6 +72,7 @@ enum {
   GEOM_AABB_BAD	= 2,	// geom's AABB is not valid
   GEOM_PLACEABLE = 4,	// geom is placeable
   GEOM_ENABLED = 8,		// geom is enabled
+  GEOM_BODY_UNLINKED = 0x1000,	// retruxx: contacts with the geom do not attach its body (see dGeomGetLinkedBody)
 
   // Ray specific
   RAY_FIRSTCONTACT = 0x10000,

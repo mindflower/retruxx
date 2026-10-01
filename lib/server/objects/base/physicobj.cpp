@@ -989,7 +989,7 @@ namespace ai
         m_physicBehaviorFlags = 0;
         m_massCenter.x = 0.0;
         m_massCenter.y = 0.0;
-        m_massCenter.y = 0.0;
+        m_massCenter.z = 0.0;
 
         m_body = new dBody(gGlobalWorld);
 
@@ -1160,41 +1160,34 @@ namespace ai
 
     void PhysicObj::SetCorrectEnabledCellsCounter()
     {
+        // RVA 0x5FABD0 - an object with its physics off but its geometry on keeps that geometry only while it
+        // touches a collision cell enabled last frame; every cell it touches is marked to be checked.
         m_enabledCellsCount = 0;
-        if ((m_physicState & 1) == 0 && (m_physicState & 2) != 0)
+        if ((m_physicState & 1) != 0 || (m_physicState & 2) == 0)
         {
-            auto aabb = GetCollisionCellAabb();
-            if (aabb.z0 <= aabb.z1)
+            return;
+        }
+        auto& landscape = ai::pServer->GetWorld()->GetLandscape();
+        Geom::CellAabb const aabb = GetCollisionCellAabb();
+        for (int x = aabb.x0; x <= aabb.x1; ++x)
+        {
+            for (int z = aabb.z0; z <= aabb.z1; ++z)
             {
-                auto z0 = aabb.z0;
-                if (aabb.z0 <= aabb.z1)
+                auto* const cell = landscape.GetCollisionCellItem(x, z);
+                if (cell->m_wasEnabledLastFrame)
                 {
-                    int retaddr = 0;
-                    auto v6 = retaddr;
-                    auto x1 = aabb.x1;
-                    do
-                    {
-                        if (x1 <= v6)
-                        {
-                            do
-                            {
-                                auto CollisionCellItem = ai::pServer->GetWorld()->GetLandscape().GetCollisionCellItem(z0, x1);
-                                if (CollisionCellItem->m_wasEnabledLastFrame)
-                                    ++m_enabledCellsCount;
-                                CollisionCellItem->m_bMustCheck = 1;
-                                v6 = retaddr;
-                                ++x1;
-                            } while (x1 <= retaddr);
-                            x1 = aabb.x1;
-                        }
-                        ++z0;
-                    } while (z0 <= aabb.z1);
+                    ++m_enabledCellsCount;
                 }
-                if (m_enabledCellsCount <= 0)
-                    DisableGeometry(0);
-                else
-                    EnableGeometry(0);
+                cell->m_bMustCheck = 1;
             }
+        }
+        if (m_enabledCellsCount <= 0)
+        {
+            DisableGeometry(false);
+        }
+        else
+        {
+            EnableGeometry(false);
         }
     }
 

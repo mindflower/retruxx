@@ -551,20 +551,23 @@ int dGeomIsEnabled (dxGeom *g)
 //retruxx
 void dGeomUnlinkFromBody (dxGeom* g)
 {
+    // RVA 0x6005E0
     dAASSERT(g);
-    g->gflags |= 0x10;
+    g->gflags |= GEOM_BODY_UNLINKED;
 }
 
 void dGeomLinkToBody (dxGeom* g)
 {
+    // RVA 0x6005F0
     dAASSERT(g);
-    g->gflags &= ~0x10;
+    g->gflags &= ~GEOM_BODY_UNLINKED;
 }
 
 dxBody* dGeomGetLinkedBody (dxGeom* g)
 {
+    // RVA 0x600600 - contacts with an unlinked geom are attached to the static environment instead of its body.
     dAASSERT(g);
-    if ((g->gflags & 0x1000) != 0)
+    if ((g->gflags & GEOM_BODY_UNLINKED) != 0)
         return 0;
     return g->body;
 }
