@@ -5764,7 +5764,7 @@ namespace m3d
                 M3D_RENDERER->MatPush(matReflect);
 
                 // Calculate reflected view-projection matrix
-                CMatrix reflectedViewProj = saveView * matReflect;
+                CMatrix reflectedViewProj = matReflect * saveView;
                 M3D_RENDERER->SetViewMatrix(reflectedViewProj);
 
                 // Set up reflection projection matrix
