@@ -3097,6 +3097,11 @@ int CMiracle3d::InitMedia()
         initVivisectionBlock();
         if (m3d::g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
         {
+            g_pApp->m_sound->SetGroupVolume(0, m3d::g_Kernel->GetEngineCfg().m_mus_Volume.GetC());
+            g_pApp->m_sound->SetMaxVolume(m3d::g_Kernel->GetEngineCfg().m_mus_Volume.GetI());
+        }
+        if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        {
             g_pApp->m_sound->SetGroupVolume(1, m3d::g_Kernel->GetEngineCfg().m_snd_2dVolume.GetC());
             g_pApp->m_sound->SetGroupVolume(2, m3d::g_Kernel->GetEngineCfg().m_snd_3dVolume.GetC());
         }
