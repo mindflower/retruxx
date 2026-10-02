@@ -19,7 +19,8 @@
 #include <server/objects/base/prototypemanager.h>
 #include <server/objects/dummyobject.h>
 
-bool interpolateColorsOnLoad = false;
+// On in the shipped build: its initialiser is 1 and nothing calls SetInterpolateColorsOnLoad.
+bool interpolateColorsOnLoad = true;
 
 namespace
 {
@@ -30,6 +31,62 @@ namespace
 
     // Sentinel stored in ParticleSystem::m_colors for "no keyframe here".
     unsigned int constexpr UNDEFINED_COLOR = 0xFFFFFFFFu;
+
+    // NOTE: the binary's keyframe scans run one slot off either end of ParticleSystem::m_colors, into the
+    // members laid out around it: slot -1 is the bits of m_point2Max.z, slots 20 and up those of m_sizes.
+    unsigned char const* ColorSlotBytes(m3d::ParticleSystem const& ps, int slot)
+    {
+        if (slot < 0)
+        {
+            return reinterpret_cast<unsigned char const*>(&ps.m_point2Max.z);
+        }
+        if (slot >= TIME_DISCRETION)
+        {
+            return reinterpret_cast<unsigned char const*>(&ps.m_sizes[slot - TIME_DISCRETION]);
+        }
+        return reinterpret_cast<unsigned char const*>(&ps.m_colors[slot]);
+    }
+
+    unsigned int ColorSlot(m3d::ParticleSystem const& ps, int slot)
+    {
+        unsigned int value;
+        memcpy(&value, ColorSlotBytes(ps, slot), sizeof(value));
+        return value;
+    }
+
+    // The nearest defined slots below and above an undefined one: prev stops at -1, next past slot 20.
+    void FindColorKeys(m3d::ParticleSystem const& ps, int slot, int& prev, int& next)
+    {
+        prev = slot;
+        while (prev >= 0 && ColorSlot(ps, prev) == UNDEFINED_COLOR)
+        {
+            --prev;
+        }
+        next = slot;
+        while (next <= TIME_DISCRETION && ColorSlot(ps, next) == UNDEFINED_COLOR)
+        {
+            ++next;
+        }
+    }
+
+    // Blends two slots channel by channel; each channel keeps the low byte of its truncated value.
+    unsigned int BlendColorSlots(m3d::ParticleSystem const& ps, int prev, int next, double tt, double fader)
+    {
+        unsigned char const* prevBytes = ColorSlotBytes(ps, prev);
+        unsigned char const* nextBytes = ColorSlotBytes(ps, next);
+        unsigned char bytes[4];
+        for (int i = 0; i < 4; ++i)
+        {
+            double const channel =
+                ((static_cast<double>(nextBytes[i]) - static_cast<double>(prevBytes[i])) * tt +
+                 static_cast<double>(prevBytes[i])) *
+                fader;
+            bytes[i] = static_cast<unsigned char>(static_cast<long long>(channel));
+        }
+        unsigned int value;
+        memcpy(&value, bytes, sizeof(value));
+        return value;
+    }
 
     // Points held per trail by one ParticleBases block from TrailsPool.
     int constexpr MAX_TRAIL_LEN = 15;
@@ -741,42 +798,17 @@ namespace m3d
             return;
         }
 
-        // Walk outwards to the nearest defined keyframes on either side.
-        int prevIndex = colorIndex;
-        while (prevIndex >= 0 && static_cast<unsigned int>(m_colors[prevIndex]) == UNDEFINED_COLOR)
-        {
-            --prevIndex;
-        }
-
-        int nextIndex = colorIndex;
-        while (nextIndex < TIME_DISCRETION && static_cast<unsigned int>(m_colors[nextIndex]) == UNDEFINED_COLOR)
-        {
-            ++nextIndex;
-        }
-
-        // The original reads one slot past either end of the table when the whole
-        // table is undefined; clamp instead so the lookup stays in bounds.
-        prevIndex = std::clamp(prevIndex, 0, TIME_DISCRETION - 1);
-        nextIndex = std::clamp(nextIndex, 0, TIME_DISCRETION - 1);
+        // Blend between the nearest defined keyframes on either side (see ColorSlotBytes for the ends).
+        int prevIndex;
+        int nextIndex;
+        FindColorKeys(*this, colorIndex, prevIndex, nextIndex);
 
         float const prevTime = static_cast<float>(prevIndex) * INV_DISCRETION;
         float const nextTime = static_cast<float>(nextIndex) * INV_DISCRETION;
-        float const tt = (nextTime != prevTime) ? (normalizedLifetime - prevTime) / (nextTime - prevTime) : 0.0f;
+        float const tt = (normalizedLifetime - prevTime) / (nextTime - prevTime);
 
-        auto const* prevBytes = reinterpret_cast<unsigned char const*>(&m_colors[prevIndex]);
-        auto const* nextBytes = reinterpret_cast<unsigned char const*>(&m_colors[nextIndex]);
-
-        m3d::rend::Colori clr;
-        for (int i = 0; i < 4; ++i)
-        {
-            // The fader scales the whole interpolated channel, not just its base.
-            clr.clr[i] = static_cast<unsigned char>(
-                ((static_cast<double>(nextBytes[i]) - static_cast<double>(prevBytes[i])) * tt +
-                 static_cast<double>(prevBytes[i])) *
-                fader);
-        }
-
-        pParticle->m_curClr = clr.rgba;
+        // The fader scales the whole interpolated channel, not just its base.
+        pParticle->m_curClr = BlendColorSlots(*this, prevIndex, nextIndex, tt, fader);
     }
 
     void ParticleSystem::SetPsTrailLen(int traillen)
@@ -846,8 +878,8 @@ namespace m3d
 
     void ParticleSystem::InterpolateColors()
     {
-        // Fills every undefined slot by interpolating between its nearest defined
-        // neighbours. Slots are filled in place and in order, so an already-filled
+        // RVA 0x8EAEA0 - fills every undefined slot by blending its nearest defined neighbours (see
+        // ColorSlotBytes for the ends). Slots are filled in place and in order, so an already-filled
         // slot acts as the left neighbour for the next one.
         for (int slot = 0; slot < TIME_DISCRETION; ++slot)
         {
@@ -856,39 +888,12 @@ namespace m3d
                 continue;
             }
 
-            int prevIndex = slot;
-            while (prevIndex >= 0 && static_cast<unsigned int>(m_colors[prevIndex]) == UNDEFINED_COLOR)
-            {
-                --prevIndex;
-            }
+            int prevIndex;
+            int nextIndex;
+            FindColorKeys(*this, slot, prevIndex, nextIndex);
 
-            int nextIndex = slot;
-            while (nextIndex < TIME_DISCRETION && static_cast<unsigned int>(m_colors[nextIndex]) == UNDEFINED_COLOR)
-            {
-                ++nextIndex;
-            }
-
-            // The original reads one slot past either end of the table when no
-            // keyframe bounds the gap; clamp instead so the lookup stays in bounds.
-            prevIndex = std::clamp(prevIndex, 0, TIME_DISCRETION - 1);
-            nextIndex = std::clamp(nextIndex, 0, TIME_DISCRETION - 1);
-
-            double const tt = (nextIndex != prevIndex) ?
-                static_cast<double>(slot - prevIndex) / static_cast<double>(nextIndex - prevIndex) :
-                0.0;
-
-            auto const* prevBytes = reinterpret_cast<unsigned char const*>(&m_colors[prevIndex]);
-            auto const* nextBytes = reinterpret_cast<unsigned char const*>(&m_colors[nextIndex]);
-
-            m3d::rend::Colori clr;
-            for (int i = 0; i < 4; ++i)
-            {
-                clr.clr[i] = static_cast<unsigned char>(
-                    (static_cast<double>(nextBytes[i]) - static_cast<double>(prevBytes[i])) * tt +
-                    static_cast<double>(prevBytes[i]));
-            }
-
-            m_colors[slot] = static_cast<int>(clr.rgba);
+            double const tt = static_cast<double>(slot - prevIndex) / static_cast<double>(nextIndex - prevIndex);
+            m_colors[slot] = static_cast<int>(BlendColorSlots(*this, prevIndex, nextIndex, tt, 1.0));
         }
     }
 
@@ -1181,20 +1186,17 @@ namespace m3d
 
     int ParticleSystem::ReadVolumeParams(ref_ptr<cmn::XmlNode>& force)
     {
-        // "Min"/"Max" bound the initial velocity, "PosMin"/"PosMax" the spawn offset.
-        //
-        // NOTE: the shipped build has a defect here. It assigns m_x0 before parsing
-        // PosMin, and crosses the two Min sources over, so every m_x0 minimum came
-        // from uninitialized stack and every m_pos minimum came from the velocity
-        // "Min" attribute. This reads the attributes the way the XML plainly means
-        // them, which only affects assets loaded per-file rather than from effects.bps.
+        // RVA 0x8EA540 - "Min"/"Max" bound the initial velocity, "PosMin"/"PosMax" the spawn offset.
+        // NOTE: the binary scans PosMin/PosMax over the Min/Max values, so a missing one inherits the
+        // velocity bound. Only assets loaded per-file take this path, not those from effects.bps.
         CVector velMin = ZeroVector;
         CVector velMax = ZeroVector;
-        CVector posMin = ZeroVector;
-        CVector posMax = ZeroVector;
 
         ReadVectorAttrib(velMin, force, "Min");
         ReadVectorAttrib(velMax, force, "Max");
+
+        CVector posMin = velMin;
+        CVector posMax = velMax;
         ReadVectorAttrib(posMin, force, "PosMin");
         ReadVectorAttrib(posMax, force, "PosMax");
 
@@ -2412,10 +2414,31 @@ namespace m3d
             }
         }
 
-        // NOTE: the shipped build interpolates a keyframe colour here from
-        // m_time / m_Emitter.m_resettime, then reuses that stack slot as the
-        // vertex-buffer offset before the colour is ever read. The vertices below
-        // are written with a zero colour either way, so it is left out.
+        // The whole mesh is drawn in one colour: the keyframe at m_time / m_resettime, blended between its
+        // neighbours where undefined.
+        unsigned int color;
+        if (m_Emitter.m_resettime == 0.0f)
+        {
+            // NOTE: with no reset time the slot index overflows in the binary; what comes out is the first
+            // keyframe, or black when that is undefined.
+            color = static_cast<unsigned int>(m_colors[0]) != UNDEFINED_COLOR ? static_cast<unsigned int>(m_colors[0]) : 0u;
+        }
+        else
+        {
+            float const life = parts->m_time / m_Emitter.m_resettime;
+            int const slot = static_cast<int>(life * static_cast<float>(TIME_DISCRETION));
+            color = ColorSlot(*this, slot);
+            if (color == UNDEFINED_COLOR)
+            {
+                int prevIndex;
+                int nextIndex;
+                FindColorKeys(*this, slot, prevIndex, nextIndex);
+                float const prevTime = static_cast<float>(prevIndex) * INV_DISCRETION;
+                float const nextTime = static_cast<float>(nextIndex) * INV_DISCRETION;
+                float const tt = (life - prevTime) / (nextTime - prevTime);
+                color = BlendColorSlots(*this, prevIndex, nextIndex, tt, 1.0);
+            }
+        }
 
         // Re-emit the emitting mesh's own vertices, one draw call per mesh.
         for (int mesh = 0; mesh < parts->m_numMeshes; ++mesh)
@@ -2437,7 +2460,7 @@ namespace m3d
                 dst[0] = src[0];
                 dst[1] = src[1];
                 dst[2] = src[2];
-                dst[3] = 0.0f;
+                memcpy(&dst[3], &color, sizeof(color));
 
                 // The texture coordinates sit at a different offset per source
                 // vertex format; the two-set formats take the second set.
@@ -2473,7 +2496,7 @@ namespace m3d
 
             M3D_RENDERER->UnlockVb(vb);
             M3D_RENDERER->SetHandleToStream0(vb);
-            M3D_RENDERER->SetHandleIndices(parts->m_skinIb[mesh], 0);
+            M3D_RENDERER->SetHandleIndices(parts->m_skinIb[mesh], vbOffset);
 
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
                 rend::M3DPT_TRIANGLELIST, m_shader, 0, numVerts, 0, parts->m_numMeshEmitterInds[mesh]);
@@ -2886,9 +2909,6 @@ namespace m3d
 
             rend::Colorf const partColor(particle->m_curClr);
 
-            // NOTE: the shipped build passes &partColor.b here, so the shader
-            // receives (b, a) followed by two floats of adjacent stack rather than
-            // the particle colour. This passes the colour the call plainly intends.
             nFloat4 const color = {partColor.r, partColor.g, partColor.b, partColor.a};
             shader->SetFloat4(rend::IEffect::User_float4_param, color);
 
