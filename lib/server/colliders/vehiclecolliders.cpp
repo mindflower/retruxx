@@ -148,6 +148,8 @@ namespace ai
             return 1;
         }
 
+        // The closing speed at the contact; it stays 0 when the owner is not a vehicle.
+        float dSpeed = 0.0f;
         if (owner->IsKindOf(&Vehicle::m_classVehicle))
         {
             DamageInfo damageInfo;
@@ -155,7 +157,6 @@ namespace ai
             // A dummy flagged this way damages the vehicle anonymously rather
             // than crediting the dummy as the attacker.
             CVector const partPos = part->GetPosition();
-            float dSpeed = 0.0f;
             if (dummy->GetPrototypeInfo()->m_bIsUpdating)
             {
                 CalcDamageToVehicles(owner, nullptr, contacts, dSpeed, damageInfo, partPos);
@@ -171,26 +172,23 @@ namespace ai
 
         if (owner->CanCreateCollisionEffect())
         {
-            // NOTE: the shipped build compares a literal 0.0 against the two
-            // thresholds here instead of the impact speed, so none of these
-            // branches can ever be taken and a dummy hit never sparks.
             CVector contactPos;
             contactPos.x = contacts->geom.pos[0];
             contactPos.y = contacts->geom.pos[1];
             contactPos.z = contacts->geom.pos[2];
 
-            if (0.0f > SPARKLE_SLOW_SPEED)
+            if (dSpeed > SPARKLE_SLOW_SPEED)
             {
                 owner->SetCollisionEffectCreated();
             }
-            if (0.0f > SPARKLE_SPEED)
+            if (dSpeed > SPARKLE_SPEED)
             {
                 CStr const modelname = (dummy->GetPhysicState() & 1) != 0 ? "ET_PS_VEHICLESPARKLE"
                                                                          : "ET_PS_STATICSSPARKLE";
                 PhysicBody::CreateEffectNode(modelname, contactPos, Quaternion(0.0f, 0.0f, 0.0f, 1.0f), true, 1.0f);
                 return 1;
             }
-            if (0.0f > SPARKLE_SLOW_SPEED)
+            if (dSpeed > SPARKLE_SLOW_SPEED)
             {
                 CStr const modelname = (dummy->GetPhysicState() & 1) != 0 ? "ET_PS_VEHICLESPARKLE_SLOW"
                                                                          : "ET_PS_STATICSSPARKLE_SLOW";
