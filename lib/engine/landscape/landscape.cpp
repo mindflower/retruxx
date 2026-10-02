@@ -793,8 +793,10 @@ namespace m3d
         {
         case LRM_DIRECT:
         {
+            // The transition radius is truncated to whole cells before the ring is offset from it.
             auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
+            int const transitionRadius = static_cast<int>(static_cast<float>(m_drawRadius) * transitionDivider);
+            m_owner->GetGraph().SortedCellsStartFetching(transitionRadius + 1, m_drawRadius + 1);
             m_solidPs->Apply();
             m_solidVs->Apply();
 
@@ -820,9 +822,10 @@ namespace m3d
         }
         case LRM_BIND:
         {
+            // The transition radius is truncated to whole cells; the ring one cell either side of it is blended.
             auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            m_owner->GetGraph().SortedCellsStartFetching(
-                transitionDivider * m_drawRadius - 1, transitionDivider * m_drawRadius + 1);
+            int const transitionRadius = static_cast<int>(static_cast<float>(m_drawRadius) * transitionDivider);
+            m_owner->GetGraph().SortedCellsStartFetching(transitionRadius - 1, transitionRadius + 1);
             m_solidBindPs->Apply();
             m_solidBindVs->Apply();
 
@@ -830,12 +833,13 @@ namespace m3d
             m_solidBindVs->SetMatrix(projMatrixHandle, du);
 
             unsigned viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
-            m_solidBindVs->SetVector3(viewPosHandle, du.getOrgInv());
+            // The camera position comes from the view matrix, not from the combined view-projection.
+            m_solidBindVs->SetVector3(viewPosHandle, M3D_RENDERER->MatGet().getOrgInv());
 
             auto const transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
             auto const viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
             float vsConst =
-                ((this->m_drawRadius * transitionDivider) - (viewDistanceDivider * transitionCFatror)) * 128.0;
+                (static_cast<float>(transitionRadius) - (viewDistanceDivider * transitionCFatror)) * 128.0f;
             M3D_RENDERER->SetVsFloatConst(7u, &vsConst, 1u);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -5705,7 +5709,8 @@ namespace m3d
         m_waterPlane.m_normal.z = 0.0;
         m_waterPlane.m_dist = this->m_owner->m_level->waterlevel;
 
-        m_bindDevider = ((1.1 - M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()) * 0.44999999) + 0.55000001;
+        m_bindDevider =
+            ((1.1f - M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()) * 0.44999999f) + 0.55000001f;
 
         // The draw radius is truncated to a whole number of cells before it is
         // clamped, so the clip distances derived from it below stay on cell

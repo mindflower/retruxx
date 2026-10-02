@@ -1,6 +1,7 @@
 #include "videooptionswnd.h"
 
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 
 #include "ui/comboboxwnd.h"
@@ -793,7 +794,8 @@ void VideoOptionsWnd::UpdateGammaControls()
     if ((m_gameDataFlags & 1) != 0)
     {
         ++m_sliderGammaBlocked;
-        m_sliderGamma->SetNotch(M3D_KERNEL->GetEngineCfg().m_gammaGamma.GetF() * 100.0);
+        // Rounded to nearest (a bare fistp), not truncated.
+        m_sliderGamma->SetNotch(static_cast<int>(lrintf(M3D_KERNEL->GetEngineCfg().m_gammaGamma.GetF() * 100.0f)));
     }
 }
 
@@ -992,8 +994,9 @@ void VideoOptionsWnd::UpdateFarDistanceControls(GraphicQuality graphicQuality)
                                   ? M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()
                                   : GetDefaultFarDistanceForGraphicQuality(graphicQuality);
 
+    // Rounded to nearest (a bare fistp): 0.53 * 100 is 52.999996, which must land on notch 53.
     ++m_sliderFarDistanceBlocked;
-    m_sliderFarDistance->SetNotch(static_cast<int>(farDistance * 100.0f));
+    m_sliderFarDistance->SetNotch(static_cast<int>(lrintf(farDistance * 100.0f)));
 }
 
 void VideoOptionsWnd::InitGraphicQualityControls()
@@ -1308,8 +1311,10 @@ void VideoOptionsWnd::UpdateControls()
     UpdateGraphicQualityControls();
     if ((m_gameDataFlags & 1) != 0)
     {
+        // Rounded to nearest (a bare fistp), not truncated.
         ++m_sliderFarDistanceBlocked;
-        m_sliderFarDistance->SetNotch(M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 100.0);
+        m_sliderFarDistance->SetNotch(
+            static_cast<int>(lrintf(M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 100.0f)));
     }
     UpdateGrassControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
     UpdateShadowsControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
