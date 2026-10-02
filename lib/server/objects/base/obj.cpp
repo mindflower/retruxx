@@ -591,7 +591,8 @@ namespace ai
         {
             if (CanChildBeAdded(pObj->GetClass()))
             {
-                m_allChildren[pObj->GetId()] = pObj;
+                // RVA 0x68DB70 - an id already present keeps its object.
+                m_allChildren.insert({pObj->GetId(), pObj});
             }
         }
         else

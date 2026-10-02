@@ -1249,8 +1249,8 @@ namespace m3d
                 // Set up projection matrix
                 CMatrix proj;
                 memset(&proj, 0, sizeof(proj));
-                proj.m[2][2] = 1.0f;
-                proj.m[3][2] = 1.0002f;
+                proj._33 = 1.0002f;
+                proj._34 = 1.0f;
                 proj._43 = -1.0002f;
 
                 float fov = sqrt(mz * mz + mx * mx) / sy * 0.19634955f;
@@ -2185,10 +2185,12 @@ namespace m3d
 
         CMatrix m;
         memset(&m, 0, sizeof(CMatrix));
-        auto v7 = *(float*)&offY * 0.017453292;
+        // RVA 0x8F5580 - one 51x51 view of the model turned by rotY degrees.
+        auto v7 = rotY * 0.017453292;
         auto v19 = v7;
         auto v8 = sin(v7);
         auto v9 = 0;
+        m._44 = 1.0;
         m._22 = 1.0;
         m._33 = cos(v19);
         m._11 = m._33;

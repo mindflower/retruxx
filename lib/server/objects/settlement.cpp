@@ -448,7 +448,7 @@ namespace ai
 
     Vehicle* Settlement::_SpawnVehicle()
     {
-        // RVA 0x839A10 - a vehicle of the settlement's side on free ground near the deploy point, not yet registered.
+        // RVA 0x839A10 - a vehicle of the settlement's side on free ground near the deploy point.
         int const vehiclesPrototypeId = GetPrototypeInfo()->m_vehiclesPrototypeId;
         if (vehiclesPrototypeId == -1)
         {
@@ -464,7 +464,8 @@ namespace ai
             return nullptr;
         }
         pos.y = M3D_ENGINE_CFG.GetHeight(pos.x, pos.z) + 2.0f;
-        Obj* const vehicle = vehicleInfo->CreateTargetObject();
+        // A registered vehicle with random parts and skin, already post-loaded (ComplexPhysicObjPrototypeInfo).
+        Obj* const vehicle = vehicleInfo->CreateRandomTargetObject();
         vehicle->SetBelong(GetBelong());
         static_cast<PhysicObj*>(vehicle)->SetPosition(pos);
         return static_cast<Vehicle*>(vehicle);

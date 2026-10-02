@@ -1620,6 +1620,8 @@ namespace m3d
 
     void SceneGraph::UpdateVis(bool newFrame, CClipper const& frusta, bool primary)
     {
+        // RVA 0x63A5B0 - only the fetched cells that EnableVisibleCells marked in the current vis space are flagged
+        // visible and rendered; InfectionZone relies on the flags to drop its teams out of the player's sight.
         if (newFrame)
         {
             SortedCellsPrepare();
@@ -1633,23 +1635,27 @@ namespace m3d
             transparentRadius = m_transparencyTest->getTransparentRadius();
 
             auto const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
-            float lsViewDistanceDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            lsViewDistanceDivider = ((lsViewDistanceDivider * 8.0) + 4.0);
-            if (lsViewDistanceDivider >= 4)
+            int endRadius = static_cast<int>(M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF() * 8.0f + 4.0f);
+            if (endRadius >= 4)
             {
-                if (lsViewDistanceDivider > 12)
-                    lsViewDistanceDivider = 12;
+                if (endRadius > 12)
+                    endRadius = 12;
             }
             else
             {
-                lsViewDistanceDivider = 4;
+                endRadius = 4;
             }
 
-            SortedCellsStartFetching(0, lsViewDistanceDivider);
+            SortedCellsStartFetching(0, endRadius);
 
             int x, y, vis, radius;
             while (SortedCellsFetch(x, y, vis, radius))
             {
+                if (!vis)
+                {
+                    continue;
+                }
+
                 inTransparencyRadius = false;
                 if (primary)
                 {
