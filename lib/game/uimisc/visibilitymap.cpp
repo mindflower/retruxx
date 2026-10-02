@@ -612,7 +612,7 @@ int VisibilityMap::CreateCircle()
     m_circleBits = new unsigned char[numPixels];
     auto* data = new unsigned[numPixels];
     int res = 0;
-    if (M3D_APP->m_renderer->DownloadTexImageRgba8888(data, &m_circlePatternTex, m_circleSize.x, m_circleSize.y))
+    if (M3D_APP->m_renderer->DownloadSizedTexImageRgba8888(data, &m_circlePatternTex, m_circleSize.x, m_circleSize.y))
     {
         for (int i = 0; i < numPixels; ++i)
         {

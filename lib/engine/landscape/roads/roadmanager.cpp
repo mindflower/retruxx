@@ -306,8 +306,8 @@ namespace m3d
                 for (unsigned meshIdx = 0; meshIdx < model->GetNumMeshes(); ++meshIdx)
                 {
                     auto& mesh = model->GetMesh(meshIdx);
-                    M3D_RENDERER->SetIndices(roadNode->m_IbPoolField, roadNode->m_VbPoolField.RealOffset);
-                    M3D_RENDERER->SetToStream0(roadNode->m_VbPoolField);
+                    M3D_RENDERER->SetPoolIndices(roadNode->m_IbPoolField, roadNode->m_VbPoolField.RealOffset);
+                    M3D_RENDERER->SetPoolToStream0(roadNode->m_VbPoolField);
 
                     rend::IEffect* effect = nullptr;
                     switch (rrt)

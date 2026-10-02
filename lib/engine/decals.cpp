@@ -557,8 +557,8 @@ namespace m3d
             m_decalsVs->GetParamHandleByName("matrices"), matrices, m_transforms.size());
 
         M3D_RENDERER->SetTexture(0, tex, -1.0);
-        M3D_RENDERER->SetToStream0(m_VbPoolField);
-        M3D_RENDERER->SetIndices(m_IbPoolField, m_VbPoolField.RealOffset);
+        M3D_RENDERER->SetPoolToStream0(m_VbPoolField);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, m_VbPoolField.RealOffset);
 
         // The shipped code has these four pushes and their matching pops
         // inlined; they are exactly overlayStart / overlayStop.

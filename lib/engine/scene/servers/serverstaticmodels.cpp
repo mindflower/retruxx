@@ -198,8 +198,8 @@ namespace m3d
             this->m_curvbBank = 0;
             this->m_curibBank = 0;
 
-            M3D_RENDERER->SetToStream0(this->m_vbArrayForAllModels[0]);
-            M3D_RENDERER->SetIndices(this->m_ibArrayForAllModels[this->m_curibBank], 0);
+            M3D_RENDERER->SetHandleToStream0(this->m_vbArrayForAllModels[0]);
+            M3D_RENDERER->SetHandleIndices(this->m_ibArrayForAllModels[this->m_curibBank], 0);
 
             // Set some render state (gap80 suggests a specific function offset)
             M3D_RENDERER->PushFog(false);
@@ -264,14 +264,14 @@ namespace m3d
             // Set vertex buffer if changed
             if (this->m_curvbBank != model->m_numvbbank)
             {
-                M3D_RENDERER->SetToStream0(this->m_vbArrayForAllModels[model->m_numvbbank]);
+                M3D_RENDERER->SetHandleToStream0(this->m_vbArrayForAllModels[model->m_numvbbank]);
                 this->m_curvbBank = model->m_numvbbank;
             }
 
             // Set index buffer if changed
             if (this->m_curibBank != model->m_numibbank)
             {
-                M3D_RENDERER->SetIndices(this->m_ibArrayForAllModels[model->m_numibbank], 0);
+                M3D_RENDERER->SetHandleIndices(this->m_ibArrayForAllModels[model->m_numibbank], 0);
                 this->m_curibBank = model->m_numibbank;
             }
 

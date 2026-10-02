@@ -2321,7 +2321,7 @@ namespace m3d
         M3D_RENDERER->PushFog(false);
         M3D_RENDERER->PushLighting(true);
         LightSwitchOffAllLights();
-        M3D_RENDERER->PushAmbient();
+        M3D_RENDERER->DuplicateAmbient();
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
         M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
@@ -2448,7 +2448,7 @@ namespace m3d
             m_blurShadowShader->SetTexture(rend::IEffect::DiffMap0, &m_texBlurShadow);
             m_blurShadowShader->SetFloat(
                 rend::IEffect::User_float_param, cfg.m_g_shadowBlurCoeff.GetF() * 0.000099999997f);
-            M3D_RENDERER->DrawFullScreenQuad(m_blurShadowShader);
+            M3D_RENDERER->DrawFullScreenQuadEffect(m_blurShadowShader);
             M3D_RENDERER->PopBlend();
             M3D_RENDERER->PopFog();
             M3D_RENDERER->PopCull();
@@ -2564,7 +2564,7 @@ namespace m3d
         M3D_RENDERER->PushFog(false);
         M3D_RENDERER->PushLighting(true);
         LightSwitchOffAllLights();
-        M3D_RENDERER->PushAmbient();
+        M3D_RENDERER->DuplicateAmbient();
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
         M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);

@@ -548,7 +548,7 @@ int SavesManager::SaveInfos(CStr const& folderName, CStr const& saveName)
 
 int SavesManager::MakeCurGameScreenshot()
 {
-    return M3D_RENDERER->AddTextureFromBackBuffer(m_curGameScreenshot);
+    return M3D_RENDERER->AddTextureFromBackBufferHandle(m_curGameScreenshot);
 }
 
 int SavesManager::LastLoad()

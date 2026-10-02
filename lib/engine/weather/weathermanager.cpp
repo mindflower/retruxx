@@ -387,7 +387,7 @@ namespace m3d
             return 0;
         }
 
-        M3D_RENDERER->SetToStream0(this->m_vbSky);
+        M3D_RENDERER->SetHandleToStream0(this->m_vbSky);
         M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
         M3D_RENDERER->PushLighting(0);
         M3D_RENDERER->PushBlend(rend::BM_ALPHA);
@@ -453,7 +453,7 @@ namespace m3d
         rot = vv;
 
         M3D_RENDERER->MatSetWorld(rot);
-        M3D_RENDERER->SetIndices(this->m_ibSky, 0);
+        M3D_RENDERER->SetHandleIndices(this->m_ibSky, 0);
         M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
         M3D_RENDERER->SetStageState(0,
                                     rend::BM_COLOR,

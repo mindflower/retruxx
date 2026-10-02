@@ -1626,7 +1626,7 @@ namespace m3d
         // RVA 0x67B830 - an untextured fill: a white texture modulated by the colour, with the
         // depth buffer off so it always lands on top.
         auto* renderer = M3D_RENDERER;
-        renderer->PushBlend();
+        renderer->DuplicateBlend();
         renderer->PushZbState(rend::ZB_DISABLE);
         renderer->SetWhiteTexture(0);
         renderer->DisableTextureStages(1);

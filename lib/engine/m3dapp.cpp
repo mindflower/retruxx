@@ -569,7 +569,7 @@ namespace m3d
                             g_pApp->m_renderer->SetAlphaTest(0);
                             g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
                             g_pApp->m_renderer->DisableTextureStages(1);
-                            g_pApp->m_renderer->SetToStream0(m_graphsVB);
+                            g_pApp->m_renderer->SetHandleToStream0(m_graphsVB);
                             g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINESTRIP, 0, 2u);
                             g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINELIST, 3u, 9u);
                             for (int g = 0; g < stage; ++g)
@@ -1809,7 +1809,7 @@ namespace m3d
         v3[2].tu = 1.0;
         v3[2].tv = 1.0;
         m3d::Application::g_pApp->m_renderer->UnlockVb(vb);
-        m3d::Application::g_pApp->m_renderer->SetToStream0(vb);
+        m3d::Application::g_pApp->m_renderer->SetHandleToStream0(vb);
         m3d::Application::g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 1u);
     }
 
@@ -2023,7 +2023,7 @@ namespace m3d
         v[5].tu = 1.0f;
         v[5].tv = 1.0f;
         g_pApp->m_renderer->UnlockVb(vb);
-        g_pApp->m_renderer->SetToStream0(vb);
+        g_pApp->m_renderer->SetHandleToStream0(vb);
         g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 2u);
     }
 
@@ -2290,7 +2290,7 @@ namespace m3d
         set(v[6], from.x, to.y, 0.0f);
         set(v[7], from.x, from.y, 1.0f);
         g_pApp->m_renderer->UnlockVb(vb);
-        g_pApp->m_renderer->SetToStream0(vb);
+        g_pApp->m_renderer->SetHandleToStream0(vb);
         g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINELIST, vofs, 4u);
     }
 
@@ -3844,7 +3844,7 @@ namespace m3d
             return 0;
         }
 
-        g_pApp->m_renderer->SetToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1));
+        g_pApp->m_renderer->SetHandleToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1));
         enterFontRender();
         auto const* text = reinterpret_cast<unsigned char const*>(str.c_str());
         int ntris = 0;
@@ -4383,7 +4383,7 @@ namespace m3d
         vertex[3].tv = tv4;
 
         M3D_RENDERER->UnlockVb(handle);
-        M3D_RENDERER->SetToStream0(handle);
+        M3D_RENDERER->SetHandleToStream0(handle);
         M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2u);
     }
 
@@ -4465,7 +4465,7 @@ namespace m3d
 
         auto const* text = reinterpret_cast<unsigned char const*>(str.c_str());
         enterFontRender();
-        g_pApp->m_renderer->SetToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
+        g_pApp->m_renderer->SetHandleToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
 
         float const startX = sx;
         for (; *text; ++text)
@@ -4636,7 +4636,7 @@ namespace m3d
         v[1].tu = 1.0f;
         v[1].tv = 1.0f;
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
+        M3D_RENDERER->SetHandleToStream0(vb);
         M3D_RENDERER->DrawPrimitive(rend::M3DPT_LINELIST, vofs, 1u);
     }
 
@@ -4657,7 +4657,7 @@ namespace m3d
         stream[1].c = color;
 
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
+        M3D_RENDERER->SetHandleToStream0(vb);
         M3D_RENDERER->DrawPrimitive(rend::M3DPT_LINELIST, vofs, 1u);
     }
 
@@ -5108,10 +5108,10 @@ namespace m3d
     {
         // RVA 0x8BCBD0
         auto* const r = g_pApp->m_renderer;
-        r->MatPush();
+        r->MatDuplicate();
         r->MatPushProj();
-        r->PushBlend();
-        r->PushZbState();
+        r->DuplicateBlend();
+        r->DuplicateZbState();
         int const wasInScene = r->InScene();
         if (wasInScene)
         {
@@ -5169,7 +5169,7 @@ namespace m3d
         r->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
         r->SetBlend(rend::BM_NONE, false);
         r->SetZbState(rend::ZB_DISABLE, false);
-        r->SetToStream0(quadVb);
+        r->SetHandleToStream0(quadVb);
 
         auto const logFill = [&](char const* what)
         {
@@ -5338,8 +5338,8 @@ namespace m3d
         r->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
         r->SetBlend(rend::BM_NONE, false);
         r->SetZbState(rend::ZB_ENABLE, false);
-        r->SetToStream0(vb);
-        r->SetIndices(ib, 0);
+        r->SetHandleToStream0(vb);
+        r->SetHandleIndices(ib, 0);
         setMaterial();
         r->SetLighting(true, false);
         logGeom("Non optimized vb (managed), lighting on, no tex ");
@@ -5447,8 +5447,8 @@ namespace m3d
 
             M3D_RENDERER->UnlockVb(this->m_pointsVertsVb);
             // The shared quad index buffer is based at the vertex offset the streaming lock returned.
-            M3D_RENDERER->SetIndices(this->m_pointsVertsIb, vOfs);
-            M3D_RENDERER->SetToStream0(this->m_pointsVertsVb);
+            M3D_RENDERER->SetHandleIndices(this->m_pointsVertsIb, vOfs);
+            M3D_RENDERER->SetHandleToStream0(this->m_pointsVertsVb);
             if (m_flushQuadsShader)
             {
                 M3D_RENDERER->DrawIndexedPrimitiveEffect(

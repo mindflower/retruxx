@@ -2317,8 +2317,8 @@ namespace m3d
         }
 
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
-        M3D_RENDERER->SetIndices(m_IbPoolField, vbOffset);
+        M3D_RENDERER->SetHandleToStream0(vb);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, vbOffset);
 
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
             rend::M3DPT_TRIANGLESTRIP,
@@ -2472,8 +2472,8 @@ namespace m3d
             }
 
             M3D_RENDERER->UnlockVb(vb);
-            M3D_RENDERER->SetToStream0(vb);
-            M3D_RENDERER->SetIndices(parts->m_skinIb[mesh], 0);
+            M3D_RENDERER->SetHandleToStream0(vb);
+            M3D_RENDERER->SetHandleIndices(parts->m_skinIb[mesh], 0);
 
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
                 rend::M3DPT_TRIANGLELIST, m_shader, 0, numVerts, 0, parts->m_numMeshEmitterInds[mesh]);
@@ -2611,8 +2611,8 @@ namespace m3d
         }
 
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
-        M3D_RENDERER->SetIndices(m_IbPoolField, vbOffset);
+        M3D_RENDERER->SetHandleToStream0(vb);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, vbOffset);
 
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
             rend::M3DPT_TRIANGLESTRIP,
@@ -3005,8 +3005,8 @@ namespace m3d
         }
 
         M3D_RENDERER->UnlockVb(partsVb);
-        M3D_RENDERER->SetToStream0(partsVb);
-        M3D_RENDERER->SetIndices(m_IbPoolField, vofs);
+        M3D_RENDERER->SetHandleToStream0(partsVb);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, vofs);
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
             rend::M3DPT_TRIANGLELIST,
             m_shader,
@@ -3293,8 +3293,8 @@ namespace m3d
         }
 
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
-        M3D_RENDERER->SetIndices(m_IbPoolField, vofs);
+        M3D_RENDERER->SetHandleToStream0(vb);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, vofs);
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
             rend::M3DPT_TRIANGLELIST, m_shader, 0, vertexCount, m_IbPoolField.RealOffset, 2 * parts->m_numParticles);
         M3D_RENDERER->PopZbState();
@@ -3400,8 +3400,8 @@ namespace m3d
         }
 
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
-        M3D_RENDERER->SetIndices(m_IbPoolField, vbOffset);
+        M3D_RENDERER->SetHandleToStream0(vb);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, vbOffset);
 
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
             rend::M3DPT_LINELIST,
@@ -3515,8 +3515,8 @@ namespace m3d
         }
 
         M3D_RENDERER->UnlockVb(vb);
-        M3D_RENDERER->SetToStream0(vb);
-        M3D_RENDERER->SetIndices(m_IbPoolField, vofs);
+        M3D_RENDERER->SetHandleToStream0(vb);
+        M3D_RENDERER->SetPoolIndices(m_IbPoolField, vofs);
         M3D_RENDERER->DrawIndexedPrimitiveEffect(
             rend::M3DPT_TRIANGLELIST, m_shader, 0, vertexCount, m_IbPoolField.RealOffset, 2 * parts->m_numParticles);
 
