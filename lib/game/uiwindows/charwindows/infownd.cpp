@@ -534,7 +534,8 @@ void InfoWnd::RecalcLayot(
     float const cursorH = GetStation()->GetCurrentCursor().m_sz.y;
 
     float const x0 = (x + b.width >= DESIGN_W) ? DESIGN_W - b.width : x;
-    float const y0 = (y + cursorH + b.height >= DESIGN_H) ? y : y + cursorH;
+    // Below the cursor, or above it when that would run off the bottom of the screen.
+    float const y0 = (y + cursorH + b.height >= DESIGN_H) ? y - b.height : y + cursorH;
 
     m_bounds.x0 = x0;
     m_bounds.y0 = y0;
