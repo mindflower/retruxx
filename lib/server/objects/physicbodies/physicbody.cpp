@@ -958,26 +958,26 @@ namespace ai
 
     void PhysicBody::SetOwnerBodyToGeoms()
     {
-        m_ownerPhysicObj = this->m_ownerPhysicObj;
-
-        dBodyID id = 0;
-        if (m_ownerPhysicObj)
-            id = m_ownerPhysicObj->GetBody()->id();
-
-        auto v4 = 0;
+        // RVA 0x6194C0 - the geoms go on the owner's body; they are left unlinked from it (so contacts ignore the
+        // body) only while the owner's physics is off with no auto-disabling to wake it.
+        dBodyID id = nullptr;
         if (m_ownerPhysicObj)
         {
-            v4 = 1;
-            if ((m_ownerPhysicObj->GetPhysicState() & 1) != 0 || dBodyGetAutoDisableFlag(id))
-                v4 = 0;
+            id = m_ownerPhysicObj->GetBody()->id();
+        }
+        bool unlink = false;
+        if (m_ownerPhysicObj)
+        {
+            unlink = (m_ownerPhysicObj->GetPhysicState() & 1) == 0 && !dBodyGetAutoDisableFlag(id);
         }
         for (auto& geom : m_pGeoms)
         {
             dGeomSetData(geom->GetGeomId(), this);
             dGeomSetBody(geom->GetGeomId(), id);
-            if (v4)
-                dGeomSetBody(geom->GetGeomId(), id);
-            geom->UnlinkFromBody();
+            if (unlink)
+            {
+                geom->UnlinkFromBody();
+            }
         }
     }
 

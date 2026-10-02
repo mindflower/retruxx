@@ -844,7 +844,8 @@ namespace ai
         // Each soil's splash type is the index of its splash type name among the sorted unique names.
         for (auto& props : m_soilProps)
         {
-            auto const it = std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), props.m_splashTypeName);
+            auto const it =
+                std::find(m_soilSplashTypeNames.begin(), m_soilSplashTypeNames.end(), props.m_splashTypeName);
             props.m_splashType = static_cast<short>(std::distance(m_soilSplashTypeNames.begin(), it));
         }
 
@@ -1526,8 +1527,12 @@ namespace ai
             }
         }
 
+        // RVA 0x606880 - an object keeps its saved id only when a whole game is being loaded.
         int objId = -1;
-        m3d::SafeIntAttrib(objId, xmlNode, "ObjectId");
+        if (theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+        {
+            m3d::SafeIntAttrib(objId, xmlNode, "ObjectId");
+        }
 
         if (theObjects->GetObjIdByObjName(name) != -1)
         {

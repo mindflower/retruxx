@@ -190,12 +190,12 @@ namespace ai
         for (unsigned i = 0; i < m_Members.size(); ++i)
         {
             GeomObj const* const member = m_Members[i];
-            xmlNode->SetAttribute((CStr(i) + CStr("_Pos")).c_str(), CStr(member->GetPosition()).c_str());
-            xmlNode->SetAttribute((CStr(i) + CStr("_Rot")).c_str(), CStr(member->GetRotation()).c_str());
-            xmlNode->SetAttribute(
-                (CStr(i) + CStr("_LinVel")).c_str(), CStr(member->GetLinearVelocity()).c_str());
-            xmlNode->SetAttribute(
-                (CStr(i) + CStr("_AngVel")).c_str(), CStr(member->GetAngularVelocity()).c_str());
+            // NOTE: "_Ang_vel", not "_AngVel", as shipped; LoadRuntimeValues reads the same names.
+            CStr const prefix = CStr("Member_") + CStr(i);
+            xmlNode->SetAttribute((prefix + CStr("_Pos")).c_str(), CStr(member->GetPosition()).c_str());
+            xmlNode->SetAttribute((prefix + CStr("_Rot")).c_str(), CStr(member->GetRotation()).c_str());
+            xmlNode->SetAttribute((prefix + CStr("_LinVel")).c_str(), CStr(member->GetLinearVelocity()).c_str());
+            xmlNode->SetAttribute((prefix + CStr("_Ang_vel")).c_str(), CStr(member->GetAngularVelocity()).c_str());
         }
     }
 
@@ -448,10 +448,11 @@ namespace ai
         for (unsigned i = 0; i < size; ++i)
         {
             GoDataForLoad& data = m_dataForLoad[i];
-            m3d::SafeVectorAttrib(data.pos, xmlNode, (CStr(i) + CStr("_Pos")).c_str());
-            m3d::SafeQuaternionAttrib(data.rot, xmlNode, (CStr(i) + CStr("_Rot")).c_str());
-            m3d::SafeVectorAttrib(data.linVel, xmlNode, (CStr(i) + CStr("_LinVel")).c_str());
-            m3d::SafeVectorAttrib(data.angVel, xmlNode, (CStr(i) + CStr("_AngVel")).c_str());
+            CStr const prefix = CStr("Member_") + CStr(i);
+            m3d::SafeVectorAttrib(data.pos, xmlNode, (prefix + CStr("_Pos")).c_str());
+            m3d::SafeQuaternionAttrib(data.rot, xmlNode, (prefix + CStr("_Rot")).c_str());
+            m3d::SafeVectorAttrib(data.linVel, xmlNode, (prefix + CStr("_LinVel")).c_str());
+            m3d::SafeVectorAttrib(data.angVel, xmlNode, (prefix + CStr("_Ang_vel")).c_str());
         }
     }
 
