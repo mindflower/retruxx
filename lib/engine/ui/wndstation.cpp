@@ -478,7 +478,7 @@ namespace m3d
         {
             if (!m_strings.get(id, dest))
             {
-                dest = "MISSING!";
+                dest = id + "MISSING!";
                 return 0;
             }
             return 1;

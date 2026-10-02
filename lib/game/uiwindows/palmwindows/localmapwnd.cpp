@@ -776,8 +776,9 @@ int LocalMapWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned messa
                 CVector2 const range = data.GetAsRange();
                 PointBase<float> const wndPt{range.x, range.y};
                 CVector const worldPos = m_wndChart->WndPtToWorldPos(wndPt, GetCurrentLevelName());
-                // NOTE: the shipped build passes an uninitialised bWithUserWarning here.
-                AddNavPoint(worldPos, true);
+                // No confirmation: the shipped build adds the point straight away (its dialog text,
+                // AddNavPointMsg, has no entry in the string table anyway).
+                AddNavPoint(worldPos, false);
             }
             return 1;
 
