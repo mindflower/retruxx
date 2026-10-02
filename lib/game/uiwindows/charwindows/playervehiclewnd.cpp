@@ -425,7 +425,7 @@ int PlayerVehicleWnd::SetupForHackedVehiclePart(int vpId)
 int PlayerVehicleWnd::PrepareHackedVehicleForVehiclePart(int hackedVpId)
 {
     // RVA 0x66710 - clones the player's vehicle, strips its gadgets, repository
-    // and guns, then swaps in a clone of the hovered vehicle part so the
+    // and guns, then swaps in a clone of the hovered cabin or basket so the
     // characteristics tab can preview it.
     if (hackedVpId < 0)
     {
@@ -444,11 +444,11 @@ int PlayerVehicleWnd::PrepareHackedVehicleForVehiclePart(int hackedVpId)
         return 0;
     }
 
-    // Cabin and basket parts are previewed by their own dedicated windows.
+    // Only cabins and baskets are previewed this way.
     int const cabinResId = ai::theResourceManager->GetResourceId("CABIN");
     int const basketResId = ai::theResourceManager->GetResourceId("BASKET");
-    if (ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, cabinResId)
-        || ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, basketResId))
+    if (!ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, cabinResId)
+        && !ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, basketResId))
     {
         return 0;
     }
