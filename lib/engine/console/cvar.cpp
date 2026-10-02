@@ -233,7 +233,8 @@ namespace m3d
 
     float CVar::GetF() const
     {
-        return m_f;
+        // RVA 0x406DC0 - a cvar of any other type is read as an integer.
+        return m_type == CVAR_FLOAT ? m_f : static_cast<float>(m_i);
     }
 
     int CVar::GetI() const
