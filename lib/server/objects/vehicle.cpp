@@ -2071,6 +2071,7 @@ namespace ai
 
     void Vehicle::SetUpdatingByODE(bool byODE)
     {
+        // RVA 0x5E3B80
         if (byODE && !bIsUpdatingByODE())
         {
             auto pos = GetPosition();
@@ -2085,12 +2086,28 @@ namespace ai
             if (validPosition)
             {
                 SetGamePositionOnGround(newPos, true, false);
-                _EnableIntersections(true);
             }
             else
             {
                 M3D_LOG_ERR(
                     "Error: couldn't find valid position for " + GetDebugDescription() + " when enabling physics");
+            }
+            _EnableIntersections(true);
+        }
+
+        // The wheels go in and out of the simulation with the vehicle; when its state changes they are put
+        // back on their mount points.
+        for (auto& wheelInfo : m_wheels)
+        {
+            Wheel* wheel = wheelInfo.GetWheel();
+            if (!wheel)
+            {
+                continue;
+            }
+            wheel->SetUpdatingByODE(byODE);
+            if (bIsUpdatingByODE() != byODE)
+            {
+                wheel->SetPosition(GetPositionAtRelPoint(wheelInfo.m_initialPos));
             }
         }
 
