@@ -567,7 +567,7 @@ int ConversationWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 ConversationWnd::PlayerReplyButton::AuxInfo::AuxInfo()
 {
     // RVA 0x97860
-    m_selectColor = 0xFF241D1Bu;  // -14452709
+    m_selectColor = 0xFF23781Bu;
     m_unselectColor = 0;
 }
 
