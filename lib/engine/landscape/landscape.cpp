@@ -5858,7 +5858,7 @@ namespace m3d
                     // Render terrain to reflection
                     if (drawReflectedTerrain)
                     {
-                        DrawSolidLandscape(LRM_REFLECTION, true);
+                        DrawSolidLandscape(LRM_REFLECTION, 1);
                     }
 
                     // Update clipping plane for models
