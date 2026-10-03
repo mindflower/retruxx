@@ -81,7 +81,7 @@ void SoundOptionsWnd::ApplyEffectsVolume()
     {
         auto const volume = m_sliderEffectsVolume->GetNotch();
         M3D_KERNEL->GetEngineCfg().m_snd_3dVolume .SetI(volume);
-        if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
         {
             M3D_APP->m_sound->SetGroupVolume(2, volume);
         }
@@ -210,7 +210,7 @@ void SoundOptionsWnd::ApplySpeakVolume()
     {
         auto const volume = m_sliderSpeakVolume->GetNotch();
         M3D_KERNEL->GetEngineCfg().m_snd_2dVolume.SetI(volume);
-        if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
         {
             M3D_APP->m_sound->SetGroupVolume(1, volume);
         }

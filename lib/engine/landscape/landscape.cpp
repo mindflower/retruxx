@@ -793,8 +793,10 @@ namespace m3d
         {
         case LRM_DIRECT:
         {
+            // The transition radius is truncated to whole cells before the ring is offset from it.
             auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            m_owner->GetGraph().SortedCellsStartFetching(m_drawRadius * transitionDivider + 1, m_drawRadius + 1);
+            int const transitionRadius = static_cast<int>(static_cast<float>(m_drawRadius) * transitionDivider);
+            m_owner->GetGraph().SortedCellsStartFetching(transitionRadius + 1, m_drawRadius + 1);
             m_solidPs->Apply();
             m_solidVs->Apply();
 
@@ -820,9 +822,10 @@ namespace m3d
         }
         case LRM_BIND:
         {
+            // The transition radius is truncated to whole cells; the ring one cell either side of it is blended.
             auto const transitionDivider = M3D_ENGINE_CFG.m_lsTransitionDevider.GetF();
-            m_owner->GetGraph().SortedCellsStartFetching(
-                transitionDivider * m_drawRadius - 1, transitionDivider * m_drawRadius + 1);
+            int const transitionRadius = static_cast<int>(static_cast<float>(m_drawRadius) * transitionDivider);
+            m_owner->GetGraph().SortedCellsStartFetching(transitionRadius - 1, transitionRadius + 1);
             m_solidBindPs->Apply();
             m_solidBindVs->Apply();
 
@@ -830,12 +833,13 @@ namespace m3d
             m_solidBindVs->SetMatrix(projMatrixHandle, du);
 
             unsigned viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
-            m_solidBindVs->SetVector3(viewPosHandle, du.getOrgInv());
+            // The camera position comes from the view matrix, not from the combined view-projection.
+            m_solidBindVs->SetVector3(viewPosHandle, M3D_RENDERER->MatGet().getOrgInv());
 
             auto const transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
             auto const viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
             float vsConst =
-                ((this->m_drawRadius * transitionDivider) - (viewDistanceDivider * transitionCFatror)) * 128.0;
+                (static_cast<float>(transitionRadius) - (viewDistanceDivider * transitionCFatror)) * 128.0f;
             M3D_RENDERER->SetVsFloatConst(7u, &vsConst, 1u);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -5706,7 +5710,8 @@ namespace m3d
         m_waterPlane.m_normal.z = 0.0;
         m_waterPlane.m_dist = this->m_owner->m_level->waterlevel;
 
-        m_bindDevider = ((1.1 - M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()) * 0.44999999) + 0.55000001;
+        m_bindDevider =
+            ((1.1f - M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()) * 0.44999999f) + 0.55000001f;
 
         // The draw radius is truncated to a whole number of cells before it is
         // clamped, so the clip distances derived from it below stay on cell
@@ -5853,7 +5858,7 @@ namespace m3d
                     // Render terrain to reflection
                     if (drawReflectedTerrain)
                     {
-                        DrawSolidLandscape(LRM_REFLECTION, true);
+                        DrawSolidLandscape(LRM_REFLECTION, 1);
                     }
 
                     // Update clipping plane for models
@@ -8296,10 +8301,6 @@ namespace m3d
         unsigned const* curCell = cellsPerTex.m_data;
         int numCells = cellsPerTex.m_numItems;
         int const ls = 4 * m_owner->m_level->land_size;
-        // NOTE: the UV tables are read as [angle][25][2] (200 bytes an angle), not as the
-        // [2][25][4] the header declares.
-        float const* const uvBase = &m_uvForAngles[0][0][0];
-        float const* const alphaUvBase = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][0];
         // NOTE: a m_clampCells of 0 or less never finishes.
         while (numCells)
         {
@@ -8352,12 +8353,12 @@ namespace m3d
                     }
                 }
 
-                float const* srcUv = uvBase;
+                float const* srcUv = m_uvForAngles[0][0];
                 float const* srcUv2 = nullptr;
                 if (RenderType == RT_OTHERPASSES)
                 {
-                    srcUv2 = alphaUvBase + 200 * (m_CurAlphaSet * 5 + specialMapper[corner].m_maskindex) +
-                        50 * specialMapper[corner].m_rotate;
+                    srcUv2 = m_setAndUVs.m_sets[m_CurAlphaSet][specialMapper[corner].m_maskindex]
+                                 .m_uvForAngles[specialMapper[corner].m_rotate][0];
                 }
 
                 int const idx0 = 4 * tx + 4 * tz * (m_mapSize + 1);

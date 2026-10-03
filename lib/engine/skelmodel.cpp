@@ -3452,6 +3452,7 @@ namespace m3d
             M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_S, 1);
             M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_T, 1);
             M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_TEX_FILTER, 5);
+            break;
         }
         case CUBEMAP:
         {
@@ -3460,6 +3461,7 @@ namespace m3d
             M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_T, 3);
             M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_WRAP_R, 3);
             M3D_RENDERER->SetTextureParameter(texHandle, rend::TM_TEX_FILTER, 4);
+            break;
         }
         }
         if (!texHandle.IsValid())

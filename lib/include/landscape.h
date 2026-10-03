@@ -526,16 +526,16 @@ namespace m3d
         /* 0x0d04 */ retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*> > m_tilesTextures;
         /* 0x0d14 */ m3d::Landscape::TileInfo* m_tiles;
         /* 0x0d18 */ unsigned int* m_colormap;
-        /* 0x0d1c */ float m_uvForAngles[2][25][4];
+        /* 0x0d1c */ float m_uvForAngles[4][25][2];
 
         struct AlphaSetUnit
         {
-            /* 0x0000 */ float m_uvForAngles[2][25][4];
+            /* 0x0000 */ float m_uvForAngles[4][25][2];
         }; /* size: 0x0320 */
 
         struct TextureAlphaSet
         {
-            /* 0x0000 */ m3d::Landscape::AlphaSetUnit m_sets[5][8];
+            /* 0x0000 */ m3d::Landscape::AlphaSetUnit m_sets[8][5];
         }; /* size: 0x7d00 */
 
     private:

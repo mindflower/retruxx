@@ -594,7 +594,8 @@ namespace m3d
             {
                 auto prevThinkTime = think->m_prevThinkTime;
                 auto delta = curTime - prevThinkTime;
-                if (delta == 1)
+                // A node that has never thought (its previous think time is still the initial 1) gets 100 ms.
+                if (prevThinkTime == 1)
                 {
                     delta = 100;
                 }

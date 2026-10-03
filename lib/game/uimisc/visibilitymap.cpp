@@ -556,9 +556,10 @@ int VisibilityMap::ClearBg()
     {
         return 0;
     }
+    // RVA 0x183C30 - every texel starts as opaque grey; DrawCircle then takes alpha away where the map is seen.
     for (int i = 0; i < m_bgSize.y * m_bgSize.x; ++i)
     {
-        m_bgBits[4 * i] = -8355712;
+        m_bgBits[4 * i] = 0xFF808080u;
     }
     return M3D_APP->m_renderer->UploadTexImage(
         m_bgTex, m_bgSize.x, m_bgSize.y, m_bgBits, m3d::rend::TM_DTF_RGBA8888, 0);

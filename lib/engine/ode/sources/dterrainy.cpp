@@ -150,31 +150,34 @@ dReal dxTerrainY::GetHeight(int x,int z)
 
 dReal dxTerrainY::GetHeight(dReal x,dReal z)
 {
-	int nX		= int(floor(x / m_vNodeLength));
-	int nZ		= int(floor(z / m_vNodeLength));
-	dReal dx	= (x - (dReal(nX) * m_vNodeLength)) / m_vNodeLength;
-	dReal dz	= (z - (dReal(nZ) * m_vNodeLength)) / m_vNodeLength;
-	dIASSERT((dx >= 0.f) && (dx <= 1.f));
+	// RVA 0x8883B0 - retruxx: the shipped build splits a cell along its (x,z)-(x+1,z+1) diagonal, the one the
+	// terrain is drawn with, not along stock ODE's (x+1,z)-(x,z+1). rx is measured back from the cell's far
+	// x edge.
+	int nX		= int(floor(x * m_vNodeLengthInv));
+	int nZ		= int(floor(z * m_vNodeLengthInv));
+	dReal rx	= (dReal(nX+1) * m_vNodeLength - x) * m_vNodeLengthInv;
+	dReal dz	= (z - (dReal(nZ) * m_vNodeLength)) * m_vNodeLengthInv;
+	dIASSERT((rx >= 0.f) && (rx <= 1.f));
 	dIASSERT((dz >= 0.f) && (dz <= 1.f));
 
 	dReal y,y0;
-	
-	if (dx + dz < 1.f)
+
+	if (dz + rx < 1.f)
 	{
-		y0	= GetHeight(nX,nZ);
-		y	= y0	
-			+ (GetHeight(nX+1,nZ) - y0) * dx
-			+ (GetHeight(nX,nZ+1) - y0) * dz;
+		y0	= GetHeight(nX+1,nZ);
+		y	= (GetHeight(nX+1,nZ+1) - y0) * dz
+			+ (GetHeight(nX,nZ) - y0) * rx
+			+ y0;
 	}
 	else
 	{
-		y0	= GetHeight(nX+1,nZ+1);
-		y	= y0	
-			+ (GetHeight(nX+1,nZ) - y0) * (1.f - dz)
-			+ (GetHeight(nX,nZ+1) - y0) * (1.f - dx);
+		y0	= GetHeight(nX,nZ+1);
+		y	= (GetHeight(nX+1,nZ+1) - y0) * (1.f - rx)
+			+ (GetHeight(nX,nZ) - y0) * (1.f - dz)
+			+ y0;
 	}
 
-	return y;	
+	return y;
 }
 
 bool dxTerrainY::IsOnTerrain(int nx,int nz,int w,dReal *pos)
@@ -192,13 +195,14 @@ bool dxTerrainY::IsOnTerrain(int nx,int nz,int w,dReal *pos)
 	if ((pos[2]<Min[2]-Tol) || (pos[2]>Max[2]+Tol))
 		return false;
 
-	dReal dx	= (pos[0] - (dReal(nx) * m_vNodeLength)) / m_vNodeLength;
-	dReal dz	= (pos[2] - (dReal(nz) * m_vNodeLength)) / m_vNodeLength;
+	// RVA 0x888250 - retruxx: the two triangles meet on the (x,z)-(x+1,z+1) diagonal, see GetHeight.
+	dReal rx	= (Max[0] - pos[0]) * m_vNodeLengthInv;
+	dReal dz	= (pos[2] - Min[2]) * m_vNodeLengthInv;
 
-	if ((w == 0) && (dx + dz > 1.f+TERRAINTOL))
+	if ((w == 0) && (dz + rx > 1.f+TERRAINTOL))
 		return false;
 
-	if ((w == 1) && (dx + dz < 1.f-TERRAINTOL))
+	if ((w == 1) && (dz + rx < 1.f-TERRAINTOL))
 		return false;
 
 	return true;
@@ -292,18 +296,20 @@ int dxTerrainY::dCollideTerrainUnit(
 
 	dReal Plane[4],lBD,lCD,lBC;
 	dVector3 A,B,C,D,BD,CD,BC,AB,AC;
-	A[0] = x * m_vNodeLength;
+	// RVA 0x888580 - retruxx: the shipped build turns the cell's corners a quarter round from stock ODE, so the
+	// shared edge BC is the (x,z)-(x+1,z+1) diagonal the terrain is drawn with.
+	A[0] = (x+1) * m_vNodeLength;
 	A[2] = z* m_vNodeLength;
-	A[1] = GetHeight(x,z);
+	A[1] = GetHeight(x+1,z);
 	B[0] = (x+1) * m_vNodeLength;
-	B[2] = z * m_vNodeLength;
-	B[1] = GetHeight(x+1,z);
+	B[2] = (z+1) * m_vNodeLength;
+	B[1] = GetHeight(x+1,z+1);
 	C[0] = x * m_vNodeLength;
-	C[2] = (z+1) * m_vNodeLength;
-	C[1] = GetHeight(x,z+1);
-	D[0] = (x+1) * m_vNodeLength;
+	C[2] = z * m_vNodeLength;
+	C[1] = GetHeight(x,z);
+	D[0] = x * m_vNodeLength;
 	D[2] = (z+1) * m_vNodeLength;
-	D[1] = GetHeight(x+1,z+1);
+	D[1] = GetHeight(x,z+1);
 
 	dOP(BC,-,C,B);
 	lBC = dLENGTH(BC);
@@ -329,12 +335,12 @@ int dxTerrainY::dCollideTerrainUnit(
 		dVector3 E,F;
 		dVector3 CE,FB,AD;
 		dVector3 Normal[3];
-		E[0] = (x+2) * m_vNodeLength;
-		E[2] = z * m_vNodeLength;
-		E[1] = GetHeight(x+2,z);
-		F[0] = x * m_vNodeLength;
-		F[2] = (z+2) * m_vNodeLength;
-		F[1] = GetHeight(x,z+2);
+		E[0] = (x+1) * m_vNodeLength;
+		E[2] = (z+2) * m_vNodeLength;
+		E[1] = GetHeight(x+1,z+2);
+		F[0] = (x-1) * m_vNodeLength;
+		F[2] = z * m_vNodeLength;
+		F[1] = GetHeight(x-1,z);
 		dOP(AD,-,D,A);
 		dNormalize3(AD);
 		dOP(CE,-,E,C);
