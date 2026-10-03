@@ -206,7 +206,7 @@ namespace m3d
                 renderer->SetStencilFunc(rend::M3DCMP_NOTEQUAL, false);
                 rend::TexHandle noTexture;
                 renderer->SetTexture(0, noTexture, -1.0);
-                renderer->SetHandleToStream0(m_fsQuadVb);
+                renderer->SetToStream0(m_fsQuadVb);
                 renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, 2);
                 renderer->PopZbState();
                 renderer->SetStencilState(false, false);

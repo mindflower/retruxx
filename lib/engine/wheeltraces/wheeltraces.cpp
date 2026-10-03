@@ -106,7 +106,7 @@ namespace m3d
         M3D_RENDERER->SetAlphaTest(1);
         M3D_RENDERER->DisableTextureStages(1);
         M3D_RENDERER->PushFog(true);
-        M3D_RENDERER->SetHandleToStream0(m_vb);
+        M3D_RENDERER->SetToStream0(m_vb);
 
         CClipper const& frustum = m3d::pClient->GetWorld().GetLandscape().m_frustumCull;
         int baseVertex = 0;
@@ -133,7 +133,7 @@ namespace m3d
             }
 
             unsigned const numVertices = 2 * strip.m_stripSize;
-            M3D_RENDERER->SetHandleIndices(m_ib, baseVertex);
+            M3D_RENDERER->SetIndices(m_ib, baseVertex);
             M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, numVertices, 0, numVertices - 2);
         }
 

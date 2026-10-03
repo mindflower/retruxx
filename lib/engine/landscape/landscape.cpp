@@ -696,8 +696,8 @@ namespace m3d
             int const numPrims = cellsToDraw * m_lsNumIndices[0] - 3;
             if (numPrims > 0)
             {
-                M3D_RENDERER->SetHandleToStream0(vb);
-                M3D_RENDERER->SetHandleIndices(m_landIbConst[0], vofs);
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(m_landIbConst[0], vofs);
                 if (overlayShader)
                 {
                     M3D_RENDERER->DrawIndexedPrimitiveEffect(
@@ -881,7 +881,7 @@ namespace m3d
             break;
         }
 
-        M3D_RENDERER->SetHandleToStream0(m_solidVb);
+        M3D_RENDERER->SetToStream0(m_solidVb);
 
         // One draw per visible cell: constant 5 is the cell's world origin (and the height scale 8), constant 6
         // its lightmap UV origin and the UV step of one vertex.
@@ -907,7 +907,7 @@ namespace m3d
 
             landTris += trisPerCell[lod];
             ++landDips;
-            M3D_RENDERER->SetHandleIndices(m_solidIb[lod], vertsPerCell * (y + landSize * x));
+            M3D_RENDERER->SetIndices(m_solidIb[lod], vertsPerCell * (y + landSize * x));
             M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, vertsPerCell, 0, trisPerCell[lod]);
         }
 
@@ -1015,8 +1015,8 @@ namespace m3d
 
         float const distBetwVert = 4.0f;
         M3D_RENDERER->SetVsFloatConst(17u, &distBetwVert, 1u);
-        M3D_RENDERER->SetHandleToStream0(m_waterVb);
-        M3D_RENDERER->SetHandleIndices(m_waterIb[3], 0);
+        M3D_RENDERER->SetToStream0(m_waterVb);
+        M3D_RENDERER->SetIndices(m_waterIb[3], 0);
 
         // Tiles are instanced through vertex shader constants, m_maxWaterCellPerPass at a time.
         // NOTE: one draw is issued even when no water tile is in view.
@@ -1224,7 +1224,7 @@ namespace m3d
 
         if (M3D_ENGINE_CFG.m_lsShadows.GetB())
         {
-            M3D_RENDERER->SetHandleToStream(1, m_landUVVb);
+            M3D_RENDERER->SetToStream(1, m_landUVVb);
             M3D_RENDERER->SetTexture(0, m_AlphaSets.front().m_texMasks[0].front(), -1.0);
             M3D_RENDERER->SetTexture(2, GetLightmapTexture(), -1.0);
             M3D_RENDERER->SetFogColor(m_owner->GetWeatherFogColor(), false);
@@ -2660,8 +2660,8 @@ namespace m3d
                 remaining -= run;
 
                 M3D_RENDERER->SetTexture(0, info->tex, -1.0);
-                M3D_RENDERER->SetHandleToStream0(info->vb);
-                M3D_RENDERER->SetHandleIndices(info->ib, 0);
+                M3D_RENDERER->SetToStream0(info->vb);
+                M3D_RENDERER->SetIndices(info->ib, 0);
                 M3D_RENDERER->SetTexture(1, GetLightmapTexture(), -1.0);
                 // The shadow pass has its own texture bound at stage 2.
                 M3D_RENDERER->DisableTextureStages(rgt == RGT_FOR_SHADOW ? 3 : 2);
@@ -2804,8 +2804,9 @@ namespace m3d
         // RVA 0x5ADBA0 - the UVs of a 5x5 vertex grid (a quarter-cell per step) under each of the 4 rotations of an
         // alpha mask (0, -90, -180, -270 degrees about the mask's centre): plain in m_uvForAngles, and for every
         // set group and mask placed in the 8x2 mask atlas (cells of 1/8 x 1/2, shrunk by 5% and inset).
-        // NOTE: both arrays are written as flat [rotation][row][column][u, v] runs of floats; the atlas entries follow
-        // one another for 8 groups x 5 masks. m_uvForAngles is rewritten, identically, for every group and mask.
+        // NOTE: both arrays are written as flat [rotation][row][column][u, v] runs of floats, whatever their declared
+        // shape; the atlas entries follow one another for 8 groups x 5 masks. m_uvForAngles is rewritten, identically,
+        // for every group and mask.
         // The arithmetic keeps the evaluation order the shipped build's inlined matrix products reduce to.
         float* atlasUV = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][0];
         for (int group = 0; group < 32; group += 4)
@@ -3100,7 +3101,7 @@ namespace m3d
             return;
         }
 
-        M3D_RENDERER->SetHandleToStream0(m_shoresVb);
+        M3D_RENDERER->SetToStream0(m_shoresVb);
         M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
         M3D_RENDERER->SetCull(rend::M3DCULL_NONE, false);
         M3D_RENDERER->PushBlend(rend::BM_ALPHA);
@@ -3181,7 +3182,7 @@ namespace m3d
                 int const numPoints = static_cast<int>(line.size());
                 if (numPoints - 1 > 0)
                 {
-                    M3D_RENDERER->SetHandleIndices(m_shoresIb, baseVertex);
+                    M3D_RENDERER->SetIndices(m_shoresIb, baseVertex);
                     M3D_RENDERER->DrawIndexedPrimitiveEffect(
                         rend::M3DPT_TRIANGLESTRIP, m_shoresShader, 0, 2 * numPoints, 0, 2 * numPoints - 2);
                     baseVertex += 2 * numPoints;
@@ -3229,8 +3230,8 @@ namespace m3d
             shader->SetVector3(rend::IEffect::User_float3_param2, v);
 
             M3D_RENDERER->PushZbState(rend::ZB_NOWRITE);
-            M3D_RENDERER->SetHandleToStream0(m_solidVb);
-            M3D_RENDERER->SetHandleIndices(m_solidIb[0], vertsPerCell * (z + x * m_owner->m_level->land_size));
+            M3D_RENDERER->SetToStream0(m_solidVb);
+            M3D_RENDERER->SetIndices(m_solidIb[0], vertsPerCell * (z + x * m_owner->m_level->land_size));
             M3D_RENDERER->DrawIndexedPrimitiveEffect(
                 rend::M3DPT_TRIANGLESTRIP, shader, 0, vertsPerCell, 0, trisPerCell[0]);
             M3D_RENDERER->PopZbState();
@@ -4801,7 +4802,7 @@ namespace m3d
         }
 
         // Setup rendering
-        M3D_RENDERER->SetHandleToStream0(m_waterVb);
+        M3D_RENDERER->SetToStream0(m_waterVb);
         m_waterVs->Apply();
 
         if (this->m_waterShaderVersion == 20)
@@ -4827,7 +4828,7 @@ namespace m3d
 
             if (!lodCells.empty())
             {
-                M3D_RENDERER->SetHandleIndices(m_waterIb[lod], 0);
+                M3D_RENDERER->SetIndices(m_waterIb[lod], 0);
 
                 auto cellIt = lodCells.begin();
                 while (cellIt != lodCells.end())
@@ -5199,8 +5200,8 @@ namespace m3d
             int const numPrims = cellsToDraw * m_lsNumIndices[0] - 3;
             if (numPrims > 0)
             {
-                M3D_RENDERER->SetHandleToStream0(vb);
-                M3D_RENDERER->SetHandleIndices(m_landIbConst[0], vofs);
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(m_landIbConst[0], vofs);
                 if (overlayShader)
                 {
                     M3D_RENDERER->DrawIndexedPrimitiveEffect(
@@ -5729,8 +5730,8 @@ namespace m3d
         M3D_RENDERER->SetLighting(false, false);
         M3D_RENDERER->PushZFunc(rend::CmpFunc::M3DCMP_LESS);
         M3D_RENDERER->PushBlend(rend::BlendMode::BM_NONE);
-        M3D_RENDERER->DuplicateCull();
-        M3D_RENDERER->DuplicateZbState();
+        M3D_RENDERER->PushCull();
+        M3D_RENDERER->PushZbState();
         M3D_RENDERER->PushFog(M3D_KERNEL->GetEngineCfg().m_r_enableFog.GetB());
         if (m_numWaterCells != 0 && m_isWaterVisible)
         {
@@ -6742,7 +6743,7 @@ namespace m3d
         }
         M3D_RENDERER->UnlockVb(M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC));
 
-        M3D_RENDERER->SetHandleToStream0(M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC));
+        M3D_RENDERER->SetToStream0(M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZC));
         int first = vofs;
         if (facingHorizon)
         {
@@ -8187,9 +8188,9 @@ namespace m3d
                 unsigned int vertexCount = 25 * primitiveCount;
 
                 // Set up rendering resources
-                M3D_RENDERER->SetHandleIndices(m_landIbConst.front(), vertexOffset);
+                M3D_RENDERER->SetIndices(m_landIbConst.front(), vertexOffset);
 
-                M3D_RENDERER->SetHandleToStream0(tivchunk.m_vbHandle[bankNumber]);
+                M3D_RENDERER->SetToStream0(tivchunk.m_vbHandle[bankNumber]);
 
                 // Draw the geometry
                 M3D_RENDERER->DrawIndexedPrimitiveShader(rend::M3DPT_TRIANGLESTRIP, 0, vertexCount, 0, indexCount);
@@ -8300,6 +8301,10 @@ namespace m3d
         unsigned const* curCell = cellsPerTex.m_data;
         int numCells = cellsPerTex.m_numItems;
         int const ls = 4 * m_owner->m_level->land_size;
+        // NOTE: the UV tables are read as [angle][25][2] (200 bytes an angle), not as the
+        // [2][25][4] the header declares.
+        float const* const uvBase = &m_uvForAngles[0][0][0];
+        float const* const alphaUvBase = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][0];
         // NOTE: a m_clampCells of 0 or less never finishes.
         while (numCells)
         {
@@ -8352,12 +8357,12 @@ namespace m3d
                     }
                 }
 
-                float const* srcUv = m_uvForAngles[0][0];
+                float const* srcUv = uvBase;
                 float const* srcUv2 = nullptr;
                 if (RenderType == RT_OTHERPASSES)
                 {
-                    srcUv2 = m_setAndUVs.m_sets[m_CurAlphaSet][specialMapper[corner].m_maskindex]
-                                 .m_uvForAngles[specialMapper[corner].m_rotate][0];
+                    srcUv2 = alphaUvBase + 200 * (m_CurAlphaSet * 5 + specialMapper[corner].m_maskindex) +
+                        50 * specialMapper[corner].m_rotate;
                 }
 
                 int const idx0 = 4 * tx + 4 * tz * (m_mapSize + 1);
@@ -8423,8 +8428,8 @@ namespace m3d
                 void* dst = M3D_RENDERER->LockVbStreaming(vb, 25 * realCellsToDraw, vofs, nullptr);
                 memcpy(dst, m_dummyVB, sizeof(rend::VertexXYZNCT2) * 25 * realCellsToDraw);
                 M3D_RENDERER->UnlockVb(vb);
-                M3D_RENDERER->SetHandleToStream0(vb);
-                M3D_RENDERER->SetHandleIndices(m_landIbConst[0], vofs);
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(m_landIbConst[0], vofs);
                 M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLESTRIP, 0, 25 * realCellsToDraw, 0, numIndices);
             }
             numCells -= numCellsToDraw;

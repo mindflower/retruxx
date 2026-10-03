@@ -14,10 +14,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-if(MSVC)
-    add_compile_options(/MP)
-endif()
-
 set(BUILD_GMOCK OFF CACHE BOOL "Build only googletest")
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 

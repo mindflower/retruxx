@@ -1241,7 +1241,7 @@ namespace m3d
                     src += mesh.m_VertexTypeSize;
                 }
                 M3D_RENDERER->UnlockVb(vb);
-                M3D_RENDERER->SetHandleToStream0(vb);
+                M3D_RENDERER->SetToStream0(vb);
                 M3D_RENDERER->DrawPrimitive(rend::M3DPT_LINELIST, 0, mesh.m_numDrawVerts);
             }
             if (mesh.m_meshType == 1)
@@ -2286,7 +2286,7 @@ namespace m3d
             // Rigid mesh riding a single bone - draw it in that bone's animated space.
             M3D_RENDERER->MatPushWorld();
             M3D_RENDERER->MatSetWorld(ai->m_bonesAnim[mesh.m_numNode].m_curMatrix);
-            M3D_RENDERER->SetPoolToStream0(mesh.m_VbPoolField);
+            M3D_RENDERER->SetToStream0(mesh.m_VbPoolField);
             baseVertex = mesh.m_VbPoolField.RealOffset;
         }
         else if (mesh.m_meshType == 2)
@@ -2298,12 +2298,12 @@ namespace m3d
             void* dest = M3D_RENDERER->LockVbStreaming(vb, mesh.m_numVertices, firstVertex, nullptr);
             memcpy(dest, ai->m_meshesVerts[cc], mesh.m_numVertices * mesh.m_VertexTypeSize);
             M3D_RENDERER->UnlockVb(vb);
-            M3D_RENDERER->SetHandleToStream0(vb);
+            M3D_RENDERER->SetToStream0(vb);
             baseVertex = static_cast<unsigned>(firstVertex);
         }
         else if (mesh.m_meshType == 4)
         {
-            M3D_RENDERER->SetPoolToStream0(mesh.m_VbPoolField);
+            M3D_RENDERER->SetToStream0(mesh.m_VbPoolField);
             baseVertex = mesh.m_VbPoolField.RealOffset;
         }
         else
@@ -2314,7 +2314,7 @@ namespace m3d
 
         if (bindIndices)
         {
-            M3D_RENDERER->SetPoolIndices(mesh.m_IbPoolField, static_cast<int>(baseVertex));
+            M3D_RENDERER->SetIndices(mesh.m_IbPoolField, static_cast<int>(baseVertex));
         }
 
         unsigned const numPrimitives = mesh.m_numDrawIndices / 3;

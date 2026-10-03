@@ -112,7 +112,7 @@ namespace m3d
             dest[i] = m_volume[i];
         }
         renderer->UnlockVb(vb);
-        renderer->SetHandleToStream0(vb);
+        renderer->SetToStream0(vb);
         renderer->MatSetWorld(objToWorld);
         renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, m_numVolumeVerts / 3);
     }

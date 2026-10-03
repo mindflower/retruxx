@@ -976,8 +976,8 @@ namespace m3d
                 remaining -= groupCount;
 
                 M3D_RENDERER->SetTexture(0, dm->m_impostorTex, -1.0);
-                M3D_RENDERER->SetHandleToStream0(dm->m_impostorVb);
-                M3D_RENDERER->SetHandleIndices(dm->m_impostorIb, 0);
+                M3D_RENDERER->SetToStream0(dm->m_impostorVb);
+                M3D_RENDERER->SetIndices(dm->m_impostorIb, 0);
 
                 while (groupCount > 0)
                 {
@@ -1950,8 +1950,8 @@ namespace m3d
 
             M3D_RENDERER->MatPushWorld();
             M3D_RENDERER->MatSetWorld(anim->m_bonesAnim[mh.m_numNode].m_curMatrix);
-            M3D_RENDERER->SetPoolToStream0(mh.m_VbPoolField);
-            M3D_RENDERER->SetPoolIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+            M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
             break;
         }
         case 2:
@@ -1967,14 +1967,14 @@ namespace m3d
                 verts,
                 mh.m_numVertices * mh.m_VertexTypeSize);
             M3D_RENDERER->UnlockVb(vbHandle);
-            M3D_RENDERER->SetHandleToStream0(vbHandle);
-            M3D_RENDERER->SetPoolIndices(mh.m_IbPoolField, vOfs);
+            M3D_RENDERER->SetToStream0(vbHandle);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, vOfs);
             break;
         }
         case 4:
         {
-            M3D_RENDERER->SetPoolToStream0(mh.m_VbPoolField);
-            M3D_RENDERER->SetPoolIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+            M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
             break;
         }
         // RVA 0x8F3D60 - any other mesh type keeps the buffers the caller set up.
@@ -2072,21 +2072,21 @@ namespace m3d
                 auto stream = M3D_RENDERER->LockVbStreaming(vb, mh.m_numVertices, vofs, nullptr);
                 memcpy(stream, ai->m_meshesVerts[mh.meshId], mh.m_numVertices * mh.m_VertexTypeSize);
                 M3D_RENDERER->UnlockVb(vb);
-                M3D_RENDERER->SetHandleToStream0(vb);
-                M3D_RENDERER->SetPoolIndices(mh.m_IbPoolField, vofs);
+                M3D_RENDERER->SetToStream0(vb);
+                M3D_RENDERER->SetIndices(mh.m_IbPoolField, vofs);
             }
             if (meshType - 1 == 2)
             {
-                M3D_RENDERER->SetPoolToStream0(mh.m_VbPoolField);
-                M3D_RENDERER->SetPoolIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+                M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+                M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
             }
         }
         else
         {
             M3D_RENDERER->MatPushWorld();
             M3D_RENDERER->MatSetWorld(ai->m_bonesAnim[mh.m_numNode].m_curMatrix);
-            M3D_RENDERER->SetPoolToStream0(mh.m_VbPoolField);
-            M3D_RENDERER->SetPoolIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
+            M3D_RENDERER->SetToStream0(mh.m_VbPoolField);
+            M3D_RENDERER->SetIndices(mh.m_IbPoolField, mh.m_VbPoolField.RealOffset);
         }
 
         if (shader)
