@@ -104,7 +104,7 @@ MapMarkIcoWnd::AuxInfo::AuxInfo()
     m_sizeSelected = PointBase<float>{64.0f, 32.0f};
     m_colorEnemy = 0xFF880000u;
     m_colorNeutral = 0xFFCCCCCCu;
-    m_colorFriend = 0xFF008040u;
+    m_colorFriend = 0xFF006600u;
     m_texIdSelection = "MapMarkSelection";
 }
 
