@@ -8301,10 +8301,6 @@ namespace m3d
         unsigned const* curCell = cellsPerTex.m_data;
         int numCells = cellsPerTex.m_numItems;
         int const ls = 4 * m_owner->m_level->land_size;
-        // NOTE: the UV tables are read as [angle][25][2] (200 bytes an angle), not as the
-        // [2][25][4] the header declares.
-        float const* const uvBase = &m_uvForAngles[0][0][0];
-        float const* const alphaUvBase = &m_setAndUVs.m_sets[0][0].m_uvForAngles[0][0][0];
         // NOTE: a m_clampCells of 0 or less never finishes.
         while (numCells)
         {
@@ -8357,12 +8353,12 @@ namespace m3d
                     }
                 }
 
-                float const* srcUv = uvBase;
+                float const* srcUv = m_uvForAngles[0][0];
                 float const* srcUv2 = nullptr;
                 if (RenderType == RT_OTHERPASSES)
                 {
-                    srcUv2 = alphaUvBase + 200 * (m_CurAlphaSet * 5 + specialMapper[corner].m_maskindex) +
-                        50 * specialMapper[corner].m_rotate;
+                    srcUv2 = m_setAndUVs.m_sets[m_CurAlphaSet][specialMapper[corner].m_maskindex]
+                                 .m_uvForAngles[specialMapper[corner].m_rotate][0];
                 }
 
                 int const idx0 = 4 * tx + 4 * tz * (m_mapSize + 1);
