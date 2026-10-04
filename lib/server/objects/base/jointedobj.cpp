@@ -320,19 +320,26 @@ namespace ai
                 CMatrix restMat;
                 restMat.rotTranslate(restBone.m_quaternion0, restBone.m_translation0);
 
+                // The bone's rest pose in the world, and the member placed in it the same way as above.
                 CMatrix const jointMat =
                     restMat * m_Anim->GetBoneAnim(boneParent).m_curMatrix * matWorld;
 
-                m_Members[i]->SetPosition(CVector(jointMat._41, jointMat._42, jointMat._43));
+                CVector const& translation = hierGeom->geom.Translation;
+                m_Members[i]->SetPosition(CVector(
+                    translation.x * jointMat._11 + translation.y * jointMat._21 + translation.z * jointMat._31 +
+                        jointMat._41,
+                    translation.x * jointMat._12 + translation.y * jointMat._22 + translation.z * jointMat._32 +
+                        jointMat._42,
+                    translation.x * jointMat._13 + translation.y * jointMat._23 + translation.z * jointMat._33 +
+                        jointMat._43));
                 Quaternion jointRot;
-                jointRot.FromMatrix(jointMat);
+                jointRot.FromMatrix(hierGeom->geom.Rotation.ToMatrix() * jointMat);
                 m_Members[i]->SetRotation(jointRot);
 
-                // NOTE: both axes are read two floats past the start of their row, so what ends
-                // up in them is (_23, _24, _31) and (_33, _34, _41) rather than the y and z axes
-                // of the joint frame that the surrounding code plainly intends. Kept as shipped.
-                dJointSetUniversalAxis1(joint, restMat._23, restMat._24, restMat._31);
-                dJointSetUniversalAxis2(joint, restMat._33, restMat._34, restMat._41);
+                // The axes are the joint frame's y and z in the world. (Hex-Rays shows them two floats
+                // further on, because it takes the SetPosition call above for a three-argument one.)
+                dJointSetUniversalAxis1(joint, jointMat._21, jointMat._22, jointMat._23);
+                dJointSetUniversalAxis2(joint, jointMat._31, jointMat._32, jointMat._33);
 
                 // The swing limits come from the model, clamped away from zero so the joint
                 // always has somewhere to move.
