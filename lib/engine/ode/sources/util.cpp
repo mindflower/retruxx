@@ -25,6 +25,7 @@
 #include "objects.h"
 #include "joint.h"
 #include "util.h"
+#include "step.h"
 #include "core/log.h"
 
 #define ALLOCA dALLOCA16
@@ -273,7 +274,10 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
     }
 
     // now do something with body and joint lists
-    stepper (world,body,bcount,joint,jcount,stepsize);
+    // NOTE: the shipped build (RVA 0x8FCD50) ignores `stepper` and always takes the exact LCP step, so
+    // dWorldQuickStep behaves like dWorldStep: resting contacts and motors hold instead of creeping.
+    (void) stepper;
+    dInternalStepIsland (world,body,bcount,joint,jcount,stepsize);
 
     // what we've just done may have altered the body/joint tag values.
     // we must make sure that these tags are nonzero.
