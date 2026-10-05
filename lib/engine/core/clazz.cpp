@@ -109,12 +109,13 @@ namespace m3d
 
     bool Class::IsKindOf(char const* className) const
     {
-        if (className == nullptr)
+        if (this == nullptr)
         {
             return false;
         }
+
         auto* clazz = this;
-        while (CStr(clazz->m_className) != className)
+        while (strcmp(clazz->m_className, className))
         {
             clazz = clazz->m_fnGetBaseClass();
             if (clazz == nullptr)
@@ -127,10 +128,11 @@ namespace m3d
 
     bool Class::IsKindOf(Class const* clazz) const
     {
-        if (clazz == nullptr)
+        if (this == nullptr)
         {
             return false;
         }
+
         auto* thisClazz = this;
         while (thisClazz != clazz)
         {
