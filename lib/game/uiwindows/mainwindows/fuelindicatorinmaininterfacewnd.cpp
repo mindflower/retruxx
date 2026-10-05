@@ -1,4 +1,5 @@
 #include "fuelindicatorinmaininterfacewnd.h"
+#include <cmath>
 #include "twinklinglampwnd.h"
 #include "electronicdigitalwnd.h"
 #include <core/log.h>
@@ -276,7 +277,7 @@ void FuelIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
         }
         if ((m_gameDataFlags & 1) != 0)
         {
-            m_wndValue->ShowNumber(static_cast<int>(curFuel), false, 4u, false);
+            m_wndValue->ShowNumber(static_cast<int>(lrintf(curFuel)), false, 4u, false);
             if ((m_gameDataFlags & 1) != 0)
             {
                 m_wndLowFuelLamp->SetValue(curFuel, maxFuel);
@@ -294,7 +295,7 @@ void FuelIndicatorInMainInterfaceWnd::UpdateValueWnd(float curFuel)
     // RVA 0x5248D0
     if ((m_gameDataFlags & 1) != 0)
     {
-        m_wndValue->ShowNumber(static_cast<int>(curFuel), false, 4u, false);
+        m_wndValue->ShowNumber(static_cast<int>(lrintf(curFuel)), false, 4u, false);
     }
 }
 
@@ -308,7 +309,9 @@ void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float curFuel, float maxFuel
     // RVA 0x5249C0
     if ((m_gameDataFlags & 1) != 0)
     {
-        CStr text = m_strFuel + ": " + CStr(static_cast<int>(curFuel)) + "/" + CStr(static_cast<int>(maxFuel));
+        // The shipped build converts with fistp, i.e. rounds to nearest (ties to even), as do the other
+        // conversions in this file.
+        CStr text = m_strFuel + ": " + CStr(static_cast<int>(lrintf(curFuel))) + "/" + CStr(static_cast<int>(lrintf(maxFuel)));
         m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
         m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
     }

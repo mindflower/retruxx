@@ -1,4 +1,5 @@
 #include "healthindicatorinmaininterfacewnd.h"
+#include <cmath>
 
 #include "core/log.h"
 #include "server/dynamicquestmanager.h"
@@ -241,7 +242,9 @@ void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float curHp, float maxHp)
     // RVA 0x526900
     if ((m_gameDataFlags & 1) != 0)
     {
-        CStr text = m_strHealth + ": " + CStr(static_cast<int>(curHp)) + "/" + CStr(static_cast<int>(maxHp));
+        // The shipped build converts with fistp, i.e. rounds to nearest (ties to even), as do the other
+        // conversions in this file.
+        CStr text = m_strHealth + ": " + CStr(static_cast<int>(lrintf(curHp))) + "/" + CStr(static_cast<int>(lrintf(maxHp)));
         m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
         m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
     }
@@ -336,7 +339,7 @@ void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float curHp)
     // RVA 0x526810
     if ((m_gameDataFlags & 1) != 0)
     {
-        m_wndValue->ShowNumber(static_cast<int>(curHp), false, 4u, false);
+        m_wndValue->ShowNumber(static_cast<int>(lrintf(curHp)), false, 4u, false);
     }
 }
 
@@ -360,7 +363,7 @@ void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
         }
         if ((m_gameDataFlags & 1) != 0)
         {
-            m_wndValue->ShowNumber(static_cast<int>(curHp), false, 4u, false);
+            m_wndValue->ShowNumber(static_cast<int>(lrintf(curHp)), false, 4u, false);
             if ((m_gameDataFlags & 1) != 0)
             {
                 m_wndLowHpLamp->SetValue(curHp, maxHp);

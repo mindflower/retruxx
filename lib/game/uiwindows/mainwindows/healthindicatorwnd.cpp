@@ -1,4 +1,5 @@
 #include "healthindicatorwnd.h"
+#include <cmath>
 
 #include "core/kernel.h"
 #include "core/log.h"
@@ -148,7 +149,9 @@ void HealthIndicatorWnd::UpdateBarTexture()
     }
 
     float const pct = (GetCurValue() / (GetMaxValue() - GetMinValue())) * 100.0f;
-    int const pctInt = static_cast<int>(pct);
+    // The shipped build converts with fistp, i.e. rounds to nearest (ties to even), as do the other
+    // conversions in this file.
+    int const pctInt = static_cast<int>(lrintf(pct));
 
     m3d::rend::TexHandle newTex;
     if (pctInt > 0)
@@ -244,6 +247,6 @@ void HealthIndicatorWnd::UpdateTooltip()
 {
     // RVA 0x1273C0
     CStr text =
-        m_strHealth + ": " + CStr(static_cast<int>(GetCurValue())) + "/" + CStr(static_cast<int>(GetMaxValue()));
+        m_strHealth + ": " + CStr(static_cast<int>(lrintf(GetCurValue()))) + "/" + CStr(static_cast<int>(lrintf(GetMaxValue())));
     SetProperty(PROP_WND_TOOLTIP, &text);
 }
