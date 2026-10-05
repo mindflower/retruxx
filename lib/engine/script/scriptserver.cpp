@@ -256,8 +256,8 @@ namespace
         return stack.getNumOutArgs();
     }
 
-    char buf_0[5] = {0};
-    char buf[5] = {0};
+    char buf_0[50] = {0};
+    char buf[50] = {0};
 
     int _toString(lua_State* L)
     {

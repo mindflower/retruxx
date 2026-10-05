@@ -186,13 +186,10 @@ void WeaponInfoList::UpdateOnKeyBindingsChanged()
 int WeaponInfoList::RecalcLayotInMainInterface()
 {
     // RVA 0x13D8A0
-    // NOTE: the shipped code computes this same "row per weapon group" grid
-    // layout via heavily aliased/reused stack slots that could not be
-    // transcribed byte-exact; reconstructed here as the clearly-intended
-    // behavior - items in a group are placed side by side (one
-    // pattern-width apart) in a row below the decor-top image, rows stacked
-    // per group with m_aif.m_bigSpace between them, and the decor-bottom
-    // image repositioned to sit right below the last row.
+    // Items stack vertically below the top decor (a group's items are one
+    // pattern-height apart, groups are separated by m_aif.m_bigSpace), the
+    // bottom decor goes right after the last item, and the list grows to
+    // cover it.
     if ((m_gameDataFlags & 1) == 0)
     {
         return 0;
@@ -205,29 +202,29 @@ int WeaponInfoList::RecalcLayotInMainInterface()
 
     BoundsBase<float> const patternBounds = WeaponInfoWnd::m_patterns[TYPE_IN_MAIN_INTERFACE].m_wndPattern->GetBounds();
     BoundsBase<float> const decorTopBounds = m_wndDecorTop->GetBounds();
-    float rowTop = decorTopBounds.y0 + decorTopBounds.height;
+    float y = decorTopBounds.y0 + decorTopBounds.height;
 
-    std::vector<ref_ptr<WeaponInfoWnd>> groupItems;
     for (int group = 0; group < GetNumOfGroups(); ++group)
     {
+        std::vector<ref_ptr<WeaponInfoWnd>> groupItems;
         GetItemsByGroup(group, groupItems);
-        for (size_t i = 0; i < groupItems.size(); ++i)
+        int const numItems = static_cast<int>(groupItems.size());
+        for (int i = 0; i < numItems; ++i)
         {
-            BoundsBase<float> itemBounds = patternBounds;
-            itemBounds.x0 = static_cast<float>(i) * patternBounds.width;
-            itemBounds.y0 = rowTop;
-            groupItems[i]->SetBounds(itemBounds, true);
+            // NOTE: the shipped code writes the item's position straight into
+            // its m_bounds instead of going through SetBounds.
+            groupItems[i]->m_bounds.x0 = patternBounds.x0;
+            groupItems[i]->m_bounds.y0 = static_cast<float>(i) * patternBounds.height + y;
         }
-        if (!groupItems.empty())
+        if (numItems != 0)
         {
-            rowTop += patternBounds.height + m_aif.m_bigSpace;
+            y = static_cast<float>(numItems) * patternBounds.height + m_aif.m_bigSpace + y;
         }
     }
 
-    float const newHeight = rowTop - m_aif.m_bigSpace;
-    m_bounds.height = newHeight;
     BoundsBase<float> decorBottomBounds = m_wndDecorBottom->GetBounds();
-    decorBottomBounds.y0 = newHeight - decorBottomBounds.height;
+    m_bounds.height = y - m_aif.m_bigSpace + decorBottomBounds.height;
+    decorBottomBounds.y0 = m_bounds.height - decorBottomBounds.height;
     m_wndDecorBottom->SetBounds(decorBottomBounds, true);
     return 1;
 }
