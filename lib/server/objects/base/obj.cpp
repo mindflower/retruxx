@@ -1231,7 +1231,7 @@ namespace ai
         m_flags |= 8;
         if ((oldFlags & 8) == 0)
         {
-            M3D_APP->ImmediateMessage(66542, (int)this, 0, 0, 0, {}, {});
+            M3D_APP->ImmediateMessage(66542, this, 0, 0, 0, {}, {});
             CauseEvent(GE_OBJECT_DIE, 0.0, {GetId()}, {});
         }
     }

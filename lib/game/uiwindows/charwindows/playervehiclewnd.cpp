@@ -205,7 +205,7 @@ int PlayerVehicleWnd::GameDataUpdate(void* data, int dataType)
         {
             // NOTE: the shipped build passes the hacked vehicle-part obj id
             // packed directly into the data pointer.
-            SetupForHackedVehiclePart(reinterpret_cast<int>(data));
+            SetupForHackedVehiclePart(static_cast<int>(reinterpret_cast<intptr_t>(data)));
             return 1;
         }
     }

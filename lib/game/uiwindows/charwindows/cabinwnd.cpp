@@ -113,9 +113,9 @@ int CabinWnd::GameDataUpdate(void* data, int dataType)
     }
     if (dataType == 31)
     {
-        if (data && static_cast<int*>(data)[13] == m_vehicleId)
+        if (data && static_cast<m3d::Event*>(data)->m_intEv[0] == m_vehicleId)
         {
-            ref_ptr<GadgetWnd> gadgetWnd = GetGadgetWndByGadgetSlotId(static_cast<int*>(data)[14]);
+            ref_ptr<GadgetWnd> gadgetWnd = GetGadgetWndByGadgetSlotId(static_cast<m3d::Event*>(data)->m_intEv[1]);
             ai::Vehicle* vehicle = GetVehicle();
             if (gadgetWnd && vehicle)
             {

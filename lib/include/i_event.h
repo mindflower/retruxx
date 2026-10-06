@@ -339,14 +339,18 @@ namespace m3d
 
         union
         {
-            void* m_void[4] = {};
-            IEventHandler* m_handle[4];
+            int m_intEv[4] = {};
             unsigned int m_uintEv[4];
-            int m_intEv[4];
             unsigned short m_ushortEv[8];
             short m_shortEv[8];
             unsigned char m_byteEv[16];
         }; /* size: 0x0010 */
+
+        // retruxx adaptation: the shipped build also viewed the union above as void*[4] and
+        // IEventHandler*[4] and passed window and object pointers through it, which only fits
+        // where a pointer is an int. They travel here instead: ptr0 and ptr1 of the pointer
+        // overloads of Application::EnqueueMessage and ImmediateMessage.
+        void* m_ptrEv[2] = {};
 
         CStr Dump() const;
     }; /* size: 0x0048 */

@@ -3,7 +3,7 @@
 #include <cstdint>
 
 struct CVector;
-class CVector4;
+struct CVector4;
 
 namespace m3d
 {

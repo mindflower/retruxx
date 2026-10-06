@@ -702,7 +702,7 @@ void EncyclopaediaWnd::OnPrototypeMet(void* data)
     // RVA 0xD6910
     if (data)
     {
-        AddPrototype(static_cast<int*>(data)[13]);
+        AddPrototype(static_cast<m3d::Event*>(data)->m_intEv[0]);
     }
 }
 
@@ -711,7 +711,7 @@ void EncyclopaediaWnd::OnObjMet(void* data)
     // RVA 0xD6920
     if (data)
     {
-        AddObj(static_cast<int*>(data)[13]);
+        AddObj(static_cast<m3d::Event*>(data)->m_intEv[0]);
     }
 }
 
@@ -720,7 +720,7 @@ void EncyclopaediaWnd::OnBelongMet(void* data)
     // RVA 0xD7850
     if (data)
     {
-        AddClan(static_cast<int*>(data)[13]);
+        AddClan(static_cast<m3d::Event*>(data)->m_intEv[0]);
     }
 }
 
@@ -729,7 +729,7 @@ void EncyclopaediaWnd::OnPlayerVehicleDamaged(void* data)
     // RVA 0xD6930
     if (data)
     {
-        int const prototypeId = static_cast<int*>(data)[14];
+        int const prototypeId = static_cast<m3d::Event*>(data)->m_intEv[1];
         if (prototypeId != -1)
         {
             AddPrototype(prototypeId);

@@ -44,6 +44,9 @@ namespace m3d
             /* 0x0000 */ retruxx::vector<CStr>* m_NameList;
             /* 0x0000 */ retruxx::vector<int>* m_NumList;
             /* 0x0000 */ CStr* m_Str;
+            // retruxx adaptation: an object pointer travelling as an ID (see FromPointer); the slot is
+            // pointer-sized already, the shipped build read it back through id.
+            /* 0x0000 */ void* m_ptr;
         }; /* size: 0x0010 */
         /* 0x0010 */ m3d::eAIParamType Type = AIPARAM_UNDEFINE;
         void Detach();
@@ -101,6 +104,10 @@ namespace m3d
         Quaternion GetAsQuaternion() const;
         CVector2 GetAsRange() const;
         int GetAsID() const;
+        // retruxx adaptation: the shipped build packed a pointer into the id of an ID parameter in a
+        // few places (the local chart's object info); these carry it at full width.
+        static m3d::AIParam FromPointer(void* ptr);
+        void* GetAsPointer() const;
         float GetAsFloat() const;
         retruxx::vector<int> GetAsIdList() const;
         retruxx::vector<CStr> GetAsStringList() const;

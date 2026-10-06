@@ -548,7 +548,8 @@ namespace m3d
         }; /* size: 0x0018 */
 #pragma pack(pop)
 
-        static_assert(sizeof(ShaderMacro) == 0x0018);
+        // Didnt true for x64
+        // static_assert(sizeof(ShaderMacro) == 0x0018);
 
 #pragma pack(push, 4)
         struct IRenderResource
@@ -565,7 +566,8 @@ namespace m3d
         }; /* size: 0x0008 */
 #pragma pack(pop)
 
-        static_assert(sizeof(IRenderResource) == 0x0008);
+        // Didnt true for x64
+        // static_assert(sizeof(IRenderResource) == 0x0008);
 
         class IQuery : public m3d::rend::IRenderResource
         {
@@ -619,23 +621,25 @@ namespace m3d
                 PS_3_0 = 8,
             };
 
-            using ParameterHandle = unsigned int;
+            // A parameter handle is the renderer's D3DXHANDLE (a pointer) handed out as an integer;
+            // the shipped interface used unsigned int, which only holds it on a 32-bit build.
+            using ParameterHandle = std::uintptr_t;
 
-            static const unsigned int INVALID_PARAM;
+            static const ParameterHandle INVALID_PARAM;
             virtual unsigned int GetNumberOfParams() const = 0 /* 0x14 */;
-            virtual unsigned int GetParamHandleByName(const char*) = 0 /* 0x18 */;
-            virtual void SetInt(unsigned int, int) = 0 /* 0x1c */;
-            virtual void SetFloat(unsigned int, float) = 0 /* 0x20 */;
-            virtual void SetVector4(unsigned int, const CVector4&) = 0 /* 0x24 */;
-            virtual void SetVector3(unsigned int, const CVector&) = 0 /* 0x28 */;
-            virtual void SetFloat4(unsigned int, const nFloat4&) = 0 /* 0x2c */;
-            virtual void SetMatrix(unsigned int, const CMatrix&) = 0 /* 0x30 */;
-            virtual void SetIntArray(unsigned int, const int*, int) = 0 /* 0x34 */;
-            virtual void SetFloatArray(unsigned int, const float*, int) = 0 /* 0x38 */;
-            virtual void SetFloat4Array(unsigned int, const nFloat4*, int) = 0 /* 0x3c */;
-            virtual void SetVector4Array(unsigned int, const CVector4*, int) = 0 /* 0x40 */;
-            virtual void SetMatrixArray(unsigned int, const CMatrix*, int) = 0 /* 0x44 */;
-            virtual void SetMatrixPointerArray(unsigned int, const CMatrix**, int) = 0 /* 0x48 */;
+            virtual ParameterHandle GetParamHandleByName(const char*) = 0 /* 0x18 */;
+            virtual void SetInt(ParameterHandle, int) = 0 /* 0x1c */;
+            virtual void SetFloat(ParameterHandle, float) = 0 /* 0x20 */;
+            virtual void SetVector4(ParameterHandle, const CVector4&) = 0 /* 0x24 */;
+            virtual void SetVector3(ParameterHandle, const CVector&) = 0 /* 0x28 */;
+            virtual void SetFloat4(ParameterHandle, const nFloat4&) = 0 /* 0x2c */;
+            virtual void SetMatrix(ParameterHandle, const CMatrix&) = 0 /* 0x30 */;
+            virtual void SetIntArray(ParameterHandle, const int*, int) = 0 /* 0x34 */;
+            virtual void SetFloatArray(ParameterHandle, const float*, int) = 0 /* 0x38 */;
+            virtual void SetFloat4Array(ParameterHandle, const nFloat4*, int) = 0 /* 0x3c */;
+            virtual void SetVector4Array(ParameterHandle, const CVector4*, int) = 0 /* 0x40 */;
+            virtual void SetMatrixArray(ParameterHandle, const CMatrix*, int) = 0 /* 0x44 */;
+            virtual void SetMatrixPointerArray(ParameterHandle, const CMatrix**, int) = 0 /* 0x48 */;
             virtual void Apply() = 0 /* 0x4c */;
             virtual  ~IHlslShader() override /* 0x00 */;
         }; /* size: 0x0008 */
@@ -705,8 +709,8 @@ namespace m3d
                 /* 0x002f */ bool useAlpha;
             }; /* size: 0x0030 */
 #pragma pack(pop)
-
-            static_assert(sizeof(TechniqueDesc) == 0x0030);
+            // Didnt true for x64
+            // static_assert(sizeof(TechniqueDesc) == 0x0030);
 
             virtual unsigned int GetNumTechniques() const = 0 /* 0x14 */;
             virtual const m3d::rend::IEffect::TechniqueDesc& GetTechniqueDesc(unsigned int) const = 0 /* 0x18 */;

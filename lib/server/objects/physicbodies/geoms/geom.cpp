@@ -319,7 +319,9 @@ namespace ai
         // NOTE: the space is dumped as the raw pointer value, which is only good for
         // telling two dumps apart within one run.
         xmlNode->SetAttribute(
-            "Space", CStr(reinterpret_cast<unsigned>(dGeomGetSpace(m_geomId))).c_str());
+            "Space",
+            CStr::format_("%llu", static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(dGeomGetSpace(m_geomId))))
+                .c_str());
     }
 
     Geom::Geom(dxGeom* const geomId, void(* movedCallback)(dxGeom*))

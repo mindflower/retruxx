@@ -624,7 +624,7 @@ namespace m3d
                 RecalcSelfBounds();
                 UpdateToggleButtonPane();
                 int const msg = m_state == STATE_OPEN ? 47 : 48;
-                Application::g_pApp->EnqueueMessage(msg, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                Application::g_pApp->EnqueueMessage(msg, this, 0, 0, 0, {}, {});
             }
         }
 
@@ -776,7 +776,7 @@ namespace m3d
             {
                 return res;
             }
-            M3D_APP->EnqueueMessage(47, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+            M3D_APP->EnqueueMessage(47, this, 0, 0, 0, {}, {});
             return res;
         }
     }    

@@ -609,7 +609,7 @@ void SaleWnd::UpdateOnChangeTabSel(int newTabIdx, int, m3d::ui::TabWnd::Selectio
     if (workWnd)
     {
         M3D_APP->m_pInterfaceManager->LaunchEvent(
-            EVENT_TAB_WORK_WND_SHOWN, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(workWnd->GetInt()));
+            EVENT_TAB_WORK_WND_SHOWN, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(static_cast<intptr_t>(workWnd->GetInt())));
     }
 
     // Only a deliberate switch feeds the tutorial; a programmatic one does not.

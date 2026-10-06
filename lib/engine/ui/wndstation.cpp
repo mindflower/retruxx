@@ -178,7 +178,7 @@ namespace m3d
                 return false;
             }
             int res = 0;
-            if (!m_allWindows.getValueByKey(reinterpret_cast<int>(w), res))
+            if (!m_allWindows.getValueByKey(reinterpret_cast<std::uintptr_t>(w), res))
             {
                 return false;
             }
@@ -493,11 +493,11 @@ namespace m3d
         {
             if (urgent)
             {
-                Application::g_pApp->ImmediateMessage(40, reinterpret_cast<int>(from), reinterpret_cast<int>(to), msg, 0, {}, data);
+                Application::g_pApp->ImmediateMessage(40, from, to, msg, 0, {}, data);
             }
             else
             {
-                Application::g_pApp->EnqueueMessage(40, reinterpret_cast<int>(from), reinterpret_cast<int>(to), msg, 0, {}, data);
+                Application::g_pApp->EnqueueMessage(40, from, to, msg, 0, {}, data);
             }
             return 1;
         }
@@ -743,7 +743,7 @@ namespace m3d
 
             case EV_UI_CLOSE_MODAL_WND:
             {
-                auto* modalWnd = static_cast<ModalWnd*>(event.m_void[0]);
+                auto* modalWnd = static_cast<ModalWnd*>(event.m_ptrEv[0]);
                 if (modalWnd->CanClose())
                 {
                     EndModal(modalWnd, event.m_uintEv[1]);
@@ -755,8 +755,8 @@ namespace m3d
 
             case EV_UI_NOTIFY_WND:
             {
-                auto* sender = static_cast<Wnd*>(event.m_void[0]);
-                auto* receiver = static_cast<Wnd*>(event.m_void[1]);
+                auto* sender = static_cast<Wnd*>(event.m_ptrEv[0]);
+                auto* receiver = static_cast<Wnd*>(event.m_ptrEv[1]);
                 auto msg = event.m_uintEv[2];
 
                 // The notification takes its own copy of the parameter, released again on the
@@ -773,7 +773,7 @@ namespace m3d
             }
 
             case EV_UI_END_WND_ANIMATION:
-                OnEndAnimation(static_cast<Wnd*>(event.m_void[0]));
+                OnEndAnimation(static_cast<Wnd*>(event.m_ptrEv[0]));
                 handled = OnEvent(event);
                 break;
 
@@ -792,7 +792,7 @@ namespace m3d
             {
                 RemoveCurrentTooltip();
 
-                auto* wnd = static_cast<Wnd*>(event.m_void[0]);
+                auto* wnd = static_cast<Wnd*>(event.m_ptrEv[0]);
                 if (IsWndAlive(wnd, -1))
                 {
                     m_wndForTooltip = wnd;
@@ -812,12 +812,12 @@ namespace m3d
                 break;
 
             case EV_UI_COMBO_OPENED:
-                OnOpenComboBox(static_cast<ComboBoxWnd*>(event.m_void[0]));
+                OnOpenComboBox(static_cast<ComboBoxWnd*>(event.m_ptrEv[0]));
                 handled = 1;
                 break;
 
             case EV_UI_COMBO_CLOSED:
-                OnCloseComboBox(static_cast<ComboBoxWnd*>(event.m_void[0]));
+                OnCloseComboBox(static_cast<ComboBoxWnd*>(event.m_ptrEv[0]));
                 handled = 1;
                 break;
 
@@ -1014,7 +1014,7 @@ namespace m3d
             }
             if (isModal)
             {
-                Application::g_pApp->EnqueueMessage(41, reinterpret_cast<int>(wnd), 0, 0, 0, {}, {});
+                Application::g_pApp->EnqueueMessage(41, wnd, 0, 0, 0, {}, {});
             }
             if (m_wndKbdCapture && (wnd == m_wndKbdCapture || m_wndKbdCapture->IsChildOf(wnd)))
             {
@@ -1102,7 +1102,7 @@ namespace m3d
             }
 
             int val = -1;
-            auto const res = m_allWindows.getValueByKey(reinterpret_cast<unsigned>(combo), val);
+            auto const res = m_allWindows.getValueByKey(reinterpret_cast<std::uintptr_t>(combo), val);
             if (res)
             {
                 if (combo->IsChildOf(this))
@@ -1135,7 +1135,7 @@ namespace m3d
                 if (w->m_uniqueId == -1)
                 {
                     w->m_uniqueId = m_nextUniqueId;
-                    m_allWindows.addValueByKey(reinterpret_cast<unsigned>(w), m_nextUniqueId);
+                    m_allWindows.addValueByKey(reinterpret_cast<std::uintptr_t>(w), m_nextUniqueId);
                     m_allWindowsById.addValueByKey(m_nextUniqueId, w);
                     ++m_nextUniqueId;
                 }
@@ -1158,7 +1158,7 @@ namespace m3d
             if (w && w->m_uniqueId != -1)
             {
                 m_allWindowsById.removeByKey(w->m_uniqueId);
-                m_allWindows.removeByKey(reinterpret_cast<unsigned>(w));
+                m_allWindows.removeByKey(reinterpret_cast<std::uintptr_t>(w));
                 w->m_uniqueId = -1;
             }
         }

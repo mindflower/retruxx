@@ -397,9 +397,9 @@ namespace m3d
         return m_bMouseYAxisFlipped;
     }
 
-    int Application::ImmediateMessage(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
+    Event Application::MakeMessageEvent(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
     {
-        // RVA 0x5A71F0
+        // The event both ImmediateMessage (RVA 0x5A71F0) and EnqueueMessage (RVA 0x5A70C0) build.
         Event ev;
         // Reads the timer's current time as is, without advancing it, and converts it to seconds.
         ev.m_timeStamp = g_Kernel->GetTimer()._GetCurTime() * 0.001;
@@ -410,6 +410,28 @@ namespace m3d
         ev.m_intEv[3] = p3;
         ev.m_strEv = p4;
         ev.m_aiParamEv = p5;
+        return ev;
+    }
+
+    int Application::ImmediateMessage(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
+    {
+        // RVA 0x5A71F0
+        return HandleEvent(MakeMessageEvent(msg, p0, p1, p2, p3, p4, p5));
+    }
+
+    int Application::ImmediateMessage(int msg, void* ptr0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
+    {
+        Event ev = MakeMessageEvent(msg, 0, p1, p2, p3, p4, p5);
+        ev.m_ptrEv[0] = ptr0;
+        return HandleEvent(ev);
+    }
+
+    int Application::ImmediateMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, CStr const& p4,
+                                      AIParam const& p5)
+    {
+        Event ev = MakeMessageEvent(msg, 0, 0, p2, p3, p4, p5);
+        ev.m_ptrEv[0] = ptr0;
+        ev.m_ptrEv[1] = ptr1;
         return HandleEvent(ev);
     }
 
@@ -1154,7 +1176,7 @@ namespace m3d
         return 1;
     }
 
-    long Application::MsgProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
+    LRESULT Application::MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         // RVA 0x5A7D80
         switch (uMsg)
@@ -3662,7 +3684,7 @@ namespace m3d
         {
             m3d::Event ev;
             ev.m_eventType = 5;
-            ev.m_void[0] = entity;
+            ev.m_ptrEv[0] = entity;
             m_focusKbdEntity->HandleEvent(ev);
         }
 
@@ -3671,7 +3693,7 @@ namespace m3d
         {
             m3d::Event ev;
             ev.m_eventType = 6;
-            ev.m_void[0] = entity;
+            ev.m_ptrEv[0] = entity;
             m_focusKbdEntity->HandleEvent(ev);
         }
     }
@@ -5984,28 +6006,24 @@ namespace m3d
         AIParam const& param5)
     {
         // RVA 0x5A70C0
-        Event ev;
-        // Reads the timer's current time as is, without advancing it.
-        ev.m_timeStamp = g_Kernel->GetTimer()._GetCurTime() * 0.001;
-        ev.m_eventType = msg;
-        ev.m_intEv[0] = param0;
-        ev.m_intEv[1] = param1;
-        ev.m_intEv[2] = p2;
-        ev.m_intEv[3] = p3;
-        ev.m_strEv = param4;
-        ev.m_aiParamEv = param5;
+        EnqueueEvent(MakeMessageEvent(msg, param0, param1, p2, p3, param4, param5));
+    }
 
-        auto head = m_eventsQueueHead;
-        auto newHead = head + 1;
-        if (newHead >= 5000)
-        {
-            newHead = 0;
-        }
-        if (newHead != m_eventsQueueTail)
-        {
-            m_eventsQueue[head] = ev;
-            m_eventsQueueHead = newHead;
-        }
+    void Application::EnqueueMessage(int msg, void* ptr0, int param1, int p2, int p3, CStr const& param4,
+                                     AIParam const& param5)
+    {
+        Event ev = MakeMessageEvent(msg, 0, param1, p2, p3, param4, param5);
+        ev.m_ptrEv[0] = ptr0;
+        EnqueueEvent(ev);
+    }
+
+    void Application::EnqueueMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, CStr const& param4,
+                                     AIParam const& param5)
+    {
+        Event ev = MakeMessageEvent(msg, 0, 0, p2, p3, param4, param5);
+        ev.m_ptrEv[0] = ptr0;
+        ev.m_ptrEv[1] = ptr1;
+        EnqueueEvent(ev);
     }
 
     void Application::PutSpriteRel(float x1, float y1, float x2, float y2, unsigned c)

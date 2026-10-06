@@ -122,7 +122,8 @@ namespace m3d
             void OnBearWindow(m3d::ui::Wnd*);
 
         private:
-            /* 0x0280 */ m3d::CIntHash<int> m_allWindows;
+            // Keyed by the window's address; a machine word so that it is not truncated on x64.
+            /* 0x0280 */ m3d::CIntHash<int, std::uintptr_t> m_allWindows;
             /* 0x02a8 */ m3d::CIntHash<m3d::ui::Wnd*> m_allWindowsById;
             void RegisterWnd(m3d::ui::Wnd* w);
             void UnregisterWnd(m3d::ui::Wnd* w);

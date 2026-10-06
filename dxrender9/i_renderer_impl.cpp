@@ -51,7 +51,7 @@ namespace m3d
         // orig 0x645290 i_renderer_shader.h:285
         IEffect::~IEffect() {}
 
-        const unsigned int IHlslShader::INVALID_PARAM = 0xffffffff;
+        const IHlslShader::ParameterHandle IHlslShader::INVALID_PARAM = static_cast<IHlslShader::ParameterHandle>(-1);
 
         // orig 0x6429e0 i_renderer_query.h:156
         QueryReturnValue::QueryReturnValue() :

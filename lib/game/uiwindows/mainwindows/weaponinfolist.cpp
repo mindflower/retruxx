@@ -494,7 +494,7 @@ int WeaponInfoList::AddGroupButton(int group, BoundsBase<float> const& btnB, Wea
     btn->SetPaneFlags(0);
     btn->SetDefaultFont(1);
     btn->SetTextColor(m_textColor);
-    btn->SetInt(reinterpret_cast<unsigned int>(wiw));
+    btn->SetInt(reinterpret_cast<std::uintptr_t>(wiw));
     SetTooltipForGroupButton(btn);
     m_groupButtons.push_back(btn);
     AddChild(btn);

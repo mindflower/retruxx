@@ -723,7 +723,7 @@ namespace m3d
             return Object::ReadFromXmlNode(xmlFile, xmlNode);
         }
 
-        unsigned Wnd::GetInt() const
+        std::uintptr_t Wnd::GetInt() const
         {
             return m_int;
         }
@@ -861,7 +861,7 @@ namespace m3d
             return 1;
         }
 
-        void Wnd::SetInt(unsigned ii)
+        void Wnd::SetInt(std::uintptr_t ii)
         {
             m_int = ii;
         }
@@ -1627,11 +1627,11 @@ namespace m3d
                 m_currentAnimation.m_purpose = AnimationInfo::PURPOSE_UNKNOWN;
                 if (bUrgent)
                 {
-                    M3D_APP->ImmediateMessage(42, (int)this, 0, 0, 0, {}, {});
+                    M3D_APP->ImmediateMessage(42, this, 0, 0, 0, {}, {});
                 }
                 else
                 {
-                    M3D_APP->EnqueueMessage(42, (int)this, 0, 0, 0, {}, {});
+                    M3D_APP->EnqueueMessage(42, this, 0, 0, 0, {}, {});
                 }
             }
         }
@@ -1971,14 +1971,14 @@ namespace m3d
                 {
                     if (!m_toolTipTimeOut)
                     {
-                        Application::g_pApp->EnqueueMessage(45, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                        Application::g_pApp->EnqueueMessage(45, this, 0, 0, 0, {}, {});
                         m_toolTipTimeOut = -1;
                     }
                 }
                 else if (!m_toolTipTimeOut)
                 {
                     m_toolTipWnd = CreateTooltipWnd();
-                    Application::g_pApp->EnqueueMessage(44, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                    Application::g_pApp->EnqueueMessage(44, this, 0, 0, 0, {}, {});
                     m_toolTipTimeOut = 3000;
                 }
             }
@@ -2465,7 +2465,7 @@ namespace m3d
 
         int ModalWnd::CloseModal(int val)
         {
-            M3D_APP->EnqueueMessage(39, reinterpret_cast<int>(this), val, 0, 0, {}, {});
+            M3D_APP->EnqueueMessage(39, this, val, 0, 0, {}, {});
             return 1;
         }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <vector>
 #include <math/matrix.h>
 #include <math/point2d.h>
@@ -182,9 +183,16 @@ namespace m3d
         /* 0x0185 */ char Padding_113[3];
 
     protected:
-        /* 0x0188 */ int m_properties[3];
+        // retruxx adaptation: the server slots PROP_SERVER_SLOT / PROP_SERVER_SLOT_1 hold the
+        // per-node data pointers of the servers (particle info, animated model, effect list); the
+        // shipped build kept them as ints, here each is a machine word moved as a pointer.
+        /* 0x0188 */ std::uintptr_t m_properties[3];
         /* 0x0194 */ CStr m_debugMsg;
-        /* 0x01a0 */ unsigned int m_props[10];
+        // retruxx adaptation: the generic node properties PROP_NODE_FIRST..PROP_NODE_GAMEOBJECT. The
+        // shipped build kept them as unsigned ints and stored pointers in four of them (physic body,
+        // geom objects list, last parent, game object), so each slot is a machine word here;
+        // GetProperty and SetProperty move the pointer-valued ones as pointers.
+        /* 0x01a0 */ std::uintptr_t m_props[10];
         /* 0x01c8 */ m3d::GraphItemsForSgNode* m_forGraph;
 
     public:

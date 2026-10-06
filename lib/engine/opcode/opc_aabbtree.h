@@ -30,7 +30,7 @@
 		/* Data access */																								\
 		inline_	const volume*		Get##volume()	const	{ return &mBV;							}					\
 		/* Clear the last bit */																						\
-		inline_	const base_class*	GetPos()		const	{ return (const base_class*)(mPos&~1);	}					\
+		inline_	const base_class*	GetPos()		const	{ return (const base_class*)(mPos&~uptr(1));	}					\
 		inline_	const base_class*	GetNeg()		const	{ const base_class* P = GetPos(); return P ? P+1 : null;}	\
 																														\
 		/* We don't need to test both nodes since we can't have one without the other	*/								\
@@ -43,7 +43,7 @@
 		/* Following data always belong to the BV-tree, regardless of what the tree actually contains.*/				\
 		/* Whatever happens we need the two children and the enclosing volume.*/										\
 				volume				mBV;		/* Global bounding-volume enclosing all the node-related primitives */	\
-				udword				mPos;		/* "Positive" & "Negative" children */
+				uptr				mPos;		/* "Positive" & "Negative" children */
 #else
 	//! TO BE DOCUMENTED
 	#define IMPLEMENT_TREE(base_class, volume)																			\
@@ -54,8 +54,8 @@
 		/* Data access */																								\
 		inline_	const volume*		Get##volume()	const	{ return &mBV;							}					\
 		/* Clear the last bit */																						\
-		inline_	const base_class*	GetPos()		const	{ return (const base_class*)(mPos&~1);	}					\
-		inline_	const base_class*	GetNeg()		const	{ return (const base_class*)(mNeg&~1);	}					\
+		inline_	const base_class*	GetPos()		const	{ return (const base_class*)(mPos&~uptr(1));	}					\
+		inline_	const base_class*	GetNeg()		const	{ return (const base_class*)(mNeg&~uptr(1));	}					\
 																														\
 /*		inline_	bool				IsLeaf()		const	{ return (!GetPos() && !GetNeg());	}	*/					\
 		/* We don't need to test both nodes since we can't have one without the other	*/								\
@@ -68,8 +68,8 @@
 		/* Following data always belong to the BV-tree, regardless of what the tree actually contains.*/				\
 		/* Whatever happens we need the two children and the enclosing volume.*/										\
 				volume				mBV;		/* Global bounding-volume enclosing all the node-related primitives */	\
-				udword				mPos;		/* "Positive" child */													\
-				udword				mNeg;		/* "Negative" child */
+				uptr				mPos;		/* "Positive" child */													\
+				uptr				mNeg;		/* "Negative" child */
 #endif
 
 	typedef		void				(*CullingCallback)		(udword nb_primitives, udword* node_primitives, BOOL need_clipping, void* user_data);

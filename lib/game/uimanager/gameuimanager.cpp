@@ -977,7 +977,7 @@ int GameUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void*
         auto const ev = static_cast<m3d::Event*>(data);
         for (auto const& window : m_windows)
         {
-            if (ev->m_void[0] == window.second.get())
+            if (ev->m_ptrEv[0] == window.second.get())
             {
                 m_onScreenWindows.erase(window.first);
                 GUI_EndModalDlg();
@@ -1061,7 +1061,7 @@ int GameUiManager::GUI_HideWindow(int wndId, bool canBeShownAgain, int* modalRet
             {
                 retVal = *modalRetVal;
             }
-            M3D_APP->EnqueueMessage(m3d::EV_UI_CLOSE_MODAL_WND, reinterpret_cast<int>(modalWnd), retVal, 0, 0, {}, {});
+            M3D_APP->EnqueueMessage(m3d::EV_UI_CLOSE_MODAL_WND, modalWnd, retVal, 0, 0, {}, {});
         }
     }
     else

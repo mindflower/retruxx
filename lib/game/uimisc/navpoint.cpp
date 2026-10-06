@@ -597,7 +597,7 @@ int NavPointManager::UpdateOnQuestTaken(void* data)
     {
         return 0;
     }
-    int const questId = static_cast<int*>(data)[13];
+    int const questId = static_cast<m3d::Event*>(data)->m_intEv[0];
     QuestInfoManager* qim = M3D_APP->m_pInterfaceManager->GetQuestInfoManager();
     ai::Quest* quest = ai::theQuestManager->GetQuestById(questId);
     if (!quest)
@@ -625,7 +625,7 @@ int NavPointManager::UpdateOnQuestStateChanged(void* data)
     {
         return 0;
     }
-    int const questId = static_cast<int*>(data)[13];
+    int const questId = static_cast<m3d::Event*>(data)->m_intEv[0];
     if (!ai::theQuestStateManager->GetQuestStateById(questId))
     {
         return 0;
@@ -672,7 +672,7 @@ int NavPointManager::UpdateOnDynamicQuestStateChanged(void* data)
         return 0;
     }
 
-    int const questId = static_cast<int*>(data)[13];
+    int const questId = static_cast<m3d::Event*>(data)->m_intEv[0];
     ai::Obj* obj = ai::theObjects->GetEntityByObjId(questId);
     if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
     {

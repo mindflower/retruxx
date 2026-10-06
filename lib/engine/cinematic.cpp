@@ -241,7 +241,7 @@ namespace m3d
         _Fix();
     }
 
-    unsigned CameraPath::size() const
+    std::size_t CameraPath::size() const
     {
         return m_cameraPathStates.size();
     }

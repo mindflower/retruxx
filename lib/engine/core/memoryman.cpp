@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <stdexcept>
 
@@ -15,10 +17,10 @@ namespace
 {
     // Block header magic values: live blocks carry kMagic in m_magic and kTrailer after their data, freed ones
     // carry the freed pair.
-    constexpr int kMagic = static_cast<int>(0xDEADBEEF);
-    constexpr int kTrailer = static_cast<int>(0xFEEBDAED);
-    constexpr int kFreedMagic = 0x21524110;
-    constexpr int kFreedTrailer = 0x01142512;
+    constexpr uint32_t kMagic        = 0xDEADBEEFu;
+    constexpr uint32_t kTrailer      = 0xFEEBDAEDu;
+    constexpr uint32_t kFreedMagic   = 0x21524110u;
+    constexpr uint32_t kFreedTrailer = 0x01142512u;
 
     // m_nextBlock of a block that has its own chunk (a big allocation).
     m3d::auxBlockHeader* const kOwnChunk = reinterpret_cast<m3d::auxBlockHeader*>(-1);
@@ -31,7 +33,7 @@ namespace
 
 namespace m3d
 {
-    int MemoryManager::debugMemLastUnsuccessfulAllocSize() const
+    std::size_t MemoryManager::debugMemLastUnsuccessfulAllocSize() const
     {
         // RVA 0x589400
         return m_lastUnsuccessfulAllocationSize;
@@ -50,10 +52,10 @@ namespace m3d
         m_chunks = nullptr;
         for (int i = 0; i < 7; ++i)
         {
-            int const size = 1 << (i + 4);
+            int const size = 1u << (i + 4u);
             m_b_size[i] = size;
-            m_b_num[i] = 0x4000 / size;
-            m_blocks[i] = NewChunk(size, 0x4000 / size);
+            m_b_num[i] = 0x4000u / size;
+            m_blocks[i] = NewChunk(size, 0x4000u / size);
             if (!m_blocks[i])
             {
                 __debugbreak();
@@ -61,7 +63,7 @@ namespace m3d
         }
     }
 
-    void* MemoryManager::Realloc(void* p, int newSize, char const* src_name, int src_line)
+    void* MemoryManager::Realloc(void* p, std::size_t newSize, char const* src_name, int src_line)
     {
         // RVA 0x748C10
         AutoLock lock(m_cs);
@@ -77,7 +79,7 @@ namespace m3d
         void* const n = Malloc(newSize, src_name, src_line);
         if (n)
         {
-            int const oldSize = (static_cast<auxBlockHeader*>(p) - 1)->m_size;
+            const std::size_t oldSize = (static_cast<auxBlockHeader*>(p) - 1)->m_size;
             memcpy(n, p, newSize > oldSize ? oldSize : newSize);
             Free(p);
         }
@@ -109,7 +111,7 @@ namespace m3d
             return;
         }
         // m_nextBlock of a pooled block holds the index of its size class while the block is in use.
-        int const v = reinterpret_cast<int>(block->m_nextBlock);
+        int const v = static_cast<int>(reinterpret_cast<std::intptr_t>(block->m_nextBlock));
         block->m_nextBlock = m_blocks[v];
         m_blocks[v] = block;
         block->m_size = 0;
@@ -121,8 +123,8 @@ namespace m3d
         // RVA 0x748820 - writes a leak report and frees every chunk; the critical section is deleted by the m_cs
         // member.
         // NOTE: m_firstChunk is left pointing at the freed first chunk.
-        unsigned int appMemLost = 0;
-        unsigned int appMemLostOverhead = 0;
+        std::size_t appMemLost = 0;
+        std::size_t appMemLostOverhead = 0;
         int blocksLost = 0;
         FILE* const file = fopen("memlog.txt", "w");
         if (file)
@@ -188,7 +190,7 @@ namespace m3d
         }
     }
 
-    unsigned MemoryManager::debugMemUsed() const
+    std::size_t MemoryManager::debugMemUsed() const
     {
         // RVA 0x5893D0
         return m_memUsed;
@@ -218,13 +220,14 @@ namespace m3d
         }
     }
 
-    auxBlockHeader* MemoryManager::NewChunk(int bsize, int bnum)
+    auxBlockHeader* MemoryManager::NewChunk(std::size_t bsize, int bnum)
     {
         // RVA 0x748670 - a chunk is a header followed by bnum blocks of a 12-byte header, bsize bytes of data and a
         // 4-byte trailer; its blocks are returned linked into a free list.
-        int const stride = bsize + 16;
-        m_memOverhead += 16;
-        int const total = bnum * stride + 16;
+        const std::size_t overhead = sizeof(auxBlockHeader) + sizeof(int);
+        const std::size_t stride = bsize + overhead;
+        m_memOverhead += overhead;
+        const std::size_t total = bnum * stride + sizeof(auxChunkHeader);
         auxChunkHeader* const chunk = static_cast<auxChunkHeader*>(malloc(total));
         if (!chunk)
         {
@@ -261,13 +264,13 @@ namespace m3d
         return reinterpret_cast<auxBlockHeader*>(first);
     }
 
-    unsigned MemoryManager::debugMemAllocated() const
+    std::size_t MemoryManager::debugMemAllocated() const
     {
         // RVA 0x5893E0
         return m_memAllocated;
     }
 
-    unsigned MemoryManager::debugMemOverhead() const
+    std::size_t MemoryManager::debugMemOverhead() const
     {
         // RVA 0x5893F0
         return m_memOverhead;
@@ -279,7 +282,7 @@ namespace m3d
         CheckMemory();
     }
 
-    void* MemoryManager::Malloc(int size, char const* src_name, int src_line)
+    void* MemoryManager::Malloc(size_t size, char const* src_name, int src_line)
     {
         // RVA 0x748A30
         AutoLock lock(m_cs);
@@ -327,7 +330,7 @@ namespace m3d
                 __debugbreak();
             }
         }
-        block->m_nextBlock = reinterpret_cast<auxBlockHeader*>(v);
+        block->m_nextBlock = reinterpret_cast<auxBlockHeader*>(static_cast<std::intptr_t>(v));
         block->m_size = size;
         block->m_magic = kMagic;
         Trailer(block) = kTrailer;
@@ -347,7 +350,7 @@ namespace m3d
         free(d);
     }
 
-    void* __fastcall MemoryManager::operator new(unsigned int sz)
+    void* __fastcall MemoryManager::operator new(size_t sz)
     {
         return malloc(sz);
     }

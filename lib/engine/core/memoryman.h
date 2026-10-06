@@ -1,4 +1,6 @@
 #pragma once
+#include <cstddef>
+
 #include <core/threadsync.h>
 
 namespace m3d
@@ -7,15 +9,15 @@ namespace m3d
     {
         auxChunkHeader* m_nextChunk;
         auxChunkHeader* m_prevChunk;
-        int m_bnum;
-        int m_bsize;
+        std::size_t     m_bnum;
+        std::size_t     m_bsize;
     };
 
     struct auxBlockHeader
     {
         auxBlockHeader* m_nextBlock;
-        int m_size;
-        int m_magic;
+        std::size_t     m_size;
+        int             m_magic;
     };
 
     class MemoryManager
@@ -24,34 +26,34 @@ namespace m3d
         /* 0x0000 */ m3d::auxChunkHeader* m_firstChunk = nullptr;
         /* 0x0004 */ m3d::auxChunkHeader* m_chunks = nullptr;
         /* 0x0008 */ m3d::auxBlockHeader* m_blocks[7];
-        /* 0x0024 */ int m_b_size[7];
-        /* 0x0040 */ int m_b_num[7];
+        /* 0x0024 */ std::size_t m_b_size[7];
+        /* 0x0040 */ std::size_t m_b_num[7];
         MemoryManager();
         ~MemoryManager();
-        static void* __fastcall operator new(unsigned int sz);
-        static void __fastcall operator delete(void* d);
-        m3d::auxBlockHeader* NewChunk(int bsize, int bnum);
+        static void* operator new(std::size_t sz);
+        static void operator delete(void* d);
+        m3d::auxBlockHeader* NewChunk(std::size_t bsize, int bnum);
         void FreeChunk(m3d::auxChunkHeader* ch);
-        void* Malloc(int size, const char* src_name, int src_line);
-        void* Realloc(void* p, int newSize, const char* src_name, int src_line);
+        void* Malloc(size_t size, const char* src_name, int src_line);
+        void* Realloc(void* p, size_t newSize, const char* src_name, int src_line);
         void Free(void* p);
         void DumpMemory(const char* filename);
         void DumpMemoryFootprint(bool bDetailed) const;
-        unsigned int debugMemUsed() const;
-        unsigned int debugMemAllocated() const;
-        unsigned int debugMemOverhead() const;
-        int debugMemLastUnsuccessfulAllocSize() const;
+        std::size_t debugMemUsed() const;
+        std::size_t debugMemAllocated() const;
+        std::size_t debugMemOverhead() const;
+        std::size_t debugMemLastUnsuccessfulAllocSize() const;
         void turnAggressiveDebugMode(bool bOn);
         void CheckMemory();
 
     private:
         /* 0x005c */ m3d::CriticalSection m_cs;
-        /* 0x0074 */ unsigned int m_memAllocated = 0;
-        /* 0x0078 */ unsigned int m_memUsed = 0;
-        /* 0x007c */ unsigned int m_numNewChunks = 0;
-        /* 0x0080 */ unsigned int m_memNumAlloc = 0;
-        /* 0x0084 */ unsigned int m_memNumAllocToBreakIn = 0;
-        /* 0x0088 */ unsigned int m_memOverhead = 0;
-        /* 0x008c */ int m_lastUnsuccessfulAllocationSize = 0;
+        /* 0x0074 */ std::size_t m_memAllocated = 0;
+        /* 0x0078 */ std::size_t m_memUsed = 0;
+        /* 0x007c */ std::size_t m_numNewChunks = 0;
+        /* 0x0080 */ std::size_t m_memNumAlloc = 0;
+        /* 0x0084 */ std::size_t m_memNumAllocToBreakIn = 0;
+        /* 0x0088 */ std::size_t m_memOverhead = 0;
+        /* 0x008c */ std::size_t m_lastUnsuccessfulAllocationSize = 0;
     }; /* size: 0x0090 */
 }

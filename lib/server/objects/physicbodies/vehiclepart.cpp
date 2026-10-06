@@ -950,7 +950,7 @@ namespace ai
     VehiclePart::VehiclePart(VehiclePartPrototypeInfo const& prototypeInfo) :
         PhysicBody(prototypeInfo),
         m_price(prototypeInfo.m_price),
-        m_durability(prototypeInfo.m_durability, 0.0, prototypeInfo.m_durability, 0.0)
+        m_durability(prototypeInfo.m_durability, 0.0f, prototypeInfo.m_durability, 0.0f)
     {
         m_durability.m_AfterValueChange =
             new AfterChangeFloatCallback(*this, &VehiclePart::_OnDurabilityValueAfterChange);

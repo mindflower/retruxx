@@ -544,7 +544,8 @@ namespace ai
             // and the action is always set to 0.
             int nullValue = 0;
             node->SetProperty(m3d::PROP_DM_ACTION, &nullValue);
-            node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &nullValue);
+            PhysicBody* noBody = nullptr;
+            node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &noBody);
 
             // Uniform scale on all three axes. Passing the bare float would
             // implicitly build CVector(scale) - which is {scale, 0, 0}, and

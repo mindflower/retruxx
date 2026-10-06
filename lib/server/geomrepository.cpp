@@ -117,7 +117,7 @@ namespace ai
                 obj->RefreshMass();
             }
         }
-        M3D_APP->EnqueueMessage(66537, (int)this, 0, 0, 0, {}, {});
+        M3D_APP->EnqueueMessage(66537, this, 0, 0, 0, {}, {});
     }
 
     bool GeomRepository::SetGeomSize(PointBase<int> const& geomSize)

@@ -61,7 +61,9 @@ namespace m3d
         /* 0x0000 */ tStrHash m_hash;
     }; /* size: 0x000c */
 
-    template <class T>
+    // K is the key type: unsigned int as in the original, or a pointer-sized integer where the
+    // original keyed by an address (the window station's registry of live windows).
+    template <class T, class K = unsigned int>
     class CIntHash
     {
     public:
@@ -74,12 +76,12 @@ namespace m3d
             m_hash.clear();
         }
 
-        void removeByKey(unsigned int key)
+        void removeByKey(K key)
         {
             m_hash.erase(key);
         }
 
-        bool getValueByKey(unsigned int key, T& v) const
+        bool getValueByKey(K key, T& v) const
         {
             auto it = m_hash.find(key);
             if (it == m_hash.end())
@@ -91,13 +93,13 @@ namespace m3d
         }
 
         // Inlined in the binary as lower_bound, insert if missing, then assign: an existing key is overwritten.
-        void addValueByKey(unsigned int key, T const& val)
+        void addValueByKey(K key, T const& val)
         {
             m_hash[key] = val;
         }
 
         //using tHashFunction = stdext::hash_compare<unsigned int, std::less<unsigned int> >;
-        using tHash = retruxx::hash_map<unsigned int, T>;
+        using tHash = retruxx::hash_map<K, T>;
         class tHashIt;
         class tConstHashIt;
 

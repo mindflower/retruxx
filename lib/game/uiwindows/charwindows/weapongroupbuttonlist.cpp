@@ -486,11 +486,11 @@ void WeaponGroupButtonList::OnVehiclePartChanged(void* data)
     {
         return;
     }
-    if (static_cast<int*>(data)[13] != m_vehicleId)
+    if (static_cast<m3d::Event*>(data)->m_intEv[0] != m_vehicleId)
     {
         return;
     }
-    if (CStr::my_strcmp(static_cast<char const**>(data)[3], m_gunPartName.c_str()) != 0)
+    if (CStr::my_strcmp(static_cast<m3d::Event*>(data)->m_strEv.c_str(), m_gunPartName.c_str()) != 0)
     {
         return;
     }

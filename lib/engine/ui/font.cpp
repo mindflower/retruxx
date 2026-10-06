@@ -329,7 +329,7 @@ namespace m3d
             m_nameFull = prototype->m_nameFull;
             m_heightUnscaled = heightUnscaled;
             auto vieport = Application::g_pApp->m_renderer->GetViewport();
-            m_heightScaled = (vieport.m_width * heightUnscaled) * 0.0009765625;
+            m_heightScaled = (vieport.m_width * heightUnscaled) * 0.0009765625f;
             m_scaleTex = (prototype->m_scaleTex / prototype->m_heightScaled) * m_heightScaled;
             m_textures = prototype->m_textures;
             for (auto& tex : m_textures)
@@ -1115,7 +1115,8 @@ namespace m3d
         unsigned FontManager::GetCodePageByCharset(unsigned charset)
         {
             CHARSETINFO charsetInfo{};
-            if (::TranslateCharsetInfo(reinterpret_cast<DWORD*>(charset), &charsetInfo, TCI_SRCCHARSET))
+            if (::TranslateCharsetInfo(reinterpret_cast<DWORD*>(static_cast<std::uintptr_t>(charset)), &charsetInfo,
+                                       TCI_SRCCHARSET))
             {
                 return charsetInfo.ciACP;
             }
@@ -1135,7 +1136,7 @@ namespace m3d
         unsigned FontManager::GetCharsetByCodePage(unsigned codePage)
         {
             CHARSETINFO info{};
-            if (::TranslateCharsetInfo((DWORD*)codePage, &info, 2))
+            if (::TranslateCharsetInfo(reinterpret_cast<DWORD*>(static_cast<std::uintptr_t>(codePage)), &info, 2))
             {
                 return info.ciCharset;
             }

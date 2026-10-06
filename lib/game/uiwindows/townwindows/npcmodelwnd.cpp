@@ -129,7 +129,7 @@ void NpcModelWnd::OnNpcReplyShown(void* data)
         return;
     }
 
-    int replyNpcId = reinterpret_cast<int const*>(data)[13];
+    int replyNpcId = static_cast<m3d::Event const*>(data)->m_intEv[0];
     if (replyNpcId != m_npcId)
     {
         return;

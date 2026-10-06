@@ -40,16 +40,13 @@ namespace m3d
 
 		bool CFileEnum::StartEnumeration(char const* const szEnumPathAndPattern, _finddata_t* pFile)
 		{
-			int v4; // eax
-
 			if (this->m_hEnumFile)
 			{
 				_findclose(this->m_hEnumFile);
 				this->m_hEnumFile = 0;
 			}
-			v4 = _findfirst(szEnumPathAndPattern, pFile);
-			this->m_hEnumFile = v4;
-			if (v4 != -1)
+			this->m_hEnumFile = _findfirst(szEnumPathAndPattern, pFile);
+			if (this->m_hEnumFile != -1)
 				return 1;
 			_findclose(-1);
 			this->m_hEnumFile = 0;

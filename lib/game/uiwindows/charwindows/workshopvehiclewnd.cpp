@@ -236,7 +236,7 @@ int WorkshopVehicleWnd::GameDataUpdate(void* data, int dataType)
     else if (dataType == DATATYPE_REPOSITORY_CHANGED)
     {
         if (data && IsChildOf(M3D_APP) &&
-            static_cast<ai::GeomRepository**>(data)[13] == GetWorkshopRepository())
+            static_cast<m3d::Event*>(data)->m_ptrEv[0] == GetWorkshopRepository())
         {
             OnRepositoryChanged();
             return 1;
@@ -593,7 +593,8 @@ void WorkshopVehicleWnd::OnFinishTrade(void* data)
 {
     // RVA 0x48BF90 - a completed purchase closes the showroom; a cancelled one
     // leaves it up.
-    if ((m_gameDataFlags & 1) != 0 && data && static_cast<int*>(data)[13] && !static_cast<int*>(data)[14])
+    if ((m_gameDataFlags & 1) != 0 && data && static_cast<m3d::Event*>(data)->m_intEv[0] &&
+        !static_cast<m3d::Event*>(data)->m_intEv[1])
     {
         Hide();
     }

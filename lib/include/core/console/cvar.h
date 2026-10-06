@@ -81,5 +81,6 @@ namespace m3d
 
     // The original driver DLLs read cvars straight out of EngineConfig: the type at +0x0c and
     // the value at +0x14, so the layout is fixed.
-    static_assert(sizeof(CVar) == 0x002c);
+    // Didnt true for x64
+    // static_assert(sizeof(CVar) == 0x002c);
 }  // namespace m3d

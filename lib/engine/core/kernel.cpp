@@ -29,12 +29,12 @@ namespace
     retruxx::map<CStr, m3d::Object*>* m_lGlobals = nullptr;
     m3d::MemoryManager* mm = nullptr;
 
-    void* __fastcall AllocateMemory(unsigned int sz, char const* file, int linenum)
+    void* __fastcall AllocateMemory(std::size_t sz, char const* file, int linenum)
     {
         return mm->Malloc(sz, file, linenum);
     }
 
-    void* __fastcall ReallocateMemory(void* mem, unsigned int sz, char const* file, int linenum)
+    void* __fastcall ReallocateMemory(void* mem, std::size_t sz, char const* file, int linenum)
     {
         return mm->Realloc(mem, sz, file, linenum);
     }
