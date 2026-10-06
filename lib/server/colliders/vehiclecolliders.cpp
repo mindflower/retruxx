@@ -20,6 +20,7 @@
 #include "server/server.h"
 #include "server/objects/base/globalproperties.h"
 #include "server/objects/base/physicobj.h"
+#include "server/objects/dummyobject.h"
 #include "server/objects/physicbodies/physicbody.h"
 #include "server/objects/physicbodies/vehiclepart.h"
 #include "server/objects/player.h"
@@ -37,7 +38,7 @@ namespace ai
 
     float CalcHitVelocity(CVector const& deltaVel, CVector const& normal)
     {
-        // RVA 0x88F6A0 - the squared closing speed along the contact normal,
+        // RVA 0x7D2FC0 - the squared closing speed along the contact normal,
         // with a dead zone so that gentle contact does no damage at all. The
         // configured minimum is in km/h, hence the conversion to m/s.
         float const velProjection =
@@ -139,7 +140,7 @@ namespace ai
         (void)numContacts;
         (void)reverse;
 
-        auto* dummy = static_cast<PhysicObj*>(obj1);
+        auto* dummy = static_cast<DummyObject*>(obj1);
         auto* part = static_cast<VehiclePart*>(obj2);
 
         PhysicObj* owner = part ? part->GetOwner() : nullptr;
@@ -154,10 +155,10 @@ namespace ai
         {
             DamageInfo damageInfo;
 
-            // A dummy flagged this way damages the vehicle anonymously rather
-            // than crediting the dummy as the attacker.
+            // A dummy without physics is an immovable obstacle: the vehicle takes
+            // the whole impact. Otherwise the two masses share it.
             CVector const partPos = part->GetPosition();
-            if (dummy->GetPrototypeInfo()->m_bIsUpdating)
+            if (dummy->GetPrototypeInfo()->m_DisablePhysics)
             {
                 CalcDamageToVehicles(owner, nullptr, contacts, dSpeed, damageInfo, partPos);
             }
