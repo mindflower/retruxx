@@ -407,8 +407,12 @@ namespace ai
         M3D_APP->EnqueueMessage(66565, GetId(), bRuined ? 1 : 0, 0, 0, {}, {});
     }
 
-    Town::Town(TownPrototypeInfo const& prototype) : Settlement(prototype), m_gateTime(0.0, 0.0)
+    Town::Town(TownPrototypeInfo const& prototype) :
+        Settlement(prototype),
+        m_gateTime(0.0, 0.0),
+        m_maxDefenders(prototype.m_maxDefenders)
     {
+        // RVA 0x6F2480
         m_gateState = GATE_CLOSED;
         m_PointOfViewInInterface.x = 5.0f;
         m_PointOfViewInInterface.y = 20.0f;
