@@ -18,7 +18,7 @@ if(MSVC)
     add_compile_options(/MP)
     # Every conversion between a pointer and an integer is an error: on a 64-bit build they
     # truncate (C4311, C4302), widen (C4312, C4306) or sign-extend (C4826) handles and pointers.
-    #add_compile_options(/we4311 /we4312 /we4302 /we4306 /we4826)
+    add_compile_options(/we4311 /we4312 /we4302 /we4306 /we4826)
 endif()
 
 set(BUILD_GMOCK OFF CACHE BOOL "Build only googletest")

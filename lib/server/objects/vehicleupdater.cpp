@@ -95,7 +95,7 @@ namespace ai
         wheelAVel = _CalcWheelAVel();
         for (gear = 0; gear < 5; ++gear)
         {
-            engineRpm = ((Vehicle::GEAR_RATIOS[gear] * m_vehicle->m_diffRatio) * 1.8) * wheelAVel * 9.5492964;
+            engineRpm = ((Vehicle::GEAR_RATIOS[gear] * m_vehicle->m_diffRatio) * 1.8f) * wheelAVel * 9.5492964f;
             if (m_vehicle->m_highGearShiftLimit > engineRpm)
             {
                 break;

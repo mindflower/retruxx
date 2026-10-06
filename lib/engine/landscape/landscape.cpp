@@ -8600,10 +8600,10 @@ namespace m3d
                             double phi = (double)(u + h) * 0.78539819 * 0.5;                  //pi/4 steps
 
                             // Calculate quaternion rotation
-                            float q1 = sin(theta);
-                            float q3 = cos(theta);
-                            float q4 = sin(phi);
-                            float q5 = cos(phi);
+                            float q1 = sinf(theta);
+                            float q3 = cosf(theta);
+                            float q4 = sinf(phi);
+                            float q5 = cosf(phi);
 
                             // Rotate base vector
                             CVector rotatedVec;

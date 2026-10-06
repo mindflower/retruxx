@@ -373,20 +373,20 @@ void CMatrix::GetNormalizedBasis(CVector& x, CVector& y, CVector& z) const
     z.y = _23;
     z.z = _33;
 
-    float const scaleX = sqrt(x.x * x.x + x.y * x.y + x.z * x.z + FLT_EPSILON);
-    x.x = 1.0 / scaleX * x.x;
-    x.y = 1.0 / scaleX * x.y;
-    x.z = 1.0 / scaleX * x.z;
+    float const scaleX = sqrtf(x.x * x.x + x.y * x.y + x.z * x.z + FLT_EPSILON);
+    x.x = 1.0f / scaleX * x.x;
+    x.y = 1.0f / scaleX * x.y;
+    x.z = 1.0f / scaleX * x.z;
 
-    float const scaleY = sqrt(y.x * y.x + y.y * y.y + y.z * y.z + FLT_EPSILON);
-    y.x = 1.0 / scaleY * y.x;
-    y.y = 1.0 / scaleY * y.y;
-    y.z = 1.0 / scaleY * y.z;
+    float const scaleY = sqrtf(y.x * y.x + y.y * y.y + y.z * y.z + FLT_EPSILON);
+    y.x = 1.0f / scaleY * y.x;
+    y.y = 1.0f / scaleY * y.y;
+    y.z = 1.0f / scaleY * y.z;
 
-    float const scaleZ = sqrt(z.x * z.x + z.y * z.y + z.z * z.z + FLT_EPSILON);
-    z.x = 1.0 / scaleZ * z.x;
-    z.y = 1.0 / scaleZ * z.y;
-    z.z = 1.0 / scaleZ * z.z;
+    float const scaleZ = sqrtf(z.x * z.x + z.y * z.y + z.z * z.z + FLT_EPSILON);
+    z.x = 1.0f / scaleZ * z.x;
+    z.y = 1.0f / scaleZ * z.y;
+    z.z = 1.0f / scaleZ * z.z;
 }
 
 CVector CMatrix::vecMul(CVector const& v) const
@@ -638,12 +638,12 @@ CVector CMatrix::getOrgInv() const
 void CMatrix::perspectiveFovLH(float fovY, float aspect, float z0, float z1)
 {
     memset(this, 0, sizeof(CMatrix));
-    auto v5 = z1 / (float)(z1 - z0);
+    auto v5 = z1 / (z1 - z0);
     this->_33 = v5;
-    this->_43 = 0.0 - (float)(v5 * z0);
-    this->_34 = 1.0;
-    this->_11 = 1.0 / tan(fovY * aspect * 0.5);
-    this->_22 = 1.0 / tan(fovY * 0.5);
+    this->_43 = 0.0f - (v5 * z0);
+    this->_34 = 1.0f;
+    this->_11 = 1.0f / std::tan(fovY * aspect * 0.5f);
+    this->_22 = 1.0f / std::tan(fovY * 0.5f);
 }
 
 void CMatrix::rotZ(float a)

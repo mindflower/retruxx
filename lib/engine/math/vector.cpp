@@ -3,7 +3,7 @@
 
 namespace
 {
-    float constexpr THRESHOLD_EPS = 0.0000099999997;
+    float constexpr THRESHOLD_EPS = 0.0000099999997f;
 }
 
 CVector::CVector(float* xx)
@@ -136,7 +136,7 @@ CVector CVector::getNormalized() const
 
 float CVector::length() const
 {
-    return sqrt(lengthSq());
+    return sqrtf(lengthSq());
 }
 
 float CVector::lengthSq() const
@@ -146,10 +146,10 @@ float CVector::lengthSq() const
 
 void CVector::normalizeInplace()
 {
-    float const scale = sqrt(x * x + y * y + z * z + FLT_EPSILON);
-    x = 1.0 / scale * x;
-    y = 1.0 / scale * y;
-    z = 1.0 / scale * z;
+    float const scale = sqrtf(x * x + y * y + z * z + FLT_EPSILON);
+    x = 1.0f / scale * x;
+    y = 1.0f / scale * y;
+    z = 1.0f / scale * z;
 }
 
 void CVector::one()

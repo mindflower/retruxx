@@ -79,5 +79,5 @@ float CVector2::randomValue() const
     auto const x1 = x <= y ? x : y;
     auto const x2 = y <= x ? x : y;
     auto const x3 = x <= y ? x : y;
-    return std::rand() * (x2 - x3) * 0.000030518509 + x1;
+    return std::rand() * (x2 - x3) * 0.000030518509f + x1;
 }

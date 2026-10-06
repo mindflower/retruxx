@@ -695,12 +695,12 @@ namespace ai
 
             CVector const toPoint(point.x - vehiclePos.x, flatY, point.z - vehiclePos.z);
             float const invLenToPoint =
-                1.0 / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929);
+                1.0f / sqrtf(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
             CVector const dirToPoint(invLenToPoint * toPoint.x, toPoint.y * invLenToPoint, toPoint.z * invLenToPoint);
 
             CVector const segment(nextPoint.x - point.x, flatY, nextPoint.z - point.z);
             float const invLenSegment =
-                1.0 / sqrt(segment.z * segment.z + segment.y * segment.y + segment.x * segment.x + 0.00000011920929);
+                1.0f / sqrtf(segment.z * segment.z + segment.y * segment.y + segment.x * segment.x + 0.00000011920929f);
             CVector const dirSegment(invLenSegment * segment.x, segment.y * invLenSegment, segment.z * invLenSegment);
 
             float cosAngle = dirSegment.z * dirToPoint.z + dirSegment.y * dirToPoint.y + dirSegment.x * dirToPoint.x;
@@ -4604,8 +4604,8 @@ namespace ai
     void Vehicle::SetCustomLinearVelocity(float velocityValue)
     {
         auto direction = GetDirection();
-        auto value = 1.0 /
-            sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z + 0.00000011920929);
+        auto value = 1.0f /
+            sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z + 0.00000011920929f);
 
         CVector velocity;
         velocity.x = (direction.x * value) * velocityValue;
@@ -5863,7 +5863,7 @@ namespace ai
             attraction.y = 0.0f;
             attraction.z = 0.0f;
 
-            float const invPredictedLen = 1.0 / sqrt(predictedDistSq + 0.00000011920929);
+            float const invPredictedLen = 1.0f / sqrtf(predictedDistSq + 0.00000011920929f);
             CVector const push(
                 invPredictedLen * predictedDelta.x * ai::theGlobProp.m_repulsiveCoeff,
                 predictedDelta.y * invPredictedLen * ai::theGlobProp.m_repulsiveCoeff,
@@ -5875,8 +5875,8 @@ namespace ai
                 steerZ * up.y - up.z * 0.0f,
                 steerX * up.z - steerZ * up.x,
                 up.x * 0.0f - steerX * up.y);
-            float const invSideLen = 1.0 / sqrt(side.z * side.z + side.y * side.y + side.x * side.x + 0.00000011920929);
-            float const pushLen = sqrt(push.x * push.x + push.z * push.z + push.y * push.y);
+            float const invSideLen = 1.0f / sqrtf(side.z * side.z + side.y * side.y + side.x * side.x + 0.00000011920929f);
+            float const pushLen = sqrtf(push.x * push.x + push.z * push.z + push.y * push.y);
 
             repulsion.x = invSideLen * side.x * pushLen * 0.1f + push.x;
             repulsion.y = invSideLen * side.y * pushLen * 0.1f + push.y;
@@ -5891,7 +5891,7 @@ namespace ai
         }
 
         // Ground-plane direction from the obstacle to the vehicle, crossed with the steering direction.
-        float const invFlatDist = 1.0 / sqrt(flatDistSq + 0.00000011920929);
+        float const invFlatDist = 1.0f / sqrtf(flatDistSq + 0.00000011920929f);
         CVector const flatDir(invFlatDist * delta.x, invFlatDist * 0.0f, delta.z * invFlatDist);
         CVector const cross(
             steerZ * flatDir.y - flatDir.z * 0.0f,

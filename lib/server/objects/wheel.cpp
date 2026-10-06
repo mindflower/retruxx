@@ -20,10 +20,10 @@ namespace ai
 
     WheelPrototypeInfo::WheelPrototypeInfo()
     {
-        this->m_suspensionRange = 0.5;
-        this->m_suspensionCFM = 0.1;
-        this->m_suspensionERP = 0.80000001;
-        this->m_mU = 1.0;
+        this->m_suspensionRange = 0.5f;
+        this->m_suspensionCFM = 0.1f;
+        this->m_suspensionERP = 0.80000001f;
+        this->m_mU = 1.0f;
         this->m_typeName = "BIG";
         this->m_blowEffectName = "ET_PS_HARD_BLOW";
     }

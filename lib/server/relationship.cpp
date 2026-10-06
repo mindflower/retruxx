@@ -221,14 +221,14 @@ namespace ai
         // The stored tolerance is a float, so report the listed step nearest to it.
         auto v10 = GetTolerance(belongId1, belongId2) - (double)(int)m_defaultTolerance;
         eTolerance NearestTol = m_defaultTolerance;
-        float Min = fabs(v10);
+        float Min = fabsf(v10);
         for (auto const& tolerance : m_toleranceList)
         {
             if (Min > fabs(GetTolerance(belongId1, belongId2) - (double)(int)tolerance.m_tolerance))
             {
                 auto Tolerance = GetTolerance(belongId1, belongId2);
                 NearestTol = tolerance.m_tolerance;
-                Min = fabs(Tolerance - (double)(int)tolerance.m_tolerance);
+                Min = fabsf(Tolerance - (double)(int)tolerance.m_tolerance);
             }
         }
         return NearestTol;
