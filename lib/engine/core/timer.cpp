@@ -4,6 +4,7 @@
 #include <core/kernel.h>
 // QueryPerformanceCounter and timeGetTime.
 #include <Windows.h>
+#include <mmsystem.h>
 
 namespace m3d
 {

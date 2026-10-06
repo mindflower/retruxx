@@ -455,6 +455,73 @@ void CMatrix::FromBasis(CVector const& x, CVector const& y, CVector const& z)
     _33 = z.z;
 }
 
+// The four members below are declared in matrix.h but were never defined in retruxx; the
+// renderer (dxrender9) needs them. They are restored from the original binary, where the
+// engine's inline versions were instantiated into dxrender9's matrices.obj / clipPlanes.obj.
+
+// orig 0x625930 matrix.h:222
+float CMatrix::calcDeterminantSimple() const
+{
+    return (_11 * _22 - _12 * _21) * _33 - (_23 * _11 - _13 * _21) * _32 + (_23 * _12 - _13 * _22) * _31;
+}
+
+// orig 0x625970 matrix.h:435 - inverse of an affine (rotation / scale + translation) matrix; a
+// singular matrix gives the zero matrix.
+CMatrix CMatrix::getInverseSimple() const
+{
+    CMatrix res;
+    float det = calcDeterminantSimple();
+    if (det == 0.0f)
+    {
+        res.zero();
+        return res;
+    }
+
+    float idet = 1.0f / det;
+
+    res._11 = (_33 * _22 - _23 * _32) * idet;
+    res._12 = (_13 * _32 - _33 * _12) * idet;
+    res._13 = (_23 * _12 - _13 * _22) * idet;
+    res._14 = 0.0f;
+
+    res._21 = (_23 * _31 - _33 * _21) * idet;
+    res._22 = (_33 * _11 - _13 * _31) * idet;
+    res._23 = (_13 * _21 - _23 * _11) * idet;
+    res._24 = 0.0f;
+
+    res._31 = (_21 * _32 - _31 * _22) * idet;
+    res._32 = (_12 * _31 - _32 * _11) * idet;
+    res._33 = (_11 * _22 - _12 * _21) * idet;
+    res._34 = 0.0f;
+
+    res._41 = ((_33 * _42 - _43 * _32) * _21 + (_41 * _32 - _42 * _31) * _23 + (_43 * _31 - _33 * _41) * _22) * idet;
+    res._42 = ((_43 * _11 - _13 * _41) * _32 + (_12 * _41 - _42 * _11) * _33 + (_13 * _42 - _12 * _43) * _31) * idet;
+    res._43 = ((_12 * _21 - _11 * _22) * _43 + (_23 * _11 - _13 * _21) * _42 + (_13 * _22 - _23 * _12) * _41) * idet;
+    res._44 = 1.0f;
+
+    return res;
+}
+
+// orig 0x6278e0 matrix.h:803
+void CMatrix::transposeInplace()
+{
+    std::swap(_12, _21);
+    std::swap(_13, _31);
+    std::swap(_14, _41);
+    std::swap(_23, _32);
+    std::swap(_24, _42);
+    std::swap(_34, _43);
+}
+
+// orig 0x627950 matrix.h:1264 - the inverse transpose: the matrix that transforms plane
+// coefficients the way this matrix transforms points.
+void CMatrix::createPlaneTransform()
+{
+    CMatrix inv = getInverse();
+    inv.transposeInplace();
+    *this = inv;
+}
+
 CMatrix CMatrix::getInverse() const
 {
     // RVA 0x512490 - Gauss-Jordan elimination on the augmented matrix [M | I] with scaled

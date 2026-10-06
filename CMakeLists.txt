@@ -27,8 +27,9 @@ set(RETRUXX_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/lib")
 
 add_subdirectory(app)
 add_subdirectory(lib)
+add_subdirectory(dxrender9)
 add_subdirectory(tests)
 add_subdirectory(deps/gtest)
 
-add_dependencies(retruxx retruxx_lib)
+add_dependencies(retruxx retruxx_lib dxrender9)
 add_dependencies(retruxx_tests retruxx_lib gtest gtest_main)
