@@ -231,8 +231,8 @@ int CBButton::SetupForCB(int cbId)
 
 int CBButton::LoadPattern(ref_ptr<m3d::ui::Wnd> pattern, Type type)
 {
-    // RVA 0x43C180 - the first list of a kind to come up wins; later ones just
-    // reuse the pattern it stored.
+    // RVA 0x43C180 - the first list of a kind to come up wins; later ones reuse the pattern it
+    // stored and take one more count on it, which their ClearPattern gives back.
     if (!pattern || type == NUM_TYPES)
     {
         M3D_LOG_INFO("CBButton::LoadPattern - error to create - invalid params");
@@ -241,6 +241,7 @@ int CBButton::LoadPattern(ref_ptr<m3d::ui::Wnd> pattern, Type type)
 
     if (m_wndPattern[type])
     {
+        m_wndPattern[type]->IncRef();
         return 1;
     }
     m_wndPattern[type] = pattern;
