@@ -368,7 +368,7 @@ namespace ai
 
                             dContact contact;
                             if (!bCheckBoxes || !obstacleBox ||
-                                dCollide(pLookSphere->GetGeomId(), obstacleBox->GetGeomId(), 1, &contact.geom, 104))
+                                dCollide(pLookSphere->GetGeomId(), obstacleBox->GetGeomId(), 1, &contact.geom, sizeof(dContact)))
                             {
                                 nearCallback(nullptr, pLookSphere->GetGeomId(), obstacleSphere->GetGeomId());
                             }
@@ -383,7 +383,7 @@ namespace ai
                     {
                         dContact contact;
                         if (geomObject->IsKindOf(&m3d::GeomObjectPassCell::m_classGeomObjectPassCell) &&
-                            dCollide(pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, 104))
+                            dCollide(pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, sizeof(dContact)))
                         {
                             bPlayerPassCellCollided = true;
                         }
