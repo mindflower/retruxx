@@ -626,8 +626,7 @@ namespace ai
                 // NOTE: the visibility test uses the map value under the current point as its
                 // threshold rather than m_blockedValue, so how far the path may be straightened
                 // depends on the terrain it is standing on.
-                unsigned char const checkValue = m_pMap->GetValue(
-                    static_cast<int>(m_pPath[curPos].x), static_cast<int>(m_pPath[curPos].y));
+                unsigned char const checkValue = m_pMap->GetValue(m_pPath[curPos].x, m_pPath[curPos].y);
 
                 unsigned int last = m_size - 1;
                 for (unsigned j = curPos + 1; j < m_size; ++j)
@@ -1047,10 +1046,8 @@ namespace ai
             // For a weighted search the threshold is the terrain the path is standing on, so it
             // will not straighten out of rough ground onto smooth; otherwise it is the blocking
             // value the search itself used.
-            unsigned char const checkValue = bForDijkstra
-                ? m_pMap->GetValue(
-                      static_cast<int>(m_pPath[curPos].x), static_cast<int>(m_pPath[curPos].y))
-                : m_blockedValue;
+            unsigned char const checkValue =
+                bForDijkstra ? m_pMap->GetValue(m_pPath[curPos].x, m_pPath[curPos].y) : m_blockedValue;
 
             unsigned int last = m_size - 1;
             for (unsigned j = curPos + 1; j < m_size; ++j)
