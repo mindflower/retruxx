@@ -178,12 +178,9 @@ void InfoWnd::InfoItem::CalculateStringSize()
         return;
     }
 
-    // NOTE: the font id here is ~(m_flags >> 1) with no mask, unlike Draw() which
-    // masks it to 0/1. For every flag combination it therefore comes out negative
-    // - an id GfxServer rejects - so measuring silently keeps whatever font was
-    // current while drawing switches to the big/normal one. Preserved as shipped.
+    // The same font Draw() uses: bit 1 of the flags clear means the big font (id 1).
     m_auxStringSize =
-        GetGfxServer()->MeasureText(m_string, ~(m_flags >> 1), m3d::TW_WORD_WRAP, m_aif.m_maxStringW);
+        GetGfxServer()->MeasureText(m_string, (~(m_flags >> 1)) & 1, m3d::TW_WORD_WRAP, m_aif.m_maxStringW);
 }
 
 PointBase<float> InfoWnd::InfoItem::GetDrawSize() const
