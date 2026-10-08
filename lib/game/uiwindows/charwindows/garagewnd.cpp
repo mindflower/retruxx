@@ -1720,7 +1720,7 @@ void GarageWnd::OnRepositoryChanged(void* data)
         return;
     }
     if (workshop->GetRepositoryByType(ai::WORKSHOP_CABINS_AND_BASKETS) !=
-        reinterpret_cast<ai::GeomRepository*>(static_cast<int*>(data)[13]))
+        static_cast<ai::GeomRepository*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]))
     {
         return;
     }
@@ -1753,12 +1753,12 @@ void GarageWnd::OnFinishTrade(void* data)
 {
     // RVA 0x44C5A0 - a completed cabin or basket trade closes whichever of those
     // two lists is on screen.
-    if ((m_gameDataFlags & 1) == 0 || !data || !static_cast<int*>(data)[13])
+    if ((m_gameDataFlags & 1) == 0 || !data || !static_cast<m3d::Event*>(data)->m_intEv[0])
     {
         return;
     }
 
-    switch (static_cast<int*>(data)[14])
+    switch (static_cast<m3d::Event*>(data)->m_intEv[1])
     {
     case 1:
         if (m_curList && m_curList.get() == static_cast<m3d::ui::Wnd*>(m_wndCabinsList.get()))

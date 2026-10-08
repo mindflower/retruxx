@@ -213,16 +213,16 @@ namespace m3d
 
         struct WaveSets
         {
-            /* 0x0000 */ float m_tcomp = -1.0;
-            /* 0x0004 */ float m_tlevel = 0.1;
-            /* 0x0008 */ float m_tamplitude = 0.25;
-            /* 0x000c */ float m_tphase = 0.0;
-            /* 0x0010 */ float m_tfreq = 0.2;
-            /* 0x0014 */ float m_scomp = -1.0;
-            /* 0x0018 */ float m_slevel = 2.0;
-            /* 0x001c */ float m_samplitude = 0.89999998;
-            /* 0x0020 */ float m_sphase = 0.15000001;
-            /* 0x0024 */ float m_sfreq = 0.2;
+            /* 0x0000 */ float m_tcomp = -1.0f;
+            /* 0x0004 */ float m_tlevel = 0.1f;
+            /* 0x0008 */ float m_tamplitude = 0.25f;
+            /* 0x000c */ float m_tphase = 0.0f;
+            /* 0x0010 */ float m_tfreq = 0.2f;
+            /* 0x0014 */ float m_scomp = -1.0f;
+            /* 0x0018 */ float m_slevel = 2.0f;
+            /* 0x001c */ float m_samplitude = 0.89999998f;
+            /* 0x0020 */ float m_sphase = 0.15000001f;
+            /* 0x0024 */ float m_sfreq = 0.2f;
             /* 0x0028 */ rend::TexHandle m_texHandle;
         }; /* size: 0x002c */
 

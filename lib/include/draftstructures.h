@@ -128,12 +128,12 @@ namespace m3d
         DRAFT_BoneBounds()
         {
             this->BoneIndex = 0;
-            this->MinRot.x = -6.2831855;
-            this->MinRot.y = -6.2831855;
-            this->MinRot.z = -6.2831855;
-            this->MaxRot.x = 6.2831855;
-            this->MaxRot.y = 6.2831855;
-            this->MaxRot.z = 6.2831855;
+            this->MinRot.x = -6.2831855f;
+            this->MinRot.y = -6.2831855f;
+            this->MinRot.z = -6.2831855f;
+            this->MaxRot.x = 6.2831855f;
+            this->MaxRot.y = 6.2831855f;
+            this->MaxRot.z = 6.2831855f;
         }
     }; /* size: 0x001c */
 

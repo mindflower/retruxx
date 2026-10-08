@@ -247,7 +247,7 @@ void WeaponSlotList::OnVehiclePartChanged(void* data)
 {
     // RVA 0x485AF0 - a gun coming or going changes which slots exist, so the
     // whole panel is rebuilt.
-    if (!IsChildOf(M3D_APP) || !data || static_cast<int*>(data)[13] != m_vehicleId)
+    if (!IsChildOf(M3D_APP) || !data || static_cast<m3d::Event*>(data)->m_intEv[0] != m_vehicleId)
     {
         return;
     }

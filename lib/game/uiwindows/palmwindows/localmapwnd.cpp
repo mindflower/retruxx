@@ -327,7 +327,7 @@ int LocalMapWnd::DeleteNavPoint(int npId, bool bWithUserWarning)
 void LocalMapWnd::OnNavPointAdded(void* data)
 {
     // RVA 0x4E97C0
-    if (data && static_cast<int*>(data)[16] == 2)
+    if (data && static_cast<m3d::Event*>(data)->m_intEv[3] == 2)
     {
         UpdateBtnNavPointState();
     }
@@ -336,7 +336,7 @@ void LocalMapWnd::OnNavPointAdded(void* data)
 void LocalMapWnd::OnNavPointDeleted(void* data)
 {
     // RVA 0x4E97E0
-    if (data && static_cast<int*>(data)[16] == 2)
+    if (data && static_cast<m3d::Event*>(data)->m_intEv[3] == 2)
     {
         UpdateBtnNavPointState();
     }
@@ -795,7 +795,7 @@ int LocalMapWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned messa
         }
 
         case 0x19:  // show info for the clicked object
-            ShowInfo(reinterpret_cast<ObjectInfo*>(data.GetAsID()), false);
+            ShowInfo(static_cast<ObjectInfo*>(data.GetAsPointer()), false);
             return 1;
 
         case 0x1B:  // object-name visibility toggled on the chart

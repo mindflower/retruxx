@@ -124,7 +124,7 @@ void GroundWnd::OnRepositoryChanged(void* data)
     }
     ai::GeomRepository* groundRepository = GetGroundRepository();
     if (groundRepository &&
-        groundRepository == reinterpret_cast<ai::GeomRepository*>(static_cast<const m3d::Event*>(data)->m_intEv[0]))
+        groundRepository == static_cast<ai::GeomRepository*>(static_cast<const m3d::Event*>(data)->m_ptrEv[0]))
     {
         UpdatePickupButtonState();
     }

@@ -44,7 +44,7 @@ namespace m3d
         const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& GetCameraPathStates() const;
         void clear();
         bool empty() const;
-        unsigned int size() const;
+        std::size_t size() const;
         void push_back(const m3d::CameraPathState& state);
         void insert(int pointNum, const m3d::CameraPathState& state);
         const m3d::CameraPathState& operator[](unsigned int index) const;

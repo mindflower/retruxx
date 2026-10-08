@@ -102,6 +102,13 @@ namespace m3d
         void texGenProcess(m3d::IGeneratedTexture* tex);
         void EnqueueMessage(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
         int ImmediateMessage(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        // retruxx adaptation: the shipped build packed window and object pointers into param0 and
+        // param1; these carry them in Event::m_ptrEv, the int slots stay as they are.
+        void EnqueueMessage(int msg, void* ptr0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        void EnqueueMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        int ImmediateMessage(int msg, void* ptr0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        int ImmediateMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        m3d::Event MakeMessageEvent(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
         void SetKeyboardFocus(m3d::IEventHandler* entity);
         int GetMouseX() const;
         int GetMouseY() const;
@@ -150,7 +157,7 @@ namespace m3d
         void RunBenchmark();
         int createInput();
         void doneInput();
-        /* 0x0318 */ unsigned long m_dwWindowStyle;
+        /* 0x0318 */ LONG_PTR m_dwWindowStyle;
         /* 0x031c */ tagRECT m_rcWindowBounds;
         /* 0x032c */ tagRECT m_rcWindowClient;
         /* 0x033c */ CStr m_frameStats;
@@ -235,8 +242,8 @@ namespace m3d
         /* 0x581f8 */ HINSTANCE m_hRenderDll;
         /* 0x581fc */ HINSTANCE m_hSoundDll;
         /* 0x58200 */ bool m_breakLoop = false;
-        static long __stdcall WndProc(HWND__* hWnd, unsigned int uMsg, unsigned int wParam, long lParam);
-        long MsgProc(HWND__* hWnd, unsigned int uMsg, unsigned int wParam, long lParam);
+        static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+        LRESULT MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
         /* 0x58201 */ char Padding_311[3];
         /* 0x58204 */ int m_isAppActive = 0;
         int CheckAndLogPlatform();

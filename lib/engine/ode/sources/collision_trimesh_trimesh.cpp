@@ -48,7 +48,7 @@ struct LineContactSet
 };
 
 
-static void GetTriangleGeometryCallback(udword, VertexPointers&, udword);
+static void GetTriangleGeometryCallback(udword, VertexPointers&, void*);
 static void GenerateContact(int, dContactGeom*, int, dxTriMesh*,  dxTriMesh*, 
                             const dVector3, const dVector3, dReal, int&);
 static int TriTriIntersectWithIsectLine(dReal V0[3],dReal V1[3],dReal V2[3],
@@ -943,11 +943,11 @@ dCollideTTL(dxGeom* g1, dxGeom* g2, int Flags, dContactGeom* Contacts, int Strid
 
 
 static void
-GetTriangleGeometryCallback(udword triangleindex, VertexPointers& triangle, udword user_data)
+GetTriangleGeometryCallback(udword triangleindex, VertexPointers& triangle, void* user_data)
 {
     dVector3 Out[3];
 
-    FetchTriangle((dxTriMesh*) user_data, (int) triangleindex, Out);
+    FetchTriangle(static_cast<dxTriMesh*>(user_data), (int) triangleindex, Out);
 
     for (int i = 0; i < 3; i++)
         triangle.Vertex[i] =  (const Point*) ((dReal*) Out[i]);

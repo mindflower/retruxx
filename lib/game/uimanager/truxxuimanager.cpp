@@ -1775,7 +1775,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         {
             // The destroyed-object event carries the object itself, not its id.
             m_objectCollection.RemoveObject(
-                reinterpret_cast<ai::Obj*>(static_cast<intptr_t>(static_cast<m3d::Event*>(data)->m_intEv[0])));
+                static_cast<ai::Obj*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]));
         }
         return 1;
 

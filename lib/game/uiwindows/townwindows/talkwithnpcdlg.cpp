@@ -373,7 +373,7 @@ int TalkWithNpcDlg::GameDataUpdate(void* data, int dataType)
         if (data)
         {
             m_showType = SHOWTYPE_IN_BAR;
-            SetupForNpc(reinterpret_cast<int*>(data)[13]);
+            SetupForNpc(static_cast<m3d::Event*>(data)->m_intEv[0]);
         }
     }
     else if (dataType == 70)
@@ -391,7 +391,7 @@ void TalkWithNpcDlg::OnLocationNpc(void* data)
     {
         return;
     }
-    int const npcId = GetNpcToTalkWithFromLocation(reinterpret_cast<int*>(data)[13]);
+    int const npcId = GetNpcToTalkWithFromLocation(static_cast<m3d::Event*>(data)->m_intEv[0]);
     if (npcId == -1)
     {
         Hide(false);
@@ -409,7 +409,7 @@ void TalkWithNpcDlg::OnBarNpc(void* data)
         return;
     }
     m_showType = SHOWTYPE_IN_BAR;
-    SetupForNpc(reinterpret_cast<int*>(data)[13]);
+    SetupForNpc(static_cast<m3d::Event*>(data)->m_intEv[0]);
 }
 
 int TalkWithNpcDlg::Show(int npcId)

@@ -203,7 +203,7 @@ int CClipper::testSphere(CVector const& o, float r) const
     if (!m_nfrustums)
         return 1;
 
-    auto v4 = 0;
+    uint32_t v4 = 0;
     for (auto i = &this->m_planes[0][1];
          ((1 << v4) & this->m_enabled) == 0 || ((((i[1] * o.z) + (*(i - 1) * o.x)) + (o.y * *i)) - i[2]) <= r;
          i += 4)

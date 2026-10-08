@@ -1023,12 +1023,12 @@ namespace ai
             // Send immediate messages based on object flags
             if (obj->GetFlags() & 2)
             {  // Some specific flag
-                M3D_APP->ImmediateMessage(66542, (int)obj, 0, 0, 0, {}, {});
+                M3D_APP->ImmediateMessage(66542, obj, 0, 0, 0, {}, {});
             }
 
             if (obj->GetFlags() & 8)
             {
-                M3D_APP->ImmediateMessage(66542, (int)obj, 0, 0, 0, {}, {});
+                M3D_APP->ImmediateMessage(66542, obj, 0, 0, 0, {}, {});
             }
         }
 

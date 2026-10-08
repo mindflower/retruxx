@@ -185,7 +185,7 @@ namespace ai
         {
             auto curTime = M3D_KERNEL->GetTimer().GetCurTime();
             ai::Event e = evn;
-            e.m_timeStamp = curTime * 0.001;
+            e.m_timeStamp = curTime * 0.001f;
             e.m_debugNum = ++m_eventDebugNum;
             m_eventQueue.push_back(std::move(e));
         }
@@ -205,7 +205,7 @@ namespace ai
         e.m_framesToPass = framesToPass;
         e.m_param1 = param1;
         e.m_param2 = param2;
-        e.m_timeStamp = M3D_KERNEL->GetTimer().GetCurTime() * 0.001;
+        e.m_timeStamp = M3D_KERNEL->GetTimer().GetCurTime() * 0.001f;
         e.m_debugNum = ++m_eventDebugNum;
         m_eventQueue.push_back(std::move(e));
     }

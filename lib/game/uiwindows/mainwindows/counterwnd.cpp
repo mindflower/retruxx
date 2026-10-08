@@ -243,7 +243,7 @@ void CounterWnd::OnDynamicQuestStateChanged(void* data)
     {
         return;
     }
-    int const dQuestId = static_cast<int*>(data)[13];
+    int const dQuestId = static_cast<m3d::Event*>(data)->m_intEv[0];
     ai::Obj* obj = ai::theObjects->GetEntityByObjId(dQuestId);
     if (!obj || !obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
     {

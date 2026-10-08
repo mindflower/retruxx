@@ -15,7 +15,7 @@ namespace m3d
             bool StartEnumeration(char const* const, _finddata_t*);
 
         private:
-            int m_hEnumFile = 0;
+            intptr_t m_hEnumFile = 0;
         };
     }
 }

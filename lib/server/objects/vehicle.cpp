@@ -17,6 +17,7 @@
 #include "server/utils.h"
 #include <server/objects/physicbodies/physichelpers.h>
 
+#include "math/color.h"
 #include "chassis.h"
 #include "chest.h"
 #include "landscape.h"
@@ -630,7 +631,7 @@ namespace ai
                 // uninitialised. Every line is overwritten by CreateOrthogonal before use.
                 normal.x = 1.0f;
                 normal.y = 1.0f;
-                float const invLen = 1.0 / sqrt(normal.z * normal.z + 2.0);
+                float const invLen = 1.0f / sqrt(normal.z * normal.z + 2.0f);
                 normal.x = invLen;
                 normal.y = invLen;
                 normal.z = normal.z * invLen;
@@ -694,12 +695,12 @@ namespace ai
 
             CVector const toPoint(point.x - vehiclePos.x, flatY, point.z - vehiclePos.z);
             float const invLenToPoint =
-                1.0 / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929);
+                1.0f / sqrtf(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
             CVector const dirToPoint(invLenToPoint * toPoint.x, toPoint.y * invLenToPoint, toPoint.z * invLenToPoint);
 
             CVector const segment(nextPoint.x - point.x, flatY, nextPoint.z - point.z);
             float const invLenSegment =
-                1.0 / sqrt(segment.z * segment.z + segment.y * segment.y + segment.x * segment.x + 0.00000011920929);
+                1.0f / sqrtf(segment.z * segment.z + segment.y * segment.y + segment.x * segment.x + 0.00000011920929f);
             CVector const dirSegment(invLenSegment * segment.x, segment.y * invLenSegment, segment.z * invLenSegment);
 
             float cosAngle = dirSegment.z * dirToPoint.z + dirSegment.y * dirToPoint.y + dirSegment.x * dirToPoint.x;
@@ -1456,7 +1457,7 @@ namespace ai
         auto* recollection = RT_DYNCAST(theObjects->GetEntityByObjId(m_recollectionId), VehicleRecollection);
         if (recollection)
         {
-            auto range = (double)rand() * 0.000030518509 * recollectionRange;
+            auto range = (double)rand() * 0.000030518509f * recollectionRange;
             auto time = theObjects->GetGameTimeDiff() - ai::theGlobProp.m_gameTimeMult * range;
             return recollection->GetRecollectionPosition(time);
         }
@@ -3125,7 +3126,7 @@ namespace ai
         textPos.y += m_size.y;
 
         // Draw debug text
-        ai::DebugText(textPos, 11.0f, 0.0f, reinterpret_cast<uint32_t>(this) | 0xFF000000, name);
+        ai::DebugText(textPos, 11.0f, 0.0f, AddrToColor(this), name);
     }
 
     void Vehicle::SetVisible()
@@ -3300,7 +3301,7 @@ namespace ai
     float Vehicle::GetMaxSpeed() const
     {
         auto cabin = GetCabin();
-        float maxSpeed = cabin ? cabin->GetMaxSpeed() : 0.0;
+        float maxSpeed = cabin ? cabin->GetMaxSpeed() : 0.0f;
 
         if (m_maxSpeedLimited)
         {
@@ -4603,8 +4604,8 @@ namespace ai
     void Vehicle::SetCustomLinearVelocity(float velocityValue)
     {
         auto direction = GetDirection();
-        auto value = 1.0 /
-            sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z + 0.00000011920929);
+        auto value = 1.0f /
+            sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z + 0.00000011920929f);
 
         CVector velocity;
         velocity.x = (direction.x * value) * velocityValue;
@@ -5215,9 +5216,9 @@ namespace ai
     float Vehicle::_GetTimeOutForNextIntersectionWithWorld() const
     {
         if (ai::PhysicObj::bIsUpdatingByODE())
-            return (float)rand() * 0.000030518509 * 0.1;
+            return (float)rand() * 0.000030518509f * 0.1f;
         else
-            return (float)rand() * 0.000030518509 * 0.30000001 + 0.2;
+            return (float)rand() * 0.000030518509f * 0.30000001f + 0.2f;
     }
 
     void Vehicle::_ApplyStabilizingForces()
@@ -5689,7 +5690,7 @@ namespace ai
         }
 
         // Degenerate case: keep the next point from coinciding with the current one.
-        if ((curPoint - nextPoint).length() < 0.01)
+        if ((curPoint - nextPoint).length() < 0.01f)
         {
             nextPoint = curPoint + CVector(1.0f, 1.0f, 1.0f);
         }
@@ -5715,29 +5716,29 @@ namespace ai
                 (direction.z * velocity.z + direction.y * velocity.y + direction.x * velocity.x) *
                 static_cast<float>(throttleSign);
 
-            auto const isWrongWay = (wheelRpm > 5.0 && (RoughSign(m_engineRpm) * throttleSign <= 0)) ||
-                (wheelRpm <= 5.0 && (throttleSign == 0 || alongThrottle < -0.1));
+            auto const isWrongWay = (wheelRpm > 5.0f && (RoughSign(m_engineRpm) * throttleSign <= 0)) ||
+                (wheelRpm <= 5.0f && (throttleSign == 0 || alongThrottle < -0.1f));
 
             if (isWrongWay)
             {
-                m_throttle = 0.0;
-                m_brake = 1.0;
+                m_throttle = 0.0f;
+                m_brake = 1.0f;
             }
         }
 
         if (RoughSign(m_throttle) == 0 &&
-            sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5)
+            sqrt(velocity.z * velocity.z + velocity.y * velocity.y + velocity.x * velocity.x) < 0.5f)
         {
             m_bHandBrake = true;
         }
 
         if (m_bHandBrake)
         {
-            m_throttle = 0.0;
-            m_brake = 1.0;
+            m_throttle = 0.0f;
+            m_brake = 1.0f;
         }
 
-        m_realThrottle = m_throttle - ((RoughSign(m_engineRpm) * m_brake) * 10.0);
+        m_realThrottle = m_throttle - ((RoughSign(m_engineRpm) * m_brake) * 10.0f);
 
         auto const doApplyActions = [&](ActionType const& type)
         {
@@ -5862,7 +5863,7 @@ namespace ai
             attraction.y = 0.0f;
             attraction.z = 0.0f;
 
-            float const invPredictedLen = 1.0 / sqrt(predictedDistSq + 0.00000011920929);
+            float const invPredictedLen = 1.0f / sqrtf(predictedDistSq + 0.00000011920929f);
             CVector const push(
                 invPredictedLen * predictedDelta.x * ai::theGlobProp.m_repulsiveCoeff,
                 predictedDelta.y * invPredictedLen * ai::theGlobProp.m_repulsiveCoeff,
@@ -5874,8 +5875,8 @@ namespace ai
                 steerZ * up.y - up.z * 0.0f,
                 steerX * up.z - steerZ * up.x,
                 up.x * 0.0f - steerX * up.y);
-            float const invSideLen = 1.0 / sqrt(side.z * side.z + side.y * side.y + side.x * side.x + 0.00000011920929);
-            float const pushLen = sqrt(push.x * push.x + push.z * push.z + push.y * push.y);
+            float const invSideLen = 1.0f / sqrtf(side.z * side.z + side.y * side.y + side.x * side.x + 0.00000011920929f);
+            float const pushLen = sqrtf(push.x * push.x + push.z * push.z + push.y * push.y);
 
             repulsion.x = invSideLen * side.x * pushLen * 0.1f + push.x;
             repulsion.y = invSideLen * side.y * pushLen * 0.1f + push.y;
@@ -5890,7 +5891,7 @@ namespace ai
         }
 
         // Ground-plane direction from the obstacle to the vehicle, crossed with the steering direction.
-        float const invFlatDist = 1.0 / sqrt(flatDistSq + 0.00000011920929);
+        float const invFlatDist = 1.0f / sqrtf(flatDistSq + 0.00000011920929f);
         CVector const flatDir(invFlatDist * delta.x, invFlatDist * 0.0f, delta.z * invFlatDist);
         CVector const cross(
             steerZ * flatDir.y - flatDir.z * 0.0f,
@@ -6034,7 +6035,7 @@ namespace ai
                 }
                 case TURN_BACK_ENABLED_ACCELERATING:
                 {
-                    if (throttle < 0.94247788)
+                    if (throttle < 0.94247788f)
                     {
                         m_turningBackStatus = TURN_BACK_ENABLED_BRAKING;
                     }
@@ -6043,8 +6044,8 @@ namespace ai
                 case TURN_BACK_ENABLED_BRAKING:
                 {
                     if ((float)((float)((float)(velocity.y * velocity.y) + (float)(velocity.z * velocity.z)) +
-                                (float)(velocity.x * velocity.x)) < 1.0 &&
-                        0.0 != fabs((double)(m_steerRadians < 0.1)))
+                                (float)(velocity.x * velocity.x)) < 1.0f &&
+                        0.0f != fabs((double)(m_steerRadians < 0.1f)))
                     {
                         m_turningBackStatus = TURN_BACK_DISABLED;
                     }
@@ -6052,7 +6053,7 @@ namespace ai
                 }
                 case TURN_BACK_DISABLED:
                 {
-                    if (throttle > 1.8849558)
+                    if (throttle > 1.8849558f)
                     {
                         this->m_turningBackStatus = TURN_BACK_ENABLED_ACCELERATING;
                     }
@@ -6065,59 +6066,59 @@ namespace ai
 
             if (m_turningBackStatus == TURN_BACK_DISABLED)
             {
-                if (throttle > 0.52359879)
+                if (throttle > 0.52359879f)
                 {
                     int dir = 0;
-                    if (steer >= 0.0)
+                    if (steer >= 0.0f)
                         dir = 1;
                     else
                         dir = -1;
-                    steer = (float)dir * 0.52359879;
+                    steer = (float)dir * 0.52359879f;
                 }
-                steer = steer * 1.9098593;
+                steer = steer * 1.9098593f;
                 throttle = sqrt(
                                steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y +
                                steeringForce.z * steeringForce.z) *
-                    (4.0 - fabs(steer) * 2.7) * 0.25;
+                    (4.0f - fabs(steer) * 2.7f) * 0.25f;
             }
             else
             {
-                throttle = 0.0;
+                throttle = 0.0f;
                 if (m_turningBackStatus == TURN_BACK_ENABLED_ACCELERATING)
                 {
                     int dir = 0;
-                    if (steer >= 0.0)
+                    if (steer >= 0.0f)
                         dir = 1;
                     else
                         dir = -1;
-                    steer = 0.0 - (float)dir;
-                    throttle = -1.0;
+                    steer = 0.0f - (float)dir;
+                    throttle = -1.0f;
                 }
                 else
                 {
-                    steer = 0.0;
+                    steer = 0.0f;
                 }
             }
-            if (fabs(steer) >= 1.000001)
+            if (fabs(steer) >= 1.000001f)
             {
                 M3D_LOG_INFO("Error: steer of " + GetDebugDescription() + "is invalid: " + CStr(steer));
                 M3D_ASSERT(0);
             }
 
-            auto v20 = -1.0;
+            auto v20 = -1.0f;
             if (!m_bWasStuck)
-                v20 = 1.0;
-            auto v21 = 0.0;
-            m_steerRadians = (float)(0.0 - (float)(0.78539819 * steer)) * v20;
+                v20 = 1.0f;
+            auto v21 = 0.0f;
+            m_steerRadians = (float)(0.0f - (float)(0.78539819f * steer)) * v20;
             auto v22 = sqrt(
                 steeringForce.x * steeringForce.x + steeringForce.y * steeringForce.y +
                 steeringForce.z * steeringForce.z);
-            if (v22 >= 0.0)
+            if (v22 >= 0.0f)
             {
                 v21 = v22;
                 auto absAngle = v22;
-                if (absAngle > 1.0)
-                    v21 = 1.0;
+                if (absAngle > 1.0f)
+                    v21 = 1.0f;
             }
             SetThrottle((float)(v21 * v20) * throttle, 1);
         }
@@ -6380,13 +6381,13 @@ namespace ai
 
         CVector const toPoint(point.x - vehiclePos.x, 0.0f, point.z - vehiclePos.z);
         float scale = 0.0f;
-        if (fabs(dv.nextAngle) <= 0.1570796370506287 ||
+        if (fabs(dv.nextAngle) <= 0.1570796370506287f ||
             dv.brakingCircleRadius <= sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x))
         {
             scale = 1.0f;
         }
 
-        float const invLen = 1.0 / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929);
+        float const invLen = 1.0f / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
         return CVector(invLen * toPoint.x * scale, toPoint.y * invLen * scale, toPoint.z * invLen * scale);
     }
 
@@ -6784,11 +6785,11 @@ namespace ai
         // Signed angle between the vehicle's forward axis and the direction to the point:
         // positive when the point is to the right (local +X), negative to the left.
         auto const toPoint = point - GetPosition();
-        if (sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x) < 0.0099999998)
+        if (sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x) < 0.0099999998f)
         {
             return 0.0f;
         }
-        float const invLen = 1.0 / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929);
+        float const invLen = 1.0f / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
         CVector const dir(invLen * toPoint.x, toPoint.y * invLen, toPoint.z * invLen);
 
         // Bring the direction into the vehicle's local frame with the rotation matrix of the
@@ -6834,25 +6835,25 @@ namespace ai
         auto wy = invRot.w * invRot.y;
 
         CMatrix vv;
-        vv._11 = 1.0 - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.y * invRot.y)) * 2.0);
-        vv._21 = (float)((float)(invRot.y * invRot.x) - (float)(invRot.w * invRot.z)) * 2.0;
+        vv._11 = 1.0f - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.y * invRot.y)) * 2.0f);
+        vv._21 = (float)((float)(invRot.y * invRot.x) - (float)(invRot.w * invRot.z)) * 2.0f;
         auto wz = invRot.w * invRot.z;
         auto zz = invRot.z * invRot.z;
         auto& v6 = v5;
         auto yy = invRot.y * invRot.y;
         auto xz = invRot.z * invRot.x;
         auto wx = invRot.w * invRot.x;
-        vv._31 = (float)((float)(invRot.w * invRot.y) + (float)(invRot.z * invRot.x)) * 2.0;
-        vv._12 = (float)((float)(invRot.w * invRot.z) + (float)(invRot.y * invRot.x)) * 2.0;
-        vv._22 = 1.0 - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.x * invRot.x)) * 2.0);
-        vv._33 = 1.0 - (float)((float)((float)(invRot.y * invRot.y) + (float)(invRot.x * invRot.x)) * 2.0);
-        vv._32 = (float)((float)(invRot.z * invRot.y) - (float)(invRot.w * invRot.x)) * 2.0;
-        vv._13 = (float)((float)(invRot.z * invRot.x) - (float)(invRot.w * invRot.y)) * 2.0;
-        vv._23 = (float)((float)(invRot.w * invRot.x) + (float)(invRot.z * invRot.y)) * 2.0;
-        vv._14 = 0.0;
-        vv._24 = 0.0;
+        vv._31 = (float)((float)(invRot.w * invRot.y) + (float)(invRot.z * invRot.x)) * 2.0f;
+        vv._12 = (float)((float)(invRot.w * invRot.z) + (float)(invRot.y * invRot.x)) * 2.0f;
+        vv._22 = 1.0f - (float)((float)((float)(invRot.z * invRot.z) + (float)(invRot.x * invRot.x)) * 2.0f);
+        vv._33 = 1.0f - (float)((float)((float)(invRot.y * invRot.y) + (float)(invRot.x * invRot.x)) * 2.0f);
+        vv._32 = (float)((float)(invRot.z * invRot.y) - (float)(invRot.w * invRot.x)) * 2.0f;
+        vv._13 = (float)((float)(invRot.z * invRot.x) - (float)(invRot.w * invRot.y)) * 2.0f;
+        vv._23 = (float)((float)(invRot.w * invRot.x) + (float)(invRot.z * invRot.y)) * 2.0f;
+        vv._14 = 0.0f;
+        vv._24 = 0.0f;
         memset(&vv.m[2][3], 0, 16);
-        vv._44 = 1.0;
+        vv._44 = 1.0f;
 
         auto v66 = vv;
         auto v7 = v66._22 * v6.y + v66._32 * v6.z + v66._12 * v6.x;
@@ -6862,12 +6863,12 @@ namespace ai
         CVector axis;
         axis.x = (float)((float)(v6.y * v66._21) + (float)(v6.z * v66._31)) + (float)(v6.x * v66._11);
         auto v10 = v8 + v9;
-        yz_2 = 1.0 / sqrt((float)(0.0 - axis.x) * (float)(0.0 - axis.x) + (float)(v10 * v10) + 0.00000011920929);
-        auto v11 = atan2(v7, sqrt(axis.x * axis.x + (float)(v10 * v10))) * 0.5;
-        auto v12 = (float)(0.0 - axis.x) * yz_2;
+        yz_2 = 1.0f / sqrt((float)(0.0f - axis.x) * (float)(0.0f - axis.x) + (float)(v10 * v10) + 0.00000011920929f);
+        auto v11 = atan2(v7, sqrt(axis.x * axis.x + (float)(v10 * v10))) * 0.5f;
+        auto v12 = (float)(0.0f - axis.x) * yz_2;
         auto v13 = yz_2 * v10;
-        auto v14 = yz_2 * 0.0;
-        yz_2 = sin(v11);
+        auto v14 = yz_2 * 0.0f;
+        yz_2 = sinf(v11);
 
         CVector wheelDir;
         wheelDir.z = v12 * yz_2;
@@ -6980,19 +6981,19 @@ namespace ai
         wheelDir.x = Position.x - pos.x;
         wheelDir.y = Position.y - pos.y;
         wheelDir.z = Position.z - pos.z;
-        vv._11 = 1.0 - (float)((float)(zz + yy) * 2.0);
-        vv._21 = (float)(xy_2 - wz) * 2.0;
-        vv._31 = (float)(wy + xz) * 2.0;
-        vv._12 = (float)(wz + xy_2) * 2.0;
-        vv._22 = 1.0 - (float)((float)(zz + xx_2) * 2.0);
-        vv._32 = (float)(yz - wx) * 2.0;
-        vv._33 = 1.0 - (float)((float)(yy + xx_2) * 2.0);
-        vv._13 = (float)(xz - wy) * 2.0;
-        vv._23 = (float)(wx + yz) * 2.0;
-        vv._14 = 0.0;
-        vv._24 = 0.0;
+        vv._11 = 1.0f - (float)((float)(zz + yy) * 2.0f);
+        vv._21 = (float)(xy_2 - wz) * 2.0f;
+        vv._31 = (float)(wy + xz) * 2.0f;
+        vv._12 = (float)(wz + xy_2) * 2.0f;
+        vv._22 = 1.0f - (float)((float)(zz + xx_2) * 2.0f);
+        vv._32 = (float)(yz - wx) * 2.0f;
+        vv._33 = 1.0f - (float)((float)(yy + xx_2) * 2.0f);
+        vv._13 = (float)(xz - wy) * 2.0f;
+        vv._23 = (float)(wx + yz) * 2.0f;
+        vv._14 = 0.0f;
+        vv._24 = 0.0f;
         memset(&vv.m[2][3], 0, 16);
-        vv._44 = 1.0;
+        vv._44 = 1.0f;
 
         v66 = vv;
         wheelDir.y =
@@ -7003,19 +7004,19 @@ namespace ai
         auto y = rot.y;
         yz_2 = rot.y * rot.x;
         xy = rot.z * rot.y;
-        vv._11 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(y * y)) * 2.0);
-        vv._21 = (float)((float)(rot.y * rot.x) - (float)(rot.z * rot.w)) * 2.0;
-        vv._31 = (float)((float)(rot.y * rot.w) + (float)(rot.z * rot.x)) * 2.0;
-        vv._12 = (float)((float)(rot.z * rot.w) + (float)(rot.y * rot.x)) * 2.0;
-        vv._22 = 1.0 - (float)((float)((float)(rot.z * rot.z) + (float)(rot.x * rot.x)) * 2.0);
-        vv._33 = 1.0 - (float)((float)((float)(y * y) + (float)(rot.x * rot.x)) * 2.0);
-        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0;
-        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.y * rot.w)) * 2.0;
-        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0;
-        vv._14 = 0.0;
-        vv._24 = 0.0;
+        vv._11 = 1.0f - (float)((float)((float)(rot.z * rot.z) + (float)(y * y)) * 2.0f);
+        vv._21 = (float)((float)(rot.y * rot.x) - (float)(rot.z * rot.w)) * 2.0f;
+        vv._31 = (float)((float)(rot.y * rot.w) + (float)(rot.z * rot.x)) * 2.0f;
+        vv._12 = (float)((float)(rot.z * rot.w) + (float)(rot.y * rot.x)) * 2.0f;
+        vv._22 = 1.0f - (float)((float)((float)(rot.z * rot.z) + (float)(rot.x * rot.x)) * 2.0f);
+        vv._33 = 1.0f - (float)((float)((float)(y * y) + (float)(rot.x * rot.x)) * 2.0f);
+        vv._32 = (float)((float)(rot.z * rot.y) - (float)(rot.w * rot.x)) * 2.0f;
+        vv._13 = (float)((float)(rot.z * rot.x) - (float)(rot.y * rot.w)) * 2.0f;
+        vv._23 = (float)((float)(rot.w * rot.x) + (float)(rot.z * rot.y)) * 2.0f;
+        vv._14 = 0.0f;
+        vv._24 = 0.0f;
         memset(&vv.m[2][3], 0, 16);
-        vv._44 = 1.0;
+        vv._44 = 1.0f;
 
         v66 = vv;
         axis.x = (float)((float)((float)(v66._21 * wheelDir.y) + (float)(v66._31 * wheelDir.z)) +
@@ -7030,20 +7031,20 @@ namespace ai
         m_wheel->SetPosition(axis);
 
         auto v40 = m_wheel->GetDirection();
-        vv._11 = 1.0 - (float)((float)(zz + yy) * 2.0);
-        vv._21 = (float)(xy_2 - wz) * 2.0;
-        vv._12 = (float)(wz + xy_2) * 2.0;
+        vv._11 = 1.0f - (float)((float)(zz + yy) * 2.0f);
+        vv._21 = (float)(xy_2 - wz) * 2.0f;
+        vv._12 = (float)(wz + xy_2) * 2.0f;
         auto& v41 = v40;
-        vv._31 = (float)(wy + xz) * 2.0;
-        vv._22 = 1.0 - (float)((float)(zz + xx_2) * 2.0);
-        vv._32 = (float)(yz - wx) * 2.0;
-        vv._33 = 1.0 - (float)((float)(yy + xx_2) * 2.0);
-        vv._13 = (float)(xz - wy) * 2.0;
-        vv._23 = (float)(wx + yz) * 2.0;
-        vv._14 = 0.0;
-        vv._24 = 0.0;
+        vv._31 = (float)(wy + xz) * 2.0f;
+        vv._22 = 1.0f - (float)((float)(zz + xx_2) * 2.0f);
+        vv._32 = (float)(yz - wx) * 2.0f;
+        vv._33 = 1.0f - (float)((float)(yy + xx_2) * 2.0f);
+        vv._13 = (float)(xz - wy) * 2.0f;
+        vv._23 = (float)(wx + yz) * 2.0f;
+        vv._14 = 0.0f;
+        vv._24 = 0.0f;
         memset(&vv.m[2][3], 0, 16);
-        vv._44 = 1.0;
+        vv._44 = 1.0f;
 
         v66 = vv;
         auto v42 = (float)((float)(v41[0] * v66._11) + (float)(v66._21 * v41[1])) + (float)(v66._31 * v41[2]);

@@ -103,7 +103,7 @@ namespace m3d
             }
             memcpy(
                 _data,
-                reinterpret_cast<void*>(m_lAllChunks[chunkNum].chunk_header.offset),
+                static_cast<char const*>(m_pFileData) + m_lAllChunks[chunkNum].chunk_header.offset,
                 m_lAllChunks[chunkNum].chunk_header.size);
             return SUCCESS;
         }
@@ -201,7 +201,9 @@ namespace m3d
             {
                 return TAG_NOT_FOUND;
             }
-            *_data = reinterpret_cast<void*>(m_lAllChunks[chunkNum].chunk_header.offset);
+            // retruxx adaptation: the shipped code kept the absolute address in the 32-bit offset
+            // field of the chunk table; the offset is file-relative here and resolved on read.
+            *_data = static_cast<char*>(m_pFileData) + m_lAllChunks[chunkNum].chunk_header.offset;
             return SUCCESS;
         }
 
@@ -360,7 +362,8 @@ namespace m3d
                     // NOTE: the shipped code leaves data uninitialised here; nothing reads it for
                     // a chunk that is not a copy.
                     data.data = nullptr;
-                    chunk.chunk_header.offset += reinterpret_cast<unsigned>(m_pFileData);
+                    // The offset stays file-relative; it is resolved against m_pFileData where the
+                    // data is read (the shipped code added the base here, into the 32-bit field).
                     chunk.chunk_data.push_back(data);
                     m_lAllChunks.push_back(chunk);
                     fileData += 4;
@@ -434,7 +437,7 @@ namespace m3d
                 data.is_copy = false;
                 data.size = fileData[1];
                 data.data = nullptr;
-                chunk.chunk_header.offset += reinterpret_cast<unsigned>(m_pFileData);
+                // The offset stays file-relative, see the in-memory path above.
                 chunk.chunk_data.push_back(data);
                 m_lAllChunks.push_back(chunk);
                 fileData += 4;

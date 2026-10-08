@@ -890,7 +890,7 @@ void RepositoryWnd::OnRepositoryChanged(void* data)
     {
         return;
     }
-    auto* changed = reinterpret_cast<ai::GeomRepository* const*>(data)[13];
+    auto* changed = static_cast<ai::GeomRepository*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]);
     if (changed == m_repository)
     {
         FullUpdate();
@@ -913,7 +913,7 @@ void RepositoryWnd::OnVehiclePartChanged(void* data)
     {
         return;
     }
-    int changedVehicleId = reinterpret_cast<int const*>(data)[13];
+    int changedVehicleId = static_cast<m3d::Event const*>(data)->m_intEv[0];
     int playerVehicleId = -1;
     if (ai::thePlayer)
     {

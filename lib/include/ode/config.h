@@ -30,7 +30,7 @@ typedef unsigned int uint32;
 /* an integer type that we can safely cast a pointer to and
  * from without loss of bits.
  */
-typedef unsigned int intP;
+typedef size_t intP;
 
 /* select the base floating point type */
 //#define dDOUBLE 1

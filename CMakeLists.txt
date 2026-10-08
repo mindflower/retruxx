@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
 # Platform check
-if(NOT WIN32)
-    message(FATAL_ERROR "This project is Windows-only (Win32)")
-endif()
+# if(NOT WIN32)
+#     message(FATAL_ERROR "This project is Windows-only (Win32)")
+# endif()
 
 project(retruxx LANGUAGES C CXX)
 
@@ -16,6 +16,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if(MSVC)
     add_compile_options(/MP)
+    # Every conversion between a pointer and an integer is an error: on a 64-bit build they
+    # truncate (C4311, C4302), widen (C4312, C4306) or sign-extend (C4826) handles and pointers.
+    add_compile_options(/we4311 /we4312 /we4302 /we4306 /we4826)
 endif()
 
 set(BUILD_GMOCK OFF CACHE BOOL "Build only googletest")

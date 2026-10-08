@@ -428,7 +428,7 @@ namespace
 
         lua_newtable(m3d::ScriptServer::L);
         n = luaL_ref(m3d::ScriptServer::L, -10000);
-        pClass->m_scriptHandle = reinterpret_cast<void*>(n);
+        pClass->m_scriptHandle = reinterpret_cast<void*>(static_cast<std::intptr_t>(n));
         lua_rawgeti(m3d::ScriptServer::L, -10000, n);
         lua_pushstring(m3d::ScriptServer::L, "internalTag");
         lua_pushnumber(m3d::ScriptServer::L, 1002.0);
@@ -567,7 +567,7 @@ namespace m3d
             {
                 _buildExportMap(cls);
             }
-            lua_rawgeti(L, -10000, reinterpret_cast<int>(cls->m_scriptHandle));
+            lua_rawgeti(L, -10000, static_cast<int>(reinterpret_cast<std::intptr_t>(cls->m_scriptHandle)));
             lua_type(L, -1);
             lua_type(L, -2);
             lua_rawseti(L, -2, 1);
@@ -576,9 +576,9 @@ namespace m3d
             lua_pushcclosure(L, _indexObject, 0);
             lua_settable(L, -3);
             lua_setmetatable(L, -2);
-            pObj->m_scriptHandle = reinterpret_cast<void*>(luaL_ref(L, -10000));
+            pObj->m_scriptHandle = reinterpret_cast<void*>(static_cast<std::intptr_t>(luaL_ref(L, -10000)));
         }
-        return reinterpret_cast<int>(pObj->m_scriptHandle);
+        return static_cast<int>(reinterpret_cast<std::intptr_t>(pObj->m_scriptHandle));
     }
 
     eScriptError ScriptServer::reloadScript(char const* fileName)

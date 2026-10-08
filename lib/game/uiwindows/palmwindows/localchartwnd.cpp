@@ -362,7 +362,7 @@ void LocalChartWnd::OnAddNavPoint(void* data)
     // RVA 0x4E4FF0
     if (data)
     {
-        AddNavPointMark(static_cast<int*>(data)[13]);
+        AddNavPointMark(static_cast<m3d::Event*>(data)->m_intEv[0]);
     }
 }
 
@@ -686,13 +686,13 @@ int LocalChartWnd::GameDataUpdate(void* data, int dataType)
     case IE_EV_UM_NAVPOINT_ADDED:
         if (IsChildOf(M3D_APP) && data)
         {
-            AddNavPointMark(static_cast<int*>(data)[13]);
+            AddNavPointMark(static_cast<m3d::Event*>(data)->m_intEv[0]);
         }
         break;
     case IE_EV_UM_NAVPOINT_DELETED:
         if (IsChildOf(M3D_APP) && data)
         {
-            DeleteNavPointMark(static_cast<int*>(data)[13]);
+            DeleteNavPointMark(static_cast<m3d::Event*>(data)->m_intEv[0]);
             return 1;
         }
         break;
@@ -1063,7 +1063,7 @@ bool LocalChartWnd::HandleMouseClickOnMapMark(
             if ((mark->GetStyle() & 0x200) != 0)
             {
                 // The shipped build forwards the ObjectInfo pointer as an id payload.
-                m3d::AIParam data{reinterpret_cast<int>(mark->GetObjectInfo())};
+                m3d::AIParam data = m3d::AIParam::FromPointer(mark->GetObjectInfo());
                 CallParentNotify(0x19, data, false);
             }
             return true;
@@ -1132,7 +1132,7 @@ void LocalChartWnd::OnDeleteNavPoint(void* data)
     // RVA 0x4E5000
     if (data)
     {
-        DeleteNavPointMark(static_cast<int*>(data)[13]);
+        DeleteNavPointMark(static_cast<m3d::Event*>(data)->m_intEv[0]);
     }
 }
 

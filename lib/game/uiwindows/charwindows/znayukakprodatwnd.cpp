@@ -2528,7 +2528,7 @@ void ZnayuKakProdatWnd::OnVehiclePartChanged(void* data)
         return;
     }
 
-    int const vehicleId = static_cast<int*>(data)[13];
+    int const vehicleId = static_cast<m3d::Event*>(data)->m_intEv[0];
     if (vehicleId == -1)
     {
         return;
@@ -2547,7 +2547,7 @@ void ZnayuKakProdatWnd::OnGadgetChanged(void* data)
         return;
     }
 
-    int const vehicleId = static_cast<int*>(data)[13];
+    int const vehicleId = static_cast<m3d::Event*>(data)->m_intEv[0];
     if (vehicleId == -1)
     {
         return;
@@ -2566,7 +2566,7 @@ void ZnayuKakProdatWnd::OnRepositoryChanged(void* data)
         return;
     }
 
-    auto const* repository = static_cast<ai::IzvratRepository const*>(static_cast<void**>(data)[13]);
+    auto const* repository = static_cast<ai::IzvratRepository const*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]);
     if (!repository)
     {
         return;

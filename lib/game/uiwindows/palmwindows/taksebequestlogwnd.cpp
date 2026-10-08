@@ -271,7 +271,7 @@ void TakSebeQuestLogWnd::OnCurProfileChanged()
 
 void TakSebeQuestLogWnd::OnCurProfileParamChanged(void* ev)
 {
-    if (ev && *reinterpret_cast<int*>(static_cast<char*>(ev) + 0x34) == PP_QUESTS_FILTER)
+    if (ev && static_cast<m3d::Event*>(ev)->m_intEv[0] == PP_QUESTS_FILTER)
     {
         OnCompleteFilterPartChanged();
     }
@@ -285,7 +285,7 @@ int TakSebeQuestLogWnd::GameDataUpdate(void* data, int dataType)
     }
     if (dataType == DATATYPE_CUR_PROFILE_CHANGED ||
         (dataType == DATATYPE_CUR_PROFILE_PARAM_CHANGED && data &&
-         *reinterpret_cast<int*>(static_cast<char*>(data) + 0x34) == PP_QUESTS_FILTER))
+         static_cast<m3d::Event*>(data)->m_intEv[0] == PP_QUESTS_FILTER))
     {
         OnCompleteFilterPartChanged();
     }

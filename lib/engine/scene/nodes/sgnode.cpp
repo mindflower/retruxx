@@ -228,6 +228,16 @@ namespace m3d
         return this->m_rotation;
     }
 
+    namespace
+    {
+        // The generic node properties the shipped build stored pointers in (see SgNode::m_props).
+        bool IsPointerNodeProperty(unsigned propId)
+        {
+            return propId == PROP_NODE_PHYSICBODY || propId == PROP_NODE_GEOMOBJSLIST ||
+                   propId == PROP_NODE_LASTPARENT || propId == PROP_NODE_GAMEOBJECT;
+        }
+    }
+
     int SgNode::GetProperty(unsigned propId, void* prop) const
     {
         if (propId >= 3)
@@ -261,14 +271,21 @@ namespace m3d
                 }
                 else
                 {
-                    *(int*)prop = this->m_props[v4];
+                    if (IsPointerNodeProperty(propId))
+                    {
+                        *(void**)prop = reinterpret_cast<void*>(this->m_props[v4]);
+                    }
+                    else
+                    {
+                        *(int*)prop = static_cast<int>(this->m_props[v4]);
+                    }
                     return 1;
                 }
             }
         }
         else
         {
-            *(int*)prop = this->m_properties[propId];
+            *(void**)prop = reinterpret_cast<void*>(this->m_properties[propId]);
             return 1;
         }
     }
@@ -398,12 +415,19 @@ namespace m3d
             auto v6 = propId - 4352;
             if ((int)(propId - 4352) >= 0 && v6 < 10)
             {
-                this->m_props[v6] = *(int*)prop;
+                if (IsPointerNodeProperty(propId))
+                {
+                    this->m_props[v6] = reinterpret_cast<std::uintptr_t>(*(void**)prop);
+                }
+                else
+                {
+                    this->m_props[v6] = static_cast<unsigned int>(*(int*)prop);
+                }
                 return 1;
             }
             if (propId >= 3)
                 return 0;
-            this->m_properties[propId] = *(int*)prop;
+            this->m_properties[propId] = reinterpret_cast<std::uintptr_t>(*(void**)prop);
         }
         return 1;
     }

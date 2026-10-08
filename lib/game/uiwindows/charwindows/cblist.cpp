@@ -605,7 +605,7 @@ int CBList::GameDataUpdate(void* data, int dataType)
 
     if (dataType == 58 && data && IsChildOf(M3D_APP))
     {
-        if (GetWorkshopRepository() == reinterpret_cast<ai::GeomRepository*>(static_cast<int*>(data)[13]))
+        if (GetWorkshopRepository() == static_cast<ai::GeomRepository*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]))
         {
             OnRepositoryChanged();
         }
@@ -919,7 +919,7 @@ void CBList::SelectItem(CBButton* btn)
     if (m_selItemId != -1 && m_selItemId != oldSelItemId)
     {
         M3D_APP->m_pInterfaceManager->LaunchEvent(
-            107, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(btn ? btn->m_cbId : -1));
+            107, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(static_cast<intptr_t>(btn ? btn->m_cbId : -1)));
     }
 }
 

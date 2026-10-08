@@ -22,21 +22,21 @@ void Quaternion::FromMatrix(CMatrix const& m)
             v4 = 2;
         auto v5 = nxt[v4];
         auto v6 = nxt[v5];
-        auto v7 = sqrt(*(&m._11 + 5 * v4) - (*(&m._11 + 5 * v6) + *(&m._11 + 5 * v5)) + 1.0);
+        auto v7 = sqrtf(*(&m._11 + 5 * v4) - (*(&m._11 + 5 * v6) + *(&m._11 + 5 * v5)) + 1.0f);
         auto mc = v7;
-        *(&this->x + v4) = v7 * 0.5;
-        this->w = (float)(*(&m._11 + 4 * v5 + v6) - *(&m._11 + 4 * v6 + v5)) * (float)(0.5 / mc);
-        *(&this->x + v5) = (float)(*(&m._11 + 4 * v5 + v4) + *(&m._11 + 4 * v4 + v5)) * (float)(0.5 / mc);
-        *(&this->x + v6) = (float)(*(&m._11 + 4 * v6 + v4) + *(&m._11 + 4 * v4 + v6)) * (float)(0.5 / mc);
+        *(&this->x + v4) = v7 * 0.5f;
+        this->w = (float)(*(&m._11 + 4 * v5 + v6) - *(&m._11 + 4 * v6 + v5)) * (float)(0.5f / mc);
+        *(&this->x + v5) = (float)(*(&m._11 + 4 * v5 + v4) + *(&m._11 + 4 * v4 + v5)) * (float)(0.5f / mc);
+        *(&this->x + v6) = (float)(*(&m._11 + 4 * v6 + v4) + *(&m._11 + 4 * v4 + v6)) * (float)(0.5f / mc);
     }
     else
     {
-        auto v3 = sqrt(ma + 1.0);
+        auto v3 = sqrtf(ma + 1.0f);
         auto mb = v3;
-        this->w = v3 * 0.5;
-        this->x = (float)(m._23 - m._32) * (float)(0.5 / mb);
-        this->y = (float)(m._31 - m._13) * (float)(0.5 / mb);
-        this->z = (float)(m._12 - m._21) * (float)(0.5 / mb);
+        this->w = v3 * 0.5f;
+        this->x = (float)(m._23 - m._32) * (float)(0.5f / mb);
+        this->y = (float)(m._31 - m._13) * (float)(0.5f / mb);
+        this->z = (float)(m._12 - m._21) * (float)(0.5f / mb);
     }
 }
 
@@ -154,19 +154,19 @@ CMatrix Quaternion::ToMatrix() const
     wy = this->y * this->w;
     v5 = this->z * this->z;
     v6 = this->y * this->y;
-    m._11 = 1.0 - (float)((float)(v5 + v6) * 2.0);
-    m._21 = (float)(xy - v2) * 2.0;
-    m._31 = (float)(wy + v3) * 2.0;
-    m._12 = (float)(v2 + xy) * 2.0;
-    m._22 = 1.0 - (float)((float)(v5 + xx) * 2.0);
-    m._33 = 1.0 - (float)((float)(v6 + xx) * 2.0);
-    m._32 = (float)(yz - v4) * 2.0;
-    m.m[0][2] = ((float)(v3 - wy) * 2.0);
-    m.m[0][3] = 0.0;
-    m.m[1][2] = ((float)(v4 + yz) * 2.0);
-    m.m[1][3] = 0.0;
+    m._11 = 1.0f - (float)((float)(v5 + v6) * 2.0f);
+    m._21 = (float)(xy - v2) * 2.0f;
+    m._31 = (float)(wy + v3) * 2.0f;
+    m._12 = (float)(v2 + xy) * 2.0f;
+    m._22 = 1.0f - (float)((float)(v5 + xx) * 2.0f);
+    m._33 = 1.0f - (float)((float)(v6 + xx) * 2.0f);
+    m._32 = (float)(yz - v4) * 2.0f;
+    m.m[0][2] = ((float)(v3 - wy) * 2.0f);
+    m.m[0][3] = 0.0f;
+    m.m[1][2] = ((float)(v4 + yz) * 2.0f);
+    m.m[1][3] = 0.0f;
     memset(&m.m[2][3], 0, 16);
-    m._44 = 1.0;
+    m._44 = 1.0f;
     return m;
 }
 
@@ -221,31 +221,31 @@ void Quaternion::Lerp(Quaternion const& q1, Quaternion const& q2, float k2)
     auto q1a = (float)((float)((float)(q1.z * q2.z) + (float)(q1.y * q2.y)) + (float)(q2.w * q1.w))
         + (float)(q1.x * q2.x);
     auto v5 = q1a;
-    if (q1a < 0.0)
+    if (q1a < 0.0f)
     {
-        v5 = 0.0 - q1a;
-        q1a = 0.0 - q1a;
+        v5 = 0.0f - q1a;
+        q1a = 0.0f - q1a;
         v6 = 1;
     }
     float v7, v8;
-    if ((float)(1.0 - v5) >= 0.001)
+    if ((float)(1.0f - v5) >= 0.001f)
     {
-        auto v9 = acos(q1a);
+        auto v9 = std::acos(q1a);
         auto v14 = v9 * k2;
         auto v10 = v9;
-        auto v11 = 1.0 / sqrt(1.0 - q1a * q1a);
-        auto q1b = sin(v10 - v14) * v11;
+        auto v11 = 1.0f / std::sqrt(1.0f - q1a * q1a);
+        auto q1b = std::sin(v10 - v14) * v11;
         v8 = q1b;
-        auto v15 = sin(v14) * v11;
+        auto v15 = std::sin(v14) * v11;
         v7 = v15;
     }
     else
     {
         v7 = k2;
-        v8 = 1.0 - k2;
+        v8 = 1.0f - k2;
     }
     if (v6)
-        v7 = 0.0 - v7;
+        v7 = 0.0f - v7;
     this->x = (float)(q1.x * v8) + (float)(q2.x * v7);
     this->y = (float)(q1.y * v8) + (float)(v7 * q2.y);
     this->z = (float)(q1.z * v8) + (float)(v7 * q2.z);
@@ -264,12 +264,12 @@ void Quaternion::RotZ(float radians)
 
 void Quaternion::FromAxisAngle(const CVector& axis, float radians)
 {
-    auto v3 = radians * 0.5;
-    auto v4 = sin(v3);
+    auto v3 = radians * 0.5f;
+    auto v4 = std::sin(v3);
     x = v4 * axis.x;
     y = v4 * axis.y;
     z = v4 * axis.z;
-    w = cos(v3);
+    w = std::cos(v3);
 }
 
 void Quaternion::RotX(float radians)

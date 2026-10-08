@@ -284,7 +284,7 @@ int ItemInfoWnd::GameDataUpdate(void* data, int dataType)
     if (dataType == 58)
     {
         if (data && m_infoType == INFOTYPE_REPOSITORY_ITEM &&
-            reinterpret_cast<ai::GeomRepository*>(static_cast<int*>(data)[13]) ==
+            static_cast<ai::GeomRepository*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]) ==
                 m_repositoryItem.m_parentRepository)
         {
             Update(false);

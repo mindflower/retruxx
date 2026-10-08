@@ -206,7 +206,7 @@ namespace m3d
         return 0;
     }
 
-    int Object::GetPropertiesList(retruxx::set<size_t>& properties) const
+    int Object::GetPropertiesList(retruxx::set<unsigned int>& properties) const
     {
         return 1;
     }

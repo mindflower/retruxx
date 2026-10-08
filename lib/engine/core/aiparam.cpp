@@ -107,6 +107,19 @@ namespace m3d
         Detach();
     }
 
+    AIParam AIParam::FromPointer(void* ptr)
+    {
+        AIParam param;
+        param.Type = AIPARAM_ID;
+        param.m_ptr = ptr;
+        return param;
+    }
+
+    void* AIParam::GetAsPointer() const
+    {
+        return GetType() == AIPARAM_ID ? m_ptr : nullptr;
+    }
+
     int AIParam::GetAsID() const
     {
         if (GetType() == AIPARAM_UNDEFINE)

@@ -1355,7 +1355,7 @@ int MotherPanel::GameDataUpdate(void* data, int dataType)
     {
         if (!data)
             return 1;
-        int objId = *reinterpret_cast<int*>(static_cast<char*>(data) + 0x34);
+        int objId = static_cast<m3d::Event*>(data)->m_intEv[0];
         ai::Obj* e = ai::theObjects->GetEntityByObjId(objId);
         if (e && e->IsKindOf(&ai::Bar::m_classBar))
             SetCurTab(static_cast<ai::Bar*>(e)->bWithBarman() ? TAB_BAR : TAB_ADDITIONAL_BUILDING, true);

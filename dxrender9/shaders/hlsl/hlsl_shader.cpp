@@ -286,7 +286,7 @@ void HlslShaderImpl::UpdateShaderInfo()
 }
 
 // orig 0x64ad90 hlsl_shader.cpp:372
-bool HlslShaderImpl::IsValidParam(unsigned int p) const
+bool HlslShaderImpl::IsValidParam(ParameterHandle p) const
 {
     return true;
 }
@@ -298,43 +298,43 @@ unsigned int HlslShaderImpl::GetNumberOfParams() const
 }
 
 // orig 0x64adb0 hlsl_shader.cpp:389
-unsigned int HlslShaderImpl::GetParamHandleByName(const char* paramName)
+HlslShaderImpl::ParameterHandle HlslShaderImpl::GetParamHandleByName(const char* paramName)
 {
-    return (unsigned int)(size_t)m_constantTable->GetConstantByName(0, paramName);
+    return (ParameterHandle)(size_t)m_constantTable->GetConstantByName(0, paramName);
 }
 
 // orig 0x64add0 hlsl_shader.cpp:396
-void HlslShaderImpl::SetInt(unsigned int p, int val)
+void HlslShaderImpl::SetInt(ParameterHandle p,int val)
 {
     m_constantTable->SetInt(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, val);
 }
 
 // orig 0x64ae00 hlsl_shader.cpp:406
-void HlslShaderImpl::SetIntArray(unsigned int p, const int* array, int count)
+void HlslShaderImpl::SetIntArray(ParameterHandle p,const int* array, int count)
 {
     m_constantTable->SetIntArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, array, count);
 }
 
 // orig 0x64ae30 hlsl_shader.cpp:416
-void HlslShaderImpl::SetFloat(unsigned int p, float val)
+void HlslShaderImpl::SetFloat(ParameterHandle p,float val)
 {
     m_constantTable->SetFloat(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, val);
 }
 
 // orig 0x64ae60 hlsl_shader.cpp:426
-void HlslShaderImpl::SetFloatArray(unsigned int p, const float* array, int count)
+void HlslShaderImpl::SetFloatArray(ParameterHandle p,const float* array, int count)
 {
     m_constantTable->SetFloatArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, array, count);
 }
 
 // orig 0x64ae90 hlsl_shader.cpp:440
-void HlslShaderImpl::SetVector4(unsigned int p, CVector4 const& val)
+void HlslShaderImpl::SetVector4(ParameterHandle p,CVector4 const& val)
 {
     m_constantTable->SetVector(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)&val);
 }
 
 // orig 0x64b440 hlsl_shader.cpp:451
-void HlslShaderImpl::SetVector3(unsigned int p, CVector const& val)
+void HlslShaderImpl::SetVector3(ParameterHandle p,CVector const& val)
 {
     static D3DXVECTOR4 v4;
     v4.x = val.x;
@@ -346,37 +346,37 @@ void HlslShaderImpl::SetVector3(unsigned int p, CVector const& val)
 }
 
 // orig 0x64aec0 hlsl_shader.cpp:466
-void HlslShaderImpl::SetFloat4(unsigned int p, nFloat4 const& val)
+void HlslShaderImpl::SetFloat4(ParameterHandle p,nFloat4 const& val)
 {
     m_constantTable->SetVector(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)&val);
 }
 
 // orig 0x64aef0 hlsl_shader.cpp:481
-void HlslShaderImpl::SetFloat4Array(unsigned int p, const nFloat4* array, int count)
+void HlslShaderImpl::SetFloat4Array(ParameterHandle p,const nFloat4* array, int count)
 {
     m_constantTable->SetVectorArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)array, count);
 }
 
 // orig 0x64af20 hlsl_shader.cpp:491
-void HlslShaderImpl::SetVector4Array(unsigned int p, const CVector4* array, int count)
+void HlslShaderImpl::SetVector4Array(ParameterHandle p,const CVector4* array, int count)
 {
     m_constantTable->SetVectorArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)array, count);
 }
 
 // orig 0x64af50 hlsl_shader.cpp:501
-void HlslShaderImpl::SetMatrix(unsigned int p, CMatrix const& val)
+void HlslShaderImpl::SetMatrix(ParameterHandle p,CMatrix const& val)
 {
     m_constantTable->SetMatrix(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX*)&val);
 }
 
 // orig 0x64af80 hlsl_shader.cpp:516
-void HlslShaderImpl::SetMatrixArray(unsigned int p, const CMatrix* array, int count)
+void HlslShaderImpl::SetMatrixArray(ParameterHandle p,const CMatrix* array, int count)
 {
     m_constantTable->SetMatrixArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX*)array, count);
 }
 
 // orig 0x64afb0 hlsl_shader.cpp:526
-void HlslShaderImpl::SetMatrixPointerArray(unsigned int p, const CMatrix** array, int count)
+void HlslShaderImpl::SetMatrixPointerArray(ParameterHandle p,const CMatrix** array, int count)
 {
     m_constantTable->SetMatrixPointerArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX**)array,
                                            count);

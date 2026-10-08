@@ -758,7 +758,7 @@ namespace ai
     unsigned Workshop::_GetRealObjectBuyPrice(Obj const* obj) const
     {
         // RVA 0x6B2E20
-        return ai::GetIntPrice(static_cast<float>(obj->GetPrice(m_priceCoeffProvider)) * 0.5);
+        return ai::GetIntPrice(static_cast<float>(obj->GetPrice(m_priceCoeffProvider)) * 0.5f);
     }
 
     bool Workshop::_BuyRealObject(Obj const* obj)

@@ -67,6 +67,9 @@
 	typedef unsigned __int64	uqword;		//!< sizeof(uqword)	must be 8
 	typedef float				float32;	//!< sizeof(float32)	must be 4
 	typedef double				float64;	//!< sizeof(float64)	must be 4
+	// retruxx adaptation: Opcode packs node pointers (with flag bits) into integers; udword only holds
+	// them on a 32-bit build, so those fields and casts use this pointer-sized integer instead.
+	typedef size_t				uptr;		//!< sizeof(uptr)	== sizeof(void*)
 
 	ICE_COMPILE_TIME_ASSERT(sizeof(bool)==1);	// ...otherwise things might fail with VC++ 4.2 !
 	ICE_COMPILE_TIME_ASSERT(sizeof(ubyte)==1);

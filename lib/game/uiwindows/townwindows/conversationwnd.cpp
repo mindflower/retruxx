@@ -198,22 +198,22 @@ void ConversationWnd::EndConversation()
 {
     // RVA 0x98C70
     m_scriptFlags |= SCRIPT_FLAG_END;
-    // NOTE: the shipped build packs the window pointer into message p0.
-    M3D_APP->EnqueueMessage(UM_END_CONVERSATION, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+    // NOTE: the shipped build packs the window pointer into message p0; here it travels as ptr0.
+    M3D_APP->EnqueueMessage(UM_END_CONVERSATION, this, 0, 0, 0, {}, {});
 }
 
 void ConversationWnd::LeaveTown()
 {
     // RVA 0x98D10
     m_scriptFlags |= SCRIPT_FLAG_LEAVE_TOWN;
-    M3D_APP->EnqueueMessage(UM_END_CONVERSATION, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+    M3D_APP->EnqueueMessage(UM_END_CONVERSATION, this, 0, 0, 0, {}, {});
 }
 
 void ConversationWnd::StartConversation(int npcId)
 {
     // RVA 0x98DB0
     m_scriptFlags |= SCRIPT_FLAG_START;
-    M3D_APP->EnqueueMessage(UM_START_CONVERSATION, reinterpret_cast<int>(this), npcId, 0, 0, {}, {});
+    M3D_APP->EnqueueMessage(UM_START_CONVERSATION, this, npcId, 0, 0, {}, {});
 }
 
 int ConversationWnd::ShowDynamicQuestsMenu()
@@ -262,15 +262,15 @@ int ConversationWnd::GameDataUpdate(void* data, int dataType)
     switch (dataType)
     {
     case 26:
-        if (data && reinterpret_cast<ConversationWnd**>(data)[13] == this)
+        if (data && static_cast<m3d::Event*>(data)->m_ptrEv[0] == this)
         {
             UpdateOnEndConversation();
         }
         break;
     case 27:
-        if (data && reinterpret_cast<ConversationWnd**>(data)[13] == this)
+        if (data && static_cast<m3d::Event*>(data)->m_ptrEv[0] == this)
         {
-            UpdateOnBeginConversation(reinterpret_cast<int*>(data)[14]);
+            UpdateOnBeginConversation(static_cast<m3d::Event*>(data)->m_intEv[1]);
             return 1;
         }
         break;

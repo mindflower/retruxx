@@ -1411,7 +1411,7 @@ int RadarWnd::OnAddNavPoint(void* data)
     {
         return 1;
     }
-    return AddNavPoint(static_cast<int*>(data)[13]);
+    return AddNavPoint(static_cast<m3d::Event*>(data)->m_intEv[0]);
 }
 
 int RadarWnd::OnDeleteNavPoint(void* data)
@@ -1423,7 +1423,7 @@ int RadarWnd::OnDeleteNavPoint(void* data)
         return 0;
     }
 
-    int const npId = static_cast<int*>(data)[13];
+    int const npId = static_cast<m3d::Event*>(data)->m_intEv[0];
     int const res = RemoveItem(m_navPointItems, npId) & 1;
     if (m_bDistancesAllowed && m_bDistancesEnabled)
     {

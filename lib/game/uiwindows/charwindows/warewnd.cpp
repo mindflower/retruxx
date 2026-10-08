@@ -1618,7 +1618,7 @@ void WareWnd::OnCurProfileChanged()
 void WareWnd::OnCurProfileParamChanged(void* data)
 {
     // RVA 0x47BFD0 - only the ware-list mode param is of interest.
-    if (!data || static_cast<int*>(data)[13] != PP_WARELIST_MODE)
+    if (!data || static_cast<m3d::Event*>(data)->m_intEv[0] != PP_WARELIST_MODE)
     {
         return;
     }

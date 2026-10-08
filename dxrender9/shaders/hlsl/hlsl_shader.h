@@ -44,23 +44,23 @@ public:
 
     // IHlslShader
     unsigned int GetNumberOfParams() const override;
-    unsigned int GetParamHandleByName(const char* name) override;
-    void SetInt(unsigned int param, int val) override;
-    void SetFloat(unsigned int param, float val) override;
-    void SetVector4(unsigned int param, CVector4 const& val) override;
-    void SetVector3(unsigned int param, CVector const& val) override;
-    void SetFloat4(unsigned int param, nFloat4 const& val) override;
-    void SetMatrix(unsigned int param, CMatrix const& val) override;
-    void SetIntArray(unsigned int param, const int* vals, int count) override;
-    void SetFloatArray(unsigned int param, const float* vals, int count) override;
-    void SetFloat4Array(unsigned int param, const nFloat4* vals, int count) override;
-    void SetVector4Array(unsigned int param, const CVector4* vals, int count) override;
-    void SetMatrixArray(unsigned int param, const CMatrix* vals, int count) override;
-    void SetMatrixPointerArray(unsigned int param, const CMatrix** vals, int count) override;
+    ParameterHandle GetParamHandleByName(const char* name) override;
+    void SetInt(ParameterHandle param, int val) override;
+    void SetFloat(ParameterHandle param, float val) override;
+    void SetVector4(ParameterHandle param, CVector4 const& val) override;
+    void SetVector3(ParameterHandle param, CVector const& val) override;
+    void SetFloat4(ParameterHandle param, nFloat4 const& val) override;
+    void SetMatrix(ParameterHandle param, CMatrix const& val) override;
+    void SetIntArray(ParameterHandle param, const int* vals, int count) override;
+    void SetFloatArray(ParameterHandle param, const float* vals, int count) override;
+    void SetFloat4Array(ParameterHandle param, const nFloat4* vals, int count) override;
+    void SetVector4Array(ParameterHandle param, const CVector4* vals, int count) override;
+    void SetMatrixArray(ParameterHandle param, const CMatrix* vals, int count) override;
+    void SetMatrixPointerArray(ParameterHandle param, const CMatrix** vals, int count) override;
     void Apply() override;
 
     void UpdateShaderInfo();
-    bool IsValidParam(unsigned int param) const;
+    bool IsValidParam(ParameterHandle param) const;
     void ValidateEffect();
     void OnDeviceReset();
     void OnDeviceRestore();

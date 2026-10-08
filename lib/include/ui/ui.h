@@ -279,11 +279,13 @@ namespace m3d
             /* 0x00fe */ char Padding_23[2];
 
         protected:
-            /* 0x0100 */ unsigned int m_int;
+            // retruxx adaptation: the window's user value; the shipped build was unsigned int and the
+            // weapon group buttons keep a window pointer in it, so it is a machine word here.
+            /* 0x0100 */ std::uintptr_t m_int;
 
         public:
-            void SetInt(unsigned int ii);
-            unsigned int GetInt() const;
+            void SetInt(std::uintptr_t ii);
+            std::uintptr_t GetInt() const;
             bool IsVisible() const;
             virtual void ShowWindow(bool show) /* 0xdc */;
             virtual void EnableWindow(bool bEnable) /* 0xe0 */;

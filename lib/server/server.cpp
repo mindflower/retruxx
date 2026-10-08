@@ -357,19 +357,19 @@ namespace ai
             M3D_LOG_ERR(formatedScriptErrorDesc);
         }
 
-        ai::theProcessManager->Update(0.0001, 1u, 2u);
+        ai::theProcessManager->Update(0.0001f, 1u, 2u);
         if (ai::thePlayer && ai::theObjects->m_SaveType != ai::ObjContainer::eSAVE_TYPES::SAVE_FULL)
         {
             ai::thePlayer->CauseEvent(GE_GAME_START, 0.0, {}, {});
         }
 
         M3D_LOG_INFO("\t\tBefore first Update");
-        ai::theProcessManager->Update(0.050000001, 1u, 2u);
+        ai::theProcessManager->Update(0.050000001f, 1u, 2u);
         if (ai::theObjects->m_SaveType == ai::ObjContainer::eSAVE_TYPES::SAVE_LEVEL)
         {
-            Update(0.0099999998);
-            Update(0.0099999998);
-            Update(0.0099999998);
+            Update(0.0099999998f);
+            Update(0.0099999998f);
+            Update(0.0099999998f);
         }
         M3D_LOG_INFO("\t\tAfter first Update");
 
@@ -1313,7 +1313,7 @@ namespace ai
     void CServer::Init(m3d::CWorld* world)
     {
         m_InCinematic = false;
-        m_LastUpdateTime = M3D_KERNEL->GetTimer().GetCurTime() * 0.001;
+        m_LastUpdateTime = M3D_KERNEL->GetTimer().GetCurTime() * 0.001f;
         m_pWorld = world;
         _SetLevel(world->m_level);
         m_pObjects->AllowSave(true);
@@ -1375,7 +1375,7 @@ namespace ai
 
         pGlobalMap = new Map;
         pGlobalMap->Create(
-            m_level->m_passMapCellSize, m_level->m_passMapCellSize, pServer->m_level->land_size * 128.0, pServer->m_level->land_size * 128.0, nullptr);
+            m_level->m_passMapCellSize, m_level->m_passMapCellSize, pServer->m_level->land_size * 128.0f, pServer->m_level->land_size * 128.0f, nullptr);
         pGlobalMap->Clear();
         Map::SetGlobalMap(pGlobalMap);
         pGlobalMap->LoadFromRawFile(m_level->GetFullPathNameA(m_level->m_passMapName).c_str());

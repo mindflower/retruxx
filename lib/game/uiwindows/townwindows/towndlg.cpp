@@ -185,11 +185,11 @@ int TownDlg::GameDataUpdate(void* data, int dataType)
     case IE_EV_SM_TOWN:  // 57
         if (data)
         {
-            ShowForTown(reinterpret_cast<int*>(data)[13]);
+            ShowForTown(static_cast<m3d::Event*>(data)->m_intEv[0]);
         }
         break;
     case IE_CUST_ENTER_BAR:  // 104
-        OnEnterBar(reinterpret_cast<int>(data));
+        OnEnterBar(static_cast<int>(reinterpret_cast<intptr_t>(data)));
         return 1;
     case IE_CUST_LEAVE_BAR:  // 105
         OnLeaveBar();

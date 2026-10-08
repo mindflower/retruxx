@@ -278,7 +278,7 @@ void TargetInfoWnd::StopFade()
 {
     if (m_fadeStartTime)
     {
-        M3D_APP->EnqueueMessage(42, (int)this, 0, 0, 0, {}, {});
+        M3D_APP->EnqueueMessage(42, this, 0, 0, 0, {}, {});
     }
 }
 

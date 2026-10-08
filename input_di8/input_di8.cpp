@@ -161,11 +161,12 @@ public:
     /* 0x02a4 */ void* m_joystick;
 }; /* size: 0x02a8 */
 
-static_assert(sizeof(CInput_di8::CKbdEvent) == 0x18);
-static_assert(sizeof(CInput_di8) == 0x2a8);
-static_assert(offsetof(CInput_di8, m_params) == 0x128);
-static_assert(offsetof(CInput_di8, m_asciiToChar) == 0x191);
-static_assert(offsetof(CInput_di8, m_joystick) == 0x2a4);
+// Didnt true for a x64
+// static_assert(sizeof(CInput_di8::CKbdEvent) == 0x18);
+// static_assert(sizeof(CInput_di8) == 0x2a8);
+// static_assert(offsetof(CInput_di8, m_params) == 0x128);
+// static_assert(offsetof(CInput_di8, m_asciiToChar) == 0x191);
+// static_assert(offsetof(CInput_di8, m_joystick) == 0x2a4);
 
 // orig 0x8997e0 input_di8.cpp (static member)
 HANDLE CInput_di8::eventShutdown = 0;

@@ -57,7 +57,7 @@
 				udword			mNbObjects;			//!< Max number of objects we can handle
 				SAP_Element**	mArray;				//!< Pointers to pool
 		// Internal methods
-				SAP_Element*	GetFreeElem(udword id, SAP_Element* next, udword* remap=null);
+				SAP_Element*	GetFreeElem(udword id, SAP_Element* next, uptr* remap=null);
 		inline_	void			FreeElem(SAP_Element* elem);
 				void			Release();
 	};

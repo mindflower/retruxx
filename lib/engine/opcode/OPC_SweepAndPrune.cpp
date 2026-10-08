@@ -162,9 +162,9 @@ bool SAP_PairData::Init(udword nb_objects)
  *	\param		delta	[in] offset in bytes
  */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline_ void Remap(SAP_Element*& element, udword delta)
+inline_ void Remap(SAP_Element*& element, uptr delta)
 {
-	if(element)	element = (SAP_Element*)(udword(element) + delta);
+	if(element)	element = (SAP_Element*)(uptr(element) + delta);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +176,7 @@ inline_ void Remap(SAP_Element*& element, udword delta)
  *	\return		the new element
  */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SAP_Element* SAP_PairData::GetFreeElem(udword id, SAP_Element* next, udword* remap)
+SAP_Element* SAP_PairData::GetFreeElem(udword id, SAP_Element* next, uptr* remap)
 {
 	if(remap)	*remap = 0;
 
@@ -200,7 +200,7 @@ SAP_Element* SAP_PairData::GetFreeElem(udword id, SAP_Element* next, udword* rem
 
 			// Remap everything
 			{
-				udword Delta = udword(NewElems) - udword(mElementPool);
+				uptr Delta = uptr(NewElems) - uptr(mElementPool);
 
 				for(udword i=0;i<mNbUsedElements;i++)	Remap(NewElems[i].mNext, Delta);
 				for(udword i=0;i<mNbObjects;i++)		Remap(mArray[i], Delta);
@@ -271,7 +271,7 @@ void SAP_PairData::AddPair(udword id1, udword id2)
 		if(Current->mID==id2)	return;	// The pair already exists
 		
 //		Current->mNext = GetFreeElem(id2, Current->mNext);
-		udword Delta;
+		uptr Delta;
 		SAP_Element* E = GetFreeElem(id2, Current->mNext, &Delta);
 		if(Delta)	Remap(Current, Delta);
 		Current->mNext = E;

@@ -23,6 +23,7 @@
 #include "scene/servers/dataserver.h"
 #include "skelmodel.h"
 #include "math/coremath.h"
+#include "math/color.h"
 #include "server/objects/base/physicobj.h"
 
 #include <draftstructures.h>
@@ -348,7 +349,7 @@ namespace m3d
         int const x1 = std::clamp(static_cast<int>(bounds.m_box[3] * toCell), 0, maxIndex);
         int const z1 = std::clamp(static_cast<int>(bounds.m_box[5] * toCell), 0, maxIndex);
 
-        int physicBodyPtr = 0;
+        void* physicBodyPtr = nullptr;
         int isNodeHaveCollision = 0;
         node->GetProperty(PROP_NODE_PHYSICBODY, &physicBodyPtr);
         node->GetProperty(PROP_NODE_HAVECOLLISION, &isNodeHaveCollision);
@@ -800,7 +801,7 @@ namespace m3d
             m_solidPs->Apply();
             m_solidVs->Apply();
 
-            unsigned projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle =m_solidVs->GetParamHandleByName("mViewProj");
             m_solidVs->SetMatrix(projMatrixHandle, du);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -813,7 +814,7 @@ namespace m3d
             m_solidPs->Apply();
             m_solidVs->Apply();
 
-            unsigned projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle =m_solidVs->GetParamHandleByName("mViewProj");
             m_solidVs->SetMatrix(projMatrixHandle, du);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -829,10 +830,10 @@ namespace m3d
             m_solidBindPs->Apply();
             m_solidBindVs->Apply();
 
-            unsigned projMatrixHandle = m_solidBindVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle =m_solidBindVs->GetParamHandleByName("mViewProj");
             m_solidBindVs->SetMatrix(projMatrixHandle, du);
 
-            unsigned viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
+            auto viewPosHandle =m_solidBindVs->GetParamHandleByName("ViewPos");
             // The camera position comes from the view matrix, not from the combined view-projection.
             m_solidBindVs->SetVector3(viewPosHandle, M3D_RENDERER->MatGet().getOrgInv());
 
@@ -852,15 +853,15 @@ namespace m3d
             m_solidDeepVs->Apply();
             m_solidDeepPs->Apply();
 
-            unsigned projMatrixHandle = m_solidDeepVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle =m_solidDeepVs->GetParamHandleByName("mViewProj");
             m_solidDeepVs->SetMatrix(projMatrixHandle, du);
 
             CMatrix const textureMat = du * m_matScale;
-            unsigned mTextureHandle = m_solidDeepVs->GetParamHandleByName("mTexture");
+            auto mTextureHandle =m_solidDeepVs->GetParamHandleByName("mTexture");
             m_solidDeepVs->SetMatrix(mTextureHandle, textureMat);
 
             CVector const viewPos = M3D_RENDERER->MatGet().getOrgInv();
-            unsigned viewPosHandle = m_solidDeepVs->GetParamHandleByName("viewPos");
+            auto viewPosHandle =m_solidDeepVs->GetParamHandleByName("viewPos");
             m_solidDeepVs->SetVector3(viewPosHandle, viewPos);
 
             auto const* level = pClient->GetWorld().m_level;
@@ -1667,7 +1668,7 @@ namespace m3d
         node->GetProperty(8718u, &nodeObstacle);
         if (nodeObstacle)
         {
-            int smh = 0;
+            void* smh = nullptr;
             node->GetProperty(4356u, &smh);
             if (!smh)
                 LinkObstacleToCells(nodeObstacle);
@@ -1822,7 +1823,7 @@ namespace m3d
         dJointGetUniversalAnchor(joint, anchor);
         CVector const Anchor(anchor[0], anchor[1], anchor[2]);
         // The first body's address doubles as the line colour.
-        unsigned const color = reinterpret_cast<unsigned>(body0) | 0xFF000000;
+        unsigned const color = AddrToColor(body0);
         if (pos0)
         {
             CVector const from = *pos0;
@@ -4526,10 +4527,10 @@ namespace m3d
         CMatrix const resultViewMat = mat * projMat;
         CMatrix const textureMat = resultViewMat * m_matScale;
 
-        unsigned const viewProjHandle = m_waterVs->GetParamHandleByName("mViewProj");
+        auto const viewProjHandle =m_waterVs->GetParamHandleByName("mViewProj");
         m_waterVs->SetMatrix(viewProjHandle, resultViewMat);
 
-        unsigned const textureHandle = m_waterVs->GetParamHandleByName("mTexture");
+        auto const textureHandle =m_waterVs->GetParamHandleByName("mTexture");
         m_waterVs->SetMatrix(textureHandle, textureMat);
 
         rend::Colorf const reflectionTint = m_owner->m_level->m_reflectionTint;
@@ -4546,14 +4547,14 @@ namespace m3d
                 currentWeather->m_waterSpecularS * (float)colorSpec * 0.0039215689,
                 currentWeather->m_waterSpecularM);
 
-            unsigned const waveHeightSpecularHandle = m_waterPs->GetParamHandleByName("waveHeightSpecular");
+            auto const waveHeightSpecularHandle =m_waterPs->GetParamHandleByName("waveHeightSpecular");
             m_waterPs->SetVector4(waveHeightSpecularHandle, waveHeightSpecular);
 
             // Set view position
             CMatrix invView = mat.getInverse();
             CVector viewPos = invView.getOrg();
 
-            unsigned const viewPosHandle = m_waterVs->GetParamHandleByName("viewPos");
+            auto const viewPosHandle =m_waterVs->GetParamHandleByName("viewPos");
             m_waterVs->SetVector3(viewPosHandle, viewPos);
 
             // Set wave parameters
@@ -4562,7 +4563,7 @@ namespace m3d
                 currentWeather->m_waterSizeBig,
                 cos(currentWeather->m_waterCourseAng),
                 sin(currentWeather->m_waterCourseAng));
-            unsigned const waveSizeHandle = m_waterVs->GetParamHandleByName("waveSize");
+            auto const waveSizeHandle =m_waterVs->GetParamHandleByName("waveSize");
             m_waterVs->SetVector4(waveSizeHandle, waveSize);
 
             // Set sun direction and fog color
@@ -4595,7 +4596,7 @@ namespace m3d
             1.0f / (fogReduceFactor * fogEnd - fogReduceFactor * fogStart),
             fogReduceFactor * fogStart);
 
-        unsigned const gFogTermHandle = m_waterVs->GetParamHandleByName("g_FogTerm");
+        auto const gFogTermHandle =m_waterVs->GetParamHandleByName("g_FogTerm");
         m_waterVs->SetVector3(gFogTermHandle, fogTerm);
 
         // Clear water cells to draw
@@ -5386,7 +5387,7 @@ namespace m3d
         box.m_box[4] = size.y * 0.5f;
         box.m_box[5] = size.z * 0.5f;
         // NOTE: the colour is the mass pointer with full alpha, as shipped.
-        box.Draw(reinterpret_cast<unsigned>(mass) | 0xFF000000);
+        box.Draw(AddrToColor(mass));
         M3D_RENDERER->MatPopWorld();
     }
 
@@ -8568,7 +8569,7 @@ namespace m3d
         // coloured by its address.
         // NOTE: unverified: the sphere and capped-cylinder tessellation was only checked against Hex-Rays output, which
         // loses track of the stack arrays here; box, trimesh and the error path match.
-        unsigned int color = reinterpret_cast<unsigned int>(geom) | 0xFF000000;
+        unsigned int color = AddrToColor(geom);
         int geomClass = dGeomGetClass(geom);
 
         switch (geomClass)
@@ -8599,10 +8600,10 @@ namespace m3d
                             double phi = (double)(u + h) * 0.78539819 * 0.5;                  //pi/4 steps
 
                             // Calculate quaternion rotation
-                            float q1 = sin(theta);
-                            float q3 = cos(theta);
-                            float q4 = sin(phi);
-                            float q5 = cos(phi);
+                            float q1 = sinf(theta);
+                            float q3 = cosf(theta);
+                            float q4 = sinf(phi);
+                            float q5 = cosf(phi);
 
                             // Rotate base vector
                             CVector rotatedVec;

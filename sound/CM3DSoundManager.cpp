@@ -822,7 +822,7 @@ namespace snd
         item->m_fileName = CStr(filename);
 
         // 669
-        pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(stream, _CommonMusicEndCallback, (void*)m_nextSoundId);
+        pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(stream, _CommonMusicEndCallback, (void*)(intptr_t)m_nextSoundId);
 
         // 670
         SOUND_ASSERT(m_sounds.find( m_nextSoundId ) == m_sounds.end(), 670);
@@ -887,7 +887,7 @@ namespace snd
             item = new CSoundItem(FST_STREAM, stream, group);
 
             // 755
-            pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(stream, _CommonMusicEndCallback, (void*)m_nextSoundId);
+            pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(stream, _CommonMusicEndCallback, (void*)(intptr_t)m_nextSoundId);
             // 775
             break;
         }
@@ -2058,7 +2058,7 @@ namespace snd
         SOUND_ASSERT(m_instance, 1894);
 
         // 1905
-        int soundId = (int)userdata;
+        int soundId = (int)(intptr_t)userdata;
 
         // 1907
         std::map<int, CSoundItem*>& sounds = m_instance->m_sounds;

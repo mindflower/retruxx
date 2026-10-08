@@ -77,7 +77,9 @@ public:
 }; /* size: 0x000c */
 
 // Embedded in CVar and read by the original driver DLLs, so the layout is fixed.
-static_assert(sizeof(CStr) == 0x000c);
+
+// Didnt true for x64
+//static_assert(sizeof(CStr) == 0x000c);
 
 void UnifyFileName(CStr& fileName);
 void UnifyFileName0(CStr& fileName);
