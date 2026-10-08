@@ -150,10 +150,9 @@ bool VehiclePartWnd::NeedUpdateInfoWnd(ItemInfoWnd* infoWnd) const
 
 void VehiclePartWnd::SetupInfoWnd(ItemInfoWnd* infoWnd)
 {
-    // RVA 0x765D0
+    // RVA 0x765D0 - the popup keeps this window alive through its ref_ptr argument; no extra count.
     if (infoWnd && IsValid())
     {
-        IncRef();
         infoWnd->SetUpForObject(m_itemId, this);
     }
 }

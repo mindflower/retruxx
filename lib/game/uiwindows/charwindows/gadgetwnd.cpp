@@ -139,7 +139,7 @@ void GadgetWnd::SetupInfoWnd(ItemInfoWnd* infoWnd)
 {
     if (infoWnd && IsValid())
     {
-        IncRef();
+        // The popup keeps this window alive through its ref_ptr argument; no extra count.
         infoWnd->SetUpForObject(m_itemId, this);
     }
 }

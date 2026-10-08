@@ -861,10 +861,13 @@ int ItemWnd::ShowVideoWnd()
     }
     auto* videoWnd = static_cast<VideoWnd*>(w.get());
 
-    // The shipped build short-circuits when the video panel is already showing
-    // this exact object for this slot; that check reads a private VideoWnd field
-    // with no accessor in retruxx yet.
-    IncRef();
+    // Nothing to do when the panel already shows this object for this slot. The panel keeps this
+    // window alive through its ref_ptr argument; no extra count.
+    ref_ptr<m3d::ui::Wnd> const videoSrcWindow = videoWnd->GetSrcWindow();
+    if (videoSrcWindow.get() == this && videoWnd->GetObjId() == item.GetObjId())
+    {
+        return 0;
+    }
     return videoWnd->ShowModelByObjId(item.GetObjId(), this);
 }
 
@@ -875,6 +878,5 @@ int ItemWnd::HideVideoWnd()
     {
         return 0;
     }
-    IncRef();
     return static_cast<VideoWnd*>(w.get())->HideModel(this);
 }
