@@ -272,14 +272,15 @@ bool LocalMapWnd::CanUserLocationNavPointBeDeletedFromBtn() const
 
 int LocalMapWnd::AddNavPoint(ObjectInfo* objectInfo, bool bWithUserWarning)
 {
-    // RVA 0x4EA4C0
-    // NOTE: the shipped build only proceeds when bWithUserWarning is set; the
-    // nav-point button path passes false, so it is effectively a no-op there.
-    if (!bWithUserWarning || objectInfo->GetLevelName() != help::GetCurrentLevelName())
+    // RVA 0x4EA4C0 - only an object on the current level can get a nav point; the
+    // confirmation box is asked only when bWithUserWarning is set (the nav-point
+    // button passes false and adds it straight away).
+    if (!objectInfo || objectInfo->GetLevelName() != help::GetCurrentLevelName())
     {
         return 0;
     }
-    if (M3D_APP->RunMsgBoxDlg({}, M3D_APP->GetStringByStringId0(m_aif.m_addNpDlgStr), 2, false) != m3d::ui::MBX_RET_YES)
+    if (bWithUserWarning &&
+        M3D_APP->RunMsgBoxDlg({}, M3D_APP->GetStringByStringId0(m_aif.m_addNpDlgStr), 2, false) != m3d::ui::MBX_RET_YES)
     {
         return 1;
     }

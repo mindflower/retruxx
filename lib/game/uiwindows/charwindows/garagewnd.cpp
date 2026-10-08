@@ -244,7 +244,20 @@ m3d::Class* GarageWnd::GetClass() const
 int GarageWnd::GameDataSetup()
 {
     // RVA 0x447710 - collects the thirteen service controls from the XML, then
-    // borrows the six list windows from the interface manager by id.
+    // borrows the six list windows from the interface manager by id. Like the
+    // other windows, the setup only runs while flag 2 is clear; a repeated call
+    // just reports the state of flag 1. This matters here because the service
+    // lists are moved into this window's coordinates, which must happen once.
+    if ((m_gameDataFlags & 2) != 0)
+    {
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            return 1;
+        }
+        M3D_LOG_INFO("GarageWnd: error - fail to init because of a bad resource");
+        return 0;
+    }
+
     int res = 1;
 
     auto const findButton = [&](CStr const& name, m3d::ui::ButtonWnd*& out)
@@ -299,10 +312,30 @@ int GarageWnd::GameDataSetup()
             return nullptr;
         };
 
+        // The three service lists are laid out from the garage's own coordinates
+        // and pop up out of their list button: the list's corner is moved into
+        // this window's frame (m_bounds written directly, not through SetBounds)
+        // and the button's bounds become the list's switch bounds.
+        auto const anchorList = [&](AdvancedList* list, m3d::ui::ButtonWnd* listButton)
+        {
+            if (!list)
+            {
+                return;
+            }
+            PointBase<float> const pos =
+                ToWindow(PointBase<float>(list->m_bounds.x0, list->m_bounds.y0));
+            list->m_bounds.x0 = pos.x;
+            list->m_bounds.y0 = pos.y;
+            list->SetSwitchWndBounds(listButton->GetBounds());
+        };
+
         m_wndRefuelList = static_cast<RefuelList*>(getList(IW_WND_REFUEL_LIST, &RefuelList::m_classRefuelList));
+        anchorList(m_wndRefuelList.get(), m_btnRefuelList);
         m_wndRepairList = static_cast<RepairList*>(getList(IW_WND_REPAIR_LIST, &RepairList::m_classRepairList));
+        anchorList(m_wndRepairList.get(), m_btnRepairList);
         m_wndRechargeList =
             static_cast<RechargeList*>(getList(IW_WND_RECHARGE_LIST, &RechargeList::m_classRechargeList));
+        anchorList(m_wndRechargeList.get(), m_btnRechargeList);
         m_wndCabinsList = static_cast<CabinList*>(getList(IW_WND_CABIN_LIST, &CabinList::m_classCabinList));
         m_wndBasketsList = static_cast<BasketList*>(getList(IW_WND_BASKET_LIST, &BasketList::m_classBasketList));
         m_wndSkinList = static_cast<SkinsWnd*>(getList(IW_WND_SKINS, &SkinsWnd::m_classSkinsWnd));
@@ -748,8 +781,9 @@ void GarageWnd::UpdateServiceSelectState(
         }
         else
         {
+            // SetImaged takes (regular, mouse down, mouse in, disabled).
             btn->SetImaged(
-                ico(m_aif.m_strEnabled), ico(m_aif.m_strOverrolled), ico(m_aif.m_strPressed), ico(m_aif.m_strDisabled));
+                ico(m_aif.m_strEnabled), ico(m_aif.m_strPressed), ico(m_aif.m_strOverrolled), ico(m_aif.m_strDisabled));
         }
     }
 }
@@ -1239,6 +1273,10 @@ void GarageWnd::GetPossibleRecharge(int& units, int& price) const
             int const moneyLeft = money - price;
             if (moneyLeft < shellsNeeded * shellPrice)
             {
+                // NOTE: the gun the money runs out on is charged for the running total
+                // of units, including the shells already priced for the earlier guns,
+                // not just for its own shells, as shipped. With several guns the
+                // recharge-all price can then exceed both the money and the list's sum.
                 units += moneyLeft / shellPrice;
                 price += shellPrice * units;
                 break;

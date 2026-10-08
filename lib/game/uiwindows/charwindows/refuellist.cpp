@@ -11,6 +11,8 @@
 #include <server/objects/vehicle.h>
 #include <ui/wndstation.h>
 
+#include <cmath>
+
 // ===========================================================================
 //  RefuelButton
 // ===========================================================================
@@ -91,7 +93,7 @@ int RefuelButton::GetMaxUnitsToBuy() const
     {
         return 0;
     }
-    return static_cast<int>(vehicle->Fuel().maxValue().get() - vehicle->Fuel().value().get());
+    return static_cast<int>(lrintf(vehicle->Fuel().maxValue().get() - vehicle->Fuel().value().get()));
 }
 
 float RefuelButton::GetPriceForOneUnit() const

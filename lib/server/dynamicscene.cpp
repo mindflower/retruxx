@@ -107,27 +107,25 @@ namespace ai
 
     int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
     {
-        // RVA 0x88D360 - verified against the binary, including the raw offset
-        // arithmetic. The mode is 0x3018 = dContactApprox1 | dContactSoftERP |
-        // dContactSoftCFM, so mu2, motion1 and motion2 are deliberately left
-        // alone; only colliders that set the matching flag also set those.
-        if (numContacts)
+        // RVA 0x88D360 - the shipped code walks the array from &surface.slip1 in
+        // steps of 26 floats (sizeof(dContact) on x86); the fields are named here
+        // so the stride follows the real dContact size on x64 as well. The mode is
+        // 0x3018 = dContactApprox1 | dContactSoftERP | dContactSoftCFM, so mu2,
+        // motion1 and motion2 are deliberately left alone; only colliders that set
+        // the matching flag also set those.
+        // NOTE: bounce and bounce_vel are written although dContactBounce is not
+        // in the mode, so ODE never reads them, as shipped.
+        for (unsigned int i = 0; i < numContacts; ++i)
         {
-            auto p_slip1 = &contacts->surface.slip1;
-            auto v3 = numContacts;
-            do
-            {
-                *((int*)p_slip1 - 9) = 12312;
-                *(p_slip1 - 8) = 0.80000001;
-                *p_slip1 = 0.0000099999997;
-                p_slip1[1] = 0.0000099999997;
-                *(p_slip1 - 4) = 0.80000001;
-                *(p_slip1 - 3) = 0.0000049999999;
-                *(p_slip1 - 6) = 0.001;
-                *(p_slip1 - 5) = 0.0099999998;
-                p_slip1 += 26;
-                --v3;
-            } while (v3);
+            dSurfaceParameters& surface = contacts[i].surface;
+            surface.mode = 12312;
+            surface.mu = 0.8f;
+            surface.slip1 = 0.00001f;
+            surface.slip2 = 0.00001f;
+            surface.soft_erp = 0.8f;
+            surface.soft_cfm = 0.000005f;
+            surface.bounce = 0.001f;
+            surface.bounce_vel = 0.01f;
         }
         return 1;
     }
