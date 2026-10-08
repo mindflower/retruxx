@@ -150,7 +150,10 @@ namespace
         M3D_LOG_INFO("input: " + str);
     }
 
+    // The shipped table (23 entries, registered by Application::RegisterConsoleCommands); the ids
+    // are the cases of Application::HandleCommand.
     m3d::CConsoleCommands conCommands[] = {
+        {"quit", 0},
         {"exit", 0},
         {"benchmark", 1},
         {"mem_footprint", 3},
@@ -163,16 +166,17 @@ namespace
         {"descNative", 10},
         {"descClass", 11},
         {"r_videomode", 2},
-        {"r_reloadShaders", 13},
-        {"r_showStats", 14},
-        {"r_showDeviceMemStats", 15},
-        {"r_showGraphicalStats", 16},
-        {"r_reloadTextures", 17},
-        {"r_repainTextures", 18},
-        {"r_texturesInfo", 19},
-        {"r_vbInfo", 20},
-        {"r_ibInfo", 21},
-        {"s_modelsInfo", 22},
+        {"r_reloadShaders", 12},
+        {"r_showStats", 13},
+        {"r_showDeviceMemStats", 14},
+        {"r_showGraphicalStats", 15},
+        {"r_reloadTextures", 16},
+        {"r_repainTextures", 17},
+        {"r_texturesInfo", 18},
+        {"r_vbInfo", 19},
+        {"r_ibInfo", 20},
+        {"s_modelsInfo", 21},
+        {"Statistic", 56},
     };
 
     using CreateIRendererType = m3d::rend::IRenderer*(__cdecl*)(m3d::Kernel*);
