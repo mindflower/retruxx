@@ -7,6 +7,7 @@
 #include <cinematic.h>
 #include <config.h>
 #include <intrin.h>
+#include <iterator>
 #include <landscape.h>
 #include <level.h>
 #include <m3dapp.h>
@@ -936,7 +937,7 @@ namespace m3d
                 ev.m_byteEv[3] = param2;
                 ev.m_eventType = 8 - (param3 != 0);
                 auto head = m_eventsQueueHead + 1;
-                if (head >= 0x1388)
+                if (head >= static_cast<int>(std::size(m_eventsQueue)))
                 {
                     head = 0;
                 }
@@ -986,7 +987,7 @@ namespace m3d
                         ev.m_ushortEv[2] = mask != 0;
 
                         auto head = m_eventsQueueHead + 1;
-                        if (head >= 0x1388)
+                        if (head >= static_cast<int>(std::size(m_eventsQueue)))
                         {
                             head = 0;
                         }
@@ -1009,7 +1010,7 @@ namespace m3d
                     ev.m_eventType = 15;
 
                     auto head = m_eventsQueueHead + 1;
-                    if (head >= 0x1388)
+                    if (head >= static_cast<int>(std::size(m_eventsQueue)))
                     {
                         head = 0;
                     }
@@ -1045,7 +1046,7 @@ namespace m3d
                             ev.m_ushortEv[2] = btnsMask != 0;
 
                             auto head = m_eventsQueueHead + 1;
-                            if (head >= 0x1388)
+                            if (head >= static_cast<int>(std::size(m_eventsQueue)))
                             {
                                 head = 0;
                             }
@@ -1086,7 +1087,7 @@ namespace m3d
             ev.m_eventType = 9;
 
             auto head = m_eventsQueueHead + 1;
-            if (head >= 0x1388)
+            if (head >= static_cast<int>(std::size(m_eventsQueue)))
             {
                 head = 0;
             }
@@ -1111,7 +1112,7 @@ namespace m3d
             }
             auto const ev = m_eventsQueue[tail];
             auto newTail = m_eventsQueueTail + 1;
-            if (newTail >= 0x1388)
+            if (newTail >= static_cast<int>(std::size(m_eventsQueue)))
             {
                 newTail = 0;
             }
@@ -5520,7 +5521,7 @@ namespace m3d
     {
         // RVA 0x59EBE0
         int head = m_eventsQueueHead + 1;
-        if (static_cast<unsigned>(head) >= 5000)
+        if (static_cast<unsigned>(head) >= std::size(m_eventsQueue))
         {
             head = 0;
         }
@@ -5544,7 +5545,7 @@ namespace m3d
         if (removeFromQueue)
         {
             int tail = m_eventsQueueTail + 1;
-            if (static_cast<unsigned>(tail) >= 5000)
+            if (static_cast<unsigned>(tail) >= std::size(m_eventsQueue))
             {
                 tail = 0;
             }
@@ -5969,7 +5970,8 @@ namespace m3d
         while (m_eventsQueueTail != m_eventsQueueHead)
         {
             m_eventsQueue[m_eventsQueueTail] = emptyEvent;
-            m_eventsQueueTail = (m_eventsQueueTail + 1 >= 5000) ? 0 : m_eventsQueueTail + 1;
+            m_eventsQueueTail =
+                (m_eventsQueueTail + 1 >= static_cast<int>(std::size(m_eventsQueue))) ? 0 : m_eventsQueueTail + 1;
         }
     }
 

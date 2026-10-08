@@ -583,8 +583,9 @@ namespace ai
             m_repositories[type] = repository;
         }
 
-        // A workshop is a shop for guns whether or not the level gave it that counter.
-        if (GetPrototypeInfo()->m_buildingType == WORKSHOP &&
+        // A shop always has a gun counter, whether or not the level gave it one. Workshops only
+        // get one from the level file (the shipped build compares the building type with SHOP).
+        if (GetPrototypeInfo()->m_buildingType == SHOP &&
             m_repositories.find(WORKSHOP_GUNS_AND_GADGETS) == m_repositories.end())
         {
             auto* const repository = (GeomRepository*)M3D_KERNEL->New("GeomRepository");
