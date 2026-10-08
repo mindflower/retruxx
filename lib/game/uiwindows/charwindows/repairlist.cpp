@@ -17,6 +17,8 @@
 #include <server/server.h>
 #include <ui/wndstation.h>
 
+#include <cmath>
+
 namespace
 {
     // The four service branches of RepairButton::GetServiceName / GetServiceIco
@@ -157,6 +159,8 @@ m3d::rend::TexHandle RepairButton::GetServiceIco() const
 int RepairButton::GetMaxUnitsToBuy() const
 {
     // RVA 0x469880 - how much health / durability the object is missing.
+    // NOTE: rounded to nearest (a bare fistp), like the garage's own repair
+    // totals, not truncated.
     ai::Obj* obj = m_objId == -1 ? nullptr : ai::theObjects->GetEntityByObjId(m_objId);
     if (!obj || !RT_DYNCAST(obj, ai::Obj))
     {
@@ -164,15 +168,15 @@ int RepairButton::GetMaxUnitsToBuy() const
     }
     if (auto* vehicle = RT_DYNCAST(obj, ai::Vehicle))
     {
-        return static_cast<int>(vehicle->Health().maxValue().get() - vehicle->Health().value().get());
+        return static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
     }
     if (auto* compound = RT_DYNCAST(obj, ai::CompoundVehiclePart))
     {
-        return static_cast<int>(compound->GetMaxDurability() - compound->GetDurability());
+        return static_cast<int>(lrintf(compound->GetMaxDurability() - compound->GetDurability()));
     }
     if (auto* part = RT_DYNCAST(obj, ai::VehiclePart))
     {
-        return static_cast<int>(part->Durability().maxValue().get() - part->Durability().value().get());
+        return static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
     }
     return 0;
 }

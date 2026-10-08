@@ -180,6 +180,9 @@ public:
 
 class AdvancedList : public m3d::ui::Wnd
 {
+    // GarageWnd::GameDataSetup moves the list into its own coordinates by writing m_bounds directly.
+    friend class GarageWnd;
+
 public:
     int SetupForWorkshop(int workshopId);
     void SetSwitchWndBounds(BoundsBase<float> const& b);

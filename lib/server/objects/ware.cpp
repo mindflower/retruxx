@@ -4,6 +4,8 @@
 #include "core/log.h"
 #include "base/prototypemanager.h"
 #include "base/obj.h"
+
+#include <cmath>
 #include <server/modifier.h>
 
 namespace ai
@@ -14,16 +16,22 @@ namespace ai
 
     int GetIntPrice(float price)
     {
-        return price >= 1.0f ? static_cast<int>(price) : 1;
+        // RVA 0x6AA3D0
+        // NOTE: the shipped code converts with a bare fistp, so the price rounds
+        // to nearest rather than truncating.
+        return price >= 1.0f ? static_cast<int>(lrintf(price)) : 1;
     }
 
     int GetIntRepairPrice(float price)
     {
+        // RVA 0x6AA400
         if (price < 0.0001f)
         {
             return 0;
         }
-        return price >= 1.0f ? static_cast<int>(price) : 1;
+        // NOTE: the shipped code converts with a bare fistp, so the price rounds
+        // to nearest rather than truncating.
+        return price >= 1.0f ? static_cast<int>(lrintf(price)) : 1;
     }
 
     float GetDurabilityPriceCoeff(ai::NumericInRange<float> const& durability)
