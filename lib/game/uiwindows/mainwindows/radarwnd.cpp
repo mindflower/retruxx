@@ -172,7 +172,10 @@ void RadarWnd::NpDistance::Show(bool bShow)
     }
     else
     {
-        m_wndDigital->SetBaseOrigin(animationInfo.m_endPt);
+        // Not in the window tree (e.g. the radar is hidden behind a town
+        // dialog): no animation runs, so the readout is moved straight to the
+        // animation's end point.
+        m_wndDigital->SetOrigin(animationInfo.m_endPt);
     }
 }
 
