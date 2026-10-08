@@ -1,4 +1,7 @@
 #include "weathermanager.h"
+#include <algorithm>
+#include <cmath>
+#include <cstring>
 #include <stdexcept>
 
 #include "config.h"
@@ -12,6 +15,7 @@
 #include "file/fileserver.h"
 #include "file/filestream.h"
 #include "game/m3dgame.h"
+#include "math/vector2.h"
 #include "server/server.h"
 
 namespace m3d
@@ -19,6 +23,10 @@ namespace m3d
     namespace
     {
         const char* m_globalTimeParamsNames[4] = { "sunriseTime", "dayTime", "sunsetTime", "nightTime" };
+
+        // The sky dome is a square grid of this many vertices per side (CreateSky, SetupSkyParams,
+        // RenderWeather).
+        int const SKY_GRID = 20;
     }
 
     int WeatherManager::DeleteWeather(unsigned iWeatherIdx)
@@ -32,7 +40,7 @@ namespace m3d
         {
             return 0;
         }
-        unsigned const count = m_weatherStorage.size();
+        std::size_t count = m_weatherStorage.size();
         if (iWeatherIdx >= count || count <= 1)
         {
             return 0;
@@ -51,21 +59,20 @@ namespace m3d
     {
         // RVA 0x65E740 - the sky dome is a 20x20 vertex grid (filled in by SetupSkyParams), drawn as
         // 19x19 quads of two triangles each: 19 * 19 * 6 = 2166 indices.
-        int const GRID = 20;
-        m_vbSky = M3D_APP->m_renderer->AddVb(rend::VERTEX_XYZCT2, GRID * GRID, "Sky", 0);
-        m_ibSky = M3D_APP->m_renderer->AddIb((GRID - 1) * (GRID - 1) * 6, false);
+        m_vbSky = M3D_APP->m_renderer->AddVb(rend::VERTEX_XYZCT2, SKY_GRID * SKY_GRID, "Sky", 0);
+        m_ibSky = M3D_APP->m_renderer->AddIb((SKY_GRID - 1) * (SKY_GRID - 1) * 6, false);
         auto mem = static_cast<WORD*>(M3D_APP->m_renderer->LockIb(m_ibSky, 0, 0, 0));
-        for (int row = 0; row < GRID - 1; ++row)
+        for (int row = 0; row < SKY_GRID - 1; ++row)
         {
-            for (int col = 0; col < GRID - 1; ++col)
+            for (int col = 0; col < SKY_GRID - 1; ++col)
             {
-                WORD const base = static_cast<WORD>(row * GRID + col);
+                WORD const base = static_cast<WORD>(row * SKY_GRID + col);
                 mem[0] = base;
-                mem[1] = base + GRID + 1;
-                mem[2] = base + GRID;
+                mem[1] = base + SKY_GRID + 1;
+                mem[2] = base + SKY_GRID;
                 mem[3] = base;
                 mem[4] = base + 1;
-                mem[5] = base + GRID + 1;
+                mem[5] = base + SKY_GRID + 1;
                 mem += 6;
             }
         }
@@ -136,96 +143,65 @@ namespace m3d
         return oldValue;
     }
 
-    m3d::rend::VertexXYZCT2 tmp_0[400];
-
     int WeatherManager::SetupSkyParams()
     {
+        // RVA 0x65DA30 - refills the 20x20 sky dome (see CreateSky): a paraboloid over the level whose
+        // height drops with the squared distance from the centre over the atmosphere radius. Stage 0
+        // carries the scrolling clouds, stage 1 the same texture unscrolled, and the alpha fades out
+        // from a quarter of the lerp radius to the full radius.
         if (m_weatherStorage.empty())
         {
             return 0;
         }
-
         M3D_APP->SetFrameClearColor(GetWeatherColor(CI_FOG));
 
-        auto v4 = 0;
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        static rend::VertexXYZCT2 tmp[SKY_GRID * SKY_GRID];
 
-        float VISCELL_EDGE_LENGTH_9 = 128.0;
-        auto atmoRadius = M3D_ENGINE_CFG.m_weather_AtmoRadius.GetF();
+        float const w = static_cast<float>(m_owner->m_level->land_size + 2) * VISCELL_EDGE_LENGTH;
+        float const invAtmoRadius = 1.0f / M3D_ENGINE_CFG.m_weather_AtmoRadius.GetF();
+        float const domeHeight = w / (m_owner->m_level->m_skyDomeDivider * m_currentWeather->m_weatherSkyDomeFactor);
+        float const c2 = w * 0.05f;
+        float const lerpHalf = w * 0.3535f;
+        float const fadeStart = lerpHalf * 0.25f;
+        float const fadeLength = lerpHalf * 0.75f;
+        CVector2 const center(w * 0.5f, w * 0.5f);
 
-        auto v22 = (this->m_owner->m_level->land_size + 2) * VISCELL_EDGE_LENGTH_9;
-
-        auto v7 = 0.0;
-        auto v8 = 1.0 / atmoRadius;
-        auto v9 = v22 * 0.050000001;
-        auto v26 = v22 * 0.35350001;
-        auto v10 = v22 / (float)(this->m_owner->m_level->m_skyDomeDivider * this->m_currentWeather->m_weatherSkyDomeFactor);
-        auto w = v22 * 0.050000001;
-        auto v11 = 0.0;
-        auto len = 0.0;
-        auto v23 = (float)(v22 * 0.35350001) * 0.25;
-        auto center_4 = v10;
-
-        auto v27 = v22 / 2;
-        auto v29 = v22 / 2;
-        auto v30 = v22 / 2;
-        while (1)
+        rend::VertexXYZCT2* v = tmp;
+        for (int row = 0; row < SKY_GRID; ++row)
         {
-            auto v12 = len * v9;
-            auto v13 = 0.0;
-            auto retaddr = len * v9;
-            auto v25 = (float)((float)(len * v9) - v30) * (float)((float)(len * v9) - v30);
-            auto p_tu0 = &tmp_0[v4].tu0;
-            while (1)
+            float const tv = static_cast<float>(row) * 0.25f;
+            for (int col = 0; col < SKY_GRID; ++col, ++v)
             {
-                auto v15 = v13 * v9;
-                auto lerpHalf = 255.0;
-                auto alpha = sqrt((float)((float)(v13 * v9) - v29) * (float)((float)(v13 * v9) - v29) + v25);
-                if (alpha > (double)v23)
+                float const tu = static_cast<float>(col) * 0.25f;
+                CVector2 const point(static_cast<float>(col) * c2, static_cast<float>(row) * c2);
+                float const dx = point.x - center.x;
+                float const dz = point.y - center.y;
+                float const len = std::sqrt(dx * dx + dz * dz);
+                float alpha = 255.0f;
+                if (len > fadeStart)
                 {
-                    auto v16 = (float)(alpha - v23) / (float)(v26 * 0.75);
-                    auto v17 = 0.0;
-                    if (v16 < 0.0 || (v17 = 1.0, v16 > 1.0))
-                        v16 = v17;
-                    v12 = retaddr;
-                    lerpHalf = 255.0 - (float)(v16 * 255.0);
+                    float const t = std::clamp((len - fadeStart) / fadeLength, 0.0f, 1.0f);
+                    alpha = 255.0f - t * 255.0f;
                 }
-                v13 = v13 + 1.0;
-                *((int*)p_tu0 - 1) = (int)lerpHalf << 24;
-                *p_tu0 = v7 + this->m_cloudsOffset;
-                p_tu0[1] = v11 + this->m_cloudsOffset;
-                *(p_tu0 - 2) = v12 - *(float*)&v27;
-                p_tu0[2] = v7;
-                v7 = v7 + 0.25;
-                *(p_tu0 - 3) = center_4
-                    - (float)((float)((float)((float)(v12 - *(float*)&v27) * (float)(v12 - *(float*)&v27)) * v8)
-                              + (float)((float)((float)(v15 - *(float*)&v27) * (float)(v15 - *(float*)&v27)) * v8));
-                p_tu0[3] = v11;
-                *(p_tu0 - 4) = v15 - *(float*)&v27;
-                ++v4;
-                p_tu0 += 8;
-                if (v13 >= 19.9)
-                    break;
-                v9 = w;
+
+                v->x = dx;
+                v->y = domeHeight - (dx * dx + dz * dz) * invAtmoRadius;
+                v->z = dz;
+                // Rounded to nearest (a bare fistp), not truncated.
+                v->c = static_cast<uint32_t>(lrintf(alpha)) << 24;
+                v->tu0 = tu + m_cloudsOffset;
+                v->tv0 = tv + m_cloudsOffset;
+                v->tu1 = tu;
+                v->tv1 = tv;
             }
-            auto v18 = (float)(len + 1.0) >= 19.9;
-            v11 = v11 + 0.25;
-            len = len + 1.0;
-            if (v18)
-                break;
-            v7 = 0.0;
-            v9 = w;
         }
 
-        this->m_cloudsOffset = M3D_KERNEL->GetTimer().GetLastFrameTime()
-            * 0.001
-            * this->m_currentWeather->m_cloudsSpeed[this->m_curDayTime]
-            + this->m_cloudsOffset;
+        m_cloudsOffset += static_cast<float>(M3D_KERNEL->GetTimer().GetLastFrameTime()) * 0.001f
+            * m_currentWeather->m_cloudsSpeed[m_curDayTime];
 
-        memcpy(
-            M3D_RENDERER->LockVb(this->m_vbSky, 0, 0, 0),
-            tmp_0,
-            0x3200u);
-        M3D_RENDERER->UnlockVb(this->m_vbSky);
+        memcpy(M3D_RENDERER->LockVb(m_vbSky, 0, 0, 0), tmp, sizeof(tmp));
+        M3D_RENDERER->UnlockVb(m_vbSky);
         return 1;
     }
 
@@ -382,118 +358,49 @@ namespace m3d
 
     int WeatherManager::RenderWeather(Landscape::LandRenderMode rendMode)
     {
+        // RVA 0x65DE10 - the dome is drawn around the camera: clouds from UV set 0 modulated twice by
+        // the sky colour, then at night in the direct pass the stars from UV set 1 over them.
         if (m_weatherStorage.empty())
         {
             return 0;
         }
 
-        M3D_RENDERER->SetToStream0(this->m_vbSky);
+        M3D_RENDERER->SetToStream0(m_vbSky);
         M3D_RENDERER->PushCull(rend::M3DCULL_NONE);
         M3D_RENDERER->PushLighting(0);
         M3D_RENDERER->PushBlend(rend::BM_ALPHA);
         M3D_RENDERER->SetAlphaTest(0);
 
-        auto orgInv = M3D_RENDERER->MatGetOrgInv();
+        CVector const org = M3D_RENDERER->MatGetOrgInv();
         M3D_RENDERER->MatPushWorld();
-
         CMatrix translation;
-        translation.zero();
-
-        translation.m[3][0] = orgInv.x;
-        translation.m[3][1] = orgInv.y;
-        translation.m[3][2] = orgInv.z;
-
+        translation.translation(org);
         CMatrix rot;
-        rot.zero();
-
-        CMatrix vv;
-        auto v6 = sin(0.0);
-        auto v7 = cos(0.0);
-        vv._11 = (float)((float)((float)(translation._21 * v6) + (float)(translation._31 * rot._13))
-                         + (float)(rot._14 * translation._41))
-            + v7;
-        vv._12 = (float)((float)((float)(translation._12 * v7) + (float)(translation._32 * rot._13))
-                         + (float)(rot._14 * translation._42))
-            + v6;
-        vv._14 = translation._14 * v7 + translation._24 * v6 + translation._34 * rot._13 + rot._14;
-        vv._13 = (float)((float)((float)(translation._13 * v7) + (float)(translation._23 * v6))
-                         + (float)(rot._14 * translation._43))
-            + rot._13;
-        vv._21 = (float)((float)((float)(translation._21 * v7) + (float)(rot._23 * translation._31))
-                         + (float)(rot._24 * translation._41))
-            + (float)(0.0 - v6);
-        vv._22 = (float)((float)((float)(rot._23 * translation._32) + (float)(translation._12 * (float)(0.0 - v6)))
-                         + (float)(rot._24 * translation._42))
-            + v7;
-        vv._24 = (float)((float)((float)(translation._24 * v7) + (float)(rot._23 * translation._34))
-                         + (float)(translation._14 * (float)(0.0 - v6)))
-            + rot._24;
-        vv._23 = (float)((float)((float)(translation._23 * v7) + (float)(translation._13 * (float)(0.0 - v6)))
-                         + (float)(rot._24 * translation._43))
-            + rot._23;
-        vv._31 = (float)((float)((float)(rot._32 * translation._21) + (float)(rot._34 * translation._41)) + rot._31)
-            + translation._31;
-        vv._32 = (float)((float)((float)(rot._31 * translation._12) + (float)(rot._34 * translation._42)) + rot._32)
-            + translation._32;
-        vv._33 = (float)((float)((float)(rot._32 * translation._23) + (float)(rot._31 * translation._13))
-                         + (float)(rot._34 * translation._43))
-            + 1.0;
-        vv._34 = (float)((float)((float)(rot._32 * translation._24) + (float)(rot._31 * translation._14)) + rot._34)
-            + translation._34;
-        vv._41 = (float)((float)((float)(rot._43 * translation._31) + (float)(rot._42 * translation._21)) + rot._41)
-            + translation._41;
-        vv._42 = (float)((float)((float)(rot._43 * translation._32) + (float)(rot._41 * translation._12)) + rot._42)
-            + translation._42;
-        vv._43 = (float)((float)((float)(rot._42 * translation._23) + (float)(rot._41 * translation._13)) + rot._43)
-            + translation._43;
-        vv._44 = (float)((float)((float)(rot._43 * translation._34) + (float)(rot._42 * translation._24))
-                         + (float)(rot._41 * translation._14))
-            + 1.0;
-
-        rot = vv;
-
+        // NOTE: the original scales a timer reading by zero here, so the dome never turns.
+        rot.rotZ(0.0f);
+        rot = rot * translation;
         M3D_RENDERER->MatSetWorld(rot);
-        M3D_RENDERER->SetIndices(this->m_ibSky, 0);
-        M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
-        M3D_RENDERER->SetStageState(0,
-                                    rend::BM_COLOR,
-                                    rend::TS_TEX_MODULATE2X_TFAC);
 
-        M3D_RENDERER->SetStageState(0,
-            rend::BM_ALPHA,
-            rend::TS_DIFF_MODULATE_TFAC);
+        unsigned const SKY_VERTICES = SKY_GRID * SKY_GRID;
+        unsigned const SKY_TRIANGLES = (SKY_GRID - 1) * (SKY_GRID - 1) * 2;
+        M3D_RENDERER->SetIndices(m_ibSky, 0);
+        M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 0);
+        M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_TEX_MODULATE2X_TFAC);
+        M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_DIFF_MODULATE_TFAC);
         M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
         M3D_RENDERER->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
-        M3D_RENDERER->SetTexture(0,
-            this->m_cloudTextureHandle,
-            -1.0);
+        M3D_RENDERER->SetTexture(0, m_cloudTextureHandle, -1.0);
         M3D_RENDERER->SetTFactor(GetWeatherColor(CI_SKY), false);
-        M3D_RENDERER->DrawIndexedPrimitive(
-            rend::M3DPT_TRIANGLELIST,
-            0,
-            400u,
-            0,
-            722u);
+        M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, SKY_VERTICES, 0, SKY_TRIANGLES);
 
-        if (this->m_curDayTime == GTP_NIGHT_TIME && rendMode == Landscape::LRM_DIRECT)
+        if (m_curDayTime == GTP_NIGHT_TIME && rendMode == Landscape::LRM_DIRECT)
         {
-            M3D_RENDERER->SetTFactor(-1u, 0);
+            M3D_RENDERER->SetTFactor(0xFFFFFFFFu, false);
             M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
-            M3D_RENDERER->SetStageState(
-                0,
-                rend::BM_ALPHA,
-                rend::TS_DIFF_MODULATE_TFAC);
-            M3D_RENDERER->SetTexture(
-                0,
-                this->m_starsTexture,
-                -1.0);
+            M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_DIFF_MODULATE_TFAC);
+            M3D_RENDERER->SetTexture(0, m_starsTexture, -1.0);
             M3D_RENDERER->TgSetTcSource(0, rend::TC_FROM_VERTEX, 1);
-            M3D_RENDERER->DrawIndexedPrimitive(
-                rend::M3DPT_TRIANGLELIST,
-                0,
-                400u,
-                0,
-                722u);
+            M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, 0, SKY_VERTICES, 0, SKY_TRIANGLES);
         }
 
         M3D_RENDERER->MatPopWorld();
@@ -652,7 +559,7 @@ namespace m3d
             m_curWeatherStorage = m_weatherStorage;
         }
 
-        auto modulo = 0;
+        std::size_t modulo = 0u;
         if (!m_bEdit)
         {
             modulo = m_curWeatherStorage.size();
@@ -706,7 +613,7 @@ namespace m3d
         }
     }
 
-    unsigned WeatherManager::GetNumWeathers() const
+    std::size_t WeatherManager::GetNumWeathers() const
     {
         if (m_bEdit)
         {

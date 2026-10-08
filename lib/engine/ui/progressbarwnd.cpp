@@ -243,9 +243,9 @@ namespace m3d
         float ProgressBarWnd::GetSizeOfStepInPixel() const
         {
             if (m_orientation == ORIENTATION_LEFT_TO_RIGHT || m_orientation == ORIENTATION_RIGHT_TO_LEFT)
-                return GetMaxBarRect().width / (double)m_numOfSteps;
+                return GetMaxBarRect().width / (float)m_numOfSteps;
             else
-                return GetMaxBarRect().height / (double)m_numOfSteps;
+                return GetMaxBarRect().height / (float)m_numOfSteps;
         }
 
         int ProgressBarWnd::GetCurNumOfSteps() const
@@ -257,7 +257,7 @@ namespace m3d
             // RVA 0x724EC0 - a value just above the minimum still shows one step. The step count rounds to nearest
             // (a bare fistp), not down.
             float const fSteps = (m_curValue - m_minValue) / ((m_maxValue - m_minValue) / static_cast<float>(m_numOfSteps));
-            if (fSteps <= 0.001)
+            if (fSteps <= 0.001f)
             {
                 return 0;
             }

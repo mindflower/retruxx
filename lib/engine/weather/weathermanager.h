@@ -58,7 +58,7 @@ namespace m3d
         const m3d::Weather* GetActiveWeather() const;
         m3d::Weather* GetWeather(unsigned int N);
         m3d::Weather* GetWeatherByName(const CStr& name);
-        unsigned int GetNumWeathers() const;
+        std::size_t GetNumWeathers() const;
         unsigned int GetGlobalTimeParamsNum() const;
         const char* GetGlobalTimeParamName(unsigned int i) const;
         float GetGlobalTimeParam(unsigned int iParamIdx) const;

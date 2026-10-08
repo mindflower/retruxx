@@ -183,7 +183,7 @@ namespace m3d
             }
             auto bodyRect = GetBodyRect();
             bodyRect.y0 -= pane->m_space;
-            bodyRect.height += pane->m_space * 2.0;
+            bodyRect.height += pane->m_space * 2.0f;
 
             unsigned clr = 0;
             PaneFlagBg bgFlag = PANE_FLAG_BG_OUT;
@@ -214,11 +214,11 @@ namespace m3d
                 {
                     return 1;
                 }
-                GetGfxServer()->AddImagedRectGeneral(di, thumbRect, clr, pane->m_thumbTex, 0.0, 0.0, 1.0, 1.0);
+                GetGfxServer()->AddImagedRectGeneral(di, thumbRect, clr, pane->m_thumbTex, 0.0f, 0.0f, 1.0f, 1.0f);
             }
             if (thumbRect.width <= bodyRect.width)
             {
-                GetGfxServer()->AddImagedRectGeneral(di, thumbRect, clr, pane->m_thumbTex, 0.0, 0.0, 1.0, 1.0);
+                GetGfxServer()->AddImagedRectGeneral(di, thumbRect, clr, pane->m_thumbTex, 0.0f, 0.0f, 1.0f, 1.0f);
             }
             return 1;
         }
@@ -378,19 +378,19 @@ namespace m3d
                 {
                     bounds.y0 = ((bounds.height - m_thumbSz) * m_curPos) + bounds.y0;
                     bounds.height = m_thumbSz;
-                    bounds.x0 = (pane->GetWidth() - pane->m_thumbSize.x) * 0.5;
+                    bounds.x0 = (pane->GetWidth() - pane->m_thumbSize.x) * 0.5f;
                     bounds.width = pane->m_thumbSize.x;
                 }
                 else
                 {
                     bounds.x0 = ((bounds.width - m_thumbSz) * m_curPos) + bounds.x0;
                     bounds.width = m_thumbSz;
-                    bounds.y0 = (pane->GetWidth() - pane->m_thumbSize.y) * 0.5;
+                    bounds.y0 = (pane->GetWidth() - pane->m_thumbSize.y) * 0.5f;
                     bounds.height = pane->m_thumbSize.y;
                 }
                 return bounds;
             }
-            return { 0.0, 0.0 };
+            return { 0.0f, 0.0f };
         }
 
         BoundsBase<float> ScrollWnd::GetBodyRect() const
@@ -402,20 +402,20 @@ namespace m3d
                 if (m_vertical)
                 {
                     bounds.y0 = pane->m_btnSize.y;
-                    bounds.height -= (bounds.y0 * 2.0);
-                    bounds.x0 = (pane->GetWidth() - pane->m_barWidth) * 0.5;
+                    bounds.height -= (bounds.y0 * 2.0f);
+                    bounds.x0 = (pane->GetWidth() - pane->m_barWidth) * 0.5f;
                     bounds.width = pane->m_barWidth;
                 }
                 else
                 {
                     bounds.x0 = pane->m_btnSize.x;
-                    bounds.width -= (bounds.x0 * 2.0);
-                    bounds.y0 = (pane->GetWidth() - pane->m_barWidth) * 0.5;
+                    bounds.width -= (bounds.x0 * 2.0f);
+                    bounds.y0 = (pane->GetWidth() - pane->m_barWidth) * 0.5f;
                     bounds.height = pane->m_barWidth;
                 }
                 return bounds;
             }
-            return {0.0, 0.0};
+            return {0.0f, 0.0f};
         }
 
         int ScrollWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
