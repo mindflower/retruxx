@@ -781,8 +781,9 @@ void GarageWnd::UpdateServiceSelectState(
         }
         else
         {
+            // SetImaged takes (regular, mouse down, mouse in, disabled).
             btn->SetImaged(
-                ico(m_aif.m_strEnabled), ico(m_aif.m_strOverrolled), ico(m_aif.m_strPressed), ico(m_aif.m_strDisabled));
+                ico(m_aif.m_strEnabled), ico(m_aif.m_strPressed), ico(m_aif.m_strOverrolled), ico(m_aif.m_strDisabled));
         }
     }
 }

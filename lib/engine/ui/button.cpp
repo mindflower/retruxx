@@ -445,7 +445,7 @@ namespace m3d
             if (ButtonWnd::ReadFromXmlNode(file, node))
             {
                 m3d::SafeStrAttrib(m_checkedPaneName, node, "checkedPaneName");
-                m3d::SafeStrAttrib(m_checkedPaneName, node, "uncheckedPaneName");
+                m3d::SafeStrAttrib(m_uncheckedPaneName, node, "uncheckedPaneName");
                 auto isChecked = 0;
                 if (!node->IsEmpty())
                 {
