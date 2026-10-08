@@ -1,18 +1,44 @@
 #include <core/console/cvar.h>
 #include <core/console/console.h>
 #include <cstdio>
-#include <stdexcept>
+#include <cstring>
 
 namespace m3d
 {
-    CVar::CVar(CVar const&)
+    CVar::CVar(CVar const& other) :
+        m_name(other.m_name),
+        m_type(other.m_type),
+        m_flags(other.m_flags),
+        m_s(other.m_s),
+        m_handler(other.m_handler)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary. A member-wise copy, except that the default value is duplicated because the
+        // destructor frees it.
+        m_i = other.m_i;
+        if (other.m_defaultValue)
+        {
+            m_defaultValue = new char[strlen(other.m_defaultValue) + 1];
+            strcpy(m_defaultValue, other.m_defaultValue);
+        }
+    }
+
+    CVar::CVar(CVar&& other) noexcept :
+        m_name(other.m_name),
+        m_type(other.m_type),
+        m_flags(other.m_flags),
+        m_s(other.m_s),
+        m_handler(other.m_handler),
+        m_i(other.m_i),
+        m_defaultValue(other.m_defaultValue)
+    {
+        other.m_defaultValue = nullptr;
     }
 
     CVar::CVar()
     {
-        m_s = "errormsg";
+        // RVA 0x414680 - IDA labels the string this copies "errormsg", but it is
+        // just an empty C string, so the value starts out empty.
+        m_s = "";
         m_type = CVAR_UNDEFINED;
         m_defaultValue = 0;
         m_handler = 0;
@@ -28,6 +54,44 @@ namespace m3d
         delete[] m_defaultValue;
     }
 
+    CVar& CVar::operator=(CVar const& other)
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        m_name = other.m_name;
+        m_type = other.m_type;
+        m_flags = other.m_flags;
+        m_s = other.m_s;
+        m_handler = other.m_handler;
+        m_i = other.m_i;
+        if (other.m_defaultValue)
+        {
+            m_defaultValue = new char[strlen(other.m_defaultValue) + 1];
+            strcpy(m_defaultValue, other.m_defaultValue);
+        }
+    }
+
+    CVar& CVar::operator=(CVar&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        m_name = other.m_name;
+        m_type = other.m_type;
+        m_flags = other.m_flags;
+        m_s = other.m_s;
+        m_handler = other.m_handler;
+        m_i = other.m_i;
+
+        m_defaultValue = other.m_defaultValue;
+        other.m_defaultValue = nullptr;
+    }
+
     void CVar::Init(char const* name, char const* value, eType type, eFlags flags)
     {
         m_name = name;
@@ -38,35 +102,35 @@ namespace m3d
 
     void CVar::SetB(bool b, bool ignoreFlags)
     {
-        char buffer[1] = { 0 };
+        char buffer[16] = {0};
         sprintf_s(buffer, "%d", b);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::SetC(unsigned int i, bool ignoreFlags)
     {
-        char buffer[32] = { 0 };
+        char buffer[32] = {0};
         sprintf_s(buffer, "%d", i);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::SetF(float f, bool ignoreFlags)
     {
-        char buffer[16] = { 0 };
+        char buffer[16] = {0};
         sprintf_s(buffer, "%.2f", f);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::SetI(int i, bool ignoreFlags)
     {
-        char buffer[16] = { 0 };
+        char buffer[16] = {0};
         sprintf_s(buffer, "%d", i);
         Set(buffer, ignoreFlags);
     }
 
     void CVar::Set(char const* value, bool ignoreFlags)
     {
-        if (ignoreFlags || m_flags & CVAR_READONLY == 0)
+        if (ignoreFlags || (m_flags & CVAR_READONLY) == 0)
         {
             switch (m_type)
             {
@@ -112,10 +176,7 @@ namespace m3d
                 }
                 else
                 {
-                    m_b =
-                        !stricmp(value, "yes") ||
-                        !stricmp(value, "yeah") ||
-                        !stricmp(value, "yep") ||
+                    m_b = !stricmp(value, "yes") || !stricmp(value, "yeah") || !stricmp(value, "yep") ||
                         !stricmp(value, "true");
                     if (m_b)
                     {
@@ -172,7 +233,8 @@ namespace m3d
 
     float CVar::GetF() const
     {
-        return m_f;
+        // RVA 0x406DC0 - a cvar of any other type is read as an integer.
+        return m_type == CVAR_FLOAT ? m_f : static_cast<float>(m_i);
     }
 
     int CVar::GetI() const
@@ -187,7 +249,11 @@ namespace m3d
 
     void CVar::ResetToDefault()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary. Restores the value the cvar had when it was first set.
+        if (m_defaultValue)
+        {
+            Set(m_defaultValue);
+        }
     }
 
     IConHandler* CVar::GetHandler() const
@@ -202,7 +268,8 @@ namespace m3d
 
     bool CVar::operator==(CVar const& rhs) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Not present in the binary. Cvars are identified by name.
+        return m_name == rhs.m_name;
     }
 
     CVar::eFlags CVar::GetFlags() const
@@ -219,4 +286,4 @@ namespace m3d
     {
         return m_type;
     }
-}
+}  // namespace m3d

@@ -30,8 +30,22 @@ enum HackedMusicType
     HACKMUSIC_LAST = 0x4,
 };
 
+// How a level is being started; passed with the "level started" UI event.
+enum StartLevelType
+{
+    FROM_SCRATCH = 0x0,
+    FROM_CONTINUOUS = 0x1,
+    FROM_SAVE = 0x2,
+};
+
+class CreditsWnd;
+
 class CMiracle3d : public m3d::Application
 {
+    // CreditsWnd takes the music system off the game playlist for the
+    // duration of the credits and hands it back afterwards.
+    friend class ::CreditsWnd;
+
 public:
     class CurGameMode
     {

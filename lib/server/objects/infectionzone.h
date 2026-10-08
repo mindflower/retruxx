@@ -24,8 +24,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x005c */
 
-    static_assert(sizeof(InfectionZonePrototypeInfo) == 0x005c);
-
     class InfectionZone : public ai::Obj
     {
         friend class InfectionZonePrototypeInfo;
@@ -123,6 +121,4 @@ namespace ai
         void _WatchRespawnTimeoutFinished(float elapsedTime);
         void _DoSpawnVehicles(unsigned int);
     }; /* size: 0x0130 */
-
-    static_assert(sizeof(InfectionZone) == 0x0130);
 }

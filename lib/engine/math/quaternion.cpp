@@ -2,6 +2,7 @@
 #include <math/matrix.h>
 #include <math/vector.h>
 #include <stdexcept>
+#include <cmath>
 
 #include "retruxx/common.h"
 
@@ -12,7 +13,11 @@ void Quaternion::FromMatrix(CMatrix const& m)
     auto ma = (float)(m._22 + m._11) + m._33;
     if (ma <= 0.0)
     {
-        auto v4 = m._22 > m._11;
+        // The largest diagonal element selects the pivot axis. `v4` MUST be an
+        // int (IDA types it as one): with `auto` it deduces bool from the
+        // comparison and the `v4 = 2` below silently truncates to 1, so the
+        // _33-largest case would pivot on Y instead of Z.
+        int v4 = m._22 > m._11 ? 1 : 0;
         if (m._33 > *(&m._11 + 5 * v4))
             v4 = 2;
         auto v5 = nxt[v4];
@@ -37,17 +42,53 @@ void Quaternion::FromMatrix(CMatrix const& m)
 
 void Quaternion::Normalize()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CC370. Note the squared length is tested, so a zero quaternion
+    // collapses to identity rather than producing NaNs.
+    float const l = x * x + y * y + z * z + w * w;
+    if (l <= 0.0f)
+    {
+        x = 0.0f;
+        y = 0.0f;
+        z = 0.0f;
+        w = 1.0f;
+        return;
+    }
+    float const inv = 1.0f / std::sqrt(l);
+    x *= inv;
+    y *= inv;
+    z *= inv;
+    w *= inv;
 }
 
-void Quaternion::ToAxisAngle(CVector&, float&)
+void Quaternion::ToAxisAngle(CVector& axis, float& radians)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1FFA40
+    float const lSqr = ((x * x) + (y * y)) + (z * z);
+    if (std::fabs(lSqr) <= 0.0f)
+    {
+        radians = 0.0f;
+        axis.x = 1.0f;
+        axis.y = 0.0f;
+        axis.z = 0.0f;
+    }
+    else
+    {
+        double const halfAngle = std::acos(w);
+        radians = static_cast<float>(halfAngle + halfAngle);
+
+        double const invLen = 1.0 / std::sqrt(lSqr);
+        axis.x = static_cast<float>(invLen * x);
+        axis.y = static_cast<float>(invLen * y);
+        axis.z = static_cast<float>(invLen * z);
+    }
 }
 
-void Quaternion::fromYPR(float, float, float)
+void Quaternion::fromYPR(float Yaw, float Pitch, float Roll)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FFC40. Goes via the matrix rather than composing quaternions.
+    CMatrix m;
+    m.rotYPR(Yaw, Pitch, Roll);
+    FromMatrix(m);
 }
 
 Quaternion Quaternion::operator*(float v) const
@@ -77,9 +118,10 @@ Quaternion Quaternion::operator+(Quaternion const& q) const
     return result;
 }
 
-Quaternion::Quaternion(CMatrix const&)
+Quaternion::Quaternion(CMatrix const& m)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CC300
+    FromMatrix(m);
 }
 
 Quaternion::Quaternion(float qx, float qy, float qz, float qw) :
@@ -130,7 +172,13 @@ CMatrix Quaternion::ToMatrix() const
 
 Quaternion Quaternion::getConjugated() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x898020
+    Quaternion result;
+    result.x = -x;
+    result.y = -y;
+    result.z = -z;
+    result.w = w;
+    return result;
 }
 
 void Quaternion::Zero()
@@ -143,46 +191,28 @@ void Quaternion::Zero()
 
 Quaternion Quaternion::getInversed() const
 {
-    // TODO: generated code
-    Quaternion result;
-
-    // Calculate the squared length (magnitude) of the quaternion
-    float squaredLength = (w * w) + (x * x) + (y * y) + (z * z);
-
-    // Check for zero length quaternion to avoid division by zero
-    if (squaredLength <= 0.0f)
+    // RVA 0x5CC930 - the conjugate, normalised; a zero quaternion inverts to the identity.
+    Quaternion const conj(0.0f - x, 0.0f - y, 0.0f - z, w);
+    float const lenSq = ((conj.w * conj.w + conj.z * conj.z) + conj.y * conj.y) + conj.x * conj.x;
+    if (lenSq <= 0.0f)
     {
-        // Return identity quaternion for zero-length input
-        result.x = 0.0f;
-        result.y = 0.0f;
-        result.z = 0.0f;
-        result.w = 1.0f;
-    }
-    else
-    {
-        // Calculate inverse length (1 / magnitude)
-        float invLength = 1.0f / sqrt(squaredLength);
-
-        // For a unit quaternion, inverse is conjugate (negate x,y,z) divided by squared length
-        // Since we're normalizing, we multiply conjugate by invLength
-        result.x = -x * invLength;
-        result.y = -y * invLength;
-        result.z = -z * invLength;
-        result.w = w * invLength;
+        return Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    return result;
-
+    float const invLen = 1.0f / sqrtf(lenSq);
+    return Quaternion(conj.x * invLen, conj.y * invLen, conj.z * invLen, conj.w * invLen);
 }
 
 float& Quaternion::operator[](unsigned int i)
 {
-    return *(float*)(this + i);
+    // RVA 0x5FECA0. Indexes the four floats. `this + i` would stride by
+    // sizeof(Quaternion), i.e. 16 bytes, and read past the object.
+    return reinterpret_cast<float*>(this)[i];
 }
 
 float Quaternion::operator[](unsigned int i) const
 {
-    return *(float*)(this + i);
+    return reinterpret_cast<float const*>(this)[i];
 }
 
 void Quaternion::Lerp(Quaternion const& q1, Quaternion const& q2, float k2)
@@ -222,9 +252,14 @@ void Quaternion::Lerp(Quaternion const& q1, Quaternion const& q2, float k2)
     this->w = (float)(q2.w * v7) + (float)(v8 * q1.w);
 }
 
-void Quaternion::RotZ(float)
+void Quaternion::RotZ(float radians)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x644C80
+    float const h = radians * 0.5f;
+    x = 0.0f;
+    y = 0.0f;
+    z = std::sin(h);
+    w = std::cos(h);
 }
 
 void Quaternion::FromAxisAngle(const CVector& axis, float radians)
@@ -237,19 +272,36 @@ void Quaternion::FromAxisAngle(const CVector& axis, float radians)
     w = cos(v3);
 }
 
-void Quaternion::RotX(float)
+void Quaternion::RotX(float radians)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CC680
+    float const h = radians * 0.5f;
+    y = 0.0f;
+    z = 0.0f;
+    x = std::sin(h);
+    w = std::cos(h);
 }
 
-void Quaternion::RotY(float)
+void Quaternion::RotY(float radians)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CC6B0
+    float const h = radians * 0.5f;
+    x = 0.0f;
+    z = 0.0f;
+    y = std::sin(h);
+    w = std::cos(h);
 }
 
-CVector Quaternion::vecRot(CVector const&) const
+CVector Quaternion::vecRot(CVector const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5CC710. Expands to a matrix and rotates with it, using the same
+    // column-style application as CMatrix::vecRot.
+    CMatrix const m = ToMatrix();
+    CVector result;
+    result.x = v.x * m._11 + v.y * m._21 + v.z * m._31;
+    result.y = v.x * m._12 + v.y * m._22 + v.z * m._32;
+    result.z = v.x * m._13 + v.y * m._23 + v.z * m._33;
+    return result;
 }
 
 void Quaternion::Identity()
@@ -262,17 +314,28 @@ void Quaternion::Identity()
 
 float Quaternion::Norm() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x897FF0
+    return std::sqrt(x * x + y * y + z * z + w * w);
 }
 
-Quaternion& Quaternion::operator+=(Quaternion const&)
+Quaternion& Quaternion::operator+=(Quaternion const& q)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FEBC0
+    x += q.x;
+    y += q.y;
+    z += q.z;
+    w += q.w;
+    return *this;
 }
 
-Quaternion& Quaternion::operator*=(float)
+Quaternion& Quaternion::operator*=(float v)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FEAE0
+    x *= v;
+    y *= v;
+    z *= v;
+    w *= v;
+    return *this;
 }
 
 void Quaternion::operator*=(Quaternion const& b)
@@ -288,4 +351,18 @@ void Quaternion::operator*=(Quaternion const& b)
     this->y = v2;
     this->z = v3;
     this->w = v4;
+}
+
+Quaternion operator*(Quaternion const& a, Quaternion const& b)
+{
+    // RVA 0x9CC590
+    Quaternion result;
+    float const y = a.w * b.y + b.w * a.y + a.z * b.x - b.z * a.x;
+    float const z = a.w * b.z + a.x * b.y + a.z * b.w - b.x * a.y;
+    float const w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
+    result.x = b.w * a.x + b.z * a.y + a.w * b.x - a.z * b.y;
+    result.y = y;
+    result.z = z;
+    result.w = w;
+    return result;
 }

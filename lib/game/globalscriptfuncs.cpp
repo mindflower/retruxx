@@ -19,12 +19,19 @@
 #include <server/relationship.h>
 #include <server/objects/infectionteam.h>
 #include <server/objects/player.h>
+#include <server/objects/radiomanager.h>
 #include <server/objects/vehicle.h>
+#include <i_event.h>
+#include <scene/scenegraph.h>
+#include <scene/servers/dataserver.h>
+#include <game/uiwindows/miscwindows/gamemenu.h>
+#include <windows.h>
 
 namespace
 {
     int GetFadingMsgParams(m3d::sArgStack& scriptStack, CStr& msg, std::vector<m3d::AIParam>& params)
     {
+        // RVA 0x40A2E0
         if (scriptStack.getNumInArgs() < 1)
         {
             M3D_LOG_INFO("GetFadingMsgParams error: at least one argument must be specified");
@@ -39,8 +46,9 @@ namespace
         }
 
         msg = arg->GetS();
-        //TODO: check args count
-        while(scriptStack.m_curInArg < scriptStack.m_numInArgs)
+        // Every argument after the message becomes one format parameter.
+        int const numArgs = scriptStack.getNumInArgs();
+        for (int argIdx = 1; argIdx < numArgs; ++argIdx)
         {
             arg = scriptStack.popIn();
             switch (arg->GetType())
@@ -52,7 +60,8 @@ namespace
             }
             case m3d::sArg::ARGTYPE_FLOAT:
             {
-                params.emplace_back(arg->GetF());
+                // NOTE: the original truncates float arguments to int.
+                params.emplace_back(static_cast<int>(arg->GetF()));
                 break;
             }
             case m3d::sArg::ARGTYPE_BOOL:
@@ -87,6 +96,7 @@ namespace
 
     m3d::SgNode* CreateNode(CStr const& modelName, CVector const& pos, Quaternion const& rot, int TTL, bool bInsertInRemoveIfFree, bool LinkToCells)
     {
+        // RVA 0x4087D0
         auto const modelId = m3d::g_Kernel->GetEngineCfg().GetModelIdByName(modelName);
         auto* controlledNode = m3d::pClient->CreateServerControlledNode(modelId);
         if (!controlledNode)
@@ -104,8 +114,9 @@ namespace
         {
             m3d::pClient->GetWorld().GetLandscape().LinkNodeAndChildrenCollisionGeomsToCell(controlledNode);
         }
-        //TODO: check this
-        controlledNode->SetProperty(8704, nullptr);
+        // Reset the animation action to 0.
+        int action = 0;
+        controlledNode->SetProperty(m3d::PROP_DM_ACTION, &action);
 
         CVector scale;
         scale.one();
@@ -211,25 +222,23 @@ int n_ShowHostileVehicles(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    //TODO: check correctness
+    // RVA 0x409D30
+    // Hiding hostiles freezes every infection team and the teams of vehicles hostile to the player.
+    bool const show = arg->GetB();
     for (auto* obj : *ai::theObjects)
     {
-        if (!obj->IsKindOf(&ai::InfectionTeam::m_classInfectionTeam))
+        if (obj->IsKindOf(&ai::InfectionTeam::m_classInfectionTeam))
         {
-            if (obj->IsKindOf(&ai::Vehicle::m_classVehicle) && ai::theRelationship->CheckTolerance(obj->GetBelong(), ai::thePlayer->GetBelong()) <= ai::RS_ENEMY)
-            {
-                auto* vehicle = dynamic_cast<ai::Vehicle*>(obj);
-                auto* team = vehicle->GetTeam();
-                if (team)
-                {
-                    team->SetTeamFrozen(!arg->GetB());
-                }
-            }
+            static_cast<ai::InfectionTeam*>(obj)->SetTeamFrozen(!show);
         }
-        else
+        else if (
+            obj->IsKindOf(&ai::Vehicle::m_classVehicle) &&
+            ai::theRelationship->CheckTolerance(obj->GetBelong(), ai::thePlayer->GetBelong()) <= ai::RS_ENEMY)
         {
-            auto* team = dynamic_cast<ai::InfectionTeam*>(obj);
-            team->SetTeamFrozen(!arg->GetB());
+            if (auto* team = static_cast<ai::Vehicle*>(obj)->GetTeam())
+            {
+                team->SetTeamFrozen(!show);
+            }
         }
     }
     return 1;
@@ -311,7 +320,9 @@ int n_SetBelongColor(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    //TODO: further implementation not found
+    // RVA 0x4084A0
+    // NOTE: the shipped function is a stub: it validates both arguments, reads the second one and does nothing.
+    secondArg->GetF();
     return 1;
 }
 
@@ -380,8 +391,8 @@ int n_GetProfileMotionBlur(m3d::sArgStack& scriptStack)
 
     m3d::AIParam param;
     profile->GetParam(PP_MOTION_BLUR, param);
-    //TODO: check this
-    scriptStack.newOut()->SetB(param.GetAsStr() == "yes" ? true : false);
+    // RVA 0x4097B0
+    scriptStack.newOut()->SetB(param.GetAsStr() == "yes");
     return 1;
 }
 
@@ -511,7 +522,7 @@ int n_SetCameraBehindPlayerVehicle(m3d::sArgStack& scriptStack)
         return -1;
     }
     auto const playerDir = vehicle->GetDirection();
-    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.y);
+    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.z);
     return 1;
 }
 
@@ -631,8 +642,65 @@ int n_VTuneResume(m3d::sArgStack& scriptStack)
 
 int n_CreateNodeTTLed(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x408C10
+    if (scriptStack.getNumInArgs() < 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const modelName = arg->GetS();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    auto const pos = arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_QUATERNION)
+    {
+        return -1;
+    }
+    auto const rot = arg->GetQ();
+
+    int ttl = 0;
+    arg = scriptStack.popIn();
+    if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        ttl = arg->GetI();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        ttl = static_cast<int>(arg->GetF());
+    }
+    else
+    {
+        return -1;
+    }
+
+    M3D_LOG_INFO("Creating TTLed node from script");
+    auto* node = CreateNode(modelName, pos, rot, ttl, false, true);
+    if (scriptStack.getNumInArgs() > 4)
+    {
+        arg = scriptStack.popIn();
+        CStr name;
+        if (arg->GetType() == m3d::sArg::ARGTYPE_STRING)
+        {
+            name = CStr(arg->GetS());
+            // NOTE: the original does not check that the node was created, so a
+            // bad model name together with a name argument dereferences null here.
+            node->SetName(name);
+        }
+    }
+
+    scriptStack.newOut()->SetO(node);
+    return node != nullptr;
 }
 
 int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
@@ -750,8 +818,62 @@ int n_MoveCurrentCinematicPointToCamera(m3d::sArgStack& scriptStack)
 
 int n_PassToMap(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x409E20
+    auto const numInArgs = static_cast<int>(scriptStack.getNumInArgs());
+    if (numInArgs < 2)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const mapName = arg->GetS();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const locName = arg->GetS();
+
+    // The optional arguments silently keep their defaults when of any other type.
+    int angle = -1;
+    if (numInArgs > 2)
+    {
+        arg = scriptStack.popIn();
+        if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+        {
+            angle = arg->GetI();
+        }
+        else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+        {
+            angle = static_cast<int>(arg->GetF());
+        }
+    }
+
+    bool bImmediate = false;
+    if (numInArgs > 3)
+    {
+        arg = scriptStack.popIn();
+        if (arg->GetType() == m3d::sArg::ARGTYPE_BOOL)
+        {
+            bImmediate = arg->GetB();
+        }
+        else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+        {
+            bImmediate = static_cast<int>(arg->GetF()) != 0;
+        }
+        else if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+        {
+            bImmediate = arg->GetI() != 0;
+        }
+    }
+
+    ai::theObjects->PassToMap(mapName, locName, angle, bImmediate);
+    return 1;
 }
 
 int n_MinimapAddMark(m3d::sArgStack& scriptStack)
@@ -767,7 +889,9 @@ int n_MinimapAddMark(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    //TODO: check this
+    // RVA 0x408080
+    // NOTE: the shipped function is a stub: it validates and reads the arguments but adds no mark.
+    // A fourth argument is accepted by the count check but never read.
     arg->GetV();
 
     arg = scriptStack.popIn();
@@ -776,6 +900,10 @@ int n_MinimapAddMark(m3d::sArgStack& scriptStack)
         return -1;
     }
     arg->GetF();
+    if (numOfArgs <= 2)
+    {
+        return 1;
+    }
 
     arg = scriptStack.popIn();
     if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
@@ -868,14 +996,74 @@ int n_VTunePause(m3d::sArgStack& scriptStack)
 
 int n_SetCinematicPoint(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x409560
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        M3D_ENGINE_CFG.m_console->PrintF("Usage: SetCinematicPoint( <point number> )\n");
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() == m3d::sArg::ARGTYPE_VOID || arg->GetType() > m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    M3D_APP->m_cinematic->SetCurrentDebugPointNum(static_cast<int>(arg->GetF()));
+    return 1;
 }
 
 int n_CreateEffectInsertedInRemove(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x408A80
+    if (scriptStack.getNumInArgs() != 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const modelName = arg->GetS();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    auto const pos = arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_QUATERNION)
+    {
+        return -1;
+    }
+    auto const rot = arg->GetQ();
+
+    bool bInsertInRemoveIfFree = false;
+    arg = scriptStack.popIn();
+    if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        bInsertInRemoveIfFree = arg->GetI() != 0;
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        bInsertInRemoveIfFree = static_cast<int>(arg->GetF()) != 0;
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_BOOL)
+    {
+        bInsertInRemoveIfFree = arg->GetB();
+    }
+    else
+    {
+        return -1;
+    }
+
+    M3D_LOG_INFO("Creating inserted in RemoveIfFree effect node from script");
+    auto* node = CreateNode(modelName, pos, rot, -1, bInsertInRemoveIfFree, false);
+    scriptStack.newOut()->SetO(node);
+    return node != nullptr;
 }
 
 int n_GetCameraPos(m3d::sArgStack& scriptStack)
@@ -893,41 +1081,36 @@ int n_GetCameraPos(m3d::sArgStack& scriptStack)
 
 int n_ChangeMode(m3d::sArgStack& scriptStack)
 {
-    //TODO: check and refactor this shit
+    // RVA 0x407F30
     if (scriptStack.getNumInArgs() != 1)
     {
         return -1;
     }
     auto* arg = scriptStack.popIn();
-    auto const type = arg->GetType();
-    if (type == m3d::sArg::ARGTYPE_VOID)
-    {
-        return -1;
-    }
 
-    float value = 0.0;
-    switch (type)
+    // The game state is given either as a number (0 = GS_GAME, 1 = GS_CINEMATIC) or by name.
+    unsigned state = 0;
+    switch (arg->GetType())
     {
-    case m3d::sArg::ARGTYPE_INT: [[fallthrough]];
+    case m3d::sArg::ARGTYPE_INT:
     case m3d::sArg::ARGTYPE_FLOAT:
-    {
-        value = arg->GetF();
-        if (value < 0 || value >= 4)
+        // Truncated towards zero; negative values wrap around and are rejected.
+        state = static_cast<unsigned>(static_cast<int>(arg->GetF()));
+        if (state >= 4)
         {
             return -1;
         }
         break;
-    }
     case m3d::sArg::ARGTYPE_STRING:
     {
-        auto const stateName = arg->GetS();
+        CStr const stateName(arg->GetS());
         if (stateName == CStr("GS_GAME"))
         {
-            value = 0;
+            state = 0;
         }
-        else if(stateName == CStr("GS_CINEMATIC"))
+        else if (stateName == CStr("GS_CINEMATIC"))
         {
-            value = 1;
+            state = 1;
         }
         else
         {
@@ -938,20 +1121,21 @@ int n_ChangeMode(m3d::sArgStack& scriptStack)
     default:
         return -1;
     }
-    auto res = 0;
-    if (value == 0.0)
+
+    int modeImpulse = 0;
+    if (state == 0)
     {
-        res = 3;
+        modeImpulse = 3;
     }
-    else if (value != 1)
+    else if (state == 1)
     {
-        return -1;
+        modeImpulse = 2;
     }
     else
     {
-        res = 2;
+        return -1;
     }
-    m3d::Application::g_pApp->OnChangeMode(m3d::AuxImpulseInfo(res, true, -1, 0, 0));
+    m3d::Application::g_pApp->OnChangeMode(m3d::AuxImpulseInfo(modeImpulse, true, -1, 0, 0));
     return 1;
 
 }
@@ -985,7 +1169,8 @@ int n_MinimapDelMark(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    //TODO: check this
+    // RVA 0x4080F0
+    // NOTE: the shipped function is a stub: it reads the mark id and removes nothing.
     arg->GetF();
     return 1;
 }
@@ -1062,8 +1247,20 @@ int n_Assert(m3d::sArgStack& scriptStack)
 
 int n_PauseRadio(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x4090E0 - takes no arguments, but the argument count is never checked.
+    if (!ai::theObjects || !ai::thePlayer)
+    {
+        return -1;
+    }
+
+    auto* radioManager = ai::theObjects->GetEntityByObjId(ai::thePlayer->GetRadioManagerId());
+    if (!radioManager)
+    {
+        return -1;
+    }
+    // The object is not type-checked before use.
+    static_cast<ai::RadioManager*>(radioManager)->DisableRadio();
+    return 1;
 }
 
 int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
@@ -1084,8 +1281,52 @@ int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
 
 int n_CreateEffectTTLed(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x408900
+    if (scriptStack.getNumInArgs() != 4)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+    CStr const modelName = arg->GetS();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_VECTOR)
+    {
+        return -1;
+    }
+    auto const pos = arg->GetV();
+
+    arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_QUATERNION)
+    {
+        return -1;
+    }
+    auto const rot = arg->GetQ();
+
+    int ttl = 0;
+    arg = scriptStack.popIn();
+    if (arg->GetType() == m3d::sArg::ARGTYPE_INT)
+    {
+        ttl = arg->GetI();
+    }
+    else if (arg->GetType() == m3d::sArg::ARGTYPE_FLOAT)
+    {
+        ttl = static_cast<int>(arg->GetF());
+    }
+    else
+    {
+        return -1;
+    }
+
+    M3D_LOG_INFO("Creating TTLed effect node from script");
+    auto* node = CreateNode(modelName, pos, rot, ttl, false, false);
+    scriptStack.newOut()->SetO(node);
+    return node != nullptr;
 }
 
 int n_StartRendering(m3d::sArgStack& scriptStack)
@@ -1152,14 +1393,37 @@ int n_SetMinTimescale(m3d::sArgStack& scriptStack)
 
 int n_InsertCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x4094C0
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    auto const& camera = M3D_APP->m_curCamera;
+    scriptStack.newOut()->SetV(camera.m_worldOrigin);
+
+    Quaternion q;
+    q.fromYPR(camera.m_rotYaw, camera.m_rotPitch, camera.m_rotRoll);
+    M3D_APP->m_cinematic->InsertPointToCurrentPath(camera.m_worldOrigin, q, 1.0f, 1.0f);
+    return 1;
 }
 
 int n_ResumeRadio(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x409140 - takes no arguments, but the argument count is never checked.
+    if (!ai::theObjects || !ai::thePlayer)
+    {
+        return -1;
+    }
+
+    auto* radioManager = ai::theObjects->GetEntityByObjId(ai::thePlayer->GetRadioManagerId());
+    if (!radioManager)
+    {
+        return -1;
+    }
+    // The object is not type-checked before use.
+    static_cast<ai::RadioManager*>(radioManager)->EnableRadio();
+    return 1;
 }
 
 int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
@@ -1179,8 +1443,19 @@ int n_DumpSceneGraph(m3d::sArgStack& scriptStack)
 
 int n_SetCameraZoom(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x408500
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_FLOAT)
+    {
+        return -1;
+    }
+    M3D_APP->setZoom(arg->GetF());
+    return 1;
 }
 
 int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
@@ -1217,8 +1492,18 @@ int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
 
 int n_ShowDeathMenu(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x40A250
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    if (M3D_APP->HasChildModalRunning())
+    {
+        M3D_APP->CloseAllModalWithCancelRet();
+    }
+    M3D_APP->EnqueueMessage(UM_SHOWGAMEMENU, 0, 0, 0, 0, GameMenuWnd::DEATH_LEVEL_NAME, m3d::AIParam());
+    return 1;
 }
 
 int n_SetCinematicFadeParams(m3d::sArgStack& scriptStack)
@@ -1281,8 +1566,29 @@ int n_SetGameSpeed(m3d::sArgStack& scriptStack)
 
 int n_SetProfileBloom(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x409C30
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_BOOL)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param;
+    param = CStr(arg->GetB() ? "yes" : "no");
+    profile->SetParam(PP_BLOOM, param);
+    return 1;
 }
 
 int n_GetMinTimescale(m3d::sArgStack& scriptStack)
@@ -1294,19 +1600,48 @@ int n_GetMinTimescale(m3d::sArgStack& scriptStack)
 
 int n_GetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x4099B0
+    if (scriptStack.getNumInArgs() != 0)
+    {
+        return -1;
+    }
+
+    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
+    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    if (profile == nullptr)
+    {
+        return -1;
+    }
+
+    m3d::AIParam param;
+    profile->GetParam(PP_MOTION_BLUR_ALPHA, param);
+    scriptStack.newOut()->SetF(param.GetAsFloat());
+    return 1;
 }
 
 int n_GetNodeByName(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x409050
+    if (scriptStack.getNumInArgs() != 1)
+    {
+        return -1;
+    }
+
+    auto* arg = scriptStack.popIn();
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING)
+    {
+        return -1;
+    }
+
+    CStr const name = arg->GetS();
+    auto* node = m3d::pClient->GetWorld().GetGraph().GetNodeByName(name);
+    scriptStack.newOut()->SetO(node);
+    return node != nullptr;
 }
 
 int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
 {
-    // TODO: check this
+    // RVA 0x4085D0
     using namespace ai;
     if (scriptStack.m_numInArgs != 1 || M3D_APP->m_player.m_cameraMode != CM_FOLLOWMODE)
     {
@@ -1341,13 +1676,13 @@ int n_SetCameraDirectionToObj(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* physObj = RT_DYNCAST(obj, PhysicObj);
-    const auto objPos = physObj->GetGeometricCenter();
-    const auto vehPos = vehicle->GetPosition();
-
-    const auto a = -(objPos.x - vehPos.x);
-    const auto b = objPos.z - vehPos.z;
-    M3D_APP->m_curCamera.m_rotYaw = atan2(a, b);
+    // Turn the follow camera's yaw from the player's vehicle towards the object's centre.
+    auto* physObj = static_cast<PhysicObj*>(obj);
+    CVector const objPos = physObj->GetGeometricCenter();
+    CVector const vehPos = vehicle->GetPosition();
+    double const dx = -(objPos.x - vehPos.x);
+    double const dz = objPos.z - vehPos.z;
+    M3D_APP->m_curCamera.m_rotYaw = static_cast<float>(std::atan2(dx, dz));
     return 1;
 }
 
@@ -1362,7 +1697,7 @@ int n_PlayCustomMusic(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    //TODO: check this
+    // RVA 0x40A980 (SetCurHackedMusicType is inlined there)
     auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
     pGame->SetCurHackedMusicType(HACKMUSIC_CUSTOM);
     return 1;
@@ -1380,6 +1715,12 @@ int n_GetCameraZoom(m3d::sArgStack& scriptStack)
 
 int n_GetComputerName(m3d::sArgStack& scriptStack)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x59C420 - takes no arguments, but the argument count is never checked.
+    // The name is returned from a static buffer, as in the original.
+    static char buffer[1024];
+    DWORD sz = sizeof(buffer);
+    GetComputerNameA(buffer, &sz);
+    scriptStack.newOut()->SetS(buffer);
+    return 1;
 }
 

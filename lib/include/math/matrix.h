@@ -119,5 +119,8 @@ struct CMatrix
     void transformPlane(CVector4&);
 };
 
+// Passed to the renderer DLL and read whole from model files.
+static_assert(sizeof(CMatrix) == 0x0040);
+
 CMatrix operator*(CMatrix const& a, CMatrix const& b);
 CMatrix operator+(CMatrix const& a, CMatrix const& b);

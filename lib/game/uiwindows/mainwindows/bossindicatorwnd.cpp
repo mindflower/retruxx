@@ -26,7 +26,8 @@ BossIndicatorWnd::AuxInfo::AuxInfo()
 
 BossIndicatorWnd::~BossIndicatorWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x119350 - m_aif's CStr members and the Wnd base clean up
+    // automatically.
 }
 
 m3d::Class* BossIndicatorWnd::GetClass() const
@@ -53,9 +54,19 @@ ai::Obj const* BossIndicatorWnd::GetBoss() const
     return nullptr;
 }
 
-int BossIndicatorWnd::SetupForBoss(int)
+int BossIndicatorWnd::SetupForBoss(int bossId)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x119850
+    m_bossId = bossId;
+    if (IsChildOf(M3D_APP))
+    {
+        FullUpdate();
+    }
+    if (bossId == -1)
+    {
+        return 1;
+    }
+    return GetBoss() != nullptr;
 }
 
 m3d::Object* BossIndicatorWnd::CreateObject()
@@ -70,12 +81,14 @@ m3d::Class* BossIndicatorWnd::GetBaseClass()
 
 int BossIndicatorWnd::GetBossId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x1197D0
+    return m_bossId;
 }
 
 m3d::Object* BossIndicatorWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x119090
+    return new BossIndicatorWnd(*this);
 }
 
 void BossIndicatorWnd::UpdateImage()
@@ -103,9 +116,13 @@ void BossIndicatorWnd::UpdateImage()
     }
 }
 
-BossIndicatorWnd::BossIndicatorWnd(BossIndicatorWnd const&)
+BossIndicatorWnd::BossIndicatorWnd(BossIndicatorWnd const&) : BossIndicatorWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x119330) default-constructs the base
+    // and the AuxInfo, but leaves m_wndBossImage/m_wndBossName/
+    // m_pbBossHealth/m_bossId uninitialized; delegating to the default ctor
+    // here avoids reading uninitialized pointers while still copying nothing
+    // from the source.
 }
 
 BossIndicatorWnd::BossIndicatorWnd()
@@ -123,7 +140,7 @@ void BossIndicatorWnd::FullUpdate()
     if ((m_gameDataFlags & 1) != 0)
     {
         auto* boss = GetBoss();
-        float maxHeath  = 0.0;
+        float maxHeath = 0.0;
         float curHealth = 0.0;
         GetBossHealth(boss, maxHeath, curHealth);
         m_pbBossHealth->SetMaxValue(maxHeath);
@@ -133,14 +150,32 @@ void BossIndicatorWnd::FullUpdate()
 
 void BossIndicatorWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x119920
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        if (auto* boss = GetBoss())
+        {
+            float maxHealth = 0.0f;
+            float curHealth = 0.0f;
+            GetBossHealth(boss, maxHealth, curHealth);
+            m_pbBossHealth->SetMaxValue(maxHealth);
+            m_pbBossHealth->SetCurValue(curHealth);
+        }
+    }
 }
 
-int BossIndicatorWnd::GameDataUpdate(void*, int)
+int BossIndicatorWnd::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x1197A0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 89)
+    {
+        OnNewFrame();
+    }
+    return 1;
 }
 
 void BossIndicatorWnd::GetBossHealth(ai::Obj const* boss, float& maxHealth, float& curHealth) const
@@ -153,25 +188,25 @@ void BossIndicatorWnd::GetBossHealth(ai::Obj const* boss, float& maxHealth, floa
     {
         if (IS_KIND_OF(boss, BossMetalArm))
         {
-            auto* castedBoss = RT_DYNCAST(boss, const BossMetalArm);
+            auto* castedBoss = RT_DYNCAST(boss, BossMetalArm const);
             maxHealth = castedBoss->GetMaxHealth();
             curHealth = castedBoss->GetHealth();
         }
         else if (IS_KIND_OF(boss, Boss02))
         {
-            auto* castedBoss = RT_DYNCAST(boss, const Boss02);
+            auto* castedBoss = RT_DYNCAST(boss, Boss02 const);
             maxHealth = castedBoss->GetMaxHealth();
             curHealth = castedBoss->GetHealth();
         }
         else if (IS_KIND_OF(boss, Boss03))
         {
-            auto* castedBoss = RT_DYNCAST(boss, const Boss03);
+            auto* castedBoss = RT_DYNCAST(boss, Boss03 const);
             maxHealth = castedBoss->GetMaxHealth();
             curHealth = castedBoss->GetHealth();
         }
         else if (IS_KIND_OF(boss, Boss04))
         {
-            auto* castedBoss = RT_DYNCAST(boss, const Boss04);
+            auto* castedBoss = RT_DYNCAST(boss, Boss04 const);
             maxHealth = castedBoss->GetMaxHealth();
             curHealth = castedBoss->GetHealth();
         }
@@ -180,7 +215,13 @@ void BossIndicatorWnd::GetBossHealth(ai::Obj const* boss, float& maxHealth, floa
 
 int BossIndicatorWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x119760
+    m_bossId = -1;
+    if (IsChildOf(M3D_APP))
+    {
+        FullUpdate();
+    }
+    return 1;
 }
 
 int BossIndicatorWnd::GameDataSetup()
@@ -236,6 +277,7 @@ int BossIndicatorWnd::GameDataSetup()
     }
 
     M3D_LOG_INFO("BossIndicatorWnd: error - fail to init because of a bad resource");
+    return 0;
 }
 
 int BossIndicatorWnd::OnBeforeAddToWndStation()
@@ -244,9 +286,21 @@ int BossIndicatorWnd::OnBeforeAddToWndStation()
     return Wnd::OnBeforeAddToWndStation();
 }
 
-void BossIndicatorWnd::UpdateHealth(bool)
+void BossIndicatorWnd::UpdateHealth(bool bForce)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x119B00
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        auto* boss = GetBoss();
+        if (boss || bForce)
+        {
+            float maxHealth = 0.0f;
+            float curHealth = 0.0f;
+            GetBossHealth(boss, maxHealth, curHealth);
+            m_pbBossHealth->SetMaxValue(maxHealth);
+            m_pbBossHealth->SetCurValue(curHealth);
+        }
+    }
 }
 
 void BossIndicatorWnd::UpdateName()

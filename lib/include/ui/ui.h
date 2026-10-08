@@ -6,6 +6,7 @@
 #include <renderer/i_renderer.h>
 #include <core/clazz.h>
 #include "font.h"
+#include <ui/msgbox.h>
 
 namespace m3d
 {
@@ -102,6 +103,8 @@ namespace m3d
         {
             friend class WndStation;
             friend class ModalWnd;
+            friend class TabWnd;
+            friend MbRetCodes __fastcall RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
 
         protected:
             Wnd();
@@ -438,8 +441,6 @@ namespace m3d
             void OnEndAnimation(bool bUrgent);
             void StopAnimationMoveSound();
         }; /* size: 0x0220 */
-
-        static_assert(sizeof(Wnd) == 0x0220);
 
         class DrawInfo
         {

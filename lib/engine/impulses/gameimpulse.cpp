@@ -1,3 +1,4 @@
+#include <cstring>
 #include <stdexcept>
 #include <impulses/i_impulses.h>
 #include "gameimpulse.h"
@@ -5,9 +6,45 @@
 
 #include "config.h"
 #include "m3dapp.h"
+#include <core/kernel.h>
+#include <file/filereader.h>
 
 namespace
 {
+    // Virtual keys past the DirectInput scan codes, see l_keyNames.
+    constexpr int VKEY_CONTROL = 0x105;
+    constexpr int VKEY_ALT = 0x106;
+    constexpr int VKEY_SHIFT = 0x107;
+
+    // One modifier step of GameImpulse::FilterShifts (inlined three times in the shipped code). Returns false when
+    // the key is one of the two variants but the combined state did not change.
+    bool FoldModifierKey(
+        int& key, bool& state, int leftKey, int rightKey, int combinedKey, bool& leftDown, bool& rightDown, bool& wasDown)
+    {
+        if (key != leftKey && key != rightKey)
+        {
+            return true;
+        }
+        if (key == leftKey)
+        {
+            leftDown = state;
+        }
+        else
+        {
+            rightDown = state;
+        }
+
+        bool const down = leftDown || rightDown;
+        if (down == wasDown)
+        {
+            return false;
+        }
+        wasDown = down;
+        key = combinedKey;
+        state = down;
+        return true;
+    }
+
     struct KeyToId
     {
         int m_keyId;
@@ -195,7 +232,15 @@ namespace
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey3)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7450E0
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    CStr const strImp = context->asString(5);
+    CStr const strKey3 = context->asString(4);
+    CStr const strKey2 = context->asString(3);
+    CStr const strKey1 = context->asString(2);
+    CStr const strGameMode = context->asString(1);
+    context->pushInt(gameImpulse->BindKey3(strGameMode, strKey1, strKey2, strKey3, strImp));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey2)
@@ -208,7 +253,6 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey2)
     auto res = gameImpulse->BindKey2(gameMode, key1, key2, imp);
     context->pushInt(res);
     return 1;
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey1)
@@ -224,17 +268,38 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, BindKey1)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey3)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x745460
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    CStr const strImp = context->asString(5);
+    CStr const strKey3 = context->asString(4);
+    CStr const strKey2 = context->asString(3);
+    CStr const strKey1 = context->asString(2);
+    CStr const strGameMode = context->asString(1);
+    context->pushInt(gameImpulse->UnbindKey3(strGameMode, strKey1, strKey2, strKey3, strImp));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey2)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7455C0
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    CStr const strImp = context->asString(4);
+    CStr const strKey2 = context->asString(3);
+    CStr const strKey1 = context->asString(2);
+    CStr const strGameMode = context->asString(1);
+    context->pushInt(gameImpulse->UnbindKey2(strGameMode, strKey1, strKey2, strImp));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindKey1)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7456F0
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    CStr const strImp = context->asString(3);
+    CStr const strKey1 = context->asString(2);
+    CStr const strGameMode = context->asString(1);
+    context->pushInt(gameImpulse->UnbindKey1(strGameMode, strKey1, strImp));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindAll)
@@ -246,22 +311,34 @@ RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, UnbindAll)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromDefaults)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x745000
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    context->pushInt(gameImpulse->LoadFromDefaults());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, SaveToDefaults)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x745030
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    context->pushInt(gameImpulse->SaveToDefaults());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, LoadFromProfile)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x745060
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    context->pushInt(gameImpulse->LoadFromProfile());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(GameImpulse, SaveToProfile)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x745090
+    auto* gameImpulse = static_cast<m3d::GameImpulse*>(context->asObject(0, "GameImpulse"));
+    context->pushInt(gameImpulse->SaveToProfile());
+    return 1;
 }
 
 namespace m3d
@@ -284,22 +361,22 @@ namespace m3d
 
     void AuxImpulseInfo::UnpackXy(float* x, float* y, float* dx, float* dy) const
     {
-        // TODO: generated code
+        // RVA 0x5944A0 - each coordinate is a signed 16-bit half of m_info0 (x, y) or m_info1 (dx, dy).
         if (x)
         {
-            *x = static_cast<float>(static_cast<int16_t>(m_info0 & 0xFFFF));
+            *x = static_cast<int16_t>(m_info0 & 0xFFFF);
         }
         if (y)
         {
-            *y = static_cast<float>(static_cast<int16_t>((m_info0 >> 16) & 0xFFFF));
+            *y = static_cast<int16_t>(m_info0 >> 16);
         }
         if (dx)
         {
-            *dx = static_cast<float>(static_cast<int16_t>(m_info1 & 0xFFFF));
+            *dx = static_cast<int16_t>(m_info1 & 0xFFFF);
         }
         if (dy)
         {
-            *dy = static_cast<float>(static_cast<int16_t>((m_info1 >> 16) & 0xFFFF));
+            *dy = static_cast<int16_t>(m_info1 >> 16);
         }
     }
 
@@ -314,7 +391,8 @@ namespace m3d
 
     float AuxImpulseInfo::UnpackWheel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x594500 - the wheel delta is the signed low word of m_info1.
+        return static_cast<float>(static_cast<int16_t>(m_info1 & 0xFFFF));
     }
 
     int GameImpulse::LoadFromFile(CStr const& bindFile)
@@ -351,7 +429,18 @@ namespace m3d
 
     int GameImpulse::DecRef()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x594530
+        --m_refCount;
+        int const refCount = m_refCount;
+        if (m_parent)
+        {
+            m_parent->DecRef();
+        }
+        if (m_refCount <= 0)
+        {
+            delete this;
+        }
+        return refCount;
     }
 
     void GameImpulse::ResetImpulseWithoutNotification(int impId)
@@ -386,12 +475,18 @@ namespace m3d
 
     GameImpulse::~GameImpulse()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59AE30
+        GameImpulse::Done();
     }
 
-    void* GameImpulse::QueryIface(char const*)
+    void* GameImpulse::QueryIface(char const* ifaceName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x594560
+        if (m_parent)
+        {
+            return m_parent->QueryIface(ifaceName);
+        }
+        return nullptr;
     }
 
     int GameImpulse::Init()
@@ -410,20 +505,39 @@ namespace m3d
 
     int GameImpulse::SaveToDefaults()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x599020
+        if (!m_isInited)
+        {
+            M3D_LOG_INFO("Key bindings: error save to defaults cause impulses were not inited");
+            return 0;
+        }
+
+        int const res = SaveToFile(g_Kernel->GetEngineCfg().m_pathToDefaultKeyBindings.GetS());
+        if (res)
+        {
+            M3D_LOG_INFO("Key bindings: current bindings were saved as defaults");
+        }
+        return res;
     }
 
     int GameImpulse::Done()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x595200
+        UnbindAll();
+        g_Kernel->UnRegisterGlobal("IMPULSES");
+        m_isInited = false;
+        M3D_LOG_INFO("Key bindings: is done");
+        return 1;
     }
 
     void GameImpulse::ResetAllImpulses(bool bClearPressedKeys)
     {
+        // RVA 0x597340 - every impulse is released; with bClearPressedKeys the keys held down are forgotten too.
         if (m_isInited)
         {
-            for (auto const& state : m_impulseStates)
+            for (auto& state : m_impulseStates)
             {
+                state.second = false;
                 m_impulseResetAfterRead[state.first] = false;
             }
             if (bClearPressedKeys)
@@ -435,33 +549,30 @@ namespace m3d
 
     int GameImpulse::SetImpulsesStateBySet(KeysSet impSet, bool state, int curGameMode, ui::Wnd* causeWnd)
     {
+        // RVA 0x59ABB0 - sets the state of every impulse bound to a subset of impSet, longest combos first.
         if (!m_isInited || impSet.empty())
         {
             return 0;
         }
 
-        auto it = m_bindings.find(curGameMode);
+        auto const it = m_bindings.find(curGameMode);
         if (it == m_bindings.end())
         {
             return 0;
         }
 
-        // TODO: check this!!!
-
         auto& bindStation = it->second;
         while (!impSet.empty())
         {
-            KeysSet ks;
-            auto imp = bindStation.FindImpulseByLongestSetPossible(impSet, 0xFFFFFFFF, ks);
-            if (imp == -1)
+            KeysSet impulseKeys;
+            int const impId = bindStation.FindImpulseByLongestSetPossible(impSet, -1, impulseKeys);
+            if (impId == -1)
             {
                 break;
             }
 
-            AuxImpulseInfo info(imp, state, curGameMode, 0, 0);
-            SetImpulseState(info, causeWnd);
-
-            impSet = impSet - ks;
+            SetImpulseState(AuxImpulseInfo(impId, state, curGameMode, 0, 0), causeWnd);
+            impSet = impSet - impulseKeys;
         }
         return 1;
     }
@@ -487,20 +598,35 @@ namespace m3d
         return HandleImpulse(impInfo, causeWnd);
     }
 
-    void GameImpulse::RaiseOneTimeImpulse(AuxImpulseInfo const&)
+    void GameImpulse::RaiseOneTimeImpulse(AuxImpulseInfo const& impInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x596A70
+        if (!m_isInited)
+        {
+            return;
+        }
+
+        AuxImpulseInfo newInfo = impInfo;
+        newInfo.m_state = true;
+        SetImpulseState(newInfo, !M3D_APP->HasChildModalRunning() ? M3D_APP : nullptr);
+
+        // The impulse is dropped again by the next GetImpulseState.
+        auto const it = m_impulseResetAfterRead.find(impInfo.m_impId);
+        if (it != m_impulseResetAfterRead.end())
+        {
+            it->second = true;
+        }
     }
 
     bool GameImpulse::GetImpulseState(int impId)
     {
-        // TODO: check this
+        // RVA 0x597250
         if (!m_isInited)
         {
             return false;
         }
 
-        auto it = m_impulseStates.find(impId);
+        auto const it = m_impulseStates.find(impId);
         if (it == m_impulseStates.end())
         {
             return false;
@@ -511,22 +637,43 @@ namespace m3d
             m_impulseResetAfterRead[impId] = false;
         }
 
+        // The state is read before a one-time impulse is reset, so the caller still sees it raised once.
+        bool const state = it->second;
         if (m_impulseResetAfterRead[impId])
         {
-            if (it->second)
+            if (state)
             {
-                m3d::AuxImpulseInfo impInfo(impId, false, -1, 0, 0);
-                auto v6 = !M3D_APP->HasChildModalRunning() ? M3D_APP : 0;
-                SetImpulseState(impInfo, v6);
+                SetImpulseState(
+                    AuxImpulseInfo(impId, false, -1, 0, 0), !M3D_APP->HasChildModalRunning() ? M3D_APP : nullptr);
             }
             m_impulseResetAfterRead[impId] = false;
         }
-        return it->second;
+        return state;
     }
 
-    int GameImpulse::GetImpulseForKeys(std::vector<int, std::allocator<int>>, int)
+    int GameImpulse::GetImpulseForKeys(std::vector<int, std::allocator<int>> keys, int modeId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x599810
+        auto const bsIt = m_bindings.find(modeId);
+        if (bsIt == m_bindings.end())
+        {
+            return -1;
+        }
+
+        KeysSet ks;
+        for (int i = 0; i < static_cast<int>(keys.size()); ++i)
+        {
+            ks += keys[i];
+        }
+
+        // Searched on a copy, so the station's lookup cache is left untouched.
+        KeyBindStation bs = bsIt->second;
+        auto const* bind = bs.GetBindByKey(ks);
+        if (!bind)
+        {
+            return -1;
+        }
+        return bind->m_impulse;
     }
 
     void GameImpulse::BindKey0(int gameMode, KeysSet const& ks, int impId)
@@ -555,16 +702,49 @@ namespace m3d
 
     int GameImpulse::IncRef()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x594510
+        if (m_parent)
+        {
+            m_parent->IncRef();
+        }
+        return ++m_refCount;
     }
 
-    std::vector<std::vector<int>> GameImpulse::GetKeysForImpulse(int, int)
+    std::vector<std::vector<int>> GameImpulse::GetKeysForImpulse(int impId, int modeId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x599B30
+        std::vector<std::vector<int>> res;
+
+        auto const bsIt = m_bindings.find(modeId);
+        if (bsIt == m_bindings.end())
+        {
+            return res;
+        }
+
+        // Searched on a copy, so the station's lookup cache is left untouched.
+        KeyBindStation bs = bsIt->second;
+        auto const* bind = bs.GetBindByImpulse(impId);
+        if (!bind)
+        {
+            return res;
+        }
+
+        std::vector<KeysSet> const bk = bind->m_keys;
+        for (int i = 0; i < static_cast<int>(bk.size()); ++i)
+        {
+            std::vector<int> bkeys;
+            for (int const key : bk[i])
+            {
+                bkeys.push_back(key);
+            }
+            res.push_back(bkeys);
+        }
+        return res;
     }
 
     int GameImpulse::HandleKeyboardMouseEvent(Event const& ev, ui::Wnd* causeWnd)
     {
+        // RVA 0x59B400
         if (!m_isInited)
         {
             return 0;
@@ -579,6 +759,8 @@ namespace m3d
 
         auto& bindStation = it->second;
 
+        // NOTE: the shipped code leaves the key uninitialised for other event types (it holds a stale stack
+        // value, which is never among the pressed keys), so such events do nothing. 0 behaves the same.
         int keyToSearchBy = 0;
         bool state = false;
         bool onlyDown = false;
@@ -669,7 +851,6 @@ namespace m3d
             break;
         }
 
-        // TODO: check this
         if (FilterShifts(keyToSearchBy, state))
         {
             if (state)
@@ -682,8 +863,7 @@ namespace m3d
                     auto impulse = bindStation.FindImpulseByLongestSetPossible(m_curKeys, keyToSearchBy, impSet);
                     if (impulse != -1)
                     {
-                        impSet -= keyToSearchBy;
-                        SetImpulsesStateBySet(impulse, false, curGameMode, causeWnd);
+                        SetImpulsesStateBySet(impSet - keyToSearchBy, false, curGameMode, causeWnd);
                         AuxImpulseInfo info(impulse, true, curGameMode, i0, i1);
                         SetImpulseState(info, causeWnd);
                     }
@@ -703,8 +883,7 @@ namespace m3d
                     {
                         AuxImpulseInfo info(impulse, state, curGameMode, i0, i1);
                         SetImpulseState(info, causeWnd);
-                        impSet -= keyToSearchBy;
-                        SetImpulsesStateBySet(impSet, true, curGameMode, causeWnd);
+                        SetImpulsesStateBySet(impSet - keyToSearchBy, true, curGameMode, causeWnd);
                     }
                     m_curKeys -= keyToSearchBy;
                 }
@@ -715,122 +894,29 @@ namespace m3d
 
     int GameImpulse::FilterShifts(int& keyToSearchBy, bool& state)
     {
-        // TODO: generated code
-        if (!m_isInited)
+        // RVA 0x594590 - folds the left and right variants of Shift, Alt and Control into KEY_SHIFT, KEY_ALT and
+        // KEY_CONTROL. Returns 0 for a -1 key, and for a modifier press or release that leaves the combined
+        // modifier state unchanged.
+        if (!m_isInited || keyToSearchBy == -1)
         {
-            return false;
+            return 0;
         }
 
-        // Shift key states
-        static bool downL_1 = false;  // Left Shift
-        static bool downR_1 = false;  // Right Shift
-        static bool prevS_1 = false;  // Previous Shift state
+        static bool shiftLDown = false;
+        static bool shiftRDown = false;
+        static bool shiftDown = false;
+        static bool altLDown = false;
+        static bool altRDown = false;
+        static bool altDown = false;
+        static bool controlLDown = false;
+        static bool controlRDown = false;
+        static bool controlDown = false;
 
-        static bool downL_0 = false;  // Left Alt
-        static bool downR_0 = false;  // Right Alt
-        static bool prevS_0 = false;  // Previous Alt state
-
-        static bool downL = false;  // Left Control
-        static bool downR = false;  // Right Control
-        static bool prevS = false;  // Previous Control state
-
-        int keyCode = keyToSearchBy;
-
-        // Check for invalid key
-        if (keyCode == -1)
-        {
-            return false;
-        }
-
-        // Handle Shift keys (left and right)
-        if (keyCode == KEY_LSHIFT || keyCode == KEY_RSHIFT)
-        {
-            // Update individual shift key state
-            if (keyCode == KEY_LSHIFT)
-            {
-                downL_1 = state;
-            }
-            else if (keyCode == KEY_RSHIFT)
-            {
-                downR_1 = state;
-            }
-
-            // Calculate combined shift state
-            bool currentShiftState = downL_1 || downR_1;
-
-            // Only process if state changed
-            if (currentShiftState == prevS_1)
-            {
-                return false;
-            }
-
-            // Update previous state and modify output
-            prevS_1 = currentShiftState;
-            keyToSearchBy = (KEY_RSHIFT | KEY_LSHIFT);
-            state = currentShiftState;
-            return true;
-        }
-
-        // Handle Alt keys (left and right)
-        if (keyCode == KEY_LALT || keyCode == KEY_RALT)
-        {
-            // Update individual alt key state
-            if (keyCode == KEY_LALT)
-            {
-                downL_0 = state;
-            }
-            else if (keyCode == KEY_RALT)
-            {
-                downR_0 = state;
-            }
-
-            // Calculate combined alt state
-            bool currentAltState = downL_0 || downR_0;
-
-            // Only process if state changed
-            if (currentAltState == prevS_0)
-            {
-                return false;
-            }
-
-            // Update previous state and modify output
-            prevS_0 = currentAltState;
-            keyToSearchBy = (KEY_RALT | KEY_LALT);
-            state = currentAltState;
-            return true;
-        }
-
-        // Handle Control keys (left and right)
-        if (keyCode == KEY_LCONTROL || keyCode == KEY_RCONTROL)
-        {
-            // Update individual control key state
-            if (keyCode == KEY_LCONTROL)
-            {
-                downL = state;
-            }
-            else if (keyCode == KEY_RCONTROL)
-            {
-                downR = state;
-            }
-
-            // Calculate combined control state
-            bool currentControlState = downL || downR;
-
-            // Only process if state changed
-            if (currentControlState != prevS)
-            {
-                // Update previous state and modify output
-                keyToSearchBy = (KEY_LCONTROL | KEY_RCONTROL);
-                prevS = currentControlState;
-                state = currentControlState;
-                return true;
-            }
-
-            return false;
-        }
-
-        // For all other keys, allow processing
-        return true;
+        // A folded key no longer matches the later checks, so they fall through.
+        return FoldModifierKey(keyToSearchBy, state, KEY_LSHIFT, KEY_RSHIFT, VKEY_SHIFT, shiftLDown, shiftRDown, shiftDown) &&
+               FoldModifierKey(keyToSearchBy, state, KEY_LALT, KEY_RALT, VKEY_ALT, altLDown, altRDown, altDown) &&
+               FoldModifierKey(
+                   keyToSearchBy, state, KEY_LCONTROL, KEY_RCONTROL, VKEY_CONTROL, controlLDown, controlRDown, controlDown);
     }
 
     int GameImpulse::BindKey2(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strImp)
@@ -848,7 +934,22 @@ namespace m3d
 
     int GameImpulse::SaveToProfile()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x599140
+        if (!m_isInited)
+        {
+            M3D_LOG_INFO("Key bindings: error save to profile cause impulses were not inited");
+            return 0;
+        }
+
+        CStr const profileFolder = GetProfileFolder();
+        CStr const folder = profileFolder + CStr("\\");
+        CStr const fileName = folder + m_profileFileName;
+        int const res = SaveToFile(fileName);
+        if (res)
+        {
+            M3D_LOG_INFO("Key bindings: current settings were saved to profile");
+        }
+        return res;
     }
 
     int GameImpulse::HandleBinding(
@@ -925,14 +1026,35 @@ namespace m3d
         return HandleBinding(1, strGameMode, strKey1, strKey2, strKey3, strImp);
     }
 
-    CStr GameImpulse::GetFormattedScriptErrorDesc(eScriptError) const
+    CStr GameImpulse::GetFormattedScriptErrorDesc(eScriptError err) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x595D40
+        CStr desc;
+        if (err)
+        {
+            char const* const errorDesc = g_Kernel->GetScriptServer().getErrorDescString(err);
+            auxScriptErrorDesc const& lastErrorDesc = g_Kernel->GetScriptServer().getLastErrorDesc();
+            desc = CStr("(");
+            desc += lastErrorDesc.sourceString;
+            desc += CStr(" @ ");
+            desc += CStr(lastErrorDesc.lineNumber);
+            desc += CStr("): ");
+            desc += CStr(errorDesc);
+            desc += CStr(" ");
+            desc += lastErrorDesc.descriptionString;
+        }
+        return desc;
     }
 
-    int GameImpulse::UnbindKey3(CStr const&, CStr const&, CStr const&, CStr const&, CStr const&)
+    int GameImpulse::UnbindKey3(
+        CStr const& strGameMode,
+        CStr const& strKey1,
+        CStr const& strKey2,
+        CStr const& strKey3,
+        CStr const& strImp)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59B8F0
+        return HandleBinding(0, strGameMode, strKey1, strKey2, strKey3, strImp);
     }
 
     Class* GameImpulse::GetBaseClass()
@@ -955,9 +1077,16 @@ namespace m3d
         return 0;
     }
 
-    int GameImpulse::UnbindKey2(CStr const&, CStr const&, CStr const&, CStr const&)
+    int GameImpulse::UnbindKey2(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strImp)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x595560
+        if (m_isInited)
+        {
+            return UnbindKey3(strGameMode, strKey1, strKey2, CStr(""), strImp);
+        }
+        // NOTE: the shipped message says "bind" although this is the unbind path.
+        M3D_LOG_INFO("Key bindings: error bind key cause impulses were not inited");
+        return 0;
     }
 
     void GameImpulse::UnbindAll()
@@ -997,34 +1126,162 @@ namespace m3d
         return -1;
     }
 
-    int GameImpulse::UnbindKey1(CStr const&, CStr const&, CStr const&)
+    int GameImpulse::UnbindKey1(CStr const& strGameMode, CStr const& strKey1, CStr const& strImp)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x595460
+        if (m_isInited)
+        {
+            return UnbindKey3(strGameMode, strKey1, CStr(""), CStr(""), strImp);
+        }
+        // NOTE: the shipped message says "bind" although this is the unbind path.
+        M3D_LOG_INFO("Key bindings: error bind key cause impulses were not inited");
+        return 0;
     }
 
-    CStr GameImpulse::GetKeyNameById(int)
+    CStr GameImpulse::GetKeyNameById(int keyId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x595C90
+        CStr ret;
+        if (m_isInited && keyId != -1)
+        {
+            for (auto const& keyName : l_keyNames)
+            {
+                if (keyName.m_keyId == keyId)
+                {
+                    ret = CStr(keyName.m_keyName);
+                    break;
+                }
+            }
+        }
+        return ret;
     }
 
     Class* GameImpulse::GetRtClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7450D0
+        return RT_CLASS_LOCAL(GameImpulse);
     }
 
     int GameImpulse::LoadFromProfile()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x597AB0
+        if (!m_isInited)
+        {
+            M3D_LOG_INFO("Key bindings: error load from profile cause impulses were not inited");
+            return 0;
+        }
+
+        CStr const profileFolder = GetProfileFolder();
+        CStr const folder = profileFolder + CStr("\\");
+        CStr const bindFile = folder + m_profileFileName;
+        int const res = LoadFromFile(bindFile);
+        if (res)
+        {
+            M3D_LOG_INFO("Key bindings: were loaded from profile");
+        }
+        else
+        {
+            M3D_LOG_INFO("Key bindings: error loading from profile file; load defaults instead");
+            LoadFromDefaults();
+        }
+        return res;
     }
 
-    void GameImpulse::UnbindKey0(int, KeysSet const&, int)
+    void GameImpulse::UnbindKey0(int gameMode, KeysSet const& ks, int impId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59AB60
+        if (m_isInited)
+        {
+            m_bindings[gameMode].UnbindImpulseFromKeyset(impId, ks);
+            m_impulseStates[impId] = false;
+            m_impulseResetAfterRead[impId] = false;
+        }
     }
 
-    int GameImpulse::SaveToFile(CStr const&)
+    int GameImpulse::SaveToFile(CStr const& fileName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x598420
+        if (!m_isInited)
+        {
+            M3D_LOG_INFO("Key bindings: error save to file cause impulses were not inited");
+            return 0;
+        }
+
+        fs::FileReader fr;
+        if (!fr.Open(fileName.c_str(), fs::IStream::OPEN_WRITE))
+        {
+            M3D_LOG_INFO("Key bindings: fail to save to file " + fileName + CStr(" - cannot open the file fo writing"));
+            return 0;
+        }
+
+        // NOTE: the shipped code sets the result when a write comes up SHORT (count != length) and
+        // clears it on success, so a successful save is logged as an error and returns 0, and a
+        // save counts as successful only if the first write failed and every later one did too.
+        CStr const strCommon("IMPULSES = GET_GLOBAL_OBJECT \"IMPULSES\"\n\nIMPULSES:UnbindAll()\n\n");
+        int res = fr.WriteBytes(strCommon.c_str(), static_cast<unsigned int>(strlen(strCommon.c_str()))) != static_cast<unsigned int>(strlen(strCommon.c_str()));
+
+        for (auto& [gameMode, bindStation] : m_bindings)
+        {
+            CStr paramGameMode;
+            paramGameMode += CStr("\"");
+            paramGameMode += GetGameModeNameById(gameMode);
+            paramGameMode += CStr("\"");
+
+            for (auto const& [impId, impState] : m_impulseStates)
+            {
+                auto const* bind = bindStation.GetBindByImpulse(impId);
+                if (!bind)
+                {
+                    continue;
+                }
+
+                CStr paramImpulse;
+                paramImpulse += CStr("\"");
+                paramImpulse += GetImpulseNameById(impId);
+                paramImpulse += CStr("\"");
+
+                std::vector<KeysSet> const allKeysSets = bind->m_keys;
+                for (int i = 0; i < static_cast<int>(allKeysSets.size()); ++i)
+                {
+                    CStr paramKeys;
+                    int numKeys = 0;
+                    for (int const key : allKeysSets[i])
+                    {
+                        paramKeys += CStr("\"");
+                        paramKeys += GetKeyNameById(key);
+                        paramKeys += CStr("\"");
+                        paramKeys += CStr(",");
+                        ++numKeys;
+                    }
+
+                    if (numKeys)
+                    {
+                        CStr funcStr;
+                        funcStr += CStr("IMPULSES:");
+                        funcStr += CStr("BindKey") + CStr(numKeys);
+                        funcStr += CStr("(");
+                        funcStr += paramGameMode;
+                        funcStr += CStr(",");
+                        funcStr += paramKeys;
+                        funcStr += paramImpulse;
+                        funcStr += CStr(")");
+                        funcStr += CStr("\n");
+                        res &= fr.WriteBytes(funcStr.c_str(), static_cast<unsigned int>(strlen(funcStr.c_str()))) != static_cast<unsigned int>(strlen(funcStr.c_str()));
+                    }
+                }
+            }
+        }
+
+        fr.Close();
+        if (res)
+        {
+            M3D_LOG_INFO("Key bindings: were saved successfully to file " + fileName);
+        }
+        else
+        {
+            M3D_LOG_INFO("Key bindings: error saving to file " + fileName);
+        }
+        return res;
     }
 
     GameImpulse::GameImpulse()

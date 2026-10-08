@@ -17,10 +17,10 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0094 */
 
-    static_assert(sizeof(Boss04DronePrototypeInfo) == 0x0094);
-
     class Boss04Drone : public ai::ComplexPhysicObj
     {
+        friend class Boss04DronePrototypeInfo;
+
     protected:
         virtual  ~Boss04Drone() override /* 0x00 */;
 
@@ -73,6 +73,4 @@ namespace ai
         void _RecalcFlyPath();
         void _UpdateLookAtPlayer();
     }; /* size: 0x0164 */
-
-    static_assert(sizeof(Boss04Drone) == 0x0164);
 }

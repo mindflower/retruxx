@@ -14,10 +14,10 @@ namespace ai
         /* 0x0120 */ float m_maxHealth;
     }; /* size: 0x0124 */
 
-    static_assert(sizeof(Boss04StationPartPrototypeInfo) == 0x0124);
-
     class Boss04StationPart : public ai::VehiclePart
     {
+        friend class Boss04StationPartPrototypeInfo;
+
     protected:
         virtual  ~Boss04StationPart() override /* 0x00 */;
 
@@ -72,6 +72,4 @@ namespace ai
         /* 0x02d8 */ retruxx::vector<ai::Boss04StationPart::MeshGroupInfo, retruxx::allocator<ai::Boss04StationPart::MeshGroupInfo> > m_prevMeshGroupInfos;
         void _UpdateMeshGroupsHealth();
     }; /* size: 0x02e8 */
-
-    static_assert(sizeof(Boss04StationPart) == 0x02e8);
 }

@@ -6,19 +6,39 @@
 #include "core/clazz.h"
 #include "server/objects/base/obj.h"
 
-ObjectCollection::~ObjectCollection()
+ObjectCollection::~ObjectCollection() = default;
+
+int ObjectCollection::RemoveObject(ai::Obj* obj)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!obj || !obj->GetClass())
+    {
+        return 0;
+    }
+
+    for (auto const* cls = obj->GetClass(); IsClassCollected(cls); cls = cls->m_fnGetBaseClass())
+    {
+        auto it = m_objects.find(cls);
+        if (it != m_objects.end())
+        {
+            return it->second.erase(obj->GetId()) != 0;
+        }
+    }
+    return 1;
 }
 
-int ObjectCollection::RemoveObject(ai::Obj*)
+std::set<int> const* ObjectCollection::GetObjectsByClass(m3d::Class const* cl) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    if (!cl)
+    {
+        return nullptr;
+    }
 
-std::set<int> const* ObjectCollection::GetObjectsByClass(m3d::Class const*) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    auto it = m_objects.find(cl);
+    if (it == m_objects.end())
+    {
+        return nullptr;
+    }
+    return &it->second;
 }
 
 ObjectCollection::ObjectCollection()
@@ -33,7 +53,7 @@ bool ObjectCollection::IsClassCollected(m3d::Class const* cl) const
         return false;
     }
 
-    for (const auto& colCl : m_collectedClasses)
+    for (auto const& colCl : m_collectedClasses)
     {
         if (cl->IsKindOf(colCl))
         {
@@ -55,7 +75,6 @@ int ObjectCollection::AddObject(ai::Obj* obj)
         return 0;
     }
 
-    
     for (auto cls = obj->GetClass(); IsClassCollected(cls); cls = cls->m_fnGetBaseClass())
     {
         m_objects[cls].insert(obj->GetId());
@@ -66,13 +85,13 @@ int ObjectCollection::AddObject(ai::Obj* obj)
 
 void ObjectCollection::ClearClasses()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_collectedClasses.clear();
 }
 
 void ObjectCollection::InitClasses()
 {
     m_collectedClasses.clear();
-    CStr collectedClassNames[] = { "Vehicle", "DynamicQuest", "Town", "Lair", "Location", "StaticAutoGun" };
+    CStr collectedClassNames[] = {"Vehicle", "DynamicQuest", "Town", "Lair", "Location", "StaticAutoGun"};
     for (auto const& className : collectedClassNames)
     {
         if (auto* cls = m3d::g_Kernel->FindClass(className.c_str()))

@@ -1,5 +1,6 @@
 #include "particlesplinter.h"
 #include "base/prototypemanager.h"
+#include <core/kernel.h>
 #include <client.h>
 #include "world.h"
 namespace ai
@@ -53,12 +54,16 @@ namespace ai
 
     m3d::Object* ParticleSplinter::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8519C0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* ParticleSplinter::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851800
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     void ParticleSplinter::CheckDisablePhysics()

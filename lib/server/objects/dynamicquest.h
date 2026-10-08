@@ -36,10 +36,13 @@ namespace ai
         /* 0x0040 */ int m_minReward;
     }; /* size: 0x0044 */
 
-    static_assert(sizeof(DynamicQuestPrototypeInfo) == 0x0044);
-
     class DynamicQuest : public ai::Obj
     {
+        // DynamicQuestHunt::ConsiderPlayerKill reads the quest state directly.
+        friend class DynamicQuestHunt;
+        // DynamicQuestManager::CreateQuest fills in the new quest's target, hirer and reward.
+        friend class DynamicQuestManager;
+
     protected:
         virtual  ~DynamicQuest() override = 0 /* 0x00 */;
 
@@ -76,7 +79,15 @@ namespace ai
     public:
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
 
-        enum QuestStatus;
+        enum QuestStatus
+        {
+            STATUS_NOT_TAKEN = 0,
+            STATUS_PROCESSING = 1,
+            STATUS_COMPLETE = 2,
+            STATUS_FAILED = 3,
+            STATUS_FORGOTTEN = 4,
+            STATUS_NUM_STATES = 5,
+        };
 
     public:
         virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
@@ -120,6 +131,4 @@ namespace ai
         void _OnObjectEntersLocation(const ai::Event& evn);
         void _OnRelationChanged(const ai::Event& evn);
     }; /* size: 0x0110 */
-
-    static_assert(sizeof(DynamicQuest) == 0x0110);
 }

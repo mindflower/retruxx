@@ -37,8 +37,11 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(LineWnd);
 
-        private:
-            LineWndDirection m_direction = LINEWND_HORIZONTAL;
+        public:
+            LineWndDirection GetDirection();
+
+        protected:
+            /* 0x0220 */ LineWndDirection m_direction = LINEWND_HORIZONTAL;
         };
     }
 }

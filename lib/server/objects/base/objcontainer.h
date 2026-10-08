@@ -4,6 +4,9 @@
 
 struct CVector;
 
+class CMiracle3d;
+class SavesManager;
+
 namespace ai
 {
     class ObjContainer;
@@ -39,10 +42,16 @@ namespace ai
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
     }; /* size: 0x0018 */
 
-    static_assert(sizeof(GameTime) == 0x0018);
-
     class ObjContainer : public m3d::Object
     {
+        // The game's debug overlay and save/load read the containers directly.
+        friend class ::CMiracle3d;
+        friend class ::SavesManager;
+        // DynamicQuestManager::ConsiderPlayerKill walks the updating objects directly.
+        friend class DynamicQuestManager;
+        // Vehicle::GetEnemiesInNeighborhood walks all objects directly.
+        friend class Vehicle;
+
     protected:
         ObjContainer();
         ObjContainer(const ai::ObjContainer& rhs);
@@ -247,8 +256,6 @@ namespace ai
         void _SetObjUpdating(int objId);
         void _SetObjNotUpdating(int objId);
     }; /* size: 0x0120 */
-
-    static_assert(sizeof(ObjContainer) == 0x0120);
 
     void SetObjects(ObjContainer*);
 

@@ -39,6 +39,13 @@ namespace m3d
             int m_max;
             int m_cur;
             bool m_tracking;
+
+        protected:
+            // Declaration order matters here - these members sit at offsets taken
+            // from the binary, so m_notchWidth stays last. It is protected rather
+            // than private because BuyServiceSlider draws its own body and thumb
+            // and needs the notch width to place them; the rest of the state is
+            // reachable through GetMin/GetMax/GetNotch.
             float m_notchWidth;
         };
     }

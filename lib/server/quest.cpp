@@ -78,12 +78,14 @@ namespace ai
 
     retruxx::vector<int> const& Quest::GetPrecedingQuestIds() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F30
+        return m_precedingQuestIds;
     }
 
     CStr const& Quest::GetFuncOnFail() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F50
+        return m_funcOnFail;
     }
 
     int Quest::GetId() const
@@ -98,12 +100,14 @@ namespace ai
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> const& Quest::getActionLevels() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F90
+        return m_ActionLevels;
     }
 
     bool Quest::bSubscribeAutomatic() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699EE0
+        return m_bSubscribeAutomatic;
     }
 
     Quest::Quest() : m_conditionToGive(ConditionToGive::PRECEDERS_AND, ConditionToGive::PRECEDERS_COMPLETE)
@@ -112,12 +116,14 @@ namespace ai
 
     retruxx::vector<int, retruxx::allocator<int>> const& Quest::GetSubQuestIds() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x4F8930
+        return m_subQuestIds;
     }
 
     void Quest::PostLoad()
     {
-        //TODO: check this
+        // RVA 0x72B700 - resolves the names loaded from XML into ids, and registers this quest as following each of
+        // its preceders.
         m_parentQuestId = theQuestManager->GetQuestIdByName(m_parentQuestName);
         for (auto const& subQuestName : m_subQuestNames)
         {
@@ -157,42 +163,49 @@ namespace ai
 
     int Quest::GetParentId() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x4FAF00
+        return m_parentQuestId;
     }
 
     long long Quest::getTimeForComplete() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F80
+        return m_TimeForComplete;
     }
 
     CStr const& Quest::GetFuncOnComplete() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F40
+        return m_funcOnComplete;
     }
 
     CStr const& Quest::GetFuncOnCanBeGiven() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F70
+        return m_funcOnCanBeGiven;
     }
 
     CStr const& Quest::GetFuncOnTake() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F60
+        return m_funcOnTake;
     }
 
     Quest::ConditionToGive const& Quest::GetConditionToGive() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699EF0
+        return m_conditionToGive;
     }
 
     Quest::SubQuestCondition Quest::GetSubQuestCondition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F00
+        return m_subQuestCondition;
     }
 
     Quest::~Quest()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The members clean themselves up.
     }
 
     bool Quest::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -254,22 +267,43 @@ namespace ai
 
     bool Quest::bCheckAllSubQuests() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F10
+        return m_bCheckAllSubQuests;
     }
 
     retruxx::vector<int> const& Quest::GetSubsequentQuestIds() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x699F20
+        return m_subsequentQuestIds;
     }
 
     unsigned QuestManager::GetNumQuests() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x69A8B0
+        return m_quests.size();
     }
 
-    CStr QuestManager::QuestIdVectorToStr(retruxx::vector<int, retruxx::allocator<int>> const&)
+    CStr QuestManager::QuestIdVectorToStr(retruxx::vector<int, retruxx::allocator<int>> const& questIds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72B010 - the quests' names, separated by spaces.
+        CStr res;
+        bool first = true;
+        for (int const questId : questIds)
+        {
+            Quest const* const quest = GetQuestById(questId);
+            if (!quest)
+            {
+                M3D_LOG_INFO("Warning: invalid quest id: " + CStr(questId));
+                continue;
+            }
+            if (!first)
+            {
+                res += CStr(" ");
+            }
+            res += quest->GetName();
+            first = false;
+        }
+        return res;
     }
 
     QuestItemPrototypeInfo::QuestItemPrototypeInfo() = default;
@@ -286,26 +320,42 @@ namespace ai
 
     CStr const& QuestItemPrototypeInfo::GetModelName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x64EFF0
+        return m_modelName;
     }
 
     Obj* QuestItemPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x650990 - quest items are never created from their prototype.
+        SYS_ERROR("0");
+        return nullptr;
     }
 
     QuestManager::QuestManager()
     {
     }
 
-    void QuestManager::StrToQuestIdVector(CStr const&, retruxx::vector<int, retruxx::allocator<int>>&)
+    void QuestManager::StrToQuestIdVector(CStr const& str, retruxx::vector<int, retruxx::allocator<int>>& questIds)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72BE60 - a space-separated list of quest names into their ids; unknown names are dropped.
+        retruxx::vector<CStr> questNames;
+        StrToStringVector(str, questNames);
+        questIds.clear();
+        for (CStr const& questName : questNames)
+        {
+            int const questId = GetQuestIdByName(questName);
+            if (questId == -1)
+            {
+                M3D_LOG_INFO("Warning: invalid quest name: '" + questName + CStr("'"));
+                continue;
+            }
+            questIds.push_back(questId);
+        }
     }
 
     QuestManager::~QuestManager()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        _Clear();
     }
 
     int QuestManager::GetQuestIdByName(CStr const& questName) const
@@ -320,14 +370,22 @@ namespace ai
         return -1;
     }
 
-    retruxx::set<int> const* QuestManager::GetMutexByQuestId(int) const
+    retruxx::set<int> const* QuestManager::GetMutexByQuestId(int questId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72BA50 - the first mutex group this quest belongs to, if any.
+        for (auto const& mutex : m_mutexes)
+        {
+            if (mutex.find(questId) != mutex.end())
+            {
+                return &mutex;
+            }
+        }
+        return nullptr;
     }
 
     bool QuestManager::LoadFromXmlFile(char const* filename)
     {
-        //TODO: check this
+        // RVA 0x72D240
         _Clear();
         CStr err;
         ref_ptr xmlFile = m3d::ReadXmlFile(filename, &err);
@@ -337,7 +395,7 @@ namespace ai
             xmlFile->GetFirstChild(questsNode, "quests");
             if (questsNode->IsEmpty())
             {
-                M3D_LOG_INFO("QuestManager::LoadFromXmlFile error - cannot find root node \"quests\"");
+                M3D_LOG_ERR("QuestManager::LoadFromXmlFile error - cannot find root node \"quests\"");
                 return 0;
             }
             ref_ptr questNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
@@ -346,7 +404,7 @@ namespace ai
                 auto quest = new Quest;
                 if (!quest->LoadFromXml(xmlFile, questNode))
                 {
-                    M3D_LOG_INFO("Error: couldn't load quest from XML file. The quest is root quest.");
+                    M3D_LOG_ERR("Error: couldn't load quest from XML file. The quest is root quest.");
                     return false;
                 }
                 AddQuest(quest);

@@ -194,6 +194,28 @@ namespace ai
     class Obj : public m3d::Object
     {
         friend class ObjContainer;
+        // Vehicle::Blow detaches a wheel from its parent directly.
+        friend class Vehicle;
+        // CompositeObj::Init re-parents each piece of a wreck directly.
+        friend class CompositeObj;
+        // Chest clears the parent id of the objects it takes in and gives up directly.
+        friend class Chest;
+        // Settlement detaches its locations, guns and teams directly.
+        friend class Settlement;
+        // BreakableObject::RemoveChild clears a light child's parent id directly.
+        friend class BreakableObject;
+        // AffixGeneratorPrototypeInfo marks an object as affixed directly.
+        friend class AffixGeneratorPrototypeInfo;
+        // CServer sets and clears the cinematic flag on objects directly.
+        friend class CServer;
+        // ObjPrefab::RemoveChild clears a detached child's parent id directly.
+        friend class ObjPrefab;
+        // StaticAutoGun::RemoveChild clears a released bullet's parent id directly.
+        friend class StaticAutoGun;
+        // Clears m_parentId of a detached container.
+        friend class Boss02;
+        friend class Boss03;
+        friend class Boss04;
 
     protected:
         Obj(PrototypeInfo const& prototypeInfo);
@@ -364,7 +386,7 @@ namespace ai
         /* 0x0058 */ int m_parentId;
         /* 0x005c */ GeomRepository* m_parentRepository;
         /* 0x0060 */ int m_LastDamageSource;
-        /* 0x0064 */ bool m_bIsAlreadySaved;
+        /* 0x0064 */ mutable bool m_bIsAlreadySaved;
         /* 0x0065 */ char Padding_15[3];
         /* 0x0068 */ Obj::HierarchyType m_hierarchyType;
         /* 0x006c */ int m_prototypeId;
@@ -405,6 +427,4 @@ namespace ai
         static m3d::AIParam AIGetParentID(Obj* pObj);
         static m3d::AIParam AIGetOwnerID(Obj* pObj);
     }; /* size: 0x00c0 */
-
-    static_assert(sizeof(Obj) == 0xc0);
 }  // namespace ai

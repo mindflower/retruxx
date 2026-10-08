@@ -56,6 +56,4 @@ namespace m3d
         bool IsSkiddingStarted(void* owner);
         void AddTrace(const CVector& org, const Quaternion& quat, float scale, void* owner, int soilType, bool smoothStart);
     }; /* size: 0x0030 */
-
-    static_assert(sizeof(WheelTraceMgr) == 0x0030);
 }

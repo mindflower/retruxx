@@ -23,14 +23,43 @@ namespace ai
         return this->m_sideSize == 0;
     }
 
-    bool PlayerPassMap::SaveToBinaryFile(CStr const&) const
+    // RVA 0x7BBAD0
+    bool PlayerPassMap::SaveToBinaryFile(CStr const& fileName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        if (!m_sideSize)
+        {
+            return false;
+        }
+
+        m3d::fs::auxTaggedFile file;
+        if (file.Open(fileName.c_str(), m3d::fs::auxTaggedFile::CREATE_IGNORE_CRC))
+        {
+            M3D_LOG_ERR(CStr("Couldn't create player pass map file ") + CStr(fileName));
+            return false;
+        }
+
+        file.setFormatTitle("PLAYERPASSMAP");
+        file.setFormatVersion(2);
+        file.addChunk(0xBADF00D);
+        file.addChunkDataCopy(0xBADF00D, 4, &m_sideSize);
+        file.addChunkDataCopy(0xBADF00D, 4 * m_container.size(), m_container.data());
+        file.Close();
+        return true;
     }
 
-    void PlayerPassMap::SetValue(unsigned, unsigned, bool)
+    // RVA 0x7BBEC0
+    void PlayerPassMap::SetValue(unsigned x, unsigned y, bool bValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        M3D_ASSERT(x < m_sideSize && y < m_sideSize);
+        unsigned int const bit = y + x * m_sideSize;
+        if (bValue)
+        {
+            m_container[bit >> 5] |= 1 << (bit & 0x1F);
+        }
+        else
+        {
+            m_container[bit >> 5] &= ~(1 << (bit & 0x1F));
+        }
     }
 
     void PlayerPassMap::Create(unsigned sideLength, bool bDefaultValue)
@@ -40,9 +69,13 @@ namespace ai
         m_sideSize = sideLength;
     }
 
-    void PlayerPassMap::Fill(bool)
+    // RVA 0x7BBE60
+    void PlayerPassMap::Fill(bool bValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (unsigned int i = 0; i < m_container.size(); ++i)
+        {
+            m_container[i] = -static_cast<int>(bValue);
+        }
     }
 
     PlayerPassMap::PlayerPassMap()
@@ -51,92 +84,71 @@ namespace ai
 
     bool PlayerPassMap::LoadFromBinaryFile(CStr const& fileName)
     {
-        // TODO: check this
+        // RVA 0x7BC2C0
         m3d::fs::auxTaggedFile file;
         if (file.Open(fileName.c_str(), m3d::fs::auxTaggedFile::eOpenFlag::PROCESS_NORMAL_IGNORE_CRC))
         {
             M3D_LOG_ERR("Couldn't load player pass map from file " + fileName);
-            return 0;
+            return false;
         }
-
 
         char* title = nullptr;
         file.getFormatTitle(&title);
         if (strcmp(title, "PLAYERPASSMAP"))
         {
-            M3D_LOG_ERR("Error: Bad player passmap format title: '" + CStr(title) + "'");
-            return 0;
+            M3D_LOG_ERR("Error: Bad player passmap format title: '" + CStr(title) + CStr("'"));
+            file.Close();
+            return false;
         }
 
-        unsigned uFormatVersion = 0;
-        file.getFormatVersion(uFormatVersion);
-        if (uFormatVersion == 1)
+        unsigned formatVersion = 0;
+        file.getFormatVersion(formatVersion);
+        if (formatVersion == 1)
         {
-            uint8_t* Data = nullptr;
-            file.getChunkData(0xBADF00Du, (void**)&Data);
-            auto v7 = (unsigned int*)Data;
-            auto v8 = this->m_sideSize == 0;
-            auto pSideSize = (unsigned int*)Data;
-            Data += 4;
-            auto pContainer = (unsigned int*)Data;
-            if (!v8)
-                Clear();
-            Create(2 * *v7, 0);
-            auto v9 = *v7;
-            auto v10 = 0;
-            v8 = *v7 == 0;
-            auto i = 0;
-            if (!v8)
+            // Version 1 stores a map of half the resolution, one bit per cell, row by row: each bit becomes a
+            // 2x2 block of cells.
+            unsigned* data = nullptr;
+            file.getChunkData(0xBADF00D, reinterpret_cast<void**>(&data));
+            unsigned const* const pSideSize = data;
+            unsigned const* const bits = data + 1;
+            if (m_sideSize)
             {
-                auto v14 = 0;
-                do
-                {
-                    auto v11 = 0;
-                    auto j = 0;
-                    if (v9)
-                    {
-                        auto x = 2 * v10 + 1;
-                        do
-                        {
-                            auto v12 = j + v10 * v9;
-                            auto v13 = 1 << (v12 & 0x1F);
-                            v12 >>= 5;
-
-                            SetValue(2 * v10, v11, (v13 & pContainer[v12]) != 0);
-                            SetValue(2 * i, v11 + 1, (v13 & pContainer[v12]) != 0);
-                            SetValue(x, v11, (v13 & pContainer[v12]) != 0);
-                            SetValue(x, v11 + 1, (v13 & pContainer[v12]) != 0);
-
-                            v9 = *pSideSize;
-                            v10 = i;
-                            v11 += 2;
-                            v14 = ++j < *pSideSize;
-                        } while (v14);
-                        v7 = pSideSize;
-                    }
-                    v9 = *v7;
-                    v14 = ++v10 < *v7;
-                    i = v10;
-                } while (v14);
+                Clear();
             }
+            Create(2 * *pSideSize, false);
+            for (unsigned i = 0; i < *pSideSize; ++i)
+            {
+                for (unsigned j = 0; j < *pSideSize; ++j)
+                {
+                    unsigned const bit = j + i * *pSideSize;
+                    bool const value = (bits[bit >> 5] & (1u << (bit & 0x1F))) != 0;
+                    SetValue(2 * i, 2 * j, value);
+                    SetValue(2 * i, 2 * j + 1, value);
+                    SetValue(2 * i + 1, 2 * j, value);
+                    SetValue(2 * i + 1, 2 * j + 1, value);
+                }
+            }
+        }
+        else if (formatVersion == 2)
+        {
+            // Version 2 is the side size followed by the raw container.
+            unsigned* data = nullptr;
+            file.getChunkData(0xBADF00D, reinterpret_cast<void**>(&data));
+            if (m_sideSize)
+            {
+                Clear();
+            }
+            Create(data[0], false);
+            memcpy(m_container.data(), data + 1, sizeof(m_container[0]) * m_container.size());
         }
         else
         {
-            if (uFormatVersion != 2)
-            {
-                M3D_LOG_ERR("Error: Wrong player passmap format version: " + CStr(uFormatVersion));
-                return 0;
-            }
-            uint8_t* Data = nullptr;
-            file.getChunkData(0xBADF00Du, (void**)&Data);
-
-            auto v15 = Data;
-            auto v8 = this->m_sideSize == 0;
-            Data += 4;
-            if (!v8)
-                Clear(); 
-            Create(*(int*)v15, 0);
-            memcpy(m_container.data(), Data, 4 * m_container.size());
+            M3D_LOG_ERR("Error: Wrong player passmap format version: " + CStr(formatVersion));
+            file.Close();
+            return false;
         }
+
+        file.Close();
+        return true;
     }
 }

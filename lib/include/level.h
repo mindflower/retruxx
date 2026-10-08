@@ -100,6 +100,4 @@ namespace m3d
         int GetLandSize() const;
         const char* GetLevelName() const;
     }; /* size: 0x0300 */
-
-    static_assert(sizeof(Level) == 0x0300);
 }

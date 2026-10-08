@@ -8,80 +8,82 @@ namespace m3d
     {
         class LineWnd;
         class ImageWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
+
+class ObjectInfo;
 
 class MapSellItem : public m3d::ui::Wnd
 {
 public:
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    private:
-        PointBase<float> m_icoSz;
-        unsigned int m_textColor;
-        CStr m_linePaneName;
-        float m_height;
-    };
-
-public:
-    virtual m3d::Class* GetClass() const;
+    int SetUp(
+        int warePrototypeId,
+        int sellPrice,
+        int buyPrice,
+        PointBase<float> const& origin,
+        float maxWidth,
+        bool bLastItem);
     int GetWarePrototypeId() const;
-    int SetUp(int, int, int, PointBase<float> const&, float, bool);
-    static m3d::Object* CreateObject();
-    int GetBuyPrice() const;
-    virtual m3d::Object* Clone();
     int GetSellPrice() const;
-    static m3d::Class* GetBaseClass();
-    virtual ~MapSellItem();
+    int GetBuyPrice() const;
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ PointBase<float> m_icoSz;
+        /* 0x0008 */ unsigned int m_textColor;
+        /* 0x000c */ CStr m_linePaneName;
+        /* 0x0018 */ float m_height;
+        AuxInfo(MapSellItem::AuxInfo const&);
+        AuxInfo();
+    }; /* size: 0x001c */
 
 protected:
-    MapSellItem(MapSellItem const&);
+    /* 0x0220 */ MapSellItem::AuxInfo m_aif;
+    /* 0x023c */ m3d::ui::ImageWnd* m_imgWareIco;
+    /* 0x0240 */ m3d::ui::Wnd* m_lblSellPrice;
+    /* 0x0244 */ m3d::ui::Wnd* m_lblBuyPrice;
+    /* 0x0248 */ m3d::ui::LineWnd* m_line;
+    /* 0x024c */ int m_warePrototypeId;
+    /* 0x0250 */ int m_sellPrice;
+    /* 0x0254 */ int m_buyPrice;
+
     MapSellItem();
+    MapSellItem(MapSellItem const& rhs);
 
 public:
-    RT_CLASS_DECLARE(MapSellItem);
+    virtual ~MapSellItem() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classMapSellItem;
+}; /* size: 0x0258 */
 
-private:
-    MapSellItem::AuxInfo m_aif;
-    m3d::ui::ImageWnd* m_imgWareIco;
-    m3d::ui::Wnd* m_lblSellPrice;
-    m3d::ui::Wnd* m_lblBuyPrice;
-    m3d::ui::LineWnd* m_line;
-    int m_warePrototypeId;
-    int m_sellPrice;
-    int m_buyPrice;
-};
-
-class MapSellList :  public m3d::ui::ListBoxWnd<MapSellItem *>
+class MapSellList : public m3d::ui::ListBoxWnd<MapSellItem*>
 {
 public:
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    static m3d::Class * GetBaseClass();
-    int CreateFromPattern(m3d::ui::Wnd const *,bool);
-    virtual ~MapSellList();
-    int SetUpForObject(class ObjectInfo *);
+    int CreateFromPattern(m3d::ui::Wnd const* patternWnd, bool deleteSrc);
+    int SetUpForObject(ObjectInfo* objectInfo);
 
 protected:
-    virtual int OnBeforeAddToWndStation();
-    int CreateItemsFromSaveList();
-    virtual int CompareItem(int,int);
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override /* 0x134 */;
+    virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override /* 0x138 */;
+    virtual int DeleteItem(int itemIdx) override /* 0x13c */;
+    virtual int CompareItem(int itemIdx0, int itemIdx1) override /* 0x140 */;
     int CreateItemsFromRealObject();
-    int CreateItem(int,int,int,bool);
-    virtual int MeasureItem(int, BoundsBase<float> &) const ;
-    virtual int DeleteItem(int);
-    MapSellList(MapSellList const &);
+    int CreateItemsFromSaveList();
+    int CreateItem(int warePrototypeId, int sellPrice, int buyPrice, bool bLastItem);
+    /* 0x0238 */ ObjectInfo* m_objectInfo;
     MapSellList();
-    virtual int RenderItem(int, PointBase<float> const &, m3d::ui::DrawInfo const &);
-    virtual int GameDataClear(bool);
+    MapSellList(MapSellList const& rhs);
 
 public:
-    RT_CLASS_DECLARE(MapSellList);
-
-private:
-    ObjectInfo *m_objectInfo;
-};
+    virtual ~MapSellList() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    static m3d::Class m_classMapSellList;
+}; /* size: 0x023c */

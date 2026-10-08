@@ -1,18 +1,24 @@
 #pragma once
 #include <windows.h>
+#include <cstdint>
 #include <vector>
 
 namespace m3d
 {
     namespace fs
     {
+        // Tagged-file container records, written to and read from disk byte for byte.
+#pragma pack(push, 4)
         struct auxChunkInfo
         {
-            unsigned int tag;
-            unsigned int size;
-            unsigned int offset;
-            unsigned int crc32;
+            uint32_t tag;
+            uint32_t size;
+            uint32_t offset;
+            uint32_t crc32;
         };
+#pragma pack(pop)
+
+        static_assert(sizeof(auxChunkInfo) == 0x0010);
 
         class auxTaggedFile
         {
@@ -41,11 +47,15 @@ namespace m3d
                 CREATE_IGNORE_CRC = 0x5,
             };
 
+#pragma pack(push, 4)
             struct mTaggedHeader
             {
                 char cSignature[7];
-                unsigned int numChunks;
+                uint32_t numChunks;
             };
+#pragma pack(pop)
+
+            static_assert(sizeof(mTaggedHeader) == 0x000c);
 
             struct mChunkData
             {

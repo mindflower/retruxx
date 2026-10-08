@@ -3,13 +3,15 @@
 
 class VehicleCharacteristicsWnd :  public CharacteristicsWnd
 {
+    // VehicleWnd::SetVehicleId invokes the protected virtual ClearCharacteristics().
+    friend class VehicleWnd;
+
 public:
     class AuxInfo
     {
     public:
         AuxInfo();
 
-    private:
         CStr m_wndMaxHealthValName;
         CStr m_wndMaxFuelValName;
         CStr m_wndPiercingValName;

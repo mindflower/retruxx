@@ -79,7 +79,8 @@ namespace ai
         /* 0x00cc */ float m_angularVelocity;
         CVector m_position;
         CVector m_direction;
-        retruxx::vector<CVector2, retruxx::allocator<CVector2> > m_positions;
+        // generatePositions rebuilds the slot shape from a const accessor.
+        mutable retruxx::vector<CVector2, retruxx::allocator<CVector2> > m_positions;
         /* 0x00f8 */ ai::Path* m_pPath;
         /* 0x00fc */ int m_numPathPoint;
 

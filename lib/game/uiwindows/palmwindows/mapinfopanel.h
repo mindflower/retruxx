@@ -19,6 +19,8 @@ class MapInfoPanel :  public m3d::ui::Wnd
 public:
     class AuxInfo
     {
+        friend class MapInfoPanel;
+
     public:
         AuxInfo();
 

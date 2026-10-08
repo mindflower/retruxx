@@ -1,7 +1,12 @@
 #include "itemmodelwnd.h"
 
+#include <cmath>
+
 #include "m3dapp.h"
+#include "core/kernel.h"
 #include "core/log.h"
+#include "core/timer.h"
+#include "scene/servers/dataserver.h"
 
 RT_CLASS_EXPORTS_BEGIN(ItemModelWnd)
 RT_CLASS_EXPORTS_END;
@@ -9,22 +14,22 @@ RT_CLASS_DEFINE(ItemModelWnd);
 
 bool ItemModelWnd::IsAllowedRotateByHandX() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_bAllowRotateByHandX;
 }
 
 bool ItemModelWnd::IsAllowedRotateByHandY() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_bAllowRotateByHandY;
 }
 
 m3d::Object* ItemModelWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new ItemModelWnd;
 }
 
-void ItemModelWnd::AllowRotate(bool)
+void ItemModelWnd::AllowRotate(bool bAllow)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bAllowRotate = bAllow;
 }
 
 m3d::Class* ItemModelWnd::GetBaseClass()
@@ -34,22 +39,22 @@ m3d::Class* ItemModelWnd::GetBaseClass()
 
 float ItemModelWnd::GetRotationVelocity() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_rotationVelocity;
 }
 
 ItemModelWnd::~ItemModelWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // ~ModelWnd runs via the compiler-chained base destructor.
 }
 
 bool ItemModelWnd::IsAutosized() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_bAutosized;
 }
 
-void ItemModelWnd::SetRotationVelocity(float)
+void ItemModelWnd::SetRotationVelocity(float velocity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_rotationVelocity = velocity;
 }
 
 m3d::Object* ItemModelWnd::CreateObject()
@@ -57,37 +62,31 @@ m3d::Object* ItemModelWnd::CreateObject()
     return new ItemModelWnd;
 }
 
-int ItemModelWnd::SetModelByName(const CStr& modelName, unsigned skinNumber, unsigned cfgNumber)
+int ItemModelWnd::SetModelByName(CStr const& modelName, unsigned skinNumber, unsigned cfgNumber)
 {
-    if (modelName.empty())
+    // RVA 0x514E10
+    auto& server = M3D_APP->GetAnimatedModelsServer();
+    int const itemId = modelName.empty() ? -1 : server.GetItemByName(modelName.c_str(), true);
+    if (itemId == -1)
     {
         GameDataClear(false);
         return 0;
     }
 
-    RETRUXX_NOT_IMPLEMENTED;
-
-    //if ((ItemByName = m3d::DataServer::GetItemByName(m3d::Application::g_pApp->m_serverAnimatedModels, m_charPtr, 1), ItemByName == -1))
-    //{
-    //    this->GameDataClear(this, 0);
-    //    return 0;
-    //}
-    //mdl = 0;
-    //m3d::Application::g_pApp->m_serverAnimatedModels->GetItemProperty(m3d::Application::g_pApp->m_serverAnimatedModels, ItemByName, 16394, &mdl);
-    //v7 = this;
-    //if (mdl)
-    //{
-    //    m3d::ui::ModelWnd::SetModel(this, mdl);
-    //    if (this->m_Model && this->m_Animation)
-    //    {
-    //        m3d::ui::ModelWnd::SetCfgNum(this, cfgNumber);
-    //        this->m_SkinNum = skinNumber;
-    //        return 1;
-    //    }
-    //    v7 = this;
-    //}
-    //this->GameDataClear(v7, 0);
-    //return 0;
+    m3d::AnimatedModel* mdl = nullptr;
+    server.GetItemProperty(itemId, m3d::PROP_INTERNAL_GETMODEL, &mdl);
+    if (mdl)
+    {
+        ModelWnd::SetModel(mdl);
+        if (m_Model && m_Animation)
+        {
+            ModelWnd::SetCfgNum(cfgNumber);
+            m_SkinNum = skinNumber;
+            return 1;
+        }
+    }
+    GameDataClear(false);
+    return 0;
 }
 
 int ItemModelWnd::CreateFromPattern(m3d::ui::Wnd* patterWnd, bool deleteSrc)
@@ -96,15 +95,14 @@ int ItemModelWnd::CreateFromPattern(m3d::ui::Wnd* patterWnd, bool deleteSrc)
     {
         auto patternModelWnd = dynamic_cast<ModelWnd*>(patterWnd);
         if (CreateModelWnd(
-            patternModelWnd->GetImage(),
-            patterWnd->GetStyle(),
-            patterWnd->GetBounds(),
-            patterWnd->GetId(),
-            patternModelWnd->GetTargetTexture()
-        ))
+                patternModelWnd->GetImage(),
+                patterWnd->GetStyle(),
+                patterWnd->GetBounds(),
+                patterWnd->GetId(),
+                patternModelWnd->GetTargetTexture()))
         {
-	        if (auto parent = patternModelWnd->GetParent())
-	        {
+            if (auto parent = patternModelWnd->GetParent())
+            {
                 parent->AddChild(this);
                 parent->MoveChildToFirstPosition(this);
                 SetStyle(patternModelWnd->GetStyle());
@@ -142,7 +140,7 @@ int ItemModelWnd::CreateFromPattern(m3d::ui::Wnd* patterWnd, bool deleteSrc)
                 }
                 m_gameDataFlags |= 1u;
                 return 1;
-	        }
+            }
             else
             {
                 M3D_LOG_INFO("ItemModelWnd: fail to init - bad pattern window");
@@ -154,40 +152,51 @@ int ItemModelWnd::CreateFromPattern(m3d::ui::Wnd* patterWnd, bool deleteSrc)
             M3D_LOG_INFO("ItemModelWnd::CreateFromPattern error - cannot create widow");
             return 0;
         }
-
     }
     M3D_LOG_INFO("ItemModelWnd: fail to init - bad pattern window");
     return 0;
 }
 
-void ItemModelWnd::SetRotationByHandVelocity(float)
+void ItemModelWnd::SetRotationByHandVelocity(float velocity)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_rotationByHandVelocity = velocity;
 }
 
 float ItemModelWnd::GetRotationByHandVelocity() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_rotationByHandVelocity;
 }
 
-void ItemModelWnd::AllowRotateByHandX(bool)
+void ItemModelWnd::AllowRotateByHandX(bool bAllow)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bAllowRotateByHandX = bAllow;
 }
 
 CVector const& ItemModelWnd::GetDefaultTranslation() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_defaultTranslation;
 }
 
-void ItemModelWnd::SetAutosized(bool)
+void ItemModelWnd::SetAutosized(bool bAutosized)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bAutosized = bAutosized;
+    if (!IsChildOf(m3d::Application::g_pApp))
+    {
+        return;
+    }
+    if (m_bAutosized)
+    {
+        CalcAutosizeTranslation(m_Translation);
+    }
+    else
+    {
+        m_Translation = m_defaultTranslation;
+    }
 }
 
-void ItemModelWnd::AllowRotateByHandY(bool)
+void ItemModelWnd::AllowRotateByHandY(bool bAllow)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bAllowRotateByHandY = bAllow;
 }
 
 m3d::Class* ItemModelWnd::GetClass() const
@@ -195,24 +204,36 @@ m3d::Class* ItemModelWnd::GetClass() const
     return RT_CLASS_LOCAL(ItemModelWnd);
 }
 
-void ItemModelWnd::SetDefaultRotationAngleX(float)
+void ItemModelWnd::SetDefaultRotationAngleX(float angle)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_defaultRotationAngleX = angle;
 }
 
-void ItemModelWnd::SetDefaultTranslation(CVector const&)
+void ItemModelWnd::SetDefaultTranslation(CVector const& translation)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_defaultTranslation = translation;
+    if (!IsChildOf(m3d::Application::g_pApp))
+    {
+        return;
+    }
+    if (m_bAutosized)
+    {
+        CalcAutosizeTranslation(m_Translation);
+    }
+    else
+    {
+        m_Translation = m_defaultTranslation;
+    }
 }
 
 bool ItemModelWnd::IsAllowedRotate() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_bAllowRotate;
 }
 
 float ItemModelWnd::GetDefaultRotationAngleX() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_defaultRotationAngleX;
 }
 
 int ItemModelWnd::OnAfterRemoveFromWndStation()
@@ -228,17 +249,53 @@ int ItemModelWnd::OnAfterRemoveFromWndStation()
 
 void ItemModelWnd::UpdateCamera()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x514F60
+    if (!IsValid())
+    {
+        return;
+    }
+    if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+    {
+        return;
+    }
+
+    CVector translation;
+    if (m_bAutosized)
+    {
+        CalcAutosizeTranslation(translation);
+    }
+    else
+    {
+        translation = m_defaultTranslation;
+    }
+
+    // Rotation about the X axis by m_rotationAngle.x.
+    CMatrix rotX;
+    rotX.rotX(m_rotationAngle.x);
+
+    // Rotation about the Y axis by m_rotationAngle.y.
+    CMatrix rotY;
+    rotY.rotY(m_rotationAngle.y);
+
+    // The shipped code composes res = (rotX * rotY) * translate(translation) and
+    // then splits res back into m_Rotation / m_Translation. rotX * rotY is a pure
+    // rotation, so the trailing translate leaves the 3x3 (hence the quaternion)
+    // untouched and simply copies translation into the 4th row.
+    CMatrix tr;
+    tr.translation(translation);
+
+    CMatrix const res = (rotY * rotX) * tr;
+    Rotation().FromMatrix(res);
+    Translation() = CVector(res._41, res._42, res._43);
 }
 
 bool ItemModelWnd::IsDisabled() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return (m_style & 2) != 0 || (m_style & 0x80000) != 0;
 }
 
-ItemModelWnd::ItemModelWnd(ItemModelWnd const&)
+ItemModelWnd::ItemModelWnd(ItemModelWnd const&) : ItemModelWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 ItemModelWnd::ItemModelWnd()
@@ -256,9 +313,19 @@ ItemModelWnd::ItemModelWnd()
     m_defaultTranslation = ZeroVector;
 }
 
-int ItemModelWnd::OnMouseButton0(unsigned, PointBase<float> const&)
+int ItemModelWnd::OnMouseButton0(unsigned state, PointBase<float> const& at)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (state && (m_bAllowRotateByHandX || m_bAllowRotateByHandY))
+    {
+        m_bInRotationByHandMode = true;
+        M3D_APP->CaptureMouse(this);
+    }
+    else
+    {
+        m_bInRotationByHandMode = false;
+        M3D_APP->CaptureMouse(nullptr);
+    }
+    return Wnd::OnMouseButton0(state, at);
 }
 
 bool ItemModelWnd::IsValid() const
@@ -266,51 +333,43 @@ bool ItemModelWnd::IsValid() const
     return m_Model && m_Animation;
 }
 
-void ItemModelWnd::SetRotationByHandMode(bool)
+void ItemModelWnd::SetRotationByHandMode(bool bState)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_bInRotationByHandMode = bState;
+    M3D_APP->CaptureMouse(bState ? this : nullptr);
 }
 
 void ItemModelWnd::CalcAutosizeTranslation(CVector& translation) const
 {
-    // TODO: check and refactor this
-    if (IsValid())
+    // RVA 0x5157E0: frame the model in front of the camera from its bounding box.
+    if (!IsValid())
     {
-        auto v3 = m_Model->m_box.m_box[1];
-        auto v4 = m_Model->m_box.m_box[3];
-        auto v5 = m_Model->m_box.m_box[0];
-        auto v6 = (float)((float)(v4 - v5) * 0.5) + v5;
-        auto v7 = m_Model->m_box.m_box[4];
-        auto v8 = (float)((float)(v7 - v3) * 0.5) + v3;
-        auto v9 = m_Model->m_box.m_box[5];
-
-        CVector center;
-        center.z = (float)((float)(v9 - m_Model->m_box.m_box[2]) * 0.5) + m_Model->m_box.m_box[2];
-        auto v10 = v7 - v3;
-        auto v11 = v9 - m_Model->m_box.m_box[2];
-        auto v12 = v4 - v5;
-
-        CVector itemSize;
-        itemSize.x = v12;
-        itemSize.y = v10;
-        itemSize.z = v11;
-        auto p_y = (CVector*)&itemSize.y;
-        if (v10 <= v11)
-            p_y = (CVector*)&itemSize.z;
-        if (p_y->x <= v12)
-            p_y = &itemSize;
-        auto x = p_y->x;
-        auto p_itemSize = &itemSize;
-        if (v12 <= v11)
-            p_itemSize = (CVector*)&itemSize.z;
-        auto v16 = 3.0;
-        if (v10 <= p_itemSize->x)
-            v16 = 2.2;
-        auto v17 = (float)(0.0 - center.z) + (float)((float)(v16 * x) + (float)(2.5 / x));
-        translation.x = 0.0 - v6;
-        translation.y = (float)(0.0 - v8) + (float)(v10 * 0.1);
-        translation.z = v17;
+        return;
     }
+
+    // m_box.m_box layout: [minX, minY, minZ, maxX, maxY, maxZ].
+    float const* const box = m_Model->m_box.m_box;
+    float const centerX = (box[3] - box[0]) * 0.5f + box[0];
+    float const centerY = (box[4] - box[1]) * 0.5f + box[1];
+    float const centerZ = (box[5] - box[2]) * 0.5f + box[2];
+    float const sizeX = box[3] - box[0];
+    float const sizeY = box[4] - box[1];
+    float const sizeZ = box[5] - box[2];
+
+    // Largest of the three box dimensions.
+    float maxDim = (sizeY <= sizeZ) ? sizeZ : sizeY;
+    if (maxDim <= sizeX)
+    {
+        maxDim = sizeX;
+    }
+
+    // Pull the model further back (3.0) unless it is no taller than it is wide or
+    // deep, in which case a tighter 2.2 is enough.
+    float const depthScale = (sizeY <= ((sizeX <= sizeZ) ? sizeZ : sizeX)) ? 2.2f : 3.0f;
+
+    translation.x = -centerX;
+    translation.y = -centerY + sizeY * 0.1f;
+    translation.z = -centerZ + (depthScale * maxDim + 2.5f / maxDim);
 }
 
 int ItemModelWnd::OnBeforeAddToWndStation()
@@ -337,11 +396,14 @@ int ItemModelWnd::OnBeforeAddToWndStation()
     return Wnd::OnBeforeAddToWndStation();
 }
 
-int ItemModelWnd::GameDataUpdate(void*, int)
+int ItemModelWnd::GameDataUpdate(void* data, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x514EE0
+    if (dataType == 89)
+    {
+        OnNewFrame();
+    }
+    return 1;
 }
 
 int ItemModelWnd::GameDataClear(bool beforeContinuousLevel)
@@ -354,17 +416,47 @@ int ItemModelWnd::GameDataClear(bool beforeContinuousLevel)
     return 1;
 }
 
-int ItemModelWnd::OnMouseMove(PointBase<float> const&, PointBase<float> const&)
+int ItemModelWnd::OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_bInRotationByHandMode)
+    {
+        float dy = 0.0f;
+        float dx = 0.0f;
+        if (m_bAllowRotateByHandY)
+        {
+            dx = -deltas.x;
+        }
+        if (m_bAllowRotateByHandX)
+        {
+            dy = -deltas.y;
+        }
+        m_rotationAngle.x += dy * m_rotationByHandVelocity;
+        m_rotationAngle.y += dx * m_rotationByHandVelocity;
+        UpdateCamera();
+    }
+    return Wnd::OnMouseMove(pt, deltas);
 }
 
 int ItemModelWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (!IsValid())
+    {
+        return 0;
+    }
+    if ((m_style & 2) != 0 || (m_style & 0x80000) != 0)
+    {
+        return 0;
+    }
+    if (m_bAllowRotate && !m_bInRotationByHandMode)
+    {
+        UpdateRotationAngle();
+        UpdateCamera();
+    }
+    return 1;
 }
 
 void ItemModelWnd::UpdateRotationAngle()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_rotationAngle.y += static_cast<float>(
+        static_cast<double>(M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled()) * m_rotationVelocity * 0.001);
 }

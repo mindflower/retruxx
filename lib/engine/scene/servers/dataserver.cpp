@@ -46,56 +46,79 @@ namespace m3d
 
     int DataServer::RenderShadowVolumesSet(SgNode**, unsigned)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB20 - servers that cast shadows override this.
+        return 0;
     }
 
     int DataServer::RenderNodeSet(SgNode**, unsigned, RenderNodeInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB00 - servers that render whole node sets override this.
+        return 0;
     }
 
     void DataServer::RenderTransparents(SgNode**, unsigned)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB10
     }
 
     void DataServer::PostLoad()
     {
     }
 
-    CStr const& DataServer::GetNameByItem(int) const
+    CStr const& DataServer::GetNameByItem(int sh) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A6D30 - NOTE: the handle is not range checked.
+        return m_models[sh].m_name;
     }
 
     bool DataServer::ReportServerInfo(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB80 - servers with something to report override this.
+        return true;
     }
 
-    int DataServer::WriteItemToXmlNode(int, cmn::XmlFile*, cmn::XmlNode*)
+    int DataServer::WriteItemToXmlNode(int sh, cmn::XmlFile*, cmn::XmlNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A6D80 - the file attribute is written only for items that came from one.
+        node->SetAttribute("id", m_models[sh].m_name.c_str());
+        if (!m_models[sh].m_originalFileName.empty())
+        {
+            node->SetAttribute("file", m_models[sh].m_originalFileName.c_str());
+        }
+        return 1;
     }
 
-    int DataServer::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int DataServer::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A5C30
+        for (unsigned i = 0; i < m_models.size(); ++i)
+        {
+            ref_ptr itemNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "Item");
+            if (!WriteItemToXmlNode(i, file, itemNode))
+            {
+                return 0;
+            }
+            node->AddChild(itemNode);
+        }
+        return 1;
     }
 
     void DataServer::UpdateItem(int, void*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB40
     }
 
     int DataServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75D0F0
+        m_valid = false;
+        return 1;
     }
 
     int DataServer::GenerateImpostorsIfNeeded()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB30 - only the animated models server builds impostors.
+        return 0;
     }
 
     int DataServer::Init()
@@ -106,7 +129,7 @@ namespace m3d
 
     void DataServer::Restore()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EBA0
     }
 
     void DataServer::UnregisterNode(SgNode*)
@@ -178,14 +201,15 @@ namespace m3d
         }
     }
 
-    CStr DataServer::GetOriginalFileName(int)
+    CStr DataServer::GetOriginalFileName(int sh)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A6D50 - NOTE: despite the name this returns m_fileName, not m_originalFileName.
+        return m_models[sh].m_fileName;
     }
 
     DataServer::~DataServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EA30 - the members clean themselves up; the items a server loaded are freed by its own Release.
     }
 
     void DataServer::RegisterNode(SgNode*)
@@ -194,7 +218,7 @@ namespace m3d
 
     void DataServer::Invalidate()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75EB90
     }
 
     int DataServer::GetItemProperty(int id, int prop, void* dest)
@@ -225,12 +249,14 @@ namespace m3d
 
     int DataServer::GetNumItems() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A5D70
+        return m_models.size();
     }
 
-    void DataServer::SetError(CStr const&)
+    void DataServer::SetError(CStr const& err)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A5A90
+        m_lastError = err;
     }
 
     bool DataServer::IsValid() const

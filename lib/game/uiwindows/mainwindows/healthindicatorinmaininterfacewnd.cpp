@@ -1,34 +1,62 @@
 #include "healthindicatorinmaininterfacewnd.h"
+#include <cmath>
 
 #include "core/log.h"
 #include "server/dynamicquestmanager.h"
+#include <ui/modelwnd.h>
+#include <ui/progressbarwnd.h>
+#include "twinklinglampwnd.h"
+#include "electronicdigitalwnd.h"
+#include "ui/ui_srv.h"
+#include <game/m3dgame.h>
+#include "server/objects/vehicle.h"
 
 RT_CLASS_EXPORTS_BEGIN(HealthIndicatorInMainInterfaceWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HealthIndicatorInMainInterfaceWnd);
 
-m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
+HealthIndicatorInMainInterfaceWnd::AuxInfo::AuxInfo()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_wndLowHpLampName = "wndLowHpLamp";
+    m_wndProgressBarName = "wndHpProgressBar";
+    m_wndValueName = "wndHpValue";
+    m_wndOverlayName = "wndHpProgressBarOverlay";
+    m_strHealthId = "Construction";
 }
 
-void HealthIndicatorInMainInterfaceWnd::SetType(Type)
+m3d::Object* HealthIndicatorInMainInterfaceWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5256E0
+    return new HealthIndicatorInMainInterfaceWnd(*this);
+}
+
+void HealthIndicatorInMainInterfaceWnd::SetType(Type newType)
+{
+    m_type = newType;
+    FullUpdate(true);
 }
 
 int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
+    // RVA 0x525A90
+    using namespace m3d::ui;
+
     if (!patternWnd)
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null patternWnd");
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd: error to create - invalid pattern wnd");
         return 0;
     }
 
-    auto res = Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId());
-    if (res == 0)
+    auto* parent = patternWnd->GetParent();
+    if (!parent || !IS_KIND_OF(parent, Wnd))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - cannot create window");
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd: error to create - invalid parent wnd");
+        return 0;
+    }
+
+    if (!Wnd::Create(patternWnd->GetText(), patternWnd->GetStyle(), patternWnd->GetBounds(), patternWnd->GetId()))
+    {
+        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - error to create");
         return 0;
     }
 
@@ -42,7 +70,7 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
 
     SetFormatMode(patternWnd->GetFormatMode());
     SetColor(patternWnd->GetColor());
-    SetTextColor(patternWnd->GetColor());
+    SetTextColor(patternWnd->GetTextColor());
     SetTextColorDisabled(patternWnd->GetTextColorDisabled());
     SetClientEdges(patternWnd->GetClientEdges());
     SetPane(patternWnd->GetPaneName());
@@ -57,22 +85,126 @@ int HealthIndicatorInMainInterfaceWnd::CreateFromPattern(m3d::ui::Wnd* patternWn
     SetOnShowAnimation(patternWnd->GetOnShowAnimation());
     SetOnHideAnimation(patternWnd->GetOnHideAnimation());
 
-    RETRUXX_NOT_IMPLEMENTED;
-    auto* parent = patternWnd->GetParent();
-    if (!parent || !IS_KIND_OF(parent, Wnd))
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndOverlayName), Wnd))
     {
-        M3D_LOG_INFO("HealthIndicatorInMainInterfaceWnd::CreateFromPattern error - null parent for paternWnd");
-        return 0;
+        parent->RemoveChild(child);
+        AddChild(child);
+
+        auto bounds = child->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        child->SetBounds(bounds, false);
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndOverlayName + " is not found or incorrect type");
     }
 
-    parent->AddChild(this);
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndLowHpLampName), ImageWnd))
+    {
+        m_wndLowHpLamp = (TwinklingLampWnd*)M3D_KERNEL->New("TwinklingLampWnd");
+        if (m_wndLowHpLamp)
+        {
+            if (!m_wndLowHpLamp->CreateFromPattern(child, true))
+            {
+                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndLowHpLampName + " from pattern class");
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO(
+                "Make control error: cannot create " + m_aif.m_wndLowHpLampName +
+                " - cannot find rtti class TwinklingLampWnd");
+        }
+    }
+    else
+    {
+        M3D_LOG_INFO("Make control error: control " + m_aif.m_wndLowHpLampName + " is not found or incorrect type");
+    }
+
+    if (m_wndLowHpLamp)
+    {
+        parent->RemoveChild(m_wndLowHpLamp);
+        AddChild(m_wndLowHpLamp);
+
+        auto bounds = m_wndLowHpLamp->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndLowHpLamp->SetBounds(bounds, false);
+    }
+
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndProgressBarName), ProgressBarWnd))
+    {
+        m_wndProgressBar = child;
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndProgressBarName + " is not found or incorrect type");
+    }
+
+    if (m_wndProgressBar)
+    {
+        parent->RemoveChild(m_wndProgressBar);
+        AddChild(m_wndProgressBar);
+
+        auto bounds = m_wndProgressBar->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndProgressBar->SetBounds(bounds, false);
+    }
+
+    if (auto child = RT_DYNCAST(parent->GetChildByName(m_aif.m_wndValueName), Wnd))
+    {
+        m_wndValue = (ElectronicDigitalWnd*)M3D_KERNEL->New("ElectronicDigitalWnd");
+        if (m_wndValue)
+        {
+            if (!m_wndValue->CreateFromPattern(child, true))
+            {
+                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndValueName + " from pattern class");
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO(
+                "Make control error: cannot create " + m_aif.m_wndValueName +
+                " - cannot find rtti class ElectronicDigitalWnd");
+        }
+    }
+    else
+    {
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_wndValueName + " is not found or incorrect type");
+    }
+
+    if (m_wndValue)
+    {
+        parent->RemoveChild(m_wndValue);
+        AddChild(m_wndValue);
+
+        auto bounds = m_wndValue->GetBounds();
+        auto const parentBounds = GetBounds();
+        bounds.x0 -= parentBounds.x0;
+        bounds.y0 -= parentBounds.y0;
+        m_wndValue->SetBounds(bounds, false);
+
+        m_wndValue->SetDigitalSize(ElectronicDigitalWnd::DIGITAL_SIZE_LARGE);
+    }
+
+    // The pattern is destroyed outright (its deleting destructor, not a reference release); its
+    // destructor detaches it from the parent.
     if (deleteSrc)
     {
-        parent->RemoveChild(patternWnd);
-        // TODO: check this obj delete
-        patternWnd->DecRef();
+        delete patternWnd;
     }
+    parent->AddChild(this);
 
+    m_strHealth = M3D_APP->GetStringByStringId0(m_aif.m_strHealthId);
+    FullUpdate(true);
+
+    // NOTE: as in FuelIndicatorInMainInterfaceWnd, the original's "was inited with errors" branch
+    // tests a stale argument slot and is dead.
     m_gameDataFlags |= 1u;
     return 1;
 }
@@ -94,39 +226,60 @@ m3d::Class* HealthIndicatorInMainInterfaceWnd::GetBaseClass()
 
 HealthIndicatorInMainInterfaceWnd::~HealthIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x525A50 - m_strHealth and the Wnd base (which owns/destroys the
+    // child m_wndLowHpLamp/m_wndProgressBar/m_wndValue windows) clean up
+    // automatically.
 }
 
-void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int)
+void HealthIndicatorInMainInterfaceWnd::SetVehicleId(int id)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    m_vehicleId = id;
+    FullUpdate(true);
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float, float)
+void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float curHp, float maxHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x526900
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        // The shipped build converts with fistp, i.e. rounds to nearest (ties to even), as do the other
+        // conversions in this file.
+        CStr text = m_strHealth + ": " + CStr(static_cast<int>(lrintf(curHp))) + "/" + CStr(static_cast<int>(lrintf(maxHp)));
+        m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
+        m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
+    }
 }
 
 ai::Vehicle const* HealthIndicatorInMainInterfaceWnd::GetVehicle() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_DYNCAST(ai::theObjects->GetEntityByObjId(m_vehicleId), ai::Vehicle const);
 }
 
 int HealthIndicatorInMainInterfaceWnd::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x526600
+    m_vehicleId = -1;
+    FullUpdate(true);
+    return 1;
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float, float)
+void HealthIndicatorInMainInterfaceWnd::UpdateLowHpLamp(float curHp, float maxHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5267E0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndLowHpLamp->SetValue(curHp, maxHp);
+    }
 }
 
-int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int)
+int HealthIndicatorInMainInterfaceWnd::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
+    // RVA 0x526620
+    if (dataType == 89 && m_vehicleId != -1)
+    {
+        FullUpdate(false);
+    }
+    return 1;
 }
 
 HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
@@ -140,32 +293,85 @@ HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd()
     m_prevMaxVal = 0.0;
 }
 
-HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&)
+HealthIndicatorInMainInterfaceWnd::HealthIndicatorInMainInterfaceWnd(HealthIndicatorInMainInterfaceWnd const&) :
+    HealthIndicatorInMainInterfaceWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped copy ctor (RVA 0x525A20) default-constructs the base
+    // and resets m_strHealth to empty, but leaves m_type/m_wndLowHpLamp/
+    // m_wndProgressBar/m_wndValue/m_vehicleId/m_prevCurVal/m_prevMaxVal
+    // uninitialized; delegating to the default ctor here avoids reading
+    // uninitialized pointers/ints while still copying nothing from the source.
 }
 
-void HealthIndicatorInMainInterfaceWnd::GetHp(float&, float&) const
+void HealthIndicatorInMainInterfaceWnd::GetHp(float& curHp, float& maxHp) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5268B0
+    curHp = 0.0f;
+    maxHp = 0.0f;
+    if (ai::Vehicle const* vehicle = GetVehicle())
+    {
+        curHp = vehicle->Health().value().get();
+        maxHp = vehicle->Health().maxValue().get();
+    }
 }
 
 void HealthIndicatorInMainInterfaceWnd::OnNewFrame()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x526650
+    if (m_vehicleId != -1)
+    {
+        FullUpdate(false);
+    }
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float, float)
+void HealthIndicatorInMainInterfaceWnd::UpdateProgressBar(float curHp, float maxHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5267B0
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndProgressBar->SetMaxValue(maxHp);
+        m_wndProgressBar->SetCurValue(curHp);
+    }
 }
 
-void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float)
+void HealthIndicatorInMainInterfaceWnd::UpdateValueWnd(float curHp)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x526810
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndValue->ShowNumber(static_cast<int>(lrintf(curHp)), false, 4u, false);
+    }
 }
 
-void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool)
+void HealthIndicatorInMainInterfaceWnd::FullUpdate(bool bForce)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    float curHp = 0.0;
+    float maxHp = 0.0;
+
+    ai::Vehicle const* vehicle = GetVehicle();
+    if (vehicle)
+    {
+        curHp = vehicle->Health().value().get();
+        maxHp = vehicle->Health().maxValue().get();
+    }
+    if (bForce || curHp != m_prevCurVal || maxHp != m_prevMaxVal)
+    {
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndProgressBar->SetMaxValue(maxHp);
+            m_wndProgressBar->SetCurValue(curHp);
+        }
+        if ((m_gameDataFlags & 1) != 0)
+        {
+            m_wndValue->ShowNumber(static_cast<int>(lrintf(curHp)), false, 4u, false);
+            if ((m_gameDataFlags & 1) != 0)
+            {
+                m_wndLowHpLamp->SetValue(curHp, maxHp);
+            }
+        }
+        if (m_type == TYPE_IN_CHARACTERISTIC_WND)
+            UpdateTooltip(curHp, maxHp);
+    }
+    m_prevCurVal = curHp;
+    m_prevMaxVal = maxHp;
 }

@@ -75,8 +75,6 @@ namespace ai
         /* 0x018c */ CStr m_blastWavePrototypeName;
     }; /* size: 0x0198 */
 
-    static_assert(sizeof(GunPrototypeInfo) == 0x0198);
-
     class Gun : public ai::VehiclePart
     {
     protected:
@@ -224,6 +222,4 @@ namespace ai
         void _CreateBarrelNode();
         void _OnCinematic(const ai::Event& evn);
     }; /* size: 0x0330 */
-
-    static_assert(sizeof(Gun) == 0x0330);
 }

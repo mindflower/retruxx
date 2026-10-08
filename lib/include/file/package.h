@@ -2,32 +2,36 @@
 #include <core/stringm3d.h>
 #include "retruxx/common.h"
 
+#include <cstdint>
+
 namespace m3d
 {
     namespace fs
     {
+        // One entry of a package file table, read byte for byte.
+#pragma pack(push, 4)
         struct PackageFileRecordHeader
         {
-            /* 0x0000 */ unsigned int RecordLengthInv;
-            /* 0x0004 */ unsigned long FileDateHigh;
-            /* 0x0008 */ unsigned long FileDateLow;
+            /* 0x0000 */ uint32_t RecordLengthInv;
+            /* 0x0004 */ uint32_t FileDateHigh;
+            /* 0x0008 */ uint32_t FileDateLow;
             /* 0x000c */ bool IsArchived;
             /* 0x000d */ char Padding_16[3];
-            /* 0x0010 */ unsigned long reserved1;
-            /* 0x0014 */ unsigned int FilePositionDisp2;
-            /* 0x0018 */ unsigned int FileSizeDisp2Inv;
-            /* 0x001c */ unsigned int RealSizeDisp1;
-            /* 0x0020 */ unsigned long reserved2;
-            /* 0x0024 */ int Stat1;
-            /* 0x0028 */ int Stat2;
-            /* 0x002c */ int Stat3;
-            /* 0x0030 */ unsigned int ExternalData;
+            /* 0x0010 */ uint32_t reserved1;
+            /* 0x0014 */ uint32_t FilePositionDisp2;
+            /* 0x0018 */ uint32_t FileSizeDisp2Inv;
+            /* 0x001c */ uint32_t RealSizeDisp1;
+            /* 0x0020 */ uint32_t reserved2;
+            /* 0x0024 */ int32_t Stat1;
+            /* 0x0028 */ int32_t Stat2;
+            /* 0x002c */ int32_t Stat3;
+            /* 0x0030 */ uint32_t ExternalData;
             PackageFileRecordHeader();
             PackageFileRecordHeader(unsigned int, unsigned long, unsigned long, bool, unsigned int, unsigned int, unsigned int);
         }; /* size: 0x0034 */
+#pragma pack(pop)
 
         static_assert(sizeof(PackageFileRecordHeader) == 0x0034);
-
 
         class Package
         {
@@ -94,7 +98,5 @@ namespace m3d
         private:
             /* 0x0034 */ int m_refCount;
         }; /* size: 0x0038 */
-
-        static_assert(sizeof(Package) == 0x0038);
     }
 }

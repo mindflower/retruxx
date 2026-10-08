@@ -1,39 +1,35 @@
 #pragma once
 #include "lswnd.h"
 
-class LoadWnd :  public LSWnd
+class LoadWnd : public LSWnd
 {
 public:
-    class LAuxInfo
+    struct LAuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_btnLoadName;
+        LAuxInfo(LoadWnd::LAuxInfo const&);
         LAuxInfo();
-
-    public:
-        CStr m_btnLoadName = "btnLoad";
-    };
-
-public:
-    virtual m3d::Object * Clone();
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    virtual ~LoadWnd();
+    }; /* size: 0x000c */
 
 protected:
-    virtual int GameDataUpdate(void *,int);
-    virtual int GameDataSetup();
-    virtual void OnEnter();
-    LoadWnd(LoadWnd const &);
-    LoadWnd();
-    virtual void OnSaveSelectionChange();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override /* 0x00 */;
+    virtual void OnSaveSelectionChange() override /* 0x130 */;
+    virtual void OnEnter() override /* 0x144 */;
     void OnLoad();
 
-public:
-    RT_CLASS_DECLARE(LoadWnd);
+    /* 0x02a0 */ m3d::ui::ButtonWnd* m_btnLoad;
+    /* 0x02a4 */ LoadWnd::LAuxInfo m_laif;
 
-private:
-    m3d::ui::ButtonWnd *m_btnLoad = nullptr;
-    LoadWnd::LAuxInfo m_laif;
-};
+    LoadWnd();
+    LoadWnd(LoadWnd const& rhs);
+
+public:
+    virtual ~LoadWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    RT_CLASS_DECLARE(LoadWnd);
+}; /* size: 0x02b0 */

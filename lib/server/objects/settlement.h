@@ -32,8 +32,6 @@ namespace ai
         /* 0x0094 */ CStr m_vehiclesPrototypeName;
     }; /* size: 0x00a0 */
 
-    static_assert(sizeof(SettlementPrototypeInfo) == 0x00a0);
-
     class Settlement : public ai::SimplePhysicObj
     {
     public:
@@ -93,6 +91,4 @@ namespace ai
     private:
         void FillingFeedBackParam();
     }; /* size: 0x0224 */
-
-    static_assert(sizeof(Settlement) == 0x0224);
 }

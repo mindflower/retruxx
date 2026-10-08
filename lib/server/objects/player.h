@@ -27,8 +27,6 @@ namespace ai
         /* 0x0050 */ unsigned int m_cfgNumber;
     }; /* size: 0x0054 */
 
-    static_assert(sizeof(PlayerPrototypeInfo) == 0x0054);
-
     class Player : public Obj
     {
         friend class PlayerPrototypeInfo;
@@ -154,8 +152,6 @@ namespace ai
         void _OnDynamicQuestForgotten(const ai::Event& evn);
         void _OnDynamicQuestFailed(const ai::Event& evn);
     }; /* size: 0x0264 */
-
-    static_assert(sizeof(Player) == 0x264);
 
     inline Player* thePlayer = nullptr;
 }

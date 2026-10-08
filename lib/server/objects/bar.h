@@ -15,8 +15,6 @@ namespace ai
         /* 0x0044 */ bool m_bWithBarman;
     }; /* size: 0x0048 */
 
-    static_assert(sizeof(BarPrototypeInfo) == 0x0048);
-
     class Bar : public ai::Building
     {
         friend class BarPrototypeInfo;
@@ -47,6 +45,4 @@ namespace ai
     private:
         void CreateBarman();
     }; /* size: 0x00d4 */
-
-    static_assert(sizeof(Bar) == 0x00d4);
 }

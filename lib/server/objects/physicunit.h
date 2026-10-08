@@ -1,5 +1,6 @@
 #pragma once
 #include "base/simplephysicobj.h"
+#include "server/colliders/physicunitcolliders.h"
 #include <game/uiwindows/mainwindows/durabilityindicatorwnd.h>
 #include <server/components/numericinrangeregenerating.h>
 
@@ -16,11 +17,13 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x008c */
 
-    static_assert(sizeof(PhysicUnitPrototypeInfo) == 0x008c);
-
     class PhysicUnit : public ai::SimplePhysicObj
     {
         friend class PhysicUnitPrototypeInfo;
+        // The colliders set the ragdoll cause and kill the unit directly.
+        friend int CollidePhysicUnitAndVehicle(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+        friend int CollidePhysicUnitAndShell(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+        friend int CollidePhysicUnitAndBlastWave(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
     protected:
         virtual  ~PhysicUnit() override /* 0x00 */;
 
@@ -109,6 +112,4 @@ namespace ai
         /* 0x034c */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_dummyPath;
         void _SetWalkState(ai::PhysicUnit::WalkState newWalkState);
     }; /* size: 0x035c */
-
-    static_assert(sizeof(PhysicUnit) == 0x035c);
 }

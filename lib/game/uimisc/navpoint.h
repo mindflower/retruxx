@@ -10,85 +10,102 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 class NavPoint
 {
+    friend class NavPointManager;
+
 public:
     enum NavPointType
     {
-        NAVPOINT_TYPE_MAIN_QUEST = 0x0,
-        NAVPOINT_TYPE_USER_QUEST = 0x1,
-        NAVPOINT_TYPE_USER_LOCATION = 0x2,
-        NAVPOINT_TYPE_NUM_NAVPOINT_TYPES = 0x3,
-        NAVPOINT_TYPE_INVALID = 0x3,
+        NAVPOINT_TYPE_MAIN_QUEST = 0,
+        NAVPOINT_TYPE_USER_QUEST = 1,
+        NAVPOINT_TYPE_USER_LOCATION = 2,
+        NAVPOINT_TYPE_NUM_NAVPOINT_TYPES = 3,
+        NAVPOINT_TYPE_INVALID = 3,
     };
 
     enum ObjectType
     {
-        OBJECT_TYPE_STATIC_QUEST = 0x0,
-        OBJECT_TYPE_DYNAMIC_QUEST = 0x1,
-        OBJECT_TYPE_NUM_OBJECT_TYPES = 0x2,
-        OBJECT_TYPE_INVALID = 0x2,
+        OBJECT_TYPE_STATIC_QUEST = 0,
+        OBJECT_TYPE_DYNAMIC_QUEST = 1,
+        OBJECT_TYPE_NUM_OBJECT_TYPES = 2,
+        OBJECT_TYPE_INVALID = 2,
     };
 
 public:
+    NavPoint::NavPointType GetNavPointType() const;
+    NavPoint::ObjectType GetObjectType() const;
+    int GetObjectId() const;
+    int GetId() const;
     CStr const& GetLevelName() const;
     CVector const* GetCoordinate() const;
-    ObjectType GetObjectType() const;
-    NavPointType GetNavPointType() const;
     bool IsValid() const;
-    int SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-    int GetId() const;
-    int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    int GetObjectId() const;
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+    int SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
 
 protected:
+    NavPoint(NavPoint const&);
     NavPoint();
     ~NavPoint();
     void Invalidate();
 
-private:
-    NavPointType m_navPointType;
-    ObjectType m_objectType;
-    int m_objectId;
-    int m_id;
-    CStr m_levelName;
-    CVector m_coordinate;
-};
+    /* 0x0000 */ NavPoint::NavPointType m_navPointType;
+    /* 0x0004 */ NavPoint::ObjectType m_objectType;
+    /* 0x0008 */ int m_objectId;
+    /* 0x000c */ int m_id;
+    /* 0x0010 */ CStr m_levelName;
+    /* 0x001c */ CVector m_coordinate;
+}; /* size: 0x0028 */
 
 class NavPointManager
 {
+    using NavPointIdVector = std::vector<int, std::allocator<int>>;
+
 public:
-    std::vector<int> GetNavPointsByType(CStr const&, NavPoint::NavPointType) const;
-    int Init();
-    int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    int GetMaxNavPointsNumByType(NavPoint::NavPointType) const;
-    NavPoint const* GetNavPointByObjectId(CStr const&, int, NavPoint::ObjectType) const;
-    int RemoveNavPointById(int);
-    void Clear();
-    bool CanNavPointOfTypeBeAdded(CStr const&, NavPoint::NavPointType, bool) const;
+    NavPointManager(NavPointManager const&);
     NavPointManager();
-    NavPoint const* GetNavPointById(int) const;
-    std::vector<int> GetAllNavPointsByQuestId(int) const;
-    int AddNavPointUserLocation(CStr const&, CVector const&);
-    int AddNavPointObjectDependend(CStr const&, NavPoint::NavPointType, NavPoint::ObjectType, int, bool);
-    std::vector<int> GetNavPointsForLevel(CStr const&) const;
-    int SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-    int GameDataUpdate(void*, int);
     ~NavPointManager();
-    bool CanNavPointBeAdded(CStr const&, int, NavPoint::ObjectType, NavPoint::NavPointType, bool) const;
+    std::vector<int, std::allocator<int>> GetNavPointsForLevel(CStr const& levelName) const;
+    std::vector<int, std::allocator<int>> GetNavPointsByType(CStr const& levelName, NavPoint::NavPointType npType)
+        const;
+    NavPoint const* GetNavPointById(int id) const;
+    NavPoint const* GetNavPointByObjectId(CStr const& levelName, int objectId, NavPoint::ObjectType objectType) const;
+    std::vector<int, std::allocator<int>> GetAllNavPointsByQuestId(int questId) const;
+    int AddNavPointObjectDependend(
+        CStr const& levelName,
+        NavPoint::NavPointType npType,
+        NavPoint::ObjectType objectType,
+        int objectId,
+        bool bByUser);
+    int AddNavPointUserLocation(CStr const& levelName, CVector const& coordinate);
+    int RemoveNavPointById(int id);
+    int GetMaxNavPointsNumByType(NavPoint::NavPointType npType) const;
+    bool CanNavPointBeAdded(
+        CStr const& levelName,
+        int objectId,
+        NavPoint::ObjectType objectType,
+        NavPoint::NavPointType npType,
+        bool bByUser) const;
+    bool CanNavPointOfTypeBeAdded(CStr const& levelName, NavPoint::NavPointType npType, bool bByUser) const;
+    int Init();
+    void Clear();
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+    int SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+    int GameDataUpdate(void* data, int dataType);
+
+    using NavPointMap = std::map<int, NavPoint*, std::less<int>, std::allocator<std::pair<int const, NavPoint*>>>;
+    using NavPointPair = std::pair<int, NavPoint*>;
 
 private:
-    int UpdateOnQuestStateChanged(void*);
+    int AddNavPoint(NavPoint* np);
+    int UpdateOnQuestTaken(void* data);
+    int UpdateOnQuestStateChanged(void* data);
+    int UpdateOnDynamicQuestStateChanged(void* data);
+    int MakeNavPointOnFirstFitStaticQuest(CStr const& levelName, bool bIsMainQuest);
     int MakeNavPointOnFirstFitDynamicQuest();
-    int UpdateOnQuestTaken(void*);
-    int UpdateOnDynamicQuestStateChanged(void*);
-    int MakeNavPointOnFirstFitStaticQuest(CStr const&, bool);
-    int AddNavPoint(NavPoint*);
-
-private:
-    std::map<int, NavPoint*> m_navPoints;
-    int m_nextNavPointId = 0;
-};
+    /* 0x0000 */ std::map<int, NavPoint*, std::less<int>, std::allocator<std::pair<int const, NavPoint*>>> m_navPoints;
+    /* 0x000c */ int m_nextNavPointId = 0;
+}; /* size: 0x0010 */

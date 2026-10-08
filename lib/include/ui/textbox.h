@@ -18,7 +18,7 @@ namespace m3d
             int SetVScrollToPos(unsigned int);
             virtual Class* GetClass() const;
             virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
-            int Create(BoundsBase<float> const&, unsigned int, int);
+            virtual int Create(BoundsBase<float> const&, unsigned int, unsigned int) override;
             virtual ~TextBoxWnd();
 
         protected:

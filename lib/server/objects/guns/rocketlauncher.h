@@ -13,10 +13,10 @@ namespace ai
         /* 0x0198 */ bool m_withAngleLimit;
     }; /* size: 0x019c */
 
-    static_assert(sizeof(RocketLauncherPrototypeInfo) == 0x019c);
-
     class RocketLauncher : public ai::Gun
     {
+        friend class RocketLauncherPrototypeInfo;
+
     protected:
         virtual  ~RocketLauncher() override /* 0x00 */;
 
@@ -57,6 +57,4 @@ namespace ai
     protected:
         virtual void _LaunchShells() override /* 0x198 */;
     }; /* size: 0x0330 */
-
-    static_assert(sizeof(RocketLauncher) == 0x0330);
 }

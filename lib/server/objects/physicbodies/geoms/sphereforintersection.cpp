@@ -32,7 +32,8 @@ namespace ai
 
     ai::SphereForIntersection::SpherePurpose SphereForIntersection::GetPurpose() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Declared in the PDB but never emitted in the shipped build.
+        return m_purpose;
     }
 
     void SphereForIntersection::SetTargetClasses(

@@ -23,6 +23,8 @@ class GroundWnd : public ChildPanel
 public:
     class AuxInfo
     {
+        friend class GroundWnd;
+
     public:
         AuxInfo();
 

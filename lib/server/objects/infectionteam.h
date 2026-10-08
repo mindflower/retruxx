@@ -29,6 +29,7 @@ namespace ai
 
     class InfectionTeam : public ai::Team
     {
+        friend class InfectionTeamPrototypeInfo;
     protected:
         virtual  ~InfectionTeam() override /* 0x00 */;
 

@@ -56,7 +56,9 @@ typedef dReal *dRealMutablePtr;
 // and the optimal order is somewhat problem dependent. 
 // @@@ try the leaf->root ordering.
 
-//#define REORDER_CONSTRAINTS 1
+// The shipped build sorts the rows by convergence (SOR_LCP at RVA 0x901D20 calls qsort with
+// compare_index_error) and never reorders them randomly (dRandInt has no callers).
+#define REORDER_CONSTRAINTS 1
 
 
 // for the SOR method:
@@ -64,7 +66,7 @@ typedef dReal *dRealMutablePtr;
 // during the solution. depending on the situation, this can help a lot
 // or hardly at all, but it doesn't seem to hurt.
 
-#define RANDOMLY_REORDER_CONSTRAINTS 1
+//#define RANDOMLY_REORDER_CONSTRAINTS 1
 
 //***************************************************************************
 // testing stuff
@@ -294,7 +296,7 @@ struct IndexError {
 
 #ifdef REORDER_CONSTRAINTS
 
-static int compare_index_error (const void *a, const void *b)
+static int __cdecl compare_index_error (const void *a, const void *b)
 {
 	const IndexError *i1 = (IndexError*) a;
 	const IndexError *i2 = (IndexError*) b;

@@ -1,7 +1,5 @@
 #pragma once
-//TODO: windows.h
 #include "filestream.h"
-#include <Windows.h>
 #include <core/stringm3d.h>
 
 namespace m3d

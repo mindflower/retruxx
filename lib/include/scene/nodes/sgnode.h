@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <math/matrix.h>
 #include <math/point2d.h>
 #include <math/quaternion.h>
@@ -8,12 +9,28 @@
 #include <math/aabb.h>
 
 class Obb;
+class ComplexModelWnd;
+
+namespace ai
+{
+    class DummyObject;
+    class RopeObj;
+    class BossArm;
+    class BossMetalArm;
+    class CompositeObj;
+    class JointedObj;
+}
 
 namespace m3d
 {
     class GraphItemsForSgNode;
     class DataServer;
     class SceneGraph;
+
+    namespace ui
+    {
+        class SgNodeArrayWnd;
+    }
 
     enum TransparencyType
     {
@@ -40,6 +57,26 @@ namespace m3d
     class SgNode : public m3d::Object
     {
         friend class SceneGraph;
+        // SgNodeArrayWnd renders a set of nodes (and their children) into a
+        // texture, and needs each node's current world transform to place the
+        // children relative to the node it was handed. ComplexModelWnd, which
+        // builds that set out of a vehicle or gun, reads the same transform plus
+        // each node's own bounding box to frame the model.
+        friend class m3d::ui::SgNodeArrayWnd;
+        friend class ::ComplexModelWnd;
+        // DummyObject::SetSgNodeAndCollision sizes a box collision from the node's own bounds.
+        friend class ::ai::DummyObject;
+        // ai::CompositeObj drives its node's box from the pieces the wreck broke into.
+        friend class ::ai::CompositeObj;
+        friend class ::ai::JointedObj;
+        // RopeObj matches its tie positions against nodes' world origins and load points.
+        friend class ::ai::RopeObj;
+        friend class ::ai::BossArm;
+        friend class ::ai::BossMetalArm;
+        // A loadpoint node thinks again when its parent does.
+        friend class SgLoadpointNode;
+        // The shadow volumes are placed with each caster's world transform.
+        friend class AnimatedModelsServer;
 
     protected:
         SgNode();
@@ -175,5 +212,25 @@ namespace m3d
         void InternalInit();
     }; /* size: 0x01d4 */
 
-    static_assert(sizeof(SgNode) == 0x01d4);
+    // Calls f(node) for every node below root (not root itself), as the engine's inlined subtree walks do: a stack
+    // of nodes whose children are still to be visited, each popped node's children visited in sibling order.
+    template<class F>
+    void ForEachDescendant(SgNode* root, F&& f)
+    {
+        std::vector<SgNode*> stack{root};
+        while (!stack.empty())
+        {
+            SgNode* const node = stack.back();
+            stack.pop_back();
+            for (auto* child = static_cast<SgNode*>(node->GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
+            {
+                f(child);
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+    }
 }

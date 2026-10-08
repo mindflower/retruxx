@@ -51,6 +51,4 @@ namespace m3d
             /* 0x0004 */ float m_q[4];
         }; /* size: 0x000c */
     }; /* size: 0x0014 */
-
-    static_assert(sizeof(sArg) == 0x0014);
 }

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <script/funcarg.h>
 #include <math/vector.h>
+#include <math/quaternion.h>
 #include <stdexcept>
 
 namespace m3d
@@ -15,7 +16,9 @@ namespace m3d
 
     Quaternion sArg::GetQ() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40C160
+        assert(m_type == ARGTYPE_QUATERNION);
+        return Quaternion(m_q[0], m_q[1], m_q[2], m_q[3]);
     }
 
     char const* sArg::GetS() const
@@ -51,7 +54,9 @@ namespace m3d
 
     int sArg::GetI() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40C410
+        assert(m_type == ARGTYPE_INT);
+        return m_i;
     }
 
     sArg::sArg()
@@ -60,12 +65,18 @@ namespace m3d
 
     CVector sArg::GetV() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40C630
+        assert(m_type == ARGTYPE_VECTOR);
+        return CVector(m_v[0], m_v[1], m_v[2]);
     }
 
-    void sArg::SetV(CVector const&)
+    void sArg::SetV(CVector const& v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40C5D0 - NOTE: a string held before is not freed.
+        m_type = ARGTYPE_VECTOR;
+        m_v[0] = v.x;
+        m_v[1] = v.y;
+        m_v[2] = v.z;
     }
 
     void sArg::SetS(char const* s)
@@ -85,9 +96,14 @@ namespace m3d
         }
     }
 
-    void sArg::SetQ(Quaternion const&)
+    void sArg::SetQ(Quaternion const& v)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x40C570 - NOTE: a string held before is not freed.
+        m_type = ARGTYPE_QUATERNION;
+        m_q[0] = v.x;
+        m_q[1] = v.y;
+        m_q[2] = v.z;
+        m_q[3] = v.w;
     }
 
     void sArg::SetF(float f)

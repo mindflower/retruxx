@@ -20,9 +20,9 @@ class VisibilityMap
 public:
     enum CellValue
     {
-        CELL_EMPTY = 0xFFFFFFFF,
-        CELL_SNAPPED = 0xFFFFFFFE,
-        CELL_INVALID = 0xFFFFFFFD,
+        CELL_EMPTY = 0,
+        CELL_MARKED = 1,
+        CELL_INVALID = 2,
     };
 
     class AuxInfo

@@ -1,6 +1,11 @@
 #include "motherpaneltabbutton.h"
 #include <core/log.h>
 #include <game/m3dgame.h>
+#include <game/uimisc/guihelper.h>
+#include <server/server.h>
+#include <server/objects/bar.h>
+#include <server/objects/building.h>
+#include <server/objects/town.h>
 
 RT_CLASS_EXPORTS_BEGIN(MotherPanelTabButton)
 RT_CLASS_EXPORTS_END;
@@ -53,7 +58,7 @@ bool MotherPanelTabButton::IsSelected() const
 
 m3d::Object* MotherPanelTabButton::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new MotherPanelTabButton(*this);
 }
 
 MotherPanelTabButton::Mode MotherPanelTabButton::GetMode() const
@@ -68,15 +73,16 @@ m3d::Class* MotherPanelTabButton::GetBaseClass()
 
 MotherPanelTabButton::~MotherPanelTabButton()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    ClearInfo();
+    // ~ButtonWnd runs via the compiler-chained base destructor.
 }
 
 int MotherPanelTabButton::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
 {
-    // TODO: check this
+    // RVA 0x464B00
     if (!patternWnd || !patternWnd->IsKindOf(RT_CLASS_LOCAL(ButtonWnd)))
     {
-        M3D_LOG_INFO("OptionTabButton::CreateFromPattern error - null patternWnd or class does not match");
+        M3D_LOG_INFO("MotherPanelTabButton::CreateFromPattern error - null patternWnd or class does not match");
         return 0;
     }
 
@@ -119,15 +125,15 @@ int MotherPanelTabButton::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool delet
             buttonWnd->GetImageRegular(),
             buttonWnd->GetImageDown(),
             buttonWnd->GetImageIn(),
-            buttonWnd->GetImageDisabled());
+            {});  // NOTE: the original does not copy the disabled image.
     }
     else
     {
         SetRegular();
     }
 
-    auto parent = patternWnd->GetParent();
-    if (parent)
+    auto* parent = patternWnd->GetParent();
+    if (parent && parent->IsKindOf(RT_CLASS_LOCAL(Wnd)))
     {
         parent->AddChild(this);
         parent->MoveChildToFirstPosition(this);
@@ -219,9 +225,10 @@ CStr MotherPanelTabButton::Mode2Str(Mode mode)
 
 }
 
-MotherPanelTabButton::MotherPanelTabButton(MotherPanelTabButton const&)
+MotherPanelTabButton::MotherPanelTabButton(MotherPanelTabButton const&) : MotherPanelTabButton()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // The shipped copy constructor only rebuilds the ButtonWnd base + vtable and
+    // leaves the tab fields uninitialised; delegating to the default ctor is safer.
 }
 
 MotherPanelTabButton::MotherPanelTabButton()
@@ -235,8 +242,17 @@ MotherPanelTabButton::MotherPanelTabButton()
 
 void MotherPanelTabButton::UpdateTooltip()
 {
-    // TODO: implement MotherPanelTabButton::UpdateTooltip
-    // RETRUXX_NOT_IMPLEMENTED;
+    CStr tooltip;
+    const ai::Building* building = GetBuilding(m_mode);
+    if (building)
+    {
+        tooltip = ai::pServer->GetFullNameByObjID(building->GetId());
+    }
+    else
+    {
+        GetStation()->GetStringByStringId(tooltip, CStr("TabBtn_") + MotherPanel::Tab2Str(m_tabId));
+    }
+    SetProperty(PROP_WND_TOOLTIP, &tooltip);
 }
 
 bool MotherPanelTabButton::CanApplyMode(Mode mode) const
@@ -282,73 +298,56 @@ bool MotherPanelTabButton::HasMode(Mode mode) const
 
 void MotherPanelTabButton::InitInfo()
 {
-    // TODO: generated code MotherPanelTabButton::InitInfo
-    // Clear existing info
+    // RVA 0x465040
     ClearInfo();
-
-    // Check if tab ID is valid
     if (m_tabId == MotherPanel::TAB_NUM_TABS)
     {
         return;
     }
 
-    // Initialize info for each mode
-    for (int mode = MODE_IN_FIELD; mode < MODE_NUM_MODES; ++mode)
+    // One texture pair per mode the tab has (HasMode is inlined in the original), named
+    // "TabBtn_<tab>_<mode>"; icon mode 0 is the selected image, 1 the unselected one.
+    for (int i = MODE_IN_FIELD; i < MODE_NUM_MODES; ++i)
     {
-        Mode currentMode = static_cast<Mode>(mode);
-
-        // Check if this tab should have info for this mode
-        bool shouldInit = false;
-
-        switch (m_tabId)
+        auto const mode = static_cast<Mode>(i);
+        if (!HasMode(mode))
         {
-        case MotherPanel::TAB_QUESTLOG:
-        case MotherPanel::TAB_MAP:
-        case MotherPanel::TAB_JOURNAL:
-            // These tabs only have info in field mode
-            shouldInit = (currentMode == MODE_IN_FIELD);
-            break;
-
-        case MotherPanel::TAB_INVENTORY_VS_SHOP:
-        case MotherPanel::TAB_CHARACTERISTIC_VS_WORKSHOP:
-            // These tabs have info in both modes
-            shouldInit = true;
-            break;
-
-        case MotherPanel::TAB_BAR:
-        case MotherPanel::TAB_ADDITIONAL_BUILDING:
-            // These tabs only have info in town mode
-            shouldInit = (currentMode == MODE_IN_TOWN);
-            break;
-
-        default:
-            // Other tabs don't have per-mode info
-            break;
+            continue;
         }
 
-        if (shouldInit)
-        {
-            // Build the texture name
-            CStr name = "TabBtn_";
-            name += MotherPanel::Tab2Str(m_tabId);
-            name += "_";
-            name += Mode2Str(currentMode);
-
-            // Get textures (the original code seems to pass 0/1 as flags)
-            auto selectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(name, 0);
-            auto unselectedTex = M3D_APP->m_pInterfaceManager->GetIcoByName(name, 1);
-
-            // Create and store per-mode info
-            m_info[mode] = new PerModeInfo(selectedTex, unselectedTex);
-        }
-        else
-        {
-            m_info[mode] = nullptr;
-        }
+        CStr const name = CStr("TabBtn_") + MotherPanel::Tab2Str(m_tabId) + CStr("_") + Mode2Str(mode);
+        auto const selTex = M3D_APP->m_pInterfaceManager->GetIcoByName(name, 0);
+        auto const unselTex = M3D_APP->m_pInterfaceManager->GetIcoByName(name, 1);
+        m_info[i] = new PerModeInfo(selTex, unselTex);
     }
 }
 
-ai::Building const* MotherPanelTabButton::GetBuilding(Mode) const
+ai::Building const* MotherPanelTabButton::GetBuilding(Mode mode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (mode != MODE_IN_TOWN)
+    {
+        return nullptr;
+    }
+    if (m_tabId <= MotherPanel::TAB_JOURNAL)
+    {
+        return nullptr;
+    }
+    const ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    if (!town)
+    {
+        return nullptr;
+    }
+    switch (m_tabId)
+    {
+    case MotherPanel::TAB_INVENTORY_VS_SHOP:
+        return help::GetShopForTown(town);
+    case MotherPanel::TAB_CHARACTERISTIC_VS_WORKSHOP:
+        return help::GetWorkshopForTown(town);
+    case MotherPanel::TAB_BAR:
+        return help::GetBarWithBarmanForTown(town);
+    case MotherPanel::TAB_ADDITIONAL_BUILDING:
+        return help::GetBarWithoutBarmanForTown(town);
+    default:
+        return nullptr;
+    }
 }

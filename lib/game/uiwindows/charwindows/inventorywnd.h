@@ -6,68 +6,67 @@
 class BasketWnd;
 class CabinWnd;
 
-class InventoryWnd :  public ChildPanel
+class InventoryWnd : public ChildPanel
 {
 public:
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    private:
-        CStr m_wndCabinName;
-        CStr m_wndBasketName;
-    };
-
     enum VehicleType
     {
-        VEHICLETYPE_PLAYER = 0x0,
-        VEHICLETYPE_WORKSHOP = 0x1,
-        VEHICLETYPE_INVALID = 0x2,
-    };
-
-    class ChildSaveInfo
-    {
-    public:
-        ChildSaveInfo();
-    public:
-        bool m_bBasketOnShowAnimationEnabled;
-        bool m_bBasketOnHideAnimationEnabled;
-        bool m_bCabinOnShowAnimationEnabled;
-        bool m_bCabinOnHideAnimationEnabled;
-        BoundsBase<float> m_basketB;
-        BoundsBase<float> m_cabinB;
+        VEHICLETYPE_PLAYER = 0,
+        VEHICLETYPE_WORKSHOP = 1,
+        VEHICLETYPE_INVALID = 2,
     };
 
 public:
-    virtual m3d::Class * GetClass() const ;
-    virtual ~InventoryWnd();
-    virtual void SetVehicleId(int);
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    void SetTradeVehicleId(int,ZnayuKakProdatWnd::TradeType);
-    virtual m3d::Object * Clone();
+    virtual void SetVehicleId(int vehicleId) override /* 0x11c */;
+    void SetTradeVehicleId(int vehicleId, ZnayuKakProdatWnd::TradeType tradeType);
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_wndCabinName;
+        /* 0x000c */ CStr m_wndBasketName;
+
+        AuxInfo(InventoryWnd::AuxInfo const&);
+        AuxInfo();
+    }; /* size: 0x0018 */
+
+    struct ChildSaveInfo
+    {
+        /* 0x0000 */ bool m_bBasketOnShowAnimationEnabled;
+        /* 0x0001 */ bool m_bBasketOnHideAnimationEnabled;
+        /* 0x0002 */ bool m_bCabinOnShowAnimationEnabled;
+        /* 0x0003 */ bool m_bCabinOnHideAnimationEnabled;
+        /* 0x0004 */ BoundsBase<float> m_basketB;
+        /* 0x0014 */ BoundsBase<float> m_cabinB;
+
+        ChildSaveInfo(InventoryWnd::ChildSaveInfo const&);
+        ChildSaveInfo();
+    }; /* size: 0x0024 */
 
 protected:
-    InventoryWnd();
-    InventoryWnd(InventoryWnd const &);
-    void RemoveCBWindows();
-    virtual int GameDataUpdate(void *,int);
-    VehicleType GetVehicleTypeByGuiId(int) const ;
-    virtual int GameDataSetup();
-    virtual int OnBeforeAddToWndStation();
-    virtual int OnAfterRemoveFromWndStation();
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
     void OnPlayerVehicleChanged();
+    InventoryWnd::VehicleType GetVehicleTypeByGuiId(int guiId) const;
     void AddCBWindows();
+    void RemoveCBWindows();
+
+    /* 0x0224 */ InventoryWnd::AuxInfo m_aif;
+    /* 0x023c */ ref_ptr<CabinWnd> m_wndCabin;
+    /* 0x0240 */ ref_ptr<BasketWnd> m_wndBasket;
+    /* 0x0244 */ InventoryWnd::VehicleType m_vehicleType;
+    /* 0x0248 */ InventoryWnd::ChildSaveInfo m_childSaveInfo;
+    /* 0x026c */ ZnayuKakProdatWnd::TradeType m_tradeType;
+
+    InventoryWnd();
+    InventoryWnd(InventoryWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(InventoryWnd);
-
-private:
-    InventoryWnd::AuxInfo m_aif;
-    ref_ptr<CabinWnd> m_wndCabin;
-    ref_ptr<BasketWnd> m_wndBasket;
-    InventoryWnd::VehicleType m_vehicleType;
-    InventoryWnd::ChildSaveInfo m_childSaveInfo;
-    ZnayuKakProdatWnd::TradeType m_tradeType;
-};
+    virtual ~InventoryWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classInventoryWnd;
+}; /* size: 0x0270 */

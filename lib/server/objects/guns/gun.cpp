@@ -16,6 +16,13 @@
 #include <server/objects/base/prototypemanager.h>
 #include <server/objects/player.h>
 #include <server/processmanager.h>
+#include <server/server.h>
+#include <server/statistic/statisticmanager.h>
+#include <server/statistic/intstatistic.h>
+#include <server/statistic/favoritestringstatistic.h>
+#include <server/statistic/intintratiostatistic.h>
+#include <level.h>
+#include <world.h>
 
 extern "C"
 {
@@ -25,32 +32,44 @@ extern "C"
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInCurrentCharge)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    context->pushInt(gun->GetShellsInCurrentCharge());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetShellsInCurrentCharge)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    gun->SetShellsInCurrentCharge(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetShellsInPool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    context->pushInt(gun->GetShellsInPool());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetShellsInPool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    gun->SetShellsInPool(context->asInt(1));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, GetChargeState)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    context->pushInt(gun->GetChargeState());
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Gun, SetChargeState)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* gun = (ai::Gun*)context->asObject(0, "Gun");
+    gun->SetChargeState(context->asInt(1));
+    return 1;
 }
 
 namespace ai
@@ -101,33 +120,33 @@ namespace ai
             return res;
         }
 
-        bool PointIsReachable(CVector const& src, CVector const& dir, CVector const& dst, std::vector<int> const& exceptions)
+        // Casts the segment [src, src + dir] and reports whether nothing (other than the excepted
+        // objects) is hit closer to src than dst.
+        bool PointIsReachable(
+            CVector const& src,
+            CVector const& dir,
+            CVector const& dst,
+            std::vector<int> const& exceptions)
         {
-            // TODO: check this
+            // RVA 0x6E22A0 (ai::PointIsReachable in the original, not file-local)
             static scoped_ptr Ray = ai::Ray::CreateObject(nullptr, 1000.0, nullptr);
             Ray->SetPosition(src);
             Ray->SetDirection(dir.getNormalized());
             Ray->SetLength(dir.length());
 
-            bool res = true;
             ai::ObjIdExceptionalTraceLineCallback callback(exceptions);
             dContact closestContact;
-            if (ai::TraceLine(*Ray, closestContact, 0, 0, 0, 0, &callback, 1, 0))
+            if (!ai::TraceLine(*Ray, closestContact, 0, 0, 0, 0, &callback, 1, 0))
             {
-                auto v9 = src.y - dst.y;
-                auto v10 = src.z - dst.z;
-                if ((float)((float)((float)((float)((float)(src.z - closestContact.geom.pos[2]) *
-                                                    (float)(src.z - closestContact.geom.pos[2])) +
-                                            (float)((float)(src.y - closestContact.geom.pos[1]) *
-                                                    (float)(src.y - closestContact.geom.pos[1]))) +
-                                    (float)((float)(src.x - closestContact.geom.pos[0]) * (float)(src.x - closestContact.geom.pos[0]))) +
-                            0.0099999998) <=
-                    (float)((float)((float)(v10 * v10) + (float)(v9 * v9)) + (float)((float)(src.x - dst.x) * (float)(src.x - dst.x))))
-                {
-                    res = false;
-                }
+                return true;
             }
-            return res;
+
+            CVector const toHit(
+                src.x - closestContact.geom.pos[0], src.y - closestContact.geom.pos[1], src.z - closestContact.geom.pos[2]);
+            CVector const toDst = src - dst;
+            float const hitDistSq = toHit.z * toHit.z + toHit.y * toHit.y + toHit.x * toHit.x;
+            float const dstDistSq = toDst.z * toDst.z + toDst.y * toDst.y + toDst.x * toDst.x;
+            return hitDistSq + 0.0099999998f > dstDistSq;
         }
     }  // namespace
 
@@ -186,8 +205,8 @@ namespace ai
         while (true)
         {
             CMatrix boneMatrix;
-            auto const res =
-                animatedModelsServer->GetBoneMatrixByNameFromModelName(m_barrelModelName.c_str(), GetFireLp(i), boneMatrix, false);
+            auto const res = animatedModelsServer->GetBoneMatrixByNameFromModelName(
+                m_barrelModelName.c_str(), GetFireLp(i), boneMatrix, false);
             if (!res)
             {
                 break;
@@ -223,9 +242,17 @@ namespace ai
         }
     }
 
-    CStr GunPrototypeInfo::DamageType2Str(DamageType)
+    CStr GunPrototypeInfo::DamageType2Str(DamageType damageType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E0C20
+        for (auto const& entry : l_damageType2Str)
+        {
+            if (entry.m_type == damageType)
+            {
+                return entry.m_name;
+            }
+        }
+        return {};
     }
 
     GunPrototypeInfo::GunPrototypeInfo()
@@ -273,9 +300,16 @@ namespace ai
         }
     }
 
-    CStr GunPrototypeInfo::FiringType2Str(FiringTypes)
+    CStr GunPrototypeInfo::FiringType2Str(FiringTypes firingType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (auto const& entry : l_firingType2Str)
+        {
+            if (entry.m_type == firingType)
+            {
+                return entry.m_name;
+            }
+        }
+        return {};
     }
 
     FiringTypes GunPrototypeInfo::Str2FiringType(CStr const& firingTypeStr)
@@ -342,7 +376,15 @@ namespace ai
             m3d::SafeUintAttrib(m_ChargeSize, xmlNode, "ChargeSize");
             m3d::SafeFloatAttrib(m_ReChargingTime, xmlNode, "RechargingTime");
             m3d::SafeFloatAttrib(m_ReChargingTimePerShell, xmlNode, "ReChargingTimePerShell");
+
+            m_ShellsPoolSize = 0;
             m3d::SafeUintAttrib(m_ShellsPoolSize, xmlNode, "ShellsPoolSize");
+
+            if (!m_ShellsPoolSize)
+            {
+                m_WithShellsPoolLimit = false;
+                m_ShellsPoolSize = 12;
+            }
             m3d::SafeBoolAttrib(m_WithShellsPoolLimit, xmlNode, "WithShellsPoolLimit");
 
             m3d::SafeFloatAttrib(m_turningSpeed, xmlNode, "TurningSpeed");
@@ -357,7 +399,8 @@ namespace ai
 
     float GunPrototypeInfo::GetDamageForOneShell() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3330 - guns that fire several shells at once override this.
+        return m_damage;
     }
 
     void GunPrototypeInfo::PostLoad()
@@ -366,7 +409,8 @@ namespace ai
         m_shellPrototypeId = thePrototypeManager->GetPrototypeId(m_shellPrototypeName);
         if (m_shellPrototypeId == -1 && !m_shellPrototypeName.empty())
         {
-            M3D_CRITICAL_ERROR("shell prototype '" + m_shellPrototypeName + "' is invalid for '" + GetDebugDescription());
+            M3D_CRITICAL_ERROR(
+                "shell prototype '" + m_shellPrototypeName + "' is invalid for '" + GetDebugDescription());
         }
 
         if (!m_blastWavePrototypeName.empty())
@@ -381,12 +425,14 @@ namespace ai
 
     short GunPrototypeInfo::GetExplosionType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x601110
+        return m_explosionType;
     }
 
     bool GunPrototypeInfo::_bIsRapidFiring() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDCA0 - anything faster than 300 rounds a minute is drawn as a continuous stream.
+        return m_firingRate > 299.89999;
     }
 
     m3d::SgNode* Gun::GetBarrelNode() const
@@ -410,19 +456,28 @@ namespace ai
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), GunPrototypeInfo const);
     }
 
-    void Gun::SetShellsInPool(unsigned)
+    void Gun::SetShellsInPool(unsigned Shells)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE040
+        m_ShellsInPool = Shells;
     }
 
     void Gun::RenderGunDebugInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2B10 - a green line five metres down the barrel.
+        CVector const from = _CalcRoughPosForNextShot();
+        CMatrix const shotMatrix = GetMatrixForShot(m_curBarrelIndex);
+        CVector to;
+        to.x = shotMatrix._21 * 5.0 + from.x;
+        to.y = shotMatrix._22 * 5.0 + from.y;
+        to.z = shotMatrix._23 * 5.0 + from.z;
+        M3D_APP->DrawLine(from, to, 0xFF00FF00);
     }
 
-    float Gun::EstimateDamage(CVector const&, retruxx::vector<int, retruxx::allocator<int>> const&) const
+    float Gun::EstimateDamage(CVector const& pos, retruxx::vector<int, retruxx::allocator<int>> const& exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2D70 - a shot is worth its full damage if it can get there at all.
+        return PointIsReachable(pos, exceptions) ? m_damage : 0.0f;
     }
 
     float Gun::EstimateDamage() const
@@ -432,12 +487,21 @@ namespace ai
 
     bool Gun::bIs360DegreesHoriz() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDC50
+        return m_rightStopAngle - m_leftStopAngle > 6.283184482025146;
     }
 
-    CStr Gun::GetPropertyName(int) const
+    CStr Gun::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E30B0
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return VehiclePart::GetPropertyName(id);
     }
 
     bool Gun::CanLookAtTarget() const
@@ -448,97 +512,54 @@ namespace ai
 
     float Gun::GetRechargingTime() const
     {
-        // TODO: generated code Gun::GetRechargingTime
-        GunPrototypeInfo const* prototypeInfo = GetPrototypeInfo();
-        unsigned int shellsNeeded = m_ChargeSize - m_ShellsInCurrentCharge;
-
-        unsigned int shellsToRecharge;
-
-        if (!prototypeInfo->m_WithShellsPoolLimit)
-        {
-            // No shell pool limit - recharge all needed shells
-            shellsToRecharge = shellsNeeded;
-        }
-        else
-        {
-            // With shell pool limit - recharge up to available shells in pool
-            shellsToRecharge = (shellsNeeded < m_ShellsInPool) ? shellsNeeded : m_ShellsInPool;
-        }
-
-        return (shellsToRecharge * m_ReChargingTimePerShell) + m_ReChargingTime;
+        // RVA 0x2DF9A0
+        return (getShellsForRecharge() * m_ReChargingTimePerShell) + m_ReChargingTime;
     }
 
     m3d::Class* Gun::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDC90
+        return RT_CLASS_LOCAL(Gun);
     }
 
     bool Gun::isLookAtPoint(CVector const& lookAt, float eps) const
     {
-        // TODO: generated code Gun::isLookAtPoint
-        CVector gunPosition;
-
-        // Get the gun's world position from either barrel node, main node, or physics body
-        if (m_barrelNode != nullptr)
+        // RVA 0x6E28F0 - true when the current barrel points at lookAt: the sine of the angle
+        // between the barrel axis and the direction to the point is below eps.
+        CVector gunPos;
+        if (m_barrelNode)
         {
-            gunPosition = m_barrelNode->GetOriginWorldAbs();
+            gunPos = m_barrelNode->GetOriginWorldAbs();
         }
-        else if (m_Node != nullptr)
+        else if (m_Node)
         {
-            gunPosition = m_Node->GetOriginWorldAbs();
+            gunPos = m_Node->GetOriginWorldAbs();
         }
         else
         {
-            gunPosition = GetPosition();
+            gunPos = GetPosition();
         }
 
-        // Calculate direction vector from gun to target
-        CVector targetDir;
-        targetDir.x = lookAt.x - gunPosition.x;
-        targetDir.y = lookAt.y - gunPosition.y;
-        targetDir.z = lookAt.z - gunPosition.z;
+        CVector const toTarget = lookAt - gunPos;
+        float const invTargetLen =
+            1.0 / sqrt(toTarget.z * toTarget.z + toTarget.y * toTarget.y + toTarget.x * toTarget.x + 0.00000011920929);
+        CVector const targetDir(invTargetLen * toTarget.x, toTarget.y * invTargetLen, toTarget.z * invTargetLen);
 
-        // Normalize the target direction vector
-        float invTargetLength =
-            1.0f / std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z + 1.1920929e-7f);
-        CVector normalizedTargetDir;
-        normalizedTargetDir.x = targetDir.x * invTargetLength;
-        normalizedTargetDir.y = targetDir.y * invTargetLength;
-        normalizedTargetDir.z = targetDir.z * invTargetLength;
+        // The barrel axis is the shot matrix's second row (the local Y axis).
+        CMatrix const shotMatrix = GetMatrixForShot(m_curBarrelIndex);
+        CVector const axis(
+            (shotMatrix._31 + shotMatrix._11) * 0.0f + shotMatrix._21,
+            (shotMatrix._32 + shotMatrix._12) * 0.0f + shotMatrix._22,
+            (shotMatrix._33 + shotMatrix._13) * 0.0f + shotMatrix._23);
+        float const invAxisLen = 1.0 / sqrt(axis.z * axis.z + axis.y * axis.y + axis.x * axis.x + 0.00000011920929);
+        CVector const barrelDir(axis.x * invAxisLen, axis.y * invAxisLen, axis.z * invAxisLen);
 
-        // Get the gun's transformation matrix for the current barrel
-        CMatrix gunMatrix = GetMatrixForShot(m_curBarrelIndex);
-
-        // Calculate the gun's forward direction from the matrix
-        // The forward vector appears to be calculated as a combination of matrix columns
-        CVector gunForwardDir;
-        gunForwardDir.x = gunMatrix._21;  // Combination of _31 + _11 * 0.0 + _21 = _21
-        gunForwardDir.y = gunMatrix._22;  // Combination of _32 + _12 * 0.0 + _22 = _22
-        gunForwardDir.z = gunMatrix._23;  // Combination of _33 + _13 * 0.0 + _23 = _23
-
-        // Normalize the gun's forward direction vector
-        float invGunLength = 1.0f /
-            std::sqrt(gunForwardDir.x * gunForwardDir.x + gunForwardDir.y * gunForwardDir.y + gunForwardDir.z * gunForwardDir.z +
-                      1.1920929e-7f);
-        CVector normalizedGunForwardDir;
-        normalizedGunForwardDir.x = gunForwardDir.x * invGunLength;
-        normalizedGunForwardDir.y = gunForwardDir.y * invGunLength;
-        normalizedGunForwardDir.z = gunForwardDir.z * invGunLength;
-
-        // Calculate the cross product between gun direction and target direction
-        // This gives us the "error" vector - its magnitude indicates how misaligned we are
-        CVector crossProduct;
-        crossProduct.x = normalizedGunForwardDir.y * normalizedTargetDir.z - normalizedGunForwardDir.z * normalizedTargetDir.y;
-        crossProduct.y = normalizedGunForwardDir.z * normalizedTargetDir.x - normalizedGunForwardDir.x * normalizedTargetDir.z;
-        crossProduct.z = normalizedGunForwardDir.x * normalizedTargetDir.y - normalizedGunForwardDir.y * normalizedTargetDir.x;
-
-        // Calculate the magnitude of the cross product (alignment error)
-        float alignmentError =
-            std::sqrt(crossProduct.x * crossProduct.x + crossProduct.y * crossProduct.y + crossProduct.z * crossProduct.z);
-
-        // Return true if the alignment error is within the epsilon tolerance
-        // This means the gun is pointing close enough to the target
-        return eps > std::fabs(alignmentError);
+        CVector const cross(
+            barrelDir.y * targetDir.z - barrelDir.z * targetDir.y,
+            barrelDir.z * targetDir.x - barrelDir.x * targetDir.z,
+            barrelDir.x * targetDir.y - barrelDir.y * targetDir.x);
+        // NOTE: only the angle's sine is tested, so a point straight behind the barrel counts too.
+        return eps > fabs(sqrt(cross.z * cross.z + cross.y * cross.y + cross.x * cross.x));
     }
 
     void Gun::SetInvisible()
@@ -549,9 +570,14 @@ namespace ai
         _UpdateNodeFiringAction();
     }
 
-    void Gun::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void Gun::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2FB0
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        VehiclePart::GetPropertiesNames(Props);
     }
 
     void Gun::Update(float elapsedTime, unsigned workTime)
@@ -590,47 +616,195 @@ namespace ai
 
     float Gun::GetDamageForOneShell() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFB0
+        return m_damage;
     }
 
-    bool Gun::CanShotToTarget(int) const
+    bool Gun::CanShotToTarget(int targetId) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E1FD0 - fire a trace ray down the barrel and see whether the first thing it meets
+        // belongs to the object being aimed at. A wheel answers for the vehicle it is fitted to.
+        if (targetId == -1)
+        {
+            return false;
+        }
+
+        static scoped_ptr<Ray> shotRay(ai::Ray::CreateObject(nullptr, 1000.0, nullptr));
+
+        CVector const gunPos = _CalcRoughPosForNextShot();
+        dGeomSetPosition(shotRay->GetGeomId(), gunPos.x, gunPos.y, gunPos.z);
+
+        CMatrix const shotMatrix = GetMatrixForShot(m_curBarrelIndex);
+        CVector fireDir;
+        fireDir.x = shotMatrix._21;
+        fireDir.y = shotMatrix._22;
+        fireDir.z = shotMatrix._23;
+        float const invLength =
+            1.0 / sqrt(fireDir.z * fireDir.z + fireDir.y * fireDir.y + fireDir.x * fireDir.x + 0.00000011920929);
+        fireDir.x = fireDir.x * invLength;
+        fireDir.y = fireDir.y * invLength;
+        fireDir.z = fireDir.z * invLength;
+        shotRay->SetDirection(fireDir);
+        shotRay->SetLength(m_firingRange);
+
+        dContact closestContact;
+        if (!ai::TraceLine(*shotRay, closestContact, 0, 0, 1, 1, nullptr, 1, 0))
+        {
+            return false;
+        }
+
+        auto* const hit = (m3d::Object*)dGeomGetData(closestContact.geom.g2);
+        if (!hit || !hit->IsKindOf(&ai::PhysicBody::m_classPhysicBody))
+        {
+            return false;
+        }
+        PhysicObj* const owner = ((PhysicBody*)hit)->GetOwner();
+        if (!owner)
+        {
+            return false;
+        }
+        if (!owner->IsKindOf(&ai::Wheel::m_classWheel))
+        {
+            return owner->GetId() == targetId;
+        }
+        Vehicle const* const vehicle = ((Wheel*)owner)->GetVehicle();
+        return vehicle && vehicle->GetId() == targetId;
     }
 
-    void Gun::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void Gun::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3030
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        VehiclePart::GetPropertiesIDs(Props);
     }
 
-    bool Gun::PointIsReachableFromPosition(CVector const&, CVector const&, retruxx::vector<int, retruxx::allocator<int>>) const
+    bool Gun::PointIsReachableFromPosition(
+        CVector const& newPosition,
+        CVector const& target,
+        retruxx::vector<int, retruxx::allocator<int>> exceptions) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2DB0 - the same test as PointIsReachable, but asking whether the gun could hit the
+        // target from somewhere it is not standing yet.
+        for (Obj const* obj = this; obj; obj = obj->GetParent())
+        {
+            exceptions.push_back(obj->GetId());
+        }
+
+        CVector const direction = target - newPosition;
+        float const distance = sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        if (distance > m_firingRange)
+        {
+            return false;
+        }
+        return ai::PointIsReachable(newPosition, direction, target, exceptions);
     }
 
-    void Gun::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void Gun::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E0CB0
+        VehiclePart::LoadRuntimeValues(xmlFile, xmlNode);
+
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const targetId = xmlNode->GetAttribute("TargetId");
+            if (targetId)
+            {
+                m_targetObjId = atoi(targetId);
+            }
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const curBarrelNum = xmlNode->GetAttribute("CurBarrelNum");
+            if (curBarrelNum)
+            {
+                int const value = atoi(curBarrelNum);
+                if (value >= 0)
+                {
+                    m_curBarrelIndex = value;
+                }
+            }
+        }
+        if (m_barrelNode)
+        {
+            Quaternion barrelNodeRotation = m_barrelNode->GetRotation();
+            m3d::SafeQuaternionAttrib(barrelNodeRotation, xmlNode, "BarrelNodeRotation");
+            m_barrelNode->SetRotation(barrelNodeRotation);
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const chargeState = xmlNode->GetAttribute("ChargeState");
+            if (chargeState)
+            {
+                m_ChargeState = static_cast<ChargeState>(atoi(chargeState));
+            }
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const currentReChargingTime = xmlNode->GetAttribute("CurrentReChargingTime");
+            if (currentReChargingTime)
+            {
+                m_CurrentReChargingTime = static_cast<float>(atof(currentReChargingTime));
+            }
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const shellsInCurrentCharge = xmlNode->GetAttribute("ShellsInCurrentCharge");
+            if (shellsInCurrentCharge)
+            {
+                int const value = atoi(shellsInCurrentCharge);
+                if (value >= 0)
+                {
+                    m_ShellsInCurrentCharge = value;
+                }
+            }
+        }
+        if (m_ShellsInCurrentCharge > m_ChargeSize)
+        {
+            m_ShellsInCurrentCharge = m_ChargeSize;
+        }
+        if (!xmlNode->IsEmpty())
+        {
+            char const* const shellsInPool = xmlNode->GetAttribute("ShellsInPool");
+            if (shellsInPool)
+            {
+                int const value = atoi(shellsInPool);
+                if (value >= 0)
+                {
+                    m_ShellsInPool = value;
+                }
+            }
+        }
+        m3d::SafeBoolAttrib(m_bIsFiring, xmlNode, "IsFiring");
+        m3d::SafeBoolAttrib(m_bWasShot, xmlNode, "WasShot");
+        m3d::SafeBoolAttrib(m_bJustShot, xmlNode, "JustShot");
     }
 
     unsigned Gun::GetShellsInPool() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE030
+        return m_ShellsInPool;
     }
 
     bool Gun::IsWithCharging() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2C0
+        return GetPrototypeInfo()->m_WithCharging;
     }
 
     float Gun::GetFiringRate() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DDFD0
+        return m_firingRate;
     }
 
     CMatrix Gun::GetMatrixForShot(unsigned) const
     {
-        // TODO: generated code Gun::GetMatrixForShot
+        // RVA 0x2E15F0
+        // NOTE: the shipped build ignores the barrelIndex argument and always
+        // uses m_curBarrelIndex; every caller passes m_curBarrelIndex anyway.
         // Get the prototype information for this gun
         ai::GunPrototypeInfo const* prototypeInfo = this->GetPrototypeInfo();
 
@@ -661,28 +835,44 @@ namespace ai
             float orig_44 = fireMat._44;
 
             // Transform first row [11, 12, 13, 14]
-            fireMat._11 = barrelXForm._11 * orig_11 + barrelXForm._21 * orig_12 + barrelXForm._31 * orig_13 + barrelXForm._41 * orig_14;
-            fireMat._12 = barrelXForm._12 * orig_11 + barrelXForm._22 * orig_12 + barrelXForm._32 * orig_13 + barrelXForm._42 * orig_14;
-            fireMat._13 = barrelXForm._13 * orig_11 + barrelXForm._23 * orig_12 + barrelXForm._33 * orig_13 + barrelXForm._43 * orig_14;
-            fireMat._14 = barrelXForm._14 * orig_11 + barrelXForm._24 * orig_12 + barrelXForm._34 * orig_13 + barrelXForm._44 * orig_14;
+            fireMat._11 = barrelXForm._11 * orig_11 + barrelXForm._21 * orig_12 + barrelXForm._31 * orig_13 +
+                barrelXForm._41 * orig_14;
+            fireMat._12 = barrelXForm._12 * orig_11 + barrelXForm._22 * orig_12 + barrelXForm._32 * orig_13 +
+                barrelXForm._42 * orig_14;
+            fireMat._13 = barrelXForm._13 * orig_11 + barrelXForm._23 * orig_12 + barrelXForm._33 * orig_13 +
+                barrelXForm._43 * orig_14;
+            fireMat._14 = barrelXForm._14 * orig_11 + barrelXForm._24 * orig_12 + barrelXForm._34 * orig_13 +
+                barrelXForm._44 * orig_14;
 
             // Transform second row [21, 22, 23, 24]
-            fireMat._21 = barrelXForm._11 * orig_21 + barrelXForm._21 * orig_22 + barrelXForm._31 * orig_23 + barrelXForm._41 * orig_24;
-            fireMat._22 = barrelXForm._12 * orig_21 + barrelXForm._22 * orig_22 + barrelXForm._32 * orig_23 + barrelXForm._42 * orig_24;
-            fireMat._23 = barrelXForm._13 * orig_21 + barrelXForm._23 * orig_22 + barrelXForm._33 * orig_23 + barrelXForm._43 * orig_24;
-            fireMat._24 = barrelXForm._14 * orig_21 + barrelXForm._24 * orig_22 + barrelXForm._34 * orig_23 + barrelXForm._44 * orig_24;
+            fireMat._21 = barrelXForm._11 * orig_21 + barrelXForm._21 * orig_22 + barrelXForm._31 * orig_23 +
+                barrelXForm._41 * orig_24;
+            fireMat._22 = barrelXForm._12 * orig_21 + barrelXForm._22 * orig_22 + barrelXForm._32 * orig_23 +
+                barrelXForm._42 * orig_24;
+            fireMat._23 = barrelXForm._13 * orig_21 + barrelXForm._23 * orig_22 + barrelXForm._33 * orig_23 +
+                barrelXForm._43 * orig_24;
+            fireMat._24 = barrelXForm._14 * orig_21 + barrelXForm._24 * orig_22 + barrelXForm._34 * orig_23 +
+                barrelXForm._44 * orig_24;
 
             // Transform third row [31, 32, 33, 34]
-            fireMat._31 = barrelXForm._11 * orig_31 + barrelXForm._21 * orig_32 + barrelXForm._31 * orig_33 + barrelXForm._41 * orig_34;
-            fireMat._32 = barrelXForm._12 * orig_31 + barrelXForm._22 * orig_32 + barrelXForm._32 * orig_33 + barrelXForm._42 * orig_34;
-            fireMat._33 = barrelXForm._13 * orig_31 + barrelXForm._23 * orig_32 + barrelXForm._33 * orig_33 + barrelXForm._43 * orig_34;
-            fireMat._34 = barrelXForm._14 * orig_31 + barrelXForm._24 * orig_32 + barrelXForm._34 * orig_33 + barrelXForm._44 * orig_34;
+            fireMat._31 = barrelXForm._11 * orig_31 + barrelXForm._21 * orig_32 + barrelXForm._31 * orig_33 +
+                barrelXForm._41 * orig_34;
+            fireMat._32 = barrelXForm._12 * orig_31 + barrelXForm._22 * orig_32 + barrelXForm._32 * orig_33 +
+                barrelXForm._42 * orig_34;
+            fireMat._33 = barrelXForm._13 * orig_31 + barrelXForm._23 * orig_32 + barrelXForm._33 * orig_33 +
+                barrelXForm._43 * orig_34;
+            fireMat._34 = barrelXForm._14 * orig_31 + barrelXForm._24 * orig_32 + barrelXForm._34 * orig_33 +
+                barrelXForm._44 * orig_34;
 
             // Transform fourth row [41, 42, 43, 44]
-            fireMat._41 = barrelXForm._11 * orig_41 + barrelXForm._21 * orig_42 + barrelXForm._31 * orig_43 + barrelXForm._41 * orig_44;
-            fireMat._42 = barrelXForm._12 * orig_41 + barrelXForm._22 * orig_42 + barrelXForm._32 * orig_43 + barrelXForm._42 * orig_44;
-            fireMat._43 = barrelXForm._13 * orig_41 + barrelXForm._23 * orig_42 + barrelXForm._33 * orig_43 + barrelXForm._43 * orig_44;
-            fireMat._44 = barrelXForm._14 * orig_41 + barrelXForm._24 * orig_42 + barrelXForm._34 * orig_43 + barrelXForm._44 * orig_44;
+            fireMat._41 = barrelXForm._11 * orig_41 + barrelXForm._21 * orig_42 + barrelXForm._31 * orig_43 +
+                barrelXForm._41 * orig_44;
+            fireMat._42 = barrelXForm._12 * orig_41 + barrelXForm._22 * orig_42 + barrelXForm._32 * orig_43 +
+                barrelXForm._42 * orig_44;
+            fireMat._43 = barrelXForm._13 * orig_41 + barrelXForm._23 * orig_42 + barrelXForm._33 * orig_43 +
+                barrelXForm._43 * orig_44;
+            fireMat._44 = barrelXForm._14 * orig_41 + barrelXForm._24 * orig_42 + barrelXForm._34 * orig_43 +
+                barrelXForm._44 * orig_44;
         }
 
         // Copy the final matrix to the result
@@ -691,12 +881,14 @@ namespace ai
 
     float Gun::GetCurrentRechargingTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2F0
+        return m_CurrentReChargingTime;
     }
 
     unsigned Gun::GetShellsPoolSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE050
+        return GetPrototypeInfo()->m_ShellsPoolSize;
     }
 
     int Gun::OnEvent(Event const& evn)
@@ -725,7 +917,8 @@ namespace ai
 
     unsigned Gun::GetChargeSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2E0
+        return m_ChargeSize;
     }
 
     float Gun::GetFiringRange() const
@@ -733,60 +926,38 @@ namespace ai
         return m_firingRange;
     }
 
-    float Gun::EstimateDamageFromPosition(CVector const&, CVector const&, retruxx::vector<int, retruxx::allocator<int>> const&)
+    float Gun::EstimateDamageFromPosition(
+        CVector const& position,
+        CVector const& pos,
+        retruxx::vector<int, retruxx::allocator<int>> const& exceptions)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2EC0
+        return PointIsReachableFromPosition(position, pos, exceptions) ? m_damage : 0.0f;
     }
 
     bool Gun::PointIsReachable(CVector const& pos, retruxx::vector<int, retruxx::allocator<int>> exceptions) const
     {
-        // TODO: generated code Gun::PointIsReachable
-        // Add all parent objects to exceptions list (to avoid hitting ourselves)
-        ai::Gun const* currentObj = this;
-        while (currentObj != nullptr)
+        // RVA 0x6E2C20 - pos is within firing range and the line of fire from the current barrel
+        // is clear. The gun and all its ancestors are ignored by the trace.
+        for (Obj const* obj = this; obj; obj = obj->GetParent())
         {
-            int objId = currentObj->GetId();
-            exceptions.push_back(objId);
-            currentObj = (ai::Gun*)currentObj->GetParent();
+            exceptions.push_back(obj->GetId());
         }
 
-        // Get the gun's firing position and orientation
-        CMatrix gunMatrix = GetMatrixForShot(m_curBarrelIndex);
-
-        // Calculate direction from gun to target
-        CVector gunPos;
-        gunPos.x = gunMatrix._41;
-        gunPos.y = gunMatrix._42;
-        gunPos.z = gunMatrix._43;
-
-        CVector direction;
-        direction.x = pos.x - gunPos.x;
-        direction.y = pos.y - gunPos.y;
-        direction.z = pos.z - gunPos.z;
-
-        // Calculate distance to target
-        float distance = sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-
-        bool isReachable = false;
-
-        // Check if target is within firing range
-        if (distance <= m_firingRange)
+        CMatrix const shotMatrix = GetMatrixForShot(m_curBarrelIndex);
+        CVector const barrelPos(shotMatrix._41, shotMatrix._42, shotMatrix._43);
+        CVector const dir = pos - barrelPos;
+        if (sqrt(dir.z * dir.z + dir.y * dir.y + dir.x * dir.x) > m_firingRange)
         {
-            // Check if there's a clear line of sight to the target
-            isReachable = ai::PointIsReachable(gunPos, direction, pos, exceptions);
+            return false;
         }
-        else
-        {
-            // Target is out of range
-            isReachable = false;
-        }
-
-        return isReachable;
+        return ai::PointIsReachable(barrelPos, dir, pos, exceptions);
     }
 
     unsigned Gun::GetShellsInCurrentCharge() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE020
+        return m_ShellsInCurrentCharge;
     }
 
     void Gun::LookAtPoint(CVector const& lookAt, float elapsedTime)
@@ -820,7 +991,11 @@ namespace ai
 
     void Gun::Recharge()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DFA00
+        if (getShellsForRecharge() && m_ChargeState != csInCharging)
+        {
+            BeginReCharge();
+        }
     }
 
     int Gun::GetPropertyId(char const* propName) const
@@ -834,9 +1009,15 @@ namespace ai
         return VehiclePart::GetPropertyId(propName);
     }
 
-    eGObjPropertySaveStatus Gun::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Gun::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E2840
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return VehiclePart::GetPropertySaveStatus(id);
     }
 
     void Gun::Registration()
@@ -851,12 +1032,15 @@ namespace ai
 
     void Gun::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDE90 - the barrel node belongs to the map being left behind.
+        VehiclePart::SetPassedToAnotherMapStatus();
+        m_barrelNode = nullptr;
     }
 
     float Gun::GetDamage() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFA0
+        return m_damage;
     }
 
     void Gun::SetInitialHorizAngle(float angle)
@@ -871,12 +1055,14 @@ namespace ai
 
     Gun::ChargeState Gun::GetChargeState() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE060
+        return m_ChargeState;
     }
 
     float Gun::GetTurningSpeed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDF90
+        return m_turningSpeed;
     }
 
     bool Gun::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
@@ -921,14 +1107,20 @@ namespace ai
         return result;
     }
 
-    void Gun::SetShellsInCurrentCharge(unsigned)
+    void Gun::SetShellsInCurrentCharge(unsigned Value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DF6F0 - clamped to the charge size.
+        m_ShellsInCurrentCharge = Value;
+        if (m_ShellsInCurrentCharge > m_ChargeSize)
+        {
+            m_ShellsInCurrentCharge = m_ChargeSize;
+        }
     }
 
     DamageType Gun::GetDamageType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFC0
+        return m_damageType;
     }
 
     bool Gun::IsDurabilityEnoughForFiring() const
@@ -944,12 +1136,27 @@ namespace ai
 
     bool Gun::IsWithShellsPoolLimit() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE2D0
+        return GetPrototypeInfo()->m_WithShellsPoolLimit;
     }
 
-    void Gun::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void Gun::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E0E70
+        VehiclePart::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("TargetId", CStr(m_targetObjId).c_str());
+        xmlNode->SetAttribute("CurBarrelNum", CStr(m_curBarrelIndex).c_str());
+        if (m_barrelNode)
+        {
+            xmlNode->SetAttribute("BarrelNodeRotation", CStr(m_barrelNode->GetRotation()).c_str());
+        }
+        xmlNode->SetAttribute("ChargeState", CStr(m_ChargeState).c_str());
+        xmlNode->SetAttribute("CurrentReChargingTime", CStr(m_CurrentReChargingTime).c_str());
+        xmlNode->SetAttribute("ShellsInCurrentCharge", CStr(m_ShellsInCurrentCharge).c_str());
+        xmlNode->SetAttribute("ShellsInPool", CStr(m_ShellsInPool).c_str());
+        xmlNode->SetAttribute("IsFiring", CStr(m_bIsFiring).c_str());
+        xmlNode->SetAttribute("WasShot", CStr(m_bWasShot).c_str());
+        xmlNode->SetAttribute("JustShot", CStr(m_bJustShot).c_str());
     }
 
     bool Gun::CanFire() const
@@ -958,9 +1165,25 @@ namespace ai
             (GetPrototypeInfo()->m_ignoreStopAnglesWhenFire || CanLookAtTarget()) && IsDurabilityEnoughForFiring();
     }
 
-    unsigned Gun::GetPrice(IPriceCoeffProvider const*) const
+    unsigned Gun::GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E1E50 - a gun with a magazine is worth its own price plus whatever ammunition it is
+        // carrying.
+        unsigned price = VehiclePart::GetPrice(priceCoeffProvider);
+        float const priceCoeff = GetPriceCoeff(priceCoeffProvider);
+
+        GunPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+        if (prototypeInfo->m_WithCharging && prototypeInfo->m_WithShellsPoolLimit &&
+            prototypeInfo->m_shellPrototypeId != -1)
+        {
+            // NOTE: the shell prototype is used without a null check.
+            PrototypeInfo const* const shellPrototypeInfo =
+                thePrototypeManager->GetPrototypeInfo(prototypeInfo->m_shellPrototypeId);
+            price += static_cast<int>(
+                static_cast<double>((m_ShellsInPool + m_ShellsInCurrentCharge) * shellPrototypeInfo->GetBasePrice()) *
+                priceCoeff);
+        }
+        return price;
     }
 
     Gun::Gun(GunPrototypeInfo const& prototypeInfo) : VehiclePart(prototypeInfo)
@@ -996,17 +1219,20 @@ namespace ai
 
     float Gun::GetInitialHorizAngle() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DDFF0
+        return m_initialHorizAngle;
     }
 
-    void Gun::SetChargeState(int)
+    void Gun::SetChargeState(int Value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE5B0
+        m_ChargeState = static_cast<ChargeState>(Value);
     }
 
-    void Gun::SetChargeState(ChargeState)
+    void Gun::SetChargeState(ChargeState Value)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE070
+        m_ChargeState = Value;
     }
 
     void Gun::SetHorizontalStopAngles(float leftStopAngle, float rightStopAngle)
@@ -1054,7 +1280,8 @@ namespace ai
                 rot.FromMatrix(mat);
 
                 CVector fireDir;
-                float angle = 0.0;
+                float angle = 0.0f;
+                rot.ToAxisAngle(fireDir, angle);
 
                 CVector force;
                 force.x = (float)(0.0 - fireDir.x) * m_recoilForce;
@@ -1067,9 +1294,14 @@ namespace ai
         }
     }
 
-    void Gun::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Gun::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E35D0 - SAVE_PROP_NORMAL is the default and is not recorded.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
     bool Gun::_DoFire()
@@ -1092,8 +1324,7 @@ namespace ai
         auto const* protoInfo = GetPrototypeInfo();
         ++m_curBarrelIndex;
 
-        // TODO: check this
-        int barrelCount = protoInfo->m_fireLpMatrices.size();
+        unsigned const barrelCount = static_cast<unsigned>(protoInfo->m_fireLpMatrices.size());
         if (m_curBarrelIndex == barrelCount)
         {
             m_curBarrelIndex = 0;
@@ -1102,14 +1333,44 @@ namespace ai
         return true;
     }
 
-    bool Gun::_IsDirVerticallyReachable(CVector const&) const
+    bool Gun::_IsDirVerticallyReachable(CVector const& dir) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DF790 - turn the direction into the owner's frame and check it against the gun's
+        // elevation limits.
+        Quaternion const ownerRotation = GetOwner()->GetRotation();
+        CMatrix const ownerMatrix = ownerRotation.getInversed().ToMatrix();
+
+        float const desiredBeta = asin(ownerMatrix._12 * dir.x + ownerMatrix._22 * dir.y + ownerMatrix._32 * dir.z);
+        return desiredBeta >= m_lowStopAngle && m_highStopAngle >= desiredBeta;
     }
 
-    bool Gun::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Gun::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3CC0 - the defaults are whatever the prototype says.
+        GunPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+        switch (propertyId)
+        {
+        case 28:
+            retVal = prototypeInfo->m_damage;
+            return true;
+        case 29:
+            retVal = prototypeInfo->m_firingRate;
+            return true;
+        case 30:
+            retVal = prototypeInfo->m_firingRange;
+            return true;
+        case 34:
+            retVal = prototypeInfo->m_ChargeSize;
+            return true;
+        case 35:
+            retVal = prototypeInfo->m_ReChargingTime;
+            return true;
+        case 36:
+            retVal = prototypeInfo->m_ShellsPoolSize;
+            return true;
+        default:
+            return VehiclePart::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
     }
 
     void Gun::_InternalCreateVisualPart()
@@ -1125,13 +1386,64 @@ namespace ai
 
     unsigned Gun::GetBarrelsNum()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DF720
+        return static_cast<unsigned>(GetPrototypeInfo()->m_fireLpMatrices.size());
     }
 
     void Gun::_LaunchShells()
     {
-        // TODO: implement Gun::_LaunchShells
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2E10C0 - the base implementation only books the shot into the
+        // player's statistics; derived guns override this to spawn the shells.
+        Obj* parentObj = this;
+        while (!IS_KIND_OF(parentObj, Vehicle))
+        {
+            parentObj = parentObj->GetParent();
+            if (!parentObj)
+            {
+                return;
+            }
+        }
+
+        auto* vehicle = RT_DYNCAST(parentObj, Vehicle);
+        if (!vehicle || !vehicle->bIsControlledByPlayer())
+        {
+            return;
+        }
+
+        CStr const& levelName = pServer->GetWorld()->m_level->m_levelName;
+        CStr const& gunName = GetPrototypeInfo()->m_prototypeName;
+
+        auto* shellsEmitted =
+            static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_SHELLS_EMITTED, "IntStatistic"));
+        shellsEmitted->SetGlobalFlag(true);
+        shellsEmitted->Increase(1);
+
+        auto* levelShellsEmitted = static_cast<IntStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_SHELLS_EMITTED + levelName, "IntStatistic"));
+        levelShellsEmitted->SetGlobalFlag(false);
+        levelShellsEmitted->Increase(1);
+
+        auto* favoriteGun = static_cast<FavoriteStringStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_FAVORITE_GUN, "FavoriteStringStatistic"));
+        favoriteGun->SetGlobalFlag(true);
+        favoriteGun->Increase(gunName);
+
+        auto* levelFavoriteGun = static_cast<FavoriteStringStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_FAVORITE_GUN + levelName, "FavoriteStringStatistic"));
+        levelFavoriteGun->SetGlobalFlag(false);
+        levelFavoriteGun->Increase(gunName);
+
+        // Every emitted shell bumps the hit-ratio denominator; the numerator is
+        // raised elsewhere when a shell actually connects.
+        auto* hitRatio = static_cast<IntIntRatioStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_HIT_RATIO, "IntIntRatioStatistic"));
+        hitRatio->SetGlobalFlag(true);
+        hitRatio->IncreaseDenominator(1);
+
+        auto* levelHitRatio = static_cast<IntIntRatioStatistic*>(
+            theStatisticManager->GetStatistic(STATISTIC_HIT_RATIO + levelName, "IntIntRatioStatistic"));
+        levelHitRatio->SetGlobalFlag(false);
+        levelHitRatio->IncreaseDenominator(1);
     }
 
     CVector Gun::_CalcDirForNextShot() const
@@ -1146,21 +1458,29 @@ namespace ai
 
     void Gun::_InternalPostLoad()
     {
+        // RVA 0x6E3DA0 - subscribes this gun to the player's "object created" events.
         if (thePlayer)
         {
-            // TODO: check IE_EV_SM_OBJECT_CREATED
-            theProcessManager->PostMessageA(GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, IE_EV_SM_OBJECT_CREATED, {}, 1);
+            theProcessManager->PostMessageA(
+                GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, IE_EV_SM_OBJECT_CREATED, {}, 1);
         }
     }
 
     CVector Gun::_CalcRoughPosForNextShot() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DF740 - the barrel's own origin when it has one, otherwise the gun's.
+        m3d::SgNode* const node = m_barrelNode ? m_barrelNode : m_Node;
+        if (node)
+        {
+            return node->GetOriginWorldAbs();
+        }
+        return PhysicBody::GetPosition();
     }
 
     bool Gun::_bIsVolleyFiring() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x2DE150
+        return false;
     }
 
     Gun::~Gun() = default;
@@ -1171,72 +1491,137 @@ namespace ai
         return mat.getOrg();
     }
 
-    bool Gun::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Gun::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E3BF0
+        switch (propertyId)
+        {
+        case 28:
+            retVal = m_damage;
+            return true;
+        case 29:
+            retVal = m_firingRate;
+            return true;
+        case 30:
+            retVal = m_firingRange;
+            return true;
+        case 34:
+            retVal = m_ChargeSize;
+            return true;
+        case 35:
+            retVal = m_ReChargingTime;
+            return true;
+        case 36:
+            retVal = m_ShellsInPool;
+            return true;
+        default:
+            return VehiclePart::_GetPropertyInternal(propertyId, retVal);
+        }
     }
 
     void Gun::_CreateBarrelNode()
     {
-        // TODO: implement Gun::_CreateBarrelNode
-        if (!m_modelname.empty())
+        // RVA 0x6E3E40 - hangs the barrel model on the gun's LP_GUN load point.
+        // ("errormsg" in the original's comparison is the empty string.)
+        if (m_modelname.empty())
         {
-            auto const* prototypeInfo = GetPrototypeInfo();
-            CVector scale(1.0, 1.0, 1.0);
+            return;
+        }
 
-            m_barrelNode = CreateNode(prototypeInfo->m_barrelModelName.c_str(), 0, scale, this, false);
-            if (!m_barrelNode)
+        auto const* prototypeInfo = GetPrototypeInfo();
+        CVector const scale(1.0f, 1.0f, 1.0f);
+        m_barrelNode = CreateNode(prototypeInfo->m_barrelModelName.c_str(), 0, scale, this, false);
+        if (!m_barrelNode)
+        {
+            M3D_LOG_ERR("Error: Couldn't create barrel for " + GetDebugDescription());
+            SYS_ERROR("!\"Error creating barrel, see log\"");
+        }
+
+        m_Node->AddChild(m_barrelNode);
+
+        auto* serverAnimatedModels = static_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
+        CMatrix boneMat;
+        if (!serverAnimatedModels->GetBoneMatrixByNameFromModelName(m_modelname.c_str(), "LP_GUN", boneMat, false))
+        {
+            M3D_LOG_ERR(
+                CStr("Error: LoadPoint not found: ") + CStr("LP_GUN") + CStr(" for ") + GetDebugDescription() +
+                CStr(", modelName = ") + m_modelname);
+            boneMat.identity();
+        }
+
+        Quaternion rot;
+        rot.FromMatrix(boneMat);
+        CVector const origin = boneMat.getOrg();
+        m_barrelNode->SetRotation(rot);
+        m_barrelNode->SetOriginAbs(origin);
+        m_barrelNode->UpdateXForm(false, true);
+        m_barrelNode->SetName(m_Node->GetName() + CStr("Brl"));
+
+        if (fabs(prototypeInfo->m_highStopAngle - prototypeInfo->m_lowStopAngle) < 0.0099999998)
+        {
+            // A barrel that cannot elevate never moves relative to the gun, so its collision
+            // shapes are baked into the gun's own hull at the barrel's fixed place instead of
+            // being simulated apart.
+            retruxx::vector<CollisionInfo> barrelCollisionInfos;
+            int sh = -1;
+            m_barrelNode->GetProperty(m3d::PROP_NODE_HANDLE, &sh);
+            ai::GetCollisionInfoByServerHandle(sh, barrelCollisionInfos, m_bCollisionTrimeshAllowed);
+
+            CMatrix const rotMatrix = rot.ToMatrix();
+            for (auto& collisionInfo : barrelCollisionInfos)
             {
-                M3D_CRITICAL_ERROR("Couldn't create barrel for " + GetDebugDescription());
+                Quaternion relRotation = rot;
+                relRotation *= collisionInfo.m_relRotation;
+                collisionInfo.m_relRotation = relRotation;
+                collisionInfo.m_relTranslation = rotMatrix.vecRot(collisionInfo.m_relTranslation) + origin;
             }
 
-            m_Node->AddChild(m_barrelNode);
-
-            auto* serverAnimatedModels = static_cast<m3d::AnimatedModelsServer*>(&M3D_APP->GetAnimatedModelsServer());
-
-            CMatrix boneMat;
-            auto const boneRes = serverAnimatedModels->GetBoneMatrixByNameFromModelName(m_modelname.c_str(), "LP_GUN", boneMat, false);
-            if (!boneRes)
-            {
-                M3D_LOG_ERR("Error: LoadPoint not found: LP_GUN for " + GetDebugDescription());
-                boneMat.identity();
-            }
-
-            Quaternion rot;
-            rot.FromMatrix(boneMat);
-            m_barrelNode->SetRotation(rot);
-
-            CVector const origin = boneMat.getOrg();
-            m_barrelNode->SetOriginAbs(origin);
-
-            m_barrelNode->UpdateXForm(false, true);
-            m_barrelNode->SetName(m_Node->GetName() + CStr("Brl"));
-
-            if (fabs(prototypeInfo->m_highStopAngle - prototypeInfo->m_lowStopAngle) < 0.0099999998)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-            }
+            m_collisionInfos.insert(m_collisionInfos.end(), barrelCollisionInfos.begin(), barrelCollisionInfos.end());
+            ChangePhysicBodyByCollisionInfo(m_collisionInfos);
         }
     }
 
     void Gun::_OnCinematic(Event const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DE160 - a gun caught mid-burst when a cutscene starts is told to stop.
+        if (!m_Node)
+        {
+            return;
+        }
+        int action = 0;
+        m_Node->GetProperty(8704u, &action);
+        if (action)
+        {
+            SetNodeAction(0, true);
+            m_bIsFiring = false;
+        }
     }
 
     m3d::Object* Gun::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DFE60
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
-    void Gun::_GetCurrentOffsetAngles(float&, float&) const
+    void Gun::_GetCurrentOffsetAngles(float& alpha, float& beta) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DE7F0 - where the gun is pointing right now: beta from the barrel node's own
+        // rotation, alpha from the whole gun's direction in its owner's frame.
+        CMatrix const barrelMatrix = m_barrelNode->GetRotation().ToMatrix();
+
+        float dummy = 0.0f;
+        barrelMatrix.getYPR(dummy, beta, dummy);
+        beta = -beta;
+
+        CVector const oldRelDir = GetNodeRelativeDirection();
+        alpha = atan2(oldRelDir.x, oldRelDir.z);
     }
 
     CMatrix Gun::_CalcMatrixForNextShot() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6E1D40
+        return GetMatrixForShot(m_curBarrelIndex);
     }
 
     void Gun::BeginReCharge()
@@ -1278,7 +1663,7 @@ namespace ai
 
     unsigned Gun::getShellsForRecharge() const
     {
-        // TODO: generated code Gun::getShellsForRecharge
+        // RVA 0x2DF530
         GunPrototypeInfo const* prototypeInfo = GetPrototypeInfo();
         unsigned int shellsNeeded = m_ChargeSize - m_ShellsInCurrentCharge;
 
@@ -1292,267 +1677,113 @@ namespace ai
         return (shellsNeeded < m_ShellsInPool) ? shellsNeeded : m_ShellsInPool;
     }
 
+    namespace
+    {
+        // Brings an angle that is at most one turn off back into [-PI, PI].
+        float WrapAngle(float angle)
+        {
+            if (angle > 3.1415927f)
+            {
+                return angle - 6.2831855f;
+            }
+            if (angle < -3.1415927f)
+            {
+                return angle + 6.2831855f;
+            }
+            return angle;
+        }
+
+        // The rotation matrix of q, as the original inlines it wherever a quaternion is turned
+        // into a matrix.
+        CMatrix RotationMatrix(Quaternion const& q)
+        {
+            CMatrix m;
+            m._11 = 1.0f - (q.z * q.z + q.y * q.y) * 2.0f;
+            m._12 = (q.z * q.w + q.y * q.x) * 2.0f;
+            m._13 = (q.z * q.x - q.y * q.w) * 2.0f;
+            m._14 = 0.0f;
+            m._21 = (q.y * q.x - q.z * q.w) * 2.0f;
+            m._22 = 1.0f - (q.z * q.z + q.x * q.x) * 2.0f;
+            m._23 = (q.x * q.w + q.z * q.y) * 2.0f;
+            m._24 = 0.0f;
+            m._31 = (q.y * q.w + q.z * q.x) * 2.0f;
+            m._32 = (q.z * q.y - q.x * q.w) * 2.0f;
+            m._33 = 1.0f - (q.y * q.y + q.x * q.x) * 2.0f;
+            m._34 = 0.0f;
+            m._41 = 0.0f;
+            m._42 = 0.0f;
+            m._43 = 0.0f;
+            m._44 = 1.0f;
+            return m;
+        }
+    }  // namespace
+
     void Gun::_GetOffsetAngles(CVector const& lookAt, float elapsedTime, float& alpha, float& beta)
     {
-        // TODO: generated code Gun::_GetOffsetAngles
-        // Get the gun's world position
-        CVector gunPosition;
+        // RVA 0x6DEA40 - one frame of turret motion towards lookAt: alpha is the new horizontal
+        // angle of the gun node and beta the new pitch of the barrel, each moved by at most
+        // m_turningSpeed * elapsedTime and kept within the stop angles.
+        CVector const gunPos = m_barrelNode ? m_barrelNode->GetOriginWorldAbs() : GetNodeAbsolutePosition();
+        CVector const toTarget = lookAt - gunPos;
+        float const invLen =
+            1.0 / sqrt(toTarget.x * toTarget.x + toTarget.z * toTarget.z + toTarget.y * toTarget.y + 0.00000011920929);
+        CVector const worldDir(invLen * toTarget.x, toTarget.y * invLen, toTarget.z * invLen);
+
+        // The target direction in the owner's frame.
+        CMatrix const toOwner = RotationMatrix(GetOwner()->GetRotation().getInversed());
+        CVector const targetDir(
+            toOwner._31 * worldDir.z + toOwner._21 * worldDir.y + toOwner._11 * worldDir.x,
+            toOwner._32 * worldDir.z + toOwner._22 * worldDir.y + toOwner._12 * worldDir.x,
+            toOwner._33 * worldDir.z + toOwner._23 * worldDir.y + toOwner._13 * worldDir.x);
+
+        // Current angles: the gun node's yaw and the barrel's pitch.
+        float curAlpha;
+        float pitch;
+        float roll;
+        RotationMatrix(GetNodeRelativeRotation()).getYPR(curAlpha, pitch, roll);
+        curAlpha = WrapAngle(m_initialHorizAngle + curAlpha);
+
+        float curBeta = 0.0f;
         if (m_barrelNode)
         {
-            gunPosition = m_barrelNode->GetOriginWorldAbs();
+            float yaw;
+            RotationMatrix(m_barrelNode->GetRotation()).getYPR(yaw, curBeta, roll);
         }
-        else
-        {
-            gunPosition = GetNodeAbsolutePosition();
-        }
+        curBeta = 0.0f - curBeta;
 
-        // Calculate direction to target and normalize it
-        CVector targetDir = lookAt - gunPosition;
-        float invLength =
-            1.0f / std::sqrt(targetDir.x * targetDir.x + targetDir.y * targetDir.y + targetDir.z * targetDir.z + 1.1920929e-7f);
-        targetDir.x *= invLength;
-        targetDir.y *= invLength;
-        targetDir.z *= invLength;
-
-        // Get owner's inverse rotation to transform to local space
-        ai::PhysicObj* owner = GetOwner();
-        Quaternion ownerRot = owner->GetRotation();
-        Quaternion invOwnerRot = ownerRot.getInversed();
-
-        // Convert inverse owner rotation to matrix
-        CMatrix ownerMat;
-        float xx = invOwnerRot.x * invOwnerRot.x;
-        float yy = invOwnerRot.y * invOwnerRot.y;
-        float zz = invOwnerRot.z * invOwnerRot.z;
-        float xy = invOwnerRot.x * invOwnerRot.y;
-        float xz = invOwnerRot.x * invOwnerRot.z;
-        float yz = invOwnerRot.y * invOwnerRot.z;
-        float wx = invOwnerRot.w * invOwnerRot.x;
-        float wy = invOwnerRot.w * invOwnerRot.y;
-        float wz = invOwnerRot.w * invOwnerRot.z;
-
-        ownerMat._11 = 1.0f - 2.0f * (yy + zz);
-        ownerMat._12 = 2.0f * (xy + wz);
-        ownerMat._13 = 2.0f * (xz - wy);
-        ownerMat._14 = 0.0f;
-
-        ownerMat._21 = 2.0f * (xy - wz);
-        ownerMat._22 = 1.0f - 2.0f * (xx + zz);
-        ownerMat._23 = 2.0f * (yz + wx);
-        ownerMat._24 = 0.0f;
-
-        ownerMat._31 = 2.0f * (xz + wy);
-        ownerMat._32 = 2.0f * (yz - wx);
-        ownerMat._33 = 1.0f - 2.0f * (xx + yy);
-        ownerMat._34 = 0.0f;
-
-        ownerMat._41 = 0.0f;
-        ownerMat._42 = 0.0f;
-        ownerMat._43 = 0.0f;
-        ownerMat._44 = 1.0f;
-
-        // Transform target direction to local space
-        CVector localTargetDir;
-        localTargetDir.x = ownerMat._11 * targetDir.x + ownerMat._21 * targetDir.y + ownerMat._31 * targetDir.z;
-        localTargetDir.y = ownerMat._12 * targetDir.x + ownerMat._22 * targetDir.y + ownerMat._32 * targetDir.z;
-        localTargetDir.z = ownerMat._13 * targetDir.x + ownerMat._23 * targetDir.y + ownerMat._33 * targetDir.z;
-
-        // Get current gun rotation and convert to matrix
-        Quaternion gunRot = GetNodeRelativeRotation();
-        CMatrix gunMat;
-
-        xx = gunRot.x * gunRot.x;
-        yy = gunRot.y * gunRot.y;
-        zz = gunRot.z * gunRot.z;
-        xy = gunRot.x * gunRot.y;
-        xz = gunRot.x * gunRot.z;
-        yz = gunRot.y * gunRot.z;
-        wx = gunRot.w * gunRot.x;
-        wy = gunRot.w * gunRot.y;
-        wz = gunRot.w * gunRot.z;
-
-        gunMat._11 = 1.0f - 2.0f * (yy + zz);
-        gunMat._12 = 2.0f * (xy + wz);
-        gunMat._13 = 2.0f * (xz - wy);
-        gunMat._14 = 0.0f;
-
-        gunMat._21 = 2.0f * (xy - wz);
-        gunMat._22 = 1.0f - 2.0f * (xx + zz);
-        gunMat._23 = 2.0f * (yz + wx);
-        gunMat._24 = 0.0f;
-
-        gunMat._31 = 2.0f * (xz + wy);
-        gunMat._32 = 2.0f * (yz - wx);
-        gunMat._33 = 1.0f - 2.0f * (xx + yy);
-        gunMat._34 = 0.0f;
-
-        gunMat._41 = 0.0f;
-        gunMat._42 = 0.0f;
-        gunMat._43 = 0.0f;
-        gunMat._44 = 1.0f;
-
-        // Extract yaw, pitch, roll from gun matrix
-        float currentYaw, currentPitch, roll;
-        gunMat.getYPR(currentYaw, currentPitch, roll);
-
-        currentYaw += m_initialHorizAngle;
-        // Normalize angle to [-PI, PI]
-        if (currentYaw > M_PI)
-        {
-            currentYaw -= 2.0f * M_PI;
-        }
-        else if (currentYaw < -M_PI)
-        {
-            currentYaw += 2.0f * M_PI;
-        }
-
-        // Get barrel pitch if barrel node exists
-        float barrelPitch = 0.0f;
-        if (m_barrelNode)
-        {
-            CMatrix barrelMat;
-            Quaternion const& barrelRot = m_barrelNode->GetRotation();
-
-            xx = barrelRot.x * barrelRot.x;
-            yy = barrelRot.y * barrelRot.y;
-            zz = barrelRot.z * barrelRot.z;
-            xy = barrelRot.x * barrelRot.y;
-            xz = barrelRot.x * barrelRot.z;
-            yz = barrelRot.y * barrelRot.z;
-            wx = barrelRot.w * barrelRot.x;
-            wy = barrelRot.w * barrelRot.y;
-            wz = barrelRot.w * barrelRot.z;
-
-            barrelMat._11 = 1.0f - 2.0f * (yy + zz);
-            barrelMat._12 = 2.0f * (xy + wz);
-            barrelMat._13 = 2.0f * (xz - wy);
-            barrelMat._14 = 0.0f;
-
-            barrelMat._21 = 2.0f * (xy - wz);
-            barrelMat._22 = 1.0f - 2.0f * (xx + zz);
-            barrelMat._23 = 2.0f * (yz + wx);
-            barrelMat._24 = 0.0f;
-
-            barrelMat._31 = 2.0f * (xz + wy);
-            barrelMat._32 = 2.0f * (yz - wx);
-            barrelMat._33 = 1.0f - 2.0f * (xx + yy);
-            barrelMat._34 = 0.0f;
-
-            barrelMat._41 = 0.0f;
-            barrelMat._42 = 0.0f;
-            barrelMat._43 = 0.0f;
-            barrelMat._44 = 1.0f;
-
-            float barrelYaw, pitch, barrelRoll;
-            barrelMat.getYPR(barrelYaw, pitch, barrelRoll);
-            barrelPitch = -pitch;
-        }
-
-        // Get current relative direction for comparison
-        CVector oldRelDir = GetNodeRelativeDirection();
-
-        // Calculate desired alpha angle
-        float desiredAlpha = std::atan2(localTargetDir.x, localTargetDir.z) + m_initialHorizAngle;
-        // Normalize desired alpha
-        if (desiredAlpha > M_PI)
-        {
-            desiredAlpha -= 2.0f * M_PI;
-        }
-        else if (desiredAlpha < -M_PI)
-        {
-            desiredAlpha += 2.0f * M_PI;
-        }
-
+        CVector const oldRelDir = GetNodeRelativeDirection();
+        float desiredAlpha = WrapAngle(atan2(targetDir.x, targetDir.z) + m_initialHorizAngle);
         m_currentDesiredAlpha = desiredAlpha;
 
-        // Handle alpha movement with constraints
-        if (m_rightStopAngle - m_leftStopAngle > 2.0f * M_PI)
+        if (m_rightStopAngle - m_leftStopAngle > 6.283184482025146)
         {
-            // Unconstrained movement
-            float cross = localTargetDir.z * oldRelDir.x - localTargetDir.x * oldRelDir.z;
-            int direction;
-            if (cross > 1e-6f)
-            {
-                direction = 1;
-            }
-            else if (cross < -1e-6f)
-            {
-                direction = -1;
-            }
-            else
-            {
-                direction = 0;
-            }
-
-            alpha = currentYaw - (direction * m_turningSpeed * elapsedTime);
-
-            // Check if we should stop at target
-            float alphaDiff = alpha - desiredAlpha;
-            float currentDiff = currentYaw - desiredAlpha;
-
-            int alphaSign = (alphaDiff > 1e-6f) ? 1 : ((alphaDiff < -1e-6f) ? -1 : 0);
-            int currentSign = (currentDiff > 1e-6f) ? 1 : ((currentDiff < -1e-6f) ? -1 : 0);
-
-            if (alphaSign * currentSign <= 0)
+            // Turns all the way round: take the shorter way, by the side the target is on.
+            int const turn = RoughSign(targetDir.z * oldRelDir.x - targetDir.x * oldRelDir.z);
+            alpha = curAlpha - turn * m_turningSpeed * elapsedTime;
+            // Snap to the target once this step reaches or passes it.
+            if (RoughSign(alpha - desiredAlpha) * RoughSign(curAlpha - desiredAlpha) <= 0)
             {
                 alpha = desiredAlpha;
             }
         }
         else
         {
-            // Constrained movement
-            float oldAlpha = std::atan2(oldRelDir.x, oldRelDir.z) + m_initialHorizAngle;
-            if (oldAlpha > M_PI)
-            {
-                oldAlpha -= 2.0f * M_PI;
-            }
-            else if (oldAlpha < -M_PI)
-            {
-                oldAlpha += 2.0f * M_PI;
-            }
-
-            // Clamp desired alpha to stop angles
-            float clampedDesiredAlpha = desiredAlpha;
+            float const oldAlpha = WrapAngle(atan2(oldRelDir.x, oldRelDir.z) + m_initialHorizAngle);
             if (m_leftStopAngle > desiredAlpha)
             {
-                clampedDesiredAlpha = m_leftStopAngle;
+                desiredAlpha = m_leftStopAngle;
             }
-            if (clampedDesiredAlpha > m_rightStopAngle)
+            if (desiredAlpha > m_rightStopAngle)
             {
-                clampedDesiredAlpha = m_rightStopAngle;
+                desiredAlpha = m_rightStopAngle;
             }
 
-            // Determine movement direction
-            float diff = oldAlpha - clampedDesiredAlpha;
-            int direction;
-            if (diff > 1e-6f)
+            int const turn = RoughSign(oldAlpha - desiredAlpha);
+            alpha = curAlpha - turn * m_turningSpeed * elapsedTime;
+            if (RoughSign(alpha - desiredAlpha) * RoughSign(curAlpha - desiredAlpha) <= 0)
             {
-                direction = 1;
+                alpha = desiredAlpha;
             }
-            else if (diff < -1e-6f)
-            {
-                direction = -1;
-            }
-            else
-            {
-                direction = 0;
-            }
-
-            alpha = currentYaw - (direction * m_turningSpeed * elapsedTime);
-
-            // Check if we should stop at target
-            float alphaDiff = alpha - clampedDesiredAlpha;
-            float currentDiff = currentYaw - clampedDesiredAlpha;
-
-            int alphaSign = (alphaDiff > 1e-6f) ? 1 : ((alphaDiff < -1e-6f) ? -1 : 0);
-            int currentSign = (currentDiff > 1e-6f) ? 1 : ((currentDiff < -1e-6f) ? -1 : 0);
-
-            if (alphaSign * currentSign <= 0)
-            {
-                alpha = clampedDesiredAlpha;
-            }
-
-            // Clamp to stop angles
             if (m_leftStopAngle > alpha)
             {
                 alpha = m_leftStopAngle;
@@ -1562,49 +1793,24 @@ namespace ai
                 alpha = m_rightStopAngle;
             }
         }
+        alpha = WrapAngle(alpha - m_initialHorizAngle);
 
-        // Final alpha normalization
-        alpha -= m_initialHorizAngle;
-        if (alpha > M_PI)
-        {
-            alpha -= 2.0f * M_PI;
-        }
-        else if (alpha < -M_PI)
-        {
-            alpha += 2.0f * M_PI;
-        }
-
-        // Calculate beta angle
-        float desiredBeta = std::asin(localTargetDir.y);
-
-        // Apply beta constraints
-        float clampedDesiredBeta = desiredBeta;
+        float desiredBeta = asin(targetDir.y);
         if (m_lowStopAngle > desiredBeta)
         {
-            clampedDesiredBeta = m_lowStopAngle;
+            desiredBeta = m_lowStopAngle;
         }
-        if (clampedDesiredBeta > m_highStopAngle)
+        if (desiredBeta > m_highStopAngle)
         {
-            clampedDesiredBeta = m_highStopAngle;
+            desiredBeta = m_highStopAngle;
         }
 
-        // Smooth beta movement
-        int betaDirection = (clampedDesiredBeta - barrelPitch >= 0.0f) ? 1 : -1;
-        beta = barrelPitch + (betaDirection * m_turningSpeed * elapsedTime);
-
-        // Check if we should stop at target beta
-        float betaDiff = beta - clampedDesiredBeta;
-        float currentBetaDiff = barrelPitch - clampedDesiredBeta;
-
-        int betaSign = (betaDiff > 1e-6f) ? 1 : ((betaDiff < -1e-6f) ? -1 : 0);
-        int currentBetaSign = (currentBetaDiff > 1e-6f) ? 1 : ((currentBetaDiff < -1e-6f) ? -1 : 0);
-
-        if (betaSign * currentBetaSign <= 0)
+        int const tilt = desiredBeta - curBeta < 0.0f ? -1 : 1;
+        beta = tilt * m_turningSpeed * elapsedTime + curBeta;
+        if (RoughSign(beta - desiredBeta) * RoughSign(curBeta - desiredBeta) <= 0)
         {
-            beta = clampedDesiredBeta;
+            beta = desiredBeta;
         }
-
-        // Clamp beta to constraints
         if (m_lowStopAngle > beta)
         {
             beta = m_lowStopAngle;
@@ -1622,7 +1828,7 @@ namespace ai
 
     void Gun::_UpdateNodeFiringAction()
     {
-        // TODO: check this
+        // RVA 0x2DE1A0
         if (m_Node)
         {
             int action = 0;
@@ -1631,9 +1837,11 @@ namespace ai
             {
                 if (_bIsVolleyFiring())
                 {
-                    if (action == 2)
-                        return;
-                    SetNodeAction(2, 1);
+                    if (action != 2)
+                    {
+                        SetNodeAction(2, 1);
+                    }
+                    return;
                 }
                 if (action)
                     SetNodeAction(0, 1);
@@ -1649,7 +1857,8 @@ namespace ai
                         SetNodeAction(2, 1);
                 }
             }
-            else if (m_bWasShot && (m_timeFromLastShot >= (float)(60.0 / m_firingRate) || m_ChargeState == csInCharging))
+            else if (
+                m_bWasShot && (m_timeFromLastShot >= (float)(60.0 / m_firingRate) || m_ChargeState == csInCharging))
             {
                 m_bWasShot = 0;
                 SetNodeAction(0, 1);
@@ -1659,6 +1868,8 @@ namespace ai
 
     m3d::Object* Gun::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6DFCA0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

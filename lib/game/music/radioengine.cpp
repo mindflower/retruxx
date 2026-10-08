@@ -8,6 +8,10 @@
 #include <core/ini.h>
 #include "core/ref_ptr.h"
 #include "server/utils.h"
+#include "core/timer.h"
+#include "game/m3dgame.h"
+#include "game/profile.h"
+#include <cmath>
 
 namespace m3d
 {
@@ -132,8 +136,66 @@ namespace m3d
 
     void RadioEngine::PlayNextSoundMessage()
     {
-        // TODO: implmement RadioEngine::PlayNextSoundMessage
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x428470
+        if (!m_instance || !g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return;
+        }
+
+        if (m_curChannelId != -1)
+        {
+            if (M3D_APP->m_sound->IsChannelPlaying(m_curChannelId))
+            {
+                return;
+            }
+            m_curChannelId = -1;
+            m_curTextToShow = CStr("");
+        }
+
+        if (m_soundDeque.empty())
+        {
+            return;
+        }
+
+        RadioSoundItem const sslFront = m_soundDeque.front();
+        m_soundDeque.pop_front();
+
+        // A message type is repeated at most once every 10 seconds, and only
+        // during normal gameplay.
+        if (g_Kernel->GetTimer().GetCurTime() - m_lastTime[sslFront.type] < 10000 || M3D_APP->GetCurGameMode() != 0)
+        {
+            return;
+        }
+        if (m_correctIds.find(sslFront.sound) == m_correctIds.end())
+        {
+            return;
+        }
+
+        int probability = m_correctIds[sslFront.sound].probability;
+        auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
+        if (profile)
+        {
+            AIParam probabilityCoeff;
+            profile->GetParam(PP_NUM_RADIO_REPLIES_COEFF, probabilityCoeff);
+            float const scaled = probabilityCoeff.GetAsFloat() * static_cast<float>(probability);
+            // NOTE: the original converts with a bare fistp, i.e. rounding to
+            // nearest rather than truncating.
+            probability = static_cast<int>(std::lrint(scaled));
+        }
+
+        if (rand() % 100 > probability)
+        {
+            return;
+        }
+
+        auto const numIds = static_cast<unsigned>(m_correctIds[sslFront.sound].ids.size());
+        auto const idx = static_cast<unsigned>(rand()) % numIds;
+        auto const sampleId = m_correctIds[sslFront.sound].ids[idx];
+        auto const sound = m_soundIdSound[sampleId];
+        m_curTextToShow = m_soundIdName[sampleId];
+        m_curChannelId = M3D_APP->m_sound->PlaySound2D(sound, false);
+        M3D_APP->m_pInterfaceManager->AddFadingMsg(m_curTextToShow, {});
+        m_lastTime[sslFront.type] = g_Kernel->GetTimer().GetCurTime();
     }
 
     RadioEngine* RadioEngine::GetInstance()
@@ -141,9 +203,25 @@ namespace m3d
         return m_instance;
     }
 
-    void RadioEngine::PlaySoundMessage(int, int, CStr const&)
+    void RadioEngine::PlaySoundMessage(int belongId, int messageType, CStr const& soundId)
     {
-        // TODO: implmement RadioEngine::PlaySoundMessage
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x4282C0
+        if (!g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        {
+            return;
+        }
+
+        if (belongId == -1)
+        {
+            // No speaker: only restart this message type's repeat timer.
+            m_lastTime[messageType] = g_Kernel->GetTimer().GetCurTime();
+        }
+        else if (m_groupNameByBelong.find(belongId) != m_groupNameByBelong.end())
+        {
+            RadioSoundItem sl;
+            sl.sound = m_groupNameByBelong[belongId] + CStr("_") + soundId;
+            sl.type = messageType;
+            m_soundDeque.push_back(sl);
+        }
     }
 }  // namespace m3d

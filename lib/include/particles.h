@@ -175,6 +175,9 @@ namespace m3d
         void SetPsColor(float time, unsigned int value);
         void SetPsMesh(float radius, int points);
         void SetTextureName(const CStr& name);
+        // Not in the original: the shader lookup is shared by ReadFromProtos and
+        // ReadRenderParams, which both inline the same switch in the shipped build.
+        void CreateShaderForType(PsShaderType type);
         CStr GetName();
         CoordinatesSystemType GetPsVolume() const;
         void GetPsVolume(int, float&, float&, ForceType&, float&) const;
@@ -298,6 +301,9 @@ namespace m3d
         ModelPS();
 
     private:
+        // Not in the original: Read and ReadFromProtos both inline this.
+        void LoadPartsModel();
+
         AnimatedModel* m_PartsModel;
         AnimInfo* m_Anim;
         CStr m_PartsModelName;

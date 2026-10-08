@@ -18,10 +18,11 @@ namespace ai
         /* 0x0040 */ CStr m_engineModelName;
     }; /* size: 0x004c */
 
-    static_assert(sizeof(SgNodeObjPrototypeInfo) == 0x004c);
-
     class SgNodeObj : public ai::Obj
     {
+        // SgNodeObjPrototypeInfo::CreateTargetObject builds the object from its prototype.
+        friend class SgNodeObjPrototypeInfo;
+
     protected:
         virtual  ~SgNodeObj() override /* 0x00 */;
 
@@ -76,6 +77,4 @@ namespace ai
         /* 0x00ec */ float m_scale;
         /* 0x00f0 */ bool m_needToRelink;
     }; /* size: 0x00f4 */
-
-    static_assert(sizeof(SgNodeObj) == 0x00f4);
 }

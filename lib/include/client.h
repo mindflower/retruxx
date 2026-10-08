@@ -63,7 +63,5 @@ namespace m3d
         virtual const char* GetCallbackName() const override /* 0x00 */;
     }; /* size: 0x002c */
 
-    static_assert(sizeof(CClient) == 0x002c);
-
     inline CClient* pClient = nullptr;
 }

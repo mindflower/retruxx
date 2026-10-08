@@ -4,6 +4,20 @@
 
 namespace m3d
 {
+    // Deletes every element of a container of owning raw pointers and then
+    // releases the container's own storage - not just clear(), the buffer goes
+    // too. Elements are destroyed back to front, as in the original.
+    template <class T>
+    void emptyPtrContainer(T& c)
+    {
+        while (!c.empty())
+        {
+            delete c.back();
+            c.pop_back();
+        }
+        T().swap(c);
+    }
+
     template<class T>
     class CStrHash
     {
@@ -33,9 +47,10 @@ namespace m3d
             return false;
         }
 
-        void remove(const CStr&)
+        void remove(const CStr& key)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // NOTE: not emitted in the shipped binary; drops the key if present.
+            m_hash.erase(key);
         }
 
         using tStrHash = retruxx::map<CStr, T>;
@@ -75,9 +90,10 @@ namespace m3d
             return true;
         }
 
+        // Inlined in the binary as lower_bound, insert if missing, then assign: an existing key is overwritten.
         void addValueByKey(unsigned int key, T const& val)
         {
-            m_hash.insert(retruxx::pair<unsigned int, T>(key, val));
+            m_hash[key] = val;
         }
 
         //using tHashFunction = stdext::hash_compare<unsigned int, std::less<unsigned int> >;

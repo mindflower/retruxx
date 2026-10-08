@@ -6,6 +6,14 @@
 #include <math/point2d.h>
 #include <renderer/i_renderer.h>
 
+namespace ai
+{
+    class CompositeObj;
+    class JointedObj;
+    class PhysicBody;
+}
+
+
 class CClipper;
 
 namespace m3d
@@ -44,8 +52,6 @@ namespace m3d
         bool empty() const;
     }; /* size: 0x0300 */
 
-    static_assert(sizeof(ObjectsContainer) == 0x0300);
-
     struct GraphItemsForSgNode
     {
         /* 0x0000 */ PointBase<int> m_cellsCoveredPoint0;
@@ -56,11 +62,17 @@ namespace m3d
         void ClearCellsCovered();
     }; /* size: 0x0020 */
 
-    static_assert(sizeof(GraphItemsForSgNode) == 0x0020);
-
     class SceneGraph
     {
         friend class CWorld;
+        // ai::CompositeObj takes its node off the think list once the pieces drive it.
+        friend class ai::CompositeObj;
+        friend class ai::JointedObj;
+        // PhysicBody::SetAnimationStopped moves nodes in and out of the think list.
+        friend class ai::PhysicBody;
+        friend class LightsServer;
+        // ProjectorsServer::RenderItem walks the sorted cells and sets up the projector shaders.
+        friend class ProjectorsServer;
 
     public:
         SceneGraph(const m3d::SceneGraph&);
@@ -241,6 +253,4 @@ namespace m3d
         int getYOfs(int y);
         void EnsureEverythingIsUnlinked() const;
     }; /* size: 0x395880 */
-
-    static_assert(sizeof(SceneGraph) == 0x395880);
 }

@@ -7,7 +7,7 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(ImageWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(ImageWnd);
 
@@ -21,9 +21,18 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        int ImageWnd::SetImage(CStr const&)
+        int ImageWnd::SetImage(CStr const& textureName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x6B2350
+            if (m_texture.IsValid())
+            {
+                M3D_RENDERER->ReleaseTexture(m_texture);
+            }
+            m_textureName = textureName;
+            m_texture = M3D_RENDERER->AddTexture(m_textureName, 4);
+            M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
+            return m_texture.IsValid();
         }
 
         int ImageWnd::SetImage(rend::TexHandle tex)
@@ -58,7 +67,7 @@ namespace m3d
 
         Object* ImageWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ImageWnd(*this);
         }
 
         int ImageWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -78,19 +87,40 @@ namespace m3d
             return 1;
         }
 
-        int ImageWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ImageWnd::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x6742B0
+            if (!Wnd::WriteToXmlNode(file, writeTo))
+            {
+                return 0;
+            }
+            writeTo->SetAttribute("image", m_textureName.c_str());
+            return 1;
         }
 
-        int ImageWnd::CreateImageWnd(BoundsBase<float> const&, CStr const&)
+        int ImageWnd::CreateImageWnd(BoundsBase<float> const& rc, CStr const& textureName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x6B20F0
+            if (!Wnd::Create(CStr(), WS_NOFRAME | WS_IS_VISIBLE, rc, 4))  // style 0x240
+            {
+                return 0;
+            }
+            m_textureName = textureName;
+            m_texture = M3D_RENDERER->AddTexture(m_textureName, 4);
+            M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
+            return 1;
         }
 
-        int ImageWnd::CreateImageWnd(BoundsBase<float> const&, rend::TexHandle)
+        int ImageWnd::CreateImageWnd(BoundsBase<float> const& rc, rend::TexHandle tex)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!Wnd::Create(CStr(), WS_NOFRAME | WS_IS_VISIBLE, rc, 4))  // style 0x240
+            {
+                return 0;
+            }
+            m_texture = tex;
+            M3D_RENDERER->ReferenceTexture(m_texture);
+            return 1;
         }
 
         int ImageWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
@@ -123,9 +153,11 @@ namespace m3d
             m_paneFlags = 0;
         }
 
-        ImageWnd::ImageWnd(ImageWnd const&)
+        ImageWnd::ImageWnd(ImageWnd const& rhs)
+            : Wnd(rhs), m_textureName(rhs.m_textureName), m_texture(rhs.m_texture)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x6B2540
+            M3D_RENDERER->ReferenceTexture(m_texture);
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

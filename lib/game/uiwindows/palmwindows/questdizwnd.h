@@ -12,6 +12,8 @@ class QuestDizWnd :  public m3d::ui::Wnd
 public:
     class AuxInfo
     {
+        friend class QuestDizWnd;
+
     public:
         AuxInfo();
 

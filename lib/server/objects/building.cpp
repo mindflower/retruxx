@@ -1,6 +1,10 @@
 #include "building.h"
+#include "base/prototypemanager.h"
 #include "core/ini.h"
 #include "npc.h"
+
+#include <algorithm>
+#include <core/kernel.h>
 
 namespace ai
 {
@@ -27,7 +31,8 @@ namespace ai
 
     Obj* BuildingPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x704910
+        return new Building(*this);
     }
 
     Building::Building(BuildingPrototypeInfo const& prototypeInfo) : Obj(prototypeInfo)
@@ -36,22 +41,41 @@ namespace ai
 
     m3d::Class* Building::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x703AC0
+        return RT_CLASS_LOCAL(Building);
     }
 
-    bool Building::RemoveChild(Obj*)
+    bool Building::RemoveChild(Obj* pChild)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7047D0
+        Obj::RemoveChild(pChild);
+        if (pChild && pChild->IsKindOf(&ai::Npc::m_classNpc))
+        {
+            auto const it = std::find(m_npcs.begin(), m_npcs.end(), static_cast<Npc*>(pChild));
+            if (it != m_npcs.end())
+            {
+                m_npcs.erase(it);
+            }
+        }
+        // NOTE: false is returned even when the npc was found and dropped.
+        return false;
     }
 
     BuildingType Building::GetBuildingType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x45C930
+        BuildingPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
+        return prototypeInfo ? prototypeInfo->m_buildingType : INVALID_BUILDINGTYPE;
     }
 
     void Building::Remove()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x704480 - the building takes its npcs with it.
+        Obj::Remove();
+        for (Npc* const npc : m_npcs)
+        {
+            npc->Remove();
+        }
     }
 
     m3d::Class* Building::GetBaseClass()
@@ -78,7 +102,8 @@ namespace ai
 
     retruxx::vector<Npc*> const& Building::GetNpcs() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x49BBC0
+        return m_npcs;
     }
 
     void Building::AddChild(Obj* pObj)
@@ -94,28 +119,39 @@ namespace ai
         }
     }
 
-    CStr Building::GetBuildingTypeName(BuildingType)
+    CStr Building::GetBuildingTypeName(BuildingType buildingType)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x704330 - INVALID_BUILDINGTYPE, and anything past it, has no name.
+        if (buildingType < NUM_BUILDINGTYPES)
+        {
+            return m_buildingTypeNames[buildingType];
+        }
+        return CStr();
     }
 
     BuildingPrototypeInfo const* Building::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7047A0
+        return RT_DYNCAST(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BuildingPrototypeInfo const);
     }
 
     Building::~Building()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x704870 - the npc vector holds no ownership of the npcs it points at.
     }
 
     m3d::Object* Building::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7040F0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* Building::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x703F30
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

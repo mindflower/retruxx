@@ -3,6 +3,8 @@
 #include <stdexcept>
 
 #include "core/aiparam.h"
+#include "core/ini.h"
+#include "core/kernel.h"
 
 namespace ai
 {
@@ -12,28 +14,30 @@ namespace ai
 
     CStr IntStatistic::GetValue() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E160
+        return CStr::format_("%d", m_value);
     }
 
     m3d::Object* IntStatistic::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E180 - NOTE: this goes through the copy constructor, which
+        // asserts, so a statistic can never actually be cloned.
+        return new IntStatistic(*this);
     }
 
-    void IntStatistic::Increase(int)
+    void IntStatistic::Increase(int delta)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72DE70
+        m_value += delta;
     }
 
     m3d::Object* IntStatistic::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72DE80
+        return new IntStatistic();
     }
 
-    IntStatistic::~IntStatistic()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    IntStatistic::~IntStatistic() = default;
 
     m3d::Class* IntStatistic::GetBaseClass()
     {
@@ -42,36 +46,44 @@ namespace ai
 
     m3d::AIParam IntStatistic::GetValueAsAIParam() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E1B0
+        return m3d::AIParam(m_value);
     }
 
-    void IntStatistic::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void IntStatistic::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72DEF0
+        Statistic::LoadFromXml(xmlFile, xmlNode);
+        m3d::SafeIntAttrib(m_value, xmlNode, "Value");
     }
 
     void IntStatistic::Zero()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72DE50
+        m_value = 0;
     }
 
-    void IntStatistic::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void IntStatistic::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72E100
+        Statistic::SaveToXml(xmlFile, xmlNode);
+        xmlNode->SetAttribute("Value", CStr(m_value).c_str());
     }
 
     m3d::Class* IntStatistic::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return RT_CLASS_LOCAL(IntStatistic);
     }
 
     IntStatistic::IntStatistic()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72DE30
+        m_value = 0;
     }
 
     IntStatistic::IntStatistic(IntStatistic const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x72DF30
+        M3D_ASSERT(0);
     }
 }

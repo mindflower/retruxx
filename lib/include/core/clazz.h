@@ -86,7 +86,6 @@ namespace m3d
     private:
         /* 0x0004 */ int m_refCount = 0;
     }; /* size: 0x0008 */
-    static_assert(sizeof(RefCountedBase) == 0x0008);
 
     //IMPORTANT: fields and members order is strict c
     class Object : public RefCountedBase

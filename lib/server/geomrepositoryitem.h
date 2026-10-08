@@ -51,4 +51,9 @@ namespace ai
         void _Init(int objId);
         void _Init();
     }; /* size: 0x001c */
+
+    // Two items are equal when they share type, parent repository and origin, and
+    // then - for object items - the same objId, or - for resource items - the same
+    // resourceId and amount. (ExMachina 1.02 NoCD RVA 0x445110.)
+    bool operator==(const ai::GeomRepositoryItem& lhs, const ai::GeomRepositoryItem& rhs);
 }

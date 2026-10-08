@@ -1,4 +1,5 @@
 #include "physicbody.h"
+#include <scene/nodes/sgnodeanimatedmodel.h>
 
 #include "server/objects/physicbodies/physichelpers.h"
 #include <stdexcept>
@@ -23,6 +24,47 @@
 #include "geoms/trimesh.h"
 #include "server/dynamicscene.h"
 #include <server/server.h>
+
+namespace
+{
+    // Rows of the rotation matrix of a unit quaternion (row vector convention), as expanded
+    // inline throughout PhysicBody.
+    struct RotRows
+    {
+        float _11, _12, _13, _21, _22, _23, _31, _32, _33;
+    };
+
+    RotRows RotationRows(Quaternion const& q)
+    {
+        float const zw = q.z * q.w;
+        float const zx = q.z * q.x;
+        float const xx = q.x * q.x;
+        float const wx = q.w * q.x;
+        float const yx = q.y * q.x;
+        float const zy = q.z * q.y;
+        float const yw = q.y * q.w;
+        float const zz = q.z * q.z;
+        float const yy = q.y * q.y;
+        RotRows m;
+        m._11 = 1.0f - (zz + yy) * 2.0f;
+        m._21 = (yx - zw) * 2.0f;
+        m._31 = (yw + zx) * 2.0f;
+        m._12 = (zw + yx) * 2.0f;
+        m._22 = 1.0f - (zz + xx) * 2.0f;
+        m._32 = (zy - wx) * 2.0f;
+        m._13 = (zx - yw) * 2.0f;
+        m._23 = (wx + zy) * 2.0f;
+        m._33 = 1.0f - (yy + xx) * 2.0f;
+        return m;
+    }
+
+    // INITIAL_OBJECTS_DIRECTION (0, 0, 1) rotated by q.
+    CVector DirectionOf(Quaternion const& q)
+    {
+        RotRows const m = RotationRows(q);
+        return CVector(m._31, m._32, m._33);
+    }
+}
 
 namespace ai
 {
@@ -95,54 +137,50 @@ namespace ai
 
     int PhysicBody::GetNodeAnimAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616620
+        return m_animAction;
     }
 
     void PhysicBody::SetNodeAnimAction(int action, bool forceRestartAction)
     {
+        // RVA 0x61C5B0 - the action goes to the node and to every node below it,
+        // unless it is already playing and no restart is forced.
         m_animAction = action;
-        if (action < 0x20)
+        if (action >= 0x20)
         {
-            auto nodeAnimInfo = GetNodeAnimInfo(m_Node);
-            if (forceRestartAction || nodeAnimInfo)
+            return;
+        }
+
+        int curAnimAction = -1;
+        if (auto* nodeAnimInfo = GetNodeAnimInfo(m_Node))
+        {
+            if (!nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
             {
-                auto curAnimAction = -1;
-                if (!nodeAnimInfo->GetStickToLastFrame() && nodeAnimInfo->GetCurAnimation())
+                curAnimAction = nodeAnimInfo->GetCurAnimation()->m_action;
+            }
+        }
+        if (!forceRestartAction && curAnimAction == m_animAction)
+        {
+            return;
+        }
+        if (!m_Node)
+        {
+            return;
+        }
+
+        m_Node->SetProperty(8709, &action);
+        retruxx::vector<m3d::Object*> stack;
+        stack.push_back(m_Node);
+        while (!stack.empty())
+        {
+            m3d::Object* const currentNode = stack.back();
+            stack.pop_back();
+            for (m3d::Object* child = currentNode->GetFirstChild(); child; child = child->GetNextSibling())
+            {
+                static_cast<m3d::SgNode*>(child)->SetProperty(8709, &action);
+                if (child->GetFirstChild())
                 {
-                    curAnimAction = nodeAnimInfo->GetCurAnimation()->m_action;
-                }
-
-                if (curAnimAction != m_animAction && m_Node)
-                {
-                    m_Node->SetProperty(8709, &action);
-                    retruxx::vector<m3d::Object*> stack;
-                    stack.push_back(m_Node);
-
-                    // Depth-first traversal
-                    while (!stack.empty())
-                    {
-                        // Pop the last node from stack
-                        m3d::Object* currentNode = stack.back();
-                        stack.pop_back();
-
-                        // Process all children of current node
-                        m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-
-                        // TODO: check this
-                        while (child != nullptr)
-                        {
-                            child->SetProperty(8709, &action);
-
-                            // If child has children of its own, push to stack for processing
-                            if (child->GetFirstChild() != nullptr)
-                            {
-                                stack.push_back(child);
-                            }
-
-                            // Move to next sibling
-                            child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
-                        }
-                    }
+                    stack.push_back(child);
                 }
             }
         }
@@ -172,6 +210,7 @@ namespace ai
 
     void PhysicBody::ChangePhysicBodyByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
     {
+        // RVA 0x61D6C0 - rebuilds the body's geoms: one transform geom per collision info, wrapping a primitive.
         UnlinkGeomFromCollisionCells();
         _ClearGeoms();
         for (auto& collisionInfo : collisionInfos)
@@ -195,7 +234,6 @@ namespace ai
             }
             case GEOM_TYPE_CYLINDER:
             {
-                // TODO: check this
                 auto cylinder = Cylinder::CreateObject(0, collisionInfo.m_radius, collisionInfo.m_size.y, 0);
                 obj->SetGeom(cylinder);
                 break;
@@ -208,7 +246,6 @@ namespace ai
             }
             case GEOM_TYPE_TRIMESH:
             {
-                // TODO: check this
                 auto trimesh = TriMesh::CreateObject(
                     0,
                     collisionInfo.m_trimeshVertices->GetObjectA().data(),
@@ -222,38 +259,79 @@ namespace ai
             }
             default:
             {
-                M3D_LOG_ERR("Invalid geom type: " + CStr(collisionInfo.m_geomType) + ", for model: " + GetDebugDescription());
+                M3D_LOG_INFO(
+                    "Invalid geom type: " + CStr(collisionInfo.m_geomType) + CStr(" for ") + GetDebugDescription() +
+                    CStr(", model = ") + m_modelname);
                 M3D_ASSERT(0);
             }
             }
 
+            // The offset belongs to the primitive inside the transform: the transform itself follows the body.
+            // NOTE: the shipped code dereferences the inner geom without checking it (an invalid type has none).
+            dGeomID const inner = obj->GetGeom()->GetGeomId();
             dGeomSetPosition(
-                obj->GetGeomId(), collisionInfo.m_relTranslation.x, collisionInfo.m_relTranslation.y, collisionInfo.m_relTranslation.z);
+                inner, collisionInfo.m_relTranslation.x, collisionInfo.m_relTranslation.y, collisionInfo.m_relTranslation.z);
 
             dQuaternion q;
             q[0] = collisionInfo.m_relRotation.w;
             q[1] = collisionInfo.m_relRotation.x;
             q[2] = collisionInfo.m_relRotation.y;
             q[3] = collisionInfo.m_relRotation.z;
-            dGeomSetQuaternion(obj->GetGeomId(), q);
+            dGeomSetQuaternion(inner, q);
         }
         SetOwnerBodyToGeoms();
         m_collisionInfos = collisionInfos;
     }
 
-    void PhysicBody::SetSgNode(m3d::SgNode*)
+    void PhysicBody::SetSgNode(m3d::SgNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61BA60 - replaces the body's visual node and takes the model name from it.
+        // The shipped code also fetches the node's absolute position, relative rotation and the body rotation here,
+        // then discards all three.
+        if (m_Node)
+        {
+            m_Node->GetGraph()->RemoveNode(m_Node);
+            m_Node = nullptr;
+        }
+        m_Node = node;
+        if (!node)
+        {
+            m_modelname = CStr();
+            return;
+        }
+
+        if (!m_Node->IsKindOf(&m3d::SgAnimatedModelNode::m_classSgAnimatedModelNode))
+        {
+            SYS_ERROR("IS_KIND_OF( m_Node, SgAnimatedModelNode )");
+        }
+        PhysicBody* pThis = this;
+        m_Node->SetProperty(4356, &pThis);
+        int modelId = -1;
+        m_Node->GetProperty(4360, &modelId);
+        m_modelname = M3D_ENGINE_CFG.GetNameByModelId(modelId + 0x200000);
     }
 
     CVector PhysicBody::GetPosition() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto position = dGeomGetPosition(m_pGeoms[0]->GetGeomId());
+        CVector result;
+        result.x = position[0];
+        result.y = position[1];
+        result.z = position[2];
+        return result;
     }
 
-    void PhysicBody::SetPosition(CVector const&)
+    void PhysicBody::SetPosition(CVector const& vec)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619060
+        if (m_ownerPhysicObj)
+        {
+            m_ownerPhysicObj->SetPosition(vec);
+        }
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            dGeomSetPosition(geom->GetGeomId(), vec.x, vec.y, vec.z);
+        }
     }
 
     void PhysicBody::UpdateGeomsByCollisionInfo(retruxx::vector<CollisionInfo> const& collisionInfos)
@@ -295,71 +373,43 @@ namespace ai
 
     void PhysicBody::SetNodeAction(int action, bool forceRestartAction)
     {
-        // TODO: generated code
-        // Store the action
-        this->m_animAction = action;
-        this->m_effectAction = action;
+        // RVA 0x61C450 - sets the animation action on the node and all its descendants, unless the node already
+        // plays it. A node without anim info, or stuck on its last frame, counts as playing action -1.
+        m_animAction = action;
+        m_effectAction = action;
 
-        // Check if we should apply the action to the node hierarchy
-        bool shouldApplyAction = forceRestartAction;
-
-        if (!shouldApplyAction)
+        if (!forceRestartAction)
         {
-            // Check if the current animation action doesn't match the new action
-            m3d::AnimInfo* animInfo = ai::GetNodeAnimInfo(this->m_Node);
-            if (animInfo != nullptr)
+            int currentAction = -1;
+            if (auto* animInfo = ai::GetNodeAnimInfo(m_Node); animInfo && !animInfo->GetStickToLastFrame())
             {
-                int currentAction = -1;
-                if (!animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation() != nullptr)
+                if (auto* curAnimation = animInfo->GetCurAnimation())
                 {
-                    currentAction = animInfo->GetCurAnimation()->m_action;
+                    currentAction = curAnimation->m_action;
                 }
-                shouldApplyAction = (currentAction != this->m_animAction);
             }
-            else
+            if (currentAction == m_animAction)
             {
-                shouldApplyAction = true;  // No anim info, so apply the action
+                return;
             }
         }
 
-        // Apply the action to the node hierarchy if needed
-        if (shouldApplyAction && this->m_Node != nullptr)
+        if (!m_Node)
         {
-            // Set property on the root node
-            this->m_Node->SetProperty(8704, &action);
-
-            // Use stack for iterative depth-first traversal of node hierarchy
-            // Process children using iterative DFS
-            std::vector<m3d::Object*> stack;
-            stack.push_back(dynamic_cast<m3d::Object*>(m_Node->GetFirstChild()));
-
-            while (!stack.empty())
-            {
-                m3d::Object* current = stack.back();
-                stack.pop_back();
-
-                // Process all siblings of the current node
-                m3d::SgNode* sibling = dynamic_cast<m3d::SgNode*>(current);
-                while (sibling)
-                {
-                    sibling->SetProperty(8704, &action);
-
-                    // If this sibling has children, add to stack for processing
-                    if (sibling->GetFirstChild())
-                    {
-                        stack.push_back(sibling->GetFirstChild());
-                    }
-
-                    // Move to next sibling
-                    sibling = dynamic_cast<m3d::SgNode*>(sibling->GetNextSibling());
-                }
-            }
+            return;
         }
+
+        m_Node->SetProperty(m3d::PROP_DM_ACTION, &action);
+        m3d::ForEachDescendant(m_Node, [&action](m3d::SgNode* node) { node->SetProperty(m3d::PROP_DM_ACTION, &action); });
     }
 
-    void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
+    void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>& geoms) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Declared in the PDB but never emitted in the shipped build; lists the geom transforms, as GetGeom does.
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            geoms.push_back(geom);
+        }
     }
 
     m3d::SgNode* PhysicBody::CreateNode(CStr const& modelname, int action, CVector const& scale, PhysicBody* owner, bool addToRoot)
@@ -447,17 +497,33 @@ namespace ai
 
     CVector PhysicBody::GetDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619230
+        return DirectionOf(GetRotation());
     }
 
     unsigned PhysicBody::GetNumGeoms() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617340
+        return static_cast<unsigned>(m_pGeoms.size());
     }
 
-    void PhysicBody::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void PhysicBody::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        Obj::LoadRuntimeValues(xmlFile, xmlNode);
+
+        m3d::SafeIntAttrib(m_animAction, xmlNode, "AnimAction");
+        SetNodeAnimAction(m_animAction, true);
+
+        m3d::SafeIntAttrib(m_effectAction, xmlNode, "EffectAction");
+        SetNodeEffectAction(m_effectAction);
+
+        m3d::SafeStrAttrib(m_modelname, xmlNode, "ModelName");
+
+        m3d::SafeIntAttrib(m_cfgNum, xmlNode, "Cfg");
+        SetNodeCfgNum(m_cfgNum);
+
+        m3d::SafeBoolAttrib(m_bAnimationIsStopped, xmlNode, "AnimationIsStopped");
+        m3d::SafeIntAttrib(m_loadedAnimTime, xmlNode, "CurAnimTime");
     }
 
     m3d::SgNode* PhysicBody::CreateEffectNode(
@@ -473,12 +539,17 @@ namespace ai
         {
             m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(node);
 
-            // TODO: check this!!!!!
+            // The original reuses the scale argument's stack slot as the action
+            // id after zeroing it, so its "action != -1" guard is always taken
+            // and the action is always set to 0.
             int nullValue = 0;
             node->SetProperty(m3d::PROP_DM_ACTION, &nullValue);
             node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &nullValue);
 
-            node->SetScale(scale);
+            // Uniform scale on all three axes. Passing the bare float would
+            // implicitly build CVector(scale) - which is {scale, 0, 0}, and
+            // flattens the model away entirely.
+            node->SetScale(CVector(scale, scale, scale));
             node->SetPersistance(false);
             node->UpdateXForm(0, 1);
 
@@ -513,14 +584,21 @@ namespace ai
         return {0.0, 0.0, 0.0, 1.0};
     }
 
-    void PhysicBody::SetRotation(Quaternion const*)
+    void PhysicBody::SetRotation(Quaternion const* q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619130
+        SetRotation(*q);
     }
 
-    void PhysicBody::SetRotation(Quaternion const&)
+    void PhysicBody::SetRotation(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6190C0
+        // ODE takes quaternions as (w, x, y, z).
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            dQuaternion const quat = {q.w, q.x, q.y, q.z};
+            dGeomSetQuaternion(geom->GetGeomId(), quat);
+        }
     }
 
     void PhysicBody::UnlinkGeomsFromBody()
@@ -531,9 +609,25 @@ namespace ai
         }
     }
 
-    void PhysicBody::SetAnimationStopped(bool)
+    void PhysicBody::SetAnimationStopped(bool bStopped)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61CD30
+        // A stopped node leaves the scene graph's think list; restarting it resumes from now.
+        m_bAnimationIsStopped = bStopped;
+        if (!m_Node)
+        {
+            return;
+        }
+        if (bStopped)
+        {
+            m_Node->GetGraph()->m_thinkList.erase(m_Node);
+        }
+        else
+        {
+            unsigned frameStartTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
+            m_Node->SetProperty(8719u, &frameStartTime);
+            m_Node->GetGraph()->m_thinkList.insert(m_Node);
+        }
     }
 
     m3d::DbgCounter* PhysicBody::GetCountNodeRelinks()
@@ -541,9 +635,11 @@ namespace ai
         return m_countNodeRelinks;
     }
 
-    Geom* PhysicBody::GetGeom(unsigned) const
+    Geom* PhysicBody::GetGeom(unsigned n) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A800
+        // NOTE: n is not range checked.
+        return m_pGeoms[n];
     }
 
     void PhysicBody::RelinkSceneGraphNode()
@@ -565,53 +661,44 @@ namespace ai
 
     void PhysicBody::SetNodeEffectAction(int action)
     {
+        // RVA 0x61C710 - as SetNodeAction, for effect actions (only the first 32 exist), without the
+        // already-playing check.
         m_effectAction = action;
-        m_effectAction = action;
-        if (action < 0x20)
+        if (action >= 0x20 || !m_Node)
         {
-            if (m_Node)
-            {
-                m_Node->SetProperty(8708, &action);
-                retruxx::vector<m3d::Object*> stack;
-                stack.push_back(m_Node);
-
-                // Depth-first traversal
-                while (!stack.empty())
-                {
-                    // Pop the last node from stack
-                    m3d::Object* currentNode = stack.back();
-                    stack.pop_back();
-
-                    // Process all children of current node
-                    m3d::SgNode* child = dynamic_cast<m3d::SgNode*>(currentNode->GetFirstChild());
-
-                    // TODO: check this
-                    while (child != nullptr)
-                    {
-                        child->SetProperty(8708, &action);
-
-                        // If child has children of its own, push to stack for processing
-                        if (child->GetFirstChild() != nullptr)
-                        {
-                            stack.push_back(child);
-                        }
-
-                        // Move to next sibling
-                        child = dynamic_cast<m3d::SgNode*>(child->GetNextSibling());
-                    }
-                }
-            }
+            return;
         }
+
+        m_Node->SetProperty(m3d::PROP_DM_EFFECT_ACTION, &action);
+        m3d::ForEachDescendant(
+            m_Node, [&action](m3d::SgNode* node) { node->SetProperty(m3d::PROP_DM_EFFECT_ACTION, &action); });
     }
 
-    void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A900
+        // NOTE: the name attribute is literally "m" in the shipped build (the pointer lands on
+        // the tail of the string "Param").
+        xmlNode->SetAttribute("m", m_name.c_str());
+        xmlNode->SetAttribute("Id", CStr(GetId()).c_str());
+        dReal const* pos = dGeomGetPosition(m_pGeoms.front()->GetGeomId());
+        xmlNode->SetAttribute("Position", CStr(CVector(pos[0], pos[1], pos[2])).c_str());
+        Quaternion const rot = GetRotation();
+        xmlNode->SetAttribute("Rotation", CStr::format_("%.4f %.4f %.4f %.4f", rot.x, rot.y, rot.z, rot.w).c_str());
+        xmlNode->SetAttribute("ModelName", m_modelname.c_str());
+        xmlNode->SetAttribute("Owner", CStr(m_ownerPhysicObj ? m_ownerPhysicObj->GetId() : -1).c_str());
+        for (GeomTransform* geom : m_pGeoms)
+        {
+            ref_ptr geomNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Geom");
+            xmlNode->AddChild(geomNode);
+            geom->DumpPhysicInfo(xmlFile, geomNode);
+        }
     }
 
     int PhysicBody::GetNodeEffectAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616630
+        return m_effectAction;
     }
 
     void PhysicBody::LinkGeomToCollisionCells()
@@ -633,9 +720,18 @@ namespace ai
         return this->m_collisionInfos;
     }
 
-    void PhysicBody::SetNodeAbsolutePosition(CVector const&)
+    void PhysicBody::SetNodeAbsolutePosition(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x619980
+        // The offset from the body, brought into the body's frame.
+        dReal const* bodyPos = dGeomGetPosition(m_pGeoms.front()->GetGeomId());
+        CVector const d(pos.x - bodyPos[0], pos.y - bodyPos[1], pos.z - bodyPos[2]);
+        RotRows const m = RotationRows(GetRotation().getInversed());
+        CVector const rel(
+            (m._31 * d.z + m._21 * d.y) + m._11 * d.x,
+            (m._32 * d.z + m._22 * d.y) + m._12 * d.x,
+            (m._33 * d.z + m._23 * d.y) + m._13 * d.x);
+        SetNodeRelativePosition(rel);
     }
 
     CVector PhysicBody::GetNodeAbsolutePosition() const
@@ -713,14 +809,43 @@ namespace ai
             m_Node->SetProperty(4353u, &newBelong);
     }
 
-    void PhysicBody::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void PhysicBody::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617680
+        Obj::SaveRuntimeValues(xmlFile, xmlNode);
+        if (m_animAction)
+        {
+            xmlNode->SetAttribute("AnimAction", CStr(m_animAction).c_str());
+        }
+        if (m_effectAction)
+        {
+            xmlNode->SetAttribute("EffectAction", CStr(m_effectAction).c_str());
+        }
+        xmlNode->SetAttribute("ModelName", m_modelname.c_str());
+        if (m_cfgNum)
+        {
+            xmlNode->SetAttribute("Cfg", CStr(m_cfgNum).c_str());
+        }
+        if (m_bAnimationIsStopped)
+        {
+            xmlNode->SetAttribute("AnimationIsStopped", CStr(static_cast<int>(m_bAnimationIsStopped)).c_str());
+        }
+        int const curAnimTime = GetNodeElapsedAnimationTimeInMs(m_Node);
+        if (curAnimTime > 0)
+        {
+            xmlNode->SetAttribute("CurAnimTime", CStr(curAnimTime).c_str());
+        }
     }
 
     int PhysicBody::GetSkin() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6165F0
+        int skin = -1;
+        if (m_Node)
+        {
+            m_Node->GetProperty(8706u, &skin);
+        }
+        return skin;
     }
 
     void PhysicBody::SetSkin(int skin)
@@ -731,7 +856,8 @@ namespace ai
 
     int PhysicBody::GetNodeCfgNum() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616640
+        return m_cfgNum;
     }
 
     void PhysicBody::RenderDebugInfo() const
@@ -757,7 +883,10 @@ namespace ai
 
     void PhysicBody::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6187D0
+        M3D_LOG_INFO(CStr("Object is ") + CStr(bIsVisible() ? "" : "NOT") + CStr(" visible in SetPassed..."));
+        Obj::SetPassedToAnotherMapStatus();
+        _DeleteNode();
     }
 
     void PhysicBody::ApplyCurrentModelCollision()
@@ -778,46 +907,77 @@ namespace ai
 
     CVector PhysicBody::GetNodeAbsoluteDirection() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A350
+        // The node's rotation relative to the body, composed with the body's rotation.
+        Quaternion const rel = GetNodeRelativeRotation();
+        Quaternion const rot = GetRotation();
+        Quaternion q;
+        q.x = ((rel.z * rot.y + rot.w * rel.x) + rel.w * rot.x) - rot.z * rel.y;
+        q.y = ((rel.w * rot.y + rot.w * rel.y) + rot.z * rel.x) - rel.z * rot.x;
+        q.z = ((rel.z * rot.w + rel.w * rot.z) + rot.x * rel.y) - rot.y * rel.x;
+        q.w = ((rel.w * rot.w - rot.x * rel.x) - rot.y * rel.y) - rel.z * rot.z;
+        return DirectionOf(q);
     }
 
     Geom::CellAabb PhysicBody::GetCollisionCellAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x618580
+        // Only the concrete bodies know their cells.
+        SYS_ERROR("0");
+        Geom::CellAabb aabb;
+        aabb.x0 = 0;
+        aabb.z0 = 0;
+        aabb.x1 = -1;
+        aabb.z1 = -1;
+        return aabb;
     }
 
-    void PhysicBody::SetNodeAbsoluteDirection(CVector const&)
+    void PhysicBody::SetNodeAbsoluteDirection(CVector const& direction)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A650
+        // A heading about y composed with an elevation about x.
+        double const halfYaw = atan2(direction.x, direction.z) * 0.5;
+        float const hy = static_cast<float>(sin(halfYaw));
+        float const hw = static_cast<float>(cos(halfYaw));
+        double const halfPitch = -asin(direction.y) * 0.5;
+        float const ex = static_cast<float>(sin(halfPitch));
+        float const ew = static_cast<float>(cos(halfPitch));
+        Quaternion q;
+        q.x = hw * ex;
+        q.y = ew * hy;
+        q.z = -(hy * ex);
+        q.w = ew * hw;
+        SetNodeAbsoluteRotation(q);
     }
 
     m3d::Class* PhysicBody::GetRtClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6164A0
+        return RT_CLASS_LOCAL(PhysicBody);
     }
 
     void PhysicBody::SetOwnerBodyToGeoms()
     {
-        m_ownerPhysicObj = this->m_ownerPhysicObj;
-
-        dBodyID id = 0;
-        if (m_ownerPhysicObj)
-            id = m_ownerPhysicObj->GetBody()->id();
-
-        auto v4 = 0;
+        // RVA 0x6194C0 - the geoms go on the owner's body; they are left unlinked from it (so contacts ignore the
+        // body) only while the owner's physics is off with no auto-disabling to wake it.
+        dBodyID id = nullptr;
         if (m_ownerPhysicObj)
         {
-            v4 = 1;
-            if ((m_ownerPhysicObj->GetPhysicState() & 1) != 0 || dBodyGetAutoDisableFlag(id))
-                v4 = 0;
+            id = m_ownerPhysicObj->GetBody()->id();
+        }
+        bool unlink = false;
+        if (m_ownerPhysicObj)
+        {
+            unlink = (m_ownerPhysicObj->GetPhysicState() & 1) == 0 && !dBodyGetAutoDisableFlag(id);
         }
         for (auto& geom : m_pGeoms)
         {
             dGeomSetData(geom->GetGeomId(), this);
             dGeomSetBody(geom->GetGeomId(), id);
-            if (v4)
-                dGeomSetBody(geom->GetGeomId(), id);
-            geom->UnlinkFromBody();
+            if (unlink)
+            {
+                geom->UnlinkFromBody();
+            }
         }
     }
 
@@ -829,7 +989,13 @@ namespace ai
 
     int PhysicBody::GetNodeRealAnimAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6175E0
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        if (animInfo && !animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation())
+        {
+            return animInfo->GetCurAnimation()->m_action;
+        }
+        return -1;
     }
 
     void PhysicBody::SetCollisionTrimeshAllowed(bool bCollisionTrimeshAllowed)
@@ -839,53 +1005,25 @@ namespace ai
 
     Quaternion PhysicBody::GetNodeRelativeRotation() const
     {
-        // TODO: generated code
-        // Check if we have valid geometry and collision info
-        if (!m_pGeoms.empty() && m_pGeoms[0] != nullptr && m_pGeoms[0]->GetGeom() != nullptr)
+        // RVA 0x619C20 - the first geom's rotation with its collision offset taken out.
+        // NOTE: the shipped build inlines the product with its own summation order (last-bit differences possible).
+        if (m_pGeoms.empty() || !m_pGeoms[0]->GetGeom())
         {
-            // Get the rotation from the inner geometry
-            Quaternion geomRotation = m_pGeoms[0]->GetGeom()->GetRotation();
-
-            // Get the inverse of the relative rotation from collision info
-            Quaternion inverseRelRot = m_collisionInfos[0].m_relRotation.getInversed();
-
-            Quaternion result;
-            // Combine the rotations: result = inverseRelRot * geomRotation
-            result.x =
-                (inverseRelRot.w * geomRotation.x + inverseRelRot.x * geomRotation.w + inverseRelRot.y * geomRotation.z -
-                 inverseRelRot.z * geomRotation.y);
-
-            result.y =
-                (inverseRelRot.w * geomRotation.y - inverseRelRot.x * geomRotation.z + inverseRelRot.y * geomRotation.w +
-                 inverseRelRot.z * geomRotation.x);
-
-            result.z =
-                (inverseRelRot.w * geomRotation.z + inverseRelRot.x * geomRotation.y - inverseRelRot.y * geomRotation.x +
-                 inverseRelRot.z * geomRotation.w);
-
-            result.w =
-                (inverseRelRot.w * geomRotation.w - inverseRelRot.x * geomRotation.x - inverseRelRot.y * geomRotation.y -
-                 inverseRelRot.z * geomRotation.z);
-
-            return result;
+            return IdentityQuaternion;
         }
-        return {0.0, 0.0, 0.0, 1.0};
+        return m_collisionInfos[0].m_relRotation.getInversed() * m_pGeoms[0]->GetGeom()->GetRotation();
     }
 
     void PhysicBody::SetNodeRelativeRotation(Quaternion const& q)
     {
-        auto& colInfoRotation = m_collisionInfos.front().m_relRotation;
-        for (auto& geom : m_pGeoms)
+        // RVA 0x619D90 - each geom gets q combined with its own collision offset.
+        // NOTE: the shipped build inlines the product with its own summation order (last-bit differences possible).
+        for (unsigned i = 0; i < m_pGeoms.size(); ++i)
         {
-            auto p_y = &this->m_collisionInfos.front().m_relRotation.y;
-            if (auto* inner = geom->GetGeom())
+            if (auto* inner = m_pGeoms[i]->GetGeom())
             {
-                // TODO: check this
-                float quat[4];
-                quat[0] = (float)((float)((float)(q.w * p_y[2]) - (float)(*(p_y - 1) * q.x)) - (float)(q.y * *p_y)) - (float)(p_y[1] * q.z);
-                quat[1] = (float)((float)((float)(p_y[2] * q.x) + (float)(q.y * p_y[1])) + (float)(q.w * *(p_y - 1))) - (float)(*p_y * q.z);
-                quat[2] = (float)((float)((float)(q.w * *p_y) + (float)(q.y * p_y[2])) + (float)(*(p_y - 1) * q.z)) - (float)(p_y[1] * q.x);
-                quat[3] = (float)((float)((float)(q.w * p_y[1]) + (float)(q.x * *p_y)) + (float)(p_y[2] * q.z)) - (float)(q.y * *(p_y - 1));
+                Quaternion const rot = q * m_collisionInfos[i].m_relRotation;
+                dQuaternion const quat = {rot.w, rot.x, rot.y, rot.z};
                 dGeomSetQuaternion(inner->GetGeomId(), quat);
             }
         }
@@ -893,27 +1031,42 @@ namespace ai
 
     int PhysicBody::GetNodeRealAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617830
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        if (animInfo && !animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation())
+        {
+            return animInfo->GetCurAnimation()->m_action;
+        }
+        return -1;
     }
 
     bool PhysicBody::bNeedToRelinkNode() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6EB0F0
+        return m_bNeedToRelinkNode;
     }
 
     void PhysicBody::SetVisible()
     {
+        // RVA 0x616510 - the reverse of SetInvisible: back under the parent it was taken from,
+        // and back into the scene graph's render list.
         Obj::SetVisible();
         EnableGeometry();
         if (m_Node)
         {
             m3d::SgNode* parent = nullptr;
-            m_Node->GetProperty(4359u, &parent);
+            m_Node->GetProperty(m3d::PROP_NODE_LASTPARENT, &parent);
             if (parent)
             {
                 parent->AddChild(m_Node);
                 parent = nullptr;
-                m_Node->SetProperty(4359, &parent);
+                m_Node->SetProperty(m3d::PROP_NODE_LASTPARENT, &parent);
+            }
+            auto* graph = m_Node->GetGraph();
+            if (!graph->IsLinkedNode(m_Node))
+            {
+                graph->LinkNode(m_Node);
+                m_Node->UpdateXForm(false, true);
             }
         }
     }
@@ -942,7 +1095,7 @@ namespace ai
 
     void PhysicBody::SetInvisible()
     {
-        // TODO: check this
+        // RVA 0x61A730
         Obj::SetInvisible();
         DisableGeometry();
         for (auto* geom : m_pGeoms)
@@ -973,9 +1126,17 @@ namespace ai
         }
     }
 
-    void PhysicBody::SetNodeAbsoluteRotation(Quaternion const&)
+    void PhysicBody::SetNodeAbsoluteRotation(Quaternion const& q)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61A000
+        // The rotation relative to the body: q composed with the body's inverse rotation.
+        Quaternion const inv = GetRotation().getInversed();
+        Quaternion rel;
+        rel.x = ((q.y * inv.z + inv.x * q.w) + inv.w * q.x) - inv.y * q.z;
+        rel.y = ((inv.x * q.z + inv.w * q.y) + q.w * inv.y) - q.x * inv.z;
+        rel.z = ((inv.w * q.z + inv.y * q.x) + q.w * inv.z) - q.y * inv.x;
+        rel.w = ((inv.w * q.w - inv.x * q.x) - q.y * inv.y) - inv.z * q.z;
+        SetNodeRelativeRotation(rel);
     }
 
     Quaternion PhysicBody::GetNodeAbsoluteRotation() const
@@ -1004,7 +1165,8 @@ namespace ai
 
     bool PhysicBody::CanChildBeAdded(m3d::Class*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x61D0A0
+        return false;
     }
 
     CVector PhysicBody::GetNodeRelativeDirection() const
@@ -1144,7 +1306,9 @@ namespace ai
 
     int PhysicBody::_GetCurAnimationFrame() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617630
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        return animInfo ? animInfo->CurAnimFrame() : 0;
     }
 
     void PhysicBody::_SetScenegraphNode(CVector const& pos, Quaternion const& rot)
@@ -1190,7 +1354,13 @@ namespace ai
 
     int PhysicBody::_GetNodeRealAnimAction() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x617650
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(m_Node);
+        if (animInfo && !animInfo->GetStickToLastFrame() && animInfo->GetCurAnimation())
+        {
+            return animInfo->GetCurAnimation()->m_action;
+        }
+        return -1;
     }
 
     void PhysicBody::_InternalCreateVisualPart()
@@ -1204,74 +1374,56 @@ namespace ai
 
     void PhysicBody::_ApplyCurrentModelName()
     {
-        // TODO: generated code
-        // Get current node transformations
-        CVector nodePos = GetNodeAbsolutePosition();
-        Quaternion relativeRot = GetNodeRelativeRotation();
-        Quaternion rotation = GetRotation();
+        // RVA 0x61B7C0 - replaces the node with one for m_modelname, keeping its pose, actions and owner.
+        // NOTE: the shipped build inlines the rotation product with its own summation order.
+        CVector const nodePos = GetNodeAbsolutePosition();
+        Quaternion const nodeRot = GetRotation() * GetNodeRelativeRotation();
 
-        // Calculate combined rotation (applying relative rotation to base rotation)
-        Quaternion nodeRot;
-        nodeRot.x = (rotation.w * relativeRot.x + relativeRot.z * rotation.y + relativeRot.w * rotation.x) - (rotation.z * relativeRot.y);
-        nodeRot.y = (relativeRot.w * rotation.y + rotation.w * relativeRot.y + rotation.z * relativeRot.x) - (relativeRot.z * rotation.x);
-        nodeRot.z = (relativeRot.z * rotation.w + relativeRot.w * rotation.z + rotation.x * relativeRot.y) - (relativeRot.x * rotation.y);
-        nodeRot.w = (relativeRot.w * rotation.w - rotation.x * relativeRot.x - rotation.y * relativeRot.y - relativeRot.z * rotation.z);
-
-        // Remove existing node from scene graph
-        if (m_Node != nullptr)
+        if (m_Node)
         {
-            m3d::SceneGraph* graph = m_Node->GetGraph();
-            graph->RemoveNode(m_Node);
+            m_Node->GetGraph()->RemoveNode(m_Node);
             m_Node = nullptr;
         }
-
-        // Create new node if model name is valid
-        if (!m_modelname.empty())
+        if (m_modelname.empty())
         {
-            // Create scale vector
-            CVector scale(1.0f, 1.0f, 1.0f);
-
-            // Get engine configuration and create node
-            int modelId = M3D_KERNEL->GetEngineCfg().GetModelIdByName(m_modelname);  // Assuming GetModelId based on context
-
-            m3d::SgNode* serverControlledNode = m3d::pClient->CreateServerControlledNode(modelId);
-            if (serverControlledNode != nullptr)
-            {
-                // Add to scene graph
-                m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(serverControlledNode);
-
-                // Set properties
-                serverControlledNode->SetProperty(4356u, this);  // 4356u appears to be a property ID
-                serverControlledNode->SetScale(scale);
-                serverControlledNode->SetPersistance(false);
-                serverControlledNode->UpdateXForm(false, true);
-            }
-
-            m_Node = serverControlledNode;
-
-            // Set transformations
-            if (m_Node != nullptr)
-            {
-                m_Node->SetOriginAbs(nodePos);
-                m_Node->SetRotation(nodeRot);
-
-                // Apply animations and effects
-                SetNodeAnimAction(m_animAction, true);
-                SetNodeEffectAction(m_effectAction);
-                SetNodeCfgNum(m_cfgNum);
-
-                auto belong = GetBelong();
-                // Set ownership property
-                m_Node->SetProperty(4353u, &belong);
-
-                // Link to dynamic scene
-                ai::gDynamicScene->LinkNodesFromBodyToSceneGraph(this);
-            }
+            return;
         }
+
+        int const modelId = M3D_ENGINE_CFG.GetModelIdByName(m_modelname);
+        m3d::SgNode* node = m3d::pClient->CreateServerControlledNode(modelId);
+        if (node)
+        {
+            m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(node);
+            PhysicBody* self = this;
+            node->SetProperty(m3d::PROP_NODE_PHYSICBODY, &self);
+            node->SetScale(CVector(1.0f, 1.0f, 1.0f));
+            node->SetPersistance(false);
+            node->UpdateXForm(false, true);
+        }
+        m_Node = node;
+
+        // NOTE: the shipped code dereferences the node here even when it could not be created; we skip it.
+        if (!m_Node)
+        {
+            return;
+        }
+        m_Node->SetOriginAbs(nodePos);
+        m_Node->SetRotation(nodeRot);
+        SetNodeAnimAction(m_animAction, true);
+        SetNodeEffectAction(m_effectAction);
+        SetNodeCfgNum(m_cfgNum);
+        int belong = GetBelong();
+        m_Node->SetProperty(m3d::PROP_NODE_BELONG, &belong);
+        ai::gDynamicScene->LinkNodesFromBodyToSceneGraph(this);
     }
 
     void PhysicBody::_DeleteNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6164D0
+        if (m_Node)
+        {
+            m_Node->GetGraph()->RemoveNode(m_Node);
+            m_Node = nullptr;
+        }
     }
 }  // namespace ai

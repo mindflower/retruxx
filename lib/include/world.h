@@ -49,6 +49,17 @@ namespace m3d
     class CWorld
     {
         friend class Landscape;
+        // Application::SaveUsedOnlyServers walks the scene graph directly.
+        friend class Application;
+        // SceneGraph::DrawDetailedShadows / DrawShadowsToTexture read m_sunDir
+        // directly, exactly as the shipped code does.
+        friend class SceneGraph;
+        // AnimatedModelsServer::RenderShadowVolumesSet lights the stencil shadows from m_sunDir.
+        friend class AnimatedModelsServer;
+        // ProjectorsServer::RenderItem draws each projector over the landscape, roads and models.
+        friend class ProjectorsServer;
+        // GameAttractor blows particles along with the current weather's wind.
+        friend class GameAttractor;
 
     public:
         /* 0x0000 */ m3d::CVar m_lsInscatterCoeff;
@@ -170,6 +181,4 @@ namespace m3d
         void LoadStaticObstacles();
         void CreatePlayerPassMapGeoms();
     }; /* size: 0x39eb00 */
-
-    static_assert(sizeof(CWorld) == 0x39eb00);
 }

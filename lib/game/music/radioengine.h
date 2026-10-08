@@ -9,6 +9,8 @@ namespace m3d
     public:
         class RadioSoundItem
         {
+            friend class RadioEngine;
+
         private:
             CStr sound;
             int type;

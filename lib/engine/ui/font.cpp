@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cmath>
 #include <config.h>
 #include <m3dapp.h>
 #include <stdexcept>
@@ -5,6 +7,9 @@
 #include <core/kernel.h>
 #include <core/log.h>
 #include <core/ref_ptr.h>
+#include <core/scoped_ptr.h>
+#include <file/filereader.h>
+#include <file/fileserver.h>
 #include <ui/font.h>
 #include <renderer/i_renderer.h>
 #include <server/utils.h>
@@ -25,17 +30,20 @@ namespace m3d
 
         CStr const& TCharDictionary::GetSrcFile() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B3500
+            return m_srcFile;
         }
 
         CStr const& TCharDictionary::GetCharSetName() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B34E0
+            return m_charSetName;
         }
 
         CStr const& TCharDictionary::GetCodePageName() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B34D0
+            return m_codePageName;
         }
 
         bool TCharDictionary::IsTCharPresent(unsigned char tChar) const
@@ -50,7 +58,7 @@ namespace m3d
 
         unsigned char TCharDictionary::GetTCharAtPos(int pos) const
         {
-            if (pos < 0 || pos >=m_tChars.length())
+            if (pos < 0 || pos >= m_tChars.length())
             {
                 return 0;
             }
@@ -62,9 +70,84 @@ namespace m3d
             return m_tChars;
         }
 
-        int TCharDictionary::CreateFromXml(CStr const&)
+        int TCharDictionary::CreateFromXml(CStr const& fileName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B4CF0
+            scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+            if (!stream->Open(fileName.c_str(), fs::IStream::OPEN_READ))
+            {
+                M3D_LOG_INFO("TCharDictionary: can't open file " + fileName + CStr(" for read."));
+                return 0;
+            }
+
+            ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
+            if (!xmlFile->Read(*stream))
+            {
+                M3D_LOG_ERR(
+                    "TCharDictionary: error - cannot parse " + fileName + CStr(" (") + CStr(xmlFile->GetError()) +
+                    CStr(") "));
+                return 0;
+            }
+            stream->Close();
+
+            m_srcFile = fileName;
+            ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            xmlFile->GetFirstChild(node, "Dictionary");
+            if (node->IsEmpty())
+            {
+                M3D_LOG_INFO("TCharDictionary: file " + fileName + CStr(" is empty"));
+                return 0;
+            }
+
+            SafeStrAttrib(m_codePageName, node, "codePage");
+            SafeStrAttrib(m_charSetName, node, "charSet");
+            if (m_codePageName.empty() || m_charSetName.empty())
+            {
+                // NOTE: only the code page falls back to CP_ACP; a missing charset stays empty. And
+                // "CP_ACP" is not a number, so the atoi below then logs it as unsupported too.
+                M3D_LOG_INFO(CStr("TCharDictionary: warning - code page or charset was not specified; use CP_ACP"));
+                m_codePageName = CStr("CP_ACP");
+            }
+
+            CStr chars;
+            SafeStrAttrib(chars, node, "chars");
+
+            UINT codePage;
+            if (strstr(m_codePageName.c_str(), "windows-"))
+            {
+                // NOTE: skips the prefix length from the start of the string, not from where
+                // strstr found it.
+                codePage = atoi(m_codePageName.c_str() + strlen("windows-"));
+            }
+            else
+            {
+                codePage = atoi(m_codePageName.c_str());
+            }
+            if (!codePage)
+            {
+                M3D_LOG_INFO(
+                    "TCharDictionary -- code page is not supported : " + m_codePageName +
+                    CStr(" forcing ANSI, some chars will be not available"));
+                codePage = 0;
+            }
+
+            // NOTE: the shipped code leaves this uninitialised and ignores GetCPInfoExA's result;
+            // it is zeroed here so a failed call reads 0 instead of stack garbage.
+            CPINFOEXA codePageInfo{};
+            ::GetCPInfoExA(codePage, 0, &codePageInfo);
+            if (codePageInfo.MaxCharSize < 2)
+            {
+                M3D_LOG_INFO(
+                    "TCharDictionary: warning - code page " + m_codePageName + CStr(" is already single-byted"));
+            }
+
+            // NOTE: the chars are appended to the default 32..255 set built by the constructor,
+            // not substituted for it, so the dictionary may hold duplicates.
+            CStr localChars;
+            localChars = chars;
+            m_tChars += localChars;
+            M3D_LOG_INFO("TCharDictionary was successfully loaded from file " + fileName);
+            return 1;
         }
 
         void TCharDictionary::InitDefault()
@@ -72,7 +155,7 @@ namespace m3d
             m_charSetName = "ANSI_CHARSET";
             m_codePageName = "CP_ACP";
             m_tChars = "";
-            for (int i = 32; i<256;++i)
+            for (int i = 32; i < 256; ++i)
             {
                 m_tChars += CStr(static_cast<char>(i), 1);
             }
@@ -111,17 +194,124 @@ namespace m3d
 
         int Font::SaveToXml()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B6820
+            CStr err;
+            ref_ptr xmlFile = ReadXmlFile(M3D_ENGINE_CFG.m_ui_pathToFonts.GetS(), &err);
+            if (!xmlFile)
+            {
+                xmlFile = ref_ptr(M3D_KERNEL->CreateXmlFile());
+            }
+
+            // NOTE: the fonts file is reopened for writing (and so truncated) before anything is
+            // built; every error path below leaves it empty.
+            fs::FileReader fr;
+            if (!fr.Open(M3D_ENGINE_CFG.m_ui_pathToFonts.GetS(), fs::IStream::OPEN_WRITE))
+            {
+                M3D_LOG_INFO(
+                    "Font: fail to save - cannot open file " + CStr(M3D_ENGINE_CFG.m_ui_pathToFonts.GetS()) +
+                    CStr(" for writing"));
+                return 0;
+            }
+
+            ref_ptr rootNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+            xmlFile->GetFirstChild(rootNode, "Fonts");
+            if (rootNode->IsEmpty())
+            {
+                rootNode = ref_ptr(xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Fonts"));
+                if (!rootNode)
+                {
+                    fr.Close();
+                    M3D_LOG_ERR(CStr("Font::SaveToXml error: cannot create root node"));
+                    return 0;
+                }
+                xmlFile->AddChild(rootNode);
+            }
+
+            ref_ptr fontNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Item");
+            if (!fontNode)
+            {
+                fr.Close();
+                M3D_LOG_ERR(CStr("Font::SaveToXml error: cannot create font node"));
+                return 0;
+            }
+            rootNode->AddChild(fontNode);
+            fontNode->SetAttribute("name", m_nameShort.c_str());
+            fontNode->SetAttribute("height", CStr(m_heightScaled).c_str());
+            fontNode->SetAttribute("heightVirtual", CStr(m_heightUnscaled).c_str());
+
+            retruxx::vector<CStr> filesVector;
+            for (unsigned i = 0; i < m_textures.size(); ++i)
+            {
+                filesVector.push_back(GetFileNameForTexture(i));
+            }
+            fontNode->SetAttribute("file", ai::StringVectorToStr(filesVector).c_str());
+
+            int res = 1;
+            auto const& dict = FontManager::GetTCharDictionary();
+            int const numChars = dict.GetNumOfTChars();
+            for (int c = 0; c < numChars; ++c)
+            {
+                unsigned char const sym = dict.GetTCharAtPos(c);
+                // NOTE: the value is written as the decimal character code (CStr(int)), while
+                // CreateFromXmlNode takes the first character of the attribute as the symbol, so
+                // a saved font does not load back correctly.
+                CStr symbolValue;
+                symbolValue = CStr(static_cast<int>(sym));
+                SymbolInfo const* info = m_symbols[sym];
+                if (!info)
+                {
+                    M3D_LOG_ERR(
+                        "Font::SaveToXml error: cannot find symbol structure for symbol " + symbolValue +
+                        CStr(" for font ") + m_nameShort + CStr("-") + CStr(m_heightScaled));
+                    res = 0;
+                    continue;
+                }
+
+                ref_ptr symbolNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Symbol");
+                if (!symbolNode)
+                {
+                    fr.Close();
+                    M3D_LOG_ERR(CStr("Font::SaveToXml error: cannot create symbol node"));
+                    return 0;
+                }
+                fontNode->AddChild(symbolNode);
+                symbolNode->SetAttribute("value", symbolValue.c_str());
+
+                retruxx::vector<float> vABC;
+                vABC.push_back(info->m_abc.m_A);
+                vABC.push_back(info->m_abc.m_B);
+                vABC.push_back(info->m_abc.m_C);
+                symbolNode->SetAttribute("abc", ai::FloatVectorToStr(vABC).c_str());
+
+                retruxx::vector<float> vTcs;
+                vTcs.push_back(static_cast<float>(info->m_tcs.m_texId));
+                for (float const coord : info->m_tcs.m_coordinates)
+                {
+                    vTcs.push_back(coord);
+                }
+                symbolNode->SetAttribute("tcs", ai::FloatVectorToStr(vTcs).c_str());
+            }
+
+            xmlFile->Write(fr);
+            fr.Close();
+            return res;
         }
 
         int Font::SaveToTga()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B5840
+            int res = 1;
+            for (int i = 0; i < static_cast<int>(m_textures.size()); ++i)
+            {
+                res &= M3D_RENDERER->SaveTextureToTgaFile(m_textures[i], GetFileNameForTexture(i).c_str());
+            }
+            return res;
         }
 
         CStr Font::GetFileNameForReadableInfo() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B4630
+            return GetBaseFileName() + CStr(".txt");
         }
 
         int Font::CreateFromPrototype(Font* prototype, float heightUnscaled)
@@ -149,7 +339,7 @@ namespace m3d
                     Application::g_pApp->m_renderer->ReferenceTexture(tex);
                 }
             }
-            for (int i = 0; i<FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
+            for (int i = 0; i < FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
             {
                 auto idx = FontManager::GetTCharDictionary().GetTCharAtPos(i);
                 delete m_symbols[idx];
@@ -158,9 +348,12 @@ namespace m3d
                 {
                     m_symbols[idx] = new SymbolInfo;
                     *m_symbols[idx] = *prototype->m_symbols[idx];
-                    m_symbols[idx]->m_abc.m_A = (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_A;
-                    m_symbols[idx]->m_abc.m_B = (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_B;
-                    m_symbols[idx]->m_abc.m_C = (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_C;
+                    m_symbols[idx]->m_abc.m_A =
+                        (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_A;
+                    m_symbols[idx]->m_abc.m_B =
+                        (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_B;
+                    m_symbols[idx]->m_abc.m_C =
+                        (m_heightScaled / prototype->m_heightScaled) * prototype->m_symbols[idx]->m_abc.m_C;
                 }
             }
             PrecalcSymbolsSizes();
@@ -169,22 +362,41 @@ namespace m3d
 
         FontType Font::GetType() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5589B0
+            return m_type;
         }
 
         int Font::Save()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B7B00
+            int res = SaveToXml() != 0;
+            if (!SaveToTga())
+            {
+                res = 0;
+            }
+            if (!SaveGrid())
+            {
+                res = 0;
+            }
+            if (!res)
+            {
+                M3D_LOG_ERR("Saving of font " + m_nameFull + CStr(" was with errors"));
+            }
+            return res;
         }
 
         CStr Font::GetBaseFileName() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B3E40
+            CStr path = DirectoryFromFileName(CStr(M3D_ENGINE_CFG.m_ui_pathToFonts.GetS()));
+            UnifyFileName(path);
+            return path + CStr("\\") + m_nameFull + CStr("_") + CStr(m_heightScaled);
         }
 
         float Font::GetScale() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x684DA0
+            return m_heightScaled / m_heightUnscaled;
         }
 
         int Font::CreateFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
@@ -252,7 +464,9 @@ namespace m3d
                 ai::StrToFloatVector(strAbc, abc);
                 if (abc.size() != 3)
                 {
-                    M3D_LOG_ERR("Font::CreateFromXmlNode error: invalid size of ABC structure for symbol " + symbolValue + " for font " + m_nameShort);
+                    M3D_LOG_ERR(
+                        "Font::CreateFromXmlNode error: invalid size of ABC structure for symbol " + symbolValue +
+                        " for font " + m_nameShort);
                     return 0;
                 }
                 symbolInfo->m_abc.m_A = abc[0];
@@ -265,7 +479,9 @@ namespace m3d
                 ai::StrToFloatVector(strTcs, tcs);
                 if (tcs.size() != 5)
                 {
-                    M3D_LOG_ERR("Font::CreateFromXmlNode error: invalid size of TCS structure for symbol " + symbolValue + " for font " + m_nameShort);
+                    M3D_LOG_ERR(
+                        "Font::CreateFromXmlNode error: invalid size of TCS structure for symbol " + symbolValue +
+                        " for font " + m_nameShort);
                     return 0;
                 }
                 symbolInfo->m_tcs.m_texId = static_cast<int>(tcs[0]);
@@ -286,15 +502,17 @@ namespace m3d
             return 1;
         }
 
-        int Font::CreateFromTtf(CStr const& name, float heightUnscaled, unsigned style,  unsigned charset)
+        int Font::CreateFromTtf(CStr const& name, float heightUnscaled, unsigned style, unsigned charset)
         {
+            // RVA 0x8B8FC0 - renders every character of the dictionary with GDI into
+            // as many 24-bit DIBs as needed and uploads each as an RGBA texture.
             Clear();
             m_type = FONT_TYPE_WINDOWS;
             m_style = style;
             auto viewport = M3D_APP->m_renderer->GetViewport();
             m_nameShort = name;
             m_nameFull = CreateNameFull(name, style, FontManager::GetCodePageByCharset(charset));
-            auto y = (viewport.m_width * heightUnscaled) * 0.0009765625;
+            float const y = (static_cast<float>(viewport.m_width) * heightUnscaled) * 0.0009765625f;
             PointBase<int> texSz;
             if (FontManager::NeedCharSetWChars(charset))
             {
@@ -331,10 +549,13 @@ namespace m3d
             m_scaleTex = 1.0;
             auto hDc = ::CreateCompatibleDC(NULL);
             ::SetMapMode(hDc, 1);
-            //TODO: check this
-            auto height = static_cast<int>((::GetDeviceCaps(hDc, 90)* y) * 0.013888889);
+            // Points to pixels at the DC's LOGPIXELSY, rounded to nearest (a bare fistp).
+            // The height is passed negated, so it is the character height rather than
+            // the cell height.
+            float const pixelHeight = (static_cast<float>(::GetDeviceCaps(hDc, LOGPIXELSY)) * y) * 0.013888889f;
+            int const height = static_cast<int>(lrintf(pixelHeight));
             auto hFont = CreateFontA(
-                height,
+                -height,
                 0,
                 0,
                 0,
@@ -347,8 +568,7 @@ namespace m3d
                 0,
                 0,
                 2,
-                name.c_str()
-            );
+                name.c_str());
             if (hFont)
             {
                 ::SelectObject(hDc, hFont);
@@ -380,7 +600,8 @@ namespace m3d
                     {
                         auto const sym = FontManager::GetTCharDictionary().GetTCharAtPos(i);
                         SIZE szz{};
-                        ::GetTextExtentPoint32A(hDc, FontManager::GetTCharDictionary().GetTChars().c_str() + i, 1, &szz);
+                        ::GetTextExtentPoint32A(
+                            hDc, FontManager::GetTCharDictionary().GetTChars().c_str() + i, 1, &szz);
                         ++szz.cy;
 
                         ABC abc{};
@@ -393,7 +614,7 @@ namespace m3d
                         if (width + extWidth + 1 > texSz.x)
                         {
                             ya += maxHgtInLine + 1;
-                            if (ya+maxHgtInLine > texSz.y)
+                            if (ya + maxHgtInLine > texSz.y)
                             {
                                 break;
                             }
@@ -413,9 +634,8 @@ namespace m3d
                             nullptr,
                             FontManager::GetTCharDictionary().GetTChars().c_str() + i,
                             1u,
-                            nullptr
-                        );
-                        
+                            nullptr);
+
                         auto const symbolInfo = new SymbolInfo;
                         symbolInfo->m_symbol = sym;
                         symbolInfo->m_tcs.m_texId = texId;
@@ -433,31 +653,19 @@ namespace m3d
                         m_symbols[sym] = symbolInfo;
                         ++i;
                     } while (i < dictSize);
-                    //TODO: check this and refactor
-                    auto mem = new unsigned char[4 * texSzXy];
-                    auto v30 = texSzXy;
-                    auto v32 = bits;
-                    auto yb = mem;
-                    if (v30 > 0)
+                    // Expand the 24-bit DIB into RGBA8888, taking the blue byte of each
+                    // pixel (the glyphs are drawn white on black) for all four channels.
+                    auto* const rgba = new unsigned char[4 * texSzXy];
+                    auto const* src = reinterpret_cast<unsigned char const*>(bits);
+                    for (int px = 0; px < texSzXy; ++px, src += 3)
                     {
-                        auto v33 = mem + 2;
-                        do
-                        {
-                            char v34 = *v32;
-                            v33[1] = *v32;
-                            *v33 = v34;
-                            *(v33 - 1) = v34;
-                            *(v33 - 2) = v34;
-                            v32 = (unsigned int*)((char*)v32 + 3);
-                            v33 += 4;
-                            --v30;
-                        } while (v30);
+                        std::fill_n(rgba + 4 * px, 4, *src);
                     }
                     auto dynTex = M3D_APP->m_renderer->AddDynamicTexture("$FontTex", texSz.x, texSz.y, 4);
                     m_textures.push_back(dynTex);
                     M3D_APP->m_renderer->SetTextureParameter(dynTex, rend::TM_TEX_FILTER, 1);
-                    M3D_APP->m_renderer->UploadTexImage(dynTex, texSz.x, texSz.y, yb, rend::TM_DTF_RGBA8888, 0);
-                    delete[] yb;
+                    M3D_APP->m_renderer->UploadTexImage(dynTex, texSz.x, texSz.y, rgba, rend::TM_DTF_RGBA8888, 0);
+                    delete[] rgba;
                     ::DeleteObject(hBmp);
                     ++texId;
                 }
@@ -473,41 +681,103 @@ namespace m3d
 
         CStr Font::CreateNameFull(CStr const& name, unsigned style, unsigned codePage) const
         {
+            // RVA 0x8B46E0 - "<name>_<style>_<codePage>", or the short name for a
+            // self-made font.
             if (m_type == FONT_TYPE_SELFMAKING)
             {
                 return m_nameShort;
             }
-            //TODO: check this
-            return name +"_" + CStr(style) + "_" + CStr(codePage);
+            return name + "_" + CStr(style) + "_" + CStr(codePage);
         }
 
         PointBase<float> Font::CalcGlyphSz(unsigned char c) const
         {
-            //TODO: check this
-            if (m_symbols[c])
+            // RVA 0x8B5750 - the glyph's texture rectangle in texels, scaled.
+            SymbolInfo const* const symbol = m_symbols[c];
+            if (!symbol)
             {
-                PointBase<float> res;
-                auto texSize = GetTexSz();
-                res.x = ((m_symbols[c]->m_tcs.m_coordinates[2] - m_symbols[c]->m_tcs.m_coordinates[0]) * texSize.x) * m_scaleTex;
-                res.y = ((m_symbols[c]->m_tcs.m_coordinates[3] - m_symbols[c]->m_tcs.m_coordinates[1]) * texSize.y) * m_scaleTex;
-                return res;
+                return {0.0, 0.0};
             }
-            return { 0.0, 0.0 };
+            float const* const tc = symbol->m_tcs.m_coordinates;
+            PointBase<int> const texSz = GetTexSz();
+            PointBase<float> res;
+            res.x = ((tc[2] - tc[0]) * static_cast<float>(texSz.x)) * m_scaleTex;
+            res.y = ((tc[3] - tc[1]) * static_cast<float>(texSz.y)) * m_scaleTex;
+            return res;
         }
 
         unsigned Font::GetStyle() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5589A0
+            return m_style;
         }
 
         int Font::SaveGrid()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B5C30 - paints every glyph's cell in alternating grey/white, one image per
+            // font texture, to check the atlas layout.
+            int res = 1;
+            unsigned color = 0xFFFFFFFF;
+            PointBase<int> const texSz = GetTexSz();
+            // NOTE: the buffer is never cleared, neither on allocation nor between textures, so
+            // pixels outside the glyph cells are garbage or left over from the previous texture.
+            auto* const grid = new unsigned char[4 * texSz.x * texSz.y];
+            auto* const pixels = reinterpret_cast<unsigned*>(grid);
+            auto const& dict = FontManager::GetTCharDictionary();
+            for (int texId = 0; texId < static_cast<int>(m_textures.size()); ++texId)
+            {
+                int const numChars = dict.GetNumOfTChars();
+                for (int c = 0; c < numChars; ++c)
+                {
+                    SymbolInfo const* const info = m_symbols[dict.GetTCharAtPos(c)];
+                    if (!info || info->m_tcs.m_texId != texId)
+                    {
+                        continue;
+                    }
+                    color = color != 0xFFFFFFFF ? 0xFFFFFFFF : 0xFF7F7F7F;
+                    float const w = static_cast<float>(texSz.x);
+                    float const h = static_cast<float>(texSz.y);
+                    for (int x = static_cast<int>(info->m_tcs.m_coordinates[0] * w);
+                         x < static_cast<int>(info->m_tcs.m_coordinates[2] * w);
+                         ++x)
+                    {
+                        for (int y = static_cast<int>(info->m_tcs.m_coordinates[1] * h);
+                             y < static_cast<int>(info->m_tcs.m_coordinates[3] * h);
+                             ++y)
+                        {
+                            pixels[x + texSz.x * y] = color;
+                        }
+                    }
+                }
+
+                rend::TexHandle texGrid = M3D_RENDERER->AddDynamicTexture("$TexGrid", texSz.x, texSz.y, 4);
+                // NOTE: each texture overwrites the result rather than and-ing into it, so only a
+                // failure on the last texture is reported.
+                if (!texGrid.IsValid())
+                {
+                    res = 0;
+                    continue;
+                }
+                if (M3D_RENDERER->UploadTexImage(texGrid, texSz.x, texSz.y, grid, rend::TM_DTF_RGBA8888, 0))
+                {
+                    res = M3D_RENDERER->SaveTextureToTgaFile(texGrid, GetFileNameForGrid(texId).c_str());
+                }
+                else
+                {
+                    res = 0;
+                }
+                M3D_RENDERER->ReleaseTexture(texGrid);
+            }
+            delete[] grid;
+            return res;
         }
 
-        CStr Font::GetFileNameForTexture(int) const
+        CStr Font::GetFileNameForTexture(int texId) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B4150
+            CStr strTexId;
+            strTexId.format("%02d", texId);
+            return GetBaseFileName() + CStr("_") + strTexId + CStr(".tga");
         }
 
         std::vector<rend::TexHandle> const& Font::GetTextures() const
@@ -518,7 +788,7 @@ namespace m3d
         Font::~Font()
         {
             Clear();
-            for (auto sym: m_symbols)
+            for (auto sym : m_symbols)
             {
                 delete sym;
             }
@@ -537,7 +807,7 @@ namespace m3d
             auto& tChars = FontManager::GetTCharDictionary().GetTChars();
             if (!tChars.empty())
             {
-                for (int i=0; i < tChars.length(); ++i)
+                for (int i = 0; i < tChars.length(); ++i)
                 {
                     auto const idx = static_cast<unsigned char>(tChars[i]);
                     delete m_symbols[idx];
@@ -555,19 +825,30 @@ namespace m3d
             return {0.0, 0.0};
         }
 
-        Font::TextureCoordinates Font::GetTexCoord(unsigned char) const
+        Font::TextureCoordinates Font::GetTexCoord(unsigned char c) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x66FB50
+            if (m_symbols[c])
+            {
+                return m_symbols[c]->m_tcs;
+            }
+            return TextureCoordinates();
         }
 
         CStr const& Font::GetName() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5589C0
+            return m_nameShort;
         }
 
-        float Font::CalcCharWidthAdvanced(unsigned char) const
+        float Font::CalcCharWidthAdvanced(unsigned char c) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B5810
+            if (auto const sym = m_symbols[c])
+            {
+                return sym->m_abc.m_B + sym->m_abc.m_C + sym->m_abc.m_A;
+            }
+            return 0.0;
         }
 
         PointBase<int> Font::GetTexSz() const
@@ -578,19 +859,22 @@ namespace m3d
                 Application::g_pApp->m_renderer->GetDims(m_textures.front(), res.x, res.y);
                 return res;
             }
-            return { 0, 0 };
+            return {0, 0};
         }
 
         void Font::PrecalcSymbolsSizes()
         {
-            //TODO: check this
-            for (int i = 0; i< FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
+            // RVA 0x8B5EF0 - caches the glyph size and full advance of every
+            // dictionary character the font has.
+            TCharDictionary const& dict = FontManager::GetTCharDictionary();
+            for (int i = 0; i < dict.GetNumOfTChars(); ++i)
             {
-                auto sym = FontManager::GetTCharDictionary().GetTCharAtPos(i);
-                if (m_symbols[sym])
+                unsigned char const sym = dict.GetTCharAtPos(i);
+                if (SymbolInfo* const symbol = m_symbols[sym])
                 {
-                    m_symbols[sym]->m_precalcedGlyphSz = CalcGlyphSz(sym);
-                    m_symbols[sym]->m_precalcedABCWidth = m_symbols[sym]->m_abc.m_A + m_symbols[sym]->m_abc.m_B + m_symbols[sym]->m_abc.m_C;
+                    symbol->m_precalcedGlyphSz = CalcGlyphSz(sym);
+                    // Summed in this order: (B + C) + A.
+                    symbol->m_precalcedABCWidth = (symbol->m_abc.m_B + symbol->m_abc.m_C) + symbol->m_abc.m_A;
                 }
             }
         }
@@ -600,9 +884,12 @@ namespace m3d
             m_symbols.resize(0x100, nullptr);
         }
 
-        CStr Font::GetFileNameForGrid(int) const
+        CStr Font::GetFileNameForGrid(int texId) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B4360
+            CStr strTexId;
+            strTexId.format("%02d", texId);
+            return GetBaseFileName() + CStr("_") + strTexId + CStr("_grid") + CStr(".tga");
         }
 
         float Font::GetCharWidthAdvanced(unsigned char c) const
@@ -614,9 +901,14 @@ namespace m3d
             return 0.0;
         }
 
-        Font::FontABC Font::GetAbcWidth(unsigned char) const
+        Font::FontABC Font::GetAbcWidth(unsigned char c) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x66FAD0
+            if (m_symbols[c])
+            {
+                return m_symbols[c]->m_abc;
+            }
+            return FontABC();
         }
 
         bool FontManager::NeedCharSetWChars(unsigned charSet)
@@ -637,34 +929,43 @@ namespace m3d
 
         int FontManager::ValidateFontId(int& id)
         {
-            if (id < 0 || id >= m_fonts.size())
+            // RVA 0x8BA010
+            if (id < 0 || id >= static_cast<int>(m_fonts.size()))
             {
                 return 0;
             }
-            auto viewport = Application::g_pApp->m_renderer->GetViewport();
-            //TODO: float strict comparison
-            if (viewport.m_width * m_fonts[id]->m_heightUnscaled * 0.0009765625 == m_fonts[id]->m_heightScaled)
+            Font const* const font = m_fonts[id];
+            auto const viewport = Application::g_pApp->m_renderer->GetViewport();
+            // Exact comparison on purpose: m_heightScaled was computed with this same
+            // float expression when the font was rasterised, so any difference means
+            // the viewport width has changed since.
+            float const heightScaled = (static_cast<float>(viewport.m_width) * font->m_heightUnscaled) * 0.0009765625f;
+            if (heightScaled == font->m_heightScaled)
             {
                 return 1;
             }
 
             FontParams params;
-            //TODO: check this
-            if (m_fonts[id]->m_type == FONT_TYPE_SELFMAKING)
+            if (font->m_type == FONT_TYPE_SELFMAKING)
             {
+                // NOTE: the shipped code leaves the code page uninitialised here; a
+                // self-made font's id does not depend on it, so 0 is used.
                 params.ttfParams.codePage = 0;
                 params.ttfParams.style = 1;
             }
             else
             {
                 params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
-                params.ttfParams.style = m_fonts[id]->m_style;
+                params.ttfParams.style = font->m_style;
             }
-            auto resId = GetFontId(m_fonts[id]->m_nameShort, m_fonts[id]->m_heightUnscaled, m_fonts[id]->m_type, params);
+            // The font was rasterised for another resolution: swap the caller's id for the
+            // matching font at the current one.
+            int const resId = GetFontId(font->m_nameShort, font->m_heightUnscaled, font->m_type, params);
             if (resId == -1)
             {
                 return 0;
             }
+            id = resId;
             return 1;
         }
 
@@ -675,7 +976,13 @@ namespace m3d
 
         void FontManager::Clear()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B7CB0
+            for (unsigned i = 0; i < m_fonts.size(); ++i)
+            {
+                delete m_fonts[i];
+                m_fonts[i] = nullptr;
+            }
+            std::vector<Font*>().swap(m_fonts);
         }
 
         int FontManager::GetFontId(CStr const& name, float heightUnscaled, FontType type, FontParams params)
@@ -746,7 +1053,7 @@ namespace m3d
                 }
                 ref_ptr itemNode = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
                 fontsNode->GetFirstChild(itemNode, "Item");
-                while(!itemNode->IsEmpty())
+                while (!itemNode->IsEmpty())
                 {
                     auto font = new Font;
                     if (font->CreateFromXmlNode(file, itemNode))
@@ -768,32 +1075,35 @@ namespace m3d
 
         int FontManager::GetNumFonts() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B39D0
+            return static_cast<int>(m_fonts.size());
         }
 
         void FontManager::RearrangeFonts(int id1, int id2)
         {
-            //TODO: check this
-            if (id1>=0 && id1<m_fonts.size() && id1 !=id2)
+            // RVA 0x8B79F0 - moves font id1 to slot id2. When id2 is past the end, the
+            // list is first padded with copies of font id1 up to id2, and the last copy
+            // is then swapped into id2 (a no-op swap when it already is there).
+            if (id1 < 0 || id1 >= static_cast<int>(m_fonts.size()) || id1 == id2)
             {
-                if (id1 <=id2)
+                return;
+            }
+            if (id1 <= id2)
+            {
+                // NOTE: this pads with at least one copy even when id2 is already a
+                // valid slot, and then swaps that copy into id2, so the font that was
+                // at id2 ends up at the end of the list rather than at id1.
+                do
                 {
-                    do
-                    {
-                        auto font = new Font;
-                        font->CreateFromPrototype(m_fonts[id1], m_fonts[id1]->m_heightUnscaled);
-                        m_fonts.push_back(font);
-                    } while (m_fonts.size() <= id2);
-                    auto temp = m_fonts.back();
-                    m_fonts.back() = m_fonts[id2];
-                    m_fonts[id2] = temp;
-                }
-                else
-                {
-                    auto temp = m_fonts[id1];
-                    m_fonts[id1] = m_fonts[id2];
-                    m_fonts[id2] = temp;
-                }
+                    auto* const font = new Font;
+                    font->CreateFromPrototype(m_fonts[id1], m_fonts[id1]->m_heightUnscaled);
+                    m_fonts.push_back(font);
+                } while (static_cast<int>(m_fonts.size()) <= id2);
+                std::swap(m_fonts.back(), m_fonts[id2]);
+            }
+            else
+            {
+                std::swap(m_fonts[id1], m_fonts[id2]);
             }
         }
 
@@ -815,7 +1125,7 @@ namespace m3d
 
         Font* FontManager::GetFontById(int id) const
         {
-            if (id >=0 && m_fonts.size() > id)
+            if (id >= 0 && m_fonts.size() > id)
             {
                 return m_fonts[id];
             }
@@ -829,58 +1139,131 @@ namespace m3d
             {
                 return info.ciCharset;
             }
-            M3D_LOG_INFO("FontManager::GetCharsetByCodePage error: cannot find charset for code page " + CStr(codePage));
+            M3D_LOG_INFO(
+                "FontManager::GetCharsetByCodePage error: cannot find charset for code page " + CStr(codePage));
             return 1;
         }
 
-        float FontManager::GetScaledHeight(float) const
+        float FontManager::GetScaledHeight(float height) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x8B33C0
+            auto const viewport = M3D_RENDERER->GetViewport();
+            return viewport.m_width * height * 0.0009765625;
+        }
+
+        // A derived font shares its prototype's glyph texture and only rescales the metrics,
+        // so the prototype's rasterised size decides how the text actually looks. Prefer one
+        // at least as large as the target - shrinking a glyph keeps far more detail than
+        // stretching one does - and among those on the same side of it, the closest.
+        static bool IsBetterPrototype(float candidate, float current, float target)
+        {
+            if (candidate > target)
+            {
+                if (target > current)
+                {
+                    // The one we have is too small and this one is not.
+                    return true;
+                }
+                if (current > target)
+                {
+                    return (current - target) > (candidate - target);
+                }
+            }
+            if (target > candidate && target > current)
+            {
+                return (target - current) > (target - candidate);
+            }
+            return false;
         }
 
         int FontManager::FindMatchFont(CStr const& name, float heightUnscaled, bool strictName, bool strictHeight)
         {
+            // RVA 0x8B7760 - finds a font already built at this size, or failing that the best
+            // prototype to derive one from.
             if (name.empty() || heightUnscaled <= 0.0)
             {
                 return -1;
             }
-            auto fontId = -1;
-            Font* font = nullptr;
-            auto viewport = Application::g_pApp->m_renderer->GetViewport();
-            //TODO: check this and recreate logic with foundProtoEqualUSize
-            auto heightScaled = (viewport.m_width * heightUnscaled) * 0.0009765625;
-            for (int i = 0; i<m_fonts.size();++i)
+
+            auto const viewport = Application::g_pApp->m_renderer->GetViewport();
+            // Fonts are rasterised for the current viewport; 1/1024 is the reference width the
+            // unscaled heights are quoted against.
+            float const heightScaled = (viewport.m_width * heightUnscaled) * 0.0009765625;
+
+            Font* prototype = nullptr;
+            bool foundProtoEqualUSize = false;
+
+            for (int i = 0; i < m_fonts.size(); ++i)
             {
-                if (!m_fonts[i] || m_fonts[i]->m_nameFull != name && strictName)
+                Font* const font = m_fonts[i];
+                if (!font || (strictName && font->m_nameFull != name))
                 {
                     continue;
                 }
-                auto heightThreshold = fabs(m_fonts[i]->m_heightScaled - heightScaled);
-                if (heightThreshold > 0.001 && strictHeight)
+
+                float const deltaScaled = fabs(font->m_heightScaled - heightScaled);
+                if (deltaScaled > 0.001 && strictHeight)
                 {
                     continue;
                 }
-                if (heightThreshold > 0.001)
+
+                bool const sameLogicalSize = fabs(font->m_heightUnscaled - heightUnscaled) <= 0.001;
+
+                if (deltaScaled <= 0.001)
                 {
-                    font = m_fonts[i];
+                    if (sameLogicalSize)
+                    {
+                        // Already built for exactly this request.
+                        return i;
+                    }
+
+                    // The same pixels under a different logical size: nothing can beat it, so
+                    // derive from it and stop looking.
+                    prototype = font;
+                    break;
                 }
-                else
+
+                if (!foundProtoEqualUSize)
                 {
-                    return i;
+                    if (sameLogicalSize)
+                    {
+                        // The same logical size built for another viewport. That is the right
+                        // family, so from here only fonts of that size are considered.
+                        prototype = font;
+                        foundProtoEqualUSize = true;
+                        continue;
+                    }
+                }
+                else if (!sameLogicalSize)
+                {
+                    continue;
+                }
+
+                if (!prototype)
+                {
+                    prototype = font;
+                    continue;
+                }
+                if (IsBetterPrototype(font->m_heightScaled, prototype->m_heightScaled, heightScaled))
+                {
+                    prototype = font;
                 }
             }
-            if (!font)
+
+            if (!prototype)
             {
-                return fontId;
+                return -1;
             }
-            auto newFont = new Font;
-            if (newFont->CreateFromPrototype(font, heightUnscaled))
+
+            auto* newFont = new Font;
+            if (newFont->CreateFromPrototype(prototype, heightUnscaled))
             {
                 m_fonts.push_back(newFont);
                 return m_fonts.size() - 1;
             }
+
             delete newFont;
-            return fontId;
+            return -1;
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

@@ -52,8 +52,10 @@ namespace m3d
             unsigned int ReadBytesInternal(void*, unsigned int);
 
         private:
-            HANDLE m_hFile = INVALID_HANDLE_VALUE;      //TODO: check this
-            HANDLE m_hMapping = INVALID_HANDLE_VALUE;   //TODO: check this
+            // NOTE: a failed CreateFileMappingA gives NULL, but the mapping is tested against
+            // INVALID_HANDLE_VALUE, as shipped.
+            HANDLE m_hFile = INVALID_HANDLE_VALUE;
+            HANDLE m_hMapping = INVALID_HANDLE_VALUE;
             bool m_EnableMapping = false;
             OpenFlags m_OpenMode = OPEN_READ;
             void* m_Data = nullptr;

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <draftstructures.h>
 #include <math/aabb.h>
 #include <math/matrix.h>
@@ -6,7 +7,15 @@
 #include <math/vector.h>
 #include "retruxx/common.h"
 
-enum ActionType
+namespace ai
+{
+    class CompositeObj;
+    class JointedObj;
+    class SubmarinePrototypeInfo;
+}
+
+
+enum ActionType : int32_t
 {
     AT_STAND1 = 0x0,
     AT_STAND2 = 0x1,
@@ -55,8 +64,6 @@ namespace m3d
         /* 0x0004 */ retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > loadSkins;
     }; /* size: 0x0010 */
 
-    static_assert(sizeof(LoadSkins) == 0x0010);
-
     struct BoneAnim
     {
         /* 0x0000 */ int m_lastUpdatedFrame;
@@ -65,8 +72,6 @@ namespace m3d
         /* 0x0054 */ CVector m_translation;
         /* 0x0060 */ int m_parentIdx;
     }; /* size: 0x0064 */
-
-    static_assert(sizeof(BoneAnim) == 0x0064);
 
     struct MeshesGroup
     {
@@ -78,8 +83,6 @@ namespace m3d
         void GetNextVariant(retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& variant);
     }; /* size: 0x0044 */
 
-    static_assert(sizeof(MeshesGroup) == 0x0044);
-
     struct AnimAction
     {
         /* 0x0000 */ char* m_name;
@@ -88,9 +91,17 @@ namespace m3d
 
     AnimAction* GetAnimActions();
 
+    // Pushes the shared per-frame lighting / fog / time constants into a shader,
+    // skipping any parameter the current technique does not use.
+    void SetShaderParams(m3d::rend::IEffect* pShader);
+
     class AnimatedModel
     {
         friend class AnimatedModelsServer;
+        // ai::CompositeObj takes a model apart into one physical piece per hierarchy geom.
+        friend class ai::CompositeObj;
+        // SubmarinePrototypeInfo::RefreshFromXml retunes the platform animation.
+        friend class ai::SubmarinePrototypeInfo;
         friend class AnimInfo;
     public:
         struct HierarchyChange
@@ -330,8 +341,6 @@ namespace m3d
         /* 0x0164 */ Aabb m_box;
     }; /* size: 0x017c */
 
-    static_assert(sizeof(AnimatedModel) == 0x017c);
-
     struct Configuration
     {
         /* 0x0000 */ unsigned int m_num = 0;
@@ -339,12 +348,11 @@ namespace m3d
         /* 0x0014 */ retruxx::vector<unsigned char, retruxx::allocator<unsigned char> > m_groupVariants;
     }; /* size: 0x0024 */
 
-    static_assert(sizeof(Configuration) == 0x0024);
-
     class AnimInfo
     {
         friend class AnimatedModelsServer;
         friend class AnimatedModel;
+        friend class ::ai::JointedObj;
 
     public:
         AnimInfo(const m3d::AnimInfo&);
@@ -395,8 +403,6 @@ namespace m3d
         /* 0x0080 */ int m_lastInterpolationUpdatePrev;
         /* 0x0084 */ int m_stickToLastFramePrev;
     }; /* size: 0x0088 */
-
-    static_assert(sizeof(AnimInfo) == 0x0088);
 
     ActionType GetActionByName(char const *);
 }

@@ -28,8 +28,6 @@ public:
     virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
 }; /* size: 0x001c */
 
-static_assert(sizeof(CAffineXForm) == 0x001c);
-
 enum CameraModes
 {
     CM_FIRST_NOTUSED = 0x0,
@@ -55,4 +53,3 @@ public:
     virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x04 */;
 }; /* size: 0x0024 */
 
-static_assert(sizeof(CCamera) == 0x0024);

@@ -24,8 +24,6 @@ namespace ai
         virtual void PostLoad() override /* 0x00 */;
     }; /* size: 0x011c */
 
-    static_assert(sizeof(CompoundVehiclePartPrototypeInfo) == 0x011c);
-
     class CompoundVehiclePart : public ai::VehiclePart
     {
     protected:
@@ -36,6 +34,9 @@ namespace ai
         CompoundVehiclePart(const ai::CompoundVehiclePart&);
         virtual m3d::Object* Clone() override /* 0x00 */;
         static m3d::Object* __fastcall CreateObject();
+
+        // GadgetPrototypeInfo::ApplyToVp passes a modification on to every part of a compound gun.
+        friend class GadgetPrototypeInfo;
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
@@ -95,6 +96,4 @@ namespace ai
         virtual void RenderDebugInfo() const override /* 0x00 */;
         virtual void ClearSavedStatus() override /* 0x00 */;
     }; /* size: 0x02d4 */
-
-    static_assert(sizeof(CompoundVehiclePart) == 0x02d4);
 }

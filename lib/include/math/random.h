@@ -1,11 +1,14 @@
 #pragma once
 
-class RandomCoeffWithDispersion
+struct RandomCoeffWithDispersion
 {
-public:
-    RandomCoeffWithDispersion();
+    float baseCoeff = 1.0f;
+    float baseDispersion = 0.0f;
 
-private:
-    float baseCoeff;
-    float baseDispersion;
+    RandomCoeffWithDispersion() = default;
+    RandomCoeffWithDispersion(float coeff, float dispersion) :
+        baseCoeff(coeff),
+        baseDispersion(dispersion)
+    {
+    }
 };

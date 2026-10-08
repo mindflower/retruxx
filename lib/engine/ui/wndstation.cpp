@@ -1,4 +1,6 @@
 #include <cassert>
+#include <cmath>
+#include <config.h>
 #include <m3dapp.h>
 #include <stdexcept>
 #include <core/ini.h>
@@ -22,6 +24,15 @@ char const STR_ERROR[] = "error";
 namespace
 {
     m3d::ui::GfxServer* gfxserver = nullptr;
+
+    // Where CheckForMouseDblClick has got to in the press / release / press
+    // sequence it is watching for.
+    enum DblClickState
+    {
+        DBLCLICK_NOTHING = 0,
+        DBLCLICK_PRESS = 1,
+        DBLCLICK_PRESS_RELEASE = 2,
+    };
 }
 
 namespace m3d
@@ -32,8 +43,31 @@ namespace m3d
         RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(WndStation);
 
+        static Wnd* FindWndUnderPoint(WndStation& station, PointBase<float> const& pt)
+        {
+            // Not a function in the binary: this loop is inlined in both
+            // DispatchMouse (RVA 0x593690) and Repaint (RVA 0x5916A0). The first
+            // visible top-level window containing the point that yields a hit wins;
+            // otherwise the station itself, unless it is transparent or disabled.
+            for (Object* child = station.GetFirstChild(); child != nullptr; child = child->GetNextSibling())
+            {
+                auto* const wnd = static_cast<Wnd*>(child);
+                if (wnd->IsVisible() && wnd->IsPtInBounds(pt))
+                {
+                    if (Wnd* const hit = station.GetWndForMousePoint(wnd, pt, false))
+                    {
+                        return hit;
+                    }
+                }
+            }
+            return (station.GetStyle() & (WS_TRANSPARENT | WS_DISABLE)) == 0 ? &station : nullptr;
+        }
+
         int WndStation::DispatchMouse(Event const& ev)
         {
+            // RVA 0x593690 - finds the window under the cursor (or the capture
+            // window), converts the point to its client space and routes the
+            // event to the matching mouse handler.
             float x = ev.m_shortEv[0];
             float y = ev.m_shortEv[1];
             float x1 = ev.m_shortEv[2];
@@ -44,49 +78,30 @@ namespace m3d
 
             m_prevMouseCoord.x = x;
             m_prevMouseCoord.y = y;
-            PointBase<float> sxy{x, y};
-            PointBase<float> sxy1{x1, y1};
+            PointBase<float> const sxy{x, y};
+            PointBase<float> const sxy1{x1, y1};
 
-            Wnd* captureWnd = m_wndMouseCapture;
-            if (!captureWnd)
+            Wnd* target = m_wndMouseCapture;
+            if (!target)
             {
-                for (auto* wnd = RT_DYNCAST(GetFirstChild(), Wnd); wnd != nullptr; wnd = RT_DYNCAST(wnd->GetNextSibling(), Wnd))
-                {
-                    if (wnd->IsVisible() && wnd->IsPtInBounds(m_prevMouseCoord))
-                    {
-                        captureWnd = GetWndForMousePoint(wnd, m_prevMouseCoord, false);
-                        if (captureWnd != nullptr)
-                        {
-                            break;
-                        }
-                    }
-                }
-                //TODO: check correctness
-                if (captureWnd == nullptr)
-                {
-                    captureWnd = (GetStyle() & (WS_TRANSPARENT | WS_DISABLE)) == 0 ? this : nullptr;
-                }
+                target = FindWndUnderPoint(*this, sxy);
             }
 
-            Wnd* wnd = ModalOverride(captureWnd);
-            float xx = 0.0;
-            float yy = 0.0;
+            Wnd* const wnd = ModalOverride(target);
 
-            for (Wnd* parent = wnd; parent = nullptr; parent = RT_DYNCAST(parent->GetParent(), Wnd))
+            // Station-space point relative to the window's origin.
+            PointBase<float> org{0.0f, 0.0f};
+            for (Object* parent = wnd; parent != nullptr; parent = parent->GetParent())
             {
-                BoundsBase<float> const bounds = parent->GetBounds();
-                xx += bounds.x0;
-                yy += bounds.y0;
+                org.x += static_cast<Wnd*>(parent)->m_bounds.x0;
+                org.y += static_cast<Wnd*>(parent)->m_bounds.y0;
             }
-
-            PointBase<float> lc;
-            lc.x = sxy.x - xx;
-            lc.y = sxy.y - yy;
+            PointBase<float> lc{sxy.x - org.x, sxy.y - org.y};
 
             UpdateOnMouseInOut(wnd);
 
             int handled = 0;
-            short state = ev.m_shortEv[2];
+            unsigned const state = ev.m_shortEv[2];
             PointBase<float> firstClickLc{0.0, 0.0};
 
             switch (ev.m_eventType)
@@ -139,20 +154,13 @@ namespace m3d
                 break;
             }
 
-            // TODO: check this
-            if ((ev.m_eventType == EV_MOUSE_LBTN || ev.m_eventType == EV_MOUSE_RBTN || ev.m_eventType == EV_MOUSE_MBTN) && state &&
-                m_wndOpenedComboBox)
+            // Pressing any button outside the open combo box closes it.
+            bool const isButton =
+                ev.m_eventType == EV_MOUSE_LBTN || ev.m_eventType == EV_MOUSE_RBTN || ev.m_eventType == EV_MOUSE_MBTN;
+            if (isButton && state && m_wndOpenedComboBox && IsWndAlive(m_wndOpenedComboBox, -1) && IsWndAlive(wnd, -1) &&
+                wnd != m_wndOpenedComboBox && !wnd->IsChildOf(m_wndOpenedComboBox))
             {
-                int comboId = 0;
-                if (m_allWindows.getValueByKey(reinterpret_cast<unsigned>(m_wndOpenedComboBox), comboId))
-                {
-                    int wndId = 0;
-                    if (m_allWindows.getValueByKey(reinterpret_cast<unsigned>(wnd), wndId) && wnd != m_wndOpenedComboBox &&
-                        !wnd->IsChildOf(m_wndOpenedComboBox))
-                    {
-                        m_wndOpenedComboBox->Close();
-                    }
-                }
+                m_wndOpenedComboBox->Close();
             }
 
             if (wnd == this)
@@ -217,106 +225,138 @@ namespace m3d
 
         int WndStation::DispatchPaint(Wnd* curWnd, BoundsBase<float> const& clipTo)
         {
-            auto childBounds = clipTo;
+            // RVA 0x591250 - paints a window, then its children clipped to it,
+            // then whatever the window draws over its children.
+            auto& renderer = *M3D_APP->m_renderer;
+            BoundsBase<float> childBounds = clipTo;
             DrawInfo info{};
             curWnd->OnTick(M3D_KERNEL->GetTimer().GetCurTimeUnscaled(), M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled());
-            if (curWnd->m_bounds.width + curWnd->m_bounds.x0 - curWnd->m_bounds.x0 != 0.0 ||
-                curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
+
+            // Evaluated again after the children, as the shipped code does.
+            auto const isDrawable = [curWnd] {
+                return !curWnd->m_bounds.Empty() && (curWnd->m_style & WS_NODRAW) == 0 &&
+                       (curWnd->m_style & WS_IS_VISIBLE) != 0;
+            };
+            if (isDrawable())
             {
-                if ((curWnd->m_style & 1) == 0 && (curWnd->m_style & 0x200) != 0)
+                info.m_originalRect = curWnd->ToScreen(curWnd->m_bounds.SizeRect());
+                info.m_clippedRect = clipTo.Intersect(info.m_originalRect);
+                info.m_clientRect = curWnd->ToScreen(curWnd->GetClientBounds());
+                info.m_clientClippedRect = clipTo.Intersect(info.m_clientRect);
+
+                if (!info.m_clippedRect.Empty())
                 {
-                    BoundsBase<float> drawReserved{};
-                    drawReserved.x0 = 0.0;
-                    drawReserved.y0 = 0.0;
-                    drawReserved.width = curWnd->m_bounds.width;
-                    drawReserved.height = curWnd->m_bounds.height;
-                    info.m_originalRect = curWnd->ToScreen(drawReserved);
-                    info.m_clippedRect = clipTo.Intersect(info.m_originalRect);
-
-                    info.m_clientRect = curWnd->ToScreen(curWnd->GetClientBounds());
-                    info.m_clientClippedRect = clipTo.Intersect(info.m_clientRect);
-
-                    if (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0 ||
-                        info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0)
-                    {
-                        M3D_APP->m_renderer->SetWhiteTexture(0);
-                        M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-                        M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-                        M3D_APP->m_renderer->DisableTextureStages(1);
-                        info.m_wndDest = curWnd;
-                        curWnd->OnPaint(info);
-                        GetGfxServer()->FlushWindow(curWnd);
-                    }
-                    childBounds = info.m_clippedRect;
+                    renderer.SetWhiteTexture(0);
+                    renderer.SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+                    renderer.SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+                    renderer.DisableTextureStages(1);
+                    info.m_wndDest = curWnd;
+                    curWnd->OnPaint(info);
+                    GetGfxServer()->FlushWindow(curWnd);
                 }
+                childBounds = info.m_clippedRect;
             }
 
-            //TODO: check child order
-            retruxx::vector<Wnd*> wnds;
-            for (auto child = curWnd->GetFirstChild(); child; child = child->GetNextSibling())
+            // Children are collected in list order and painted from the last one
+            // back, so the first child ends up on top.
+            retruxx::vector<Wnd*> drawReversed;
+            for (Object* child = curWnd->GetFirstChild(); child; child = child->GetNextSibling())
             {
-                if (auto const wnd = dynamic_cast<Wnd*>(child))
-                {
-                    wnds.insert(wnds.begin(), wnd);
-                }
+                drawReversed.push_back(static_cast<Wnd*>(child));
             }
-            for (auto const& wnd : wnds)
+            for (auto it = drawReversed.rbegin(); it != drawReversed.rend(); ++it)
             {
-                if (wnd->GetName() == CStr("lblHealth"))
-                {
-                    bool asd = true;
-                }
-                DispatchPaint(wnd, childBounds);
+                DispatchPaint(*it, childBounds);
             }
 
-            if ((curWnd->m_bounds.width + curWnd->m_bounds.x0) - curWnd->m_bounds.x0 != 0.0 ||
-                curWnd->m_bounds.y0 - (curWnd->m_bounds.height + curWnd->m_bounds.y0) != 0.0)
+            if (isDrawable() && !info.m_clippedRect.Empty())
             {
-                if ((curWnd->m_style & 1) == 0 && (curWnd->m_style & 0x200) != 0 &&
-                    (info.m_clippedRect.width + info.m_clippedRect.x0 - info.m_clippedRect.x0 != 0.0 ||
-                     info.m_clippedRect.y0 - (info.m_clippedRect.height + info.m_clippedRect.y0) != 0.0))
-                {
-                    M3D_APP->m_renderer->SetWhiteTexture(0);
-                    M3D_APP->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-                    M3D_APP->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
-                    M3D_APP->m_renderer->DisableTextureStages(1);
-                    curWnd->OnPaintOverChildren(info);
-                }
+                renderer.SetWhiteTexture(0);
+                renderer.SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+                renderer.SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+                renderer.DisableTextureStages(1);
+                curWnd->OnPaintOverChildren(info);
             }
             return 1;
         }
 
-        int WndStation::CheckForMouseClick(Wnd*, bool, PointBase<float> const*)
+        int WndStation::CheckForMouseClick(Wnd* w, bool set, PointBase<float> const* pt)
         {
-            // TODO: implement WndStation::CheckForMouseClick
-            // RETRUXX_NOT_IMPLEMENTED;
-            return 0;
+            // RVA 0x592E30 - the second half of the click machine: the press and
+            // release are recorded by "set", and the click is only delivered once
+            // the double-click window has passed without a second press.
+            static unsigned clickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            static PointBase<float> savePt{0.0f, 0.0f};
+            static bool isSet = false;
+
+            if (!w)
+            {
+                return 0;
+            }
+            if (w != m_wndCandidateForDblClick)
+            {
+                return 0;
+            }
+            if (!m_wndCandidateForDblClick)
+            {
+                isSet = false;
+                return 0;
+            }
+
+            if (set)
+            {
+                if (pt)
+                {
+                    clickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                    savePt = *pt;
+                    isSet = true;
+                }
+                return 0;
+            }
+
+            if (!isSet)
+            {
+                return 0;
+            }
+            auto const now = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            if (now - clickTime <= static_cast<unsigned>(M3D_ENGINE_CFG.m_ui_dblClickDelay.GetI()))
+            {
+                return 0;
+            }
+
+            isSet = false;
+            w->OnMouseClick(savePt);
+            if (w == this)
+            {
+                // A click on the station itself is reported as an event instead.
+                Event clickEvent;
+                clickEvent.m_timeStamp = g_Kernel->GetTimer().GetCurTimeUnscaled() * 0.001;
+                clickEvent.m_eventType = EV_MOUSE_CLICK;
+                clickEvent.m_ushortEv[0] = static_cast<unsigned short>(savePt.x);
+                clickEvent.m_ushortEv[1] = static_cast<unsigned short>(savePt.y);
+                OnEvent(clickEvent);
+            }
+            return 1;
         }
 
         Wnd* WndStation::GetWndForMousePoint(Wnd* curWnd, PointBase<float> const& pt, bool affectAll)
         {
-            //TODO: check this
-            auto res = curWnd;
-            if (curWnd)
+            // RVA 0x590040 - depth-first search for the innermost window under the
+            // point. Hidden children are skipped unless affectAll is set, and without
+            // affectAll a transparent or disabled hit counts as no hit.
+            Wnd* res = curWnd;
+            for (Object* child = curWnd->GetFirstChild(); child; child = child->GetNextSibling())
             {
-                for (auto obj = curWnd->GetFirstChild(); obj; obj = obj->GetNextSibling())
+                auto* const wnd = static_cast<Wnd*>(child);
+                if ((wnd->IsVisible() || affectAll) && wnd->IsPtInBounds(pt))
                 {
-                    auto wnd = (Wnd*)(obj);
-                    if ((wnd->GetStyle() & 0x200) != 0 || affectAll)
+                    if (Wnd* const hit = GetWndForMousePoint(wnd, pt, affectAll))
                     {
-                        if (wnd->IsPtInBounds(pt))
-                        {
-                            res = GetWndForMousePoint(wnd, pt, affectAll);
-                            if (res)
-                            {
-                                return res;
-                            }
-                        }
+                        return hit;
                     }
                 }
-                res = curWnd;
             }
-            if (!affectAll && (res->GetStyle() & 0x102) != 0)
+            if (!affectAll && (res->GetStyle() & (WS_TRANSPARENT | WS_DISABLE)) != 0)
             {
                 return nullptr;
             }
@@ -350,9 +390,12 @@ namespace m3d
             return m_wndModalRetVal;
         }
 
-        int WndStation::PulseKeyForWindow(Wnd*, unsigned short, unsigned char)
+        int WndStation::PulseKeyForWindow(Wnd* w, unsigned short key, unsigned char scanCode)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CBE0 - a synthetic press followed immediately by a release.
+            w->OnKey(key, scanCode, 1);
+            w->OnKey(key, scanCode, 0);
+            return 1;
         }
 
         Wnd* WndStation::GetCapture() const
@@ -362,22 +405,25 @@ namespace m3d
 
         Wnd* WndStation::GetWndMouseOver()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CAF0
+            return m_wndMouseOver;
         }
 
-        void WndStation::EnableAnimation(bool)
+        void WndStation::EnableAnimation(bool bEnable)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CC70
+            m_bAnimationEnabled = bEnable;
         }
 
         int WndStation::Activate(Wnd* wnd)
         {
+            // RVA 0x58EB60
             auto wndToActive = wnd;
             if (!wndToActive)
             {
                 wndToActive = this;
             }
-            if (wnd == m_wndActive)
+            if (wndToActive == m_wndActive)
             {
                 return 0;
             }
@@ -413,9 +459,12 @@ namespace m3d
             return 1;
         }
 
-        Wnd* WndStation::CaptureMouse(Wnd*)
+        Wnd* WndStation::CaptureMouse(Wnd* wnd)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB30 - hands back whoever held the capture before.
+            auto* prev = m_wndMouseCapture;
+            m_wndMouseCapture = wnd;
+            return prev;
         }
 
         CStr WndStation::GetStringByStringId0(CStr const& id)
@@ -429,7 +478,7 @@ namespace m3d
         {
             if (!m_strings.get(id, dest))
             {
-                dest = "MISSING!";
+                dest = id + "MISSING!";
                 return 0;
             }
             return 1;
@@ -453,9 +502,104 @@ namespace m3d
             return 1;
         }
 
-        int WndStation::CheckForMouseDblClick(Wnd*, PointBase<float> const&, unsigned, PointBase<float>&)
+        int WndStation::CheckForMouseDblClick(Wnd* w, PointBase<float> const& pt, unsigned mouseState,
+                                              PointBase<float>& prevClickPt)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x593210 - press / release / press on the same window inside the
+            // double-click delay makes a double click; anything else restarts the
+            // sequence. Returns 1 exactly on the closing press.
+            static PointBase<float> firstClickCoords{-1.0f, -1.0f};
+            static unsigned firstClickTime = 0;
+            static DblClickState clickState = DBLCLICK_NOTHING;
+
+            if (!w)
+            {
+                return 0;
+            }
+
+            auto const startSequence = [&]()
+            {
+                firstClickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                clickState = DBLCLICK_PRESS;
+                firstClickCoords = pt;
+            };
+            auto const resetSequence = [&]()
+            {
+                firstClickTime = 0;
+                clickState = DBLCLICK_NOTHING;
+                m_wndCandidateForDblClick = nullptr;
+                firstClickCoords.x = -1.0f;
+                firstClickCoords.y = -1.0f;
+            };
+
+            if (w != m_wndCandidateForDblClick)
+            {
+                if (mouseState)
+                {
+                    m_wndCandidateForDblClick = w;
+                    startSequence();
+                }
+                else
+                {
+                    resetSequence();
+                }
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            auto const now = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            if (now - firstClickTime > static_cast<unsigned>(M3D_ENGINE_CFG.m_ui_dblClickDelay.GetI()))
+            {
+                // Too slow: this press, if any, becomes the start of a new pair.
+                if (mouseState)
+                {
+                    startSequence();
+                }
+                else
+                {
+                    resetSequence();
+                }
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            if (clickState == DBLCLICK_PRESS)
+            {
+                if (!mouseState)
+                {
+                    clickState = DBLCLICK_PRESS_RELEASE;
+                    CheckForMouseClick(m_wndCandidateForDblClick, true, &pt);
+                }
+                else
+                {
+                    firstClickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                    firstClickCoords = pt;
+                }
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            if (clickState != DBLCLICK_PRESS_RELEASE)
+            {
+                prevClickPt = firstClickCoords;
+                return 0;
+            }
+
+            clickState = DBLCLICK_NOTHING;
+            firstClickTime = 0;
+            if (mouseState)
+            {
+                prevClickPt = firstClickCoords;
+                m_wndCandidateForDblClick = nullptr;
+                firstClickCoords.x = -1.0f;
+                firstClickCoords.y = -1.0f;
+                return 1;
+            }
+            m_wndCandidateForDblClick = nullptr;
+            firstClickCoords.x = -1.0f;
+            firstClickCoords.y = -1.0f;
+            prevClickPt = firstClickCoords;
+            return 0;
         }
 
         int WndStation::GetDefaultCursor(Cursor& cur)
@@ -503,7 +647,11 @@ namespace m3d
 
         int WndStation::Create(CStr const&, unsigned, BoundsBase<float> const&, unsigned)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58E9A0 - the station is not an ordinary window: the shipped
+            // build raises a system error here and returns success anyway. Use
+            // Create(stringsName, schemaName) instead.
+            SYS_ERROR("0");
+            return 1;
         }
 
         void WndStation::StopAllAnimations()
@@ -536,128 +684,175 @@ namespace m3d
 
         Wnd* WndStation::GetFocus() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB60
+            return m_wndKbdCapture;
         }
 
-        int WndStation::ProcessEvent(Event const& ev)
+        int WndStation::ProcessEvent(Event const& event)
         {
-            int v3;                    // ebx
-            m3d::ui::ModalWnd* v6;     // ebx
-            m3d::ui::Wnd* v7;          // ebp
-            m3d::ui::Wnd* v8;          // ebp
-            m3d::ui::WndStation* v9;   // eax
-            m3d::ui::WndStation* v10;  // eax
-            m3d::ui::Wnd* v11;         // [esp-4h] [ebp-34h]
-            void* msg;                 // [esp+10h] [ebp-20h]
-            m3d::ui::Wnd* eventa;      // [esp+34h] [ebp+4h]
+            // RVA 0x593DD0 - the station's event entry point. Raw input is handed to the
+            // dispatchers, which route it to the focused or hovered window; everything else is
+            // the UI talking to itself about modal windows, tooltips, animations and combos.
+            int handled = 0;
 
-            AIParam data = ev.m_aiParamEv;
-
-            v3 = 0;
-            switch (ev.m_eventType)
+            switch (event.m_eventType)
             {
-            case 4:
+            case EV_DISPLAY_CHANGED:
                 ForEachChild(this, &Wnd::OnDisplayChanged);
-                goto LABEL_3;
-            case 5:
-            case 6:
-                goto $L118755;
-            case 7:
-            case 8:
-                v3 = DispatchKey(ev);
+                // NOTE: reported as unhandled even though every window was just notified, so
+                // the event carries on to the rest of the application.
                 break;
-            case 9:
-            case 0xA:
-            case 0xB:
-            case 0xC:
-            case 0xF:
-                v3 = DispatchMouse(ev);
+
+            case EV_LOOSING_FOCUS:
+            case EV_OBTAINED_FOCUS:
+                // Swallowed without doing anything: the station keeps its focus across an
+                // application focus change.
+                handled = 1;
                 break;
-            case 0x10:
-            case 0x11:
-            case 0x12:
-            case 0x13:
-            case 0x14:
-            case 0x15:
-            case 0x16:
-            case 0x17:
-            case 0x18:
-            case 0x19:
-                v3 = DispatchJoystick(ev);
+
+            case EV_KEY_DOWN:
+            case EV_KEY_UP:
+                handled = DispatchKey(event);
                 break;
-            case 0x27:
-                v6 = reinterpret_cast<ModalWnd*>(ev.m_void[0]);
-                if (v6->CanClose())
-                    EndModal(v6, ev.m_uintEv[1]);
-            $L118755:
-                v3 = 1;
+
+            case EV_MOUSE_MOVE:
+            case EV_MOUSE_LBTN:
+            case EV_MOUSE_RBTN:
+            case EV_MOUSE_MBTN:
+            case EV_MOUSE_WHEEL:
+                // EV_MOUSE_DBLCLICK and EV_MOUSE_CLICK are deliberately absent: the station
+                // produces those itself out of the button events and posts them outwards, so
+                // they are results of dispatching rather than input to it.
+                handled = DispatchMouse(event);
                 break;
-            case 0x28:
-                v7 = reinterpret_cast<Wnd*>(ev.m_void[0]);
-                eventa = reinterpret_cast<Wnd*>(ev.m_void[1]);
-                if (IsWndAlive(v7, -1) && IsWndAlive(eventa, -1))
+
+            case EV_JOYSTICK_BTN0:
+            case EV_JOYSTICK_BTN1:
+            case EV_JOYSTICK_BTN2:
+            case EV_JOYSTICK_BTN3:
+            case EV_JOYSTICK_BTN4:
+            case EV_JOYSTICK_BTN5:
+            case EV_JOYSTICK_BTN6:
+            case EV_JOYSTICK_BTN7:
+            case EV_JOYSTICK_BTN8:
+            case EV_JOYSTICK_BTN9:
+                // NOTE: only the ten buttons reach the UI - the axis events fall through to
+                // the default case and are dropped, so the joystick cannot move the cursor.
+                handled = DispatchJoystick(event);
+                break;
+
+            case EV_UI_CLOSE_MODAL_WND:
+            {
+                auto* modalWnd = static_cast<ModalWnd*>(event.m_void[0]);
+                if (modalWnd->CanClose())
                 {
-                    eventa->OnWndNotify(v7, v7->m_id, ev.m_uintEv[2], data);
-                    v3 = 1;
+                    EndModal(modalWnd, event.m_uintEv[1]);
+                }
+                // NOTE: counted as handled even when the window refused to close.
+                handled = 1;
+                break;
+            }
+
+            case EV_UI_NOTIFY_WND:
+            {
+                auto* sender = static_cast<Wnd*>(event.m_void[0]);
+                auto* receiver = static_cast<Wnd*>(event.m_void[1]);
+                auto msg = event.m_uintEv[2];
+
+                // The notification takes its own copy of the parameter, released again on the
+                // way out of this case (the shipped build calls AIParam::Detach here).
+                AIParam data(event.m_aiParamEv);
+
+                // Either window may have been destroyed between posting and now.
+                if (IsWndAlive(sender, -1) && IsWndAlive(receiver, -1))
+                {
+                    receiver->OnWndNotify(sender, sender->m_id, msg, data);
+                    handled = 1;
                 }
                 break;
-            case 0x29:
-            case 0x2E:
-                goto $L118771;
-            case 0x2A:
-                m3d::ui::WndStation::OnEndAnimation(reinterpret_cast<Wnd*>(ev.m_void[0]));
-            $L118771:
-                v3 = this->OnEvent(ev);
+            }
+
+            case EV_UI_END_WND_ANIMATION:
+                OnEndAnimation(static_cast<Wnd*>(event.m_void[0]));
+                handled = OnEvent(event);
                 break;
-            case 0x2B:
-                v3 = 0;
-                m3d::ui::WndStation::StopAllAnimations();
+
+            case EV_UI_MODAL_WND_IS_CLOSED:
+            case EV_KEYBINDINGS_CHANGED:
+                // Nothing for the station to do; passed straight out to the listeners.
+                handled = OnEvent(event);
                 break;
-            case 0x2C:
-                m3d::ui::WndStation::RemoveCurrentTooltip();
-                v8 = reinterpret_cast<Wnd*>(ev.m_void[0]);
-                if (m3d::ui::WndStation::IsWndAlive(v8, -1))
+
+            case EV_UI_STOP_ALL_WND_ANIMATIONS:
+                StopAllAnimations();
+                handled = 0;
+                break;
+
+            case EV_INSERT_CREATED_TOOLTIP:
+            {
+                RemoveCurrentTooltip();
+
+                auto* wnd = static_cast<Wnd*>(event.m_void[0]);
+                if (IsWndAlive(wnd, -1))
                 {
-                    this->m_wndForTooltip = v8;
-                    if (v8->m_toolTipWnd)
+                    m_wndForTooltip = wnd;
+                    if (wnd->m_toolTipWnd)
                     {
-                        GetStation()->AddChild(this->m_wndForTooltip->m_toolTipWnd);
-                        v11 = this->m_wndForTooltip->m_toolTipWnd;
-                        GetStation()->MoveChildToFirstPosition(v11);
+                        // Re-parented to the station and lifted to the front so that it draws
+                        // over everything else.
+                        GetStation()->AddChild(m_wndForTooltip->m_toolTipWnd);
+                        GetStation()->MoveChildToFirstPosition(m_wndForTooltip->m_toolTipWnd);
                     }
                 }
                 break;
-            case 0x2D:
-                m3d::ui::WndStation::RemoveCurrentTooltip();
+            }
+
+            case EV_REMOVE_TOOLTIP:
+                RemoveCurrentTooltip();
                 break;
-            case 0x2F:
-                v3 = 1;
-                m3d::ui::WndStation::OnOpenComboBox(reinterpret_cast<ComboBoxWnd*>(ev.m_void[0]));
+
+            case EV_UI_COMBO_OPENED:
+                OnOpenComboBox(static_cast<ComboBoxWnd*>(event.m_void[0]));
+                handled = 1;
                 break;
-            case 0x30:
-                v3 = 1;
-                m3d::ui::WndStation::OnCloseComboBox(reinterpret_cast<ComboBoxWnd*>(ev.m_void[0]));
+
+            case EV_UI_COMBO_CLOSED:
+                OnCloseComboBox(static_cast<ComboBoxWnd*>(event.m_void[0]));
+                handled = 1;
                 break;
+
             default:
-            LABEL_3:
-                v3 = 0;
                 break;
             }
-            if (ev.m_eventType >= 0x10000)
-                this->OnEvent(ev);
-            return v3;
+
+            // NOTE: EV_USER and above is far past every label above, so a user event always
+            // lands in the default case. Its OnEvent result is dropped on the floor here and
+            // ProcessEvent reports every user event as unhandled.
+            if (event.m_eventType >= EV_USER)
+            {
+                OnEvent(event);
+            }
+            return handled;
         }
 
-        Wnd* WndStation::GetWndByUniqueId(int) const
+        Wnd* WndStation::GetWndByUniqueId(int uniqueId) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x591B80
+            Wnd* wnd = nullptr;
+            if (m_allWindowsById.getValueByKey(static_cast<unsigned>(uniqueId), wnd))
+            {
+                return wnd;
+            }
+            return nullptr;
         }
 
         void WndStation::EndModal(ModalWnd* wnd, unsigned toRet)
         {
-            if (!m_wndModalStack.empty() && m_wndModalStack[m_wndModalStack.size() - 1])
+            // RVA 0x5900B0
+            if (!m_wndModalStack.empty())
             {
-                auto& wndFromStack = m_wndModalStack[m_wndModalStack.size() - 1];
+                // A copy, not a reference: the slot is popped below.
+                ModalWnd* const wndFromStack = m_wndModalStack.back();
                 if (wnd == wndFromStack)
                 {
                     wndFromStack->OnCloseModal(toRet);
@@ -665,7 +860,9 @@ namespace m3d
                     m_wndModalRetVal = toRet;
                     CaptureMouse(nullptr);
                     RemoveCurrentTooltip();
-                    if (m_modalAttachedToStation)
+                    // The dialog's own flag, set by DoModal; removing it lets
+                    // OnRemoveWnd hand activation and keyboard focus back.
+                    if (wndFromStack->m_modalAttachedToStation)
                     {
                         RemoveChild(wndFromStack);
                     }
@@ -676,7 +873,8 @@ namespace m3d
 
         Wnd* WndStation::GetActive() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB70
+            return m_wndActive;
         }
 
         bool WndStation::IsModal(ModalWnd* wnd)
@@ -693,79 +891,52 @@ namespace m3d
 
         void WndStation::OnEndAnimation(Wnd* wnd)
         {
-            if (!wnd)
+            // RVA 0x591CA0 - a window whose unlink was suspended until its
+            // animation ended is detached once neither it nor any descendant is
+            // still animating. The walk continues up the parent chain, so suspended
+            // ancestors waiting on this window are released too; it stops at the
+            // first suspended window that still has an animating descendant.
+            if (!IsWndAlive(wnd, -1))
             {
                 return;
             }
 
-            int res = 0;
-            if (!m_allWindows.getValueByKey(reinterpret_cast<int>(wnd), res))
+            for (Object* cur = wnd; cur != nullptr;)
             {
-                return;
-            }
-
-            // TODO: generated code WndStation::OnEndAnimation
-            // Traverse up the parent hierarchy
-            m3d::ui::Wnd* currentWnd = wnd;
-            while (currentWnd)
-            {
-                m3d::Object* parentWnd = currentWnd->GetParent();
-
-                // Check if this is a suspended window that needs cleanup
-                if (currentWnd->IsKindOf(&m3d::ui::Wnd::m_classWnd) && currentWnd->m_bSuspendedUnlink)
+                Object* const parent = cur->GetParent();
+                if (IS_KIND_OF(cur, Wnd) && static_cast<Wnd*>(cur)->m_bSuspendedUnlink)
                 {
                     bool canRemove = true;
-
-                    // Use a stack to perform depth-first traversal of children
-                    std::vector<m3d::Object*> stack;
-                    stack.push_back(currentWnd);
-
-                    while (!stack.empty())
+                    retruxx::vector<Object*> stack;
+                    stack.push_back(cur);
+                    while (canRemove && !stack.empty())
                     {
-                        m3d::Object* obj = stack.back();
+                        Object* const obj = stack.back();
                         stack.pop_back();
-
-                        // Check all children of this object
-                        for (m3d::Object* child = obj->GetFirstChild(); child != nullptr; child = child->GetNextSibling())
+                        for (Object* child = obj->GetFirstChild(); child; child = child->GetNextSibling())
                         {
-                            // If any child window is still animating, we cannot remove yet
-                            if (child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
+                            if (IS_KIND_OF(child, Wnd) && static_cast<Wnd*>(child)->IsAnimatingNow())
                             {
-                                m3d::ui::Wnd* childWnd = static_cast<m3d::ui::Wnd*>(child);
-                                if (childWnd->IsAnimatingNow())
-                                {
-                                    canRemove = false;
-                                    break;
-                                }
+                                canRemove = false;
+                                break;
                             }
-
-                            // Add child to stack for further processing
                             if (child->GetFirstChild())
                             {
                                 stack.push_back(child);
                             }
                         }
-
-                        if (!canRemove)
-                            break;
-                    }
-
-                    // Clear the stack
-                    stack.clear();
-
-                    // If we can remove this window and it has a parent, detach it
-                    if (canRemove && parentWnd && parentWnd->IsKindOf(&m3d::ui::Wnd::m_classWnd))
-                    {
-                        auto* parentWndCasted = RT_DYNCAST(parentWnd, Wnd);
-                        parentWndCasted->RemoveChildForce(currentWnd);
                     }
 
                     if (!canRemove)
+                    {
                         return;
+                    }
+                    if (parent && IS_KIND_OF(parent, Wnd))
+                    {
+                        static_cast<Wnd*>(parent)->RemoveChildForce(cur);
+                    }
                 }
-
-                // Move up to parent
-                currentWnd = RT_DYNCAST(parentWnd, Wnd);
+                cur = parent;
             }
         }
 
@@ -776,30 +947,43 @@ namespace m3d
 
         CStr WndStation::InitializeStringUsingIds(CStr const& src)
         {
-            if (!src.empty())
+            // RVA 0x665660 - replaces each ^id^ with the string of that id.
+            // NOTE: CStr::find returns positions relative to where the search starts. Both are used correctly
+            // for the first marker, but a later search starts past the previous one and its relative result
+            // is used as if it were absolute, so any marker after the first is mangled.
+            if (src.empty())
             {
-                CStr newStr = src;
-                auto startPos = 0;
-                while (true)
-                {
-                    auto const pos1 = newStr.find('^');
-                    if (pos1 == CStr_npos)
-                    {
-                        break;
-                    }
-                    auto const pos2 = newStr.find('^', pos1 + 1);
-                    if (pos2 == CStr_npos)
-                    {
-                        break;
-                    }
-                    CStr replacedSubstr;
-                    GetStringByStringId(replacedSubstr, newStr.substr(pos1 + 1, pos2));
-                    newStr = newStr.substr(startPos, pos1) + replacedSubstr + newStr.substr(pos2 + 1);
-                    startPos = pos2 + 1;
-                }
-                return newStr;
+                return CStr("");
             }
-            return src;
+            CStr accum;
+            int const len = src.length();
+            int pos = 0;
+            while (true)
+            {
+                int const pos1 = src.find('^', pos);
+                if (pos1 < 0)
+                {
+                    accum += src.substr(pos);
+                    break;
+                }
+                int const idStart = pos1 + 1;
+                int const idLen = src.find('^', idStart);
+                if (idLen < 0)
+                {
+                    accum += src.substr(pos);
+                    break;
+                }
+                CStr const id = src.substr(idStart, idLen);
+                CStr dest;
+                GetStringByStringId(dest, id);
+                accum += src.substr(pos, pos1 - pos) + dest;
+                pos = pos1 + idLen + 2;
+                if (pos >= len)
+                {
+                    break;
+                }
+            }
+            return accum;
         }
 
         WndStation::~WndStation()
@@ -809,48 +993,40 @@ namespace m3d
 
         int WndStation::OnRemoveWnd(Wnd* parent, Wnd* wnd)
         {
-            //TODO: check this
-            if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+            // RVA 0x592A90 - drops every reference the station holds to a window
+            // (or to one of its descendants) that is being removed.
+            bool const isModal = wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd));
+            if (isModal)
             {
-                auto modalWnd = dynamic_cast<ModalWnd*>(wnd);
-                M3D_ASSERT(!IsModal(modalWnd));
+                M3D_ASSERT(!IsModal(RT_DYNCAST(wnd, ModalWnd)));
             }
+
             if (wnd == m_wndActive || m_wndActive->IsChildOf(wnd))
             {
-                if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+                if (isModal)
                 {
-                    if (!m_wndModalStack.empty())
-                    {
-                        Activate(m_wndModalStack.back());
-                    }
-                    else
-                    {
-                        Activate(nullptr);
-                    }
+                    Activate(m_wndModalStack.empty() ? nullptr : m_wndModalStack.back());
                 }
                 else
                 {
                     Activate(parent);
                 }
             }
-            if (wnd->IsKindOf(RT_CLASS_LOCAL(ModalWnd)))
+            if (isModal)
             {
                 Application::g_pApp->EnqueueMessage(41, reinterpret_cast<int>(wnd), 0, 0, 0, {}, {});
             }
             if (m_wndKbdCapture && (wnd == m_wndKbdCapture || m_wndKbdCapture->IsChildOf(wnd)))
             {
-                if (m_wndKbdCapture)
-                {
-                    m_wndKbdCapture->OnLoosingFocus();
-                }
+                m_wndKbdCapture->OnLoosingFocus();
                 m_wndKbdCapture = this;
-                m_wndKbdCapture->OnObtainingFocus();
+                OnObtainingFocus();
             }
             if (m_wndMouseCapture && (wnd == m_wndMouseCapture || m_wndMouseCapture->IsChildOf(wnd)))
             {
                 CaptureMouse(nullptr);
             }
-            if (m_wndMouseOver == wnd || m_wndMouseOver->IsChildOf(wnd))
+            if (wnd == m_wndMouseOver || m_wndMouseOver->IsChildOf(wnd))
             {
                 m_wndMouseOver->OnMouseOut();
                 m_wndMouseOver = parent;
@@ -859,15 +1035,12 @@ namespace m3d
             {
                 RemoveCurrentTooltip();
             }
-            if (m_wndCandidateForDblClick && (wnd == m_wndCandidateForDblClick || m_wndCandidateForDblClick->IsChildOf(wnd)))
+            if (m_wndCandidateForDblClick &&
+                (wnd == m_wndCandidateForDblClick || m_wndCandidateForDblClick->IsChildOf(wnd)))
             {
                 m_wndCandidateForDblClick = nullptr;
             }
-            if (!wnd->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)) || wnd != m_wndOpenedComboBox)
-            {
-                return 1;
-            }
-            if (wnd)
+            if (wnd->IsKindOf(RT_CLASS_LOCAL(ComboBoxWnd)) && wnd == m_wndOpenedComboBox)
             {
                 m_wndOpenedComboBox = nullptr;
             }
@@ -877,9 +1050,6 @@ namespace m3d
         WndStation::WndStation()
         {
             m_wndStation = this;
-
-            //inject::injectMemoryAddress(0x00A0A2D4, inject::cast<uint32_t>(m_wndStation));
-            //inject::cast<WndStation*>(0x00A0A2D4);
 
             if (gfxserver == nullptr)
             {
@@ -905,9 +1075,12 @@ namespace m3d
             this->m_wndOpenedComboBox = nullptr;
         }
 
-        int WndStation::DispatchJoystick(Event const&)
+        int WndStation::DispatchJoystick(Event const& event)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CB00 - joystick input is not a window concern; it goes
+            // straight to the impulse layer.
+            Application::g_pApp->m_pImpulses->HandleKeyboardMouseEvent(event, this);
+            return 1;
         }
 
         void WndStation::OnCloseComboBox(ComboBoxWnd* combo)
@@ -944,9 +1117,15 @@ namespace m3d
             }
         }
 
-        void WndStation::ForEachChild(Wnd*, void (Wnd::*)())
+        void WndStation::ForEachChild(Wnd* curWnd, void (Wnd::*fn)())
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58DCD0 - pre-order walk of the whole subtree.
+            (curWnd->*fn)();
+            for (auto* child = RT_DYNCAST(curWnd->GetFirstChild(), Wnd); child;
+                 child = RT_DYNCAST(child->GetNextSibling(), Wnd))
+            {
+                ForEachChild(child, fn);
+            }
         }
 
         void WndStation::RegisterWnd(Wnd* w)
@@ -965,23 +1144,22 @@ namespace m3d
 
         GfxServer* WndStation::getGfxServer()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x58CC20 - the one graphics server is made on first use.
+            if (!gfxserver)
+            {
+                gfxserver = new GfxServer;
+            }
+            return gfxserver;
         }
 
         void WndStation::UnregisterWnd(Wnd* w)
         {
-            //TODO: check this and refactor
-            m3d::ui::Wnd* v2;  // esi
-
-            v2 = w;
-            if (w)
+            // RVA 0x5943B0
+            if (w && w->m_uniqueId != -1)
             {
-                if (w->m_uniqueId != -1)
-                {
-                    m_allWindowsById.removeByKey(w->m_uniqueId);
-                    m_allWindows.removeByKey(reinterpret_cast<unsigned>(w));
-                    v2->m_uniqueId = -1;
-                }
+                m_allWindowsById.removeByKey(w->m_uniqueId);
+                m_allWindows.removeByKey(reinterpret_cast<unsigned>(w));
+                w->m_uniqueId = -1;
             }
         }
 
@@ -1046,32 +1224,21 @@ namespace m3d
 
         int WndStation::Repaint()
         {
-            Application::g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
-            Application::g_pApp->m_renderer->PushLighting(false);
-            Application::g_pApp->m_renderer->PushBlend(rend::BM_NONE);
+            // RVA 0x5916A0 - paints the whole window tree, refreshes the mouse-over
+            // window and tooltip, then draws the cursor (as a hardware cursor when
+            // enabled, otherwise as a sprite).
+            auto& renderer = *Application::g_pApp->m_renderer;
+            renderer.PushZbState(rend::ZB_DISABLE);
+            renderer.PushLighting(false);
+            renderer.PushBlend(rend::BM_NONE);
             DispatchPaint(this, m_bounds);
-            auto captureWnd = m_wndMouseCapture;
-            if (!captureWnd)
+
+            Wnd* target = m_wndMouseCapture;
+            if (!target)
             {
-                for (auto* it = GetFirstChild(); it != nullptr; it = it->GetNextSibling())
-                {
-                    auto* wnd = reinterpret_cast<Wnd*>(it);
-                    if ((wnd->GetStyle() & 0x200) != 0 && wnd->IsPtInBounds(m_prevMouseCoord))
-                    {
-                        captureWnd = GetWndForMousePoint(wnd, m_prevMouseCoord, false);
-                        if (captureWnd != nullptr)
-                        {
-                            break;
-                        }
-                    }
-                }
-                //TODO: check correctness
-                if (captureWnd == nullptr)
-                {
-                    captureWnd = (GetStyle() & 0x102) == 0 ? this : nullptr;
-                }
+                target = FindWndUnderPoint(*this, m_prevMouseCoord);
             }
-            auto* wnd = ModalOverride(captureWnd);
+            Wnd* const wnd = ModalOverride(target);
             if (wnd != nullptr)
             {
                 UpdateOnMouseInOut(wnd);
@@ -1080,8 +1247,9 @@ namespace m3d
             {
                 RemoveCurrentTooltip();
             }
+
             assert(m_curDefault);
-            auto oldCursor = m_currentCursor;
+            Cursor const oldCursor = m_currentCursor;
             if (m_wndMouseOver && m_wndMouseOver->GetCursorShow())
             {
                 if (!m_wndMouseOver->GetCursor(m_currentCursor))
@@ -1092,41 +1260,40 @@ namespace m3d
                 {
                     if (m_currentCursor == oldCursor)
                     {
-                        Application::g_pApp->m_renderer->UpdateDXCursorFrame();
+                        renderer.UpdateDXCursorFrame();
                     }
                     else
                     {
-                        //TODO: check this
-                        Application::g_pApp->m_renderer->SetupDXCursor(
-                            m_currentCursor.m_tex, m_currentCursor.m_spot.x, m_currentCursor.m_spot.y, 0);
+                        // The hot spot is rounded to nearest (a bare fistp), not truncated.
+                        renderer.SetupDXCursor(m_currentCursor.m_tex, static_cast<int>(lrintf(m_currentCursor.m_spot.x)),
+                                               static_cast<int>(lrintf(m_currentCursor.m_spot.y)), 0);
                     }
-                    Application::g_pApp->m_renderer->ShowDXCursor(true);
+                    renderer.ShowDXCursor(true);
                 }
                 else
                 {
-                    Application::g_pApp->m_renderer->SetBlend(rend::BM_ALPHA, false);
-                    Application::g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
-                    Application::g_pApp->m_renderer->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
-                    Application::g_pApp->m_renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
-                    Application::g_pApp->m_renderer->SetTexture(0, m_currentCursor.m_tex, -1.0);  //TODO: check this
+                    renderer.SetBlend(rend::BM_ALPHA, false);
+                    renderer.SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+                    renderer.SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+                    renderer.SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+                    renderer.SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+                    renderer.SetTexture(0, m_currentCursor.m_tex, -1.0);
                     auto mouseX = static_cast<float>(Application::g_pApp->GetMouseX());
                     auto mouseY = static_cast<float>(Application::g_pApp->GetMouseY());
-                    Application::g_pApp->m_renderer->AbsToRel(mouseX, mouseY);
-                    Application::g_pApp->PutSpriteRel(
-                        mouseX - m_currentCursor.m_spot.x,
-                        mouseY - m_currentCursor.m_spot.y,
-                        m_currentCursor.m_sz.x + (mouseX - m_currentCursor.m_spot.x),
-                        m_currentCursor.m_sz.y + (mouseY - m_currentCursor.m_spot.y),
-                        -1);
+                    renderer.AbsToRel(mouseX, mouseY);
+                    float const left = mouseX - m_currentCursor.m_spot.x;
+                    float const top = mouseY - m_currentCursor.m_spot.y;
+                    Application::g_pApp->PutSpriteRel(left, top, m_currentCursor.m_sz.x + left,
+                                                      m_currentCursor.m_sz.y + top, 0xFFFFFFFF);
                 }
             }
             else if (Application::g_pApp->IsDXCursorEnabled())
             {
-                Application::g_pApp->m_renderer->ShowDXCursor(false);
+                renderer.ShowDXCursor(false);
             }
-            Application::g_pApp->m_renderer->PopBlend();
-            Application::g_pApp->m_renderer->PopZbState();
-            Application::g_pApp->m_renderer->PopLighting();
+            renderer.PopBlend();
+            renderer.PopZbState();
+            renderer.PopLighting();
             return 1;
         }
 

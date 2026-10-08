@@ -7,6 +7,10 @@
 #include <core/ini.h>
 
 #include "game/m3dgame.h"
+#include "game/uimisc/levelinfo.h"
+#include <client.h>
+#include <level.h>
+#include <world.h>
 #include "scene/servers/DataServer.h"
 
 namespace m3d
@@ -33,8 +37,49 @@ namespace m3d
 
     void BlockMusicManager::Reset()
     {
-        // TODO: implement BlockMusicManager::Reset
-        //RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x424040
+        if (!m_bMustPlayNewMusic)
+        {
+            M3D_LOG_INFO("BlockMusicManager: resetting");
+        }
+
+        if (m_blocks.empty())
+        {
+            m_curBlockNum = -1;
+            return;
+        }
+
+        // The current level may name a set of music blocks to pick from;
+        // otherwise the first block is used.
+        m_curBlockNum = 0;
+        auto* levelInfoManager = M3D_APP->m_pInterfaceManager->GetLevelInfoManager();
+        if (levelInfoManager)
+        {
+            CStr levelName;
+            if (pClient && pClient->GetWorld().m_level)
+            {
+                levelName = pClient->GetWorld().m_level->m_levelName;
+            }
+            auto const* levelInfo = levelInfoManager->GetLevelInfoByName(levelName);
+            if (levelInfo)
+            {
+                CStr const blockNameFromLevel = levelInfo->GetRandomMusicBlock();
+                if (!blockNameFromLevel.empty())
+                {
+                    auto const it = m_blockNamesToIds.find(blockNameFromLevel);
+                    if (it == m_blockNamesToIds.end())
+                    {
+                        M3D_CRITICAL_ERROR("unknown music block: " + blockNameFromLevel);
+                    }
+                    // NOTE: like the original, this reads through end() when the
+                    // critical error above returns rather than aborting.
+                    m_curBlockNum = it->second;
+                }
+            }
+        }
+
+        M3D_ASSERT(static_cast<unsigned>(m_curBlockNum) < m_blocks.size());
+        m_bMustPlayNewMusic = true;
     }
 
     void BlockMusicManager::Init()
@@ -133,6 +178,8 @@ namespace m3d
 
     void BlockMusicManager::_MusicEndCallback(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x424470
+        M3D_LOG_INFO("BlockMusicManager: current music ended");
+        m_instance->m_bMustPlayNewMusic = true;
     }
 }

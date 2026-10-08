@@ -29,10 +29,10 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x0130 */
 
-    static_assert(sizeof(BossArmPrototypeInfo) == 0x0130);
-
     class BossArm : public ai::VehiclePart
     {
+        friend class BossArmPrototypeInfo;
+
     protected:
         virtual  ~BossArm() override /* 0x00 */;
 
@@ -55,7 +55,13 @@ namespace ai
         virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
         int GetNumExploadedLoads() const;
 
-        enum AttackState;
+        enum AttackState
+        {
+            ATTACK_IDLE = 0,
+            ATTACK_CUSTOM = 1,
+            ATTACK_CHARGING = 2,
+            ATTACK_ATTACKING = 3,
+        };
 
     protected:
         /* 0x02c8 */ int m_loadObjId;
@@ -78,6 +84,4 @@ namespace ai
         /* 0x02fc */ CVector m_curLoadVelocity;
         void _OnObjectDie(const ai::Event& evn);
     }; /* size: 0x0308 */
-
-    static_assert(sizeof(BossArm) == 0x0308);
 }

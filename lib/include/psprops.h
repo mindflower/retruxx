@@ -1,6 +1,12 @@
 #pragma once
 #include <math/vector.h>
 
+#include <cstdint>
+
+// Particle-system and attractor records are written to and read from particle files byte
+// for byte (ParticlesServer), so every field has a fixed width and packing is explicit.
+#pragma pack(push, 4)
+
 struct WorkTime
 {
     WorkTime();
@@ -9,7 +15,7 @@ struct WorkTime
     /* 0x0008 */ float m_repeat;
 }; /* size: 0x000c */
 
-enum ForceType
+enum ForceType : int32_t
 {
     PS_FORCE_RANDOM = 0x0,
     PS_FORCE_SINE = 0x1,
@@ -26,27 +32,27 @@ struct Force
     void GetAxis(float&, float&, ForceType&, float&) const;
 }; /* size: 0x0010 */
 
-enum CoordinatesSystemType
+enum CoordinatesSystemType : int32_t
 {
     PS_CST_CARTHESIAN = 0x0,
     PS_CST_POLAR = 0x1,
     PS_CST_POLAR_ORG = 0x2,
 };
 
-enum TimeMode
+enum TimeMode : int32_t
 {
     PS_TIME_LOCAL = 0x1,
     PS_TIME_GLOBAL = 0x0,
 };
 
-enum ForceMode
+enum ForceMode : int32_t
 {
     PS_FORCE_VEL = 0x0,
     PS_FORCE_ACCEL = 0x1,
     PS_FORCE_POS = 0x2,
 };
 
-enum WorkMode
+enum WorkMode : int32_t
 {
     OFF = 0x0,
     ACCELERATION = 0x1,
@@ -54,13 +60,13 @@ enum WorkMode
     WMPOSITION = 0x3,
 };
 
-enum GameInteraction
+enum GameInteraction : int32_t
 {
     GI_WIND = 0x0,
     GI_SIZE = 0x1,
 };
 
-enum PBlendMode
+enum PBlendMode : int32_t
 {
     PS_ADD = 0x0,
     PS_ALPHA = 0x1,
@@ -68,7 +74,7 @@ enum PBlendMode
     PS_ADDSIGNED = 0x3,
 };
 
-enum PsShaderType
+enum PsShaderType : int32_t
 {
     PSST_DUST = 0x0,
     PSST_LIGHT = 0x1,
@@ -83,16 +89,16 @@ struct PSProps
     /* 0x0064 */ bool m_Specific;
     /* 0x0065 */ bool m_HaveTrail;
     /* 0x0066 */ char Padding_193[2];
-    /* 0x0068 */ int m_trailLen;
+    /* 0x0068 */ int32_t m_trailLen;
     /* 0x006c */ bool m_CreateOne;
     /* 0x006d */ bool m_autoMeshEmitter;
     /* 0x006e */ char Padding_194[2];
     /* 0x0070 */ float m_meshradius;
-    /* 0x0074 */ int m_points;
+    /* 0x0074 */ int32_t m_points;
     CVector m_point1;
     CVector m_point2;
     CVector m_point2Max;
-    /* 0x009c */ int m_colors[20];
+    /* 0x009c */ int32_t m_colors[20];
     /* 0x00ec */ float m_sizes[20];
     /* 0x013c */ PBlendMode m_blendMode;
     /* 0x0140 */ bool m_forv;
@@ -103,13 +109,13 @@ struct PSProps
     /* 0x0148 */ bool m_updateXForm;
     /* 0x0149 */ char Padding_196[3];
     /* 0x014c */ float m_SpriteAngle;
-    /* 0x0150 */ int m_TexTiling;
+    /* 0x0150 */ int32_t m_TexTiling;
     /* 0x0154 */ char m_texName[50];
     /* 0x0186 */ char Padding_197[2];
     /* 0x0188 */ PsShaderType m_shaderType;
     /* 0x018c */ float m_emitAtPeriod;
     WorkTime m_wtime;
-    /* 0x019c */ unsigned int m_maxParticles;
+    /* 0x019c */ uint32_t m_maxParticles;
     /* 0x01a0 */ float m_ttlMin;
     /* 0x01a4 */ float m_ttlMax;
     /* 0x01a8 */ float m_resettime;
@@ -126,8 +132,13 @@ struct PSProps
     /* 0x0238 */ char m_PartsModelName[50];
 }; /* size: 0x026c */
 
+#pragma pack(pop)
+
+static_assert(sizeof(WorkTime) == 0x000c);
+static_assert(sizeof(Force) == 0x0010);
 static_assert(sizeof(PSProps) == 0x026c);
 
+#pragma pack(push, 4)
 struct AttrProps
 {
     /* 0x0000 */ char m_Name[50];
@@ -149,5 +160,6 @@ struct AttrProps
     /* 0x00d0 */ float m_freq;
     /* 0x00d4 */ ForceType m_type;
 }; /* size: 0x00d8 */
+#pragma pack(pop)
 
 static_assert(sizeof(AttrProps) == 0x00d8);

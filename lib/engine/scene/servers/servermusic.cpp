@@ -25,12 +25,24 @@ namespace m3d
 {
     MusicServer::~MusicServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762750
+        Release();
     }
 
-    int MusicServer::GetItemProperty(int, int, void*)
+    int MusicServer::GetItemProperty(int id, int prop, void* dest)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x761320 - NOTE: the music cvar is read but both outcomes return 0; the server has no properties of
+        // its own.
+        if (id == -1)
+        {
+            return 0;
+        }
+        if (DataServer::GetItemProperty(id, prop, dest))
+        {
+            return 1;
+        }
+        M3D_ENGINE_CFG.m_mus_Enable.GetB();
+        return 0;
     }
 
     int MusicServer::SetItemProperty(int id, int prop, void* src)
@@ -48,7 +60,9 @@ namespace m3d
 
     void MusicServer::RenderItem(int id, void* params)
     {
-        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        // RVA 0x761440 - plays the item's music with the two flags in params and returns the result in the int
+        // after them.
+        if (!M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
         {
             return;
         }
@@ -59,11 +73,9 @@ namespace m3d
             M3D_ASSERT(params);
             if (id < m_models.size())
             {
-                auto param1 = *(bool*)params;
-                auto param2 = *((bool*)(params) + 1);
-                auto soundId = _GetSoundIdByServerHandle(id);
-                // TODO: check this
-                M3D_APP->m_sound->PlayMusic(soundId, param1, param2);
+                auto* const flags = static_cast<bool*>(params);
+                *reinterpret_cast<int*>(flags + 4) =
+                    M3D_APP->m_sound->PlayMusic(_GetSoundIdByServerHandle(id), flags[0], flags[1]);
             }
             else
             {
@@ -74,7 +86,15 @@ namespace m3d
 
     int MusicServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x761810
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            delete static_cast<MusicItem*>(model.m_ptr);
+            model.m_ptr = nullptr;
+        }
+        m_models = retruxx::vector<Model>();
+        return 1;
     }
 
     void MusicServer::PostLoad()
@@ -83,16 +103,19 @@ namespace m3d
 
     int MusicServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x761290
+        return 1;
     }
 
     int MusicServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7612A0
+        return 1;
     }
 
     int MusicServer::AddItem(char const* params, char const* id)
     {
+        // RVA 0x762200 - the music file of model id in the music XML, as a sound; its index.
         if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
         {
             return -1;
@@ -107,14 +130,15 @@ namespace m3d
         ParseProto(params, &proto, &paramsPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_INFO("protocol is not supported " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_INFO(CStr("protocol is not supported " + static_cast<int>(proto)));
             return - 1;
         }
         CStr err;
         ref_ptr xmlFile = ReadXmlFile(g_Kernel->GetEngineCfg().m_snd_pathToMusic.GetS(), &err);
         if (!xmlFile)
         {
-            M3D_LOG_INFO("ServerMusic: " + err);
+            M3D_LOG_ERR("ServerMusic: " + err);
             return -1;
         }
         auto musicNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
@@ -139,19 +163,19 @@ namespace m3d
         }
 
         CStr fileName = modelNode->GetAttribute("file");
-        auto res = m3d::Application::g_pApp->m_sound->AddSound(fileName.c_str(), snd::SND_TYPE_MUSIC, 0, 1, snd::SND_PRIORITY_HIGH);
-        if (res ==-1)
+        auto res = m3d::Application::g_pApp->m_sound->AddSound(fileName.c_str(), snd::SND_TYPE_MUSIC, 0, 1, snd::SND_PRIORITY_EXTRAHIGH);
+        if (res == -1)
         {
-            M3D_LOG_INFO("MusicServer: cannot read file: " + fileName + ", id = " + CStr(id));
+            // NOTE: names the music XML, not the file that failed, as shipped.
+            M3D_LOG_ERR(
+                "MusicServer: cannot read file: " + CStr(g_Kernel->GetEngineCfg().m_snd_pathToMusic.GetS()) +
+                " id = '" + CStr(id) + "'");
             return -1;
         }
 
-        //TODO: check this
-        auto snd = new MusicItem(res);
-        Model model(snd, fileName.c_str(), {}, id);
-        m_models.push_back(std::move(model));
+        m_models.push_back(Model(new MusicItem(res), fileName.c_str(), "", id));
         GenerateItemsRemap();
-        return m_models.size();
+        return static_cast<int>(m_models.size()) - 1;
     }
 
     void MusicServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)
@@ -212,7 +236,8 @@ namespace m3d
         ParseProto(itemsList.front().m_filename.c_str(), &proto, &protoPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_ERR("Error: protocol is not supported " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_ERR(CStr("Error: protocol is not supported " + static_cast<int>(proto)));
             return;
         }
 

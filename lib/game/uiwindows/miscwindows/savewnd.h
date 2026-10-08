@@ -9,47 +9,43 @@ namespace m3d
     }
 }
 
-class SaveWnd :  public LSWnd
+class SaveWnd : public LSWnd
 {
 public:
-    class SAuxInfo
+    struct SAuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_btnSaveName;
+        /* 0x000c */ CStr m_btnDeleteName;
+        /* 0x0018 */ CStr m_editSaveName;
+        SAuxInfo(SaveWnd::SAuxInfo const&);
         SAuxInfo();
-
-    private:
-        CStr m_btnSaveName;
-        CStr m_btnDeleteName;
-        CStr m_editSaveName;
-    };
-
-public:
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    static m3d::Class * GetBaseClass();
-    virtual ~SaveWnd();
+    }; /* size: 0x0024 */
 
 protected:
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
-    virtual void OnSaveSelectionChange();
-    virtual void OnEnter();
-    void OnEditChange();
-    virtual int SetScreenshotForSave(int);
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override /* 0x00 */;
+    virtual void OnSaveSelectionChange() override /* 0x130 */;
     void OnSave();
     void OnDelete();
-    virtual int GameDataSetup();
-    virtual int GameDataUpdate(void *,int);
-    SaveWnd(SaveWnd const &);
+    void OnEditChange();
+    virtual int SetScreenshotForSave(int saveIdx) override /* 0x140 */;
+    virtual void OnEnter() override /* 0x144 */;
+
+    /* 0x02a0 */ m3d::ui::ButtonWnd* m_btnSave;
+    /* 0x02a4 */ m3d::ui::ButtonWnd* m_btnDelete;
+    /* 0x02a8 */ m3d::ui::EditWnd* m_editSaveName;
+    /* 0x02ac */ SaveWnd::SAuxInfo m_saif;
+    /* 0x02d0 */ bool m_bNeedScreenshot;
+
     SaveWnd();
+    SaveWnd(SaveWnd const& rhs);
 
 public:
+    virtual ~SaveWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
     RT_CLASS_DECLARE(SaveWnd);
-
-private:
-    m3d::ui::ButtonWnd *m_btnSave;
-    m3d::ui::ButtonWnd *m_btnDelete;
-    m3d::ui::EditWnd *m_editSaveName;
-    SaveWnd::SAuxInfo m_saif;
-    bool m_bNeedScreenshot;
-};
+}; /* size: 0x02d4 */

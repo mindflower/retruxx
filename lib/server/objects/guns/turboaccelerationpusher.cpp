@@ -3,6 +3,10 @@
 #include <math/matrix.h>
 #include <stdexcept>
 
+#include "core/kernel.h"
+#include "server/objects/vehicle.h"
+#include "server/objects/base/prototypemanager.h"
+
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(TurboAccelerationPusher)
@@ -28,12 +32,13 @@ namespace ai
 
     Obj* TurboAccelerationPusherPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846540
+        return new TurboAccelerationPusher(*this);
     }
 
     TurboAccelerationPusher::TurboAccelerationPusher(TurboAccelerationPusherPrototypeInfo const& prototype) : Gun(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846420
     }
 
     m3d::Class* TurboAccelerationPusher::GetBaseClass()
@@ -43,36 +48,58 @@ namespace ai
 
     m3d::Class* TurboAccelerationPusher::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846410
+        return RT_CLASS_LOCAL(TurboAccelerationPusher);
     }
 
     TurboAccelerationPusherPrototypeInfo const* TurboAccelerationPusher::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846930
+        // NOTE: the prototype is cast without a type check.
+        return static_cast<TurboAccelerationPusherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void TurboAccelerationPusher::_LaunchShells()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846460
+        // Firing it gives the vehicle it is mounted on a turbo boost.
+        Gun::_LaunchShells();
+        TurboAccelerationPusherPrototypeInfo const* prototype = GetPrototypeInfo();
+        Obj* obj = this;
+        while (!obj->IsKindOf(RT_CLASS_LOCAL(Vehicle)))
+        {
+            obj = static_cast<Obj*>(obj->GetParent());
+            if (!obj)
+            {
+                return;
+            }
+        }
+        Vehicle* vehicle = static_cast<Vehicle*>(obj);
+        vehicle->SetTurboThrottleTime(prototype->m_AccelerationTime);
+        vehicle->SetTurboThrottleValue(prototype->m_AccelerationValue);
     }
 
-    TurboAccelerationPusher::~TurboAccelerationPusher()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    // RVA 0x846440
+    TurboAccelerationPusher::~TurboAccelerationPusher() = default;
 
     m3d::Object* TurboAccelerationPusher::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8465B0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     bool TurboAccelerationPusher::isLookAtPoint(CVector const&, float) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846450
+        // It has nothing to aim, so it always counts as aimed.
+        return true;
     }
 
     m3d::Object* TurboAccelerationPusher::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x846770
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }  // namespace ai

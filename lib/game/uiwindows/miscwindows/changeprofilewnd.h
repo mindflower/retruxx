@@ -7,59 +7,56 @@ namespace m3d
     {
         class ButtonWnd;
         class StringsListBoxWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
 class ChangeProfileWnd : public m3d::ui::ModalWnd
 {
 public:
-    class AuxInfo
+    struct AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_wndProfileListName;
+        /* 0x000c */ CStr m_btnChoseName;
+        /* 0x0018 */ CStr m_btnDeleteName;
+        /* 0x0024 */ CStr m_lblCurProfileName;
+        /* 0x0030 */ CStr m_strIdCurProfile;
+        /* 0x003c */ unsigned int m_curProfileNameColor;
+        AuxInfo(ChangeProfileWnd::AuxInfo const&);
         AuxInfo();
-
-    public:
-        CStr m_wndProfileListName = "wndProfileList";
-        CStr m_btnChoseName = "btnChose";
-        CStr m_btnDeleteName = "btnDelete";
-        CStr m_lblCurProfileName = "lblCurProfileName";
-        CStr m_strIdCurProfile = "CurProfile";
-        unsigned int m_curProfileNameColor = 0xFF904040;
-    };
-
-public:
-    virtual m3d::Object * Clone();
-    virtual ~ChangeProfileWnd();
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Class * GetClass() const ;
+    }; /* size: 0x0040 */
 
 protected:
-    CStr GetSelectedProfileName() const ;
-    ChangeProfileWnd();
-    ChangeProfileWnd(ChangeProfileWnd const &);
-    virtual int GameDataSetup();
-    virtual int OnBeforeAddToWndStation();
-    void OnChangeProfileSelection();
-    virtual int OnKey(unsigned short,unsigned char,unsigned int);
-    int ChoseProfileAndExit();
-    void OnProfilesListChanged();
-    virtual int GameDataUpdate(void *,int);
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
+        /* 0x00 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
     int ChoseProfile();
-    void OnCurProfileChanged();
+    int ChoseProfileAndExit();
     int DeleteProfile();
-    void Clear();
     int CreateProfile();
+    void OnChangeProfileSelection();
+    CStr GetSelectedProfileName() const;
     void FullUpdate();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    void OnProfilesListChanged();
+    void OnCurProfileChanged();
+    void Clear();
+
+    /* 0x0224 */ m3d::ui::StringsListBoxWnd* m_wndProfileList;
+    /* 0x0228 */ m3d::ui::ButtonWnd* m_btnChose;
+    /* 0x022c */ m3d::ui::ButtonWnd* m_btnDelete;
+    /* 0x0230 */ m3d::ui::Wnd* m_lblCurProfile;
+    /* 0x0234 */ ChangeProfileWnd::AuxInfo m_aif;
+
+    ChangeProfileWnd();
+    ChangeProfileWnd(ChangeProfileWnd const& rhs);
 
 public:
+    virtual ~ChangeProfileWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
     RT_CLASS_DECLARE(ChangeProfileWnd);
-
-private:
-    m3d::ui::StringsListBoxWnd *m_wndProfileList = nullptr;
-    m3d::ui::ButtonWnd *m_btnChose = nullptr;
-    m3d::ui::ButtonWnd *m_btnDelete = nullptr;
-    m3d::ui::Wnd *m_lblCurProfile = nullptr;
-    ChangeProfileWnd::AuxInfo m_aif;
-};
+}; /* size: 0x0274 */

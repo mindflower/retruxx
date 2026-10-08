@@ -7,6 +7,7 @@
 #include "math/vector.h"
 #include "script/luaaiparam.h"
 #include "script/luavector.h"
+#include "script/luaquaternion.h"
 #include "script/scriptserver.h"
 
 extern "C"{
@@ -39,25 +40,21 @@ namespace m3d
 
 	int LuaContext::asInt(int i)
 	{
-        // TODO: check this
+        // RVA 0x899C00 - accepts a number or a numeric string; anything else raises a Lua type error.
         if (i < 0)
         {
-            lua_pushstring(this->L, "not enough arguments");
-            lua_error(this->L);
+            lua_pushstring(L, "not enough arguments");
+            lua_error(L);
         }
-        auto v3 = i + this->m_stackStart;
-        auto v4 = lua_type(this->L, v3) - 3;
-        L = this->L;
-        if (!v4)
-            return (int)lua_tonumber(L, v3);
-        if (v4 == 1)
+        int const pos = i + m_stackStart;
+        switch (lua_type(L, pos))
         {
-            auto v7 = lua_tostring(L, v3);
-            return atoi(v7);
-        }
-        else
-        {
-            luaL_checktype(L, v3, 3);
+        case LUA_TNUMBER:
+            return static_cast<int>(lua_tonumber(L, pos));
+        case LUA_TSTRING:
+            return atoi(lua_tostring(L, pos));
+        default:
+            luaL_checktype(L, pos, LUA_TNUMBER);
             return 0;
         }
 	}
@@ -118,7 +115,8 @@ namespace m3d
 
 	int LuaContext::countArgs()
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x8999C0
+		return m_numInputs;
 	}
 
 	float LuaContext::asFloat(int i)
@@ -147,54 +145,49 @@ namespace m3d
 
 	AIParam& LuaContext::asAIParam(int i)
 	{
+        // RVA 0x89A270 - a number, string or vector argument is converted into a new AIParam userdata pushed on
+        // the Lua stack. It stays alive while it is on the stack, i.e. until the calling C function returns.
         if (i < 0)
         {
-            lua_pushstring(this->L, "not enough arguments");
-            lua_error(this->L);
+            lua_pushstring(L, "not enough arguments");
+            lua_error(L);
         }
 
-        auto idx = i + m_stackStart;
-        switch (lua_type(L, idx))
+        int const pos = i + m_stackStart;
+        switch (lua_type(L, pos))
         {
-        case 3:
+        case LUA_TNUMBER:
         {
-            auto result = ext_createAIParam(this->L);
-            auto ia = lua_tonumber(this->L, idx);
-            *result = (float)ia;
-            //TODO: dangling pointer?
+            AIParam* const result = ext_createAIParam(L);
+            *result = static_cast<float>(lua_tonumber(L, pos));
             return *result;
         }
-        case 4:
+        case LUA_TSTRING:
         {
-            auto result = ext_createAIParam(this->L);
-            CStr str = lua_tostring(this->L, idx);
-            *result = str;
+            AIParam* const result = ext_createAIParam(L);
+            *result = CStr(lua_tostring(L, pos));
             return *result;
         }
-        case 7:
-        {
-            if (ext_checkTag(L, idx, tag_luaAIParam))
+        case LUA_TUSERDATA:
+            if (ext_checkTag(L, pos, tag_luaAIParam))
             {
-                return *(m3d::AIParam*)lua_touserdata(L, idx);
+                return *static_cast<AIParam*>(lua_touserdata(L, pos));
             }
-            if (ext_checkTag(L, idx, tag_luaVector))
+            if (ext_checkTag(L, pos, tag_luaVector))
             {
-                auto* vec = (CVector*)lua_touserdata(L, idx);
-                auto result = ext_createAIParam(this->L);
-                *result = *vec;
+                AIParam* const result = ext_createAIParam(L);
+                *result = *static_cast<CVector*>(lua_touserdata(L, pos));
                 return *result;
             }
-        }
+            [[fallthrough]];
         default:
-        {
-            M3D_LOG_ERR("Invalid argument type.");
-            lua_pushstring(this->L, "Invalid argument type.");
-            lua_error(this->L);
+            M3D_LOG_INFO("Invalid argument type.");
+            lua_pushstring(L, "Invalid argument type.");
+            lua_error(L);
             break;
         }
-        }
-        // TODO: check this
-        return *ext_createAIParam(this->L);
+        // Not reached: lua_error does not return.
+        return *ext_createAIParam(L);
 	}
 
 	void LuaContext::pushBool(bool x)
@@ -220,9 +213,11 @@ namespace m3d
 		return lua_tostring(this->L, v3);
 	}
 
-	void LuaContext::pushQuaternion(Quaternion const&)
+	void LuaContext::pushQuaternion(Quaternion const& x)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x899B00
+		*ext_createQuaternion(L) = x;
+		++m_numOutputs;
 	}
 
 	void LuaContext::pushInt(int x)
@@ -274,8 +269,14 @@ namespace m3d
         ++m_numOutputs;
 	}
 
-	int LuaContext::_validateArg(int)
+	int LuaContext::_validateArg(int i)
 	{
-		RETRUXX_NOT_IMPLEMENTED;
+		// RVA 0x899B30
+		if (i < 0)
+		{
+			lua_pushstring(this->L, "not enough arguments");
+			lua_error(this->L);
+		}
+		return i + this->m_stackStart;
 	}
 }

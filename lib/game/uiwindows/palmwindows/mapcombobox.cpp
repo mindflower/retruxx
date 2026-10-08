@@ -1,12 +1,75 @@
 #include "mapcombobox.h"
 
+#include "taksebequestlogwnd.h"
+
+#include <core/kernel.h>
+#include <core/log.h>
+
+#include "game/m3dgame.h"
+#include "game/uimanager/truxxuimanager.h"
+#include "game/uimisc/guihelper.h"
+#include "game/uimisc/levelinfo.h"
+
 RT_CLASS_EXPORTS_BEGIN(MapComboBox)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MapComboBox);
 
-int MapComboBox::CreateFromPattern(m3d::ui::Wnd const*, bool)
+int MapComboBox::CreateFromPattern(m3d::ui::Wnd const* patternWnd, bool deleteSrc)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    auto* pattern = RT_DYNCAST(patternWnd, m3d::ui::ComboBoxWnd const);
+    if (!pattern)
+    {
+        return 0;
+    }
+
+    BoundsBase<float> bounds = pattern->GetBounds();
+    unsigned int style = pattern->GetStyle();
+    unsigned int comboStyle = pattern->GetComboStyle();
+    float listMaxHeight = pattern->GetMaxListHeight();
+    float selTextFixedHeight = pattern->GetSelTextFixedHeight();
+
+    if (!Create(style, bounds, pattern->GetId(), comboStyle, listMaxHeight, selTextFixedHeight))
+    {
+        return 0;
+    }
+
+    // Copy the remaining state / appearance from the pattern control.
+    SetStyle(pattern->GetStyle());
+    SetText(pattern->GetText());
+    SetId(pattern->GetId());
+    SetPane(pattern->GetPaneName());
+    SetPaneFlags(pattern->GetPaneFlags());
+    SetDefaultFont(pattern->GetDefaultFont());
+    SetColor(pattern->GetColor());
+    SetTextColor(pattern->GetTextColor());
+    SetTextColorDisabled(pattern->GetTextColorDisabled());
+    SetClientEdges(pattern->GetClientEdges());
+    SetName(pattern->GetName());
+    SetScrollPane(pattern->GetScrollPaneName());
+    SetBackground(pattern->GetBackground());
+
+    CStr tooltip;
+    pattern->GetProperty(PROP_WND_TOOLTIP, &tooltip);
+    SetProperty(PROP_WND_TOOLTIP, &tooltip);
+
+    SetOnShowAnimation(pattern->GetOnShowAnimation());
+    SetOnHideAnimation(pattern->GetOnHideAnimation());
+
+    // Take the pattern's place in the window tree, then optionally destroy it.
+    // The shipped build bails out here when the pattern has no parent.
+    m3d::Object* parent = pattern->GetParent();
+    if (!parent)
+    {
+        return 0;
+    }
+    parent->AddChild(this);
+    if (deleteSrc)
+    {
+        delete const_cast<m3d::ui::ComboBoxWnd*>(pattern);
+    }
+
+    m_gameDataFlags |= 1;
+    return 1;
 }
 
 m3d::Class* MapComboBox::GetBaseClass()
@@ -16,52 +79,132 @@ m3d::Class* MapComboBox::GetBaseClass()
 
 CStr MapComboBox::GetSelectedMapName() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return {};
+    }
+    int sel = GetCurSel();
+    if (sel == -1)
+    {
+        return {};
+    }
+    int levelInfoId = GetItemData(sel);
+    return M3D_APP->m_pInterfaceManager->GetLevelInfoManager()->GetLevelInfoName(levelInfoId);
 }
 
 m3d::Object* MapComboBox::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new MapComboBox(*this);
 }
 
 m3d::Object* MapComboBox::CreateObject()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new MapComboBox;
 }
 
 m3d::Class* MapComboBox::GetClass() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(MapComboBox);
 }
 
 MapComboBox::~MapComboBox()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // chains to ~ComboBoxWnd
 }
 
 int MapComboBox::GameDataClear(bool)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    RemoveAllItems();
+    return 1;
 }
 
-int MapComboBox::GameDataUpdate(void*, int)
+int MapComboBox::GameDataUpdate(void*, int dataType)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
-    return 0;
-}
-
-MapComboBox::MapComboBox(MapComboBox const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+    if (dataType == 85 /*0x55*/)
+    {
+        OnStartLevel();
+    }
+    return 1;
 }
 
 MapComboBox::MapComboBox()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 int MapComboBox::OnStartLevel()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4ECEC0 - lists the visited levels by their full (display) names.
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    GameDataClear(false);  // clear the current list before rebuilding it
+
+    LevelInfoManager* lim = M3D_APP->m_pInterfaceManager->GetLevelInfoManager();
+
+    // 1) one entry per visited level, tagged with its level-info id.
+    retruxx::vector<CStr> visitedLevelNames;
+    lim->GetVisitedLevelNames(visitedLevelNames);
+    for (size_t i = 0; i < visitedLevelNames.size(); ++i)
+    {
+        int id = lim->GetLevelInfoId(visitedLevelNames[i]);
+        LevelInfo* levelInfo = lim->GetLevelInfoById(id);
+        if (!levelInfo)
+        {
+            continue;
+        }
+        int idx = AddItem(levelInfo->GetFullName());
+        if (idx != -1)
+        {
+            SetItemData(idx, lim->GetLevelInfoId(visitedLevelNames[i]));
+        }
+    }
+
+    // 2) decide what to select.
+    m3d::Object* host = GetParent();
+    while (host && !host->IsKindOf(RT_CLASS_LOCAL(TakSebeQuestLogWnd)))
+    {
+        host = host->GetParent();
+    }
+
+    // Hosted in the quest log: add a localized "All" entry (data -2 = any map) and select it. If it cannot be
+    // added, the current level is selected as for a standalone list.
+    int const allIdx = host ? AddItem(M3D_APP->GetStringByStringId0("All")) : -1;
+    if (allIdx != -1)
+    {
+        SetItemData(allIdx, -2);
+        SetCurSel(allIdx);
+    }
+    else
+    {
+        // Standalone: select the entry that matches the current level.
+        int curLevelId = lim->GetLevelInfoId(help::GetCurrentLevelName());
+        if (curLevelId != -1)
+        {
+            int count = GetCount();
+            for (int i = 0; i < count; ++i)
+            {
+                if (GetItemData(i) == curLevelId)
+                {
+                    SetCurSel(i);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            M3D_LOG_ERR("Error in updating map list: no info for current map exists");
+            if (GetCount() != 0)
+            {
+                SetCurSel(0);
+            }
+        }
+    }
+
+    return 1;
 }

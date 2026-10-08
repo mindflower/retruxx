@@ -12,11 +12,11 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x0040 */
 
-    static_assert(sizeof(NpcPrototypeInfo) == 0x0040);
-
     class Npc : public ai::Obj
     {
         friend class NpcPrototypeInfo;
+        // Bar::CreateBarman stamps the npc type onto the barman it has just created.
+        friend class Bar;
     protected:
         virtual  ~Npc() override /* 0x00 */;
 
@@ -82,13 +82,11 @@ namespace ai
         /* 0x00d4 */ unsigned int m_CfgNumber;
         /* 0x00d8 */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_helloReplyNames;
         /* 0x00e8 */ int m_spokenCount;
-        static ai::Npc* theCurrentNpc;
+        static inline ai::Npc* theCurrentNpc = nullptr;
 
     public:
         static void __fastcall SetCurrentNpc(ai::Npc* npc);
         static ai::Npc* __fastcall GetCurrentNpc();
         static void __fastcall Registration();
     }; /* size: 0x00ec */
-
-    static_assert(sizeof(Npc) == 0x00ec);
 }

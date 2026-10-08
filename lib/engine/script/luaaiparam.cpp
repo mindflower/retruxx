@@ -14,7 +14,71 @@ extern "C"
 
 void SetParams(m3d::AIParam* p, lua_State* L)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x946390 - assigns the Lua value at index 3: an AIParam or vector userdata (told apart by its
+    // internalTag), a number, a string or a table of numbers (an id list).
+    switch (lua_type(L, 3))
+    {
+    case LUA_TLIGHTUSERDATA:
+    case LUA_TUSERDATA:
+    {
+        lua_pushstring(L, "internalTag");
+        lua_gettable(L, -2);
+        int tag = 0;
+        if (lua_isnumber(L, -1))
+        {
+            tag = static_cast<int>(lua_tonumber(L, -1));
+        }
+        lua_settop(L, -2);
+        if (tag == tag_luaAIParam)
+        {
+            *p = *static_cast<m3d::AIParam const*>(lua_touserdata(L, 3));
+        }
+        else if (tag == tag_luaVector)
+        {
+            *p = *static_cast<CVector const*>(lua_touserdata(L, 3));
+        }
+        break;
+    }
+    case LUA_TNUMBER:
+    {
+        float const value = static_cast<float>(lua_tonumber(L, 3));
+        *p = value;
+        break;
+    }
+    case LUA_TSTRING:
+        *p = CStr(lua_tostring(L, 3));
+        break;
+    case LUA_TTABLE:
+        lua_pushnil(L);
+        if (!lua_next(L, 3))
+        {
+            p->Clear();
+            p->SetType(m3d::AIPARAM_ID_LIST);
+            break;
+        }
+        if (lua_type(L, -1) != LUA_TNUMBER)
+        {
+            // NOTE: a table that does not start with a number just clears the parameter.
+            lua_settop(L, -3);
+            p->Clear();
+            break;
+        }
+        {
+            retruxx::vector<int> list;
+            do
+            {
+                if (lua_type(L, -1) == LUA_TNUMBER)
+                {
+                    list.push_back(static_cast<int>(lua_tonumber(L, -1)));
+                }
+                lua_settop(L, -2);
+            } while (lua_next(L, 3));
+            *p = list;
+        }
+        break;
+    default:
+        return;
+    }
 }
 
 int ext_AIParamDestructor(lua_State* L)
@@ -26,11 +90,30 @@ int ext_AIParamDestructor(lua_State* L)
 
 int ext_AIParamCmp(lua_State* L)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x945F40 - -1, 0 or 1 like strcmp; -2 when the two cannot be ordered.
+    assert(ext_checkTag(L, 1, tag_luaAIParam) && ext_checkTag(L, 2, tag_luaAIParam));
+    auto* const a = static_cast<m3d::AIParam*>(lua_touserdata(L, 1));
+    auto const* const b = static_cast<m3d::AIParam const*>(lua_touserdata(L, 2));
+    int res = -2;
+    if (*a < *b)
+    {
+        res = -1;
+    }
+    if (*a > *b)
+    {
+        res = 1;
+    }
+    if (*a == *b)
+    {
+        res = 0;
+    }
+    lua_pushnumber(L, static_cast<double>(res));
+    return 1;
 }
 
 int ext_AIParamGet(lua_State* L)
 {
+    // RVA 0x9460B0
     auto aiParam  = (m3d::AIParam*)lua_touserdata(L, 1);
     auto param = luaL_checklstring(L, 2, 0);
     if (!strcmp(param, "internalTag"))
@@ -70,25 +153,27 @@ int ext_AIParamGet(lua_State* L)
     }
     if (!strcmp(param, "AsRange"))
     {
-        auto vec = aiParam->GetAsRange();
         auto res = ext_createVector(L);
+        auto vec = aiParam->GetAsRange();
         res->x = vec.x;
         res->y = vec.y;
+        res->z = 0.0f;
+        // NOTE: the shipped code returns a light userdata pointing at the new vector, not the vector itself,
+        // so the result has no vector metatable.
         lua_pushlightuserdata(L, res);
         return 1;
     }
     if (!strcmp(param, "AsNumList"))
     {
-        // TODO: check this
-        lua_gettop(L);
+        // A table indexed from 0 (not the Lua convention of 1).
         lua_newtable(L);
-        auto top = lua_gettop(L);
-        auto idList = aiParam->GetAsIdList();
-        for (int i = 0; i < idList.size(); ++i)
+        int const table = lua_gettop(L);
+        auto const idList = aiParam->GetAsIdList();
+        for (unsigned i = 0; i < idList.size(); ++i)
         {
             lua_pushnumber(L, i);
             lua_pushnumber(L, idList[i]);
-            lua_rawset(L, top);
+            lua_rawset(L, table);
         }
         return 1;
     }
@@ -153,7 +238,8 @@ int ext_AIParamLe(lua_State* L)
 
 m3d::AIParam* ext_createAIParam(lua_State* L)
 {
-    auto* buff = (char*)lua_newuserdata(L, sizeof(m3d::AIParam));
+    // RVA 0x946690
+    auto* buff = lua_newuserdata(L, sizeof(m3d::AIParam));
     lua_newtable(L);
     lua_pushstring(L, "__gc");
     lua_pushcclosure(L, ext_AIParamDestructor, 0);
@@ -175,7 +261,6 @@ m3d::AIParam* ext_createAIParam(lua_State* L)
     lua_settable(L, -3);
     lua_setmetatable(L, -2);
 
-    // TODO: check this
-    auto* res = new (buff) m3d::AIParam;
-    return res;
+    // The AIParam lives in the userdata block and is destroyed by ext_AIParamDestructor (__gc).
+    return new (buff) m3d::AIParam;
 }

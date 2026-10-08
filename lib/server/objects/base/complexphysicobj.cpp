@@ -19,30 +19,63 @@
 #include "server/objects/vehicle.h"
 #include "server/objects/guns/gun.h"
 #include "server/objects/physicbodies/compoundvehiclepart.h"
+#include "server/objects/guns/compoundgun.h"
+#include "client.h"
+#include "world.h"
+#include "scene/scenegraph.h"
+#include "server/objects/dummyobject.h"
+#include <server/server.h>
+#include "server/dynamicscene.h"
+
+extern "C" void __cdecl _assert(char const* message, char const* file, unsigned line);
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, CanPartBeAttached)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C1A10
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    context->pushBool(obj->CanPartBeAttached(partName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetPartByName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6BC8B0
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    auto* const part = static_cast<ai::VehiclePart*>(context->asObject(2, "VehiclePart"));
+    obj->SetPartByName(partName, part, false);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, SetNewPart)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C1A80
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const newPartPrototypeName(context->asString(2));
+    CStr const partName(context->asString(1));
+    context->pushBool(obj->SetNewPart(partName, newPartPrototypeName));
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, TakeOffPart)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C0BE0
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    ai::VehiclePart* const part = obj->GetPartByName(partName);
+    obj->SetPartByName(partName, nullptr, false);
+    context->pushObject(part);
+    return 1;
 }
 
 RT_CLASS_EXPORT_METHOD_DEFINE(ComplexPhysicObj, GetPartByName)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x6C0C60
+    auto* const obj = static_cast<ai::ComplexPhysicObj*>(context->asObject(0, "ComplexPhysicObj"));
+    CStr const partName(context->asString(1));
+    context->pushObject(obj->GetPartByName(partName));
+    return 1;
 }
 
 CStr const NO_LP("NO_LP");
@@ -64,7 +97,8 @@ namespace ai
 
     m3d::Class* ComplexPhysicObjPartDescription::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BC010
+        return RT_CLASS_LOCAL(ComplexPhysicObjPartDescription);
     }
 
     m3d::Object* ComplexPhysicObjPartDescription::CreateObject()
@@ -79,7 +113,8 @@ namespace ai
 
     unsigned ComplexPhysicObjPartDescription::GetNumLps() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BCBF0
+        return m_lpNames.size();
     }
 
     void ComplexPhysicObjPartDescription::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& partNames) const
@@ -100,7 +135,8 @@ namespace ai
             auto child = GetParent()->GetChildByName(m_name);
             if (child && this != child)
             {
-                M3D_LOG_INFO("Warning: when loading PartDescription: name = " + m_name + " conflicts with another child");
+                M3D_LOG_INFO(
+                    "Warning: when loading PartDescription: name = " + m_name + " conflicts with another child");
             }
         }
 
@@ -132,7 +168,8 @@ namespace ai
         }
     }
 
-    ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(CStr const& childName) const
+    ComplexPhysicObjPartDescription const* ComplexPhysicObjPartDescription::GetChildByNameDeep(
+        CStr const& childName) const
     {
         if (m_name == childName)
         {
@@ -163,7 +200,10 @@ namespace ai
 
     m3d::Object* ComplexPhysicObjPartDescription::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C2D30
+        // The shipped code allocates, zeroes m_lpNames, then asserts "0" and returns
+        // null - a part description is not cloneable.
+        return nullptr;
     }
 
     ComplexPhysicObjPartDescription* ComplexPhysicObjPartDescription::GetParent() const
@@ -188,7 +228,9 @@ namespace ai
 
     ComplexPhysicObjPartDescription::ComplexPhysicObjPartDescription(ComplexPhysicObjPartDescription const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // no body in the binary
+        // Elided from the shipped build: Clone() asserts before it would ever be
+        // reached, so the copy leaves everything default-constructed.
     }
 
     ComplexPhysicObjPrototypeInfo::MassShapes ComplexPhysicObjPrototypeInfo::GetMassShape() const
@@ -196,18 +238,90 @@ namespace ai
         return this->m_massShape;
     }
 
-    ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(CStr const& partName) const
+    ComplexPhysicObjPartDescription const* ComplexPhysicObjPrototypeInfo::GetPartDescriptionByName(
+        CStr const& partName) const
     {
         return m_partDescription->GetChildByNameDeep(partName);
     }
 
     Obj* ComplexPhysicObjPrototypeInfo::CreateRandomTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C1B20 - every slot without a fixed part gets a random prototype whose resource fits it.
+        int const objId = theObjects->CreateNewObject(m_prototypeId, "", -1, -1);
+        // NOTE: the new object is used without a null check.
+        auto* const obj = static_cast<ComplexPhysicObj*>(theObjects->GetEntityByObjId(objId));
+        int const numOfPrototypes = thePrototypeManager->GetNumOfPrototypes();
+
+        retruxx::vector<ComplexPhysicObjPartDescription const*> stack;
+        stack.push_back(m_partDescription);
+        while (!stack.empty())
+        {
+            ComplexPhysicObjPartDescription const* const desc = stack.back();
+            stack.pop_back();
+            for (auto* child = static_cast<ComplexPhysicObjPartDescription const*>(desc->GetFirstChild()); child;
+                 child = static_cast<ComplexPhysicObjPartDescription const*>(child->GetNextSibling()))
+            {
+                CStr const childName(child->GetName());
+                if (m_partPrototypeIds.find(childName) == m_partPrototypeIds.end() && obj->CanPartBeAttached(childName))
+                {
+                    int const resId = child->GetPartResourceId();
+                    retruxx::vector<PrototypeInfo const*> candidatePrototypes;
+                    for (int i = 0; i < numOfPrototypes; ++i)
+                    {
+                        PrototypeInfo const* const info = thePrototypeManager->GetPrototypeInfo(i);
+                        if (!info)
+                        {
+                            SYS_ERROR("info");
+                        }
+                        if (theResourceManager->bResourceIsKindOf(info->m_resourceId, resId))
+                        {
+                            candidatePrototypes.push_back(info);
+                        }
+                    }
+
+                    if (candidatePrototypes.empty())
+                    {
+                        // NOTE: the closing quote is missing from the message.
+                        M3D_LOG_ERR("Error: no candidates for resource '" + theResourceManager->GetResourceName(resId));
+                    }
+                    else
+                    {
+                        // A uniform pick, rounded to the nearest index.
+                        float const zero = 0.0f;
+                        float const last = static_cast<float>(static_cast<double>(candidatePrototypes.size()) - 1.0);
+                        float const lo = last >= 0.0f ? zero : last;
+                        float const hi = last <= 0.0f ? zero : last;
+                        int const index = static_cast<int>(
+                            static_cast<double>(rand()) * (hi - lo) * 0.000030518509f + lo + 0.5);
+                        PrototypeInfo const* const partInfo = candidatePrototypes[index];
+                        int const partId = theObjects->CreateNewObject(partInfo->m_prototypeId, "", -1, -1);
+                        // NOTE: a part that could not be created is type checked through a null pointer.
+                        Obj* const part = theObjects->GetEntityByObjId(partId);
+                        if (static_cast<m3d::Object*>(part)->IsKindOf(RT_CLASS_LOCAL(VehiclePart)))
+                        {
+                            obj->SetPartByName(childName, static_cast<VehiclePart*>(part), false);
+                        }
+                        else
+                        {
+                            M3D_LOG_ERR("Error: prototype '" + partInfo->m_prototypeName + "' is not prototype of VehiclePart");
+                        }
+                    }
+                }
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+
+        obj->SetRandomSkin();
+        obj->PostLoad();
+        return obj;
     }
 
     bool ComplexPhysicObjPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        // RVA 0x6C34E0
         auto result = ai::PhysicObjPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
@@ -233,7 +347,8 @@ namespace ai
             else
             {
                 ref_ptr partNode = xmlFile->CreateNode();
-                for (partsRootNode->GetFirstChild(partNode, "Part"); !partNode->IsEmpty(); partNode->GetNextSibling(partNode, "Part"))
+                for (partsRootNode->GetFirstChild(partNode, "Part"); !partNode->IsEmpty();
+                     partNode->GetNextSibling(partNode, "Part"))
                 {
                     CStr id;
                     m3d::SafeStrAttrib(id, partNode, "id");
@@ -241,7 +356,8 @@ namespace ai
                     CStr proto;
                     m3d::SafeStrAttrib(proto, partNode, "Prototype");
 
-                    // TODO: check this
+                    // The shipped code fills a fresh map and merges the inherited names under it, which comes to
+                    // the same thing: this prototype's parts override the parent's.
                     m_partPrototypeNames[id] = proto;
                 }
             }
@@ -253,9 +369,13 @@ namespace ai
         return result;
     }
 
-    void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>&) const
+    void ComplexPhysicObjPrototypeInfo::GetPartNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& partNames) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // inlined in the binary
+        // NOTE: no standalone body survives in the shipped build (inlined at every
+        // call site). PostLoad fills m_allPartNames from the part tree, so hand that
+        // cached list back, appending the way the part-description walker does.
+        partNames.insert(partNames.end(), m_allPartNames.begin(), m_allPartNames.end());
     }
 
     ComplexPhysicObjPrototypeInfo::~ComplexPhysicObjPrototypeInfo() = default;
@@ -277,7 +397,17 @@ namespace ai
 
     unsigned ComplexPhysicObjPrototypeInfo::GetBasePrice() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BE960
+        // The base price of a complex object is the sum of its parts' base prices.
+        unsigned price = 0;
+        for (auto const& [partName, prototypeId] : m_partPrototypeIds)
+        {
+            if (auto const* partInfo = thePrototypeManager->GetPrototypeInfo(prototypeId))
+            {
+                price += partInfo->GetBasePrice();
+            }
+        }
+        return price;
     }
 
     void ComplexPhysicObjPrototypeInfo::PostLoad()
@@ -296,14 +426,26 @@ namespace ai
         PhysicObj::UnlinkGeomsFromCollisionCells();
     }
 
-    void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>&) const
+    void ComplexPhysicObj::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>& geoms) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFC40
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            part->GetGeoms(geoms);
+        }
     }
 
     void ComplexPhysicObj::SetPassedToAnotherMapStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BEB00
+        PhysicObj::SetPassedToAnotherMapStatus();
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            if (part)
+            {
+                part->SetPassedToAnotherMapStatus();
+            }
+        }
     }
 
     void ComplexPhysicObj::EnableGeometry(bool changePhysicState)
@@ -342,23 +484,37 @@ namespace ai
 
     retruxx::vector<CStr, retruxx::allocator<CStr>> ComplexPhysicObj::GetAttachedPartNames() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C2A80
+        retruxx::vector<CStr> res;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            res.push_back(name);
+        }
+        return res;
     }
 
-    void ComplexPhysicObj::DumpPhysicInfo(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ComplexPhysicObj::DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFDB0
+        PhysicObj::DumpPhysicInfo(xmlFile, xmlNode);
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Part");
+            xmlNode->AddChild(partNode);
+            part->DumpPhysicInfo(xmlFile, partNode);
+        }
     }
 
     void ComplexPhysicObj::SetPartByName(CStr const& partName, VehiclePart* vehiclePart, bool bUnsafe)
     {
+        // RVA 0x6C3AA0
         if (vehiclePart)
         {
             if (!bUnsafe && !ai::ComplexPhysicObj::CanPartBeAttached(partName))
             {
                 M3D_LOG_ERR(
-                    "Warning: attaching a physic object part that can't be attached. Object desc: " + GetDebugDescription() +
-                    ", part name = '" + partName + "'");
+                    "Warning: attaching a physic object part that can't be attached. Object desc: " +
+                    GetDebugDescription() + ", part name = '" + partName + "'");
             }
 
             auto it = m_vehicleParts.find(partName);
@@ -391,8 +547,11 @@ namespace ai
         if (!bUnsafe)
         {
             _Construct(false);
+            // Every part is re-seated in the scene graph from its physics state, so a part that
+            // has just been attached shows up where it now belongs.
             for (auto& part : m_vehicleParts)
             {
+                part.second->TransferPhysicParamsToSceneGraphNode();
                 if (auto* node = part.second->m_Node)
                 {
                     node->UpdateXForm(false, true);
@@ -437,12 +596,23 @@ namespace ai
 
     void ComplexPhysicObj::PutContour()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBFD0
+        m_isContoured = true;
+        _PutContour();
     }
 
     bool ComplexPhysicObj::IsVisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C09E0
+        // Visible when any part's scene node was drawn this frame.
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (part->m_Node && part->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     void ComplexPhysicObj::SetSkin(int skin)
@@ -456,30 +626,31 @@ namespace ai
 
     void ComplexPhysicObj::CreateChildren()
     {
+        // RVA 0x6BEB80 - creates a part object for every part prototype, then lays the parts out and moves their
+        // nodes into place.
         Obj::CreateChildren();
 
         auto* prototypeInfo = GetPrototypeInfo();
         for (auto const& [name, protoId] : prototypeInfo->m_partPrototypeIds)
         {
-            auto objId = theObjects->CreateNewObject(protoId, {}, -1, -1);
-            if (objId >= 0)
+            int const objId = theObjects->CreateNewObject(protoId, {}, -1, -1);
+            auto* vehiclePart = objId >= 0 ? static_cast<VehiclePart*>(theObjects->GetEntityByObjId(objId)) : nullptr;
+            if (!vehiclePart)
             {
-                auto* vehiclePart = dynamic_cast<VehiclePart*>(theObjects->GetEntityByObjId(objId));
-                if (vehiclePart)
-                {
-                    SetPartByName(name, vehiclePart, true);
-                    continue;
-                }
+                auto const* partPrototype = thePrototypeManager->GetPrototypeInfo(protoId);
+                CStr const prototypeNameSuffix = partPrototype
+                    ? ", part prototype name = '" + partPrototype->m_prototypeName + "'"
+                    : CStr(", part prototype is NULL");
+                M3D_LOG_ERR(
+                    "Error: couldn't create part for " + GetDebugDescription() + " part name = " + name +
+                    ", part prototype id = " + CStr(protoId) + prototypeNameSuffix);
+                M3D_ASSERT(!"Error occured, see log");
             }
-            M3D_LOG_ERR(
-                "Error: couldn't create part for " + GetDebugDescription() + " part name = " + name +
-                ", part prototype id = " + CStr(protoId));
-            //M3D_CRITICAL_ERROR("");
+            SetPartByName(name, vehiclePart, true);
         }
 
         _Construct(false);
 
-        // TODO: check this
         for (auto const& [name, part] : m_vehicleParts)
         {
             part->TransferPhysicParamsToSceneGraphNode();
@@ -488,15 +659,14 @@ namespace ai
                 part->m_Node->UpdateXForm(false, true);
             }
 
-            if (part->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+            if (IS_KIND_OF(part, CompoundVehiclePart))
             {
-                auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
-                for (auto const& [vehPartName, vehPart] : *compoundVehiclePart)
+                for (auto const& [subPartName, subPart] : *static_cast<CompoundVehiclePart*>(part))
                 {
-                    vehPart.vp->TransferPhysicParamsToSceneGraphNode();
-                    if (vehPart.vp->m_Node)
+                    subPart.vp->TransferPhysicParamsToSceneGraphNode();
+                    if (subPart.vp->m_Node)
                     {
-                        vehPart.vp->m_Node->UpdateXForm(false, true);
+                        subPart.vp->m_Node->UpdateXForm(false, true);
                     }
                 }
             }
@@ -509,7 +679,15 @@ namespace ai
 
     void ComplexPhysicObj::ClearSavedStatus()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFD30
+        Obj::ClearSavedStatus();
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            if (part)
+            {
+                part->ClearSavedStatus();
+            }
+        }
     }
 
     VehiclePart const* ComplexPhysicObj::GetPartByName(CStr const& partName) const
@@ -563,12 +741,21 @@ namespace ai
 
     void ComplexPhysicObj::SetVisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFB40
+        PhysicObj::SetVisible();
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            part->SetVisible();
+        }
     }
 
-    void ComplexPhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    void ComplexPhysicObj::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BC920
+        PhysicObj::LoadRuntimeValues(xmlFile, xmlNode);
+        m3d::SafeIntAttrib(m_targetId, xmlNode, "TargetId");
+        m3d::SafeFloatAttrib(m_timeoutForReAimGuns, xmlNode, "TimeOutForReAimGuns");
+        m3d::SafeVectorAttrib(m_currentTargetPos, xmlNode, "TargetPos");
     }
 
     void ComplexPhysicObj::EnablePhysics()
@@ -576,29 +763,49 @@ namespace ai
         PhysicObj::EnablePhysics();
     }
 
-    VehiclePart* ComplexPhysicObj::TakeOffPart(CStr const&)
+    VehiclePart* ComplexPhysicObj::TakeOffPart(CStr const& partName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BF980
+        auto* part = GetPartByName(partName);
+        SetPartByName(partName, nullptr, false);
+        return part;
     }
 
-    void ComplexPhysicObj::AddChild(Obj*)
+    void ComplexPhysicObj::AddChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BD8D0
+        Obj::AddChild(pObj);
+        if (pObj && IS_KIND_OF(pObj, VehiclePart))
+        {
+            // A VehiclePart must be attached with SetPartByName, never AddChild - the
+            // shipped code raises an unconditional SysError here and then links anyway.
+            M3D_ASSERT(!"0");
+            pObj->LinkToParent(GetId(), HIERARCHY_CHILD);
+        }
     }
 
-    unsigned ComplexPhysicObj::GetPrice(IPriceCoeffProvider const*) const
+    unsigned ComplexPhysicObj::GetPrice(IPriceCoeffProvider const* priceCoeffProvider) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFA30
+        // NOTE: the object itself is worth nothing - only the sum of its parts.
+        unsigned price = 0;
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            price += part->GetPrice(priceCoeffProvider);
+        }
+        return price;
     }
 
     void ComplexPhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>&) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBEF0 - the parts link their own nodes.
     }
 
     void ComplexPhysicObj::RemoveContour()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBFE0
+        m_isContoured = false;
+        _RemoveContour();
     }
 
     void ComplexPhysicObj::RelinkGeomsToCollisionCells()
@@ -608,7 +815,8 @@ namespace ai
 
     ComplexPhysicObjPrototypeInfo const* ComplexPhysicObj::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BE930
+        return static_cast<ComplexPhysicObjPrototypeInfo const*>(Obj::GetPrototypeInfo());
     }
 
     void ComplexPhysicObj::DisableGeometry(bool changePhysicState)
@@ -626,24 +834,39 @@ namespace ai
         }
     }
 
-    void ComplexPhysicObj::SetContourWidth(float)
+    void ComplexPhysicObj::SetContourWidth(float contourWidth)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x529330
+        m_contourWidth = contourWidth;
     }
 
-    void ComplexPhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ComplexPhysicObj::SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BC9A0
+        PhysicObj::SaveRuntimeValues(xmlFile, xmlNode);
+        xmlNode->SetAttribute("TargetId", CStr(m_targetId).c_str());
+        xmlNode->SetAttribute("TimeOutForReAimGuns", CStr(m_timeoutForReAimGuns).c_str());
+        xmlNode->SetAttribute("TargetPos", CStr(m_currentTargetPos).c_str());
     }
 
     unsigned ComplexPhysicObj::size() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x73E1E0
+        return m_vehicleParts.size();
     }
 
-    void ComplexPhysicObj::TransferToSpace(dxSpace*)
+    void ComplexPhysicObj::TransferToSpace(dxSpace* newSpace)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BF840
+        // NOTE: the parts are relinked before the base moves the object itself.
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            if (part)
+            {
+                part->RelinkToSpace(newSpace);
+            }
+        }
+        PhysicObj::TransferToSpace(newSpace);
     }
 
     bool ComplexPhysicObj::bIsContoured() const
@@ -661,19 +884,69 @@ namespace ai
         PhysicObj::LinkGeomsToCollisionCells();
     }
 
-    void ComplexPhysicObj::SaveToXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+    void ComplexPhysicObj::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C4DA0 - a prototype's default part is written only when it differs from what loading would create;
+        // parts in other slots are always written.
+        Obj::SaveToXML(xmlFile, xmlNode);
+        ref_ptr partsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Parts");
+        xmlNode->AddChild(partsNode);
+
+        retruxx::set<CStr> savedParts;
+        for (auto const& [partName, prototypeId] : GetPrototypeInfo()->m_partPrototypeIds)
+        {
+            auto const part = m_vehicleParts.find(partName);
+            savedParts.insert(partName);
+            bool const present = part != m_vehicleParts.end();
+            if (theObjects->m_SaveType == ObjContainer::SAVE_FULL || !present ||
+                part->second->GetPrototypeInfo()->m_prototypeId != prototypeId || !part->second->bIsEqualToPrototype())
+            {
+                ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, partName.c_str());
+                partNode->SetAttribute("present", CStr(static_cast<int>(present)).c_str());
+                if (present)
+                {
+                    part->second->SaveToXML(xmlFile, partNode);
+                }
+                partsNode->AddChild(partNode);
+            }
+        }
+
+        for (auto const& [partName, part] : m_vehicleParts)
+        {
+            if (savedParts.find(partName) == savedParts.end())
+            {
+                ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, partName.c_str());
+                partNode->SetAttribute("present", "yes");
+                part->SaveToXML(xmlFile, partNode);
+                partsNode->AddChild(partNode);
+            }
+        }
     }
 
     Obj* ComplexPhysicObj::CloneObj()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFCC0
+        auto* clone = RT_DYNCAST(Obj::CloneObj(), ComplexPhysicObj);
+        if (!clone)
+        {
+            return nullptr;
+        }
+        // The base clone copies the parts but not their visual halves.
+        for (auto& [name, part] : clone->m_vehicleParts)
+        {
+            if (part)
+            {
+                part->PostLoad();
+                part->CreateVisualPart();
+            }
+        }
+        return clone;
     }
 
     void ComplexPhysicObj::SetRandomSkin()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // no-op
+        // RVA 0x6C2F40: empty in the shipped build - subclasses override it.
     }
 
     void ComplexPhysicObj::SetBelong(int newBelong)
@@ -687,12 +960,18 @@ namespace ai
 
     void ComplexPhysicObj::SetInvisible()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFBC0
+        PhysicObj::SetInvisible();
+        for (auto& [name, part] : m_vehicleParts)
+        {
+            part->SetInvisible();
+        }
     }
 
     m3d::Class* ComplexPhysicObj::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBEE0
+        return RT_CLASS_LOCAL(ComplexPhysicObj);
     }
 
     Geom::CellAabb ComplexPhysicObj::GetCollisionCellAabb() const
@@ -700,27 +979,67 @@ namespace ai
         return PhysicObj::GetCollisionCellAabb();
     }
 
-    void ComplexPhysicObj::SetContourColor(unsigned)
+    void ComplexPhysicObj::SetContourColor(unsigned contourColor)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x529320
+        m_contourColor = contourColor;
     }
 
     int ComplexPhysicObj::GetNumPhysicBodies() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7BB860
+        return static_cast<int>(m_vehicleParts.size());
     }
 
-    bool ComplexPhysicObj::RemoveChild(Obj*)
+    bool ComplexPhysicObj::RemoveChild(Obj* pObj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BDA50
+        Obj::RemoveChild(pObj);
+        // A VehiclePart must be detached with SetPartByName, never RemoveChild - the
+        // shipped code raises an unconditional SysError on this path.
+        M3D_ASSERT(!(pObj && pObj->GetParentId() == GetId() && IS_KIND_OF(pObj, VehiclePart)));
+        return false;
     }
 
-    bool ComplexPhysicObj::CanPartBeAttached(CStr const&) const
+    bool ComplexPhysicObj::CanPartBeAttached(CStr const& partName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C11E0
+        // A part can hang off the object only when every ancestor in the part tree is
+        // itself attached and actually offers the load points this part needs.
+        auto const* protoInfo = GetPrototypeInfo();
+        auto const* partDescription = protoInfo->GetPartDescriptionByName(partName);
+        if (!partDescription)
+        {
+            return false;
+        }
+
+        auto const* parentDescription = partDescription->GetParent();
+        while (parentDescription)
+        {
+            auto const it = m_vehicleParts.find(parentDescription->GetName());
+            if (it == m_vehicleParts.end())
+            {
+                return false;
+            }
+            auto const& parentLoadPoints = it->second->GetPrototypeInfo()->m_loadPoints;
+            for (unsigned i = 0; i < partDescription->GetNumLps(); ++i)
+            {
+                if (parentLoadPoints.find(partDescription->GetLpName(i)) == parentLoadPoints.end())
+                {
+                    return false;
+                }
+            }
+            partDescription = parentDescription;
+            parentDescription = parentDescription->GetParent();
+        }
+        return true;
     }
 
-    int ComplexPhysicObj::GetGunHorizontalStopAngles(CStr const& gunPartName, int index, float& leftStopAngle, float& rightStopAngle) const
+    int ComplexPhysicObj::GetGunHorizontalStopAngles(
+        CStr const& gunPartName,
+        int index,
+        float& leftStopAngle,
+        float& rightStopAngle) const
     {
         leftStopAngle = 0.0;
         rightStopAngle = 0.0;
@@ -777,99 +1096,123 @@ namespace ai
 
     void ComplexPhysicObj::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        // TODO: generated code
-        ai::Obj::LoadFromXML(xmlFile, xmlNode);
+        // RVA 0x6C0CD0 - each part comes from the Parts node, or from the prototype's default for that slot.
+        Obj::LoadFromXML(xmlFile, xmlNode);
+        ComplexPhysicObjPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
 
-        // TODO: implement ComplexPhysicObj::LoadFromXML
-        auto const prototypeInfo = GetPrototypeInfo();
-
-        ref_ptr partsNode = xmlFile->CreateNode();
+        ref_ptr partsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
         xmlNode->GetFirstChild(partsNode, "Parts");
-        for (auto& partName : prototypeInfo->GetAllPartNames())
+        for (CStr const& partName : prototypeInfo->GetAllPartNames())
         {
-            // Create temporary node for this part
-            ref_ptr<m3d::cmn::XmlNode> partNode(xmlFile->CreateNode());
-
-            // Find the prototype ID for this part
-            auto partPrototypeIt = prototypeInfo->m_partPrototypeIds.find(partName);
-            bool partPresent = (partPrototypeIt != prototypeInfo->m_partPrototypeIds.end());
-
-            // Check if part is present in XML
+            ref_ptr partNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
+            auto const defaultPart = prototypeInfo->m_partPrototypeIds.find(partName);
+            bool present = defaultPart != prototypeInfo->m_partPrototypeIds.end();
             if (!partsNode->IsEmpty())
             {
                 partsNode->GetFirstChild(partNode, partName.c_str());
                 if (!partNode->IsEmpty())
                 {
-                    m3d::SafeBoolAttrib(partPresent, partNode, "present");
+                    m3d::SafeBoolAttrib(present, partNode, "present");
                 }
             }
-
-            // If part doesn't exist in prototype or isn't present in XML, skip
-            if (!partPresent)
+            if (!present)
             {
                 continue;
             }
 
-            int objectId = -1;
-
+            int objId;
             if (partNode->IsEmpty())
             {
-                // Create new object if we're doing a full save
-                if (ai::theObjects->m_SaveType == ObjContainer::SAVE_FULL)
+                // A full save lists every part, so a missing one is not recreated from the prototype.
+                if (theObjects->m_SaveType == ObjContainer::SAVE_FULL)
                 {
                     continue;
                 }
-
-                objectId = theObjects->CreateNewObjectWithSuspendedPostLoad(partPrototypeIt->second, {}, -1, -1);
+                objId = theObjects->CreateNewObjectWithSuspendedPostLoad(defaultPart->second, "", -1, -1);
             }
             else
             {
-                // Read object from XML
-                objectId = gDynamicScene->ReadNewObjectFromXml(xmlFile, partNode, {});
+                objId = gDynamicScene->ReadNewObjectFromXml(xmlFile, partNode, {});
+                if (objId == -1)
+                {
+                    M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
+                }
             }
-
-            if (objectId == -1)
+            if (objId == -1)
             {
-                M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
                 continue;
             }
 
-            // Get the object from the container
-            m3d::Object* partObject = theObjects->GetEntityByObjId(objectId);
-
-            // Verify it's a VehiclePart and set it
-            if (IS_KIND_OF(partObject, VehiclePart))
+            // NOTE: a stale id leaves a null object, which is type checked through a null pointer.
+            Obj* const part = theObjects->GetEntityByObjId(objId);
+            if (static_cast<m3d::Object*>(part)->IsKindOf(RT_CLASS_LOCAL(VehiclePart)))
             {
-                SetPartByName(partName, RT_DYNCAST(partObject, VehiclePart), true);
+                SetPartByName(partName, static_cast<VehiclePart*>(part), true);
             }
             else
             {
-                CStr errorMsg = "Error: the part '" + partName + "' isn't a VehiclePart";
-                M3D_LOG_ERR("Error: could not read object part from XML, part name = '" + partName + "'");
+                M3D_LOG_ERR("Error: the part '" + partName + "' isn't a VehiclePart");
             }
         }
-
-        // Final construction
-        _Construct(nullptr);
+        _Construct(false);
     }
 
-    void ComplexPhysicObj::Blow(Obj*)
+    void ComplexPhysicObj::Blow(Obj* partToBlow)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C2770 - the part bursts into its blow effect and is gone.
+        if ((GetFlags() & 2) != 0 || !partToBlow)
+        {
+            return;
+        }
+        if (m_isContoured)
+        {
+            m_isContoured = false;
+            _RemoveContour();
+        }
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            if (part == partToBlow)
+            {
+                Quaternion const rotation = part->GetNodeAbsoluteRotation();
+                CVector const position = part->GetNodeAbsolutePosition();
+                PhysicBody::CreateEffectNode(part->GetBlowEffectName(), position, rotation, true, 1.0f);
+                part->Remove();
+                SetPartByName(part->GetPartName(), nullptr, true);
+                return;
+            }
+        }
     }
 
-    void ComplexPhysicObj::Flow(Obj*, float)
+    void ComplexPhysicObj::Flow(Obj* partToFlow, float averageSpeed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C1380
+        if ((GetFlags() & 2) != 0 || !partToFlow)
+        {
+            return;
+        }
+        auto* part = RT_DYNCAST(partToFlow, VehiclePart);
+        if (!part || m_vehicleParts.find(part->GetPartName()) == m_vehicleParts.end())
+        {
+            return;
+        }
+        if (m_isContoured)
+        {
+            m_isContoured = false;
+            _RemoveContour();
+        }
+        _TearOffPart(part, averageSpeed);
     }
 
     unsigned ComplexPhysicObj::GetRepairPrice() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BFAB0 - the shipped build only asserts.
+        _assert("!\"not implemented\"", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\Base\\ComplexPhysicObj.cpp", 1217);
+        return 0;
     }
 
     void ComplexPhysicObj::RefreshMass()
     {
+        // RVA 0x6BCAC0 - the body's mass is the objects' total, spread over the prototype's mass shape.
         dMass mass;
         dMassSetZero(&mass);
         dMassSetZero(&mass);
@@ -884,7 +1227,7 @@ namespace ai
         auto massSize = protoInfo->m_massSize;
         if (protoInfo->GetMassShape() == ComplexPhysicObjPrototypeInfo::MS_SPHERE)
         {
-            // TODO: check this
+            // The sphere's radius is a sixth of the mass box's summed dimensions.
             dMassSetSphereTotal(&mass, massValue, ((massSize.x + massSize.y) + massSize.z) * 0.16666667);
         }
         else
@@ -896,139 +1239,123 @@ namespace ai
 
     CVector ComplexPhysicObj::GetSmoothTargetPointForObj(Obj const* target, float elapsedTime)
     {
-        // TODO: generated code ComplexPhysicObj::GetSmoothTargetPointForObj
-        CVector* currentTargetPosPtr = &this->m_currentTargetPos;
-
-        if (target)
+        // RVA 0x6BCC10 - the point the guns aim at. For a vehicle it is re-picked only every
+        // m_timeOutForReAimGuns seconds: the target's delayed (recollected) position, scattered at random by an
+        // amount that grows with distance and relative speed.
+        if (!target)
         {
-            // Get target's geometric center
-            CVector targetPos = ai::getPhysicObjOrPhysicBodyGeometricCenter(target);
+            m_targetId = -1;
+            m_currentTargetPos = ZeroVector;
+            return m_currentTargetPos;
+        }
 
-            // Check if target is a Vehicle and handle targeting logic
-            if (IS_KIND_OF(target, Vehicle))
+        CVector targetPos = ai::getPhysicObjOrPhysicBodyGeometricCenter(target);
+        if (IS_KIND_OF(target, Vehicle))
+        {
+            if (target->GetId() == m_targetId)
             {
-                // Update target ID and timeout
-                if (target->GetId() == m_targetId)
+                m_timeoutForReAimGuns -= elapsedTime;
+            }
+            else
+            {
+                m_timeoutForReAimGuns = -1.0f;
+                m_targetId = target->GetId();
+            }
+            if (m_timeoutForReAimGuns >= 0.0f)
+            {
+                return m_currentTargetPos;
+            }
+            m_timeoutForReAimGuns = ai::theGlobProp.m_timeOutForReAimGuns;
+
+            auto const* vehicle = static_cast<Vehicle const*>(target);
+            targetPos = vehicle->GetRecollectionPosition(
+                ai::theGlobProp.GetCoeffsForCurrentDifficultyLevel().m_enemiesShootingDelay);
+
+            CVector const targetVel = vehicle->GetLinearVelocity();
+            CVector const sourcePos = GetGeometricCenter();
+            CVector const sourceVel = GetLinearVelocity();
+            double const relativeSpeed = sqrt((targetVel - sourceVel).lengthSq());
+            double const distance = sqrt((targetPos - sourcePos).lengthSq());
+            // The shipped code computes the exponential with x87 f2xm1/fscale as 2^(x * log2(e)).
+            float const spread = static_cast<float>(1.0 - exp(-sqrt(relativeSpeed * 0.1 + distance * 0.033333335)) + 0.2);
+
+            // Each axis is offset by (sum of 5 uniform [0, 1] samples) * 0.4 - 1, i.e. roughly -1..1 peaking at 0,
+            // times the spread and the vehicle's size along that axis (the longer of x/z for both x and z).
+            auto const randomOffset = []() {
+                float sum = 0.0f;
+                for (int i = 0; i < 5; ++i)
                 {
-                    this->m_timeoutForReAimGuns -= elapsedTime;
+                    sum = static_cast<float>(rand()) * 0.000030518509f + sum;
                 }
-                else
-                {
-                    this->m_timeoutForReAimGuns = -1.0f;
-                    this->m_targetId = target->GetId();
-                }
+                return sum * 0.40000001f - 1.0f;
+            };
+            CVector const vehicleSize = vehicle->GetSize();
+            targetPos.y = randomOffset() * spread * vehicleSize.y + targetPos.y;
+            float const linSize = vehicleSize.z <= vehicleSize.x ? vehicleSize.x : vehicleSize.z;
+            targetPos.x = randomOffset() * spread * linSize + targetPos.x;
+            targetPos.z = randomOffset() * spread * linSize + targetPos.z;
+        }
 
-                // Return current target if timeout hasn't expired
-                if (this->m_timeoutForReAimGuns >= 0.0f)
-                {
-                    return this->m_currentTargetPos;
-                }
+        m_currentTargetPos = targetPos;
+        return m_currentTargetPos;
+    }
 
-                // Reset timeout and calculate new target position
-                this->m_timeoutForReAimGuns = ai::theGlobProp.m_timeOutForReAimGuns;
-
-                // Get recollection position with prediction
-                ai::GlobalProperties::CoeffsForDifficultyLevel const& difficultyCoeffs =
-                    ai::theGlobProp.GetCoeffsForCurrentDifficultyLevel();
-
-                auto* vehicle = RT_DYNCAST(target, Vehicle const);
-                CVector recollectionPos = vehicle->GetRecollectionPosition(difficultyCoeffs.m_enemiesShootingDelay);
-
-                targetPos = recollectionPos;
-
-                // Get velocities for both objects
-                CVector targetVel = vehicle->GetLinearVelocity();
-                CVector sourcePos = GetGeometricCenter();
-                CVector sourceVel = GetLinearVelocity();
-
-                // Calculate relative speed and distance
-                float relativeSpeed = sqrtf(
-                    (targetVel.x - sourceVel.x) * (targetVel.x - sourceVel.x) + (targetVel.y - sourceVel.y) * (targetVel.y - sourceVel.y) +
-                    (targetVel.z - sourceVel.z) * (targetVel.z - sourceVel.z));
-
-                float distance = sqrtf(
-                    (targetPos.x - sourcePos.x) * (targetPos.x - sourcePos.x) + (targetPos.y - sourcePos.y) * (targetPos.y - sourcePos.y) +
-                    (targetPos.z - sourcePos.z) * (targetPos.z - sourcePos.z));
-
-                // Calculate randomY using exponential distribution - FIXED VERSION
-                double exponentValue = -sqrtf(relativeSpeed * 0.1f + distance * 0.033333335f) * 1.442695040888963407;
-
-                // This replicates: _ST6 = v11; __asm { frndint }
-                double integerPart = floor(exponentValue + 0.5);  // Round to nearest integer
-                double fractionalPart = exponentValue - integerPart;
-
-                // This replicates: __FSCALE__(__F2XM1__(v11 - _ST6) + 1.0, _ST6)
-                // __F2XM1__ calculates 2^x - 1 for x in [-0.5, 0.5]
-                // __FSCALE__ scales by 2^integerPart
-                double temp = pow(2.0, fractionalPart) - 1.0 + 1.0;  // 2^fractionalPart
-                double scaledValue = ldexp(temp, (int)integerPart);  // Multiply by 2^integerPart
-
-                float randomY = (float)(1.0 - scaledValue + 0.2);
-
-                // Get target vehicle size
-                CVector vehicleSize = vehicle->GetSize();
-
-                // Apply random offset to Y coordinate
-                float yRandomSum = 0.0f;
-                for (int i = 0; i < 5; i++)
-                {
-                    yRandomSum += (float)rand() * 0.000030518509f;
-                }
-                targetPos.y += ((yRandomSum * 0.4f - 1.0f) * (float)randomY * vehicleSize.y);
-
-                // Determine largest dimension (X or Z)
-                float linSize = (vehicleSize.z <= vehicleSize.x) ? vehicleSize.x : vehicleSize.z;
-
-                // Apply random offset to X coordinate
-                float xRandomSum = 0.0f;
-                for (int i = 0; i < 5; i++)
-                {
-                    xRandomSum += (float)rand() * 0.000030518509f;
-                }
-                targetPos.x += ((xRandomSum * 0.4f - 1.0f) * (float)randomY * linSize);
-
-                // Apply random offset to Z coordinate
-                float zRandomSum = 0.0f;
-                for (int i = 0; i < 5; i++)
-                {
-                    zRandomSum += (float)rand() * 0.000030518509f;
-                }
-                targetPos.z += ((zRandomSum * 0.4f - 1.0f) * (float)randomY * linSize);
-
-                // Update current target position
-                this->m_currentTargetPos = targetPos;
-                currentTargetPosPtr = &this->m_currentTargetPos;
+    void ComplexPhysicObj::FlowUnattachableParts(float averageSpeed)
+    {
+        // RVA 0x6C1400
+        // Shed every part the object can no longer carry, then rebuild the hierarchy.
+        // NOTE: the shipped code advances the map iterator before calling Flow, which
+        // erases the entry.
+        for (auto it = m_vehicleParts.begin(); it != m_vehicleParts.end();)
+        {
+            auto* part = it->second;
+            ++it;
+            if (!CanPartBeAttached(part->GetPartName()))
+            {
+                Flow(part, averageSpeed);
             }
         }
-        else
+        _Construct(false);
+    }
+
+    bool ComplexPhysicObj::SetNewPart(CStr const& partName, CStr const& newPartPrototypeName)
+    {
+        // RVA 0x6C14A0
+        if (!CanPartBeAttached(partName))
         {
-            // No target - reset to zero vector
-            this->m_targetId = -1;
-            this->m_currentTargetPos = ZeroVector;
-            currentTargetPosPtr = &this->m_currentTargetPos;
+            return false;
         }
-
-        return *currentTargetPosPtr;
+        int const prototypeId = thePrototypeManager->GetPrototypeId(newPartPrototypeName);
+        if (prototypeId == -1)
+        {
+            return false;
+        }
+        int const objId = theObjects->CreateNewObject(prototypeId, "", -1, GetBelong());
+        if (auto* oldPart = GetPartByName(partName))
+        {
+            oldPart->Remove();
+        }
+        SetPartByName(partName, static_cast<VehiclePart*>(theObjects->GetEntityByObjId(objId)), false);
+        return true;
     }
 
-    void ComplexPhysicObj::FlowUnattachableParts(float)
+    void ComplexPhysicObj::RemoveComponent(Obj* pComponent)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    bool ComplexPhysicObj::SetNewPart(CStr const&, CStr const&)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    void ComplexPhysicObj::RemoveComponent(Obj*)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BCA70
+        Obj::RemoveComponent(pComponent);
+        if (pComponent && pComponent->GetParentId() == GetId())
+        {
+            if (auto* part = RT_DYNCAST(pComponent, VehiclePart))
+            {
+                SetPartByName(part->GetPartName(), nullptr, false);
+            }
+        }
     }
 
     void ComplexPhysicObj::_DestroyHierarchy()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // no-op
+        // RVA 0x6BBFC0: empty in the shipped build.
     }
 
     void ComplexPhysicObj::_LinkBodyToGeoms()
@@ -1085,7 +1412,25 @@ namespace ai
 
     void ComplexPhysicObj::_RemoveContour()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C08A0
+        auto& graph = m3d::pClient->GetWorld().GetGraph();
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            graph.DeleteFromContourList(part->m_Node);
+            if (auto* gun = RT_DYNCAST(part, Gun))
+            {
+                graph.DeleteFromContourList(gun->GetBarrelNode());
+            }
+            else if (auto* compoundGun = RT_DYNCAST(part, CompoundGun))
+            {
+                for (auto it = compoundGun->begin(); it != compoundGun->end(); ++it)
+                {
+                    auto* subGun = static_cast<Gun*>(it->second.vp);
+                    graph.DeleteFromContourList(subGun->m_Node);
+                    graph.DeleteFromContourList(subGun->GetBarrelNode());
+                }
+            }
+        }
     }
 
     void ComplexPhysicObj::_InternalCreateVisualPart()
@@ -1105,158 +1450,119 @@ namespace ai
         }
     }
 
-    void ComplexPhysicObj::_SetPositionToGeoms(CVector const&)
+    void ComplexPhysicObj::_SetPositionToGeoms(CVector const& pos)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBFA0 (thunk)
+        PhysicObj::_SetPositionToGeoms(pos);
     }
 
-    void ComplexPhysicObj::_ConstructVehiclePart(CStr const& name, VehiclePart* vehiclePart, int index, bool bForAnimation)
+    void ComplexPhysicObj::_ConstructVehiclePart(
+        CStr const& name,
+        VehiclePart* vehiclePart,
+        int index,
+        bool bForAnimation)
     {
-        // TODO: check all this shiit
-        if (vehiclePart)
+        // RVA 0x6C3E40 - places a part at its load point: walks up the part description tree, multiplying the
+        // load-point matrices of the ancestors (the part's own index selects the load point on its direct parent,
+        // then index 0 is used further up). A gun's direct mount is also turned to the middle of its horizontal
+        // stop angles.
+        if (!vehiclePart)
         {
-            vehiclePart->SetPartName(name);
+            return;
+        }
+        vehiclePart->SetPartName(name);
 
-            CMatrix res;
-            res.identity();
+        auto* partDesc = GetPrototypeInfo()->GetPartDescriptionByName(name);
+        if (!partDesc)
+        {
+            return;
+        }
 
-            auto* partDesc = GetPrototypeInfo()->GetPartDescriptionByName(name);
-            if (partDesc)
+        auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
+        CMatrix res;
+        res.identity();
+        VehiclePart* parent = nullptr;
+        for (auto* parentDesc = partDesc->GetParent(); parentDesc; parentDesc = parentDesc->GetParent())
+        {
+            CMatrix parentMat;
+            parentMat.identity();
+
+            auto const it = m_vehicleParts.find(parentDesc->GetName());
+            if (it == m_vehicleParts.end())
             {
-                auto parentPartDescription = partDesc->GetParent();
-                if (parentPartDescription)
+                M3D_LOG_INFO("Warning: parent part for child does not exist in object '" + CStr(GetName()) + "'");
+                break;
+            }
+            VehiclePart* const parentPart = it->second;
+
+            CStr const& lpName = partDesc->GetLpName(index);
+            if (lpName != NO_LP)
+            {
+                m3d::AnimatedModel* mdl = nullptr;
+                if (parentPart->m_Node)
                 {
-                    VehiclePart* parent = nullptr;
-                    while (parentPartDescription)
+                    parentPart->m_Node->GetServerItemProperty(16394, &mdl);
+                }
+                else if (int const item = animatedModelsServer.GetItemByName(parentPart->m_modelname.c_str(), true);
+                         item != -1)
+                {
+                    animatedModelsServer.GetItemProperty(item, 16394, &mdl);
+                }
+
+                int const loadPointId = mdl ? mdl->GetLoadPointIdByName(lpName.c_str()) : -1;
+                if (loadPointId != -1)
+                {
+                    m3d::AnimInfo* anim = nullptr;
+                    if (parentPart->m_Node)
                     {
-                        CMatrix parentMat;
-                        parentMat.identity();
-
-                        auto it = m_vehicleParts.find(parentPartDescription->GetName());
-                        if (it == m_vehicleParts.end())
-                        {
-                            break;
-                        }
-
-                        auto lpName = partDesc->GetLpName(index);
-                        if (lpName != NO_LP)
-                        {
-                            m3d::AnimatedModel* mdl = nullptr;
-                            if (it->second->m_Node)
-                            {
-                                it->second->m_Node->GetServerItemProperty(16394, &mdl);
-                            }
-                            else
-                            {
-                                auto item = M3D_APP->GetAnimatedModelsServer().GetItemByName(it->second->m_modelname.c_str(), true);
-                                if (item != -1)
-                                {
-                                    M3D_APP->GetAnimatedModelsServer().GetItemProperty(item, 16394, &mdl);
-                                }
-                            }
-
-                            if (mdl)
-                            {
-                                auto loadPointIdByName = mdl->GetLoadPointIdByName(lpName.c_str());
-                                if (loadPointIdByName != -1)
-                                {
-                                    if (it->second->m_Node)
-                                    {
-                                        m3d::AnimInfo* anim = nullptr;
-                                        it->second->m_Node->GetProperty(1, &anim);
-                                        if (!anim || anim->IsEmpty())
-                                        {
-                                            parentMat = mdl->GetBoneMatrix(loadPointIdByName);
-                                        }
-                                        else
-                                        {
-                                            parentMat = anim->GetCurrentLoadpointMatrix(loadPointIdByName);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        parentMat = mdl->GetBoneMatrix(loadPointIdByName);
-                                    }
-                                }
-                                else
-                                {
-                                    M3D_LOG_ERR(
-                                        "Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " +
-                                        it->second->m_modelname);
-                                }
-                            }
-                            else
-                            {
-                                M3D_LOG_ERR(
-                                    "Error: LoadPoint not found! Model = '" + GetDebugDescription() + "', lp = " + lpName + " for " +
-                                    it->second->m_modelname);
-                            }
-                        }
-
-                        index = 0;
-                        if (!parent)
-                        {
-                            parent = it->second;
-                            if (IS_KIND_OF(vehiclePart, Gun))
-                            {
-                                // TODO: check this
-                                float leftStopAngle = 0.0;
-                                float rightStopAngle = 0.0;
-                                GetGunHorizontalStopAngles(name, 0, leftStopAngle, rightStopAngle);
-
-                                CVector org = parentMat.getOrg();
-                                Quaternion gunRotation;
-                                gunRotation.FromMatrix(parentMat);
-
-                                auto gunInitAngle = (rightStopAngle + leftStopAngle) * 0.5;
-
-                                CVector const INITIAL_UP_DIRECTION_15(0.0, 1.0, 0.0);
-                                gunRotation.FromAxisAngle(INITIAL_UP_DIRECTION_15, gunInitAngle);
-
-                                CMatrix vv;
-                                vv._11 = 1.0 - (((gunRotation.z * gunRotation.z) + (gunRotation.y * gunRotation.y)) * 2.0);
-                                vv._21 = ((gunRotation.y * gunRotation.x) - (gunRotation.z * gunRotation.w)) * 2.0;
-                                vv._12 = ((gunRotation.z * gunRotation.w) + (gunRotation.y * gunRotation.x)) * 2.0;
-                                vv._31 = ((gunRotation.y * gunRotation.w) + (gunRotation.z * gunRotation.x)) * 2.0;
-                                vv._22 = 1.0 - (((gunRotation.z * gunRotation.z) + (gunRotation.x * gunRotation.x)) * 2.0);
-                                vv._33 = 1.0 - (((gunRotation.y * gunRotation.y) + (gunRotation.x * gunRotation.x)) * 2.0);
-                                vv._32 = ((gunRotation.z * gunRotation.y) - (gunRotation.x * gunRotation.w)) * 2.0;
-                                vv._13 = ((gunRotation.z * gunRotation.x) - (gunRotation.y * gunRotation.w)) * 2.0;
-                                vv._23 = ((gunRotation.x * gunRotation.w) + (gunRotation.z * gunRotation.y)) * 2.0;
-                                vv._14 = 0.0;
-                                vv._24 = 0.0;
-                                memset(&vv.m[2][3], 0, 16);
-                                vv._44 = 1.0;
-
-                                parentMat = vv;
-                                parentMat.setOrg(org);
-
-                                auto* gun = RT_DYNCAST(vehiclePart, Gun);
-                                gun->SetHorizontalStopAngles(leftStopAngle - gunInitAngle, rightStopAngle - gunInitAngle);
-                                gun->SetInitialHorizAngle(gunInitAngle);
-                            }
-                        }
-                        res = res * parentMat;
-                        partDesc = parentPartDescription;
-                        parentPartDescription = parentPartDescription->GetParent();
+                        parentPart->m_Node->GetProperty(1, &anim);
                     }
+                    parentMat = anim && !anim->IsEmpty() ? anim->GetCurrentLoadpointMatrix(loadPointId)
+                                                         : mdl->GetBoneMatrix(loadPointId);
                 }
                 else
                 {
-                    M3D_LOG_INFO("Warning: parent part for child does not exist in object '" + GetDebugDescription() + "'");
+                    M3D_LOG_ERR(
+                        "Error: LoadPoint not found! Model = '" + parentPart->m_modelname + "', lp = " + lpName +
+                        " for " + GetDebugDescription());
                 }
-
-                CVector resVector = res.getOrg();
-                Quaternion quat;
-                quat.FromMatrix(res);
-                vehiclePart->SetNodeRelativePosition(resVector);
-                if ((!IS_KIND_OF(vehiclePart, Gun) || !bForAnimation) && theObjects->m_SaveType != ObjContainer::SAVE_FULL)
-                {
-                    vehiclePart->SetNodeRelativeRotation(quat);
-                }
-                vehiclePart->RelinkToSpace(m_spaceId);
             }
+
+            index = 0;
+            if (!parent)
+            {
+                parent = parentPart;
+                if (IS_KIND_OF(vehiclePart, Gun) && !bForAnimation)
+                {
+                    // The mount keeps its position but its rotation is replaced by a turn about the up axis to the
+                    // middle of the gun's horizontal range; the stop angles become relative to that.
+                    float leftStopAngle = 0.0f;
+                    float rightStopAngle = 0.0f;
+                    GetGunHorizontalStopAngles(name, 0, leftStopAngle, rightStopAngle);
+                    float const gunInitAngle = (rightStopAngle + leftStopAngle) * 0.5f;
+
+                    Quaternion gunRotation;
+                    gunRotation.FromAxisAngle(CVector(0.0f, 1.0f, 0.0f), gunInitAngle);
+                    parentMat.rotTranslate(gunRotation, parentMat.getOrg());
+
+                    auto* gun = static_cast<Gun*>(vehiclePart);
+                    gun->SetHorizontalStopAngles(leftStopAngle - gunInitAngle, rightStopAngle - gunInitAngle);
+                    gun->SetInitialHorizAngle(gunInitAngle);
+                }
+            }
+
+            res = res * parentMat;
+            partDesc = parentDesc;
         }
+
+        Quaternion rot;
+        rot.FromMatrix(res);
+        vehiclePart->SetNodeRelativePosition(res.getOrg());
+        if ((!IS_KIND_OF(vehiclePart, Gun) || !bForAnimation) && theObjects->m_SaveType != ObjContainer::SAVE_FULL)
+        {
+            vehiclePart->SetNodeRelativeRotation(rot);
+        }
+        vehiclePart->RelinkToSpace(m_spaceId);
     }
 
     float ComplexPhysicObj::_CalcMassForBody() const
@@ -1275,18 +1581,41 @@ namespace ai
 
     void ComplexPhysicObj::_PutContour()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C0710
+        // Outline every part - and, for guns, their barrels too.
+        auto& graph = m3d::pClient->GetWorld().GetGraph();
+        for (auto const& [name, part] : m_vehicleParts)
+        {
+            graph.InsertInContourList(part->m_Node, m_contourColor, m_contourWidth);
+            if (auto* gun = RT_DYNCAST(part, Gun))
+            {
+                graph.InsertInContourList(gun->GetBarrelNode(), m_contourColor, m_contourWidth);
+            }
+            else if (auto* compoundGun = RT_DYNCAST(part, CompoundGun))
+            {
+                for (auto it = compoundGun->begin(); it != compoundGun->end(); ++it)
+                {
+                    auto* subGun = static_cast<Gun*>(it->second.vp);
+                    graph.InsertInContourList(subGun->m_Node, m_contourColor, m_contourWidth);
+                    graph.InsertInContourList(subGun->GetBarrelNode(), m_contourColor, m_contourWidth);
+                }
+            }
+        }
     }
 
-    void ComplexPhysicObj::_SetRotationToGeoms(Quaternion const&)
+    void ComplexPhysicObj::_SetRotationToGeoms(Quaternion const& rot)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BBFB0 (thunk)
+        PhysicObj::_SetRotationToGeoms(rot);
     }
 
     void ComplexPhysicObj::_Construct(bool bForAnimation)
     {
+        // RVA 0x6C1540
         auto const pos = GetPosition();
+        // NOTE: the rotation is read but never restored; only the position is put back below.
         auto const rot = GetRotation();
+        (void)rot;
         _CreateSpace(false);
         for (auto const& [name, part] : m_vehicleParts)
         {
@@ -1294,9 +1623,10 @@ namespace ai
             {
                 auto* compoundVehiclePart = dynamic_cast<CompoundVehiclePart*>(part);
                 _ConstructVehiclePart(name, part, 0, bForAnimation);
+                // The sub-parts are built under the compound part's own slot name.
                 for (auto const& [vehPartName, vehPart] : *compoundVehiclePart)
                 {
-                    _ConstructVehiclePart(vehPartName, vehPart.vp, vehPart.index, bForAnimation);
+                    _ConstructVehiclePart(name, vehPart.vp, vehPart.index, bForAnimation);
                 }
             }
             else
@@ -1313,7 +1643,6 @@ namespace ai
         _SetMassCenter(prototypeInfo->m_massTranslation);
         _SetCorrectBoundSphereRadius();
         SetPosition(pos);
-        SetRotation(rot);
 
         for (auto const& [name, part] : m_vehicleParts)
         {
@@ -1332,22 +1661,106 @@ namespace ai
 
     m3d::Object* ComplexPhysicObj::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BD710
+        // The shipped code raises a SysError ("Object cannot be created directly")
+        // and returns null - a ComplexPhysicObj only comes from its prototype.
+        return nullptr;
     }
 
     m3d::Object* ComplexPhysicObj::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6BD550
+        // The shipped code raises a SysError ("Object cannot be cloned") and returns
+        // null; CloneObj() is the supported path.
+        return nullptr;
     }
 
-    void ComplexPhysicObj::_CreateSplinterFromSgNode(VehiclePart*, int, CVector const&, float, m3d::SgNode*, CollisionInfo const*)
+    void ComplexPhysicObj::_CreateSplinterFromSgNode(
+        VehiclePart* vp,
+        int splinterPrototypeId,
+        CVector const& dir,
+        float averageSpeed,
+        m3d::SgNode* sgNode,
+        CollisionInfo const* collisionInfo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C01C0 - a free-flying debris object that takes over the part's scene graph node.
+        int const splinterId = theObjects->CreateNewObject(splinterPrototypeId, "", -1, -1);
+        // NOTE: the splinter is used without a null check.
+        auto* const splinter = static_cast<DummyObject*>(theObjects->GetEntityByObjId(splinterId));
+        splinter->SetBelong(GetBelong());
+        splinter->SetSgNodeAndCollision(sgNode, collisionInfo);
+        splinter->SetMass(vp->m_mass.mass);
+        splinter->SetSkin(8);
+        splinter->GetPhysicBody()->SetNodeAction(0, true);
+        splinter->GetPhysicBody()->SetNodeAction(8, true);
+        splinter->GetPhysicBody()->SetNodeEffectAction(2 * rand() / 0x8000 == 1 ? 8 : 9);
+        splinter->SetPosition(vp->GetNodeAbsolutePosition());
+        splinter->SetRotation(vp->GetNodeAbsoluteRotation());
+
+        // Flies away from the owner's centre (straight up if the part sits on it), at 0.5 to 1.5 times the speed.
+        CVector const ownerPos = GetPosition();
+        CVector const partPos = vp->GetNodeAbsolutePosition();
+        CVector away(partPos.x - ownerPos.x, partPos.y - ownerPos.y, partPos.z - ownerPos.z);
+        float const horizontalSq = away.x * away.x + away.z * away.z;
+        if (sqrt(static_cast<double>(away.y) * away.y + horizontalSq) < 0.0001)
+        {
+            away.y = 1.0f;
+        }
+        double const invLen = 1.0 / sqrt(static_cast<double>(away.y) * away.y + horizontalSq + 0.00000011920929f);
+        CVector const flyDir = GetRandomDeviatedVector(
+            CVector(static_cast<float>(away.x * invLen), static_cast<float>(away.y * invLen), static_cast<float>(invLen * away.z)),
+            1.0f);
+
+        float const lowSpeed = averageSpeed * 0.5f;
+        float const highSpeed = averageSpeed * 1.5f;
+        float const minSpeed = (std::min)(lowSpeed, highSpeed);
+        float const maxSpeed = (std::max)(lowSpeed, highSpeed);
+        float const speed = static_cast<float>(rand()) * (maxSpeed - minSpeed) * 0.000030518509f + minSpeed;
+        splinter->SetLinearVelocity(CVector(flyDir.x * speed, speed * flyDir.y, flyDir.z * speed));
+
+        // Tumbles about the axis perpendicular to both the flight and the owner's heading, at 2 to 6 rad/s.
+        float const side = dir.x * flyDir.x + dir.y * flyDir.y + dir.z * flyDir.z < 0.0f ? -1.0f : 1.0f;
+        float const hx = dir.x * side;
+        float const hy = dir.y * side;
+        float const hz = dir.z * side;
+        float const spinX = hz * flyDir.y - hy * flyDir.z;
+        float const spinY = hx * flyDir.z - hz * flyDir.x;
+        float const spinZ = hy * flyDir.x - hx * flyDir.y;
+        float const invSpinLen = static_cast<float>(
+            1.0 / sqrt(static_cast<double>(spinZ) * spinZ + static_cast<double>(spinY) * spinY + static_cast<double>(spinX) * spinX +
+                       0.00000011920929f));
+        float const spinSpeed = static_cast<float>(rand()) * 0.00012207404f + 2.0f;
+        splinter->SetAngularVelocity(
+            CVector(invSpinLen * spinX * spinSpeed, invSpinLen * spinY * spinSpeed, invSpinLen * spinZ * spinSpeed));
+        splinter->SetAutoDisabling(true, 0.1f, 0.1f, 5);
+        splinter->SetDeadTimer(60000, true);
     }
 
-    void ComplexPhysicObj::_TearOffPart(VehiclePart*, float)
+    void ComplexPhysicObj::_TearOffPart(VehiclePart* vp, float averageSpeed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6C0600 - the part's model flies off as a splinter (a gun's barrel as a second one) and the part is removed.
+        int const splinterPrototypeId = thePrototypeManager->GetPrototypeId(CStr("vehicleSplinter"));
+        CVector const dir = GetDirection();
+        // The shipped code passes the start of the collision info vector as is, null when it is empty.
+        _CreateSplinterFromSgNode(
+            vp,
+            splinterPrototypeId,
+            dir,
+            averageSpeed,
+            vp->m_Node,
+            vp->m_collisionInfos.empty() ? nullptr : vp->m_collisionInfos.data());
+        if (vp->IsKindOf(RT_CLASS_LOCAL(Gun)))
+        {
+            m3d::SgNode* const barrelNode = static_cast<Gun*>(vp)->GetBarrelNode();
+            vp->m_Node->RemoveChild(barrelNode);
+            m3d::SceneGraph& graph = pServer->GetWorld()->GetGraph();
+            graph.GetRootNode()->AddChild(barrelNode);
+            graph.LinkNode(barrelNode);
+            _CreateSplinterFromSgNode(vp, splinterPrototypeId, dir, averageSpeed, barrelNode, nullptr);
+        }
+        vp->m_Node = nullptr;
+        SetPartByName(vp->GetPartName(), nullptr, true);
+        vp->Remove();
     }
 
     std::map<CStr, VehiclePart*>::const_iterator ComplexPhysicObj::begin() const

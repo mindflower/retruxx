@@ -1,8 +1,11 @@
 #include "cabin.h"
 
-#include <algorithm>
-#include <stdexcept>
 #include "base/prototypemanager.h"
+#include <server/resourcemanager.h>
+
+#include <algorithm>
+#include <core/kernel.h>
+#include <stdexcept>
 
 namespace ai
 {
@@ -26,6 +29,8 @@ namespace ai
 
     bool CabinPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
+        // RVA 0x6CC480 - each <Slot> of the cabin's <GadgetDescription> takes the next MaxAmount slot ids, keyed
+        // by the resource type it accepts.
         auto result = ai::VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
         {
@@ -41,21 +46,24 @@ namespace ai
             this->m_maxSpeed = this->m_maxSpeed * 0.27777779;
 
             ref_ptr gadgetNode = xmlFile->CreateNode();
-            xmlFile->GetFirstChild(gadgetNode, "GadgetDescription");
+            xmlNode->GetFirstChild(gadgetNode, "GadgetDescription");
             if (!gadgetNode->IsEmpty() && gadgetNode->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
             {
                 ref_ptr slotNode = xmlFile->CreateNode();
-                for (gadgetNode->GetFirstChild(slotNode, "Slot"); !slotNode->IsEmpty(); slotNode->GetNextSibling(slotNode, "Slot"))
+                // NOTE: a slot without MaxAmount reuses the previous slot's (the first one's is uninitialized in
+                // the shipped build).
+                int maxAmount = -1;
+                for (gadgetNode->GetFirstChild(slotNode, "Slot"); !slotNode->IsEmpty();
+                     slotNode->GetNextSibling(slotNode, "Slot"))
                 {
                     CStr resourceType;
                     m3d::SafeStrAttrib(resourceType, slotNode, "ResourceType");
 
-                    int maxAmount = -1;
                     m3d::SafeIntAttrib(maxAmount, slotNode, "MaxAmount");
 
-                    // TOOD: check this!!
+                    // The new range starts after the highest slot id taken so far.
                     int slot = -1;
-                    for (const auto& gadgetSlot : this->m_gadgetSlots)
+                    for (auto const& gadgetSlot : this->m_gadgetSlots)
                     {
                         if (gadgetSlot.second.y > slot)
                         {
@@ -69,9 +77,21 @@ namespace ai
         return result;
     }
 
-    int CabinPrototypeInfo::GetMaxGadgets(CStr const&) const
+    int CabinPrototypeInfo::GetMaxGadgets(CStr const& gadgetResourceName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC1C0 - a cabin's gadget slots are keyed by the resource they take. The first slot whose
+        // resource the asked-for one is a kind of answers for all of them, and how many fit is the width
+        // of that slot's range.
+        int const gadgetResourceId = theResourceManager->GetResourceId(gadgetResourceName);
+        for (auto const& slot : m_gadgetSlots)
+        {
+            int const slotResourceId = theResourceManager->GetResourceId(slot.first);
+            if (theResourceManager->bResourceIsKindOf(gadgetResourceId, slotResourceId))
+            {
+                return slot.second.y - slot.second.x + 1;
+            }
+        }
+        return 0;
     }
 
     float Cabin::GetMaxSpeed() const
@@ -79,9 +99,10 @@ namespace ai
         return this->m_maxSpeed;
     }
 
-    void Cabin::SetMaxPower(float)
+    void Cabin::SetMaxPower(float maxPower)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CB6E0
+        m_maxPower = maxPower;
     }
 
     float Cabin::GetFuelConsumption() const
@@ -104,19 +125,26 @@ namespace ai
         this->m_maxGadgets = 3;
     }
 
-    void Cabin::SetMaxSpeed(float)
+    void Cabin::SetMaxSpeed(float speed)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CB6B0
+        m_maxSpeed = speed;
     }
 
     float Cabin::GetMaxPower() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x453190
+        return m_maxPower;
     }
 
-    void Cabin::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void Cabin::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC390
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        VehiclePart::GetPropertiesIDs(Props);
     }
 
     m3d::Class* Cabin::GetClass() const
@@ -124,19 +152,39 @@ namespace ai
         return RT_CLASS_LOCAL(Cabin);
     }
 
-    int Cabin::GetPropertyId(char const*) const
+    int Cabin::GetPropertyId(char const* PropertyName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC2A0
+        auto const it = m_propertiesMap.find(PropertyName);
+        if (it != m_propertiesMap.end())
+        {
+            return it->second;
+        }
+        return VehiclePart::GetPropertyId(PropertyName);
     }
 
-    CStr Cabin::GetPropertyName(int) const
+    CStr Cabin::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC410
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return VehiclePart::GetPropertyName(id);
     }
 
-    eGObjPropertySaveStatus Cabin::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Cabin::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC260
+        auto const it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return VehiclePart::GetPropertySaveStatus(id);
     }
 
     float Cabin::GetControl() const
@@ -144,14 +192,15 @@ namespace ai
         return m_control;
     }
 
-    void Cabin::SetMaxTorque(float)
+    void Cabin::SetMaxTorque(float maxTorque)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5CB700
+        m_maxTorque = maxTorque;
     }
 
     CabinPrototypeInfo const* Cabin::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const CabinPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), CabinPrototypeInfo const);
     }
 
     m3d::Class* Cabin::GetBaseClass()
@@ -159,14 +208,37 @@ namespace ai
         return RT_CLASS_LOCAL(VehiclePart);
     }
 
-    bool Cabin::SetPropertyById(int, m3d::AIParam const&)
+    bool Cabin::SetPropertyById(int propertyId, m3d::AIParam const& newValue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CBD00 - NOTE: MaxPower has no case here, so it is the one cabin property that cannot be
+        // set through the property system even though it can be read back.
+        switch (propertyId)
+        {
+            case 22:
+                m_maxTorque = newValue.GetAsFloat();
+                return true;
+            case 23:
+                m_maxSpeed = newValue.GetAsFloat();
+                return true;
+            case 24:
+                m_fuelConsumption = newValue.GetAsFloat();
+                return true;
+            case 25:
+                m_control = newValue.GetAsFloat();
+                return true;
+            default:
+                return VehiclePart::SetPropertyById(propertyId, newValue);
+        }
     }
 
-    void Cabin::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void Cabin::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC310
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        VehiclePart::GetPropertiesNames(Props);
     }
 
     void Cabin::Registration()
@@ -177,35 +249,84 @@ namespace ai
         m_propertiesMap["Control"] = 25;
     }
 
-    int Cabin::GetMaxGadgets(CStr const&) const
+    int Cabin::GetMaxGadgets(CStr const& gadgetResourceName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC240
+        return GetPrototypeInfo()->GetMaxGadgets(gadgetResourceName);
     }
 
-    void Cabin::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Cabin::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CC840 - SAVE_PROP_NORMAL is the default and is not recorded.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
-    bool Cabin::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Cabin::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        switch (propertyId)
+        {
+        case 22:
+            retVal = m_maxTorque;
+            return true;
+        case 23:
+            retVal = m_maxSpeed;
+            return true;
+        case 24:
+            retVal = m_fuelConsumption;
+            return true;
+        case 25:
+            retVal = m_control;
+            return true;
+        default:
+            return ai::VehiclePart::_GetPropertyInternal(propertyId, retVal);
+        }
+        return false;
     }
 
-    bool Cabin::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Cabin::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto prototypeInfo = (ai::CabinPrototypeInfo const*)GetPrototypeInfo();
+        switch (propertyId)
+        {
+        case 22:
+            retVal = prototypeInfo->m_maxTorque;
+            return true;
+
+        case 23:
+            retVal = prototypeInfo->m_maxSpeed;
+            return true;
+
+        case 24:
+            retVal = prototypeInfo->m_fuelConsumption;
+            return true;
+
+        case 25:
+            retVal = prototypeInfo->m_control;
+            return true;
+
+        default:
+            return ai::VehiclePart::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        return false;
     }
 
     Cabin::~Cabin() = default;
 
     m3d::Object* Cabin::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CBDF0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* Cabin::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6CBFB0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
-}
+}  // namespace ai

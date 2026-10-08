@@ -1,6 +1,8 @@
 #include "memoryman.h"
 #include <atomic>
 #include <cassert>
+#include <cstdarg>
+#include <cstdio>
 #include <config.h>
 #include <m3dapp.h>
 #include "core/clazz.h"
@@ -14,6 +16,12 @@
 #include <ode/odememory.h>
 #include <script/scriptserver.h>
 
+// The global operator new/delete below go straight through g_Kernel->g_mar, so the kernel has
+// to be constructed before any other global object - before user segment, but after lib segment.
+#pragma warning(push)
+#pragma warning(disable : 4075)
+#pragma init_seg(".CRT$XCM")
+#pragma warning(pop)
 
 namespace
 {
@@ -23,67 +31,64 @@ namespace
 
     void* __fastcall AllocateMemory(unsigned int sz, char const* file, int linenum)
     {
-        //return mm->Malloc(sz, file, linenum);
-        return malloc(sz);
+        return mm->Malloc(sz, file, linenum);
     }
 
     void* __fastcall ReallocateMemory(void* mem, unsigned int sz, char const* file, int linenum)
     {
-        //return mm->Realloc(mem, sz, file, linenum);
-        return realloc(mem, sz);
+        return mm->Realloc(mem, sz, file, linenum);
     }
 
-    void __fastcall FreeMemory(void* p, char const* file , int linenum)
+    void __fastcall FreeMemory(void* p, char const* file, int linenum)
     {
-        //return mm->Free(p);
-        return free(p);
+        return mm->Free(p);
     }
-}
+}  // namespace
 
 namespace m3d
 {
     Kernel* g_Kernel = nullptr;
     Kernel kernelObject;
+}  // namespace m3d
+
+void* __cdecl operator new(std::size_t count)
+{
+    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
 }
 
-//void* __cdecl operator new(std::size_t count)
-//{
-//    return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
-//}
-//
-//void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
-//{
-//    try
-//    {
-//        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
-//    }
-//    catch (...)
-//    {
-//        return nullptr;
-//    }
-//}
-//
-//void* __cdecl operator new[](std::size_t sz)
-//{
-//    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
-//}
-//
-//void __cdecl operator delete(void* p)
-//{
-//    if (p)
-//    {
-//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
-//    }
-//}
-//
-//void __cdecl operator delete[](void* p)
-//{
-//    if (p)
-//    {
-//        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
-//    }
-//}
+void* __cdecl operator new(std::size_t count, std::nothrow_t const&) noexcept
+{
+    try
+    {
+        return M3D_KERNEL->g_mar.AllocMem(count, nullptr, 0);
+    }
+    catch (...)
+    {
+        M3D_LOG_ERR("operator new throw an exception!");
+        return nullptr;
+    }
+}
 
+void* __cdecl operator new[](std::size_t sz)
+{
+    return M3D_KERNEL->g_mar.AllocMem(sz, nullptr, 0);
+}
+
+void __cdecl operator delete(void* p)
+{
+    if (p)
+    {
+        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+    }
+}
+
+void __cdecl operator delete[](void* p)
+{
+    if (p)
+    {
+        M3D_KERNEL->g_mar.FreeMem(p, nullptr, 0);
+    }
+}
 
 namespace m3d
 {
@@ -112,8 +117,7 @@ namespace m3d
         return ::MessageBoxA(hWnd, pszText, pszCaption, uType);
     }
 
-    Kernel::auxLogFlow::auxLogFlow(const char* functionName) :
-        m_str(functionName)
+    Kernel::auxLogFlow::auxLogFlow(char const* functionName) : m_str(functionName)
     {
         M3D_KERNEL->m_Log->indent("Enter function: " + CStr(functionName), LOG_FLOW);
     }
@@ -130,7 +134,8 @@ namespace m3d
 
     unsigned Kernel::debugMemUsed() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x589690
+        return m_memMan->debugMemUsed();
     }
 
     cmn::Timer& Kernel::GetTimer()
@@ -140,8 +145,8 @@ namespace m3d
 
     Class* Kernel::FindClass(char const* className)
     {
-        //TODO: check correctness
-        const auto it = m_classes->find(className);
+        // RVA 0x58AF00
+        auto const it = m_classes->find(className);
         if (it != m_classes->end())
         {
             return it->second;
@@ -161,17 +166,18 @@ namespace m3d
         delete m_classes;
         delete m_Log;
         delete m_memMan;
-
     }
 
     void Kernel::DumpMem(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5895D0 - the file name is not used.
+        m_memMan->DumpMemoryFootprint(true);
     }
 
     unsigned Kernel::debugMemAllocated() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5896A0
+        return m_memMan->debugMemAllocated();
     }
 
     void Kernel::AddClass(Class* rtClass)
@@ -193,27 +199,57 @@ namespace m3d
 
     unsigned Kernel::debugMemOverhead() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5896B0
+        return m_memMan->debugMemOverhead();
     }
 
-    void Kernel::SetClipboardData(char const*) const
+    void Kernel::SetClipboardData(char const* str) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x589610
+        if (!::OpenClipboard(nullptr))
+        {
+            return;
+        }
+        if (::EmptyClipboard())
+        {
+            SIZE_T const size = strlen(str) + 1;
+            // GMEM_MOVEABLE | GMEM_DDESHARE
+            HGLOBAL const hMem = ::GlobalAlloc(0x2002, size);
+            if (hMem)
+            {
+                void* const data = ::GlobalLock(hMem);
+                if (data)
+                {
+                    memcpy(data, str, size);
+                    ::SetClipboardData(CF_TEXT, hMem);
+                    ::GlobalUnlock(hMem);
+                }
+            }
+        }
+        ::CloseClipboard();
     }
 
-    void Kernel::KernelLog(char const*, ...)
+    void Kernel::KernelLog(char const* str, ...)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x58A080 - formats into a static buffer with no length limit.
+        static char tmp[4096];
+        va_list args;
+        va_start(args, str);
+        vsprintf(tmp, str, args);
+        va_end(args);
+        M3D_LOG_INFO(CStr(tmp));
     }
 
-    void Kernel::TurnAggressiveMemoryDebugMode(bool)
+    void Kernel::TurnAggressiveMemoryDebugMode(bool bOn)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5895E0
+        m_memMan->turnAggressiveDebugMode(bOn);
     }
 
     Object* Kernel::RegisterGlobal(Object* object, char const* name)
     {
-        //TODO: check this
+        // RVA 0x58C290 - the first registration under a name wins: a later one gets the
+        // already registered object back and does not replace it.
         auto const it = m_lGlobals->find(name);
         if (it != m_lGlobals->end())
         {
@@ -254,22 +290,42 @@ namespace m3d
 
     CStr Kernel::GetClipboardData() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x58A6E0
+        CStr data;
+        if (::OpenClipboard(nullptr))
+        {
+            HANDLE const hMem = ::GetClipboardData(CF_TEXT);
+            if (hMem)
+            {
+                char const* const text = static_cast<char const*>(::GlobalLock(hMem));
+                if (text)
+                {
+                    data = CStr(text);
+                    ::GlobalUnlock(hMem);
+                }
+            }
+            ::CloseClipboard();
+        }
+        return data;
     }
 
     int Kernel::debugMemLastAllocSize() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5896C0 - the last allocation that failed.
+        return m_memMan->debugMemLastUnsuccessfulAllocSize();
     }
 
     void Kernel::UnRegisterGlobalObject(Object const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x589600 - empty; the object stays in the globals map.
     }
 
-    void Kernel::RemoveClass(Class*)
+    void Kernel::RemoveClass(Class* rtClass)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x58BD30
+        auto const cmi = m_classes->find(CStr(rtClass->m_className));
+        assert(cmi != m_classes->end());
+        m_classes->erase(cmi);
     }
 
     void Kernel::GetListOfClasses(Class**& classList, unsigned& numOfClasses)
@@ -289,7 +345,6 @@ namespace m3d
         assert(nullptr == g_Kernel);
         g_Kernel = this;
 
-        //TODO: operator new
         m_memMan = new MemoryManager;
         g_mar.AllocMem = AllocateMemory;
         g_mar.ReallocMem = ReallocateMemory;
@@ -305,7 +360,7 @@ namespace m3d
         m_fileMan = new fs::FileServer;
         m_fileMan->Initialize("data\\datasources.txt");
 
-        char workingDirectory[MAX_PATH] = { 0 };
+        char workingDirectory[MAX_PATH] = {0};
         if (::GetCurrentDirectoryA(0x100, workingDirectory))
         {
             m_fileMan->SetCurrentWorkDir(workingDirectory);
@@ -325,7 +380,6 @@ namespace m3d
         OdeSetMemoryHandlers();
     }
 
-
     bool Kernel::OpenLog(char const* logFileName)
     {
         assert(m_Log == nullptr);
@@ -342,24 +396,4 @@ namespace m3d
         }
         return g_uniqueId++;
     }
-
-    Kernel* Kernel::instance()
-    {
-        if (g_Kernel == nullptr)
-        {
-            static Kernel kernelObject;
-            g_Kernel = &kernelObject;
-        }
-        return g_Kernel;
-    }
-
-    //bool insss()
-    //{
-    //    inject::InjectAddresses.push_back(std::make_pair(inject::cast<uint32_t>(0x00A0988C), inject::cast<uint32_t>(g_Kernel)));
-    //    return true;
-    //}
-    //
-    //namespace {
-    //    auto _injected355 = insss();
-    //};
-}
+}  // namespace m3d

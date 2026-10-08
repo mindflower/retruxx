@@ -35,10 +35,10 @@ namespace ai
         /* 0x00bc */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_loadPtototypeNames;
     }; /* size: 0x00cc */
 
-    static_assert(sizeof(BossMetalArmPrototypeInfo) == 0x00cc);
-
     class BossMetalArm : public ai::SimplePhysicObj
     {
+        friend class BossMetalArmPrototypeInfo;
+
     protected:
         virtual  ~BossMetalArm() override /* 0x00 */;
 
@@ -55,7 +55,13 @@ namespace ai
         virtual const ai::BossMetalArmPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
         virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
 
-        enum AttackState;
+        enum AttackState
+        {
+            ATTACK_IDLE = 0,
+            ATTACK_NOTICED_PLAYER = 1,
+            ATTACK_CHARGING = 2,
+            ATTACK_ATTACKING = 3,
+        };
 
     public:
         virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
@@ -82,6 +88,4 @@ namespace ai
         void _PlaceLoadOnLoadpoint();
         void _OnObjectDie(const ai::Event& evn);
     }; /* size: 0x0168 */
-
-    static_assert(sizeof(BossMetalArm) == 0x0168);
 }

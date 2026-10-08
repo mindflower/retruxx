@@ -14,7 +14,9 @@ namespace m3d
 {
     MeshMaterialManager::~MeshMaterialManager()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8F0E10
+        delete m_pLogos;
+        m_pLogos = nullptr;
     }
 
     void MeshMaterialManager::Init(CStr const& logoFileName, CStr const& belongsToLogoFileName)
@@ -57,17 +59,22 @@ namespace m3d
         }
         else
         {
-            M3D_LOG_ERR("Error: BelongsToLogos: Error while reading file: " + belongsToLogoFileName);
+            // NOTE: this failure is logged as info, unlike the "can't open file" one above.
+            M3D_LOG_INFO("Error: BelongsToLogos: Error while reading file: " + belongsToLogoFileName);
         }
     }
 
     MeshMaterialManager::MeshMaterialManager()
     {
+        // RVA 0x772980
+        m_pLogos = nullptr;
     }
 
     void MeshMaterialManager::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8F0D40
+        delete m_pLogos;
+        m_pLogos = nullptr;
     }
 
     DSurfaceMaterial& MeshMaterialManager::GetMaterial(SgNode& node, AnimatedModel::Mesh& mh)

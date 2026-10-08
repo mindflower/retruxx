@@ -1,3 +1,4 @@
+#include <cstring>
 #include <stdexcept>
 #include <core/debugcounter.h>
 #include <core/stringm3d.h>
@@ -12,27 +13,27 @@ namespace m3d
 
     DbgCounter::eType DbgCounter::GetType() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_curType;
     }
 
     int DbgCounter::GetI() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_i;
     }
 
     bool DbgCounter::GetB() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_b;
     }
 
     float DbgCounter::GetF() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_f;
     }
 
     char const* DbgCounter::GetS() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_s.c_str();
     }
 
     char const* DbgCounter::GetName() const
@@ -60,11 +61,12 @@ namespace m3d
 
     DbgCounter* DbgCounterStack::GetCounter(unsigned id)
     {
-        if (id >= m_stack.size())
+        // RVA 0x5A39F0
+        if (id >= m_numCounters)
         {
-            return 0;
+            return nullptr;
         }
-        return m_stack.at(id);
+        return m_stack[id];
     }
 
     DbgCounterStack::~DbgCounterStack()
@@ -74,20 +76,19 @@ namespace m3d
 
     unsigned DbgCounterStack::AddCounter(char const* name)
     {
-        //TODO: check this
-        std::string_view nameView(name);
-        for (unsigned i =0; i<m_stack.size(); ++i)
+        // RVA 0x7A06C0 - a name that is already registered returns its existing id.
+        for (unsigned i = 0; i < m_numCounters; ++i)
         {
-            if (nameView == m_stack[i]->GetName())
+            if (!strcmp(m_stack[i]->m_name.c_str(), name))
             {
                 return i;
             }
         }
-        auto counter = new DbgCounter;
-        counter->SetName(name);
+
+        auto* counter = new DbgCounter;
+        counter->m_name = name;
         m_stack.push_back(counter);
-        m_numCounters++;
-        return m_stack.size() - 1;
+        return m_numCounters++;
     }
 
     void DbgCounterStack::ClearStringStack()
@@ -95,46 +96,69 @@ namespace m3d
         m_numStrings = 0;
     }
 
-    DbgCounter* DbgCounterStack::GetCounterByName(char const*)
+    DbgCounter* DbgCounterStack::GetCounterByName(char const* name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A03F0
+        for (unsigned i = 0; i < m_numCounters; ++i)
+        {
+            if (!strcmp(m_stack[i]->m_name.c_str(), name))
+            {
+                return m_stack[i];
+            }
+        }
+        return nullptr;
     }
 
-    char const* DbgCounterStack::GetString(unsigned) const
+    char const* DbgCounterStack::GetString(unsigned id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A3520
+        if (id >= m_numStrings)
+        {
+            return nullptr;
+        }
+        return m_stringStack[id].c_str();
     }
 
-    char const* DbgCounterStack::GetName(unsigned) const
+    char const* DbgCounterStack::GetName(unsigned id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7A0020
+        if (id >= m_numCounters)
+        {
+            return nullptr;
+        }
+        return m_stack[id]->m_name.c_str();
     }
 
     DbgCounterStack::DbgCounterStack()
     {
         m_stringStack.resize(0x32, "");
-        this->m_numCounters = 0;
-        this->m_numStrings = 0;
+        m_numCounters = 0;
+        m_numStrings = 0;
     }
 
     unsigned DbgCounterStack::GetNumStrings() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C9F0
+        return m_numStrings;
     }
 
     void DbgCounterStack::Clear()
     {
-        //TODO: check correctness
-        for (auto* counter : m_stack)
+        // RVA 0x7A0590 - deletes the counters and releases the stack's storage.
+        // NOTE: m_numCounters is not reset, so the stack is not usable after a Clear; the
+        // destructor is its only caller.
+        for (unsigned i = 0; i < m_numCounters; ++i)
         {
-            delete counter;
+            delete m_stack[i];
+            m_stack[i] = nullptr;
         }
-        m_stack.clear();
+        decltype(m_stack)().swap(m_stack);
     }
 
     unsigned DbgCounterStack::GetNumCounters() const
     {
-        return m_stack.size();
+        // RVA 0x59C9D0
+        return m_numCounters;
     }
 
     void DbgCounterStack::DrawStringThisFrame(char const* str)
@@ -142,7 +166,7 @@ namespace m3d
         if (m_numStrings < 0x32)
         {
             m_stringStack[m_numStrings] = str;
-            ++this->m_numStrings;
+            ++m_numStrings;
         }
     }
-}
+}  // namespace m3d

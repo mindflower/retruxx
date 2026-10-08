@@ -10,172 +10,183 @@ namespace m3d
     {
         class ComboBoxWnd;
         class TextBoxWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
 class SubjectList;
 
 namespace ai
 {
     class Vehicle;
-}
+    class PrototypeInfo;
+}  // namespace ai
 
-class EncyclopaediaWnd :  public m3d::ui::Wnd
+class EncyclopaediaWnd : public m3d::ui::Wnd
 {
 public:
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    private:
-        CStr m_subjectListName;
-        CStr m_wndDizName;
-        CStr m_wndModelName;
-        CStr m_comboThemesName;
-    };
-
     enum Theme
     {
-        THEME_VEHICLES = 0x0,
-        THEME_CB = 0x1,
-        THEME_WEAPON = 0x2,
-        THEME_GADGETS = 0x3,
-        THEME_AFFIXES = 0x4,
-        THEME_WARES = 0x5,
-        THEME_CLANS = 0x6,
-        THEME_QUEST_ITEMS = 0x7,
-        THEME_NUM_THEMES = 0x8,
-        THEME_INVALID = 0x8,
+        THEME_VEHICLES = 0,
+        THEME_CB = 1,
+        THEME_WEAPON = 2,
+        THEME_GADGETS = 3,
+        THEME_AFFIXES = 4,
+        THEME_WARES = 5,
+        THEME_CLANS = 6,
+        THEME_QUEST_ITEMS = 7,
+        THEME_NUM_THEMES = 8,
+        THEME_INVALID = 8,
     };
 
 public:
-    virtual m3d::Class * GetClass() const ;
-    retruxx::vector<int> const * GetClans() const ;
-    int AddClan(int);
-    bool IsClanVisible(int) const ;
+    int AddPrototype(int prototypeId);
+    bool IsPrototypeVisible(int prototypeId) const;
+    std::vector<int, std::allocator<int>> const* GetPrototypesForTheme(EncyclopaediaWnd::Theme theme) const;
+    int AddClan(int clanBelong);
+    bool IsClanVisible(int clanBelong) const;
+    std::vector<int, std::allocator<int>> const* GetClans() const;
     void ShowAll();
-    retruxx::vector<int> const * GetPrototypesForTheme(Theme) const ;
-    int AddPrototype(int);
-    virtual ~EncyclopaediaWnd();
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    bool IsPrototypeVisible(int) const ;
-    virtual m3d::Object * Clone();
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_subjectListName;
+        /* 0x000c */ CStr m_wndDizName;
+        /* 0x0018 */ CStr m_wndModelName;
+        /* 0x0024 */ CStr m_comboThemesName;
+        AuxInfo(EncyclopaediaWnd::AuxInfo const&);
+        AuxInfo();
+    }; /* size: 0x0030 */
+
+    using ThemePrototypeMap = std::map<
+        enum EncyclopaediaWnd::Theme,
+        std::vector<int, std::allocator<int>>,
+        std::less<enum EncyclopaediaWnd::Theme>,
+        std::allocator<std::pair<enum EncyclopaediaWnd::Theme const, std::vector<int, std::allocator<int>>>>>;
+    using ThemePrototypePair = std::pair<enum EncyclopaediaWnd::Theme, std::vector<int, std::allocator<int>>>;
+    using PrototypeSet = std::set<int, std::less<int>, std::allocator<int>>;
+    using RelatedPrototypeMap = std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>>;
+    using RelatedPrototypePair = std::pair<int, int>;
 
 protected:
-    m3d::rend::TexHandle GetImageForClan(CStr const &) const ;
-    int AddVehicle(ai::Vehicle const *);
-    void CheckAndAddTargetInfoVehicle();
-    void OnObjMet(void *);
-    int GetRelatedVisiblePrototypeId(int) const ;
-    int AddPrototypeByThemeUnsafe(int,enum Theme);
-    void CacheRelatedPrototypes();
-    void OnNewFrameForce();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
-    EncyclopaediaWnd();
-    EncyclopaediaWnd(EncyclopaediaWnd const &);
-    void OnStartLevel(void *);
-    int InitThemes();
-    int UpdateModel();
-    virtual int GameDataLoad(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
-    void OnPrototypeMet(void *);
-    int AddObj(int);
-    CStr Theme2Str(Theme) const ;
-    virtual int GameDataClear(bool);
-    void OnSubjectChanged();
-    int InitOnce();
-    virtual int GameDataUpdate(void *,int);
-    void OnPlayerVehicleDamaged(void *);
-    void CheckAndAddTargetCapturingVehicle();
-    Theme Str2Theme(CStr const &) const ;
-    void CheckAndAddTargetCapturedVehicle();
-    int UpdateDiz();
-    void InitAlwaysVisiblePrototypes();
-    void OnQuestItemsChanged();
-    void OnBelongMet(void *);
-    virtual int OnAfterAddToWndStation();
-    virtual int GameDataSetup();
-    void OnGadgetChanged(void *);
-    m3d::rend::TexHandle GetImageForAffix(CStr const &) const ;
-    void GetPrototypeIdsKindOfResource(int,retruxx::vector<int> &) const ;
-    Theme GetThemeByPrototypeId(int) const ;
-    Theme GetCurTheme() const ;
-    CStr GetCurSubjectName() const ;
-    virtual int GameDataSave(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *);
-    Theme GetThemeByResourceId(int) const ;
+    virtual int GameDataClear(bool beforeContinouosLevel) override /* 0x108 */;
+    virtual int GameDataSetup() override /* 0x104 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
+        /* 0xc8 */;
+    virtual int GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override /* 0x110 */;
+    virtual int GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override /* 0x114 */;
+    virtual int OnAfterAddToWndStation() override /* 0x6c */;
+    CStr Theme2Str(EncyclopaediaWnd::Theme theme) const;
+    EncyclopaediaWnd::Theme Str2Theme(CStr const& themeName) const;
     void OnThemeChanged();
+    void OnSubjectChanged();
+    int UpdateModel();
+    int UpdateDiz();
+    EncyclopaediaWnd::Theme GetCurTheme() const;
+    CStr GetCurSubjectName() const;
+    m3d::rend::TexHandle GetImageForAffix(CStr const& affixName) const;
+    m3d::rend::TexHandle GetImageForClan(CStr const& clanName) const;
+    int InitThemes();
+    int CachePrototype(ai::PrototypeInfo const*);
+    EncyclopaediaWnd::Theme GetThemeByPrototypeId(int prototypeId) const;
+    EncyclopaediaWnd::Theme GetThemeByResourceId(int resourceId) const;
+    void OnPrototypeMet(void* data);
+    void OnObjMet(void* data);
+    void OnBelongMet(void* data);
+    void OnStartLevel(void* data);
     void OnPlayerVehicleChanged();
+    void OnGadgetChanged(void* data);
+    void OnPlayerVehicleDamaged(void* data);
+    void OnQuestItemsChanged();
+    void OnNewFrameForce();
+    int AddPrototypeByThemeUnsafe(int prototypeId, EncyclopaediaWnd::Theme theme);
+    int AddObj(int objId);
+    int AddVehicle(ai::Vehicle const* vehicle);
+    int InitOnce();
+    int GetRelatedVisiblePrototypeId(int unvisiblePrototypeId) const;
+    void CacheRelatedPrototypes();
+    void InitAlwaysVisiblePrototypes();
+    void GetPrototypeIdsKindOfResource(int resourceId, std::vector<int, std::allocator<int>>& prototypeIds) const;
+    void CheckAndAddTargetInfoVehicle();
+    void CheckAndAddTargetCapturingVehicle();
+    void CheckAndAddTargetCapturedVehicle();
+    /* 0x0220 */ SubjectList* m_subjectList;
+    /* 0x0224 */ m3d::ui::TextBoxWnd* m_wndDiz;
+    /* 0x0228 */ m3d::ui::ComboBoxWnd* m_comboThemes;
+    /* 0x022c */ ContextModelWnd* m_wndModel;
+    /* 0x0230 */ EncyclopaediaWnd::AuxInfo m_aif;
+    /* 0x0260 */ std::map<
+        enum EncyclopaediaWnd::Theme,
+        std::vector<int, std::allocator<int>>,
+        std::less<enum EncyclopaediaWnd::Theme>,
+        std::allocator<std::pair<enum EncyclopaediaWnd::Theme const, std::vector<int, std::allocator<int>>>>>
+        m_prototypesByTheme;
+    /* 0x026c */ std::set<int, std::less<int>, std::allocator<int>> m_visiblePrototypeIds;
+    /* 0x0278 */ std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>> m_relatedPrototypeIds;
+    /* 0x0284 */ bool m_bInitedOnce;
+    /* 0x0285 */ char Padding_206[3];
+    /* 0x0288 */ std::vector<int, std::allocator<int>> m_clanBelongsVector;
+    /* 0x0298 */ std::set<int, std::less<int>, std::allocator<int>> m_clanBelongsSet;
+    /* 0x02a4 */ int m_prevInfoObjId;
+    /* 0x02a8 */ int m_prevCapturingObjId;
+    /* 0x02ac */ int m_prevCapturedObjId;
+    EncyclopaediaWnd();
+    EncyclopaediaWnd(EncyclopaediaWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(EncyclopaediaWnd);
+    virtual ~EncyclopaediaWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classEncyclopaediaWnd;
+}; /* size: 0x02b0 */
 
-private:
-    SubjectList *m_subjectList;
-    m3d::ui::TextBoxWnd *m_wndDiz;
-    m3d::ui::ComboBoxWnd *m_comboThemes;
-    ContextModelWnd *m_wndModel;
-    EncyclopaediaWnd::AuxInfo m_aif;
-    retruxx::map<EncyclopaediaWnd::Theme,retruxx::vector<int>> m_prototypesByTheme;
-    retruxx::set<int> m_visiblePrototypeIds;
-    retruxx::map<int,int> m_relatedPrototypeIds;
-    bool m_bInitedOnce;
-    retruxx::vector<int> m_clanBelongsVector;
-    retruxx::set<int> m_clanBelongsSet;
-    int m_prevInfoObjId;
-    int m_prevCapturingObjId;
-    int m_prevCapturedObjId;
-};
-
-class SubjectButton :  public CheckButton
+class SubjectButton : public CheckButton
 {
 public:
-    int SetUp(CStr const &,PointBase<float> const &,float,EncyclopaediaWnd::Theme,int);
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    virtual ~SubjectButton();
-    virtual m3d::Object * Clone();
+    int SetUp(CStr const& name, PointBase<float> const& origin, float width, CStr const& fullName);
+    int SetUp(CStr const& name, PointBase<float> const& origin, float width, EncyclopaediaWnd::Theme theme, int id);
 
 protected:
-    virtual int SetUp(CStr const &,PointBase<float> const &,float,CStr const &);
+    virtual CStr CalcFullName() const override /* 0x120 */;
+    /* 0x026c */ EncyclopaediaWnd::Theme m_theme;
+    /* 0x0270 */ int m_id;
     SubjectButton();
-    SubjectButton(SubjectButton const &);
-    virtual CStr CalcFullName() const ;
+    SubjectButton(SubjectButton const& rhs);
 
 public:
-    RT_CLASS_DECLARE(SubjectButton);
+    virtual ~SubjectButton() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    static m3d::Class m_classSubjectButton;
+}; /* size: 0x0274 */
 
-private:
-    EncyclopaediaWnd::Theme m_theme;
-    int m_id;
-};
-
-class SubjectList :  public CheckList
+class SubjectList : public CheckList
 {
 public:
-    static m3d::Object * CreateObject();
+    int SetUpForTheme(EncyclopaediaWnd::Theme theme);
+    CStr GetCurSubjectName() const;
     int Update();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    CStr GetCurSubjectName() const ;
-    virtual ~SubjectList();
-    int SetUpForTheme(EncyclopaediaWnd::Theme);
 
 protected:
-    int CreateItemsForClans();
-    virtual int AddButtonByNameAndId(CStr const &,int);
-    virtual int OnBeforeAddToWndStation();
-    int CreateItemsForPrototypes(EncyclopaediaWnd::Theme);
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int AddButtonByNameAndId(CStr const& name, int id) /* 0x14c */;
+    virtual int AddButtonByName(CStr const& name, CStr const& fullName) override /* 0x148 */;
+    int CreateItemsForPrototypes(EncyclopaediaWnd::Theme theme);
     int CreateItemsForAffixes();
-    virtual int AddButtonByName(CStr const &,CStr const &);
+    int CreateItemsForClans();
+    /* 0x0238 */ EncyclopaediaWnd::Theme m_theme;
     SubjectList();
-    SubjectList(SubjectList const &);
+    SubjectList(SubjectList const& rhs);
 
 public:
-    RT_CLASS_DECLARE(SubjectList);
-
-private:
-    EncyclopaediaWnd::Theme m_theme;
-};
+    virtual ~SubjectList() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    static m3d::Class m_classSubjectList;
+}; /* size: 0x023c */

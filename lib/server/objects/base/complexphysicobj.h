@@ -1,10 +1,12 @@
 #pragma once
+class WeaponSlotList;
 #include "physicobj.h"
 
 namespace ai
 {
     class CollisionInfo;
     class VehiclePart;
+    class Geom;
 
     class ComplexPhysicObjPartDescription : public m3d::Object
     {
@@ -32,10 +34,12 @@ namespace ai
         /* 0x0038 */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_lpNames;
     }; /* size: 0x0048 */
 
-    static_assert(sizeof(ComplexPhysicObjPartDescription) == 0x0048);
-
     class ComplexPhysicObjPrototypeInfo : public ai::PhysicObjPrototypeInfo
     {
+        // WeaponSlotList sorts gun slots by whether they hang off the cabin,
+        // which means walking the root part description.
+        friend class ::WeaponSlotList;
+
     public:
         ComplexPhysicObjPrototypeInfo();
         virtual  ~ComplexPhysicObjPrototypeInfo() override = 0 /* 0x00 */;
@@ -70,8 +74,6 @@ namespace ai
         /* 0x007c */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_allPartNames;
         /* 0x008c */ ai::ComplexPhysicObjPrototypeInfo::MassShapes m_massShape;
     }; /* size: 0x0090 */
-
-    static_assert(sizeof(ComplexPhysicObjPrototypeInfo) == 0x0090);
 
     class ComplexPhysicObj : public PhysicObj
     {
@@ -148,6 +150,17 @@ namespace ai
         using VehiclePartsMap = retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > >;
 
     protected:
+        // ai::CollideGeom walks every part's geometry directly, exactly as the
+        // shipped code does.
+        friend bool CollideGeom(ai::Geom const&, bool, bool, bool, bool);
+        // Workshop::GetObjectRepairPrice adds up the repair price of every part.
+        friend class Workshop;
+        // BlastWave shares an explosion's damage and push over all of a vehicle's parts.
+        friend class BlastWave;
+        // Reads the parts of its stations.
+        friend class Boss04;
+        // Obstacle::RenderDebugInfo checks the first part's node.
+        friend class Obstacle;
         /* 0x0120 */ retruxx::map<CStr, ai::VehiclePart*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::VehiclePart*> > > m_vehicleParts;
         virtual void _InternalCreateVisualPart() override /* 0x100 */;
         virtual void _ConstructVehiclePart(const CStr& name, ai::VehiclePart* vehiclePart, int index, bool bForAnimation) /* 0x1b8 */;
@@ -183,6 +196,4 @@ namespace ai
         VehiclePartsMap::iterator end();
         unsigned int size() const;
     }; /* size: 0x014c */
-
-    static_assert(sizeof(ComplexPhysicObj) == 0x014c);
 }

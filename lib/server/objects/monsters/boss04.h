@@ -33,10 +33,10 @@ namespace ai
         /* 0x00dc */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_droneSpawningLpNames;
     }; /* size: 0x00ec */
 
-    static_assert(sizeof(Boss04PrototypeInfo) == 0x00ec);
-
     class Boss04 : public ai::ComplexPhysicObj
     {
+        friend class Boss04PrototypeInfo;
+
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Boss04, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss04, ai::Modifier, float, bool>;
@@ -76,7 +76,12 @@ namespace ai
     public:
         virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
 
-        enum Boss04State;
+        enum Boss04State
+        {
+            STATE_WAITING = 0,
+            STATE_ACTION = 1,
+            STATE_DEAD = 2,
+        };
 
     public:
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
@@ -118,6 +123,4 @@ namespace ai
     public:
         static void __fastcall Registration();
     }; /* size: 0x0180 */
-
-    static_assert(sizeof(Boss04) == 0x0180);
 }

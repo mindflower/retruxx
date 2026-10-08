@@ -139,14 +139,25 @@ OptionsWnd::OptionsWnd() :
 
 }
 
-OptionsWnd::OptionsWnd(OptionsWnd const&)
+OptionsWnd::OptionsWnd(OptionsWnd const&) :
+    m_tabButtons(4, nullptr),
+    m_optionWindows(4, nullptr)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // NOTE: the shipped Clone() (RVA 0x4C2CE0) copy-constructs but carries none of
+    // the source's tab buttons / option windows across; a clone must be
+    // GameDataSetup()'d. The vectors are sized to 4 so the tab code can index them.
+}
+
+m3d::Object* OptionsWnd::Clone()
+{
+    // RVA 0x4C2CE0
+    return new OptionsWnd(*this);
 }
 
 void OptionsWnd::UpdateTabButtonsStates()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C3810
+    SelectTabButton(m_curTabId);
 }
 
 int OptionsWnd::SetCurTab(Tab tabId)
@@ -177,79 +188,50 @@ void OptionsWnd::SelectTabButton(Tab tabId)
 
 int OptionsWnd::ApplyTabChanges(Tab tabId)
 {
-    // TODO: generated code
-    // Check if there are any game data changes that need to be applied
-    if ((m_gameDataFlags & 1) != 0)
+    // RVA 0xC3910 - returns 0 to keep the current tab open.
+    if ((m_gameDataFlags & 1) == 0)
     {
-        switch (tabId)
+        return 1;
+    }
+    if (tabId == TAB_VIDEO)
+    {
+        ref_ptr<m3d::ui::Wnd>& videoWindowRef = m_optionWindows[TAB_VIDEO];
+        if (videoWindowRef && videoWindowRef->IsKindOf(&VideoOptionsWnd::m_classVideoOptionsWnd))
         {
-        case TAB_VIDEO:
-        {
-            // Get the video options window
-            ref_ptr<m3d::ui::Wnd>& videoWindowRef = m_optionWindows[0];
-            if (videoWindowRef && videoWindowRef->IsKindOf(&VideoOptionsWnd::m_classVideoOptionsWnd))
+            auto* videoWnd = static_cast<VideoOptionsWnd*>(&*videoWindowRef);
+            if (videoWnd->IsChanged())
             {
-                VideoOptionsWnd* videoWnd = static_cast<VideoOptionsWnd*>(&*videoWindowRef);
-
-                // Check if video settings have been modified
-                if (videoWnd->IsChanged())
+                switch (videoWnd->RunChangeWarningDlg())
                 {
-                    // TOD: check this!
-                    // Show warning dialog about potential performance impact
-                    auto warningResult = videoWnd->RunChangeWarningDlg();
-
-                    switch (warningResult)
-                    {
-                    case m3d::ui::MBX_RET_CANCEL:
-                        // User canceled - don't apply changes
-                        break;
-
-                    case m3d::ui::MBX_RET_USER:
-                    {
-                        // User confirmed - apply all video changes
-                        videoWnd->ApplyResolution();
-                        videoWnd->ApplyGamma();
-                        videoWnd->ApplyFarDistance();
-                        videoWnd->ApplyGrass();
-                        videoWnd->ApplyShadows();
-                        videoWnd->ApplyWaterQuality();
-                        videoWnd->ApplyAntialiasing();
-                        videoWnd->ApplyFiltration();
-                        videoWnd->ApplyBlum();
-
-                        // Reset modified flag
-                        videoWnd->m_bVideoOptionsChanged = false;
-                        break;
-                    }
-                    default:
-                        break;
-                    }
+                // NOTE: "no" leaves the changes pending without applying them, as shipped.
+                case m3d::ui::MBX_RET_NO:
+                    break;
+                case m3d::ui::MBX_RET_CANCEL:
+                    return 0;
+                default:
+                    videoWnd->ApplyResolution();
+                    videoWnd->ApplyGamma();
+                    videoWnd->ApplyFarDistance();
+                    videoWnd->ApplyGrass();
+                    videoWnd->ApplyShadows();
+                    videoWnd->ApplyWaterQuality();
+                    videoWnd->ApplyAntialiasing();
+                    videoWnd->ApplyFiltration();
+                    videoWnd->ApplyBlum();
+                    videoWnd->m_bVideoOptionsChanged = false;
+                    break;
                 }
             }
-            break;
-        }
-
-        case TAB_CONTROL:
-        {
-            // Get the control options window
-            ref_ptr<m3d::ui::Wnd> controlWindowRef = m_optionWindows[2];
-            if (controlWindowRef && controlWindowRef->IsKindOf(&ControlOptionsWnd::m_classControlOptionsWnd))
-            {
-                ControlOptionsWnd* controlWnd = static_cast<ControlOptionsWnd*>(&*controlWindowRef);
-
-                // Apply control changes (no confirmation needed)
-                return controlWnd->ApplyChanges(false);
-            }
-            break;
-        }
-
-        default:
-            // Other tabs (audio, game, etc.) - no special handling needed
-            break;
         }
     }
-
-    // Changes applied successfully or no changes to apply
+    else if (tabId == TAB_CONTROL)
+    {
+        ref_ptr<m3d::ui::Wnd>& controlWindowRef = m_optionWindows[TAB_CONTROL];
+        if (controlWindowRef && controlWindowRef->IsKindOf(&ControlOptionsWnd::m_classControlOptionsWnd))
+        {
+            return static_cast<ControlOptionsWnd*>(&*controlWindowRef)->ApplyChanges(false);
+        }
+    }
     return 1;
 }
 
@@ -330,9 +312,22 @@ int OptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
     return 0;
 }
 
-int OptionsWnd::GetOptionWindowGuiIdByTabId(Tab) const
+int OptionsWnd::GetOptionWindowGuiIdByTabId(Tab tabId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C3880
+    switch (tabId)
+    {
+    case TAB_VIDEO:
+        return 149;
+    case TAB_SOUND:
+        return 150;
+    case TAB_CONTROL:
+        return 151;
+    case TAB_GAME:
+        return 152;
+    default:
+        return -1;
+    }
 }
 
 int OptionsWnd::CanClose()
@@ -457,17 +452,20 @@ int OptionTabButton::SetupForTab(OptionsWnd::Tab tab)
 
 m3d::Object* OptionTabButton::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C2D10: allocates raw storage, runs the plain ButtonWnd ctor and
+    // patches the vtable - copies nothing from the source.
+    return new OptionTabButton(*this);
 }
 
 OptionTabButton::~OptionTabButton()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // No owned resources; ~ButtonWnd runs via the compiler-chained base dtor.
 }
 
 bool OptionTabButton::IsSelected() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C3FF0
+    return m_bSelected;
 }
 
 m3d::Class* OptionTabButton::GetBaseClass()
@@ -477,7 +475,8 @@ m3d::Class* OptionTabButton::GetBaseClass()
 
 OptionTabButton::OptionTabButton(OptionTabButton const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // The binary's Clone() runs the default ButtonWnd ctor + a vtable patch and
+    // copies nothing; m_bSelected / m_tabId keep their in-class defaults.
 }
 
 OptionTabButton::OptionTabButton()
@@ -486,5 +485,6 @@ OptionTabButton::OptionTabButton()
 
 void OptionTabButton::UpdatePane()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C4020
+    SetPane(m_bSelected ? m_aif.m_paneNameSel : m_aif.m_paneNameUnsel);
 }

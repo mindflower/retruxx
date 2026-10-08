@@ -1,8 +1,19 @@
 #include "vehiclerolecheater.h"
 
-#include "server/objects/vehicle.h"
-
+#include <cmath>
+#include <cstdlib>
 #include <stdexcept>
+
+#include "core/ini.h"
+#include "core/kernel.h"
+#include "math/vector2.h"
+#include "server/utils.h"
+#include "server/objects/team.h"
+#include "server/objects/vehicle.h"
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/base/physicobj.h"
+#include "server/objects/base/prototypemanager.h"
+#include "chasemotiontactics.h"
 
 namespace ai
 {
@@ -12,103 +23,157 @@ namespace ai
 
     VehicleRoleCheaterPrototypeInfo::VehicleRoleCheaterPrototypeInfo()
     {
-    }
-
-    float VehicleRoleCheaterPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    float VehicleRoleCheaterPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    Obj* VehicleRoleCheaterPrototypeInfo::CreateTargetObject() const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    float VehicleRoleCheaterPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
-    {
-        if (!v)
-            return 0.0;
-        auto va = v->GetMaxSpeed();
-        return v->EstimateDamageAI() + va;
+        // RVA 0x7FC1F0
     }
 
     bool VehicleRoleCheaterPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        return ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
+        // RVA 0x7FC0C0
+        return VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
-    m3d::Class* VehicleRoleCheater::GetBaseClass()
+    Obj* VehicleRoleCheaterPrototypeInfo::CreateTargetObject() const
     {
-        return RT_CLASS_LOCAL(VehicleRole);
+        // RVA 0x7FC240
+        return new VehicleRoleCheater(*this);
     }
 
-    void VehicleRoleCheater::setTargetVehicle(Vehicle const*)
+    float VehicleRoleCheaterPrototypeInfo::FitAgainstVehicle(Vehicle const* v, Vehicle const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC110
+        if (!v)
+        {
+            return 0.0f;
+        }
+        float const maxSpeed = v->GetMaxSpeed();
+        return v->EstimateDamageAI() + maxSpeed;
     }
 
-    VehicleRoleCheater::VehicleRoleCheater(VehicleRoleCheaterPrototypeInfo const& prototype) : VehicleRole(prototype)
+    float VehicleRoleCheaterPrototypeInfo::FitAgainstTeam(Vehicle const* v, Team const* target, Vehicle** targetVehicle) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC0E0
+        *targetVehicle = getBestOpponentFromTeam(v, target);
+        return FitAgainstVehicle(v, *targetVehicle);
     }
 
-    bool VehicleRoleCheater::UpdateVehicle(float, Vehicle*)
+    float VehicleRoleCheaterPrototypeInfo::FitAgainstObj(Vehicle const* v, Obj const*) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC140 - the object plays no part in the fit.
+        return FitAgainstVehicle(v, nullptr);
     }
 
-    void VehicleRoleCheater::setTargetTeam(Team const*)
+    VehicleRoleCheater::VehicleRoleCheater(VehicleRoleCheaterPrototypeInfo const& prototype) :
+        VehicleRole(prototype),
+        m_chaseTactics(nullptr),
+        m_needCreateChaseTactics(false)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    void VehicleRoleCheater::setTargetObj(Obj const*)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    VehicleRoleCheaterPrototypeInfo const* VehicleRoleCheater::GetPrototypeInfo() const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    m3d::Class* VehicleRoleCheater::GetClass() const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC150
     }
 
     VehicleRoleCheater::~VehicleRoleCheater()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC180
+        delete m_chaseTactics;
+        m_chaseTactics = nullptr;
     }
 
-    ChaseMotionTactics* VehicleRoleCheater::CreateChaseMotionTactic(Vehicle const*) const
+    void VehicleRoleCheater::setTargetVehicle(Vehicle const* vehicle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC1B0
+        VehicleRole::setTargetVehicle(vehicle);
+        setTargetObj(vehicle);
+    }
+
+    void VehicleRoleCheater::setTargetTeam(Team const* team)
+    {
+        // RVA 0x7FC1D0
+        VehicleRole::setTargetTeam(team);
+        setTargetObj(team);
+    }
+
+    void VehicleRoleCheater::setTargetObj(Obj const* obj)
+    {
+        // RVA 0x7FC2E0
+        // A new target means a new chase, created on the next update.
+        VehicleRole::setTargetObj(obj);
+        delete m_chaseTactics;
+        m_chaseTactics = nullptr;
+        if (obj)
+        {
+            m_chaseTargetId = obj->GetId();
+            m_needCreateChaseTactics = true;
+        }
+    }
+
+    bool VehicleRoleCheater::UpdateVehicle(float elapsedTime, Vehicle* v)
+    {
+        // RVA 0x7FC7B0
+        if (!VehicleRole::UpdateVehicle(elapsedTime, v))
+        {
+            return false;
+        }
+        _CreateChaseTacticsIfNeeded(v);
+        v->SetExternalDestination(_EvaluateChasePointToMove(elapsedTime));
+        _LookAndFireToEnemy(v, elapsedTime);
+        return true;
+    }
+
+    void VehicleRoleCheater::_CreateChaseTacticsIfNeeded(Vehicle* v)
+    {
+        // RVA 0x7FC370
+        if (m_needCreateChaseTactics)
+        {
+            m_chaseTactics = CreateChaseMotionTactic(v);
+            m_needCreateChaseTactics = false;
+        }
+    }
+
+    CVector VehicleRoleCheater::_EvaluateChasePointToMove(float elapsedTime)
+    {
+        // RVA 0x7FC3D0 - NOTE: with no chase the vehicle is sent to the origin.
+        if (!m_chaseTactics)
+        {
+            return ZeroVector;
+        }
+        m_chaseTactics->Update(elapsedTime);
+        return m_chaseTactics->EvaluateCurrentChasePoint(elapsedTime);
+    }
+
+    ChaseMotionTactics* VehicleRoleCheater::CreateChaseMotionTactic(Vehicle const* v) const
+    {
+        // RVA 0x7FC330
+        return new ChaseMotionTacticsCheater(m_chaseTargetId, v->GetId());
+    }
+
+    m3d::Class* VehicleRoleCheater::GetClass() const
+    {
+        // RVA 0x7FC0A0
+        return RT_CLASS_LOCAL(VehicleRoleCheater);
+    }
+
+    m3d::Class* VehicleRoleCheater::GetBaseClass()
+    {
+        // RVA 0x7FC090
+        return RT_CLASS_LOCAL(VehicleRole);
+    }
+
+    VehicleRoleCheaterPrototypeInfo const* VehicleRoleCheater::GetPrototypeInfo() const
+    {
+        // RVA 0x7FC850 - NOTE: the prototype is cast without a type check.
+        return static_cast<VehicleRoleCheaterPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRoleCheater::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    CVector VehicleRoleCheater::_EvaluateChasePointToMove(float)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC5F0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* VehicleRoleCheater::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC430
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
-
-    void VehicleRoleCheater::_CreateChaseTacticsIfNeeded(Vehicle*)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-}
+}  // namespace ai

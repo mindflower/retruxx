@@ -9,49 +9,47 @@ namespace ai
 
 class WeaponSlotWnd;
 
-class WeaponSlotList :  public m3d::ui::Wnd
+class WeaponSlotList : public m3d::ui::Wnd
 {
 public:
-    class AuxInfo
+    int SetupForVehicle(int vehicleId);
+
+    using WeaponSlotWndVector = std::vector<ref_ptr<WeaponSlotWnd>, std::allocator<ref_ptr<WeaponSlotWnd>>>;
+
+    struct WeaponSlotList::AuxInfo
     {
-    public:
+        /* 0x0000 */ float m_space;
         AuxInfo();
-
-    private:
-        float m_space;
-    };
-
-public:
-    virtual m3d::Class * GetClass() const ;
-    virtual ~WeaponSlotList();
-    int SetupForVehicle(int);
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
+    }; /* size: 0x0004 */
 
 protected:
-    void OnVehiclePartChanged(void *);
-    virtual int OnBeforeAddToWndStation();
-    WeaponSlotList();
-    WeaponSlotList(WeaponSlotList const &);
-    void GetGunPartNames(int, std::vector<CStr, std::allocator<CStr> > &) const ;
-    virtual int GameDataClear(bool);
-    virtual int OnAfterRemoveFromWndStation();
-    void ClearItems();
-    int AddItem(CStr const &);
-    void CreateItems();
-    ai::Vehicle const * GetVehicle() const ;
-    void SortGunPartNames(std::vector<CStr, std::allocator<CStr> > &, ai::Vehicle const *) const ;
-    virtual int GameDataSetup();
+    virtual int GameDataSetup() override /* 0x104 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int OnBeforeAddToWndStation() override /* 0x68 */;
+    virtual int OnAfterRemoveFromWndStation() override /* 0x74 */;
+    ai::Vehicle const* GetVehicle() const;
     void FullUpdate();
-    virtual int GameDataUpdate(void *,int);
+    void CreateItems();
+    void ClearItems();
+    int AddItem(CStr const& gunPartName);
+    void GetGunPartNames(int vehicleId, std::vector<CStr, std::allocator<CStr>>& gunPartNames) const;
+    void SortGunPartNames(std::vector<CStr, std::allocator<CStr>>& gunPartNames, ai::Vehicle const* vehicle) const;
     void RecalcLayot();
+    void OnVehiclePartChanged(void* data);
+
+    /* 0x0220 */ int m_vehicleId;
+    /* 0x0224 */ std::vector<ref_ptr<WeaponSlotWnd>, std::allocator<ref_ptr<WeaponSlotWnd>>> m_items;
+    /* 0x0234 */ WeaponSlotList::AuxInfo m_aif;
+
+    WeaponSlotList();
+    WeaponSlotList(WeaponSlotList const& rhs);
 
 public:
-    RT_CLASS_DECLARE(WeaponSlotList);
-
-private:
-    int m_vehicleId;
-    std::vector<ref_ptr<WeaponSlotWnd>> m_items;
-    WeaponSlotList::AuxInfo m_aif;
-};
+    virtual ~WeaponSlotList() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classWeaponSlotList;
+}; /* size: 0x0238 */

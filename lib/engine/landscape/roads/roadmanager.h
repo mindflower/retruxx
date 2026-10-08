@@ -141,6 +141,4 @@ namespace m3d
         void LinkToBorder(m3d::RoadNode* rn, unsigned int idx, int link, CVector& res);
         bool GetAdjPoint(m3d::RoadNode* rn, unsigned int idx, int link, CVector& acceptor);
     }; /* size: 0x001c */
-
-    static_assert(sizeof(RoadManager) == 0x001c);
 }

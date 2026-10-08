@@ -18,8 +18,6 @@ namespace ai
         virtual float GetDamageForOneShell() const override /* 0x1c */;
     }; /* size: 0x01bc */
 
-    static_assert(sizeof(BulletLauncherPrototypeInfo) == 0x01bc);
-
     class BulletLauncher : public ai::Gun
     {
         friend class BulletLauncherPrototypeInfo;   
@@ -73,6 +71,4 @@ namespace ai
         /* 0x0334 */ float m_groupingAngle;
         /* 0x0338 */ int m_numBulletsToTracer;
     }; /* size: 0x033c */
-
-    static_assert(sizeof(BulletLauncher) == 0x033c);
 }

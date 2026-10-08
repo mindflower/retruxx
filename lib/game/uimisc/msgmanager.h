@@ -14,22 +14,22 @@ public:
     };
 
 public:
-    MsgInfo(const MsgInfo&);
+    MsgInfo(MsgInfo const&);
     MsgInfo();
     ~MsgInfo();
     int GetId() const;
     int GetParentId() const;
-    const CStr& GetMsg() const;
-    const CStr& GetImageFileName() const;
-    const CStr& GetImageUpOverlayFileName() const;
-    const CStr& GetImageDownOverlayFileName() const;
+    CStr const& GetMsg() const;
+    CStr const& GetImageFileName() const;
+    CStr const& GetImageUpOverlayFileName() const;
+    CStr const& GetImageDownOverlayFileName() const;
     m3d::rend::TexHandle GetImage() const;
     m3d::rend::TexHandle GetImageUpOverlay() const;
     m3d::rend::TexHandle GetImageDownOverlay() const;
-    const CStr& GetSoundFileName() const;
+    CStr const& GetSoundFileName() const;
     int GetTime() const;
     m3d::ui::MbFlags GetMbFlags() const;
-    const CStr& GetModelName() const;
+    CStr const& GetModelName() const;
     unsigned int GetModelSkin() const;
     unsigned int GetModelCfg() const;
     int GetModelSlot() const;
@@ -37,11 +37,11 @@ public:
     MsgType GetMsgType() const;
     float GetFontSize() const;
     float GetScrollSpeed() const;
-    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
 
 private:
-    MsgInfo::MsgType Str2MsgType(const CStr& str) const;
-    void AddImage(const CStr& fileName, m3d::rend::TexHandle& tex);
+    MsgInfo::MsgType Str2MsgType(CStr const& str) const;
+    void AddImage(CStr const& fileName, m3d::rend::TexHandle& tex);
     /* 0x0000 */ int m_id;
     /* 0x0004 */ CStr m_msg;
     /* 0x0010 */ CStr m_imageFileName;
@@ -64,29 +64,32 @@ private:
     /* 0x0078 */ float m_scrollSpeed;
 }; /* size: 0x007c */
 
-class MsgManager :  public m3d::Object
+class MsgManager : public m3d::Object
 {
 public:
-    int ShowMsgBox(int,bool);
-    int Init(bool);
-    void Clear(bool);
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Class * GetBaseClass();
-    MsgInfo const * GetMsgInfo(int) const ;
-    static m3d::Object * CreateObject();
-    virtual ~MsgManager();
-    virtual m3d::Object * Clone();
+    MsgInfo const* GetMsgInfo(int msgId) const;
+    int Init(bool bGlobal);
+    void Clear(bool bGlobal);
+    int ShowMsgBox(int msgId, bool pause);
+
+    using MsgMap = std::map<int, MsgInfo*, std::less<int>, std::allocator<std::pair<int const, MsgInfo*>>>;
+    using MsgPair = std::pair<int, MsgInfo*>;
 
 protected:
-    int AddMsg(MsgInfo *,bool);
-    MsgManager(MsgManager const &);
+    int LoadFromXml(CStr const& fileName, bool bGlobal);
+    int AddMsg(MsgInfo* msgInfo, bool bGlobal);
+
+    /* 0x0034 */ std::map<int, MsgInfo*, std::less<int>, std::allocator<std::pair<int const, MsgInfo*>>> m_globalMsgs;
+    /* 0x0040 */ std::map<int, MsgInfo*, std::less<int>, std::allocator<std::pair<int const, MsgInfo*>>> m_levelMsgs;
+
     MsgManager();
-    int LoadFromXml(CStr const &,bool);
+    MsgManager(MsgManager const& rhs);
 
 public:
-    RT_CLASS_DECLARE(MsgManager);
-
-private:
-    std::map<int,MsgInfo *> m_globalMsgs;
-    std::map<int,MsgInfo *> m_levelMsgs;
-};
+    virtual ~MsgManager() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classMsgManager;
+}; /* size: 0x004c */

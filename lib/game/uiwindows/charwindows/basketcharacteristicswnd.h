@@ -6,39 +6,34 @@ namespace ai
     class Basket;
 }
 
-class BasketCharacteristicsWnd :  public CBCharacteristicsWnd
+class BasketCharacteristicsWnd : public CBCharacteristicsWnd
 {
 public:
-    class BasketAuxInfo
+    void SetupForBasket(int basketId);
+
+    struct BasketAuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_wndBasketCapacityValName;
+        BasketAuxInfo(const BasketCharacteristicsWnd::BasketAuxInfo&);
         BasketAuxInfo();
-
-    private:
-        CStr m_wndBasketCapacityValName;
-    };
-
-public:
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    void SetupForBasket(int);
-    virtual ~BasketCharacteristicsWnd();
-    virtual m3d::Class * GetClass() const ;
+    }; /* size: 0x000c */
 
 protected:
-    void SetupForCB(int);
-    virtual int GameDataSetup();
-    virtual void UpdateCharacteristics();
-    BasketCharacteristicsWnd(BasketCharacteristicsWnd const &);
+    virtual int GameDataSetup() override /* 0x00 */;
+    void SetupForCB(int cbId);
+    virtual void UpdateCharacteristics() override /* 0x120 */;
+    virtual void ClearCharacteristics() override /* 0x124 */;
+    const ai::Basket* GetBasket() const;
+    /* 0x02b4 */ m3d::ui::Wnd* m_wndBasketCapacityVal;
+    /* 0x02b8 */ BasketCharacteristicsWnd::BasketAuxInfo m_basketAif;
     BasketCharacteristicsWnd();
-    virtual void ClearCharacteristics();
-    ai::Basket const * GetBasket() const ;
+    BasketCharacteristicsWnd(const BasketCharacteristicsWnd& rhs);
 
 public:
-    RT_CLASS_DECLARE(BasketCharacteristicsWnd);
-
-private:
-    m3d::ui::Wnd *m_wndBasketCapacityVal;
-    BasketCharacteristicsWnd::BasketAuxInfo m_basketAif;
-};
+    virtual ~BasketCharacteristicsWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    static m3d::Class m_classBasketCharacteristicsWnd;
+}; /* size: 0x02c4 */

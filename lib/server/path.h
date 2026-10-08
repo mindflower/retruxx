@@ -42,6 +42,9 @@ namespace ai
 
     class Path
     {
+        // Team::TeamAIOnPathFind reads the outcome of a finished search directly.
+        friend class Team;
+
     private:
         /* 0x0000 */ unsigned int m_size;
         /* 0x0004 */ CVector2* m_pPath;
@@ -70,7 +73,8 @@ namespace ai
 
     public:
         inline static int QuantAmount = 0;
-        static int QuantMax;
+        // The shipped build holds 5 here and never writes it (RVA 0xA039B0).
+        inline static int QuantMax = 5;
         CVector2 m_startPoint;
         CVector2 m_endPoint;
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode, ai::Map* pMap);
@@ -98,6 +102,8 @@ namespace ai
         void _Init();
         void StartSearchInternal();
         void ClearHelpers();
+        // Not in the shipped build, which repeats this inline at the end of each search.
+        void _BuildPathFromParents(unsigned int endNode, bool fTarget);
         unsigned int MapIndexToId(const ai::MapIndex& v) const;
         void IdToMapIndex(unsigned int id, ai::MapIndex& res) const;
         void StraightenPath(bool bForDijkstra);

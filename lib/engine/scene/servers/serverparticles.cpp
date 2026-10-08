@@ -10,18 +10,19 @@
 #include <core/scoped_ptr.h>
 #include <core/ini.h>
 #include <core/kernel.h>
+#include <core/log.h>
 #include <file/fileserver.h>
 #include <file/filestream.h>
 #include <client.h>
 #include <algorithm>
+#include <cstring>
 
 bool loadedViaBPS = false;
 
 namespace
 {
-    constexpr int MAX_NODES_PER_CLASS = 0x7D0;
+    int constexpr MAX_NODES_PER_CLASS = 0x7D0;
 
-    
     struct ParticlesInfo
     {
         /* 0x0000 */ m3d::SgNode* pNode = nullptr;
@@ -42,54 +43,54 @@ namespace
 
     struct ParticlesSortPred
     {
-        ParticlesSortPred(ParticlesInfo* parts) : m_particles(parts){}
+        ParticlesSortPred(ParticlesInfo* parts) : m_particles(parts)
+        {
+        }
 
         bool operator()(unsigned int partIdx1, unsigned int partIdx2) const
         {
-            // TODO: check and refactor this
-            auto pSystem = this->m_particles[partIdx1].pSystem;
-            auto v4 = this->m_particles[partIdx2].pSystem;
-            auto m_shader = pSystem->m_shader;
-            auto v6 = v4->m_shader;
-            if (m_shader < v6)
-                return true;
-            if (m_shader == v6)
-                return &pSystem->m_texAdd < &v4->m_texAdd;
-            return false;
+            // RVA 0x764D70 - by effect, then by system (the address of its texture handle, as shipped).
+            m3d::ParticleSystem const* const a = m_particles[partIdx1].pSystem;
+            m3d::ParticleSystem const* const b = m_particles[partIdx2].pSystem;
+            if (a->m_shader != b->m_shader)
+            {
+                return a->m_shader < b->m_shader;
+            }
+            return &a->m_texAdd < &b->m_texAdd;
         }
         /* 0x0000 */ ParticlesInfo* m_particles;
     }; /* size: 0x0004 */
-}
+}  // namespace
 
 namespace m3d
 {
-    struct PropInternalGetMeshPoints
-    {
-        /* 0x0000 */ int m_numMesh;
-        /* 0x0004 */ m3d::SgNode* m_node;
-        /* 0x0008 */ void** m_verts;
-        retruxx::vector<m3d::rend::VertexType> m_VertexTypes;
-        retruxx::vector<unsigned int> m_VertexTypeSizes;
-        /* 0x002c */ int* m_numVerts;
-        /* 0x0030 */ unsigned short** m_indxs;
-        /* 0x0034 */ int* m_numIndxs;
-        /* 0x0038 */ bool* m_strips;
-        /* 0x003c */ CMatrix** m_localmatr;
-        /* 0x0040 */ int m_numSkinMesh;
-    }; /* size: 0x0044 */
+    PoolManager<ParticleBases> TrailsPool(0);
+    PoolManager<m3d::Particle> ParticlesPool(0);
+    PoolManager<PsInfoForNode> Info_PoolManager(0);
+    PoolManager<m3d::ParticlesList> PL_PoolManager(0);
 
-    int ParticlesServer::SetItemProperty(int, int, void*)
+    int ParticlesServer::SetItemProperty(int id, int prop, void* src)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m3d::DataServer::SetItemProperty(id, prop, src);
     }
 
     ParticlesServer::~ParticlesServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        QuadPS::ReleaseIb();
+        SpritePS::ReleaseIb();
+        GlowQuadPS::ReleaseIb();
+        PolyPS::ReleaseIb();
+        Poly1PS::ReleaseIb();
+        RainPS::ReleaseIb();
+        StripAllPS::ReleaseIb();
+        StripOnePS::ReleaseIb();
+        ParticlesServer::Release();
     }
 
     int ParticlesServer::RenderNodeSet(SgNode** nodes, unsigned numNodes, m3d::RenderNodeInfo rni)
     {
+        // RVA 0x769AA0 - the colour pass only: the particle systems sorted by effect, each effect's ambient,
+        // diffuse and fog parameters set once from the weather and the landscape fog.
         m_profiler->StartCountdown();
         assert(numNodes < MAX_NODES_PER_CLASS);
         if (!numNodes || rni.rnt)
@@ -103,7 +104,7 @@ namespace m3d
         M3D_RENDERER->PushBlend(rend::BM_NONE);
         M3D_RENDERER->PushFog(false);
         M3D_RENDERER->PushLighting(false);
-        M3D_RENDERER->SetAlphaTest (0);
+        M3D_RENDERER->SetAlphaTest(0);
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
@@ -122,8 +123,6 @@ namespace m3d
             M3D_RENDERER->SetFillMode(rend::M3DFILL_WIREFRAME, false);
         }
 
-        
-        // TODO: check this!!!!
         pClient->GetWorld().GetGraph().LightSetupSunForWorld();
         rend::Colorf ambientColor = pClient->GetWorld().GetWeatherAmbientColor();
         rend::Colorf diffuseColor = pClient->GetWorld().GetWeatherDiffuseColor();
@@ -144,7 +143,6 @@ namespace m3d
         fxParams.cDiffuse.x = diffuseColor.r;
         fxParams.cDiffuse.y = diffuseColor.g;
         fxParams.cDiffuse.z = diffuseColor.b;
-
 
         float fogReduceFactor = pClient->GetWorld().GetWeatherManager().GetFogReduceFactorFromWeather();
         fxParams.fogTerm.z = fogReduceFactor * fogStart;                        // fogStart
@@ -231,7 +229,8 @@ namespace m3d
 
     void ParticlesServer::UpdateItem(int id, void* params)
     {
-        // TODO: generated code ParticlesServer::UpdateItem
+        // RVA 0x767BF0 - advances the node's particle list by the frame time, with the node's world velocity since
+        // the last update.
 
         struct RenderInfo
         {
@@ -239,7 +238,7 @@ namespace m3d
             unsigned int m_dt;
         };
 
-        m_profiler->StartCountdown();
+        m_profilerUpdate->StartCountdown();
 
         RenderInfo* ri = (RenderInfo*)params;
         SgNode* node = ri->m_node;
@@ -259,13 +258,13 @@ namespace m3d
         if (particlesList->m_updateCalled)
         {
             // Extract position from current transform matrices
-            const auto currentPos = ri->m_node->GetCurrentMatrix().getOrg();
-            const auto prevPos = particlesList->m_curXFormToWorld.getOrg();
+            auto const currentPos = ri->m_node->GetCurrentMatrix().getOrg();
+            auto const prevPos = particlesList->m_curXFormToWorld.getOrg();
 
             // Calculate velocity as (current_pos - previous_pos) / delta_time
-            particlesList->m_worldVel.x = (currentPos.x - prevPos.x) / deltaTime;
-            particlesList->m_worldVel.y = (currentPos.y - prevPos.y) / deltaTime;
-            particlesList->m_worldVel.z = (currentPos.z - prevPos.z) / deltaTime;
+            particlesList->m_worldVel.x = (currentPos.x - prevPos.x) * (1.0f / deltaTime);
+            particlesList->m_worldVel.y = (currentPos.y - prevPos.y) * (1.0f / deltaTime);
+            particlesList->m_worldVel.z = (currentPos.z - prevPos.z) * (1.0f / deltaTime);
         }
         else
         {
@@ -274,12 +273,15 @@ namespace m3d
         }
 
         // Store current transform for next frame's velocity calculation
-        memcpy(&particlesList->m_curXFormToWorld, &ri->m_node->GetCurrentMatrix(), sizeof(particlesList->m_curXFormToWorld));
+        memcpy(
+            &particlesList->m_curXFormToWorld,
+            &ri->m_node->GetCurrentMatrix(),
+            sizeof(particlesList->m_curXFormToWorld));
 
         // Update the particle system
         particleSystem->Update(particlesList, deltaTime, 1.0f);
 
-        m_profiler->EndCountdown();
+        m_profilerUpdate->EndCountdown();
     }
 
     int ParticlesServer::GetItemProperty(int id, int prop, void* dest)
@@ -307,9 +309,10 @@ namespace m3d
         }
         else
         {
-            if (prop == 12293)
+            if (prop == PROP_SRV_IS_LOCAL)
             {
-                RETRUXX_NOT_IMPLEMENTED;
+                auto* system = static_cast<ParticleSystem*>(m_models[id].m_ptr);
+                *static_cast<bool*>(dest) = system->IsLocal();
             }
             return m3d::DataServer::GetItemProperty(id, prop, dest);
         }
@@ -339,12 +342,13 @@ namespace m3d
 
     void ParticlesServer::MoveParticles(m3d::SgNode* node, retruxx::vector<CVector> const* newPoses)
     {
-        auto* system = (ParticleSystem*)&m_models[node->GetServerHandle()];
-        m3d::ParticlesList* list = nullptr;
-        node->GetProperty(1, &list);
-        if (list)
+        auto* system = static_cast<ParticleSystem*>(m_models[node->GetServerHandle()].m_ptr);
+
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(PROP_SERVER_SLOT, &info);
+        if (info)
         {
-            system->MoveParticles(list, newPoses);
+            system->MoveParticles(info->m_list, newPoses);
         }
     }
 
@@ -356,7 +360,17 @@ namespace m3d
 
     int ParticlesServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            auto* system = static_cast<ParticleSystem*>(model.m_ptr);
+            if (system)
+            {
+                delete system;
+            }
+        }
+        ModelVector().swap(m_models);
+        return 1;
     }
 
     void ParticlesServer::RenderItem(int, void*)
@@ -365,17 +379,60 @@ namespace m3d
 
     void ParticlesServer::SaveAllLoadedEntitiesToBPS()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
+        if (!fileStream->Open("data\\models\\effects.bps", fs::IStream::OPEN_WRITE))
+        {
+            return;
+        }
+
+        retruxx::vector<AttrProps> attractors;
+        PSProps psProps;
+
+        unsigned version = 2;
+        fileStream->WriteBytes(&version, 4u);
+
+        unsigned psNum = static_cast<unsigned>(m_models.size());
+        fileStream->WriteBytes(&psNum, 4u);
+
+        for (unsigned i = 0; i < psNum; ++i)
+        {
+            auto* system = static_cast<ParticleSystem*>(m_models[i].m_ptr);
+            system->WriteToProtos(psProps, attractors);
+
+            // The record holds a fixed 50-byte name field; pad rather than read
+            // past the end of a shorter name as the original does.
+            char nameField[50] = {};
+            std::strncpy(nameField, m_models[i].m_name.c_str(), sizeof(nameField) - 1);
+            fileStream->WriteBytes(nameField, sizeof(nameField));
+            fileStream->WriteBytes(&psProps, sizeof(PSProps));
+
+            unsigned attrNum = static_cast<unsigned>(attractors.size());
+            fileStream->WriteBytes(&attrNum, 4u);
+            for (unsigned j = 0; j < attrNum; ++j)
+            {
+                fileStream->WriteBytes(&attractors[j], sizeof(AttrProps));
+            }
+        }
+
+        fileStream->Close();
     }
 
     int ParticlesServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Particle systems are shared by handle and are never removed individually.
+        return 1;
     }
 
-    void ParticlesServer::ResetItem(m3d::SgNode*)
+    void ParticlesServer::ResetItem(m3d::SgNode* node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto* system = static_cast<ParticleSystem*>(m_models[node->GetServerHandle()].m_ptr);
+
+        PsInfoForNode* info = nullptr;
+        node->GetProperty(PROP_SERVER_SLOT, &info);
+        if (info)
+        {
+            system->Reset(info->m_list);
+        }
     }
 
     void ParticlesServer::UnregisterNode(m3d::SgNode* node)
@@ -421,19 +478,41 @@ namespace m3d
         }
     }
 
-    int ParticlesServer::AddItem(char const*, char const*)
+    int ParticlesServer::AddItem(char const* params, char const* id)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        int existing = GetItemByName(id, false);
+        if (existing != -1)
+        {
+            return existing;
+        }
+
+        Proto proto;
+        int paramsPos;
+        ParseProto(params, &proto, &paramsPos);
+        if (proto != PROTO_FILE)
+        {
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_INFO(CStr("protocol is not supported " + static_cast<int>(proto)));
+            return -1;
+        }
+
+        char const* fileName = params + paramsPos;
+
+        auto* system = ParticleSystem::Factory(fileName);
+        m_models.push_back(Model(system, fileName, fileName, id));
+        return static_cast<int>(m_models.size()) - 1;
     }
 
     int ParticlesServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Particle systems are written as a single pack, see SaveAllLoadedEntitiesToBPS.
+        return 1;
     }
 
     void ParticlesServer::RegisterNode(m3d::SgNode* node)
     {
-        // TODO: check this!!
+        // RVA 0x769190 - gives the node a pooled particle list; a mesh emitter takes its points from the mesh of
+        // the nearest game unit above it.
         auto* info = Info_PoolManager.New();
         auto* particlesList = PL_PoolManager.New();
         info->m_list = particlesList;
@@ -506,18 +585,40 @@ namespace m3d
         }
     }
 
-    void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>&)
+    void ParticlesServer::AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        for (size_t i = 0; i < itemslist.size(); ++i)
+        {
+            if (m_fnLoadCallback)
+            {
+                m_fnLoadCallback(static_cast<int>(i * 100 / itemslist.size()), m_fnLoadCallbackData);
+            }
+
+            CStr const fn = itemslist[i].m_filename;
+            CStr const id = itemslist[i].m_id;
+            if (AddItem(fn.c_str(), id.c_str()) == -1)
+            {
+                M3D_LOG_INFO("DataServer: cannot read " + fn + " id = " + id);
+            }
+        }
     }
 
     void ParticlesServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemslist)
     {
+        // RVA 0x769730
         if (!loadedViaBPS)
         {
             scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (fileStream->Open("data\\models\\effects.bps", fs::IStream::OPEN_READ))
             {
+                // 0x76979D calls timeGetTime() and throws the result away - a
+                // leftover load timer whose paired report was compiled out; the
+                // binary also builds psProps and m_Attractors here, ahead of the
+                // version check, so they are declared up front to match.
+                retruxx::vector<AttrProps> m_Attractors;
+                char buffer[52];
+                PSProps psProps;
+
                 unsigned version = 0;
                 fileStream->ReadBytes(&version, 4u);
                 if (version != 2)
@@ -527,12 +628,9 @@ namespace m3d
                     return;
                 }
 
-                retruxx::vector<AttrProps> m_Attractors;
-                char buffer[52];
-                PSProps psProps;
                 unsigned psNum = 0;
                 fileStream->ReadBytes(&psNum, 4u);
-                for (int i = 0; i < psNum; ++i)
+                for (unsigned i = 0; i < psNum; ++i)
                 {
                     fileStream->ReadBytes(buffer, 50);
                     buffer[50] = 0;
@@ -540,11 +638,11 @@ namespace m3d
 
                     unsigned attrNum = 0;
                     fileStream->ReadBytes(&attrNum, 4u);
-                    
+
                     AttrProps attrProps;
                     m_Attractors.resize(attrNum, attrProps);
 
-                    for (int j = 0; j < attrNum; ++j)
+                    for (unsigned j = 0; j < attrNum; ++j)
                     {
                         fileStream->ReadBytes(&m_Attractors[j], sizeof(AttrProps));
                     }
@@ -562,4 +660,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

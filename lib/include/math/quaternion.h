@@ -40,4 +40,7 @@ struct Quaternion
 
 static_assert(sizeof(Quaternion) == 0x0010);
 
+// The Hamilton product a*b. Same terms as Quaternion::operator*=, summed in a different order.
+Quaternion operator*(const Quaternion& a, const Quaternion& b);
+
 inline Quaternion IdentityQuaternion(0.0, 0.0, 0.0, 1.0);

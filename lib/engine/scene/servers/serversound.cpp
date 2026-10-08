@@ -8,16 +8,16 @@
 #include "core/log.h"
 #include "core/ref_ptr.h"
 
-namespace 
+namespace
 {
-    const char* FAKE_ITEM_NAME = "Fake_Sound_Do_Not_Use_It";
-    const char* DEFAULT_GROUP = "SOUND3D";
+    char const* FAKE_ITEM_NAME = "Fake_Sound_Do_Not_Use_It";
+    char const* DEFAULT_GROUP = "SOUND3D";
     CStr TYPE_SINGLE = "SINGLE";
     CStr TYPE_DOUBLE = "DOUBLE";
     CStr TYPE_TRIPLE = "TRIPLE";
     CStr TYPE_FAKE = "FAKE";
 
-}
+}  // namespace
 
 namespace m3d
 {
@@ -34,17 +34,21 @@ namespace m3d
 
     int Sound3DServer::RemoveItem(int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762810
+        return 1;
     }
 
     Sound3DServer::~Sound3DServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x764070
+        Release();
     }
 
     int Sound3DServer::AddItem(char const*, char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7628B0 - sounds are only added from the XML list.
+        SYS_ERROR("!\"obsolete\"");
+        return -1;
     }
 
     void Sound3DServer::PostLoad()
@@ -62,18 +66,23 @@ namespace m3d
         switch (prop)
         {
         case PROP_SRV_SND_ID:
-            *(int*)dest = item->soundIds[0]; return 1;
+            *(int*)dest = item->soundIds[0];
+            return 1;
 
         case PROP_SRV_SND_SIMPLE:
-            *(int*)dest = item->type == SOUND_TYPE_SIMPLE; return 1;
+            *(int*)dest = item->type == SOUND_TYPE_SIMPLE;
+            return 1;
 
         case PROP_SRV_SND_DOUBLE:
-            *(int*)dest = item->type == SOUND_TYPE_DOUBLE; return 1;
+            *(int*)dest = item->type == SOUND_TYPE_DOUBLE;
+            return 1;
 
         case PROP_SRV_SND_TRIPLE:
-            *(int*)dest = item->type == SOUND_TYPE_TRIPLE; return 1;
+            *(int*)dest = item->type == SOUND_TYPE_TRIPLE;
+            return 1;
 
-        default: break;
+        default:
+            break;
         }
         return 0;
     }
@@ -84,112 +93,140 @@ namespace m3d
 
     int Sound3DServer::SaveAllLoadedEntities(char const*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762830
+        return 1;
     }
 
     void Sound3DServer::RenderItem(int id, void* params)
     {
-        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB() || id == -2)
         {
-            if (id != -2)
+            return;
+        }
+
+        if (id == -3)
+        {
+            CVector const pos = M3D_RENDERER->MatGetOrgInv();
+
+            CVector up;
+            CVector front;
+            CVector r;
+            M3D_RENDERER->MatGetBasis(r, up, front);
+            M3D_APP->m_sound->SetListenerPosition(pos, {}, front, up);
+            return;
+        }
+
+        if (id != -4)
+        {
+            struct RenderInfo
             {
-                if (id == -3)
+                /* 0x0000 */ m3d::SgNode* m_node = nullptr;
+                /* 0x0004 */ int m_currentSoundNum = 0;
+            };
+            /* size: 0x0008 */
+
+            auto const* renderInfo = static_cast<RenderInfo*>(params);
+
+            int channelId = 0;
+            int looped = 0;
+            int soundEnabled = 0;
+            int maxvolume = 0;
+
+            renderInfo->m_node->GetProperty(PROP_SND_CHANNELID, &channelId);
+            renderInfo->m_node->GetProperty(PROP_SND_LOOPED, &looped);
+            renderInfo->m_node->GetProperty(PROP_SND_MAXVOLUME, &maxvolume);
+            renderInfo->m_node->GetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
+
+            int const soundId = (static_cast<SoundItem*>(m_models[id].m_ptr))->soundIds[renderInfo->m_currentSoundNum];
+            if (soundEnabled)
+            {
+                if (maxvolume)
                 {
-                    auto pos = M3D_RENDERER->MatGetOrgInv();
+                    if (channelId != -1)
+                    {
+                        return;
+                    }
+                    channelId = M3D_APP->m_sound->PlaySound2D(soundId, looped != 0);
+                    renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
 
-                    CVector up;
-                    CVector front;
-                    CVector r;
-                    M3D_RENDERER->MatGetBasis(r, up, front);
-
-                    // TODO: check this
-                    M3D_APP->m_sound->SetListenerPosition(pos, r, front, up);
+                    int freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
+                    renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
                     return;
                 }
-                if (id != -4)
+
+                CVector const& org = renderInfo->m_node->GetOriginWorldAbs();
+                if (channelId == -1)
                 {
-                    // TODO: check and refactor this
-                    struct RenderInfo
-                    {
-                        /* 0x0000 */ m3d::SgNode* m_node;
-                        /* 0x0004 */ int m_currentSoundNum;
-                    };
-                    /* size: 0x0008 */
+                    channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
+                    renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
 
-                    auto* renderInfo = (RenderInfo*)(params);
-
-                    int channelId;
-                    int looped;
-                    int soundEnabled;
-                    int maxvolume;
-
-                    renderInfo->m_node->GetProperty(PROP_SND_CHANNELID, &channelId);
-                    renderInfo->m_node->GetProperty(PROP_SND_LOOPED, &looped);
-                    renderInfo->m_node->GetProperty(PROP_SND_MAXVOLUME, &maxvolume);
-                    renderInfo->m_node->GetProperty(PROP_SND_SOUND_ENABLED, &soundEnabled);
-
-                    auto soundId = ((SoundItem*)m_models[id].m_ptr)->soundIds[renderInfo->m_currentSoundNum];
-                    if (soundEnabled)
-                    {
-                        if (maxvolume)
-                        {
-                            if (channelId != -1)
-                            {
-                                return;
-                            }
-                            channelId = M3D_APP->m_sound->PlaySound2D(soundId, looped != 0);
-                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-
-                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
-                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
-                            return;
-                        }
-
-                        const auto& org = renderInfo->m_node->GetOriginWorldAbs();
-                        if (channelId == -1)
-                        {
-                            channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
-                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-
-                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
-                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
-                            return;
-                        }
-
-                        if (!looped)
-                        {
-                            return;
-                        }
-
-                        if (!M3D_APP->m_sound->IsChannelPlaying(channelId))
-                        {
-                            channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
-                            renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-
-                            auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
-                            renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
-                            return;
-                        }
-
-                        if (looped)
-                        {
-                            M3D_APP->m_sound->SetPosition(channelId, org, {});
-                        }
-                    }
-                    else if (channelId != -1)
-                    {
-                        M3D_APP->m_sound->StopChannel(channelId);
-                        channelId = -1;
-                        renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
-                    }
+                    int freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
+                    renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
+                    return;
                 }
+
+                if (!looped)
+                {
+                    return;
+                }
+
+                if (!M3D_APP->m_sound->IsChannelPlaying(channelId))
+                {
+                    channelId = M3D_APP->m_sound->PlaySound3D(soundId, org, {}, looped != 0);
+                    renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
+
+                    auto freq = M3D_APP->m_sound->GetChannelFrequency(channelId);
+                    renderInfo->m_node->SetProperty(PROP_SND_BASE_FREQUENCY, &freq);
+                    return;
+                }
+
+                if (looped)
+                {
+                    M3D_APP->m_sound->SetPosition(channelId, org, {});
+                }
+            }
+            else if (channelId != -1)
+            {
+                M3D_APP->m_sound->StopChannel(channelId);
+                channelId = -1;
+                renderInfo->m_node->SetProperty(PROP_SND_CHANNELID, &channelId);
             }
         }
     }
 
     int Sound3DServer::Release()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x762E10 - the sounds are only taken out of the sound system while it is enabled; the items are freed
+        // either way.
+        m_valid = false;
+        for (auto& model : m_models)
+        {
+            auto* const item = static_cast<SoundItem*>(model.m_ptr);
+            if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+            {
+                auto* const sound = M3D_APP->m_sound;
+                switch (item->type)
+                {
+                case SOUND_TYPE_SIMPLE:
+                    sound->DeleteIdTableSound(item->soundIds[0]);
+                    break;
+                case SOUND_TYPE_DOUBLE:
+                    sound->DeleteIdTableSound(item->soundIds[0]);
+                    sound->DeleteIdTableSound(item->soundIds[1]);
+                    break;
+                case SOUND_TYPE_TRIPLE:
+                    sound->DeleteIdTableSound(item->soundIds[0]);
+                    sound->DeleteIdTableSound(item->soundIds[1]);
+                    sound->DeleteIdTableSound(item->soundIds[2]);
+                    break;
+                default:
+                    break;
+                }
+            }
+            delete item;
+        }
+        m_models = retruxx::vector<Model>();
+        return 1;
     }
 
     void Sound3DServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)
@@ -231,7 +268,6 @@ namespace m3d
                 M3D_LOG_INFO("Warning: Something goes wrong!");
             }
 
-
             modelIt = m_models.erase(modelIt);
         }
 
@@ -250,7 +286,8 @@ namespace m3d
         ParseProto(itemsList.front().m_filename.c_str(), &proto, &protoPos);
         if (proto != PROTO_FILE)
         {
-            M3D_LOG_ERR("Error: protocol is not supported " + CStr(proto));
+            // NOTE: the protocol is added to the literal as a pointer, dropping that many characters, as shipped.
+            M3D_LOG_ERR(CStr("Error: protocol is not supported " + static_cast<int>(proto)));
             return;
         }
 
@@ -265,7 +302,8 @@ namespace m3d
             }
 
             size_t lasta = 0;
-            for (xmlNode->GetFirstChild(xmlNode, "model"); !xmlNode->IsEmpty(); xmlNode->GetNextSibling(xmlNode, "model"), ++lasta)
+            for (xmlNode->GetFirstChild(xmlNode, "model"); !xmlNode->IsEmpty();
+                 xmlNode->GetNextSibling(xmlNode, "model"), ++lasta)
             {
                 if (m_fnLoadCallback && lasta < numLeftItems)
                 {
@@ -288,11 +326,13 @@ namespace m3d
                 }
             }
 
-            for (const auto& item : itemsList)
+            for (auto const& item : itemsList)
             {
                 if (!item.m_fileWasRead)
                 {
-                    M3D_LOG_ERR("MusicServer: cannot read file: " + CStr(M3D_KERNEL->GetEngineCfg().m_snd_pathToSounds.GetS()) + " id = '" + item.m_id + "'");
+                    M3D_LOG_ERR(
+                        "MusicServer: cannot read file: " + CStr(M3D_KERNEL->GetEngineCfg().m_snd_pathToSounds.GetS()) +
+                        " id = '" + item.m_id + "'");
                 }
             }
         }
@@ -327,7 +367,6 @@ namespace m3d
             {
                 M3D_LOG_ERR("DataServer: cannot read " + fileStart + " id = " + id);
             }
-
         }
         else if (type == TYPE_TRIPLE)
         {
@@ -392,21 +431,24 @@ namespace m3d
             return item;
         }
 
-        auto soundId1 = M3D_APP->m_sound->AddSound(f1.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        auto soundId1 =
+            M3D_APP->m_sound->AddSound(f1.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
         if (soundId1 == -1)
         {
             M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f1));
             return -1;
         }
 
-        auto soundId2 = M3D_APP->m_sound->AddSound(f2.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        auto soundId2 =
+            M3D_APP->m_sound->AddSound(f2.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
         if (soundId2 == -1)
         {
             M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f2));
             return -1;
         }
 
-        auto soundId3 = M3D_APP->m_sound->AddSound(f3.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        auto soundId3 =
+            M3D_APP->m_sound->AddSound(f3.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
         if (soundId3 == -1)
         {
             M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f3));
@@ -444,7 +486,8 @@ namespace m3d
             soundType = strcmp(groupName, "SOUND2D") != 0;
         }
 
-        auto soundId = M3D_APP->m_sound->AddSound(fileName, (snd::UserSoundType)soundType, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        auto soundId =
+            M3D_APP->m_sound->AddSound(fileName, (snd::UserSoundType)soundType, groupName, 8, snd::SND_PRIORITY_NORMAL);
         if (soundId == -1)
         {
             M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(fileName));
@@ -467,19 +510,21 @@ namespace m3d
         }
 
         auto item = GetItemByName(id, false);
-        if (item  != -1)
+        if (item != -1)
         {
             return item;
         }
 
-        auto soundId1 = M3D_APP->m_sound->AddSound(f1.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        auto soundId1 =
+            M3D_APP->m_sound->AddSound(f1.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
         if (soundId1 == -1)
         {
             M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f1));
             return -1;
         }
 
-        auto soundId2 = M3D_APP->m_sound->AddSound(f2.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
+        auto soundId2 =
+            M3D_APP->m_sound->AddSound(f2.c_str(), snd::SND_TYPE_3DSOUND, groupName, 8, snd::SND_PRIORITY_NORMAL);
         if (soundId2 == -1)
         {
             M3D_LOG_INFO("SoundServer: cannot add sound " + CStr(f2));
@@ -494,4 +539,4 @@ namespace m3d
         m_models.push_back(std::move(model));
         return m_models.size() - 1;
     }
-}
+}  // namespace m3d

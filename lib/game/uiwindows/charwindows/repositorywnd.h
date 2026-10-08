@@ -15,6 +15,12 @@ enum SlotState
 
 class RepositoryWnd : public DragDropItemsWnd
 {
+    // SaleWnd::CreateTabItem snaps a freshly built repository tab to the cell
+    // grid before handing it to the tab control.
+    friend class SaleWnd;
+    // WareWnd checks the source repository's type before taking a quick drop.
+    friend class WareWnd;
+
 public:
     struct CellBunch
     {

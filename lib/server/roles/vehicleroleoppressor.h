@@ -7,6 +7,8 @@ namespace ai
 {
     class VehicleRoleOppressorPrototypeInfo : public VehicleRolePrototypeInfo
     {
+        // VehicleRoleOppressor::getOppressorPosition reads the oppression shift directly.
+        friend class VehicleRoleOppressor;
     public:
         virtual float FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const;
         virtual float FitAgainstObj(Vehicle const*, Obj const*) const;

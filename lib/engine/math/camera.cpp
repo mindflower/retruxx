@@ -3,6 +3,10 @@
 
 #include "math/matrix.h"
 #include "retruxx/common.h"
+#include <core/ini.h>
+
+#include <cmath>
+#include <cstring>
 
 CAffineXForm::CAffineXForm() :
     m_worldOrigin(0.0, 0.0, 0.0),
@@ -12,73 +16,64 @@ CAffineXForm::CAffineXForm() :
 {
 }
 
-void CAffineXForm::createRotationMatrix(CMatrix&) const
+void CAffineXForm::createRotationMatrix(CMatrix& matRot) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x406090
+    matRot.rotYPR(m_rotYaw, m_rotPitch, m_rotRoll);
 }
 
 void CAffineXForm::createViewMatrix(CMatrix& viewMatrix) const
 {
-    //TODO: check this and refactor
-    float v4; // xmm1_4
-    float v5; // xmm0_4
-    CMatrix mR; // [esp+8h] [ebp-C0h] BYREF
-    CMatrix mT; // [esp+48h] [ebp-80h] BYREF
-    CMatrix vv; // [esp+88h] [ebp-40h] BYREF
-
+    // RVA 0x41D880 - the rotation preceded by the translation to the origin, i.e. T(-origin) * R.
+    // The original multiplies by a zero-filled translation matrix, so only the fourth row picks
+    // anything up; it is computed here in the same order.
+    CMatrix mR;
     mR.rotYPR(m_rotYaw, m_rotPitch, m_rotRoll);
-    v4 = 0.0 - m_worldOrigin.x;
-    memset(&mT, 0, sizeof(mT));
-    mT._41 = v4;
-    v5 = 0.0 - m_worldOrigin.z;
-    mT._42 = 0.0 - m_worldOrigin.y;
-    mT._43 = v5;
-    vv._11 = (float)((float)((float)(mR._41 * mT._14) + (float)(mR._31 * mT._13)) + (float)(mR._21 * mT._12)) + mR._11;
-    vv._12 = (float)((float)((float)(mR._42 * mT._14) + (float)(mR._32 * mT._13)) + (float)(mR._22 * mT._12)) + mR._12;
-    vv._13 = (float)((float)((float)(mR._43 * mT._14) + (float)(mR._33 * mT._13)) + (float)(mR._23 * mT._12)) + mR._13;
-    vv._14 = (float)((float)((float)(mR._44 * mT._14) + (float)(mR._34 * mT._13)) + (float)(mR._24 * mT._12)) + mR._14;
-    vv._21 = (float)((float)((float)(mT._24 * mR._41) + (float)(mT._23 * mR._31)) + (float)(mT._21 * mR._11)) + mR._21;
-    vv._22 = (float)((float)((float)(mT._24 * mR._42) + (float)(mT._23 * mR._32)) + (float)(mT._21 * mR._12)) + mR._22;
-    vv._23 = (float)((float)((float)(mT._24 * mR._43) + (float)(mT._23 * mR._33)) + (float)(mT._21 * mR._13)) + mR._23;
-    vv._24 = (float)((float)((float)(mT._24 * mR._44) + (float)(mT._23 * mR._34)) + (float)(mT._21 * mR._14)) + mR._24;
-    vv._31 = (float)((float)((float)(mT._34 * mR._41) + (float)(mT._32 * mR._21)) + (float)(mT._31 * mR._11)) + mR._31;
-    vv._32 = (float)((float)((float)(mT._34 * mR._42) + (float)(mT._32 * mR._22)) + (float)(mT._31 * mR._12)) + mR._32;
-    vv._33 = (float)((float)((float)(mT._34 * mR._43) + (float)(mT._32 * mR._23)) + (float)(mT._31 * mR._13)) + mR._33;
-    vv._34 = (float)((float)((float)(mT._34 * mR._44) + (float)(mT._32 * mR._24)) + (float)(mT._31 * mR._14)) + mR._34;
-    vv._41 = (float)((float)((float)(mR._31 * v5) + (float)(mR._21 * mT._42)) + (float)(v4 * mR._11)) + mR._41;
-    vv._42 = (float)((float)((float)(mR._32 * v5) + (float)(mR._22 * mT._42)) + (float)(mR._12 * v4)) + mR._42;
-    vv._43 = (float)((float)((float)(mR._33 * v5) + (float)(mR._23 * mT._42)) + (float)(mR._13 * v4)) + mR._43;
-    vv._44 = (float)((float)((float)(mR._34 * v5) + (float)(mR._24 * mT._42)) + (float)(mR._14 * v4)) + mR._44;
-    mT = vv;
-    memcpy(&viewMatrix, &mT, sizeof(CMatrix));
+
+    float const tx = 0.0f - m_worldOrigin.x;
+    float const ty = 0.0f - m_worldOrigin.y;
+    float const tz = 0.0f - m_worldOrigin.z;
+
+    CMatrix vv = mR;
+    vv._41 = mR._31 * tz + mR._21 * ty + tx * mR._11 + mR._41;
+    vv._42 = mR._32 * tz + mR._22 * ty + mR._12 * tx + mR._42;
+    vv._43 = mR._33 * tz + mR._23 * ty + mR._13 * tx + mR._43;
+    vv._44 = mR._34 * tz + mR._24 * ty + mR._14 * tx + mR._44;
+    viewMatrix = vv;
 }
 
-void CAffineXForm::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+void CAffineXForm::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x59C030
+    m3d::SafeVectorAttrib(m_worldOrigin, xmlNode, "WorldOrigin");
+    m3d::SafeFloatAttrib(m_rotYaw, xmlNode, "RotYaw");
+    m3d::SafeFloatAttrib(m_rotPitch, xmlNode, "RotPitch");
+    m3d::SafeFloatAttrib(m_rotRoll, xmlNode, "RotRoll");
 }
 
-void CAffineXForm::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+void CAffineXForm::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode* xmlNode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x59C0D0
+    xmlNode->SetAttribute("WorldOrigin", CStr(m_worldOrigin).c_str());
+    xmlNode->SetAttribute("RotYaw", CStr(m_rotYaw).c_str());
+    xmlNode->SetAttribute("RotPitch", CStr(m_rotPitch).c_str());
+    xmlNode->SetAttribute("RotRoll", CStr(m_rotRoll).c_str());
 }
 
 void CCamera::createProjectionMatrix(CMatrix& vv, float f) const
 {
-    //TODO: check this and refactor
-    double v4; // st7
-    double v5; // st6
-    float v6; // xmm0_4
-
-    v4 = m_fovY * 0.5 * 0.017453292;
-    v5 = m_fovX / m_fovY;
-    memset(&vv, 0, sizeof(CMatrix));
-    v6 = 32000.0 / (float)(32000.0 - f);
-    vv._33 = v6;
-    vv._43 = 0.0 - (float)(v6 * f);
-    vv._34 = 1.0;
-    vv._11 = 1.0 / tan(v5 * v4 * 0.5);
-    vv._22 = 1.0 / tan(v4 * 0.5);
+    // RVA 0x41D770 - a left-handed perspective projection with the near plane at f and the far
+    // plane fixed at 32000. NOTE: the half angle is halved again inside tan, so the projection
+    // actually spans half of m_fovX by half of m_fovY.
+    double const halfFovY = m_fovY * 0.5 * 0.017453292;
+    double const aspect = m_fovX / m_fovY;
+    std::memset(&vv, 0, sizeof(CMatrix));
+    float const q = 32000.0f / (32000.0f - f);
+    vv._33 = q;
+    vv._43 = 0.0f - q * f;
+    vv._34 = 1.0f;
+    vv._11 = static_cast<float>(1.0 / std::tan(aspect * halfFovY * 0.5));
+    vv._22 = static_cast<float>(1.0 / std::tan(halfFovY * 0.5));
 }
 
 CCamera::CCamera() :
@@ -87,9 +82,12 @@ CCamera::CCamera() :
 {
 }
 
-void CCamera::lookAt(CVector const&, CVector const&)
+void CCamera::lookAt(CVector const& aim, CVector const& up)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x405B50
+    CMatrix m;
+    m.lookAtLH(m_worldOrigin, aim, up);
+    m.getYPR(m_rotYaw, m_rotPitch, m_rotRoll);
 }
 
 void CCamera::lookAt(CVector const& aim)
@@ -104,14 +102,20 @@ void CCamera::lookAt(CVector const& aim)
     v4.getYPR(this->m_rotYaw, this->m_rotPitch, this->m_rotRoll);
 }
 
-void CCamera::LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+void CCamera::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x59ED90
+    CAffineXForm::LoadFromXml(xmlFile, xmlNode);
+    m3d::SafeFloatAttrib(m_fovX, xmlNode, "FovX");
+    m3d::SafeFloatAttrib(m_fovY, xmlNode, "FovY");
 }
 
-void CCamera::SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const
+void CCamera::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x59EE00
+    CAffineXForm::SaveToXml(xmlFile, xmlNode);
+    xmlNode->SetAttribute("FovX", CStr(m_fovX).c_str());
+    xmlNode->SetAttribute("FovY", CStr(m_fovY).c_str());
 }
 
 void CCamera::setFov(float fov, float w, float h)

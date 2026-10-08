@@ -1,5 +1,7 @@
 #include "aisignal.h"
 
+#include <cstdio>
+
 namespace ai
 {
     AISignal::AISignal()
@@ -14,14 +16,18 @@ namespace ai
         m_ParamRefList.clear();
     }
 
+    // RVA 0x906430
     void AISignal::Set(const CStr& Name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_name = Name;
+        m_ParamRefList.clear();
+        m_FuncNum = 0xFFFF;
     }
 
+    // RVA 0x906410
     void AISignal::Dump() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        printf("%s", m_name.c_str());
     }
 
     const CStr& AISignal::GetName() const

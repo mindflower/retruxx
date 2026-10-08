@@ -1,6 +1,8 @@
 #pragma once
 #include <core/stringm3d.h>
 
+#include <cstdint>
+
 namespace m3d
 {
     class IConHandler;
@@ -9,7 +11,7 @@ namespace m3d
     class CVar
     {
     public:
-        enum eType
+        enum eType : int32_t
         {
             CVAR_UNDEFINED = 0x0,
             CVAR_INT = 0x1,
@@ -19,7 +21,7 @@ namespace m3d
             CVAR_COLOR = 0x5,
         };
 
-        enum eFlags
+        enum eFlags : int32_t
         {
             CVAR_ARCHIVE = 0x1,
             CVAR_READONLY = 0x2,
@@ -27,10 +29,15 @@ namespace m3d
         };
 
     public:
-        CVar(CVar const&);
+        CVar(CVar const& other);
+        CVar(CVar&& other) noexcept;
+
         CVar(char const* name, char const* value, eType type, eFlags flags);
         CVar();
         ~CVar();
+
+        CVar& operator=(CVar const& other);
+        CVar& operator=(CVar&& other) noexcept;
 
         void Init(char const* name, char const* value, eType type, eFlags flags);
         int GetI() const;
@@ -38,7 +45,6 @@ namespace m3d
         bool GetB() const;
         char const* GetS() const;
         unsigned int GetC() const;
-
 
         void Set(char const* value, bool ignoreFlags = true);
         void SetI(int, bool ignoreFlags = true);
@@ -61,8 +67,8 @@ namespace m3d
         eFlags m_flags = CVAR_ARCHIVE;
         union
         {
-            int m_i = 0;
-            unsigned int m_color;
+            int32_t m_i = 0;
+            uint32_t m_color;
             float m_f;
             bool m_b;
         };
@@ -72,4 +78,8 @@ namespace m3d
 
         bool operator==(CVar const& rhs) const;
     };
-}
+
+    // The original driver DLLs read cvars straight out of EngineConfig: the type at +0x0c and
+    // the value at +0x14, so the layout is fixed.
+    static_assert(sizeof(CVar) == 0x002c);
+}  // namespace m3d

@@ -5,10 +5,15 @@
 
 #include "geomobject.h"
 #include "landscape.h"
+#include "level.h"
 #include "physicbody.h"
 #include "world.h"
+#include "config.h"
 #include "core/kernel.h"
+#include "core/timer.h"
 #include "core/log.h"
+#include "core/scoped_ptr.h"
+#include "math/segment.h"
 #include "math/coremath.h"
 #include "ode/odecpp.h"
 #include "server/server.h"
@@ -18,6 +23,7 @@
 #include "server/objects/town.h"
 #include "server/objects/base/shell.h"
 #include "server/objects/vehicle.h"
+#include "vehiclepart.h"
 #include <algorithm>
 
 #include "m3dapp.h"
@@ -82,7 +88,8 @@ namespace ai
 
     bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
     {
-        // TODO: generated code
+        // RVA 0x7D3DB0 - collision primitives for a model: its collision trimesh (when allowed) and its geoms, or
+        // a box around the model when it has neither. Degenerate sizes are replaced with defaults.
         auto& animatedModelsServer = M3D_APP->GetAnimatedModelsServer();
 
         // Clear existing collision infos
@@ -227,7 +234,9 @@ namespace ai
                 if (boxSizeSq < 0.0001f)
                 {
                     // Log warning about zero-sized box
-                    M3D_LOG_INFO("Warning: size of box in model is zero. Setting to (0.5, 0.5, 0.5)");
+                    M3D_LOG_INFO(
+                        "Warning: size of box in model '" + M3D_ENGINE_CFG.GetNameByModelId(serverHandle + 0x200000) +
+                        "' is zero. Setting to ( 0.5, 0.5, 0.5 )");
                     collInfo.m_size = CVector(0.5f, 0.5f, 0.5f);
                 }
                 break;
@@ -237,7 +246,9 @@ namespace ai
                 if (collInfo.m_radius < 0.0001f)
                 {
                     // Log warning about zero-radius sphere
-                    M3D_LOG_INFO("Warning: size of sphere in model is zero. Setting to 0.5");
+                    M3D_LOG_INFO(
+                        "Warning: size of sphere in model '" +
+                        M3D_ENGINE_CFG.GetNameByModelId(serverHandle + 0x200000) + "' is zero. Setting to 0.5");
                     collInfo.m_radius = 0.5f;
                 }
                 break;
@@ -250,7 +261,11 @@ namespace ai
                 if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
                 {
                     // Log warning about invalid cylinder sizes
-                    M3D_LOG_INFO("Warning: sizes of cylinder in model are invalid. Setting to (0.5, 0.5)");
+                    // NOTE: "cyliner" is the shipped spelling.
+                    M3D_LOG_INFO(
+                        "Warning: sizes of cyliner in model '" +
+                        M3D_ENGINE_CFG.GetNameByModelId(serverHandle + 0x200000) +
+                        "' are invalid. Setting to ( 0.5, 0.5 )");
                     collInfo.m_size = CVector(0.0f, 0.5f, 0.0f);
                     collInfo.m_radius = 0.5f;
                 }
@@ -288,9 +303,50 @@ namespace ai
         }
     }
 
-    void SetNodeElapsedAnimationTimeInMs(m3d::SgNode*, int)
+    void SetNodeElapsedAnimationTimeInMs(m3d::SgNode* node, int ms)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7D3070 - advances the node's animation so that ms milliseconds of it have played,
+        // by updating its model server item with the missing time.
+        if (!node)
+        {
+            return;
+        }
+
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(node);
+        if (!animInfo || !animInfo->GetCurAnimation())
+        {
+            return;
+        }
+
+        // NOTE: the time already played is taken as the current frame times the frame rate, not
+        // divided by it, so the units do not match the milliseconds it is subtracted from.
+        int const dt = ms - animInfo->CurAnimFrame() * animInfo->GetCurAnimation()->m_fps;
+        if (dt <= 0)
+        {
+            return;
+        }
+
+        int serverHandle = -1;
+        node->GetProperty(m3d::PROP_NODE_HANDLE, &serverHandle);
+        if (serverHandle == -1)
+        {
+            return;
+        }
+
+        // The parameters AnimatedModelsServer::UpdateItem expects.
+        struct RenderInfo
+        {
+            /* 0x0000 */ m3d::SgNode* m_node = nullptr;
+            /* 0x0004 */ unsigned int m_dt = 0;
+            /* 0x0008 */ unsigned int m_fps = 0;
+        }; /* size: 0x000c */
+
+        RenderInfo ri;
+        ri.m_node = node;
+        ri.m_dt = dt;
+        ri.m_fps = 0;
+        node->GetServer()->UpdateItem(serverHandle, &ri);
+        node->SetPrevThinkTime(M3D_KERNEL->GetTimer().GetFrameStartTime());
     }
 
     CVector ProjectVectorOntoPlane(CVector const& normal, CVector const& v)
@@ -311,9 +367,51 @@ namespace ai
         return result;
     }
 
-    int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*)
+    int TraceLine(ai::Ray const& ray, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0xA04F30 - the index of the geom whose contact with the ray is nearest the ray's
+        // start, or -1; that contact is copied to closestContact.
+        float minDistFromContact = 1.0e30f;
+        dReal const* start = dGeomGetPosition(ray.GetGeomId());
+        float const realStartX = start[0];
+        float const realStartY = start[1];
+        float const realStartZ = start[2];
+        int contactGeom = -1;
+        for (unsigned i = 0; i < Geoms.size(); ++i)
+        {
+            dContact contact;
+            if (dCollide(ray.GetGeomId(), Geoms[i]->GetGeomId(), 1, &contact.geom, sizeof(dContact)))
+            {
+                float const dy = (realStartY - contact.geom.pos[1]) * (realStartY - contact.geom.pos[1]);
+                float const dx = (realStartX - contact.geom.pos[0]) * (realStartX - contact.geom.pos[0]);
+                float const distSq = (realStartZ - contact.geom.pos[2]) * (realStartZ - contact.geom.pos[2]) + dy + dx;
+                if (minDistFromContact > distSq)
+                {
+                    minDistFromContact = distSq;
+                    contactGeom = static_cast<int>(i);
+                    if (closestContact)
+                    {
+                        *closestContact = contact;
+                    }
+                }
+            }
+        }
+        return contactGeom;
+    }
+
+    int TraceSegment(Segment const& segment, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact)
+    {
+        // RVA 0xA05040 - TraceLine along a segment, with one ray shared by every call.
+        static scoped_ptr<ai::Ray> ray(ai::Ray::CreateObject(nullptr, 0.0f, nullptr));
+        CVector const& begin = segment.begin();
+        CVector const& end = segment.end();
+        dGeomSetPosition(ray->GetGeomId(), begin.x, begin.y, begin.z);
+        ray->SetDirection(CVector(end.x - begin.x, end.y - begin.y, end.z - begin.z));
+        float const dz = end.z - begin.z;
+        float const dy = end.y - begin.y;
+        float const dx = end.x - begin.x;
+        ray->SetLength(std::sqrt(dz * dz + dy * dy + dx * dx));
+        return TraceLine(*ray, Geoms, closestContact);
     }
 
     namespace
@@ -340,6 +438,163 @@ namespace ai
         }
     }  // namespace
 
+    bool CollideGeom(
+        ai::Geom const& testGeom,
+        bool dontCollideWithLittle,
+        bool dontCollideWithPlayer,
+        bool dontCollideWithWater,
+        bool dontCollideWithShells)
+    {
+        // RVA 0x608E90 - a yes/no overlap test for one geom against the single
+        // collision cell it sits in, plus the terrain. Unlike TraceLine it never
+        // reports where it hit, so it stops at the first contact.
+        float const VISCELL_EDGE_LENGTH = 128.0f;
+        float const invCellSize = 1.0f / static_cast<int>(VISCELL_EDGE_LENGTH);
+
+        auto const* geomPos = dGeomGetPosition(testGeom.GetGeomId());
+        int const cellX = static_cast<int>(invCellSize * static_cast<float>(geomPos[0]));
+        int const cellZ = static_cast<int>(invCellSize * static_cast<float>(geomPos[2]));
+
+        // land_size counts cells, not world units - GetLevelSize() is the latter
+        // and must not be used to bound a cell index.
+        int const landSize = ai::pServer->GetLevel()->land_size;
+        if (cellX < 0 || cellX >= landSize || cellZ < 0 || cellZ >= landSize)
+        {
+            return false;
+        }
+
+        dContact contact;
+        auto& landscape = ai::pServer->GetWorld()->GetLandscape();
+
+        if (auto* terrain = landscape.GetTerrainGeomObject())
+        {
+            if (dCollide(testGeom.GetGeomId(), terrain->GetGeom(), 1, &contact.geom, sizeof(dContact)))
+            {
+                return true;
+            }
+        }
+
+        auto* cellItem = landscape.GetCollisionCellItem(cellX, cellZ);
+        if (!cellItem)
+        {
+            M3D_LOG_INFO(
+                "Warning: null collision cell item, cellX = " + CStr(cellX) + ", cellZ = " + CStr(cellZ));
+            return false;
+        }
+
+        for (auto* geomObject : cellItem->m_geomsList)
+        {
+            if (dontCollideWithLittle && IsLittle(geomObject->GetGeom()))
+            {
+                continue;
+            }
+            if (dontCollideWithWater && geomObject->IsKindOf(&m3d::GeomObjectWater::m_classGeomObjectWater))
+            {
+                continue;
+            }
+            if (geomObject->IsKindOf(&m3d::GeomObjectPassCell::m_classGeomObjectPassCell))
+            {
+                continue;
+            }
+            if (dCollide(testGeom.GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, sizeof(dContact)))
+            {
+                return true;
+            }
+        }
+
+        for (int objId : cellItem->m_physicObjIds)
+        {
+            auto* obj = dynamic_cast<ai::PhysicObj*>(ai::theObjects->GetEntityByObjId(objId));
+            if (!obj)
+            {
+                M3D_LOG_ERR(
+                    "Error: NULL object is linked to collision cell x = " + CStr(cellX) + ", y = " + CStr(cellZ) +
+                    ", id = " + CStr(objId));
+                continue;
+            }
+
+            // A body-less object has no geometry worth testing, and a blast wave
+            // is a pressure volume rather than something solid.
+            if (!obj->GetBody() || obj->IsKindOf(&ai::BlastWave::m_classBlastWave))
+            {
+                continue;
+            }
+
+            if (obj->IsKindOf(&ai::SimplePhysicObj::m_classSimplePhysicObj))
+            {
+                auto* simple = static_cast<ai::SimplePhysicObj*>(obj);
+                // The original indexes the first geom unconditionally; here a body
+                // that never got its geometry built would be a null dereference.
+                auto* body = simple->GetPhysicBody();
+                if (!body || body->m_pGeoms.empty() || !body->m_pGeoms.front())
+                {
+                    continue;
+                }
+                dxGeom* geom = body->m_pGeoms.front()->GetGeomId();
+
+                if (dontCollideWithLittle && IsLittle(geom))
+                {
+                    continue;
+                }
+                if (dontCollideWithShells && obj->IsKindOf(&ai::Shell::m_classShell))
+                {
+                    continue;
+                }
+                if (dontCollideWithPlayer &&
+                    static_cast<ai::Vehicle*>(obj->GetParent()) ==
+                        ai::gDynamicScene->GetVehicleControlledByPlayer())
+                {
+                    continue;
+                }
+                // Geoms parked in the intersection space, or in our own space,
+                // are not real obstacles.
+                if (dGeomGetSpace(geom) == ai::gIntersectionSpace)
+                {
+                    continue;
+                }
+                if (dGeomGetSpace(geom) == dGeomGetSpace(testGeom.GetGeomId()))
+                {
+                    continue;
+                }
+                if (dCollide(testGeom.GetGeomId(), geom, 1, &contact.geom, sizeof(dContact)))
+                {
+                    return true;
+                }
+            }
+            else if (obj->IsKindOf(&ai::ComplexPhysicObj::m_classComplexPhysicObj))
+            {
+                auto* complex = static_cast<ai::ComplexPhysicObj*>(obj);
+                if (dontCollideWithPlayer && complex == ai::gDynamicScene->GetVehicleControlledByPlayer())
+                {
+                    continue;
+                }
+
+                for (auto const& part : complex->m_vehicleParts)
+                {
+                    if (!part.second || part.second->m_pGeoms.empty() || !part.second->m_pGeoms.front())
+                    {
+                        continue;
+                    }
+                    dxGeom* geom = part.second->m_pGeoms.front()->GetGeomId();
+                    if (dGeomGetSpace(geom) == ai::gIntersectionSpace)
+                    {
+                        continue;
+                    }
+                    if (dGeomGetSpace(geom) == dGeomGetSpace(testGeom.GetGeomId()))
+                    {
+                        continue;
+                    }
+                    if (dCollide(testGeom.GetGeomId(), geom, 1, &contact.geom, sizeof(dContact)))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     bool TraceLine(
         ai::Ray const& ray,
         dContact& closestContact,
@@ -351,7 +606,7 @@ namespace ai
         bool dontCollideWithShells,
         bool smartCollideWithTowns)
     {
-        // TODO: generated code
+        // RVA 0x60B780
 
         // Get ray start position and direction
         auto* geomPos = dGeomGetPosition(ray.GetGeomId());
@@ -406,7 +661,6 @@ namespace ai
         // Traverse through grid cells along the ray
         int cellX = 0;
         int cellZ = 0;
-        // TODO: check this
         while (line.step(cellX, cellZ))
         {
             // Check if we're still within level bounds
@@ -513,7 +767,9 @@ namespace ai
                     {
                         continue;
                     }
-                    if (dontCollideWithDynamic && (object->GetPhysicState() & 4) != 0)
+                    // Bit 4 is set by _SetStatic, so "don't collide with
+                    // dynamic" means only static objects are eligible.
+                    if (dontCollideWithDynamic && (object->GetPhysicState() & 4) == 0)
                     {
                         continue;
                     }
@@ -521,7 +777,9 @@ namespace ai
                     {
                         continue;
                     }
-                    if ((object->GetPhysicState() & 2) != 0)
+                    // Bit 2 is set by _SetGeomEnabledBit: the object is only
+                    // traced against while its geoms are enabled.
+                    if ((object->GetPhysicState() & 2) == 0)
                     {
                         continue;
                     }
@@ -537,70 +795,54 @@ namespace ai
                         continue;
                     }
 
-                    // Special handling for towns with smart collision
+                    // A town is hit at its N-th farthest contact along the ray (N = collision layers below
+                    // vehicles), so the ray passes through the layers a vehicle drives over.
                     if (smartCollideWithTowns && object->IsKindOf(&ai::Town::m_classTown))
                     {
-                        auto* protoInfo = dynamic_cast<Town*>(object)->GetPrototypeInfo();
-                        unsigned int maxContacts = protoInfo->m_numCollisionLayersBelowVehicle;
-                        if (maxContacts > 0)
+                        unsigned const numLayers = static_cast<Town*>(object)->GetPrototypeInfo()->m_numCollisionLayersBelowVehicle;
+                        if (numLayers > 0)
                         {
                             std::vector<CVector> contactPoints;
-
-                            // Collect all contact points with the town
-                            dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id());
-                            while (geom)
+                            for (dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id()); geom; geom = dGeomGetBodyNext(geom))
                             {
-                                if (!IsLittle(geom))
+                                if (dontCollideWithLittle && IsLittle(geom))
                                 {
-                                    dxSpace* space = dGeomGetSpace(geom);
-                                    if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
+                                    continue;
+                                }
+                                dxSpace* space = dGeomGetSpace(geom);
+                                if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
+                                {
+                                    int const contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
+                                    for (int i = 0; i < contactCount; i++)
                                     {
-                                        int contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
-
-                                        for (int i = 0; i < contactCount; i++)
-                                        {
-                                            CVector contactPos(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
-                                            contactPoints.push_back(contactPos);
-                                        }
+                                        contactPoints.emplace_back(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
                                     }
                                 }
-                                geom = dGeomGetBodyNext(geom);
                             }
 
-                            // Sort contacts by distance and use only the farthest ones (town optimization)
                             if (!contactPoints.empty())
                             {
+                                // Nearest first.
                                 std::sort(
                                     contactPoints.begin(),
                                     contactPoints.end(),
-                                    [&](CVector const& a, CVector const& b)
+                                    [&start](CVector const& a, CVector const& b)
                                     {
-                                        return (start - a).lengthSq() < (start - b).lengthSq();
+                                        return (b - start).lengthSq() > (a - start).lengthSq();
                                     });
-
-                                // Use only the most distant contacts (town optimization)
-                                size_t startIndex = 0;
-                                if (contactPoints.size() > maxContacts)
+                                size_t const pick = contactPoints.size() > numLayers ? contactPoints.size() - numLayers : 0;
+                                CVector const& point = contactPoints[pick];
+                                float const distanceSq = (start - point).lengthSq();
+                                if (distanceSq < minDistanceSq)
                                 {
-                                    startIndex = contactPoints.size() - maxContacts;
-                                }
-
-                                for (size_t i = startIndex; i < contactPoints.size(); i++)
-                                {
-                                    CVector delta = start - contactPoints[i];
-                                    float distanceSq = delta.lengthSq();
-
-                                    if (distanceSq < minDistanceSq)
-                                    {
-                                        minDistanceSq = distanceSq;
-                                        closestContact.geom.pos[0] = contactPoints[i].x;
-                                        closestContact.geom.pos[1] = contactPoints[i].y;
-                                        closestContact.geom.pos[2] = contactPoints[i].z;
-                                        closestContact.geom.pos[3] = 0.0f;
-                                        closestContact.geom.g1 = 0;
-                                        closestContact.geom.g2 = 0;
-                                        foundContact = true;
-                                    }
+                                    minDistanceSq = distanceSq;
+                                    closestContact.geom.pos[0] = point.x;
+                                    closestContact.geom.pos[1] = point.y;
+                                    closestContact.geom.pos[2] = point.z;
+                                    closestContact.geom.pos[3] = 0.0f;
+                                    closestContact.geom.g1 = nullptr;
+                                    closestContact.geom.g2 = nullptr;
+                                    foundContact = true;
                                 }
                             }
                         }
@@ -681,81 +923,207 @@ namespace ai
         bool bForPlayerVehicle,
         std::set<m3d::Class*> const& targetClasses)
     {
-        // TODO: generated code GetValidPosition
-        float minDist = 1.0e20f;
+        // RVA 0x6AA040 - a free spot for a sphere of the given radius: the position itself if free, else the first
+        // free one of 8 directions on rings of growing radius (steps of `radius`, up to 100).
+        static CVector const DirOffset[8] = {
+            {1.0f, 0.0f, 0.0f},
+            {-1.0f, 0.0f, 0.0f},
+            {0.0f, 0.0f, 1.0f},
+            {0.0f, 0.0f, -1.0f},
+            {0.70709997f, 0.0f, 0.70709997f},
+            {-0.70709997f, 0.0f, 0.70709997f},
+            {0.70709997f, 0.0f, -0.70709997f},
+            {-0.70709997f, 0.0f, -0.70709997f},
+        };
 
-        // Create intersection sphere
-        scoped_ptr<ai::SphereForIntersection> sphere = ai::SphereForIntersection::CreateObject(
-            radius, ai::SphereForIntersection::SpherePurpose::LOOKING, 0);  // LOOKING constant assumed to be 0
+        scoped_ptr<ai::SphereForIntersection> sphere =
+            ai::SphereForIntersection::CreateObject(radius, ai::SphereForIntersection::SpherePurpose::LOOKING, 0);
+        auto const isFree = [&](CVector const& pos) {
+            dGeomSetPosition(sphere->GetGeomId(), pos.x, pos.y, pos.z);
+            return ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
+                (!bCheckPassMap ||
+                 !Map::theGlobalMap->IsCircleBlocked(CVector2{pos.x, pos.z}, radius, blockingValue));
+        };
 
-        // Set initial position
-        dGeomSetPosition(sphere->GetGeomId(), position.x, position.y, position.z);
-
-        // Check if initial position is valid
-        if (!ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) ||
-            (bCheckPassMap && Map::theGlobalMap->IsCircleBlocked(CVector2{position.x, position.z}, radius, blockingValue)))
+        if (isFree(position))
         {
-            // Initial position is invalid, search for a valid one
-            float currentRadius = radius;
-            float dist = radius;
+            availablePosition = position;
+            return true;
+        }
 
-            if (radius <= 100.0f)
+        // NOTE: minDist only ever takes a ring's radius, so once a ring has a free spot the larger rings are still
+        // tried (their spheres placed) but can no longer win.
+        float minDist = 1.0e20f;
+        CVector newPos;
+        for (float dist = radius; dist <= 100.0f; dist += radius)
+        {
+            for (CVector const& offset : DirOffset)
             {
-                while (dist <= 100.0f)
+                CVector const candidate(
+                    position.x + offset.x * dist, position.y + offset.y * dist, position.z + dist * offset.z);
+                dGeomSetPosition(sphere->GetGeomId(), candidate.x, candidate.y, candidate.z);
+                if (minDist > dist && ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
+                    (!bCheckPassMap ||
+                     !Map::theGlobalMap->IsCircleBlocked(CVector2{candidate.x, candidate.z}, radius, blockingValue)))
                 {
-                    // Try 8 directions around the circle
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        static CVector const DirOffset[] = {
-                            {1.0, 0.0, 0.0},
-                            {-1.0, 0.0, 0.0},
-                            {0.0, 0.0, 1.0},
-                            {0.0, 0.0, -1.0},
-                            {0.70709997, 0.0, 0.70709997},
-                            {-0.70709997, 0.0, 0.70709997},
-                            {0.70709997, 0.0, -0.70709997},
-                            {-0.70709997, 0.0, -0.70709997},
-                        };
-                        auto const& offset = DirOffset[i];
-
-                        // Calculate new position
-                        float newX = position.x + offset.x * dist;
-                        float newY = position.y + offset.y * dist;
-                        float newZ = position.z + offset.z * dist;
-
-                        // Update sphere position
-                        dGeomSetPosition(sphere->GetGeomId(), newX, newY, newZ);
-
-                        // Check if this position is better than current best
-                        if (minDist > dist && ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle))
-                        {
-                            if (!bCheckPassMap ||
-                                !ai::Map::theGlobalMap->IsCircleBlocked(CVector2{newX, newZ}, radius, blockingValue))
-                            {
-                                minDist = dist;
-                                availablePosition = CVector{newX, newY, newZ};
-                            }
-                        }
-                    }
-
-                    // Increase search radius
-                    dist += radius;
-                    currentRadius = dist;
+                    minDist = dist;
+                    newPos = candidate;
                 }
             }
+        }
 
-            // Check if we found a valid position
-            if (minDist >= 1.0e19f)
-            {
-                return false;
-            }
+        if (minDist >= 1.0e19f)
+        {
+            return false;
+        }
+        availablePosition = newPos;
+        return true;
+    }
+
+    void SetUniversalJointParams(dxJoint* joint)
+    {
+        // RVA 0x815AC0 - the same soft stop applied to all three axis groups of a universal
+        // joint, so a ragdoll limb settles against its limit instead of snapping to it.
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            int const group = axis * 0x100;
+            dJointSetUniversalParam(joint, dParamBounce + group, 0.0f);
+            dJointSetUniversalParam(joint, dParamCFM + group, 0.0f);
+            dJointSetUniversalParam(joint, dParamStopERP + group, 0.89999998f);
+            dJointSetUniversalParam(joint, dParamStopCFM + group, 0.0f);
+        }
+    }
+
+    bool GetSmoothAcceleratedValue(
+        float elapsedTime,
+        float destination,
+        float position,
+        float velocity,
+        float acceleration,
+        float maxVelocity,
+        float& newPosition,
+        float& newVelocity)
+    {
+        // RVA 0x7D31A0 - one step of a move towards destination: accelerate up to maxVelocity,
+        // cruise, then brake so as to stop on it. Returns true once it has arrived.
+        float delta = static_cast<float>(destination - position);
+        if (fabs(delta) < 0.0099999998f)
+        {
+            newPosition = destination;
+            newVelocity = 0.0f;
             return true;
+        }
+        if (maxVelocity < 0.001f || acceleration < 0.001f)
+        {
+            newPosition = position;
+            newVelocity = 0.0f;
+            return false;
+        }
+
+        // Work in the direction of travel.
+        bool flipped = false;
+        if (delta < 0.0f)
+        {
+            delta = 0.0f - delta;
+            velocity = 0.0f - velocity;
+            position = 0.0f - position;
+            destination = 0.0f - destination;
+            flipped = true;
+        }
+
+        bool result = false;
+        float const brakeWork = delta * acceleration;
+        float const maxVelThatCanBeReached = static_cast<float>(sqrt(double(velocity) * velocity * 0.5 + brakeWork));
+        if (maxVelThatCanBeReached > velocity - 0.000099999997f || velocity < 0.0f)
+        {
+            // Accelerate (to the cap), cruise, then brake.
+            float const topVelocity = maxVelThatCanBeReached > maxVelocity ? maxVelocity : maxVelThatCanBeReached;
+            float accelTime = elapsedTime;
+            if (elapsedTime > (topVelocity - velocity) * (1.0f / acceleration))
+            {
+                accelTime = (topVelocity - velocity) * (1.0f / acceleration);
+            }
+            newPosition = ((accelTime * acceleration) * 0.5f + velocity) * accelTime + position;
+            float const reachedVelocity = accelTime * acceleration + velocity;
+            newVelocity = reachedVelocity;
+            float const restTime = elapsedTime - accelTime;
+            float cruiseTime = restTime;
+            float const cruiseLimit =
+                ((destination - (topVelocity * topVelocity) / (acceleration * 2.0f)) - newPosition) / topVelocity;
+            if (restTime > cruiseLimit)
+            {
+                cruiseTime = cruiseLimit;
+            }
+            float const cruisePos = reachedVelocity * cruiseTime + newPosition;
+            newPosition = cruisePos;
+            float brakeTime = restTime - cruiseTime;
+            if (brakeTime > (1.0f / acceleration) * newVelocity)
+            {
+                brakeTime = (1.0f / acceleration) * newVelocity;
+            }
+            newPosition = (newVelocity - (brakeTime * acceleration) * 0.5f) * brakeTime + cruisePos;
+            newVelocity = newVelocity - brakeTime * acceleration;
         }
         else
         {
-            // Initial position is valid
-            availablePosition = position;
-            return true;
+            // Too fast to stop in time: brake.
+            float const velocitySq = static_cast<float>(double(velocity) * velocity);
+            float discriminant = velocitySq - brakeWork * 2.0f;
+            if (discriminant < 0.0f)
+            {
+                discriminant = 0.0f;
+            }
+            float brakeTime = elapsedTime;
+            double const stopTime = (sqrt(discriminant) + velocity) / acceleration;
+            if (elapsedTime > stopTime)
+            {
+                brakeTime = static_cast<float>(stopTime);
+            }
+            newPosition = (velocity - (brakeTime * acceleration) * 0.5f) * brakeTime + position;
+            newVelocity = velocity - brakeTime * acceleration;
+        }
+
+        // Passing the destination at a crawl counts as arriving.
+        if ((newPosition - destination) * (position - destination) <= 0.0f && fabs(newVelocity) < 0.0099999998f)
+        {
+            newPosition = destination;
+            newVelocity = 0.0f;
+            result = true;
+        }
+        if (flipped)
+        {
+            newPosition = 0.0f - newPosition;
+            newVelocity = 0.0f - newVelocity;
+        }
+        return result;
+    }
+
+    int GetNodeElapsedAnimationTimeInMs(m3d::SgNode const* node)
+    {
+        // RVA 0x7D3030 - NOTE: the current frame times the frame rate, not divided by it, so the
+        // result is not really milliseconds (see also the use in the function below).
+        m3d::AnimInfo* animInfo = GetNodeAnimInfo(node);
+        if (!animInfo || !animInfo->GetCurAnimation())
+        {
+            return 0;
+        }
+        return animInfo->GetCurAnimation()->m_fps * animInfo->CurAnimFrame();
+    }
+
+    int GetNodeCurAnimationFrame(m3d::SgNode const* node)
+    {
+        // RVA 0x7D3120
+        m3d::AnimInfo* const animInfo = GetNodeAnimInfo(node);
+        return animInfo ? animInfo->CurAnimFrame() : 0;
+    }
+
+    void SetNodeCurAnimationFrame(m3d::SgNode* node, int frame)
+    {
+        // RVA 0x7D3150 - jumps the node's animation to the given frame.
+        m3d::AnimInfo* const animInfo = GetNodeAnimInfo(node);
+        if (animInfo && animInfo->GetCurAnimation())
+        {
+            SetNodeElapsedAnimationTimeInMs(node, frame * animInfo->GetCurAnimation()->m_fps);
         }
     }
 
@@ -773,8 +1141,11 @@ namespace ai
 
     CVector GetRandomDeviatedVector(CVector const& axis, float maxDeviationAngle)
     {
-        // TODO: generated code GetRandomDeviatedVector
-        // Generate random deviation angles
+        // RVA 0x7D34E0 - a random direction within maxDeviationAngle of axis: the forward vector (0, 0, 1) is
+        // tilted by a random angle in [0, maxDeviationAngle] about Y and spun by a random angle about Z
+        // (q = spin * tilt), then rotated from forward onto axis.
+        // The quaternion-to-matrix steps are written out as the shipped build inlines them, to keep its float
+        // evaluation order.
         float minAngle = 0.0f;
         float maxAngle = maxDeviationAngle;
 
@@ -900,12 +1271,17 @@ namespace ai
             correctionMatrix._43 = 0.0f;
             correctionMatrix._44 = 1.0f;
 
-            // Apply correction to deviated direction
+            // Apply correction to deviated direction. Every component has to be
+            // built from the original vector, so rotate into a fresh one rather
+            // than updating in place.
             CMatrix finalMatrix(correctionMatrix);
-            float originalX = deviatedDir.x;
-            deviatedDir.x = (finalMatrix._11 * deviatedDir.x) + (finalMatrix._21 * deviatedDir.y) + (finalMatrix._31 * deviatedDir.z);
-            deviatedDir.y = (finalMatrix._12 * originalX) + (finalMatrix._22 * deviatedDir.y) + (finalMatrix._32 * deviatedDir.z);
-            deviatedDir.z = (finalMatrix._13 * originalX) + (finalMatrix._23 * deviatedDir.y) + (finalMatrix._33 * deviatedDir.z);
+            CVector const preCorrection = deviatedDir;
+            deviatedDir.x = (finalMatrix._11 * preCorrection.x) + (finalMatrix._21 * preCorrection.y) +
+                (finalMatrix._31 * preCorrection.z);
+            deviatedDir.y = (finalMatrix._12 * preCorrection.x) + (finalMatrix._22 * preCorrection.y) +
+                (finalMatrix._32 * preCorrection.z);
+            deviatedDir.z = (finalMatrix._13 * preCorrection.x) + (finalMatrix._23 * preCorrection.y) +
+                (finalMatrix._33 * preCorrection.z);
         }
 
         return deviatedDir;

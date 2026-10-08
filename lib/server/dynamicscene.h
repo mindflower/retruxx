@@ -120,6 +120,9 @@ namespace ai
         void _AddSoilEffectNameForWheelTypeName(const CStr& wheelTypeName);
     }; /* size: 0x0160 */
 
+    // ODE's broadphase hands every candidate pair here; defined in dynamicscene.cpp.
+    void NearCallback(void* data, dxGeom* geom1, dxGeom* geom2);
+
     inline dxSpace* gGlobalSpace = nullptr;
     inline dxSpace* gTempSpace = nullptr;
     inline dxSpace* gBulletSpace = nullptr;

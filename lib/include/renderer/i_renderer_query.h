@@ -1,9 +1,16 @@
 #pragma once
 
+#include <cstdint>
+
 namespace m3d
 {
+    class Landscape;
+
     namespace rend
     {
+        // Query results are filled in by the renderer DLL. The union holds a uint64_t, so
+        // natural 8-byte packing keeps the original 0x20-byte layout.
+#pragma pack(push, 8)
         struct BANDWIDTHTIMINGS
         {
             /* 0x0000 */ float MaxBandwidthUtilized;
@@ -45,15 +52,18 @@ namespace m3d
 
         struct VCACHE
         {
-            /* 0x0000 */ unsigned long Pattern;
-            /* 0x0004 */ unsigned long OptMethod;
-            /* 0x0008 */ unsigned long CacheSize;
-            /* 0x000c */ unsigned long MagicNumber;
+            /* 0x0000 */ uint32_t Pattern;
+            /* 0x0004 */ uint32_t OptMethod;
+            /* 0x0008 */ uint32_t CacheSize;
+            /* 0x000c */ uint32_t MagicNumber;
         }; /* size: 0x0010 */
 
         class QueryReturnValue
         {
-            enum Type
+            // Landscape::QueryWaterVisibility reads the result directly.
+            friend class m3d::Landscape;
+
+            enum Type : int32_t
             {
                 NotValid = 0,
                 Bool = 1,
@@ -90,15 +100,24 @@ namespace m3d
             union
             {
                 /* 0x0008 */ bool b;
-                /* 0x0008 */ unsigned long d;
+                /* 0x0008 */ uint32_t d;
                 /* 0x0008 */ uint64_t i64;
                 m3d::rend::BANDWIDTHTIMINGS bw;
                 m3d::rend::CACHEUTILIZATION cu;
                 m3d::rend::INTERFACETIMINGS it;
                 m3d::rend::PIPELINETIMINGS pt;
                 m3d::rend::STAGETIMINGS st;
+                m3d::rend::VCACHE vc;
             }; /* size: 0x0014 */
-            m3d::rend::VCACHE vc;
         }; /* size: 0x0020 */
+#pragma pack(pop)
+
+        static_assert(sizeof(BANDWIDTHTIMINGS) == 0x0014);
+        static_assert(sizeof(CACHEUTILIZATION) == 0x0008);
+        static_assert(sizeof(INTERFACETIMINGS) == 0x0014);
+        static_assert(sizeof(PIPELINETIMINGS) == 0x0010);
+        static_assert(sizeof(STAGETIMINGS) == 0x0008);
+        static_assert(sizeof(VCACHE) == 0x0010);
+        static_assert(sizeof(QueryReturnValue) == 0x0020);
     }
 }

@@ -1,6 +1,19 @@
 #include "vehiclerolecoward.h"
 
+#include <cmath>
+#include <cstdlib>
 #include <stdexcept>
+
+#include "core/ini.h"
+#include "core/kernel.h"
+#include "math/vector2.h"
+#include "server/utils.h"
+#include "server/objects/team.h"
+#include "server/objects/vehicle.h"
+#include "server/objects/base/objcontainer.h"
+#include "server/objects/base/physicobj.h"
+#include "server/objects/base/prototypemanager.h"
+#include "server/objects/staticautogun.h"
 
 namespace ai
 {
@@ -10,91 +23,142 @@ namespace ai
 
     VehicleRoleCowardPrototypeInfo::VehicleRoleCowardPrototypeInfo()
     {
-        m_vehicleFiringRangeCoeff = 0.30000001;
-    }
-
-    float VehicleRoleCowardPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC970
+        m_vehicleFiringRangeCoeff = 0.30000001f;
     }
 
     bool VehicleRoleCowardPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        return ai::VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode) != 0;
+        // RVA 0x7FC8A0
+        return VehicleRolePrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
     Obj* VehicleRoleCowardPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    float VehicleRoleCowardPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC9C0
+        return new VehicleRoleCoward(*this);
     }
 
     float VehicleRoleCowardPrototypeInfo::FitAgainstVehicle(Vehicle const*, Vehicle const*) const
     {
-        return 0.0;
+        // RVA 0x7FC8C0 - never picked on merit.
+        return 0.0f;
     }
 
-    VehicleRoleCoward::VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const& prototype) : VehicleRole(prototype)
+    float VehicleRoleCowardPrototypeInfo::FitAgainstTeam(Vehicle const*, Team const*, Vehicle**) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC8D0 - NOTE: *targetVehicle is left untouched.
+        return 0.0f;
     }
 
-    m3d::Class* VehicleRoleCoward::GetBaseClass()
+    float VehicleRoleCowardPrototypeInfo::FitAgainstObj(Vehicle const*, Obj const*) const
     {
-        return RT_CLASS_LOCAL(VehicleRole);
+        // RVA 0x7FC8E0
+        return 0.0f;
     }
 
-    void VehicleRoleCoward::setTargetVehicle(Vehicle const*)
+    VehicleRoleCoward::VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const& prototype) :
+        VehicleRole(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC8F0
     }
 
-    void VehicleRoleCoward::setTargetTeam(Team const*)
+    // RVA 0x7FC910
+    VehicleRoleCoward::~VehicleRoleCoward() = default;
+
+    void VehicleRoleCoward::setTargetVehicle(Vehicle const* vehicle)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC920
+        VehicleRole::setTargetVehicle(vehicle);
+        setTargetObj(vehicle);
     }
 
-    VehicleRoleCowardPrototypeInfo const* VehicleRoleCoward::GetPrototypeInfo() const
+    void VehicleRoleCoward::setTargetTeam(Team const* team)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC940
+        VehicleRole::setTargetTeam(team);
+        setTargetObj(team);
     }
 
-    void VehicleRoleCoward::setTargetObj(Obj const*)
+    void VehicleRoleCoward::setTargetObj(Obj const* obj)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC960
+        VehicleRole::setTargetObj(obj);
+    }
+
+    bool VehicleRoleCoward::UpdateVehicle(float elapsedTime, Vehicle* v)
+    {
+        // RVA 0x7FCF10
+        if (!VehicleRole::UpdateVehicle(elapsedTime, v))
+        {
+            return false;
+        }
+        v->SetExternalDestination(getCowardPosition(v));
+        _LookAndFireToEnemy(v, elapsedTime);
+        return true;
+    }
+
+    CVector VehicleRoleCoward::getCowardPosition(Vehicle* v)
+    {
+        // RVA 0x7FCA30 - flees straight away from the target (to the point mirrored through
+        // itself) while within one and a half of the target's firing range.
+        Obj const* target = getTargetObj();
+        if (!target)
+        {
+            return v->GetPosition();
+        }
+        float range = 100.0f;
+        if (target->IsKindOf(RT_CLASS_LOCAL(Vehicle)))
+        {
+            range = static_cast<Vehicle const*>(target)->GetMaxFiringRangeAI();
+        }
+        else if (target->IsKindOf(RT_CLASS_LOCAL(StaticAutoGun)))
+        {
+            range = static_cast<StaticAutoGun const*>(target)->GetMaxFiringRangeAI();
+        }
+        CVector const posMy = v->GetPosition();
+        CVector const posTarget = getPhysicObjOrPhysicBodyPosition(target);
+        double const dz = posMy.z - posTarget.z;
+        double const dy = posMy.y - posTarget.y;
+        double const dx = posMy.x - posTarget.x;
+        if (range * 1.5 > sqrt(dz * dz + dy * dy + dx * dx))
+        {
+            CVector const pos = v->GetPosition();
+            CVector const targetPos = getPhysicObjOrPhysicBodyPosition(target);
+            return CVector(pos.x * 2.0f - targetPos.x, pos.y * 2.0f - targetPos.y, pos.z * 2.0f - targetPos.z);
+        }
+        return v->GetPosition();
     }
 
     m3d::Class* VehicleRoleCoward::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC890
+        return RT_CLASS_LOCAL(VehicleRoleCoward);
     }
 
-    bool VehicleRoleCoward::UpdateVehicle(float, Vehicle*)
+    m3d::Class* VehicleRoleCoward::GetBaseClass()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FC880
+        return RT_CLASS_LOCAL(VehicleRole);
     }
 
-    VehicleRoleCoward::~VehicleRoleCoward()
+    VehicleRoleCowardPrototypeInfo const* VehicleRoleCoward::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    CVector VehicleRoleCoward::getCowardPosition(Vehicle*)
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
-
-    m3d::Object* VehicleRoleCoward::Clone()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FCF60 - NOTE: the prototype is cast without a type check.
+        return static_cast<VehicleRoleCowardPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRoleCoward::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7FCD50
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
-}
+
+    m3d::Object* VehicleRoleCoward::Clone()
+    {
+        // RVA 0x7FCB90
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
+    }
+}  // namespace ai

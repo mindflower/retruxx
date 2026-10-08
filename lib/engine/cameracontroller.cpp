@@ -6,6 +6,7 @@
 #include "core/timer.h"
 #include "math/camera.h"
 #include "retruxx/common.h"
+#include "server/objects/base/globalproperties.h"
 
 float GetFloatUnit()
 {
@@ -21,13 +22,13 @@ namespace m3d
 
     void CameraController::EnableShaking()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_shakingAllowed = true;
     }
 
     void CameraController::Update()
     {
-        const auto shakeLinearAmplitude = M3D_ENGINE_CFG.m_g_shakeLinearAmplitude.GetF();
-        const auto shakeAngleAmplitude = M3D_ENGINE_CFG.m_g_shakeAngleAmplitude.GetF();
+        auto const shakeLinearAmplitude = M3D_ENGINE_CFG.m_g_shakeLinearAmplitude.GetF();
+        auto const shakeAngleAmplitude = M3D_ENGINE_CFG.m_g_shakeAngleAmplitude.GetF();
 
         auto pos = m_originPos - m_camera->m_worldOrigin;
         float distance = sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
@@ -50,11 +51,7 @@ namespace m3d
 
                     // Apply translational shake
                     float translationShake = currentShakePower * shakeLinearAmplitude;
-                    CVector shakeDirection(
-                        GetFloatUnit() - 0.5f,
-                        GetFloatUnit() - 0.5f,
-                        GetFloatUnit() - 0.5f
-                    );
+                    CVector shakeDirection(GetFloatUnit() - 0.5f, GetFloatUnit() - 0.5f, GetFloatUnit() - 0.5f);
                     shakeDirection.normalizeInplace();
                     m_translation = shakeDirection * translationShake;
                 }
@@ -75,7 +72,7 @@ namespace m3d
 
     void CameraController::DisableShaking()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_shakingAllowed = false;
     }
 
     CVector const& CameraController::GetShakingTranslation() const
@@ -83,8 +80,25 @@ namespace m3d
         return m_translation;
     }
 
-    void CameraController::DoTouch(CVector const&, float, float)
+    void CameraController::DoTouch(CVector const& origin, float radius, float damage)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        auto const x = origin.x - m_camera->m_worldOrigin.x;
+        auto const y = origin.y - m_camera->m_worldOrigin.y;
+        auto const z = origin.z - m_camera->m_worldOrigin.z;
+        if (sqrt(x * x + y * y + z * z) <= radius)
+        {
+            m_originPos = origin;
+            m_originRadius = radius;
+
+            m_lastShakeTimeStamp = M3D_KERNEL->GetTimer().GetCurTime();
+
+            if (damage < 0.0)
+                damage = 0.0;
+            if (damage > ai::theGlobProp.m_maxShakeDamage)
+                damage = ai::theGlobProp.m_maxShakeDamage;
+
+            m_shakePower = damage / ai::theGlobProp.m_maxShakeDamage;
+            m_duration = ai::theGlobProp.m_shakeDamageToDurationCoeff * m_shakePower * 1000.0;
+        }
     }
-}
+}  // namespace m3d

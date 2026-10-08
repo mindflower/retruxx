@@ -19,6 +19,7 @@ namespace ai
 
     class VagabondTeam : public ai::Team
     {
+        friend class VagabondTeamPrototypeInfo;
     protected:
         virtual ~VagabondTeam() override;
 

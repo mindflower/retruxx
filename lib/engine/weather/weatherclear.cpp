@@ -9,19 +9,24 @@ namespace m3d
 
     Class* WeatherClear::GetBaseClass()
     {
-        return RT_CLASS_LOCAL(Weather);
+        // RVA 0x7B1240 - NOTE: the shipped class registers m3d::Object, not Weather, as its base, so
+        // IsKindOf(Weather) is false for it.
+        return RT_CLASS_LOCAL(Object);
     }
 
     Object* WeatherClear::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B3620 - a fresh default weather; nothing is copied.
+        return new WeatherClear();
     }
 
+    // RVA 0x7B1440
     WeatherClear::~WeatherClear() = default;
 
     Class* WeatherClear::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B1250
+        return RT_CLASS_LOCAL(WeatherClear);
     }
 
     Object* WeatherClear::CreateObject()
@@ -29,9 +34,9 @@ namespace m3d
         return new WeatherClear();
     }
 
-    WeatherClear::WeatherClear(WeatherClear const&)
+    WeatherClear::WeatherClear(WeatherClear const&) : Weather()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B35E0 - NOTE: copies nothing, like Weather's copy constructor.
     }
 
     WeatherClear::WeatherClear()

@@ -1,5 +1,5 @@
 #pragma once
-//TODO: windows.h
+// CriticalSection holds the CRITICAL_SECTION by value (the shipped layout), so this needs Windows.h.
 #include <Windows.h>
 
 namespace m3d

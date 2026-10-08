@@ -10,7 +10,7 @@ namespace m3d
 {
     namespace ui
     {
-        class TabButtonInfo;
+        struct TabButtonInfo;
         class Frame;
         class BackGround;
         class Pane;
@@ -81,6 +81,7 @@ namespace m3d
             float GetGlyphHeight();
             float GetTabButtonMaxWidth() const;
             void AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg);
+            void AddTabWndPaneIzvrat(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, retruxx::vector<rend::TexHandle> const&, int, int, CStr const&, PaneFlagBg);
             void AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned int, bool);
             float GetTabButtonSpace() const;
             int Create();
@@ -99,6 +100,8 @@ namespace m3d
             int GetFontId(CStr const&, float, FontType, union FontParams) const;
             int GetBtnWidth();
             void AddFlatAxialQuad(DrawInfo const&, BoundsBase<float> const&, unsigned int);
+            // Resolves a palette index to a colour; a real colour passes through.
+            unsigned int _ResolveColor(unsigned int clr) const;
             int SetFont(int&);
             int SetFont(Font*);
             int SetFont(CStr const&, float, FontType, union FontParams);

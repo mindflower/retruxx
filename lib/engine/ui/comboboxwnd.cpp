@@ -93,7 +93,7 @@ namespace m3d
 
         unsigned ComboBoxWnd::GetComboStyle() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_comboStyle;
         }
 
         void ComboBoxWnd::Close()
@@ -103,7 +103,23 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            const auto selTextB = GetSelTextBounds();
+            const auto listB = GetListBounds();
+
+            const float x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
+            const float y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
+            const float right =
+                (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ? selTextB.x0 + selTextB.width : listB.x0 + listB.width;
+            const float bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height)
+                                     ? selTextB.y0 + selTextB.height
+                                     : listB.y0 + listB.height;
+
+            BoundsBase<float> result;
+            result.x0 = x0;
+            result.y0 = y0;
+            result.width = right - x0;
+            result.height = bottom - y0;
+            return result;
         }
 
         void ComboBoxWnd::Open()
@@ -122,7 +138,7 @@ namespace m3d
 
         float ComboBoxWnd::GetSelTextFixedHeight() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_selTextFixedH;
         }
 
         Class* ComboBoxWnd::GetClass() const
@@ -138,7 +154,9 @@ namespace m3d
 
         ComboBoxWnd::~ComboBoxWnd()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // The original deletes m_btnToggle / m_wndStringList / m_wndSelText explicitly here.
+            // In retruxx the sub-windows are owned through the child list (released by
+            // ~Wnd -> DestroyWnd -> RemoveAllChildren -> DecRef), so the body stays empty.
         }
 
         void ComboBoxWnd::SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin)
@@ -156,8 +174,9 @@ namespace m3d
 
         void ComboBoxWnd::SetSelTextFixedHeight(float height)
         {
+            // RVA 0x71F1F0 - the layout only depends on the height when combo style
+            // bit 4 is set.
             m_selTextFixedH = height;
-            //TODO: check this
             if ((m_comboStyle & 4) != 0)
             {
                 RecalcLayot();
@@ -166,6 +185,7 @@ namespace m3d
 
         int ComboBoxWnd::Create(CStr const& caption, unsigned style, BoundsBase<float> const& rc, unsigned id)
         {
+            // RVA 0x71EF60
             auto res = Create(style, rc, id, 0, 0.0, 0.0);
             if (res)
             {
@@ -176,6 +196,9 @@ namespace m3d
 
         int ComboBoxWnd::Create(unsigned style, BoundsBase<float> const& b, int id, unsigned comboStyle, float listMaxH, float selTextFixedH)
         {
+            // RVA 0x71FC90 - builds the toggle button, the selected-text window and
+            // the drop-down list as children. Only the origin and width of b are
+            // used: the height follows from the layout.
             auto rect = b;
             m_btnToggle = dynamic_cast<ButtonWnd*>(g_Kernel->New("ButtonWnd"));
             if (!m_btnToggle)
@@ -187,8 +210,11 @@ namespace m3d
             rc.y0 = 0.0;
             rc.width = 0.0;
             rc.height = 0.0;
-            //TODO: check style
-            if (m_btnToggle->Create({}, 440220, rc, 5) == 0)
+            // Style 0x440220 = WS_REFLECT_MS_AND_KEYS_TO_PARENT | WS_IS_VISIBLE |
+            // WS_SEND_NOTIFY_MESSAGES | WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE. IDA
+            // renders the immediate 0x440220 as "&loc_440220", which was copied
+            // here as the decimal literal 440220 - a different (wrong) value.
+            if (m_btnToggle->Create({}, 0x440220, rc, 5) == 0)
             {
                 return 0;
             }
@@ -199,8 +225,10 @@ namespace m3d
             {
                 return 0;
             }
-            //TODO: check style
-            if (m_wndSelText->Create({}, 4196896, rc, 0) == 0)
+            // 0x400A20
+            if (m_wndSelText->Create({}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_TEXT_CENTERED_Y | WS_IS_VISIBLE |
+                                             WS_REFLECT_MS_AND_KEYS_TO_PARENT,
+                                     rc, 0) == 0)
             {
                 return 0;
             }
@@ -211,8 +239,9 @@ namespace m3d
             {
                 return 0;
             }
-            //TODO: check style
-            if (m_wndStringList->Create({}, 4456960, rc, 6) == 0)
+            // 0x440200
+            if (m_wndStringList->Create({}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_SEND_NOTIFY_MESSAGES | WS_IS_VISIBLE,
+                                        rc, 6) == 0)
             {
                 return 0;
             }
@@ -221,7 +250,7 @@ namespace m3d
 
             if (!style)
             {
-                style = 262720;
+                style = WS_SEND_NOTIFY_MESSAGES | WS_IS_VISIBLE | WS_NOFRAME;  // 0x40240
             }
             if (Wnd::Create({}, style, rc, id) == 0)
             {
@@ -248,14 +277,27 @@ namespace m3d
             return 1;
         }
 
-        void ComboBoxWnd::SetToggleButtonPane(CStr const&, CStr const&)
+        void ComboBoxWnd::SetToggleButtonPane(CStr const& openPaneName, CStr const& closePaneName)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                m_toggleButtonOpenPaneName = openPaneName;
+                m_toggleButtonClosePaneName = closePaneName;
+                if (m_btnToggle)
+                {
+                    m_btnToggle->SetPane(
+                        m_state == STATE_OPEN ? m_toggleButtonClosePaneName : m_toggleButtonOpenPaneName);
+                }
+            }
         }
 
-        CStr ComboBoxWnd::GetItem(int) const
+        CStr ComboBoxWnd::GetItem(int idx) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->GetItem(idx);
+            }
+            return {};
         }
 
         void ComboBoxWnd::SetListMaxHeight(float listMaxH)
@@ -285,7 +327,7 @@ namespace m3d
 
         Object* ComboBoxWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return new ComboBoxWnd(*this);
         }
 
         int ComboBoxWnd::AddItem(CStr const& item)
@@ -319,6 +361,9 @@ namespace m3d
             auto selTextFixedHeight = m_selTextFixedH;
             SafeFloatAttrib(selTextFixedHeight, xmlNode, "selTextFixedHeight");
             SetSelTextFixedHeight(selTextFixedHeight);
+
+            SafeStrAttrib(m_toggleButtonOpenPaneName, xmlNode, "toggleBtnOpenPane");
+            SafeStrAttrib(m_toggleButtonClosePaneName, xmlNode, "toggleBtnClosePane");
             UpdateToggleButtonPane();
             return 1;
         }
@@ -339,32 +384,55 @@ namespace m3d
 
         CStr ComboBoxWnd::GetText() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (m_wndSelText)
+            {
+                return m_wndSelText->GetText();
+            }
+            return {};
         }
 
-        void ComboBoxWnd::SetItem(int, CStr const&)
+        void ComboBoxWnd::SetItem(int idx, CStr const& text)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                m_wndStringList->SetItem(idx, text);
+            }
         }
 
         float ComboBoxWnd::GetMaxListHeight() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_maxListH;
         }
 
         BoundsBase<float> ComboBoxWnd::GetSelTextBounds() const
         {
+            // RVA 0x71F750
             if (Valid())
             {
                 return m_wndSelText->GetBounds();
             }
-            //TODO: check this
-            return {};
+            return BoundsBase<float>(0.0f, 0.0f, 0.0f, 0.0f);
         }
 
         BoundsBase<float> ComboBoxWnd::GetFullMaxBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            const auto selTextB = GetSelTextBounds();
+            const auto listB = GetListMaxBounds();
+
+            const float x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
+            const float y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
+            const float right =
+                (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ? selTextB.x0 + selTextB.width : listB.x0 + listB.width;
+            const float bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height)
+                                     ? selTextB.y0 + selTextB.height
+                                     : listB.y0 + listB.height;
+
+            BoundsBase<float> result;
+            result.x0 = x0;
+            result.y0 = y0;
+            result.width = right - x0;
+            result.height = bottom - y0;
+            return result;
         }
 
         void ComboBoxWnd::SetTextColor(unsigned color)
@@ -379,12 +447,28 @@ namespace m3d
 
         unsigned ComboBoxWnd::GetDrawFlags() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->GetDrawFlags();
+            }
+            return 0;
         }
 
-        int ComboBoxWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int ComboBoxWnd::WriteToXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x674F60 - the mirror of ReadFromXmlNode above.
+            int const res = Wnd::WriteToXmlNode(xmlFile, writeTo);
+            if (!res)
+            {
+                return res;
+            }
+            writeTo->SetAttribute("state", CStr(static_cast<int>(m_state)).c_str());
+            writeTo->SetAttribute("maxListHeight", CStr(m_maxListH).c_str());
+            writeTo->SetAttribute("selTextFixedHeight", CStr(m_selTextFixedH).c_str());
+            writeTo->SetAttribute("comboStyle", CStr(m_comboStyle).c_str());
+            writeTo->SetAttribute("toggleBtnOpenPane", m_toggleButtonOpenPaneName.c_str());
+            writeTo->SetAttribute("toggleBtnClosePane", m_toggleButtonClosePaneName.c_str());
+            return 1;
         }
 
         void ComboBoxWnd::SetTextColorDisabled(unsigned color)
@@ -397,9 +481,15 @@ namespace m3d
             }
         }
 
-        void ComboBoxWnd::SetDefaultFont(CStr const&, float, FontType, FontParams)
+        void ComboBoxWnd::SetDefaultFont(CStr const& name, float height, FontType type, FontParams params)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            Wnd::SetDefaultFont(name, height, type, params);
+            if (Valid())
+            {
+                m_wndStringList->SetDefaultFont(name, height, type, params);
+                m_wndSelText->SetDefaultFont(name, height, type, params);
+                RecalcLayot();
+            }
         }
 
         void ComboBoxWnd::SetDefaultFont(int uiFont)
@@ -413,14 +503,28 @@ namespace m3d
             }
         }
 
-        int ComboBoxWnd::RemoveItem(int)
+        int ComboBoxWnd::RemoveItem(int idx)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->RemoveItem(idx);
+            }
+            return 0;
         }
 
         BoundsBase<float> ComboBoxWnd::GetListMaxBounds() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x71F6E0 - the drop-down at its full allowance, measured from
+            // the bottom of the selection text. It deliberately does not go
+            // through GetListBounds, which would already be offset by one list
+            // height and would also have to walk every item to find that height.
+            auto const selTextB = GetSelTextBounds();
+            BoundsBase<float> result;
+            result.x0 = selTextB.x0;
+            result.y0 = selTextB.y0 + selTextB.height;
+            result.width = selTextB.width;
+            result.height = m_maxListH;
+            return result;
         }
 
         Object* ComboBoxWnd::CreateObject()
@@ -428,14 +532,21 @@ namespace m3d
             return new ComboBoxWnd;
         }
 
-        void ComboBoxWnd::SetDrawFlags(unsigned)
+        void ComboBoxWnd::SetDrawFlags(unsigned flags)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                m_wndStringList->SetDrawFlags(flags);
+            }
         }
 
-        int ComboBoxWnd::InsertItem(CStr const&, int)
+        int ComboBoxWnd::InsertItem(CStr const& item, int idx)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (Valid())
+            {
+                return m_wndStringList->InsertItem(item, idx);
+            }
+            return 0;
         }
 
         void ComboBoxWnd::SetScrollPane(CStr const& scrollPaneName)
@@ -452,9 +563,15 @@ namespace m3d
             return RT_CLASS_LOCAL(Wnd);
         }
 
-        int ComboBoxWnd::ItemFromPoint(PointBase<float> const&)
+        int ComboBoxWnd::ItemFromPoint(PointBase<float> const& at)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!Valid())
+            {
+                return -1;
+            }
+            auto const screen = ToScreen(at);
+            auto const listLocal = m_wndStringList->ToWindow(screen);
+            return m_wndStringList->ItemFromPoint(listLocal);
         }
 
         int ComboBoxWnd::RemoveAllItems()
@@ -468,30 +585,37 @@ namespace m3d
 
         bool ComboBoxWnd::IsOpen() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
-        }
-
-        ComboBoxWnd::ComboBoxWnd(ComboBoxWnd const&)
-        {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_state == STATE_OPEN;
         }
 
         ComboBoxWnd::ComboBoxWnd()
         {
             m_defFont = 1;
+            m_maxListH = 100.0;
+            m_wndStringList = nullptr;
+            m_btnToggle = nullptr;
+            m_wndSelText = nullptr;
+            m_state = STATE_CLOSE;
+            m_selTextFixedH = 35.0;
+            m_defFont = 1;
+            m_comboStyle = 0;
+            m_toggleButtonOpenPaneName = "PaneComboToggleBtnOpenDefault";
+            m_toggleButtonClosePaneName = "PaneComboToggleBtnCloseDefault";
         }
 
         void ComboBoxWnd::UpdateToggleButtonPane()
         {
+            // RVA 0x71F1B0 - the button shows the "close" pane while the list is open.
             if (m_btnToggle)
             {
-                //TODO: check this
                 m_btnToggle->SetPane(m_state != STATE_OPEN ? m_toggleButtonOpenPaneName : m_toggleButtonClosePaneName);
             }
         }
 
         void ComboBoxWnd::SetState(State state, bool bForceUpdate)
         {
+            // RVA 0x720650 - posts message 47 when the list opens and 48 when it
+            // closes (also on a forced update without a change).
             auto const oldState = m_state;
             m_state = state;
             if (oldState != state || bForceUpdate)
@@ -499,60 +623,57 @@ namespace m3d
                 RecalcListBounds();
                 RecalcSelfBounds();
                 UpdateToggleButtonPane();
-                //TODO: check this!!!!
-                Application::g_pApp->EnqueueMessage((m_state != STATE_OPEN) + 47, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
+                int const msg = m_state == STATE_OPEN ? 47 : 48;
+                Application::g_pApp->EnqueueMessage(msg, reinterpret_cast<int>(this), 0, 0, 0, {}, {});
             }
         }
 
         void ComboBoxWnd::RecalcLayot()
         {
-            //TODO: check this
-            if (Valid())
+            // RVA 0x71F440 - lays out the selected-text window across the full width
+            // and the square toggle button at its right end. Combo style bit 4 fixes
+            // the text height; bit 2 lets the button cover the pane's frame instead
+            // of sitting inside it.
+            if (!Valid())
             {
-                int paneW = 0;
-                auto pane = GetGfxServer()->GetPane(m_paneName);
-                if (pane && pane->m_frame[0])
-                {
-                    paneW = pane->m_frame[0]->m_barUsedWidth;
-                }
-                auto selTextH = this->m_selTextFixedH;
-                if ((m_comboStyle & 4) == 0)
-                {
-                    selTextH = m_aif.m_space * 2.0 + GetGfxServer()->MeasureText("Ap", m_defFont, TW_NOWRAP, 100.0).y + (paneW * 2.0);
-                }
-
-                auto btnH = selTextH;
-                if ((m_comboStyle & 2) == 0)
-                {
-                    btnH -= paneW * 2.0;
-                }
-                auto x = m_bounds.width - selTextH;
-                if ((m_comboStyle & 2) != 0)
-                {
-                    paneW = 0.0;
-                }
-                else
-                {
-                    x -= paneW;
-                }
-                BoundsBase<float> btnB;
-                btnB.x0 = x;
-                btnB.y0 = paneW;
-                btnB.width = (x + btnH) - x;
-                btnB.height = (paneW + btnH) - paneW;
-                m_btnToggle->SetBounds(btnB, true);
-
-                BoundsBase<float> textB;
-                textB.x0 = 0.0;
-                textB.y0 = 0.0;
-                textB.width = m_bounds.width;
-                textB.height = selTextH;
-                m_wndSelText->SetBounds(textB, true);
-
-                m_wndSelText->SetClientEdges(m_aif.m_space, m_aif.m_space, m_bounds.width - btnB.x0, m_aif.m_space);
-                RecalcListBounds();
-                RecalcSelfBounds();
+                return;
             }
+            float paneW = 0.0f;
+            Pane const* const pane = GetGfxServer()->GetPane(m_paneName);
+            if (pane && pane->m_frame[0])
+            {
+                paneW = static_cast<float>(pane->m_frame[0]->m_barUsedWidth);
+            }
+
+            float selTextH = m_selTextFixedH;
+            if ((m_comboStyle & 4) == 0)
+            {
+                float const textH = GetGfxServer()->MeasureText("Ap", m_defFont, TW_NOWRAP, 100.0f).y;
+                selTextH = (m_aif.m_space * 2.0f + textH) + paneW * 2.0f;
+            }
+
+            bool const coverFrame = (m_comboStyle & 2) != 0;
+            float const btnSz = coverFrame ? selTextH : selTextH - paneW * 2.0f;
+            float const btnX = coverFrame ? m_bounds.width - btnSz : (m_bounds.width - btnSz) - paneW;
+            float const btnY = coverFrame ? 0.0f : paneW;
+            BoundsBase<float> btnB;
+            btnB.x0 = btnX;
+            btnB.y0 = btnY;
+            btnB.width = (btnX + btnSz) - btnX;
+            btnB.height = (btnY + btnSz) - btnY;
+            m_btnToggle->SetBounds(btnB, true);
+
+            BoundsBase<float> textB;
+            textB.x0 = 0.0f;
+            textB.y0 = 0.0f;
+            textB.width = m_bounds.width;
+            textB.height = selTextH;
+            m_wndSelText->SetBounds(textB, true);
+
+            // Keep the text clear of the button.
+            m_wndSelText->SetClientEdges(m_aif.m_space, m_aif.m_space, m_bounds.width - btnB.x0, m_aif.m_space);
+            RecalcListBounds();
+            RecalcSelfBounds();
         }
 
         void ComboBoxWnd::SelectItem()
@@ -611,21 +732,18 @@ namespace m3d
 
         void ComboBoxWnd::RecalcListBounds()
         {
-            //TODO: check this
-            if (Valid())
+            // RVA 0x71F610 - a closed combo box collapses its list to an empty rect.
+            if (!Valid())
             {
-                if (m_state)
-                {
-                    if (m_state == STATE_OPEN)
-                    {
-                        m_wndStringList->SetBounds(GetListBounds(), true);
-                    }
-                }
-                else
-                {
-                    //TODO; check this
-                    m_wndStringList->SetBounds(BoundsBase<float>{0.0, 0.0, 0.0, 0.0}, true);
-                }
+                return;
+            }
+            if (m_state == STATE_CLOSE)
+            {
+                m_wndStringList->SetBounds(BoundsBase<float>(0.0f, 0.0f, 0.0f, 0.0f), true);
+            }
+            else if (m_state == STATE_OPEN)
+            {
+                m_wndStringList->SetBounds(GetListBounds(), true);
             }
         }
 
@@ -651,7 +769,9 @@ namespace m3d
 
         int ComboBoxWnd::OnAfterAddToWndStation()
         {
-            auto res = Wnd::OnAfterAddToWndStation();
+            // Faithful to the shipped game: this override calls the *Before* base
+            // handler (RVA 0x720850).
+            auto res = Wnd::OnBeforeAddToWndStation();
             if (m_state != STATE_OPEN)
             {
                 return res;

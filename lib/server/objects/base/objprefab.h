@@ -32,10 +32,11 @@ namespace ai
         virtual void PostLoad() override /* 0x00 */;
     }; /* size: 0x0090 */
 
-    static_assert(sizeof(ObjPrefabPrototypeInfo) == 0x0090);
-
     class ObjPrefab : public ai::SimplePhysicObj
     {
+        // CreateTargetObject builds one of these.
+        friend class ObjPrefabPrototypeInfo;
+
     protected:
         virtual  ~ObjPrefab() override /* 0x00 */;
 
@@ -75,6 +76,4 @@ namespace ai
         void AddVehicleChild(ai::Vehicle* obj);
         void AddTeam();
     }; /* size: 0x0170 */
-
-    static_assert(sizeof(ObjPrefab) == 0x0170);
 }

@@ -6,32 +6,30 @@ namespace ai
     class Npc;
 }
 
-class NpcModelWnd :  public ItemModelWnd
+class NpcModelWnd : public ItemModelWnd
 {
 public:
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    int GetNpcId() const ;
-    ai::Npc * GetNpc() const ;
-    static m3d::Object * CreateObject();
-    virtual ~NpcModelWnd();
-    int SetUpForNpc(int);
-    virtual m3d::Class * GetClass() const ;
+    ai::Npc* GetNpc() const;
+    int GetNpcId() const;
+    int SetUpForNpc(int npcId);
 
 protected:
-    virtual int GameDataClear(bool);
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
+    virtual int OnNewFrame() override /* 0x130 */;
+    void OnNpcReplyShown(void* data);
+    virtual bool IsValid() const override /* 0x13c */;
     void RandomizeAnimationFrame();
-    virtual bool IsValid() const ;
-    virtual int GameDataUpdate(void *,int);
-    void OnNpcReplyShown(void *);
-    virtual int OnNewFrame();
     void UpdateAnimation();
+    /* 0x02bc */ int m_npcId;
     NpcModelWnd();
-    NpcModelWnd(NpcModelWnd const &);
+    NpcModelWnd(NpcModelWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(NpcModelWnd);
-
-private:
-    int m_npcId;
-};
+    virtual ~NpcModelWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classNpcModelWnd;
+}; /* size: 0x02c0 */

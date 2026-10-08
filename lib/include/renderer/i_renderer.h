@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+#include <cstring>
 #include "i_renderer_colors.h"
 #include "i_renderer_handles.h"
 #include "i_renderer_vertex.h"
@@ -26,20 +28,22 @@ struct nFloat4
     float w;
 };
 
+static_assert(sizeof(nFloat4) == 0x0010);
+
 namespace m3d
 {
     namespace rend
     {
         class TexHandle;
 
-        enum Cull
+        enum Cull : int32_t
         {
             M3DCULL_NONE = 0x0,
             M3DCULL_CW = 0x1,
             M3DCULL_CCW = 0x2,
         };
 
-        enum BlendMode
+        enum BlendMode : int32_t
         {
             BM_NONE = 0x0,
             BM_COLOR = 0x1,
@@ -172,7 +176,7 @@ namespace m3d
         };
 
 
-        enum ZbState
+        enum ZbState : int32_t
         {
             ZB_DISABLE = 0x0,
             ZB_ENABLE = 0x1,
@@ -180,7 +184,7 @@ namespace m3d
             ZB_WRITE_NOTEST = 0x3,
         };
 
-        enum CmpFunc
+        enum CmpFunc : int32_t
         {
             M3DCMP_NEVER = 0x0,
             M3DCMP_LESS = 0x1,
@@ -192,13 +196,13 @@ namespace m3d
             M3DCMP_ALWAYS = 0x7,
         };
 
-        enum ShadeMode
+        enum ShadeMode : int32_t
         {
             M3DSHADE_FLAT = 0x0,
             M3DSHADE_GOURAUD = 0x1,
         };
 
-        enum FogMode
+        enum FogMode : int32_t
         {
             M3DFOG_NONE = 0x0,
             M3DFOG_EXP = 0x1,
@@ -206,14 +210,14 @@ namespace m3d
             M3DFOG_LINEAR = 0x3,
         };
 
-        enum FillMode
+        enum FillMode : int32_t
         {
             M3DFILL_POINT = 0x0,
             M3DFILL_WIREFRAME = 0x1,
             M3DFILL_SOLID = 0x2,
         };
 
-        enum StencilOp
+        enum StencilOp : int32_t
         {
             OP_KEEP = 0x0,
             OP_ZERO = 0x1,
@@ -225,7 +229,7 @@ namespace m3d
             OP_DECR = 0x7,
         };
 
-        enum TexCreateFlags
+        enum TexCreateFlags : int32_t
         {
             TM_MIPQ_NOMIPS = 0x0,
             TM_MIPQ_LOW = 0x1,
@@ -235,7 +239,7 @@ namespace m3d
             TM_WANT_ALPHA = 0x8,
         };
 
-        enum ClearFlags
+        enum ClearFlags : int32_t
         {
             M3DCLEAR_C = 0x1,
             M3DCLEAR_Z = 0x2,
@@ -246,7 +250,7 @@ namespace m3d
             M3DCLEAR_CZS = 0x7,
         };
 
-        enum TgMode
+        enum TgMode : int32_t
         {
             TG_DISABLE = 0x0,
             TG_THRU_1 = 0x1,
@@ -260,7 +264,7 @@ namespace m3d
             TG_PROJ_PS11 = 0x9,
         };
 
-        enum PrimType
+        enum PrimType : int32_t
         {
             M3DPT_POINTLIST = 0x0,
             M3DPT_LINELIST = 0x1,
@@ -270,7 +274,7 @@ namespace m3d
             M3DPT_TRIANGLEFAN = 0x5,
         };
 
-        enum TexDynFormat
+        enum TexDynFormat : int32_t
         {
             TM_DTF_RENDER_TARGET = 0x0,
             TM_DTF_SAME_AS_RENDER_TARGET = 0x1,
@@ -282,7 +286,7 @@ namespace m3d
             TM_DTF_WANT_MIPS = 0x8000,
         };
 
-        enum TcSource
+        enum TcSource : int32_t
         {
             TC_FROM_VERTEX = 0x0,
             TC_FROM_NORMAL_IN_CAMERA_SPACE = 0x1,
@@ -290,7 +294,7 @@ namespace m3d
             TC_FROM_REFLECTION_IN_CAMERA_SPACE = 0x3,
         };
 
-        enum DeviceFeature
+        enum DeviceFeature : int32_t
         {
             FEATURE_VS_1_1 = 0x0,
             FEATURE_VS_2_0 = 0x1,
@@ -320,7 +324,7 @@ namespace m3d
             FEATURE_NUM_FEATURES = 0x19,
         };
 
-        enum TextureState
+        enum TextureState : int32_t
         {
             TS_NONE = 0x0,
             TS_TEXTURE = 0x1,
@@ -352,7 +356,7 @@ namespace m3d
             TS_TEX_MODULATE2X_TFAC = 0x1B,
         };
 
-        enum TexParam
+        enum TexParam : int32_t
         {
             TM_TEX_FILTER = 0x0,
             TM_TEX_MIN_FILTER = 0x1,
@@ -366,16 +370,30 @@ namespace m3d
             TM_MAX_ANISOTROPY = 0x9,
         };
 
+        // SetTextureParameter takes its value as an unsigned int; float parameters (TM_MIP_LOD_BIAS) are passed
+        // as the float's bit pattern.
+        inline unsigned int FloatTexParam(float value)
+        {
+            unsigned int bits;
+            std::memcpy(&bits, &value, sizeof(bits));
+            return bits;
+        }
+
+#pragma pack(push, 4)
         struct Viewport
         {
-            int m_x0;
-            int m_y0;
-            int m_width;
-            int m_height;
+            int32_t m_x0;
+            int32_t m_y0;
+            int32_t m_width;
+            int32_t m_height;
             float m_zMin;
             float m_zMax;
         };
+#pragma pack(pop)
 
+        static_assert(sizeof(Viewport) == 0x0018);
+
+#pragma pack(push, 4)
         struct Material
         {
             m3d::rend::Colorf m_diffuse;
@@ -391,7 +409,12 @@ namespace m3d
                 this->m_ambient = diff;
             }
         }; /* size: 0x0044 */
+#pragma pack(pop)
 
+        // Stored as-is in model files and passed to the renderer DLLs.
+        static_assert(sizeof(Material) == 0x0044);
+
+        // Handles are plain 32-bit ids passed to and returned by the renderer DLL.
         class TexHandle : public Handle<TexHandle>
         {
             
@@ -405,37 +428,50 @@ namespace m3d
         {
         };
 
+        static_assert(sizeof(TexHandle) == 0x0004);
+        static_assert(sizeof(IbHandle) == 0x0004);
+        static_assert(sizeof(VbHandle) == 0x0004);
+
+#pragma pack(push, 4)
         struct VbPoolField
         {
             unsigned int GetOffset() const;
             unsigned int GetSize() const;
             m3d::rend::VertexType GetVertexType() const;
             m3d::rend::VbHandle GetVbHandle() const;
-            /* 0x0000 */ unsigned int Offset;
-            /* 0x0004 */ unsigned int Size;
-            /* 0x0008 */ unsigned int RealOffset;
+            /* 0x0000 */ uint32_t Offset;
+            /* 0x0004 */ uint32_t Size;
+            /* 0x0008 */ uint32_t RealOffset;
             /* 0x000c */ m3d::rend::VertexType VertType;
             m3d::rend::VbHandle Vb;
         }; /* size: 0x0014 */
+#pragma pack(pop)
 
+        static_assert(sizeof(VbPoolField) == 0x0014);
+
+#pragma pack(push, 4)
         struct IbPoolField
         {
             unsigned int GetOffset() const;
             unsigned int GetSize() const;
             m3d::rend::IbHandle GetIbHandle() const;
-            /* 0x0000 */ unsigned int Offset;
-            /* 0x0004 */ unsigned int Size;
-            /* 0x0008 */ unsigned int RealOffset;
+            /* 0x0000 */ uint32_t Offset;
+            /* 0x0004 */ uint32_t Size;
+            /* 0x0008 */ uint32_t RealOffset;
             m3d::rend::IbHandle Ib;
         }; /* size: 0x0010 */
+#pragma pack(pop)
 
-        enum LightType
+        static_assert(sizeof(IbPoolField) == 0x0010);
+
+        enum LightType : int32_t
         {
             M3DLIGHT_POINT = 0x0,
             M3DLIGHT_SPOT = 0x1,
             M3DLIGHT_DIRECTIONAL = 0x2,
         };
 
+#pragma pack(push, 4)
         struct LightSource
         {
             /* 0x0000 */ m3d::rend::LightType m_type;
@@ -453,43 +489,55 @@ namespace m3d
             /* 0x0064 */ float m_phi;
             void init(m3d::rend::LightType type, const CVector& pos);
         }; /* size: 0x0068 */
+#pragma pack(pop)
 
+        static_assert(sizeof(LightSource) == 0x0068);
+
+#pragma pack(push, 4)
         struct RenderStats
         {
-            unsigned int polyCount;
-            unsigned int DIPs;
-            unsigned int DPs;
-            unsigned int swVertexShaders;
-            unsigned int swPixelShaders;
-            unsigned int swFfpTpShader;
-            unsigned int swRenderStates;
-            unsigned int swTextures;
-            unsigned int swTextureStageStates;
-            unsigned int swTextureSamplerStates;
-            unsigned int swMatrices;
-            unsigned int swRenderTargets;
+            uint32_t polyCount;
+            uint32_t DIPs;
+            uint32_t DPs;
+            uint32_t swVertexShaders;
+            uint32_t swPixelShaders;
+            uint32_t swFfpTpShader;
+            uint32_t swRenderStates;
+            uint32_t swTextures;
+            uint32_t swTextureStageStates;
+            uint32_t swTextureSamplerStates;
+            uint32_t swMatrices;
+            uint32_t swRenderTargets;
         };
+#pragma pack(pop)
 
+        static_assert(sizeof(RenderStats) == 0x0030);
+
+#pragma pack(push, 4)
         struct DeviceMemStats
         {
-            unsigned int RtTexSize;
-            unsigned int RtTexCount;
-            unsigned int StaticTexSize;
-            unsigned int StaticTexCount;
-            unsigned int DynamicTexSize;
-            unsigned int DynamicTexCount;
-            unsigned int DynamicVBSize;
-            unsigned int DynamicVBCount;
-            unsigned int StaticVBSize;
-            unsigned int StaticVBCount;
-            unsigned int VBPoolsSize;
-            unsigned int DynamicIBSize;
-            unsigned int DynamicIBCount;
-            unsigned int StaticIBSize;
-            unsigned int StaticIBCount;
-            unsigned int IBPoolsSize;
+            uint32_t RtTexSize;
+            uint32_t RtTexCount;
+            uint32_t StaticTexSize;
+            uint32_t StaticTexCount;
+            uint32_t DynamicTexSize;
+            uint32_t DynamicTexCount;
+            uint32_t DynamicVBSize;
+            uint32_t DynamicVBCount;
+            uint32_t StaticVBSize;
+            uint32_t StaticVBCount;
+            uint32_t VBPoolsSize;
+            uint32_t DynamicIBSize;
+            uint32_t DynamicIBCount;
+            uint32_t StaticIBSize;
+            uint32_t StaticIBCount;
+            uint32_t IBPoolsSize;
         };
+#pragma pack(pop)
 
+        static_assert(sizeof(DeviceMemStats) == 0x0040);
+
+#pragma pack(push, 4)
         struct ShaderMacro
         {
             CStr name;
@@ -498,7 +546,11 @@ namespace m3d
             ShaderMacro(const char* n, const char* d);
             ShaderMacro();
         }; /* size: 0x0018 */
+#pragma pack(pop)
 
+        static_assert(sizeof(ShaderMacro) == 0x0018);
+
+#pragma pack(push, 4)
         struct IRenderResource
         {
             /* 0x0000 */;
@@ -508,14 +560,17 @@ namespace m3d
             virtual int Release() /* 0x04 */;
             virtual int GetRefCount() /* 0x08 */;
             virtual bool IsValid() const = 0 /* 0x0c */;
-            /* 0x0004 */ int m_refCount;
+            /* 0x0004 */ int32_t m_refCount;
             virtual  ~IRenderResource() /* 0x10 */;
         }; /* size: 0x0008 */
+#pragma pack(pop)
+
+        static_assert(sizeof(IRenderResource) == 0x0008);
 
         class IQuery : public m3d::rend::IRenderResource
         {
         public:
-            enum Type
+            enum Type : int32_t
             {
                 QUERY_VCACHE = 4,
                 QUERY_EVENT = 8,
@@ -530,7 +585,7 @@ namespace m3d
                 QUERY_CACHEUTILIZATION = 18,
             };
 
-            enum State
+            enum State : int32_t
             {
                 QUERY_NOT_SUPPORT = 0,
                 QUERY_SIGNALED = 1,
@@ -551,7 +606,7 @@ namespace m3d
 
         struct IHlslShader : public m3d::rend::IRenderResource
         {
-            enum Profile
+            enum Profile : int32_t
             {
                 VS_1_1 = 0,
                 VS_2_0 = 1,
@@ -587,7 +642,7 @@ namespace m3d
 
         struct IAsmShader : public m3d::rend::IRenderResource
         {
-            enum Type
+            enum Type : int32_t
             {
                 VERTEX_SHADER = 0,
                 PIXEL_SHADER = 1,
@@ -599,7 +654,7 @@ namespace m3d
 
         struct IEffect : public m3d::rend::IRenderResource
         {
-            enum Parameter
+            enum Parameter : int32_t
             {
                 World = 0,
                 View = 1,
@@ -636,10 +691,11 @@ namespace m3d
                 InvalidParameter = 32,
             };
 
+#pragma pack(push, 4)
             struct TechniqueDesc
             {
                 CStr name;
-                /* 0x000c */ unsigned int numPasses;
+                /* 0x000c */ uint32_t numPasses;
                 CStr briefDesc;
                 CStr vertexFormatStr;
                 /* 0x0028 */ m3d::rend::VertexType vertexFormat;
@@ -648,6 +704,9 @@ namespace m3d
                 /* 0x002e */ bool isPS20;
                 /* 0x002f */ bool useAlpha;
             }; /* size: 0x0030 */
+#pragma pack(pop)
+
+            static_assert(sizeof(TechniqueDesc) == 0x0030);
 
             virtual unsigned int GetNumTechniques() const = 0 /* 0x14 */;
             virtual const m3d::rend::IEffect::TechniqueDesc& GetTechniqueDesc(unsigned int) const = 0 /* 0x18 */;
@@ -698,8 +757,8 @@ namespace m3d
             virtual void PushLighting(bool) = 0;
             virtual void PopLighting() = 0;
             virtual void SetLighting(bool, bool) = 0;
-            virtual void PushAmbient(unsigned int) = 0;
             virtual void PushAmbient() = 0;
+            virtual void PushAmbient(unsigned int) = 0;
             virtual void PopAmbient() = 0;
             virtual void SetAmbient(unsigned int, bool) = 0;
             virtual void PushFog() = 0;
@@ -726,12 +785,12 @@ namespace m3d
             virtual void PushFillMode(m3d::rend::FillMode) = 0;
             virtual void PopFillMode() = 0;
             virtual void SetFillMode(m3d::rend::FillMode, bool) = 0;
-            virtual void PushZBias(float) = 0;
             virtual void PushZBias() = 0;
+            virtual void PushZBias(float) = 0;
             virtual void PopZBias() = 0;
             virtual void SetZBias(float, bool) = 0;
-            virtual void PushZBiasSlopeScale(float) = 0;
             virtual void PushZBiasSlopeScale() = 0;
+            virtual void PushZBiasSlopeScale(float) = 0;
             virtual void PopZBiasSlopeScale() = 0;
             virtual void SetZBiasSlopeScale(float, bool) = 0;
             virtual void PushShadeMode(m3d::rend::ShadeMode) = 0;
@@ -930,8 +989,8 @@ namespace m3d
             virtual void GetDims(m3d::rend::TexHandle const&, int&, int&) = 0;
             virtual void TexCopy(const m3d::rend::TexHandle&, const m3d::rend::TexHandle&) = 0;
             virtual void RepaintAllTexturesMips() = 0;
-            virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual void DrawFullScreenQuad() = 0;
+            virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual m3d::rend::IbHandle AddIb(int, bool) = 0;
             virtual void SetIndices(const m3d::rend::IbHandle&, int) = 0;
             virtual void SetIndices(const m3d::rend::IbPoolField&, int) = 0;
@@ -980,8 +1039,8 @@ namespace m3d
             virtual void EnableClipPlane(int, bool) = 0;
             virtual int GetMaxAnisotropy() = 0;
             virtual void ResetStats() = 0;
-            virtual void GetStats(m3d::rend::RenderStats*) = 0;
-            virtual void GetDeviceMemStats(m3d::rend::DeviceMemStats*) = 0;
+            virtual void GetStats(m3d::rend::RenderStats&) = 0;
+            virtual void GetDeviceMemStats(m3d::rend::DeviceMemStats&) = 0;
             virtual void ShowStats() = 0;
             virtual int OptimizeGeometryToSingleStrip(m3d::rend::VertexType, void*, int, unsigned __int16*, int, int, void**, int*, int**, unsigned __int16**, int*) = 0;
             virtual int OptimizeGeometryToTriList(m3d::rend::VertexType, void*, int, unsigned __int16*, int, int, void**, int*, int**, unsigned __int16**, int*) = 0;
@@ -1019,4 +1078,13 @@ namespace m3d
             IRenderer() {}
         };
     }
+
+    // RVA 0x75ED50 - the render state every "overlay" pass (decals, projectors,
+    // sprites, lights and the landscape/grass shadow passes) pushes before it
+    // draws on top of already rendered geometry. The matching PopZbState /
+    // PopZFunc / PopZBiasSlopeScale / PopZBias are done by the callers.
+    void overlayStart();
+
+    // RVA 0x75EDB0 - undoes overlayStart.
+    void overlayStop();
 }

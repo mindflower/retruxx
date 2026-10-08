@@ -1,5 +1,6 @@
 #pragma once
 #include "retruxx/common.h"
+#include <cstdio>
 
 namespace Graph
 {
@@ -55,14 +56,32 @@ namespace Graph
             return m_Data.size();
         }
 
-        void Input(_iobuf*)
+        void Input(_iobuf* f)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // NOTE: not emitted in the shipped binary (a debugging aid); reads the matrix row by row as
+            // whitespace-separated numbers.
+            for (unsigned int i = 0; i < getSize(); ++i)
+            {
+                for (unsigned int j = 0; j < getSize(); ++j)
+                {
+                    float v = 0.0f;
+                    fscanf(f, "%f", &v);
+                    (*this)(i, j) = static_cast<T>(v);
+                }
+            }
         }
 
-        void Output(_iobuf*)
+        void Output(_iobuf* f)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // NOTE: not emitted in the shipped binary (a debugging aid); writes the matrix one row per line.
+            for (unsigned int i = 0; i < getSize(); ++i)
+            {
+                for (unsigned int j = 0; j < getSize(); ++j)
+                {
+                    fprintf(f, "%f ", static_cast<double>((*this)(i, j)));
+                }
+                fprintf(f, "\n");
+            }
         }
     }; /* size: 0x0010 */
 

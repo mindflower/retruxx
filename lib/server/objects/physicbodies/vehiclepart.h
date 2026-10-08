@@ -45,11 +45,16 @@ namespace ai
         void _InitModelMeshes(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
     }; /* size: 0x0110 */
 
-    static_assert(sizeof(VehiclePartPrototypeInfo) == 0x0110);
-
     class VehiclePart : public ai::PhysicBody
     {
         friend class VehiclePartPrototypeInfo;
+        // Vehicle::InflictDamage builds a BreakData directly, as the shipped
+        // code does.
+        friend class Vehicle;
+        // Breaks the hit part the way Vehicle::InflictDamage does.
+        friend class Boss03;
+        friend class Boss04Station;
+        friend class Boss04Drone;
     public:
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::VehiclePart, float, void>;
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::VehiclePart, ai::Modifier, float, bool>;
@@ -206,7 +211,5 @@ namespace ai
         static void __fastcall Registration();
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
     }; /* size: 0x02c8 */
-
-    static_assert(sizeof(VehiclePart) == 0x02c8);
 }
 

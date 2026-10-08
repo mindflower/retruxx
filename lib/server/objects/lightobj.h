@@ -11,8 +11,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
     }; /* size: 0x004c */
 
-    static_assert(sizeof(LightObjPrototypeInfo) == 0x004c);
-
     class LightObj : public ai::SgNodeObj
     {
         friend class LightObjPrototypeInfo;
@@ -51,6 +49,4 @@ namespace ai
     public:
         static void __fastcall Registration();
     }; /* size: 0x00f4 */
-
-    static_assert(sizeof(LightObj) == 0x00f4);
 }

@@ -11,16 +11,13 @@ namespace ai
     {
         using ThisType = ai::Component<T>;
 
- //   private:
     public:
-        Component() :
-            m_AfterChange(nullptr),
-            m_BeforeChange(nullptr)
+        Component() : m_AfterChange(nullptr), m_BeforeChange(nullptr)
         {
             //throw std::runtime_error("not implemented");
         }
 
-        Component(const ThisType&)
+        Component(ThisType const&)
         {
             throw std::runtime_error("not implemented");
         }
@@ -36,9 +33,19 @@ namespace ai
     public:
         /* 0x0000 */ ai::FuncPtrOneArg<T, void> m_AfterChange;
         /* 0x0008 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeChange;
-        void assign(const ThisType&);
+
+        // NOTE: assign and _AssignUnsafe are declared in the PDB but were never
+        // instantiated, so their bodies do not come from the binary. They follow
+        // the guarded/unguarded split used by NumericInRange.
+        // The base only holds the callbacks, which stay bound to their owner, so
+        // there is nothing to copy.
+        void assign(ThisType const&)
+        {
+        }
 
     protected:
-        void _AssignUnsafe(const ThisType&);
+        void _AssignUnsafe(ThisType const&)
+        {
+        }
     }; /* size: 0x0010 */
-}
+}  // namespace ai

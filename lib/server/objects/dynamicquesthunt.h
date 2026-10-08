@@ -6,6 +6,9 @@ namespace ai
 {
     class DynamicQuestHuntPrototypeInfo : public DynamicQuestPrototypeInfo
     {
+        // DynamicQuestHunt reads the season length and the share of the player's rating per head.
+        friend class DynamicQuestHunt;
+
     public:
         virtual ai::DynamicQuest* CreateTargetObject() const;
         DynamicQuestHuntPrototypeInfo();

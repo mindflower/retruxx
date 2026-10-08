@@ -51,6 +51,78 @@
 
 #include "impulses/i_impulses.h"
 #include <core/ini.h>
+#include <core/scoped_ptr.h>
+#include "graphinfo.h"
+#include <file/fileserver.h>
+#include <file/filestream.h>
+#include <client.h>
+#include <world.h>
+#include <unordered_map>
+#include <cstdio>
+
+// The CRT assertion handler the original calls directly.
+extern "C" void __cdecl _assert(char const* message, char const* file, unsigned line);
+
+namespace
+{
+    // RVA 0x8BC9E0
+    // Draws the two-triangle quad at vOfs 20 times a frame for two seconds; returns frames drawn per second.
+    double TestQuadFps(unsigned vOfs, m3d::cmn::Timer const* timer)
+    {
+        unsigned const startTime = timer->GetCurTime();
+        int numDraws = 0;
+        unsigned elapsed = 0;
+        do
+        {
+            m3d::Application::g_pApp->m_renderer->BeginScene();
+            numDraws += 20;
+            for (int i = 20; i; --i)
+            {
+                m3d::Application::g_pApp->m_renderer->DrawPrimitive(m3d::rend::M3DPT_TRIANGLESTRIP, vOfs, 2u);
+            }
+            Sleep(2u);
+            m3d::Application::g_pApp->m_renderer->EndScene();
+            m3d::Application::g_pApp->m_renderer->PresentScene();
+            elapsed = timer->GetCurTime() - startTime;
+        } while (elapsed < 2000);
+        return static_cast<double>(numDraws) * 1000.0 / static_cast<double>(elapsed);
+    }
+
+    // RVA 0x8BCAB0
+    // NOTE: the triangle list is drawn as a strip, as shipped.
+    double TestGeom(unsigned numTris, m3d::cmn::Timer const* timer)
+    {
+        unsigned const startTime = timer->GetCurTime();
+        int numDraws = 0;
+        unsigned elapsed = 0;
+        do
+        {
+            m3d::Application::g_pApp->m_renderer->BeginScene();
+            numDraws += 20;
+            for (int i = 20; i; --i)
+            {
+                m3d::Application::g_pApp->m_renderer->DrawPrimitive(m3d::rend::M3DPT_TRIANGLESTRIP, 0, numTris);
+            }
+            Sleep(2u);
+            m3d::Application::g_pApp->m_renderer->EndScene();
+            m3d::Application::g_pApp->m_renderer->PresentScene();
+            elapsed = timer->GetCurTime() - startTime;
+        } while (elapsed < 2000);
+        return static_cast<double>(numDraws) * 1000.0 / static_cast<double>(elapsed);
+    }
+}  // namespace
+
+namespace
+{
+    unsigned int __fastcall VecToRgba(CVector const& normal, float h)
+    {
+        // RVA 0x7AF9F0 - packs a unit normal into RGB and the height into alpha.
+        return (static_cast<unsigned int>(static_cast<int>(h * 255.0f)) << 24) |
+            (static_cast<unsigned char>(static_cast<int>(normal.x * 127.0f + 128.0f)) << 16) |
+            (static_cast<unsigned char>(static_cast<int>(normal.y * 127.0f + 128.0f)) << 8) |
+            static_cast<unsigned char>(static_cast<int>(normal.z * 127.0f + 128.0f));
+    }
+}  // namespace
 
 namespace
 {
@@ -122,6 +194,7 @@ namespace m3d
 
     int Application::init(HINSTANCE hInstance, HICON hIcon, CStr const& configName, HWND forcedWnd, CStr const& cmdLine)
     {
+        // RVA 0x5A8CD0
         M3D_LOG_INFO(m_strWindowTitle);
 
         m_cmdLine.Init(cmdLine.c_str());
@@ -147,13 +220,13 @@ namespace m3d
             {
                 return 0;
             }
-            if (!m_renderer->Create(logDeviceFunc, g_Kernel))  //TODO: logFunc
+            if (!m_renderer->Create(logDeviceFunc, g_Kernel))
             {
                 M3D_LOG_ERR("ERROR! Application::init -- cannot create device");
-                return false;
+                return 0;
             }
             RegisterConsoleCommands();
-            //TODO: forcedWnd is right?
+            // Render into the caller's window when one is forced (editor embedding), else create our own.
             g_Kernel->GetEngineCfg().m_mainWnd = forcedWnd;
             if (!g_Kernel->GetEngineCfg().m_mainWnd)
             {
@@ -161,9 +234,10 @@ namespace m3d
                 wndClass.lpfnWndProc = &Application::WndProc;
                 wndClass.cbClsExtra = 0;
                 wndClass.cbWndExtra = 0;
-                wndClass.hInstance = hInstance;  //TODO: not sure about hInstance
+                wndClass.hInstance = hInstance;
                 wndClass.hIcon = hIcon;
-                wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+                // NOTE: the original registers the class without a cursor; MsgProc answers WM_SETCURSOR itself.
+                wndClass.hCursor = NULL;
                 wndClass.hbrBackground = 0;
                 wndClass.lpszMenuName = 0;
                 wndClass.lpszClassName = TEXT("Miracle3d");
@@ -237,10 +311,11 @@ namespace m3d
                     doneRenderer();
                     return 0;
                 }
-                else if (!createSound())
+                if (!createSound())
                 {
-                    g_Kernel->GetEngineCfg().m_snd_Enable.SetB(false);
-                    g_Kernel->GetEngineCfg().m_mus_Enable.SetB(false);
+                    // Unlike createSound, these respect CVAR_READONLY.
+                    g_Kernel->GetEngineCfg().m_snd_Enable.SetI(0, false);
+                    g_Kernel->GetEngineCfg().m_mus_Enable.SetI(0, false);
                 }
                 createSprite();
                 createProcTexThread();
@@ -277,7 +352,7 @@ namespace m3d
                 if (!InitImpulses())
                 {
                     M3D_LOG_ERR("Error: fail to init impulses");
-                    //TODO: doneRenderer???
+                    // NOTE: unlike the other failure paths, the original releases nothing here.
                     return 0;
                 }
 
@@ -306,8 +381,10 @@ namespace m3d
                 doneRenderer();
                 return 0;
             }
-            g_Kernel->MessageBox(NULL, TEXT("error"), TEXT("cannot initialize 3d"), MB_ICONHAND);
+            // NOTE: the original passes the caption as the text and vice versa.
+            g_Kernel->MessageBox(NULL, TEXT("error"), TEXT("cannot initialize 3d"), MB_OK);
             M3D_LOG_ERR("ERROR! Application::init -- cannot initialize 3d");
+            doneRenderer();
             return 0;
         }
         M3D_LOG_ERR("ERROR! Application::init -- cannot open cfg: " + configName);
@@ -322,9 +399,11 @@ namespace m3d
 
     int Application::ImmediateMessage(int msg, int p0, int p1, int p2, int p3, CStr const& p4, AIParam const& p5)
     {
+        // RVA 0x5A71F0
         Event ev;
-        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
-        ev.m_eventType = msg;  //TODO: check this
+        // Reads the timer's current time as is, without advancing it, and converts it to seconds.
+        ev.m_timeStamp = g_Kernel->GetTimer()._GetCurTime() * 0.001;
+        ev.m_eventType = msg;
         ev.m_intEv[0] = p0;
         ev.m_intEv[1] = p1;
         ev.m_intEv[2] = p2;
@@ -341,6 +420,7 @@ namespace m3d
 
     int Application::OneFrame()
     {
+        // RVA 0x5A3AD0
         if (M3dVideoPlayer->IsVideoPlaing())
         {
             m_enginePlayingVideo = true;
@@ -368,7 +448,6 @@ namespace m3d
                     FrameProfilerPtr renderProfilerPtr(renderProfiler);
                     if (m_renderer->BeginScene())
                     {
-                        //TODO: ClearViewport second arg
                         if (m_renderer->IsFeatureSupported(rend::FEATURE_STENCIL))
                         {
                             m_renderer->ClearViewport(rend::M3DCLEAR_CZS, m_frameClearColor);
@@ -377,7 +456,7 @@ namespace m3d
                         {
                             m_renderer->ClearViewport(rend::M3DCLEAR_CZ, m_frameClearColor);
                         }
-                        //TODO: check this
+                        // A CanRender() result of 2 forces a full redraw, like m_appNeedToRedraw.
                         if (rend == 2 || m_appNeedToRedraw)
                         {
                             Render(true);
@@ -387,27 +466,222 @@ namespace m3d
                         {
                             Render(false);
                         }
-                        auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
-                        FrameProfilerPtr uiProfilerPtr(uiProfiler);
-                        Repaint();
-                        FlushGfx(m_renderer);
-                        //TODO: theck this
+                        {
+                            auto* uiProfiler = m_profilerStack.GetProfiler(m_profiler_UiRender);
+                            FrameProfilerPtr uiProfilerPtr(uiProfiler);
+                            Repaint();
+                            FlushGfx(m_renderer);
+                        }
+                        // The debug overlays below are drawn without depth testing.
                         g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
                         if (m_bDrawGraph)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            // RVA 0x5A3AD0 (performance graphs)
+                            static unsigned const colArray[7] = {
+                                0xFFFF0000, 0xFF0000FF, 0xFF00FF00, 0xFFFF00FF, 0xFF00FFFF, 0xFFFFFF00, 0xFF888888};
+                            static rend::VbHandle m_graphsVB =
+                                g_pApp->m_renderer->AddVb(rend::VERTEX_XYZWC, 7025, CStr("GraphStats"), 512u);
+                            static GraphInfo infos[7];
+
+                            rend::RenderStats rs;
+                            g_pApp->m_renderer->GetStats(rs);
+                            int stage = 0;
+                            float xx = 20.0f;
+                            SetFont(CStr("Lucida Console"), 10.0f, 1u, g_pApp->m_codePage.CodePage);
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_Fps.GetB())
+                            {
+                                unsigned const frameTime = g_Kernel->GetTimer().m_lastFrameTime;
+                                float const ft = frameTime ? static_cast<float>(frameTime) : 1.0f;
+                                infos[0].AddFiltred(1000.0f / ft, 50);
+                                DrawTextAbs(20.0f, 700.0f, colArray[0], CStr("fps"), 0, -1);
+                                stage = 1;
+                                xx = 90.0f;
+                            }
+                            auto const addGraph = [&](char const* label, float value)
+                            {
+                                DrawTextAbs(xx, 700.0f, colArray[stage], CStr(label), 0, -1);
+                                infos[stage++].AddValue(value);
+                                xx += 70.0f;
+                            };
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_Dip.GetB())
+                            {
+                                addGraph("dip/f", static_cast<float>(rs.DIPs));
+                            }
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_Dp.GetB())
+                            {
+                                addGraph("dp/f", static_cast<float>(rs.DPs));
+                            }
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_Tris.GetB())
+                            {
+                                addGraph("tris/f", static_cast<float>(rs.polyCount));
+                            }
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_Fillrate.GetB())
+                            {
+                                addGraph("pixs/f", static_cast<float>(m_frameFillRate));
+                            }
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_MemUsed.GetB())
+                            {
+                                addGraph("memUsed", static_cast<float>(g_Kernel->debugMemUsed()));
+                            }
+                            if (g_Kernel->GetEngineCfg().m_r_graphicalStats_MemAlloc.GetB())
+                            {
+                                addGraph("memAlloc", static_cast<float>(g_Kernel->debugMemAllocated()));
+                            }
+                            if (stage != 7 && g_Kernel->GetEngineCfg().m_r_graphicalStats_MemOverhead.GetB())
+                            {
+                                DrawTextAbs(xx, 700.0f, colArray[stage], CStr("memOverh"), 0, -1);
+                                infos[stage++].AddValue(static_cast<float>(g_Kernel->debugMemOverhead()));
+                            }
+
+                            int vofs = 0;
+                            auto* v = static_cast<rend::VertexXYZWC*>(
+                                g_pApp->m_renderer->LockVbStreaming(m_graphsVB, 1000 * stage + 25, vofs, nullptr));
+                            auto const set = [](rend::VertexXYZWC& vert, float x, float y, unsigned c)
+                            {
+                                vert.x = x;
+                                vert.y = y;
+                                vert.z = 0.0f;
+                                vert.w = 0.1f;
+                                vert.c = c;
+                            };
+                            // Axes, then a horizontal grid line every 70 pixels.
+                            set(v[0], 10.0f, 20.0f, 0xFFFFFFFF);
+                            set(v[1], 10.0f, 700.0f, 0xFFFFFFFF);
+                            set(v[2], 1015.0f, 700.0f, 0xFFFFFFFF);
+                            for (int line = 0; line < 9; ++line)
+                            {
+                                float const y = 630.0f - 70.0f * static_cast<float>(line);
+                                set(v[3 + line * 2], 10.0f, y, 0xFF777777);
+                                set(v[4 + line * 2], 1000.0f, y, 0xFF777777);
+                            }
+                            // NOTE: vertex 21 is left unwritten; the graphs start at vertex 22.
+                            for (int g = 0; g < stage; ++g)
+                            {
+                                for (int i = 0; i < 1000; ++i)
+                                {
+                                    set(v[22 + g * 1000 + i],
+                                        static_cast<float>(i) + 12.0f,
+                                        700.0f - infos[g].GetValue(i) * 350.0f,
+                                        colArray[g]);
+                                }
+                            }
+                            g_pApp->m_renderer->UnlockVb(m_graphsVB);
+                            g_pApp->m_renderer->SetAlphaTest(0);
+                            g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+                            g_pApp->m_renderer->DisableTextureStages(1);
+                            g_pApp->m_renderer->SetToStream0(m_graphsVB);
+                            g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINESTRIP, 0, 2u);
+                            g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINELIST, 3u, 9u);
+                            for (int g = 0; g < stage; ++g)
+                            {
+                                g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINESTRIP, 22 + g * 1000, 999u);
+                            }
+                            for (int g = 0; g < stage; ++g)
+                            {
+                                int n = 0;
+                                for (int j = 70; j < 700; j += 70)
+                                {
+                                    ++n;
+                                    CStr const text(
+                                        static_cast<float>(static_cast<float>(n) * infos[g].GetAverValue()) * 0.2f);
+                                    DrawTextAbs(
+                                        18.0f,
+                                        (700.0f - static_cast<float>(j)) + static_cast<float>(g * 10),
+                                        colArray[g],
+                                        text,
+                                        0,
+                                        -1);
+                                }
+                            }
                         }
+                        float statsY = 30.0f;
                         if (m_bDrawMemoryStats)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            ui::FontParams params;
+                            params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
+                            params.ttfParams.style = 1;
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            CStr statStr;
+                            statStr.format("mem used:          %10d", g_Kernel->debugMemUsed());
+                            DrawTextAbs(0.5f, 30.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("mem allocated:     %10d", g_Kernel->debugMemAllocated());
+                            DrawTextAbs(0.5f, 45.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("mem overhead:      %10d", g_Kernel->debugMemOverhead());
+                            DrawTextAbs(0.5f, 60.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            float y = 75.0f;
+                            if (g_pApp->m_sound)
+                            {
+                                unsigned curUsedBySound = 0;
+                                unsigned maxUsedBySound = 0;
+                                g_pApp->m_sound->GetMemUsage(curUsedBySound, maxUsedBySound);
+                                statStr.format("mem used by sound: %10d", curUsedBySound);
+                                DrawTextAbs(0.5f, 75.0f, 0xFFFFFFFF, statStr, 0, -1);
+                                y = 90.0f;
+                            }
+                            statsY = y + 10.0f;
                         }
                         if (m_bDrawStats)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            ui::FontParams params;
+                            params.ttfParams.codePage = m_codePage.CodePage;
+                            params.ttfParams.style = 1;
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            for (unsigned k = 0; k < m_profilerStack.m_numProfilers; ++k)
+                            {
+                                Profiler* const profiler = m_profilerStack.m_stack[k];
+                                CStr line;
+                                double const ms = static_cast<double>(profiler->m_averageClocks) /
+                                    profiler->m_performanceCounterFrequency * 1000.0;
+                                line.format("%s: %.04f", profiler->GetName(), ms);
+                                DrawTextAbs(0.5f, statsY, 0xFFFFFFFF, line, 0, -1);
+                                statsY += 15.0f;
+                            }
                         }
                         if (m_bDrawCounters)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            float y = statsY + 15.0f;
+                            ui::FontParams params;
+                            params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
+                            params.ttfParams.style = 1;
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            for (unsigned m = 0; m < m_counterStack.m_numCounters; ++m)
+                            {
+                                DbgCounter* const counter = m_counterStack.m_stack[m];
+                                CStr statStr = CStr(counter->m_name.c_str()) + CStr(": ");
+                                switch (counter->m_curType)
+                                {
+                                case DbgCounter::DBG_COUNTER_INT:
+                                    statStr += CStr(counter->m_i);
+                                    break;
+                                case DbgCounter::DBG_COUNTER_FLOAT:
+                                {
+                                    CStr value;
+                                    value.format("%.04f", counter->m_f);
+                                    statStr += value;
+                                    break;
+                                }
+                                case DbgCounter::DBG_COUNTER_BOOL:
+                                    statStr += CStr(counter->m_b ? "true" : "false");
+                                    break;
+                                default:
+                                    statStr += CStr(counter->m_s.c_str());
+                                    break;
+                                }
+                                CStr text;
+                                text = statStr;
+                                DrawTextAbsT(0.5f, y, 0xFFFFFFFF, text, 0, -1);
+                                y += 15.0f;
+                            }
+                            for (unsigned n = 0; n < m_counterStack.m_numStrings; ++n)
+                            {
+                                CStr text;
+                                text = CStr(m_counterStack.m_stringStack[n].c_str());
+                                DrawTextAbsT(0.5f, y, 0xFFFFFFFF, text, 0, -1);
+                                y += 15.0f;
+                            }
                         }
                         g_pApp->m_renderer->PopZbState();
                         m_counterStack.ClearStringStack();
@@ -418,11 +692,107 @@ namespace m3d
                         g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
                         if (m_bShowDeviceMemStats)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            ui::FontParams params;
+                            params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
+                            params.ttfParams.style = 1;
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            CStr statStr;
+                            rend::DeviceMemStats ms;
+                            g_pApp->m_renderer->GetDeviceMemStats(ms);
+                            double const kb = 0.0009765625;
+                            statStr.format("DynTex count:    %7d", ms.DynamicTexCount);
+                            DrawTextRel(774.0f, 200.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("DynTex size:%#05.3fKb", static_cast<double>(ms.DynamicTexSize) * kb);
+                            DrawTextRel(774.0f, 212.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("StatTex count:   %7d", ms.StaticTexCount);
+                            DrawTextRel(774.0f, 224.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("StatTex size:%#05.3fKb", static_cast<double>(ms.StaticTexSize) * kb);
+                            DrawTextRel(774.0f, 236.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format(
+                                "TotalTex size:%#05.3fKb",
+                                static_cast<double>(ms.DynamicTexSize + ms.StaticTexSize) * kb);
+                            DrawTextRel(774.0f, 248.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("DynVB count:     %7d", ms.DynamicVBCount);
+                            DrawTextRel(774.0f, 268.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("DynVB size: %5.3fKb", static_cast<double>(ms.DynamicVBSize) * kb);
+                            DrawTextRel(774.0f, 280.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("StatVB count:    %7d", ms.StaticVBCount);
+                            DrawTextRel(774.0f, 292.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("StatVB size:%5.3fKb", static_cast<double>(ms.StaticVBSize) * kb);
+                            DrawTextRel(774.0f, 304.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("VBpool size:%5.3fKb", static_cast<double>(ms.VBPoolsSize) * kb);
+                            DrawTextRel(774.0f, 316.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format(
+                                "TotalVB size:%5.3fKb",
+                                static_cast<double>(ms.DynamicVBSize + ms.StaticVBSize + ms.VBPoolsSize) * kb);
+                            DrawTextRel(774.0f, 328.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("DynIB count:     %7d", ms.DynamicIBCount);
+                            DrawTextRel(774.0f, 348.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("DynIB size: %5.3fKb", static_cast<double>(ms.DynamicIBSize) * kb);
+                            DrawTextRel(774.0f, 360.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("StatIB count:    %7d", ms.StaticIBCount);
+                            DrawTextRel(774.0f, 372.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("StatIB size:%5.3fKb", static_cast<double>(ms.StaticIBSize) * kb);
+                            DrawTextRel(774.0f, 384.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("IBpool size:%5.3fKb", static_cast<double>(ms.IBPoolsSize) * kb);
+                            DrawTextRel(774.0f, 396.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format(
+                                "TotalIB size:%5.3fKb",
+                                static_cast<double>(ms.DynamicIBSize + ms.StaticIBSize + ms.IBPoolsSize) * kb);
+                            DrawTextRel(774.0f, 408.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            unsigned const total = ms.DynamicTexSize + ms.StaticTexSize + ms.DynamicVBSize +
+                                ms.StaticVBSize + ms.VBPoolsSize + ms.DynamicIBSize + ms.StaticIBSize + ms.IBPoolsSize +
+                                ms.RtTexSize;
+                            statStr.format(
+                                "Total size:%5.3fKb(%5.3fMb)",
+                                static_cast<double>(total) * kb,
+                                0.00000095367432 * static_cast<double>(total));
+                            DrawTextRel(724.0f, 428.0f, 0xFFFFFFFF, statStr, 0, -1);
                         }
                         if (m_bShowRenderStats)
                         {
-                            RETRUXX_NOT_IMPLEMENTED;
+                            ui::FontParams params;
+                            params.ttfParams.codePage = g_pApp->m_codePage.CodePage;
+                            params.ttfParams.style = 1;
+                            ui::Wnd::GetGfxServer()->SetFont(
+                                CStr("Lucida Console"), 10.0f, ui::FONT_TYPE_WINDOWS, params);
+                            CStr statStr;
+                            rend::RenderStats rs;
+                            g_pApp->m_renderer->GetStats(rs);
+                            DrawTextRel(
+                                1024.0f - static_cast<float>(m_frameStats.length()) * 9.0f,
+                                0.5f,
+                                0xFFFFFFFF,
+                                m_frameStats,
+                                0,
+                                -1);
+                            statStr.format("%-12s %8d", "t/f:", rs.polyCount);
+                            DrawTextRel(824.0f, 24.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            int const fps =
+                                static_cast<int>(g_Kernel->GetTimer().m_timescale * g_Kernel->GetTimer().m_fps);
+                            statStr.format("%-12s %8d", "t/sec:", rs.polyCount * fps);
+                            DrawTextRel(824.0f, 36.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "dip/f:", rs.DIPs);
+                            DrawTextRel(824.0f, 48.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "dp/f:", rs.DPs);
+                            DrawTextRel(824.0f, 60.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "tex/f:", rs.swTextures);
+                            DrawTextRel(824.0f, 72.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "rs/f:", rs.swRenderStates);
+                            DrawTextRel(824.0f, 84.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "vs/f:", rs.swVertexShaders);
+                            DrawTextRel(824.0f, 96.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "ps/f:", rs.swPixelShaders);
+                            DrawTextRel(824.0f, 108.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "stageS/f:", rs.swTextureStageStates);
+                            DrawTextRel(824.0f, 120.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "samplerS/f:", rs.swTextureSamplerStates);
+                            DrawTextRel(824.0f, 132.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "xform/f:", rs.swMatrices);
+                            DrawTextRel(824.0f, 144.0f, 0xFFFFFFFF, statStr, 0, -1);
+                            statStr.format("%-12s %8d", "rt/f:", rs.swRenderTargets);
+                            DrawTextRel(824.0f, 156.0f, 0xFFFFFFFF, statStr, 0, -1);
                         }
                         if (g_Kernel->GetEngineCfg().m_g_showEffectsStats.GetB())
                         {
@@ -443,8 +813,11 @@ namespace m3d
                     }
                     m_renderer->PresentScene();
                 }
-                //TODO: add strings
-                CStr fps = " fps [";
+                // Header line of the render stats overlay, e.g. "60.0 fps [1024x768x32]".
+                auto const viewportWidth = m_renderer->GetViewport().m_width;
+                auto const viewportHeight = m_renderer->GetViewport().m_height;
+                m_frameStats = CStr(g_Kernel->GetTimer().GetRawFPS()) + CStr(" fps [") + CStr(viewportWidth) +
+                    CStr("x") + CStr(viewportHeight) + CStr("x") + CStr(m_renderer->GetCurBppStr(nullptr)) + CStr("]");
             }
         }
         return 1;
@@ -485,37 +858,36 @@ namespace m3d
 
     int Application::processWinMessages()
     {
-        //TODO: wmquitmsg - static atomic or what?
+        // RVA 0x59FA20
+        // The original keeps this flag in a plain file-scope byte: once WM_QUIT has been seen, every later
+        // call reports it again. Only the main thread pumps messages, so no synchronisation is needed.
         static bool wmQuitMsg = false;
         m_mouseInfo.ResetDelta();
         MSG msg;
-        if (!PeekMessage(&msg, 0, 0, 0, 1))
+        while (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            return !wmQuitMsg;
-        }
-        while (msg.message != 18)
-        {
-            if (!m_isAppActive && GetMessage(&msg, 0, 0, 0))
+            if (msg.message == WM_QUIT)
             {
-                do
+                wmQuitMsg = true;
+                return 0;
+            }
+            if (!m_isAppActive)
+            {
+                // While the app is inactive, block in GetMessage until it is activated again.
+                while (::GetMessageA(&msg, NULL, 0, 0) && !m_isAppActive)
                 {
-                    if (m_isAppActive)
-                        break;
-                    DispatchMessageA(&msg);
-                } while (GetMessageA(&msg, 0, 0, 0));
+                    ::DispatchMessageA(&msg);
+                }
             }
-            DispatchMessage(&msg);
-            if (!PeekMessage(&msg, 0, 0, 0, 1))
-            {
-                return !wmQuitMsg;
-            }
+            // NOTE: the original never calls TranslateMessage, so no WM_CHAR is generated here.
+            ::DispatchMessageA(&msg);
         }
-        wmQuitMsg = true;
-        return 0;
+        return !wmQuitMsg;
     }
 
     int Application::FillEngineMessages()
     {
+        // RVA 0x5A6930
         if (!m_input)
         {
             return 1;
@@ -541,15 +913,14 @@ namespace m3d
                 }
                 ev.m_byteEv[3] = param2;
                 ev.m_eventType = 8 - (param3 != 0);
-                auto oldHead = m_eventsQueueHead;
                 auto head = m_eventsQueueHead + 1;
                 if (head >= 0x1388)
                 {
-                    m_eventsQueueHead = 0;
+                    head = 0;
                 }
                 if (m_eventsQueueTail != head)
                 {
-                    m_eventsQueue[oldHead] = ev;
+                    m_eventsQueue[m_eventsQueueHead] = ev;
                     m_eventsQueueHead = head;
                 }
             } while (m_input->GetLastKbdEvent(key, param2, param3, time, true));
@@ -730,110 +1101,129 @@ namespace m3d
 
     int Application::CheckAndLogPlatform()
     {
-        M3D_LOG_INFO("Path: " + m_startupFolder);
-        M3D_LOG_INFO("Exe: " + m_imageName);
+        // RVA 0x59D2B0
+        M3D_LOG_INFO(CStr("Path: ") + m_startupFolder);
+        M3D_LOG_INFO(CStr("Exe: ") + m_imageName);
 
-        OSVERSIONINFO osinfo;
-        memset(&osinfo, 0, sizeof(OSVERSIONINFO));
-        osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-        ::GetVersionEx(&osinfo);
+        OSVERSIONINFOA osinfo;
+        memset(&osinfo, 0, sizeof(osinfo));
+        osinfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+        ::GetVersionExA(&osinfo);
         M3D_LOG_INFO(
-            "Windows version: " + CStr(osinfo.dwMajorVersion) + "." + CStr(osinfo.dwMinorVersion) + "." +
-            CStr(osinfo.dwBuildNumber));
+            CStr("Windows version: ") + CStr(osinfo.dwMajorVersion) + CStr(".") + CStr(osinfo.dwMinorVersion) +
+            CStr(".") + CStr(osinfo.dwBuildNumber));
 
-        TCHAR computerName[MAX_COMPUTERNAME_LENGTH + 1] = {0};
-        DWORD size = sizeof(computerName);
-        ::GetComputerName(computerName, &size);
-        M3D_LOG_INFO("Computer name: " + CStr(computerName));
+        char computerName[1024];
+        DWORD size = 1024;
+        ::GetComputerNameA(computerName, &size);
+        M3D_LOG_INFO(CStr("Computer name: ") + CStr(computerName));
 
-        char cpuInfo[16] = {0};
-        __cpuid(reinterpret_cast<int*>(cpuInfo), 0x80000000);
+        int cpuInfo[4] = {0};
+        __cpuid(cpuInfo, 0);
+        char cpuName[16];
+        memcpy(cpuName, &cpuInfo[1], 4);      // ebx
+        memcpy(cpuName + 4, &cpuInfo[3], 4);  // edx
+        memcpy(cpuName + 8, &cpuInfo[2], 4);  // ecx
+        memset(cpuName + 12, 0, 4);
+        M3D_LOG_INFO(CStr("Cpu: ") + CStr(cpuName));
+        M3D_LOG_INFO(CStr("Cpu clock: ~") + CStr(static_cast<int64_t>(m_cpuSpeed / 1000000)));
 
-        //TODO: other info...
-        //RETRUXX_NOT_IMPLEMENTED;
+        __cpuid(cpuInfo, 1);
+        if (!(cpuInfo[3] & 0x800000))
+        {
+            M3D_LOG_INFO("Processor should support mmx in order to run this program");
+            return 0;
+        }
+        M3D_LOG_INFO("Processor is mmx able");
+
+        MEMORYSTATUS memStatus;
+        memset(&memStatus, 0, sizeof(memStatus));
+        memStatus.dwLength = sizeof(MEMORYSTATUS);
+        ::GlobalMemoryStatus(&memStatus);
+        M3D_LOG_INFO(
+            CStr("Physical memory: ") + CStr(static_cast<unsigned long>(memStatus.dwTotalPhys >> 20)) + CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Total memory:    ") + CStr(static_cast<unsigned long>(memStatus.dwTotalPageFile >> 20)) +
+            CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Physical memory available: ") + CStr(static_cast<unsigned long>(memStatus.dwAvailPhys >> 20)) +
+            CStr(" MB"));
+        M3D_LOG_INFO(
+            CStr("Total memory available:    ") + CStr(static_cast<unsigned long>(memStatus.dwAvailVirtual >> 20)) +
+            CStr(" MB"));
         return 1;
     }
 
     long Application::MsgProc(HWND hWnd, unsigned uMsg, unsigned wParam, long lParam)
     {
-        //TODO: check this and refactor
-        int result;                  // eax
-        PointBase<int> curMousePos;  // [esp+8h] [ebp-30h] BYREF
-        CStr param4;                 // [esp+10h] [ebp-28h] BYREF
-
-        if (uMsg <= 0x21)
+        // RVA 0x5A7D80
+        switch (uMsg)
         {
-            if (uMsg < 0x20)
+        case WM_DESTROY:
+            ::PostQuitMessage(0);
+            return 0;
+        case WM_CLOSE:
+            ::DestroyWindow(hWnd);
+            return 0;
+        case WM_ACTIVATEAPP:
+            ImmediateMessage(2, wParam, 0, 0, 0, {}, {});
+            return 0;
+        case WM_ACTIVATE:
+        case WM_SETFOCUS:
+        case WM_SETCURSOR:
+        case WM_MOUSEACTIVATE:
+        case WM_NCACTIVATE:
+            // Hide the system cursor; the DX cursor, when enabled, is drawn instead.
+            ::SetCursor(NULL);
+            if (m_bDXCursorEnabled && M3D_RENDERER)
             {
-                switch (uMsg)
-                {
-                case 2u:
-                    PostQuitMessage(0);
-                    result = 0;
-                    break;
-                case 6u:
-                case 7u:
-                    goto $L141541;
-                case 0x10u:
-                    DestroyWindow(hWnd);
-                    result = 0;
-                    break;
-                case 0x1Cu:
-                    ImmediateMessage(2, wParam, 0, 0, 0, {}, {});
-                    result = 0;
-                    break;
-                default:
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-                }
-                return result;
-            }
-        $L141541:
-            SetCursor(0);
-            if (this->m_bDXCursorEnabled)
-            {
-                if (M3D_RENDERER)
-                    M3D_RENDERER->ShowDXCursor(1);
+                M3D_RENDERER->ShowDXCursor(1);
             }
             return 1;
-        }
-        if (uMsg > 0x200)
-        {
-            if (uMsg == 536)
-                return 1112363332;
-            return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-        }
-        if (uMsg != 512)
-        {
-            if (uMsg == 134)
-                goto $L141541;
-            if (uMsg == 274 && ((wParam & 0xFFF0) == 61760 || (wParam & 0xFFF0) == 61808))
+        case WM_SYSCOMMAND:
+            // Keep the screen saver and monitor power-off from kicking in.
+            if ((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
+            {
                 return 0;
-            return DefWindowProcA(hWnd, uMsg, wParam, lParam);
-        }
-        if (!this->m_isAppActive || !this->m_bDXCursorEnabled)
+            }
+            break;
+        case WM_MOUSEMOVE:
+        {
+            if (!m_isAppActive || !m_bDXCursorEnabled)
+            {
+                return 0;
+            }
+            PointBase<int> const curMousePos(LOWORD(lParam), HIWORD(lParam));
+            m_mouseInfo.SetUpForCurPos(curMousePos);
+            if (m_bDXCursorEnabled && M3D_RENDERER)
+            {
+                M3D_RENDERER->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
+            }
             return 0;
-        curMousePos.x = LOWORD(lParam);
-        curMousePos.y = HIWORD(lParam);
-        m_mouseInfo.SetUpForCurPos(curMousePos);
-        if (this->m_bDXCursorEnabled && M3D_RENDERER)
-            M3D_RENDERER->MoveDXCursor(LOWORD(lParam), HIWORD(lParam));
-        return 0;
+        }
+        case WM_POWERBROADCAST:
+            // Refuse suspend requests.
+            return BROADCAST_QUERY_DENY;
+        }
+        return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
     }
 
     void Application::SetCodepage()
     {
-        //TODO: check this
+        // RVA 0x5A7450
+        // NOTE: the installed code pages are collected but never used afterwards.
         retruxx::set<size_t> codePagesStrings;
         codePagesStringsPtr = &codePagesStrings;
         ::EnumSystemCodePages(EnumCodePagesProc, CP_INSTALLED);
         CStr const codePageName = g_Kernel->GetEngineCfg().m_ui_codePageName.GetS();
-        UINT codePage = 0;
+        UINT codePage = CP_ACP;
         if (codePageName == CStr("CP_UTF8"))
         {
             codePage = CP_UTF8;
         }
-        else if (auto const offset = codePageName.findsubstr("windows-"); offset != CStr_npos)
+        else if (codePageName.findsubstr("windows-") != CStr_npos)
         {
+            // NOTE: "windows-" is searched anywhere, but the number is always read right after the first 8 chars.
             codePage = std::atoi(codePageName.substr(strlen("windows-")).c_str());
         }
         if (::GetCPInfoEx(codePage, 0, &g_pApp->m_codePage) == FALSE)
@@ -841,13 +1231,14 @@ namespace m3d
             M3D_LOG_INFO(
                 "SetCodepage -- code page is not supported : " + codePageName +
                 " forcing ANSI, some chars will be not available");
-            //TODO: handle this
-            if (::GetCPInfoEx(0, 0, &g_pApp->m_codePage) == FALSE)
+            if (::GetCPInfoEx(CP_ACP, 0, &g_pApp->m_codePage) == FALSE)
             {
-                SYS_ERROR("GetCPInfoEx ANSI failed");
+                SYS_ERROR("res");
             }
         }
-        M3D_LOG_INFO(CStr("SetCodepage -- using codepage ") + g_pApp->m_codePage.CodePageName);
+        M3D_LOG_INFO(
+            CStr("SetCodepage -- using codepage ") + CStr(g_pApp->m_codePage.CodePage) + CStr(" '") +
+            CStr(g_pApp->m_codePage.CodePageName) + CStr("'"));
     }
 
     int Application::createRenderer()
@@ -930,31 +1321,36 @@ namespace m3d
 
     int Application::createSound()
     {
-        //TODO: check correctness
+        // RVA 0x5A0200
+        CStr const soundDriverName("sound.dll");
+        m_sound = nullptr;
         auto& config = g_Kernel->GetEngineCfg();
         if (!config.m_snd_Enable.GetB() && !config.m_mus_Enable.GetB())
         {
             return 1;
         }
-        CStr inputDriverName("sound.dll");
-        m_hSoundDll = ::LoadLibrary(inputDriverName.c_str());
+        auto const disableSound = [&config]()
+        {
+            config.m_snd_Enable.SetI(0, true);
+            config.m_mus_Enable.SetI(0, true);
+        };
+
+        m_hSoundDll = ::LoadLibraryA(soundDriverName.c_str());
         if (m_hSoundDll == NULL)
         {
-            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + inputDriverName);
-            M3D_LOG_ERR("GetLastError() = " + CStr(::GetLastError()));
-            config.m_snd_Enable.SetB(false);
-            config.m_mus_Enable.SetB(false);
+            // NOTE: this path leaves the cvars alone; init() turns sound off after the failure.
+            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot locate sound driver " + soundDriverName);
             return 0;
         }
         auto createISound = reinterpret_cast<CreateISoundType>(::GetProcAddress(m_hSoundDll, "createISound"));
         if (createISound == NULL)
         {
             M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot get factory");
-            config.m_snd_Enable.SetB(false);
-            config.m_mus_Enable.SetB(false);
+            disableSound();
             return 0;
         }
-        for (int trial = 0; trial < 3; ++trial)
+
+        for (int trial = 1; trial <= 3; ++trial)
         {
             m_sound = createISound(g_Kernel);
             if (m_sound != nullptr)
@@ -964,38 +1360,40 @@ namespace m3d
             M3D_LOG_INFO("Warning: sound was not created after trial " + CStr(trial));
             ::Sleep(1000);
         }
-        if (m_sound != nullptr)
+        if (m_sound == nullptr)
         {
-            m_sound->IncRef();
-            M3D_LOG_INFO("NOTE! sound is bind to " + inputDriverName);
-            auto isSoundInit = false;
-            for (int trial = 0; trial < 3; ++trial)
+            disableSound();
+            M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot instantiate sound");
+            return 0;
+        }
+
+        m_sound->IncRef();
+        M3D_LOG_INFO("NOTE! sound is bind to " + soundDriverName);
+        for (int trial = 1; trial <= 3; ++trial)
+        {
+            if (m_sound->Init(
+                    logSoundFunc,
+                    config.m_snd_SampleRate.GetI(),
+                    config.m_snd_BitsPerSample.GetI(),
+                    config.m_snd_MaxSounds.GetI(),
+                    config.m_snd_pathToSoundGroups.GetS()))
             {
-                auto const sampleRate = config.m_snd_SampleRate.GetI();
-                auto const maxSounds = config.m_snd_MaxSounds.GetI();
-                auto const pathToSoundGroup = config.m_snd_pathToSoundGroups.GetS();
-                auto const bitsPerSample = config.m_snd_BitsPerSample.GetI();
-                if (m_sound->Init(logSoundFunc, sampleRate, bitsPerSample, maxSounds, pathToSoundGroup))
-                {
-                    isSoundInit = true;
-                    break;
-                }
-                M3D_LOG_INFO("Warning: sound was not inited after trial " + CStr(trial));
-                ::Sleep(1000);
-            }
-            if (isSoundInit)
-            {
-                //TODO: improve logic
+                // Volume cvars forward their changes to the sound driver.
                 m_soundConHandler = new SoundConHandler{};
                 config.m_mus_Volume.SetHandler(m_soundConHandler);
                 config.m_snd_2dVolume.SetHandler(m_soundConHandler);
                 config.m_snd_3dVolume.SetHandler(m_soundConHandler);
-                return true;
+                return 1;
             }
+            M3D_LOG_INFO("Warning: sound was not inited after trial " + CStr(trial));
+            ::Sleep(1000);
         }
-        config.m_snd_Enable.SetB(false);
-        config.m_mus_Enable.SetB(false);
-        return false;
+
+        M3D_LOG_ERR("ERROR! m3dApplication::CreateSound -- cannot init sound");
+        disableSound();
+        m_sound->DecRef();
+        m_sound = nullptr;
+        return 0;
     }
 
     void Application::doneSprite()
@@ -1041,21 +1439,20 @@ namespace m3d
 
     int Application::HandleEvent(Event const& ev)
     {
+        // RVA 0x5A85B0
         static bool bAltEnterActive = false;
         static bool bCtrlShiftActive = false;
 
         int res = 0;
-        //TODO: imlement Application::HandleEvent
         switch (ev.m_eventType)
         {
         case EV_APP_QUIT:
         {
-            ::PostMessageA(M3D_ENGINE_CFG.m_mainWnd, 0x10, 0, 0);
+            ::PostMessageA(M3D_ENGINE_CFG.m_mainWnd, WM_CLOSE, 0, 0);
             return 1;
         }
         case EV_ACTIVATE_APP:
         {
-            //TODO: check this
             m_isAppActive = ev.m_intEv[0];
             if (m_input)
             {
@@ -1065,7 +1462,6 @@ namespace m3d
             {
                 m_renderer->SetActiveState(m_isAppActive);
             }
-
             M3D_KERNEL->GetTimer().SetActiveState(m_isAppActive);
             if (m_isAppActive)
             {
@@ -1073,20 +1469,19 @@ namespace m3d
                 {
                     CaptureAndClipSystemCursor(true);
                 }
-                //TODO: check this
                 ShowSystemCursor(m_bDXCursorEnabled);
                 if (M3D_APP->m_sound)
                 {
                     M3D_APP->m_sound->PauseAllSounds(false);
-                    return 1;
                 }
             }
             else
             {
-                ReleaseCapture();
-                ClipCursor(nullptr);
-                while (ShowCursor(TRUE) < 0)
-                    ;
+                ::ReleaseCapture();
+                ::ClipCursor(nullptr);
+                while (::ShowCursor(TRUE) < 0)
+                {
+                }
                 if (M3D_APP->m_sound)
                 {
                     M3D_APP->m_sound->PauseAllSounds(true);
@@ -1096,14 +1491,14 @@ namespace m3d
         }
         case EV_CHANGE_DISPLAY_MODE:
         {
-            //TODO: check this
-            SwitchDisplayModes(M3D_ENGINE_CFG.m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_intEv[2] != 0);
+            SwitchDisplayModes(M3D_ENGINE_CFG.m_mainWnd, ev.m_intEv[0], ev.m_intEv[1], ev.m_uintEv[2] != 0);
             return 1;
         }
         case EV_DISPLAY_CHANGED:
         {
-            auto const viewport = m_renderer->GetViewport();
-            M3D_ENGINE_CFG.m_console->CheckResize(viewport.m_width, viewport.m_height);
+            // Not consumed: still goes on to the focus handler and the windows below.
+            M3D_ENGINE_CFG.m_console->CheckResize(
+                m_renderer->GetViewport().m_width, m_renderer->GetViewport().m_height);
             m_appNeedToRedraw = 1;
             break;
         }
@@ -1111,17 +1506,15 @@ namespace m3d
         {
             if (ev.m_byteEv[0] == KBD_F11)
             {
+                // F11 toggles a screenshot every frame; switching it on needs debug mode.
                 if (m_screenShotPendingAlways)
                 {
                     m_screenShotPendingAlways = 0;
                 }
-                else
+                else if (M3D_ENGINE_CFG.m_debugMode.GetB())
                 {
-                    if (M3D_ENGINE_CFG.m_debugMode.GetB())
-                    {
-                        m_screenShotPendingAlways = 1;
-                        m_screenShotPending = 1;
-                    }
+                    m_screenShotPendingAlways = 1;
+                    m_screenShotPending = 1;
                 }
                 res = 1;
             }
@@ -1130,25 +1523,28 @@ namespace m3d
                 m_screenShotPending = 1;
                 res = 1;
             }
-            else
+            else if (m_waitForAnykey)
             {
-                if (m_waitForAnykey)
-                {
-                    m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
-                    res = 1;
-                }
+                // NOTE: unlike key up and the mouse buttons, key down only restamps the time and
+                // leaves m_waitForAnykey set and the timer paused.
+                m_timeFromLevelLoaded = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+                res = 1;
             }
 
-            if ((ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER)))
+            if (ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER))
             {
                 if (M3D_ENGINE_CFG.m_g_altEnterAllow.GetB() && !bAltEnterActive)
                 {
-                    RETRUXX_NOT_IMPLEMENTED;
+                    bAltEnterActive = true;
+                    bool const fullScreen = !M3D_ENGINE_CFG.m_r_fullScreen.GetB();
+                    M3D_ENGINE_CFG.m_console->executeCommand(
+                        CStr("/r_videomode ") + CStr(M3D_ENGINE_CFG.m_r_width.GetI()) + CStr(" ") +
+                        CStr(M3D_ENGINE_CFG.m_r_height.GetI()) + CStr(" ") + CStr(static_cast<int>(fullScreen)));
                 }
                 res = 1;
             }
 
-            if ((ev.m_ushortEv[0] & KBD_LCTRL) != 0 && (ev.m_ushortEv[0] & KBD_LSHIFT) != 0)
+            if ((ev.m_ushortEv[0] & 0x8000) && (ev.m_ushortEv[0] & KBD_LSHIFT))
             {
                 if (!bCtrlShiftActive)
                 {
@@ -1163,33 +1559,24 @@ namespace m3d
                 return res;
             }
 
-            if (ev.m_byteEv[3] == KEY_GRAVE)
+            if (ev.m_byteEv[3] != KEY_GRAVE)
             {
-                if (M3D_ENGINE_CFG.m_console->isActive())
-                {
-                    if (M3D_APP)
-                    {
-                        SetKeyboardFocus(M3D_APP);
-                        return 1;
-                    }
-                }
-                else
-                {
-                    if (!m_isConsoleAllowed)
-                    {
-                        return 1;
-                    }
-                    if (M3D_ENGINE_CFG.m_console)
-                    {
-                        SetKeyboardFocus(M3D_ENGINE_CFG.m_console);
-                        return 1;
-                    }
-                }
-                SetKeyboardFocus(nullptr);
-                return 1;
+                break;
             }
 
-            break;
+            // The console key.
+            if (M3D_ENGINE_CFG.m_console->isActive())
+            {
+                SetKeyboardFocus(M3D_APP ? static_cast<IEventHandler*>(M3D_APP) : nullptr);
+                return 1;
+            }
+            if (!m_isConsoleAllowed)
+            {
+                return 1;
+            }
+            SetKeyboardFocus(
+                M3D_ENGINE_CFG.m_console ? static_cast<IEventHandler*>(M3D_ENGINE_CFG.m_console) : nullptr);
+            return 1;
         }
         case EV_KEY_UP:
         {
@@ -1205,26 +1592,25 @@ namespace m3d
                 m_waitForAnykey = false;
                 res = 1;
             }
-
-            if (bAltEnterActive &&
-                (ev.m_ushortEv[0] == KBD_ENTER || ev.m_ushortEv[0] == KBD_LALT ||
-                 ev.m_ushortEv[0] == (KBD_LALT | KBD_ENTER)))
+            if (bAltEnterActive)
             {
-                bAltEnterActive = 0;
-                res = 1;
+                auto const key = static_cast<short>(ev.m_ushortEv[0]);
+                if (key == KBD_ENTER || key == KBD_LALT || key == (KBD_LALT | KBD_ENTER))
+                {
+                    bAltEnterActive = false;
+                    res = 1;
+                }
             }
-            // TODO: check this
-            if (bCtrlShiftActive && (ev.m_ushortEv[0] & 0xA000u) != 0)
+            if (bCtrlShiftActive && (ev.m_ushortEv[0] & 0xA000) != 0)
             {
-                bCtrlShiftActive = 0;
+                bCtrlShiftActive = false;
                 return 1;
             }
-
-            if (!res)
+            if (res)
             {
-                break;
+                return res;
             }
-            return res;
+            break;
         }
         case EV_MOUSE_LBTN:
         case EV_MOUSE_RBTN:
@@ -1240,77 +1626,36 @@ namespace m3d
             return 1;
         }
         default:
-        {
             break;
         }
+
+        // Keys go to the keyboard focus first, unless the application itself holds it.
+        if ((ev.m_eventType == EV_KEY_DOWN || ev.m_eventType == EV_KEY_UP) && m_focusKbdEntity &&
+            m_focusKbdEntity != static_cast<IEventHandler*>(this))
+        {
+            res = m_focusKbdEntity->HandleEvent(ev);
+            if (res)
+            {
+                return res;
+            }
         }
 
-        if (ev.m_eventType != EV_KEY_DOWN && ev.m_eventType != EV_KEY_UP || m_focusKbdEntity == nullptr ||
-            m_focusKbdEntity == this)
+        // The wheel scrolls the console while it has the focus.
+        if (ev.m_eventType == EV_MOUSE_WHEEL)
         {
-            if (m_focusKbdEntity && m_focusKbdEntity != this && m_focusKbdEntity->HandleEvent(ev) != 0)
+            IConsole* const console = M3D_ENGINE_CFG.m_console;
+            if (m_focusKbdEntity == (console ? static_cast<IEventHandler*>(console) : nullptr))
             {
-                return 1;
+                // NOTE: no null check here; with no console and no focus this calls through null.
+                res = static_cast<IEventHandler*>(M3D_ENGINE_CFG.m_console)->HandleEvent(ev);
+                if (res)
+                {
+                    return res;
+                }
             }
+        }
 
-            if (ev.m_eventType != EV_MOUSE_WHEEL)
-            {
-                return WndStation::ProcessEvent(ev);
-            }
-
-            if (m_focusKbdEntity != M3D_ENGINE_CFG.m_console)
-            {
-                return WndStation::ProcessEvent(ev);
-            }
-
-            res = M3D_ENGINE_CFG.m_console->HandleEvent(ev);
-            if (!res)
-                return WndStation::ProcessEvent(ev);
-        }
-        return res;
-
-        /*
-        if ((ev.m_eventType == EV_KEY_DOWN || ev.m_eventType == EV_KEY_UP) && m_focusKbdEntity != nullptr)
-        {
-            return ProcessEvent(ev);
-        }
-        //TODO: check this
-        if (ev.m_eventType != 15)
-        {
-            if (M3D_KERNEL->GetEngineCfg().m_console == m_focusKbdEntity)
-            {
-                return M3D_KERNEL->GetEngineCfg().m_console->HandleEvent(ev) != 0;
-            }
-            return ProcessEvent(ev);
-        }
-        if (M3D_KERNEL->GetEngineCfg().m_console->isActive())
-        {
-            if (M3D_APP)
-            {
-                SetKeyboardFocus(M3D_APP);
-                return 1;
-            }
-        }
-        else
-        {
-            if (!m_isConsoleAllowed)
-            {
-                return 1;
-            }
-            if (M3D_KERNEL->GetEngineCfg().m_console)
-            {
-                SetKeyboardFocus(M3D_KERNEL->GetEngineCfg().m_console);
-                return 1;
-            }
-        }
-        if (bCtrlShiftActive)
-        {
-            return 1;
-        }
-        bCtrlShiftActive = true;
-        ChangeLanguage();
-        return 1;
-        */
+        return WndStation::ProcessEvent(ev);
     }
 
     void Application::doneProcTexThread()
@@ -1332,12 +1677,12 @@ namespace m3d
 
     int Application::OnLoosingFocus()
     {
+        // RVA 0x59C4C0
         if (m_pImpulses)
         {
             m_pImpulses->ResetAllImpulses(false);
         }
         m_gotFocus = false;
-        //TODO: check this
         m_mouseDown = 0;
         return 1;
     }
@@ -1349,12 +1694,22 @@ namespace m3d
 
     void Application::DoneImpulses()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C500
+        delete m_pImpulses;
+        m_pImpulses = nullptr;
     }
 
     void Application::DetailSettings::RestoreGameSettings()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A1340
+        // The binary inlines CVar::Set with flags honoured (read-only cvars are left alone).
+        char buffer[64];
+        sprintf_s(buffer, "%d", m_dsShadows);
+        g_Kernel->GetEngineCfg().m_dsShadows.Set(buffer, false);
+        sprintf_s(buffer, "%.2f", m_lsViewDistanceDivider);
+        g_Kernel->GetEngineCfg().m_lsViewDistanceDivider.Set(buffer, false);
+        sprintf_s(buffer, "%.2f", m_NPatchLevel);
+        g_Kernel->GetEngineCfg().m_NPatchLevel.Set(buffer, false);
     }
 
     void Application::DetailSettings::SaveGameSettings()
@@ -1366,7 +1721,14 @@ namespace m3d
 
     void Application::DetailSettings::SetMenuLevelSettings()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A21C0
+        char buffer[64];
+        sprintf_s(buffer, "%d", 1);
+        g_Kernel->GetEngineCfg().m_dsShadows.Set(buffer, false);
+        sprintf_s(buffer, "%.2f", 1.0);
+        g_Kernel->GetEngineCfg().m_lsViewDistanceDivider.Set(buffer, false);
+        sprintf_s(buffer, "%.2f", 0.0);
+        g_Kernel->GetEngineCfg().m_NPatchLevel.Set(buffer, false);
     }
 
     Application::DetailSettings::DetailSettings()
@@ -1420,7 +1782,7 @@ namespace m3d
 
     void Application::texGenProcess(IGeneratedTexture*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75C9F0
     }
 
     void Application::DrawTri(CVector* tri, unsigned clr)
@@ -1453,67 +1815,46 @@ namespace m3d
 
     void Application::ForbidRendering()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C4A0
+        m_isRenderingAllowed = false;
     }
 
     Class* Application::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59BC10
+        return RT_CLASS_LOCAL(Application);
     }
 
     DataServer& Application::GetStaticModelsServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A5A50
+        return *m_serverStaticModels;
     }
 
     void Application::DrawCross(CVector const& org, float size, unsigned color)
     {
-        // TODO: generated code Application::DrawCross
-        // Draw a 3D cross centered at 'org' with arms of length 'size' in each axis
-
-        // Loop through each axis (X, Y, Z)
+        // RVA 0x7B04A0
+        // One line of length 2 * size along each world axis, centred on org.
         for (int axis = 0; axis < 3; ++axis)
         {
-            // Create vectors for the positive and negative ends of this axis
             CVector positiveEnd = ZeroVector;
             CVector negativeEnd = ZeroVector;
-
-            // Set the appropriate component for this axis
-            switch (axis)
-            {
-            case 0:  // X-axis
-                positiveEnd.x = size;
-                negativeEnd.x = -size;
-                break;
-
-            case 1:  // Y-axis
-                positiveEnd.y = size;
-                negativeEnd.y = -size;
-                break;
-
-            case 2:  // Z-axis
-                positiveEnd.z = size;
-                negativeEnd.z = -size;
-                break;
-            }
-
-            // Calculate the actual world positions
-            CVector from = org + negativeEnd;
-            CVector to = org + positiveEnd;
-
-            // Draw the line for this axis
-            DrawLine(from, to, color);
+            (&positiveEnd.x)[axis] = size;
+            (&negativeEnd.x)[axis] = 0.0f - size;
+            g_pApp->DrawLine(org + negativeEnd, org + positiveEnd, color);
         }
     }
 
     CStr const& Application::GetImageName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59BF70
+        return m_imageName;
     }
 
     int Application::GetCurDifficultyLevel() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA950
+        return 0;
     }
 
     char* Application::GetWindowTitle() const
@@ -1523,12 +1864,28 @@ namespace m3d
 
     void Application::MiniDump()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59BC80
+        unsigned long dummy = 0;
+        WriteDump("game.dmp", nullptr, dummy);
     }
 
     void Application::DrawLogo()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59EE90
+        g_pApp->m_renderer->PushBlend(rend::BM_COLOR);
+        g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
+        g_pApp->m_renderer->SetTexture(0, m_texLogo, -1.0);
+        float x1 = 924.0f;
+        float y1 = 0.0f;
+        float x2 = 1024.0f;
+        float y2 = 100.0f;
+        g_pApp->m_renderer->RelToAbs(x1, y1);
+        g_pApp->m_renderer->RelToAbs(x2, y2);
+        g_pApp->PutSpriteAbs(x1, y1, x2, y2, 0x80FFFFFF);
+        g_pApp->m_renderer->PopZbState();
+        g_pApp->m_renderer->PopBlend();
     }
 
     float Application::GetOnScreenSize(CVector const& o, float radius)
@@ -1558,7 +1915,8 @@ namespace m3d
 
     int Application::HandleCinematic(float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA990
+        return 0;
     }
 
     void Application::PutSplashCallBack(int proc, void* data)
@@ -1573,14 +1931,16 @@ namespace m3d
 
     bool Application::StartPlayingMusic(char const* musicName, bool bDoLoop, bool bImmediate)
     {
+        // RVA 0x59F370
         auto item = M3D_APP->m_serverMusic->GetItemByName(musicName, true);
         if (item == -1)
         {
+            // An unknown name is only reported while music is enabled, but always fails.
             if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
             {
                 M3D_LOG_ERR("Error: invalid music name: '" + CStr(musicName) + "'");
-                return false;
             }
+            return false;
         }
 
         struct RenderInfo
@@ -1596,6 +1956,7 @@ namespace m3d
         ri.m_bImmediate = bImmediate;
         ri.m_channelId = -1;
         M3D_APP->m_serverMusic->RenderItem(item, &ri);
+        return true;
     }
 
     DataServer& Application::GetProjectorsServer()
@@ -1603,34 +1964,130 @@ namespace m3d
         return *m_serverProjectors;
     }
 
-    bool Application::CheckCommandLineParam(char const*) const
+    bool Application::CheckCommandLineParam(char const* param) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A32D0
+        return m_cmdLine.CheckParam(param);
     }
 
     unsigned long Application::GetLocale() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59F5B0
+        int langId = 0;
+        sscanf_s(g_Kernel->GetEngineCfg().m_input_additionalKeyboardLayot.GetS(), "%x", &langId);
+        return static_cast<unsigned short>(langId);
     }
 
-    void Application::DrawQuad(CVector*, unsigned)
+    void Application::DrawQuad(CVector* tri, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B06C0
+        auto vb = g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1);
+        int vofs = 0;
+        auto* v = static_cast<rend::VertexXYZCT1*>(g_pApp->m_renderer->LockVbStreaming(vb, 6, vofs, 0));
+        // NOTE: the texture coordinates of the second triangle do not match the first one's
+        // (tri[2] gets (1, 0) and tri[3] gets (1, 1)); kept as shipped.
+        v[0].x = tri[0].x;
+        v[0].y = tri[0].y;
+        v[0].z = tri[0].z;
+        v[0].c = clr;
+        v[0].tu = 0.0f;
+        v[0].tv = 0.0f;
+        v[1].x = tri[1].x;
+        v[1].y = tri[1].y;
+        v[1].z = tri[1].z;
+        v[1].c = clr;
+        v[1].tu = 1.0f;
+        v[1].tv = 0.0f;
+        v[2].x = tri[2].x;
+        v[2].y = tri[2].y;
+        v[2].z = tri[2].z;
+        v[2].c = clr;
+        v[2].tu = 1.0f;
+        v[2].tv = 1.0f;
+        v[3].x = tri[0].x;
+        v[3].y = tri[0].y;
+        v[3].z = tri[0].z;
+        v[3].c = clr;
+        v[3].tu = 0.0f;
+        v[3].tv = 0.0f;
+        v[4].x = tri[2].x;
+        v[4].y = tri[2].y;
+        v[4].z = tri[2].z;
+        v[4].c = clr;
+        v[4].tu = 1.0f;
+        v[4].tv = 0.0f;
+        v[5].x = tri[3].x;
+        v[5].y = tri[3].y;
+        v[5].z = tri[3].z;
+        v[5].c = clr;
+        v[5].tu = 1.0f;
+        v[5].tv = 1.0f;
+        g_pApp->m_renderer->UnlockVb(vb);
+        g_pApp->m_renderer->SetToStream0(vb);
+        g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 2u);
     }
 
-    void Application::SaveToXml(cmn::XmlFile*, cmn::XmlNode*) const
+    void Application::SaveToXml(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59F1F0
+        ref_ptr cameraNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Camera");
+        xmlNode->AddChild(cameraNode);
+        m_curCamera.SaveToXml(xmlFile, cameraNode);
+
+        ref_ptr cinematicNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Cinematic");
+        xmlNode->AddChild(cinematicNode);
+        m_cinematic->SaveToXml(xmlFile, cinematicNode);
     }
 
     Application::~Application()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA9C0
+        // Only the members' destructors run.
     }
 
-    void Application::TexSoften(rend::TexHandle, rend::TexHandle, int, float, unsigned)
+    void Application::TexSoften(
+        rend::TexHandle dstTex,
+        rend::TexHandle srcTex,
+        int numJitters,
+        float jitterDist,
+        unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AFB10
+        int sx = 0;
+        int sy = 0;
+        g_pApp->m_renderer->GetDims(srcTex, sx, sy);
+        if (!g_pApp->m_renderer->RenderToTexStart(dstTex, false))
+        {
+            M3D_LOG_INFO("TexSoften: cannot set rt to tex");
+            return;
+        }
+
+        g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_C, 0xFFFFFFFF);
+        g_pApp->m_renderer->SetTexture(0, srcTex, -1.0);
+        g_pApp->m_renderer->PushBlend(rend::BM_ALPHA);
+        if (numJitters > 1)
+        {
+            float const adder = static_cast<float>(sx) * jitterDist * 2.0f / static_cast<float>(numJitters);
+            float const half = static_cast<float>(sx) * 0.5f;
+            float s = 0.0f - jitterDist;
+            for (int i = 0; i < numJitters; ++i)
+            {
+                float t = 0.0f - jitterDist;
+                for (int j = 0; j < numJitters; ++j)
+                {
+                    PutSpriteAbs(half + s, half + t, half, clr);
+                    t += adder;
+                }
+                s += adder;
+            }
+        }
+        else
+        {
+            float const half = static_cast<float>(sx) * 0.5f;
+            PutSpriteAbs(half, half, half + 0.5f, clr);
+        }
+        g_pApp->m_renderer->PopBlend();
+        g_pApp->m_renderer->RenderToTexFinish();
     }
 
     bool Application::IsTextHieroglyphic(CStr const&) const
@@ -1638,9 +2095,40 @@ namespace m3d
         return false;
     }
 
-    CStr Application::GetNativeFuncDesc(char const*) const
+    CStr Application::GetNativeFuncDesc(char const* funcName) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8BC2C0
+        auto const& funcDescs = g_Kernel->GetScriptServer().getRegisteredFunctionsDesc();
+        auto const it = funcDescs.find(CStr(funcName));
+        if (it == funcDescs.end())
+        {
+            return CStr("");
+        }
+
+        auto const& desc = it->second;
+        CStr descStr("");
+        if (!desc.returnValue.empty())
+        {
+            descStr += CStr(desc.returnValue) + CStr(" ");
+        }
+        else
+        {
+            descStr += CStr("??? ");
+        }
+        descStr += it->first;
+        if (!CStr(desc.params).empty())
+        {
+            descStr += CStr("( ") + CStr(desc.params.c_str()) + CStr(" )");
+        }
+        else
+        {
+            descStr += CStr("()");
+        }
+        if (!CStr(desc.shortDesc).empty())
+        {
+            descStr += CStr("   /* ") + CStr(desc.shortDesc.c_str()) + CStr(" */");
+        }
+        return descStr;
     }
 
     void Application::StopPlayingMusic()
@@ -1651,14 +2139,26 @@ namespace m3d
         }
     }
 
-    void Application::SetMouseSensitivity(float)
+    void Application::SetMouseSensitivity(float sensitivity)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59F2E0
+        m_mouseSensitivity = sensitivity;
+        float const maxSensitivity = g_Kernel->GetEngineCfg().m_mouseMaxSensitivity.GetF();
+        float const minSensitivity = g_Kernel->GetEngineCfg().m_mouseMinSensitivity.GetF();
+        if (minSensitivity > m_mouseSensitivity)
+        {
+            m_mouseSensitivity = minSensitivity;
+        }
+        if (m_mouseSensitivity > maxSensitivity)
+        {
+            m_mouseSensitivity = maxSensitivity;
+        }
     }
 
     float Application::getZoom()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA910
+        return 1.0f;
     }
 
     bool Application::LoadServers(CStr const& filename, bool bQuiet)
@@ -1752,17 +2252,46 @@ namespace m3d
 
     bool Application::SetPostEffectParam(CStr const&, float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C650
+        return false;
     }
 
     void Application::ChangeLanguage()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C5E0
+        if (m_input)
+        {
+            m_input->ChangeLanguage();
+        }
     }
 
-    void Application::DrawWireRect(CVector2 const&, CVector2 const&, unsigned)
+    void Application::DrawWireRect(CVector2 const& from, CVector2 const& to, unsigned color)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B01E0
+        auto vb = g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
+        int vofs = 0;
+        auto* v = static_cast<rend::VertexXYZWCT1*>(g_pApp->m_renderer->LockVbStreaming(vb, 8, vofs, 0));
+        auto const set = [color](rend::VertexXYZWCT1& vert, float x, float y, float t)
+        {
+            vert.x = x;
+            vert.y = y;
+            vert.z = 0.5f;
+            vert.w = 0.5f;
+            vert.c = color;
+            vert.tu = t;
+            vert.tv = t;
+        };
+        set(v[0], from.x, from.y, 0.0f);
+        set(v[1], to.x, from.y, 1.0f);
+        set(v[2], to.x, from.y, 0.0f);
+        set(v[3], to.x, to.y, 1.0f);
+        set(v[4], to.x, to.y, 0.0f);
+        set(v[5], from.x, to.y, 1.0f);
+        set(v[6], from.x, to.y, 0.0f);
+        set(v[7], from.x, from.y, 1.0f);
+        g_pApp->m_renderer->UnlockVb(vb);
+        g_pApp->m_renderer->SetToStream0(vb);
+        g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_LINELIST, vofs, 4u);
     }
 
     void Application::PostLoadServers()
@@ -1809,7 +2338,7 @@ namespace m3d
 
     void Application::OnBeforeDeviceReset()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C610
     }
 
     void Application::FinishQuads()
@@ -1820,7 +2349,7 @@ namespace m3d
 
     void Application::setZoom(float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA900
     }
 
     void Application::PutSpriteRelRot(
@@ -1836,106 +2365,80 @@ namespace m3d
         float imageRotationCenterX,
         float imageRotationCenterY)
     {
-        // TODO: generated code Application::PutSpriteRelRot
-        // Initialize vertex positions (unrotated quad centered at origin)
-        float x0 = -sizeX;
-        float y0 = -sizeY;
-        float x1 = sizeX;
-        float y1 = -sizeY;
-        float x2 = sizeX;
-        float y2 = sizeY;
-        float x3 = -sizeX;
-        float y3 = sizeY;
-
-        // Apply vertex rotation if needed
+        // RVA 0x672FF0
+        // Quad corners around the centre, in relative units, optionally rotated about the vertex rotation centre.
+        float x[4] = {0.0f - sizeX, sizeX, sizeX, 0.0f - sizeX};
+        float y[4] = {0.0f - sizeY, 0.0f - sizeY, sizeY, sizeY};
         if (vertexAngle != 0.0f)
         {
-            float sinVert = std::sin(vertexAngle);
-            float cosVert = std::cos(vertexAngle);
-
-            // Rotate each vertex around the vertex rotation center
-            auto rotatePoint = [&](float& x, float& y)
+            float const s = std::sin(vertexAngle);
+            float const c = std::cos(vertexAngle);
+            for (int i = 0; i < 4; ++i)
             {
-                float dx = x - vertexRotationCenterX;
-                float dy = y - vertexRotationCenterY;
-                x = dx * cosVert - dy * sinVert + vertexRotationCenterX;
-                y = dy * cosVert + dx * sinVert + vertexRotationCenterY;
-            };
-
-            rotatePoint(x0, y0);
-            rotatePoint(x1, y1);
-            rotatePoint(x2, y2);
-            rotatePoint(x3, y3);
+                float const dx = x[i] - vertexRotationCenterX;
+                float const dy = y[i] - vertexRotationCenterY;
+                x[i] = dx * c - dy * s + vertexRotationCenterX;
+                y[i] = dy * c + dx * s + vertexRotationCenterY;
+            }
         }
 
-        // Initialize texture coordinates (unrotated)
-        float u0 = 0.0f, v0 = 0.0f;  // top-left
-        float u1 = 1.0f, v1 = 0.0f;  // top-right
-        float u2 = 1.0f, v2 = 1.0f;  // bottom-right
-        float u3 = 0.0f, v3 = 1.0f;  // bottom-left
-
-        // Convert all coordinates from relative to absolute
+        float u[4] = {0.0f, 1.0f, 1.0f, 0.0f};
+        float v[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+        // NOTE: sizeX/sizeY are converted but no longer used, and the image rotation centre is converted
+        // to pixels before it rotates texture coordinates in the 0..1 range. Both as in the original.
         m_renderer->RelToAbs(centerX, centerY);
-        m_renderer->RelToAbs(sizeX, sizeY);  // Note: sizeX/sizeY not used after this
-        m_renderer->RelToAbs(x0, y0);
-        m_renderer->RelToAbs(x1, y1);
-        m_renderer->RelToAbs(x2, y2);
-        m_renderer->RelToAbs(x3, y3);
+        m_renderer->RelToAbs(sizeX, sizeY);
+        for (int i = 0; i < 4; ++i)
+        {
+            m_renderer->RelToAbs(x[i], y[i]);
+        }
         m_renderer->RelToAbs(vertexRotationCenterX, vertexRotationCenterY);
         m_renderer->RelToAbs(imageRotationCenterX, imageRotationCenterY);
-
-        // Apply texture rotation if needed
         if (imageAngle != 0.0f)
         {
-            float sinImg = std::sin(imageAngle);
-            float cosImg = std::cos(imageAngle);
-
-            // Rotate each texture coordinate around the image rotation center
-            auto rotateTexCoord = [&](float& u, float& v)
+            float const s = std::sin(imageAngle);
+            float const c = std::cos(imageAngle);
+            for (int i = 0; i < 4; ++i)
             {
-                float du = u - imageRotationCenterX;
-                float dv = v - imageRotationCenterY;
-                u = du * cosImg - dv * sinImg + imageRotationCenterX;
-                v = dv * cosImg + du * sinImg + imageRotationCenterY;
-            };
-
-            rotateTexCoord(u0, v0);
-            rotateTexCoord(u1, v1);
-            rotateTexCoord(u2, v2);
-            rotateTexCoord(u3, v3);
+                float const du = u[i] - imageRotationCenterX;
+                float const dv = v[i] - imageRotationCenterY;
+                u[i] = du * c - dv * s + imageRotationCenterX;
+                v[i] = dv * c + du * s + imageRotationCenterY;
+            }
         }
 
-        // Call the absolute positioning function with translated vertices
+        // PutSprite2Abs takes the corners in strip order: 0, 1, 3, 2.
         PutSprite2Abs(
-            x0 + centerX,
-            y0 + centerY,  // vertex 0
-            x1 + centerX,
-            y1 + centerY,  // vertex 1
-            x3 + centerX,
-            y3 + centerY,  // vertex 3
-            x2 + centerX,
-            y2 + centerY,  // vertex 2
-            u0,
-            v0,  // texcoord 0
-            u1,
-            v1,  // texcoord 1
-            u3,
-            v3,  // texcoord 3
-            u2,
-            v2,    // texcoord 2
-            0.0f,  // unknown parameter (possibly z-coordinate)
-            color  // color
-        );
+            x[0] + centerX,
+            y[0] + centerY,
+            x[1] + centerX,
+            y[1] + centerY,
+            x[3] + centerX,
+            y[3] + centerY,
+            x[2] + centerX,
+            y[2] + centerY,
+            u[0],
+            v[0],
+            u[1],
+            v[1],
+            u[3],
+            v[3],
+            u[2],
+            v[2],
+            0.0f,
+            color);
     }
 
-    void Application::SetMouseXAxisFlipped(bool)
+    void Application::SetMouseXAxisFlipped(bool bFlip)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C5D0
+        m_bMouseXAxisFlipped = bFlip;
     }
 
-    void Application::SetMouseYAxisFlipped(bool)
+    void Application::SetMouseYAxisFlipped(bool bFlip)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C5B0
+        m_bMouseYAxisFlipped = bFlip;
     }
 
     void Application::SetFlushQuadsShader(rend::IEffect* shader)
@@ -1950,41 +2453,192 @@ namespace m3d
 
     rend::VertexXYZCT1* Application::RenderQuadXyzct1GetNextPtr()
     {
-        // TODO: check this
-        if ((unsigned int)(this->m_numPointsVerts + 4) >= 0xFA0)
+        // RVA 0x7AFED0
+        // Reserves the next four vertices of the quad batch, flushing it first when it is full.
+        if (static_cast<unsigned>(m_numPointsVerts + 4) >= 4000)
+        {
             FlushQuads();
-        this->m_numPointsVerts = m_numPointsVerts + 4;
-        return &this->m_pointsVertsCt1[m_numPointsVerts];
+        }
+        auto* const quad = &m_pointsVertsCt1[m_numPointsVerts];
+        m_numPointsVerts += 4;
+        return quad;
     }
 
-    void Application::LoadFromXml(cmn::XmlFile*, cmn::XmlNode const*)
+    void Application::LoadFromXml(cmn::XmlFile* xmlFile, cmn::XmlNode const* xmlNode)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59F0F0
+        ref_ptr cameraNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        xmlNode->GetLastChild(cameraNode, "Camera");
+        m_curCamera.LoadFromXml(xmlFile, cameraNode);
+
+        ref_ptr cinematicNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
+        xmlNode->GetFirstChild(cinematicNode, "Cinematic");
+        m_cinematic->LoadFromXml(xmlFile, cinematicNode);
     }
 
-    int Application::SwitchDisplayModes(HWND__*, int, int, bool)
+    int Application::SwitchDisplayModes(HWND__* wnd, int dwWidth, int dwHeight, bool bFullScreen)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A8150
+        static int reenter = 0;
+
+        int ret = 1;
+        if (reenter >= 2)
+        {
+            return ret;
+        }
+
+        auto& cfg = g_Kernel->GetEngineCfg();
+        if (cfg.m_r_width.GetI() == dwWidth && cfg.m_r_height.GetI() == dwHeight &&
+            cfg.m_r_fullScreen.GetB() == bFullScreen)
+        {
+            return ret;
+        }
+
+        ++reenter;
+        bool const saveFs = cfg.m_r_fullScreen.GetB();
+        int const saveW = cfg.m_r_width.GetI();
+        int const saveH = cfg.m_r_height.GetI();
+
+        char buffer[16];
+        sprintf_s(buffer, "%d", bFullScreen ? 1 : 0);
+        cfg.m_r_fullScreen.Set(buffer, true);
+        SetWindowLongA(wnd, GWL_STYLE, GetStyleForRenderWindow(bFullScreen));
+
+        int width = dwWidth;
+        int height = dwHeight;
+        if (!bFullScreen)
+        {
+            DWORD const style = GetWindowLongA(wnd, GWL_STYLE);
+            RECT rc;
+            SetRect(&rc, 0, 0, dwWidth, dwHeight);
+            AdjustWindowRect(&rc, style, FALSE);
+            SetWindowPos(wnd, HWND_NOTOPMOST, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW);
+            RECT clientRect;
+            GetClientRect(wnd, &clientRect);
+            width = clientRect.right - clientRect.left;
+            height = clientRect.bottom - clientRect.top;
+        }
+
+        sprintf_s(buffer, "%d", width);
+        cfg.m_r_width.Set(buffer, true);
+        sprintf_s(buffer, "%d", height);
+        cfg.m_r_height.Set(buffer, true);
+
+        if (!m_renderer->SwitchDisplayModes(wnd, width, height, bFullScreen))
+        {
+            M3D_LOG_INFO("trying to fallback to previous mode");
+            if (!SwitchDisplayModes(m_renderWindow, saveW, saveH, saveFs))
+            {
+                M3D_LOG_ERR("ERROR! Application::SwitchDisplayMode() failed to recover");
+                EnqueueMessage(1, 0, 0, 0, 0, CStr(), AIParam());
+                ret = 0;
+            }
+        }
+
+        --reenter;
+        m_renderWindow = wnd;
+        CaptureAndClipSystemCursor(cfg.m_clipCursorWithinRenderWnd.GetB());
+        g_pApp->ImmediateMessage(4, 0, 0, 0, 0, CStr(), AIParam());
+        return ret;
     }
 
     void Application::done()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59FAF0
+        g_Kernel->GetEngineCfg().m_levFileName.Set("Empty", false);
+        g_Kernel->GetEngineCfg().Save(m_cfgName);
+        DoneMedia();
+
+        delete M3dVideoPlayer;
+        M3dVideoPlayer = nullptr;
+
+        // NOTE: ClearOnce is called before the null check on the server.
+        ai::pServer->ClearOnce();
+        delete ai::pServer;
+        ai::pServer = nullptr;
+
+        delete m_serverStaticModels;
+        m_serverStaticModels = nullptr;
+        delete m_serverAnimatedModels;
+        m_serverAnimatedModels = nullptr;
+        delete m_serverLights;
+        m_serverLights = nullptr;
+        delete m_serverSprites;
+        m_serverSprites = nullptr;
+        delete m_serverLines;
+        m_serverLines = nullptr;
+        delete m_serverParticles;
+        m_serverParticles = nullptr;
+        delete m_serverSound;
+        m_serverSound = nullptr;
+        delete m_serverMusic;
+        m_serverMusic = nullptr;
+        delete m_serverProjectors;
+        m_serverProjectors = nullptr;
+        delete m_serverDecals;
+        m_serverDecals = nullptr;
+
+        g_pApp->m_renderer->ReleaseIb(m_pointsVertsIb);
+        doneProcTexThread();
+        ui::WndStation::Done();
+        doneSprite();
+
+        if (m_sound)
+        {
+            m_sound->DecRef();
+            m_sound = nullptr;
+        }
+        if (m_hSoundDll)
+        {
+            FreeLibrary(m_hSoundDll);
+        }
+        if (m_input)
+        {
+            m_input->DecRef();
+            m_input = nullptr;
+        }
+        if (m_hInputDll)
+        {
+            FreeLibrary(m_hInputDll);
+        }
+        if (m_renderer)
+        {
+            m_renderer->DecRef();
+            m_renderer = nullptr;
+        }
+        if (m_hRenderDll)
+        {
+            FreeLibrary(m_hRenderDll);
+        }
+
+        DoneImpulses();
+        DeInitAllocCheck();
+
+        // The camera controller and the sound console handler are released without running their destructors.
+        ::operator delete(m_cameraController);
+        m_cameraController = nullptr;
+        delete m_cinematic;
+        m_cinematic = nullptr;
+        ::operator delete(m_soundConHandler);
+        m_soundConHandler = nullptr;
+        delete m_log;
+        m_log = nullptr;
     }
 
     void Application::OnAfterDeviceReset()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C600
     }
 
     void Application::ReloadPostEffects()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C680
     }
 
     bool Application::GetPostEffectParam(CStr const&, float&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C640
+        return false;
     }
 
     namespace
@@ -2002,352 +2656,285 @@ namespace m3d
             return result;
         }
 
+        // RVA 0x686F10 (inlined) - words are joined with a space, except where that would
+        // double one up: at the start of a line, or when either side is itself a space.
+        CStr FormatTextSeparator(CStr const& line, CStr const& prevWord, CStr const& word)
+        {
+            if (!line.c_str() || !strlen(line.c_str()) || prevWord == " " || word == " ")
+            {
+                return CStr("");
+            }
+            return CStr(" ");
+        }
+
         void GetWord(CStr const& src, int i, m3d::TextWrapFlags wrapFlags, CStr& word, int& nextWordPos)
         {
-            // TODO: generated code
-            // Initialize with empty string
-            word = "";
+            // RVA 0x685000 - the length of the word starting at i: one character (or a whole '#'
+            // colour or '@' code) when wrapping by characters, otherwise up to the next space or
+            // unescaped '|'; -1 for the rest of the string. An unescaped '|' at i is a word of
+            // length 0, so the caller steps over it and breaks the line.
+            word = CStr("");
             nextWordPos = -1;
-
-            char const* srcStr = src.c_str();
-            int srcLen = src.length();
-
-            if (i < 0 || i >= srcLen)
-            {
-                nextWordPos = -1;
-                return;
-            }
-
+            int offset = 0;
+            int const len = src.c_str() ? static_cast<int>(strlen(src.c_str())) : 0;
             if (wrapFlags == TW_CHAR_WRAP)
             {
-                // Character-based wrapping
-                nextWordPos = 1;  // Default: single character word
-
+                nextWordPos = 1;
                 if (!IsEscSymbolBeforeSymbol(src, i))
                 {
-                    char currentChar = srcStr[i];
-
-                    switch (currentChar)
+                    switch (src.c_str()[i])
                     {
                     case '#':
-                        // Color code - typically 2 characters (# followed by color code)
-                        if (i + 1 < srcLen)
+                        if (i + 1 < len)
                         {
                             nextWordPos = 2;
                         }
                         break;
-
                     case '@':
-                        // Special command - typically 9 characters
-                        if (i + 9 <= srcLen)
+                        if (i + 9 <= len)
                         {
                             nextWordPos = 9;
                         }
                         break;
-
                     case '|':
-                        // Line break character
                         nextWordPos = 0;
                         break;
-
                     default:
-                        // Regular character - keep default of 1
                         break;
                     }
                 }
             }
             else
             {
-                // Word-based wrapping (space-separated)
-                int v8 = 0;
-
                 while (true)
                 {
-                    // Find next space or pipe character
-                    int foundPos = src.findOneOf(" |", v8 + i);
-
-                    if (foundPos == -1)
-                    {
-                        // No delimiter found - take rest of string
-                        nextWordPos = -1;
-                        break;
-                    }
-
-                    int relativePos = foundPos + v8;
-                    nextWordPos = relativePos;
-
-                    if (relativePos == -1)
-                    {
-                        break;
-                    }
-
-                    char foundChar = srcStr[foundPos + i];
-
-                    if (foundChar != '|')
-                    {
-                        // Found a space, not a pipe
-                        break;
-                    }
-
-                    // Found a pipe character
-                    if (!IsEscSymbolBeforeSymbol(src, foundPos + i))
-                    {
-                        // Unescaped pipe - treat as word boundary
-                        break;
-                    }
-
-                    // Escaped pipe - continue searching
-                    if (foundPos + i + 1 >= srcLen)
+                    // findOneOf gives the offset from where the search started.
+                    int const found = src.findOneOf(" |", offset + i);
+                    if (found == -1)
                     {
                         nextWordPos = -1;
                         break;
                     }
-
-                    v8 = relativePos + 1;
+                    int const pos = found + offset;
+                    nextWordPos = pos;
+                    if (pos == -1)
+                    {
+                        break;
+                    }
+                    char const c = src.c_str()[pos + i];
+                    if (c != '|')
+                    {
+                        // A space at i is a word of its own.
+                        if (c == ' ' && pos == 0)
+                        {
+                            nextWordPos = 1;
+                        }
+                        break;
+                    }
+                    if (!IsEscSymbolBeforeSymbol(src, pos + i))
+                    {
+                        break;
+                    }
+                    // An escaped '|' is part of the word.
+                    if (pos + i + 1 >= len)
+                    {
+                        nextWordPos = -1;
+                        break;
+                    }
+                    offset = pos + 1;
                     if (nextWordPos == -1)
                     {
                         break;
                     }
                 }
-
-                // Handle special case: if we found a space at the beginning
-                if (nextWordPos != -1)
-                {
-                    char boundaryChar = srcStr[i + nextWordPos];
-                    if (boundaryChar == ' ' && nextWordPos == 0)
-                    {
-                        nextWordPos = 1;  // Single space word
-                    }
-                }
             }
-
-            // Extract the actual word
-            if (nextWordPos == -1)
-            {
-                // Take the rest of the string from position i
-                if (i < srcLen)
-                {
-                    word = src.substr(i, srcLen - i);
-                }
-            }
-            else if (nextWordPos == 0)
-            {
-                // Special case: pipe character as a word
-                word = "|";
-            }
-            else
-            {
-                // TODO: check this
-                // Extract substring of specified length
-                word = src.substr(i, nextWordPos + i);
-            }
+            word = src.substr(i, nextWordPos);
         }
     }  // namespace
 
     int Application::GetTextFit(CStr const& strText, PointBase<float>& size, float maxX, TextWrapFlags flags)
     {
-        // TODO: generated code
+        // RVA 0x6878D0
         if (flags == TW_NOWRAP)
         {
             GetTextExtent(strText, size, -1, 0, 0, 0, 0, 0);
             return 1;
         }
 
-        std::vector<ui::FormattedLine> linesOfText;
-        CStr src = strText;
-
-        CStr line;
-        CStr lhs;
-        float x = 0.0f;
-        float lineHeight = 0.0f;
-        float totalHeight = 0.0f;
-        //float maxLineWidth = 0.0f;
-        int lastColor = 0;
-        int wordCount = 0;
-        int lastWordPos = 0;
-
-        int textLen = src.length();
-        int currentPos = 0;
-
-        float availableWidth = maxX + 0.01f;  // Small epsilon
-
-        while (currentPos < textLen)
+        // Breaks the text into lines no wider than wrapWidth (the same inlined layout loop appears twice in
+        // the original).
+        auto const wrapLines = [this, &strText, flags](float wrapWidth)
         {
-            CStr word;
-            int nextWordPos;
+            std::vector<ui::FormattedLine> lines;
+            CStr const src = strText;
+            CStr line;
+            CStr prevWord;
+            float lineWidth = 0.0f;
+            float lineHeight = 0.0f;
+            float originY = 0.0f;
+            unsigned lastColor = 0xFFFFFFFF;
+            int numWords = 0;
+            int prevNextWordPos = -1;
+            int pos = 0;
+            int const textLen = static_cast<int>(src.length());
+            double const maxLineWidth = static_cast<double>(wrapWidth) + 0.01;
+            // A separating space goes between words unless the line is empty or either side is a space.
+            auto const separator = [&](CStr const& word)
+            { return (line.length() != 0 && !(prevWord == " ") && !(word == " ")) ? " " : ""; };
 
-            GetWord(src, currentPos, flags, word, nextWordPos);
-
-            bool forceBreak = false;
-            if (lastWordPos != -1)
+            while (pos < textLen)
             {
-                int prevPos = currentPos - 1;
-                if (prevPos < textLen && prevPos > 0 && src[prevPos] == '|')
+                CStr word;
+                int nextWordPos = -1;
+                GetWord(src, pos, flags, word, nextWordPos);
+
+                // An unescaped '|' right before this word forces a line break.
+                bool forceBreak = false;
+                if (prevNextWordPos != -1)
                 {
-                    forceBreak = !IsEscSymbolBeforeSymbol(src, prevPos);
+                    int const barPos = pos - 1;
+                    if (barPos < textLen && barPos > 0 && src[barPos] == '|')
+                    {
+                        forceBreak = !IsEscSymbolBeforeSymbol(src, barPos);
+                    }
                 }
-            }
 
-            // Update position
-            if (nextWordPos == 0)
-            {
-                currentPos++;
-            }
-            else if (nextWordPos == -1)
-            {
-                currentPos = textLen;
-            }
-            else
-            {
-                int newPos = currentPos + nextWordPos;
-                if (newPos < textLen && src[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                if (nextWordPos == -1)
                 {
-                    currentPos = newPos + 1;
+                    pos = textLen;
                 }
                 else
                 {
-                    currentPos = newPos;
-                }
-            }
-
-            PointBase<float> wordSize;
-            if (flags == TW_CHAR_WRAP)
-            {
-                GetTextExtent(word, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-            else
-            {
-                // Handle word wrapping with spaces
-                CStr temp = word;
-                if (line.c_str()[0] != '\0' && !(lhs == " ") && !(word == " "))
-                {
-                    temp += " ";
-                }
-                GetTextExtent(temp, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-
-            if (wordSize.x + x > availableWidth || forceBreak)
-            {
-                // Create new line
-                ui::FormattedLine newLine;
-                newLine.m_origin.x = 0.0f;
-                newLine.m_origin.y = totalHeight;
-
-                if (wordCount > 0)
-                {
-                    newLine.m_text = line;
-                }
-                else
-                {
-                    newLine.m_text = word;
+                    int const wordEnd = pos + nextWordPos;
+                    if (wordEnd >= 0 && wordEnd < textLen && src[wordEnd] == '|' &&
+                        !IsEscSymbolBeforeSymbol(src, wordEnd))
+                    {
+                        pos = wordEnd + 1;  // skip the line-break marker
+                    }
+                    else if (nextWordPos == 0)
+                    {
+                        ++pos;
+                    }
+                    else
+                    {
+                        pos = wordEnd;
+                    }
                 }
 
-                newLine.m_color = static_cast<unsigned int>(lastColor);
-                newLine.m_isHieroglyphic = false;
-                newLine.m_format = TF_LEFT;
-
-                linesOfText.push_back(newLine);
-
-                // Update color tracking
-                int foundColor = FindLastColorInStr(line);
-                if (foundColor != 0)
-                {
-                    lastColor = foundColor;
-                }
-
-                if (lineHeight == 0.0f)
-                {
-                    lineHeight = wordSize.y;
-                }
-                totalHeight += lineHeight;
-
-                // Reset line
-                if (wordCount > 0)
-                {
-                    line = word;
-                    wordCount = 1;
-                }
-                else
-                {
-                    line = "";
-                    wordCount = 0;
-                }
-
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                x = wordSize.x;
-                lineHeight = wordSize.y;
-            }
-            else
-            {
-                // Add to current line
+                // NOTE: in word-wrap mode the fit test measures the word with a trailing separator.
+                PointBase<float> ext;
                 if (flags == TW_CHAR_WRAP)
                 {
-                    line += word;
+                    GetTextExtent(word, ext, -1, 0, 0, 0, 0, 0);
                 }
                 else
                 {
-                    if (line.c_str()[0] != '\0' && !(lhs == " ") && !(word == " "))
-                    {
-                        line += " ";
-                    }
-                    line += word;
+                    GetTextExtent(word + CStr(separator(word)), ext, -1, 0, 0, 0, 0, 0);
                 }
-                wordCount++;
 
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                x = wordSize.x;
-                if (wordSize.y > lineHeight)
+                if (ext.x + lineWidth > maxLineWidth || forceBreak)
                 {
-                    lineHeight = wordSize.y;
+                    ui::FormattedLine newLine;
+                    newLine.m_origin.x = 0.0f;
+                    newLine.m_origin.y = originY;
+                    newLine.m_text = numWords ? line : word;
+                    newLine.m_color = lastColor;
+                    if (unsigned const color = FindLastColorInStr(line))
+                    {
+                        lastColor = color;
+                    }
+                    newLine.m_isHieroglyphic = false;
+                    newLine.m_format = TF_LEFT;
+                    lines.push_back(newLine);
+
+                    if (lineHeight == 0.0f)
+                    {
+                        lineHeight = ext.y;
+                    }
+                    originY += lineHeight;
+                    // NOTE: when the line was empty, the overlong word went into the pushed line and the next
+                    // line starts empty.
+                    if (numWords)
+                    {
+                        line = word;
+                        numWords = 1;
+                    }
+                    else
+                    {
+                        line = CStr("");
+                    }
+                    GetTextExtent(line, ext, -1, 0, 0, 0, 0, 0);
+                    lineWidth = ext.x;
+                    lineHeight = ext.y;
                 }
+                else
+                {
+                    if (flags == TW_CHAR_WRAP)
+                    {
+                        line += word;
+                    }
+                    else
+                    {
+                        line += CStr(separator(word)) + word;
+                    }
+                    ++numWords;
+                    GetTextExtent(line, ext, -1, 0, 0, 0, 0, 0);
+                    lineWidth = ext.x;
+                    if (ext.y > lineHeight)
+                    {
+                        lineHeight = ext.y;
+                    }
+                }
+                prevWord = word;
+                prevNextWordPos = nextWordPos;
             }
 
-            lhs = word;
-            lastWordPos = nextWordPos;
-        }
-
-        // Handle remaining text
-        if (line.c_str()[0] != '\0')
-        {
-            ui::FormattedLine newLine;
-            newLine.m_origin.x = 0.0f;
-            newLine.m_origin.y = totalHeight;
-            newLine.m_text = line;
-            newLine.m_color = static_cast<unsigned int>(lastColor);
-            newLine.m_isHieroglyphic = false;
-            newLine.m_format = TF_LEFT;
-            linesOfText.push_back(newLine);
-        }
-
-        // Calculate final dimensions
-        float maxWidth = 0.0f;
-        float totalTextHeight = 0.0f;
-
-        for (auto const& formattedLine : linesOfText)
-        {
-            PointBase<float> lineSize;
-            if (formattedLine.m_text.c_str()[0] != '\0')
+            if (line.length() != 0)
             {
-                GetTextExtent(formattedLine.m_text, lineSize, -1, 0, 0, 0, 0, 0);
+                ui::FormattedLine newLine;
+                newLine.m_origin.x = 0.0f;
+                newLine.m_origin.y = originY;
+                newLine.m_text = line;
+                newLine.m_color = lastColor;
+                newLine.m_isHieroglyphic = false;
+                newLine.m_format = TF_LEFT;
+                lines.push_back(newLine);
+            }
+            return lines;
+        };
+
+        // First pass: find the widest line when wrapping at maxX.
+        float maxWidth = 0.0f;
+        for (auto const& formattedLine : wrapLines(maxX))
+        {
+            PointBase<float> ext;
+            GetTextExtent(formattedLine.m_text, ext, -1, 0, 0, 0, 0, 0);
+            maxWidth = (std::max)(maxWidth, ext.x);
+        }
+        size.x = maxWidth;
+
+        // NOTE: second pass wraps again at that width. Because the fit test above includes a trailing
+        // space, this can wrap more tightly than the first pass; the result is kept as in the original.
+        maxWidth = 0.0f;
+        float height = 0.0f;
+        for (auto const& formattedLine : wrapLines(size.x))
+        {
+            PointBase<float> ext;
+            if (formattedLine.m_text.length() != 0)
+            {
+                GetTextExtent(formattedLine.m_text, ext, -1, 0, 0, 0, 0, 0);
             }
             else
             {
-                // Measure a single character for empty lines
-                CStr singleChar("A");
-                GetTextExtent(singleChar, lineSize, -1, 0, 0, 0, 0, 0);
-                lineSize.x = 0.0f;
+                // An empty line still takes the height of one character.
+                GetTextExtent(CStr("A"), ext, -1, 0, 0, 0, 0, 0);
+                ext.x = 0.0f;
             }
-
-            if (lineSize.x > maxWidth)
-            {
-                maxWidth = lineSize.x;
-            }
-            totalTextHeight += lineSize.y;
+            maxWidth = (std::max)(maxWidth, ext.x);
+            height += ext.y;
         }
-
         size.x = maxWidth;
-        size.y = totalTextHeight;
-
+        size.y = height;
         return 1;
     }
 
@@ -2362,6 +2949,11 @@ namespace m3d
     DataServer& Application::GetSpritesServer()
     {
         return *m_serverSprites;
+    }
+
+    DataServer& Application::GetLinesServer()
+    {
+        return *m_serverLines;
     }
 
     void Application::panic()
@@ -2387,14 +2979,72 @@ namespace m3d
         }
     }
 
-    bool Application::SaveServers(CStr const&)
+    bool Application::SaveServers(CStr const& filename)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A6490
+        struct
+        {
+            DataServer* m_server;
+            char const* m_name;
+            CStr m_diz;
+        } servers[9];
+
+        // The localised descriptions are looked up but not used when saving.
+        servers[0].m_diz = GetStringByStringId0("AnimatedModelsServer");
+        servers[1].m_diz = GetStringByStringId0("StaticModelsServer");
+        servers[2].m_diz = GetStringByStringId0("LightsServer");
+        servers[3].m_diz = GetStringByStringId0("SpritesServer");
+        servers[4].m_diz = GetStringByStringId0("ParticlesServer");
+        servers[5].m_diz = GetStringByStringId0("SoundsServer");
+        servers[6].m_diz = GetStringByStringId0("MusicServer");
+        servers[7].m_diz = GetStringByStringId0("ProjectorsServer");
+        servers[8].m_diz = GetStringByStringId0("DecalsServer");
+        servers[0].m_server = m_serverAnimatedModels;
+        servers[1].m_server = m_serverStaticModels;
+        servers[2].m_server = m_serverLights;
+        servers[3].m_server = m_serverSprites;
+        servers[4].m_server = m_serverParticles;
+        servers[5].m_server = m_serverSound;
+        servers[6].m_server = m_serverMusic;
+        servers[7].m_server = m_serverProjectors;
+        servers[8].m_server = m_serverDecals;
+        servers[0].m_name = "AnimatedModelsServer";
+        servers[1].m_name = "StaticModelsServer";
+        servers[2].m_name = "LightsServer";
+        servers[3].m_name = "SpritesServer";
+        servers[4].m_name = "ParticlesServer";
+        servers[5].m_name = "SoundsServer";
+        servers[6].m_name = "MusicServer";
+        servers[7].m_name = "ProjectorsServer";
+        servers[8].m_name = "DecalsServer";
+
+        ref_ptr xmlFile = g_Kernel->CreateXmlFile();
+        ref_ptr root = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Servers");
+        for (auto const& server : servers)
+        {
+            ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, server.m_name);
+            server.m_server->WriteToXmlNode(xmlFile, node);
+            root->AddChild(node);
+        }
+        xmlFile->AddChild(root);
+
+        scoped_ptr<fs::FileStream> stream(g_Kernel->GetFileServer().CreateFileStream());
+        if (stream->Open(filename.c_str(), fs::IStream::OPEN_WRITE))
+        {
+            xmlFile->Write(*stream);
+            stream->Close();
+        }
+        else
+        {
+            M3D_LOG_INFO("Save servers: could not save servers into file " + filename);
+        }
+        return true;
     }
 
     bool Application::GetMouseHitPoint(CVector&, SgNode*&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA970
+        return false;
     }
 
     void Application::StartQuads(rend::VertexType vt)
@@ -2425,17 +3075,21 @@ namespace m3d
         CStr* leftInvisibleSubstr,
         CStr* rightInvisibleSubstr)
     {
-        // Initialize output parameters if provided
-        if (leftInvisibleSubstr && !leftInvisibleSubstr->empty())
+        // RVA 0x685610 - measures a string in the markup the UI uses, where '#' escapes the
+        // next control character, '@' introduces an eight digit colour code, and '&' opens a
+        // span that '|' closes. Only the characters that actually get drawn are counted.
+        //
+        // With a clip rect it also reports which character first falls outside it on each side,
+        // so a caller can scroll a field without measuring it twice.
+        if (leftInvisibleSubstr)
         {
-            *leftInvisibleSubstr = {};
+            *leftInvisibleSubstr = CStr("");
         }
-        if (rightInvisibleSubstr && !rightInvisibleSubstr->empty())
+        if (rightInvisibleSubstr)
         {
-            *rightInvisibleSubstr = {};
+            *rightInvisibleSubstr = CStr("");
         }
 
-        // Handle empty string case
         if (str.empty())
         {
             size.x = 0.0f;
@@ -2443,149 +3097,129 @@ namespace m3d
             return 0;
         }
 
-        // Get font
-        ui::Font* font = nullptr;
-        if (fid == 0xFFFFFFFF)
-        {  // NAN check (decompiler interpreted as NAN)
-            font = ui::Wnd::m_gfx->GetCurFont();
-        }
-        else
-        {
-            font = ui::Wnd::m_gfx->GetFontById(fid);
-        }
-
+        ui::Font* const font = fid == -1 ? ui::Wnd::m_gfx->GetCurFont() : ui::Wnd::m_gfx->GetFontById(fid);
         if (!font)
         {
             return 0;
         }
 
-        char const* text = str.c_str();
-        int textLength = strlen(text);
+        // Glyph metrics are held at the font's unscaled size, so everything is measured in
+        // those units and divided down once at the end.
+        float const scale = font->m_heightScaled / font->m_heightUnscaled;
 
-        float totalWidth = 0.0f;
-        float maxHeight = 0.0f;
-        int visibleCharCount = 0;
+        char const* const text = str.c_str();
+        int const len = text ? static_cast<int>(strlen(text)) : 0;
 
-        bool inHashMode = false;       // For '#' escape sequences
-        bool inAmpersandMode = false;  // For '&' sequences
+        float width = 0.0f;
+        float maxGlyphHeight = 0.0f;
+        int numChars = 0;
 
-        // Process each character
-        for (int i = 0; i < textLength; ++i)
+        bool escaped = false;
+        bool inSpan = false;
+
+        for (int i = 0; i < len; ++i)
         {
-            unsigned char currentChar = text[i];
-
-            if (!currentChar)
+            unsigned char const c = text[i];
+            if (!c)
             {
                 break;
             }
 
-            // Handle escape sequences
-            if (!inHashMode)
+            // A control character cannot be escaped and is never drawn.
+            if (c < ' ')
             {
-                switch (currentChar)
-                {
-                case '#':
-                    inHashMode = true;
-                    continue;
-                case '&':
-                    inAmpersandMode = true;
-                    continue;
-                case '|':
-                    if (inAmpersandMode)
-                    {
-                        inAmpersandMode = false;
-                    }
-                    continue;
-                case '@':
-                    // Skip 8 characters (probably a special code)
-                    i += 8;
-                    continue;
-                case '$':
-                    continue;  // Skip '$' character
-                }
-            }
-            else
-            {
-                inHashMode = false;
-            }
-
-            // Skip control characters
-            if (currentChar < ' ')
-            {
-                inHashMode = false;
+                escaped = false;
                 continue;
             }
 
-            // Check if text exceeds right clip boundary
-            if (csz && maxc)
+            if (!escaped)
             {
-                float scaledWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
-                if (scaledWidth > (csz->width + csz->x0))
+                if (c == '#')
                 {
-                    *maxc = i;
-                    if (rightInvisibleSubstr)
+                    escaped = true;
+                    continue;
+                }
+                if (c == '&')
+                {
+                    inSpan = true;
+                    continue;
+                }
+                if (c == '|')
+                {
+                    // A bar outside a span is markup; the one that closes a span is drawn.
+                    if (!inSpan)
                     {
-                        CStr temp(&text[i], 1);
-                        *rightInvisibleSubstr += temp;
+                        continue;
                     }
-                    break;
+                    inSpan = false;
+                }
+                else if (c == '@')
+                {
+                    // '@' plus eight digits of colour.
+                    i += 8;
+                    continue;
+                }
+                else if (c == '$')
+                {
+                    continue;
+                }
+            }
+            escaped = false;
+
+            // Past the right edge of the clip rect: report where it happened and stop.
+            if (csz && maxc && width / scale > csz->width + csz->x0)
+            {
+                *maxc = i;
+                if (rightInvisibleSubstr)
+                {
+                    // NOTE: only the one character is recorded before the loop stops, so this
+                    // is the first character off the right edge rather than all of them.
+                    *rightInvisibleSubstr += CStr(&text[i], 1);
+                }
+                break;
+            }
+
+            width += font->GetCharWidthAdvanced(c);
+
+            float const glyphHeight = font->GetGlyphSz(c).y;
+            if (glyphHeight > maxGlyphHeight)
+            {
+                maxGlyphHeight = glyphHeight;
+            }
+
+            // Still short of the left edge, so this character is scrolled out of view.
+            if (csz && minc && csz->x0 > width / scale)
+            {
+                *minc = i;
+                if (leftInvisibleSubstr)
+                {
+                    *leftInvisibleSubstr += CStr(&text[i], 1);
                 }
             }
 
-            // Get character metrics
-            float charWidth = font->GetCharWidthAdvanced(currentChar);
-            totalWidth += charWidth;
-
-            PointBase<float> glyphSize = font->GetGlyphSz(currentChar);
-
-            if (glyphSize.y > maxHeight)
-            {
-                maxHeight = glyphSize.y;
-            }
-
-            // Check if text starts after left clip boundary
-            if (csz && minc)
-            {
-                float scaledCurrentWidth = totalWidth / (font->m_heightScaled / font->m_heightUnscaled);
-                if (csz->x0 > scaledCurrentWidth)
-                {
-                    *minc = i;
-                    if (leftInvisibleSubstr)
-                    {
-                        CStr temp(&text[i], 1);
-                        *leftInvisibleSubstr += temp;
-                    }
-                }
-            }
-
-            ++visibleCharCount;
+            ++numChars;
         }
 
-        // Handle case with no visible characters
-        if (visibleCharCount == 0)
+        // A line of pure markup still has to report a height, so it borrows the one from 'A'.
+        if (!numChars)
         {
-            // Use 'A' glyph height as default if available
+            maxGlyphHeight = 0.0f;
             if (font->m_symbols.size() > 'A' && font->m_symbols['A'])
             {
-                maxHeight = font->m_symbols['A']->m_precalcedGlyphSz.y;
-            }
-            else
-            {
-                maxHeight = 0.0f;
+                maxGlyphHeight = font->m_symbols['A']->m_precalcedGlyphSz.y;
             }
         }
 
-        // Apply scaling and return results
-        float scaleFactor = font->m_heightScaled / font->m_heightUnscaled;
-        size.x = totalWidth / scaleFactor;
-        size.y = maxHeight / scaleFactor;
-
-        return visibleCharCount;
+        size.x = width / scale;
+        size.y = maxGlyphHeight / scale;
+        return numChars;
     }
 
-    int Application::DrawTextRelT(float, float, unsigned, CStr const&, unsigned, int)
+    int Application::DrawTextRelT(float x, float y, unsigned dwColor, CStr const& strText, unsigned dwFlags, int fid)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x41D720
+        m_renderer->RelToAbs(x, y);
+        return DrawTextAbsT(x, y, dwColor, strText, dwFlags, fid);
     }
 
     int Application::FormatText(
@@ -2596,233 +3230,184 @@ namespace m3d
         TextWrapFlags wrapFlags,
         TextFormatFlags formatFlags)
     {
-        // TODO: generated code
+        // RVA 0x686F10 - breaks the text into lines that fit the client rect, honouring the
+        // explicit '|' breaks the strings carry and remembering the colour each line starts in.
         CStr src = textIn;
         CStr line;
-        CStr prevWord;
 
         int wordsInLine = 0;
-        float lineWidth = 0.0f;
-        float lineHeight = 0.0f;
-        float availableWidth = 0.0f;
+        float width = 0.0f;
+        float height = 0.0f;
 
-        PointBase<float> origin = at;
-        int prevWordPos = -1;
-        int lineColor = -1;
-
-        // Calculate available width based on text format
+        // How much room a line has depends on which edge the text is anchored to.
+        float available = 0.0f;
         switch (formatFlags)
         {
         case TF_CENTER:
-            availableWidth = di.m_clientRect.width;
+            available = di.m_clientRect.width;
             break;
 
         case TF_LEFT:
         case TF_FULL:
-            availableWidth = di.m_clientRect.width - (at.x - di.m_clientRect.x0);
+            available = di.m_clientRect.width - (at.x - di.m_clientRect.x0);
             break;
 
         case TF_RIGHT:
-            availableWidth = at.x - di.m_clientRect.x0;
+            available = at.x - di.m_clientRect.x0;
             break;
 
         default:
-            availableWidth = di.m_clientRect.width;
+            // NOTE: any other format leaves no room at all, so every word wraps onto its own
+            // line rather than falling back to the full width.
             break;
         }
 
-        // Add small epsilon to avoid floating point precision issues
-        float maxWidth = availableWidth + 0.01f;
+        PointBase<float> org = at;
+        int prevPos = -1;
+        int lineColor = -1;
+        CStr prevWord;
 
-        // Get source text length
-        char const* srcText = src.c_str();
-        int textLen = srcText ? strlen(srcText) : 0;
-        int currentPos = 0;
+        int const len = src.c_str() ? static_cast<int>(strlen(src.c_str())) : 0;
+        int i = 0;
 
-        if (textLen <= 0)
+        if (len > 0)
         {
-            if (line.c_str()[0] != '\0')
+            // The epsilon keeps a word that measures exactly the full width from wrapping.
+            float const maxWidth = available + 0.01f;
+
+            do
             {
-                m3d::ui::FormattedLine formattedLine;
-                formattedLine.m_origin = origin;
-                formattedLine.m_text = line;
-                formattedLine.m_color = lineColor;
-                formattedLine.m_isHieroglyphic = false;
-                formattedLine.m_format = (formatFlags != TF_FULL) ? formatFlags : TF_LEFT;
+                int const wordStart = i;
 
-                linesOfText.push_back(formattedLine);
-            }
+                CStr word;
+                int pos = -1;
+                GetWord(src, i, wrapFlags, word, pos);
 
-            return 1;
-        }
-
-        // Process text word by word
-        do
-        {
-            CStr word;
-            int wordLen;
-            bool forceBreak = false;
-
-            // Get next word
-            GetWord(src, currentPos, wrapFlags, word, wordLen);
-
-            // Check for forced line break (pipe character)
-            if (prevWordPos != -1)
-            {
-                int prevCharPos = currentPos - 1;
-                if (prevCharPos < textLen && prevCharPos > 0 && srcText[prevCharPos] == '|')
+                // A '|' immediately before this word ends the previous line, unless it was
+                // escaped and so meant literally.
+                bool forceBreak = false;
+                if (prevPos != -1)
                 {
-                    forceBreak = !IsEscSymbolBeforeSymbol(src, prevCharPos);
+                    int const barPos = wordStart - 1;
+                    if (barPos < len && barPos > 0 && src.c_str()[barPos] == '|')
+                    {
+                        forceBreak = !IsEscSymbolBeforeSymbol(src, barPos);
+                    }
                 }
-            }
 
-            // Update current position
-            if (wordLen == -1)
-            {
-                currentPos = textLen;
-            }
-            else
-            {
-                int newPos = currentPos + wordLen;
-                if (newPos < textLen && srcText[newPos] == '|' && !IsEscSymbolBeforeSymbol(src, newPos))
+                prevPos = pos;
+                if (pos == -1)
                 {
-                    currentPos = newPos + 1;
+                    // Nothing left to read.
+                    i = len;
                 }
                 else
                 {
-                    currentPos = newPos;
-                }
-            }
-
-            prevWordPos = wordLen;
-
-            PointBase<float> wordSize;
-
-            if (wrapFlags == TW_CHAR_WRAP)
-            {
-                // Character-based wrapping - measure word directly
-                GetTextExtent(word, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-            else
-            {
-                // Word-based wrapping - measure word with potential space
-                CStr tempWord = word;
-                if (line.c_str()[0] != '\0' && !(prevWord == " ") && !(word == " "))
-                {
-                    tempWord += " ";
-                }
-                GetTextExtent(tempWord, wordSize, -1, 0, 0, 0, 0, 0);
-            }
-
-            // Check if we need to break the line
-            if (wordSize.x + lineWidth > maxWidth || forceBreak)
-            {
-                // Create formatted line
-                m3d::ui::FormattedLine formattedLine;
-                formattedLine.m_origin = origin;
-
-                if (wordsInLine > 0)
-                {
-                    formattedLine.m_text = line;
-                }
-                else
-                {
-                    formattedLine.m_text = word;
+                    int const next = pos + i;
+                    if (next < 0 || next >= len || src.c_str()[next] != '|' || IsEscSymbolBeforeSymbol(src, next))
+                    {
+                        // A zero-length word would leave the position where it was, so it is
+                        // stepped over by hand to keep the loop moving.
+                        i = pos ? next : i + 1;
+                    }
+                    else
+                    {
+                        // Step past the bar itself; the break is noticed on the next word.
+                        i = next + 1;
+                    }
                 }
 
-                formattedLine.m_color = lineColor;
-
-                // Update color tracking
-                float foundColor = FindLastColorInStr(line);
-                if (foundColor != 0.0f)
-                {
-                    lineColor = static_cast<int>(foundColor);
-                }
-
-                formattedLine.m_isHieroglyphic = false;
-
-                // Set format - special handling for TF_FULL with forced breaks
-                if (formatFlags != TF_FULL || !forceBreak)
-                {
-                    formattedLine.m_format = formatFlags;
-                }
-                else
-                {
-                    formattedLine.m_format = TF_LEFT;
-                }
-
-                // Add to lines vector
-                linesOfText.push_back(formattedLine);
-
-                // Update line height if this is the first line
-                if (lineHeight == 0.0f)
-                {
-                    lineHeight = wordSize.y;
-                }
-
-                // Move origin down for next line
-                origin.y += lineHeight;
-
-                // Reset line buffer
-                if (wordsInLine > 0)
-                {
-                    line = word;
-                    wordsInLine = 1;
-                }
-                else
-                {
-                    line = "";
-                    wordsInLine = 0;
-                }
-
-                // Measure new line
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                lineWidth = wordSize.x;
-                lineHeight = wordSize.y;
-            }
-            else
-            {
-                // Add word to current line
+                // Character wrapping measures the character alone; word wrapping has to include
+                // the space that joining the word to the line would add.
+                PointBase<float> sz;
                 if (wrapFlags == TW_CHAR_WRAP)
                 {
-                    line += word;
+                    GetTextExtent(word, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
                 }
                 else
                 {
-                    // Add space between words if appropriate
-                    if (line.c_str()[0] != '\0' && !(prevWord == " ") && !(word == " "))
-                    {
-                        line += " ";
-                    }
-                    line += word;
+                    CStr const separator = FormatTextSeparator(line, prevWord, word);
+                    GetTextExtent(word + separator, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
                 }
-                wordsInLine++;
 
-                // Measure updated line
-                GetTextExtent(line, wordSize, -1, 0, 0, 0, 0, 0);
-                lineWidth = wordSize.x;
-
-                // Update line height if this word is taller
-                if (wordSize.y > lineHeight)
+                if (sz.x + width > maxWidth || forceBreak)
                 {
-                    lineHeight = wordSize.y;
+                    int const hadWords = wordsInLine;
+
+                    ui::FormattedLine formattedLine;
+                    formattedLine.m_origin = org;
+                    // With nothing on the line yet it is this word itself that overflows, so it
+                    // goes out on its own rather than being held back.
+                    formattedLine.m_text = hadWords ? line : word;
+                    formattedLine.m_color = lineColor;
+
+                    // Colour carries across the break into the line that follows.
+                    int const lastColor = FindLastColorInStr(line);
+                    if (lastColor)
+                    {
+                        lineColor = lastColor;
+                    }
+
+                    formattedLine.m_isHieroglyphic = false;
+                    // A line broken by an explicit '|' is the end of its paragraph, so it is not
+                    // stretched even in justified text.
+                    formattedLine.m_format = (formatFlags == TF_FULL && forceBreak) ? TF_LEFT : formatFlags;
+                    linesOfText.push_back(formattedLine);
+
+                    if (height == 0.0f)
+                    {
+                        height = sz.y;
+                    }
+                    org.y += height;
+
+                    if (hadWords)
+                    {
+                        line = word;
+                        wordsInLine = 1;
+                    }
+                    else
+                    {
+                        line = CStr("");
+                    }
+
+                    GetTextExtent(line, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+                    width = sz.x;
+                    height = sz.y;
                 }
-            }
+                else
+                {
+                    if (wrapFlags == TW_CHAR_WRAP)
+                    {
+                        line += word;
+                    }
+                    else
+                    {
+                        line += FormatTextSeparator(line, prevWord, word) + word;
+                    }
+                    ++wordsInLine;
 
-            prevWord = word;
+                    GetTextExtent(line, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+                    width = sz.x;
+                    if (sz.y > height)
+                    {
+                        height = sz.y;
+                    }
+                }
 
-        } while (currentPos < textLen);
+                prevWord = word;
+            } while (i < len);
+        }
 
-        // Handle any remaining text in the line buffer
-        if (line.c_str()[0] != '\0')
+        // Whatever is still in hand becomes the last line.
+        if (line.c_str() && strlen(line.c_str()))
         {
-            m3d::ui::FormattedLine formattedLine;
-            formattedLine.m_origin = origin;
+            ui::FormattedLine formattedLine;
+            formattedLine.m_origin = org;
             formattedLine.m_text = line;
             formattedLine.m_color = lineColor;
             formattedLine.m_isHieroglyphic = false;
-            formattedLine.m_format = (formatFlags != TF_FULL) ? formatFlags : TF_LEFT;
-
+            // The last line of justified text is never stretched.
+            formattedLine.m_format = (formatFlags == TF_FULL) ? TF_LEFT : formatFlags;
             linesOfText.push_back(formattedLine);
         }
 
@@ -2831,7 +3416,14 @@ namespace m3d
 
     void Application::WaitForAnykey()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C470
+        if (!m_waitForAnykey)
+        {
+            m_waitForAnykey = true;
+            m_eventsQueueTail = 0;
+            m_eventsQueueHead = 0;
+            m_input->ClearBuffer();
+        }
     }
 
     void Application::SetFrameClearColor(unsigned color)
@@ -2839,9 +3431,12 @@ namespace m3d
         this->m_frameClearColor = color;
     }
 
-    int Application::DrawTextAbs(float, float, unsigned, CStr const&, unsigned, int)
+    int Application::DrawTextAbs(float x, float y, unsigned dwColor, CStr const& strText, unsigned dwFlags, int fid)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59CA60
+        CStr tStrText;
+        tStrText = strText;
+        return DrawTextAbsT(x, y, dwColor, tStrText, dwFlags, fid);
     }
 
     Application::Application(char const* logName)
@@ -2850,8 +3445,6 @@ namespace m3d
         {
             M3D_LOG_INFO("Starting up...");
             g_pApp = this;
-
-            //inject::injectMemoryAddress(0x00A0A55C, inject::cast<uint32_t>(g_pApp));
 
             m_focusKbdEntity = this;
             m_strWindowTitle = "retruxx - release version build v0.01";
@@ -2925,11 +3518,11 @@ namespace m3d
 
     void Application::sysError(CStr const& whence, CStr const& assertion)
     {
-        RETRUXX_NOT_IMPLEMENTED;
-        auto const description = "Assertion failed at " + whence + "\nexpression: " + assertion;
-        M3D_LOG_INFO(description);
-        //TODO: check this
+        // RVA 0x59E970
         panic();
+        M3D_LOG_INFO(CStr((CStr("Assertion failed at ") + whence + CStr("\nexpression ") + assertion).c_str()));
+        g_currentBinaryName = CStr("");
+        _assert(assertion.c_str(), whence.c_str(), 0);
     }
 
     int Application::FinishExclusiveMsgLoop()
@@ -2940,7 +3533,7 @@ namespace m3d
 
     void Application::UnPause()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA930
     }
 
     Class* Application::GetBaseClass()
@@ -2948,14 +3541,101 @@ namespace m3d
         return RT_CLASS_LOCAL(WndStation);
     }
 
-    void Application::PutSpriteAbsRot(float, float, float, float, unsigned, float, float, float, float, float, float)
+    void Application::PutSpriteAbsRot(
+        float cx,
+        float cy,
+        float sx,
+        float sy,
+        unsigned c,
+        float angleVerts,
+        float avx,
+        float avy,
+        float angleImage,
+        float aix,
+        float aiy)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6734F0
+        float x0 = 0.0f - sx;
+        float y0 = 0.0f - sy;
+        float x1 = sx;
+        float y1 = 0.0f - sy;
+        float x2 = sx;
+        float y2 = sy;
+        float x3 = 0.0f - sx;
+        float y3 = sy;
+        if (angleVerts != 0.0f)
+        {
+            float const s = sin(angleVerts);
+            float const co = cos(angleVerts);
+            auto const rotate = [&](float& x, float& y)
+            {
+                float const dx = x - avx;
+                float const dy = y - avy;
+                x = dx * co - dy * s + avx;
+                y = dy * co + dx * s + avy;
+            };
+            rotate(x0, y0);
+            rotate(x1, y1);
+            rotate(x2, y2);
+            rotate(x3, y3);
+        }
+
+        float u0 = 0.0f;
+        float v0 = 0.0f;
+        float u1 = 1.0f;
+        float v1 = 0.0f;
+        float u2 = 1.0f;
+        float v2 = 1.0f;
+        float u3 = 0.0f;
+        float v3 = 1.0f;
+        if (angleImage != 0.0f)
+        {
+            float const s = sin(angleImage);
+            float const co = cos(angleImage);
+            auto const rotate = [&](float& u, float& v)
+            {
+                float const du = u - aix;
+                float const dv = v - aiy;
+                u = du * co - dv * s + aix;
+                v = dv * co + du * s + aiy;
+            };
+            rotate(u0, v0);
+            rotate(u1, v1);
+            rotate(u2, v2);
+            rotate(u3, v3);
+        }
+
+        // The quad is emitted as a strip: corner 0, 1, 3, 2.
+        PutSprite2Abs(
+            x0 + cx,
+            y0 + cy,
+            x1 + cx,
+            y1 + cy,
+            x3 + cx,
+            y3 + cy,
+            x2 + cx,
+            y2 + cy,
+            u0,
+            v0,
+            u1,
+            v1,
+            u3,
+            v3,
+            u2,
+            v2,
+            0.0f,
+            c);
     }
 
-    Profiler* Application::CreateProfiler(char const*)
+    Profiler* Application::CreateProfiler(char const* name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x698600
+        unsigned const idx = m_profilerStack.AddProfiler(name, 30u);
+        if (idx < m_profilerStack.m_numProfilers)
+        {
+            return m_profilerStack.m_stack[idx];
+        }
+        return nullptr;
     }
 
     void Application::PutSprite2Rel(
@@ -2969,9 +3649,11 @@ namespace m3d
         float tv2,
         unsigned c)
     {
-        this->m_renderer->RelToAbs(x1, y1);
-        this->m_renderer->RelToAbs(x2, y2);
-        m3d::Application::PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
+        // RVA 0x41CFD0 - the corners arrive in relative coordinates; everything below this
+        // works in absolute ones.
+        m_renderer->RelToAbs(x1, y1);
+        m_renderer->RelToAbs(x2, y2);
+        PutSprite2Abs(x1, y1, tu1, tv1, x2, y2, tu2, tv2, c);
     }
 
     void Application::SetKeyboardFocus(IEventHandler* entity)
@@ -2996,12 +3678,18 @@ namespace m3d
 
     int Application::OnChangeMode(AuxImpulseInfo const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA980
+        return 1;
     }
 
-    void Application::DrawWireRectRel(CVector2 const&, CVector2 const&, unsigned)
+    void Application::DrawWireRectRel(CVector2 const& from, CVector2 const& to, unsigned color)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B0410
+        CVector2 a = from;
+        CVector2 b = to;
+        g_pApp->m_renderer->RelToAbs(a.x, a.y);
+        g_pApp->m_renderer->RelToAbs(b.x, b.y);
+        DrawWireRect(a, b, color);
     }
 
     DataServer& Application::GetLightsServer()
@@ -3009,25 +3697,326 @@ namespace m3d
         return *m_serverLights;
     }
 
-    int Application::SetFont(CStr const&, float, unsigned, unsigned)
+    int Application::SetFont(CStr const& fontName, float height, unsigned flags, unsigned cp)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C530
+        ui::FontParams params;
+        params.ttfParams.style = flags;
+        params.ttfParams.codePage = cp;
+        return ui::Wnd::GetGfxServer()->SetFont(fontName, height, ui::FONT_TYPE_WINDOWS, params);
     }
 
-    bool Application::SaveUsedOnlyServers(CStr const&, retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&)
+    bool Application::SaveUsedOnlyServers(
+        CStr const& filename,
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& usedAnimatedHandles)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A8DC0
+        struct
+        {
+            DataServer* m_server;
+            char const* m_name;
+            CStr m_diz;
+        } servers[9];
+
+        servers[0].m_diz = GetStringByStringId0("AnimatedModelsServer");
+        servers[1].m_diz = GetStringByStringId0("StaticModelsServer");
+        servers[2].m_diz = GetStringByStringId0("LightsServer");
+        servers[3].m_diz = GetStringByStringId0("SpritesServer");
+        servers[4].m_diz = GetStringByStringId0("ParticlesServer");
+        servers[5].m_diz = GetStringByStringId0("SoundsServer");
+        servers[6].m_diz = GetStringByStringId0("MusicServer");
+        servers[7].m_diz = GetStringByStringId0("ProjectorsServer");
+        servers[8].m_diz = GetStringByStringId0("DecalsServer");
+        servers[0].m_server = m_serverAnimatedModels;
+        servers[1].m_server = m_serverStaticModels;
+        servers[2].m_server = m_serverLights;
+        servers[3].m_server = m_serverSprites;
+        servers[4].m_server = m_serverParticles;
+        servers[5].m_server = m_serverSound;
+        servers[6].m_server = m_serverMusic;
+        servers[7].m_server = m_serverProjectors;
+        servers[8].m_server = m_serverDecals;
+        servers[0].m_name = "AnimatedModelsServer";
+        servers[1].m_name = "StaticModelsServer";
+        servers[2].m_name = "LightsServer";
+        servers[3].m_name = "SpritesServer";
+        servers[4].m_name = "ParticlesServer";
+        servers[5].m_name = "SoundsServer";
+        servers[6].m_name = "MusicServer";
+        servers[7].m_name = "ProjectorsServer";
+        servers[8].m_name = "DecalsServer";
+
+        ref_ptr xmlFile = g_Kernel->CreateXmlFile();
+        ref_ptr root = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Servers");
+
+        // Server -> its index in the table above.
+        std::unordered_map<DataServer*, int> serverIndices;
+        for (int i = 0; i < 9; ++i)
+        {
+            serverIndices.emplace(servers[i].m_server, i);
+        }
+
+        // Collect the item handles referenced by the scene graph, per server.
+        std::set<int> handles[16];
+        std::vector<Object*> stack;
+        stack.push_back(pClient->GetWorld().m_sceneGraph.GetRootNode());
+        int index = 0;
+        while (!stack.empty())
+        {
+            Object* parent = stack.back();
+            stack.pop_back();
+            for (Object* child = parent->GetFirstChild(); child; child = child->GetNextSibling())
+            {
+                if (DataServer* server = static_cast<SgNode*>(child)->GetServer())
+                {
+                    int handle = -1;
+                    child->GetProperty(0x1108, &handle);
+                    auto const it = serverIndices.find(server);
+                    // NOTE: a server missing from the table reuses the previous index (the binary starts
+                    // with garbage there and would index past the handle sets; such items are skipped here).
+                    if (it != serverIndices.end())
+                    {
+                        index = it->second;
+                    }
+                    if (handle != -1 && index >= 0 && index < 16)
+                    {
+                        handles[index].insert(handle);
+                    }
+                }
+                if (child->GetFirstChild())
+                {
+                    stack.push_back(child);
+                }
+            }
+        }
+
+        for (int const handle : usedAnimatedHandles)
+        {
+            handles[0].insert(handle);
+        }
+
+        CStr const staticModelsServer("StaticModelsServer");
+        CStr const animatedModelsServer("AnimatedModelsServer");
+        for (int i = 0; i < 9; ++i)
+        {
+            ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, servers[i].m_name);
+            // NOTE: only the model servers get their items written; every other server is saved as an empty node.
+            if (CStr(servers[i].m_name) == staticModelsServer || CStr(servers[i].m_name) == animatedModelsServer)
+            {
+                for (int const handle : handles[i])
+                {
+                    ref_ptr item = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Item");
+                    servers[i].m_server->WriteItemToXmlNode(handle, xmlFile, item);
+                    node->AddChild(item);
+                }
+            }
+            root->AddChild(node);
+        }
+        xmlFile->AddChild(root);
+
+        scoped_ptr<fs::FileStream> stream(g_Kernel->GetFileServer().CreateFileStream());
+        if (stream->Open(filename.c_str(), fs::IStream::OPEN_WRITE))
+        {
+            xmlFile->Write(*stream);
+            stream->Close();
+        }
+        else
+        {
+            M3D_LOG_INFO("Save servers: could not save servers into file " + filename);
+        }
+        return true;
     }
 
-    int Application::Render3DText0(CVector const&, CStr const&, unsigned, float)
+    int Application::Render3DText0(CVector const& at, CStr const& str, unsigned dwFlags, float scale)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x670490
+        // "^0".."^7" select one of these colours for the rest of the text.
+        static unsigned const colors[8] = {
+            0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF, 0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
+
+        ui::Font* const fnt = ui::Wnd::GetGfxServer()->GetCurFont();
+        if (!fnt)
+        {
+            return 0;
+        }
+        if (str.empty())
+        {
+            return 0;
+        }
+
+        g_pApp->m_renderer->SetToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1));
+        enterFontRender();
+        auto const* text = reinterpret_cast<unsigned char const*>(str.c_str());
+        int ntris = 0;
+        CVector aax;
+        CVector aay;
+        CVector az;
+        g_pApp->m_renderer->MatGetBasis(aax, aay, az);
+        bool const noCull = (dwFlags & 2) != 0;
+        if (noCull)
+        {
+            g_pApp->m_renderer->PushCull(rend::M3DCULL_NONE);
+        }
+
+        float x = 0.0f;
+        float y = 0.0f;
+        if (dwFlags & 1)
+        {
+            // Centred: measured without the colour codes.
+            // NOTE: after removing a "^x" pair the next character is skipped, so "^1^2" keeps "^2".
+            CStr o(reinterpret_cast<char const*>(text));
+            for (int i = 0; i < o.length(); ++i)
+            {
+                if (o.c_str()[i] == '^')
+                {
+                    o.del(i, 2);
+                }
+            }
+            PointBase<float> sz;
+            GetTextExtent(o, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+            x = sz.x * scale * -0.5f;
+            y = sz.y * scale * -0.5f;
+        }
+
+        unsigned color = 0xFFFFFFFF;
+        float const startX = x;
+        while (unsigned char const c = *text)
+        {
+            ++text;
+            if (c == '\n')
+            {
+                x = startX;
+                float c1 = 0.0f;
+                float c3 = 0.0f;
+                if (fnt->m_symbols[0])
+                {
+                    c1 = fnt->m_symbols[0]->m_tcs.m_coordinates[1];
+                    c3 = fnt->m_symbols[0]->m_tcs.m_coordinates[3];
+                }
+                int texSzX = 0;
+                int texSzY = 0;
+                if (!fnt->m_textures.empty())
+                {
+                    g_pApp->m_renderer->GetDims(fnt->m_textures[0], texSzX, texSzY);
+                }
+                y -= (c3 - c1) * static_cast<float>(texSzY) * scale;
+                continue;
+            }
+            if (c < ' ')
+            {
+                continue;
+            }
+            if (c == '^')
+            {
+                unsigned char code = *text;
+                if (code)
+                {
+                    ++text;
+                    if (code < '0')
+                    {
+                        code = '0';
+                    }
+                    else if (code > '7')
+                    {
+                        code = '7';
+                    }
+                    color = colors[code - '0'];
+                }
+                continue;
+            }
+
+            auto const tcs = fnt->GetTexCoord(c);
+            auto const texSz = fnt->GetTexSz();
+            CVector const right(aax.x * 2.0f, aax.y * 2.0f, aax.z * 2.0f);
+            CVector const up(aay.x * 2.0f, aay.y * 2.0f, aay.z * 2.0f);
+            float const w = (tcs.m_coordinates[2] - tcs.m_coordinates[0]) * static_cast<float>(texSz.x) * scale;
+            float const h = (tcs.m_coordinates[3] - tcs.m_coordinates[1]) * static_cast<float>(texSz.y) * scale;
+            float const abcA = fnt->m_symbols[c] ? fnt->m_symbols[c]->m_abc.m_A : 0.0f;
+            float const ofsX = (0.0f - w - abcA) * 0.1f;
+            float const ofsY = h * -0.1f;
+
+            int vofs = 0;
+            auto* v = static_cast<rend::VertexXYZCT1*>(g_pApp->m_renderer->LockVbStreaming(
+                g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1), 12, vofs, nullptr));
+
+            auto const set =
+                [&](rend::VertexXYZCT1& vert, float px, float py, bool shadow, unsigned vcolor, float tu, float tv)
+            {
+                float vx = at.x + right.x * px + up.x * py;
+                float vy = at.y + right.y * px + up.y * py;
+                float vz = at.z + right.z * px + up.z * py;
+                if (shadow)
+                {
+                    vx += az.x;
+                    vy += az.y;
+                    vz += az.z;
+                }
+                vert.x = vx;
+                vert.y = vy;
+                vert.z = vz;
+                vert.c = vcolor;
+                vert.tu = tu;
+                vert.tv = tv;
+            };
+
+            float const u0 = tcs.m_coordinates[0];
+            float const v0 = tcs.m_coordinates[1];
+            float const u1 = tcs.m_coordinates[2];
+            float const v1 = tcs.m_coordinates[3];
+
+            // Shadow, pushed along the third basis vector and offset by a tenth of the glyph size.
+            float const sx0 = ofsX + x;
+            float const sy0 = ofsY + y;
+            float const sx1 = ofsX + w + x;
+            float const sy1 = ofsY + h + y;
+            set(v[0], sx0, sy0, true, 0xFF000000, u0, v1);
+            set(v[1], sx0, sy1, true, 0xFF000000, u0, v0);
+            set(v[2], sx1, sy0, true, 0xFF000000, u1, v1);
+            set(v[3], sx1, sy1, true, 0xFF000000, u1, v0);
+            set(v[4], sx1, sy0, true, 0xFF000000, u1, v1);
+            set(v[5], sx0, sy1, true, 0xFF000000, u0, v0);
+
+            set(v[6], x, y, false, color, u0, v1);
+            set(v[7], x, h + y, false, color, u0, v0);
+            set(v[8], w + x, y, false, color, u1, v1);
+            set(v[9], w + x, h + y, false, color, u1, v0);
+            set(v[10], w + x, y, false, color, u1, v1);
+            set(v[11], x, h + y, false, color, u0, v0);
+
+            g_pApp->m_renderer->UnlockVb(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZCT1));
+
+            std::vector<rend::TexHandle> const fontTextures = fnt->m_textures;
+            if (tcs.m_texId >= 0 && tcs.m_texId < static_cast<int>(fontTextures.size()))
+            {
+                auto const& tex = fontTextures[tcs.m_texId];
+                if (tex != ui::Wnd::GetGfxServer()->m_curFontTexture)
+                {
+                    g_pApp->m_renderer->SetTexture(0, tex, -1.0);
+                    ui::Wnd::GetGfxServer()->m_curFontTexture = tex;
+                }
+            }
+
+            g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 4);
+            ntris += 4;
+            // NOTE: the pen advances by the unscaled glyph width.
+            x += fnt->m_symbols[c] ? fnt->m_symbols[c]->m_precalcedABCWidth : 0.0f;
+        }
+
+        finishFontRender();
+        if (noCull)
+        {
+            g_pApp->m_renderer->PopCull();
+        }
+        return ntris;
     }
 
     rend::VertexXYZWCT1* Application::RenderQuadXyzwct1GetNextPtr()
     {
-        if (this->m_numPointsVerts + 4 >= 0xFA0)
-            m3d::Application::FlushQuads();
+        // RVA 0x7AFD80
+        if (static_cast<unsigned>(m_numPointsVerts + 4) >= 4000)
+        {
+            FlushQuads();
+        }
 
         auto result = &this->m_pointsVertsWct1[m_numPointsVerts];
         this->m_numPointsVerts = m_numPointsVerts + 4;
@@ -3036,100 +4025,111 @@ namespace m3d
 
     bool Application::AddPostEffect(CStr const&, float)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C660
+        return false;
     }
 
     int Application::FindLastColorInStr(CStr const& line)
     {
-        // TODO: check this
+        // RVA 0x6851B0
+        // Colour tags are "@AARRGGBB"; a '#' escapes the next character.
         if (line.empty())
         {
             return 0;
         }
-
-        int nColor = 0;
-        bool bEsc = false;
-        int v3 = 0;  // position index
-        int v4 = 8;  // some offset counter
-
-        while (true)
+        int color = 0;
+        bool escaped = false;
+        int pos = 0;
+        while (pos < static_cast<int>(line.length()))
         {
-            int v6 = line.length();
-
-            if (v3 >= v6)
-                return nColor;
-
-            char v7 = line[v3];
-
-            if (v7 == '#')
+            char const ch = line[pos];
+            if (ch == '#' && !escaped)
             {
-                if (bEsc)
+                escaped = true;
+                ++pos;
+            }
+            else if (ch == '@' && !escaped && pos + 8 < static_cast<int>(line.length()))
+            {
+                char hex[9];
+                for (int i = 0; i < 8; ++i)
                 {
-                    bEsc = false;
-                    v3++;
-                    v4++;
-                    continue;
+                    hex[i] = line[pos + 1 + i];
                 }
-                ++v3;
-                bEsc = true;
-                ++v4;
+                hex[8] = '\0';
+                sscanf(hex, "%x", &color);
+                pos += 9;
             }
             else
             {
-                if (v7 != '@' || bEsc)
-                {
-                    bEsc = false;
-                    v3++;
-                    v4++;
-                    continue;
-                }
-
-                int v8 = v6;
-                if (v8 <= v4)
-                {
-                    v3++;
-                    v4++;
-                    continue;
-                }
-
-                // Extract color code
-                char color[9];  // 8 chars + null terminator
-                color[0] = line[v3 + 1];
-                color[1] = line[v3 + 2];
-                color[2] = line[v3 + 3];
-                color[3] = line[v3 + 4];
-                color[4] = line[v3 + 5];
-                color[5] = line[v3 + 6];
-                color[6] = line[v3 + 7];
-                color[7] = line[v3 + 8];
-                color[8] = 0;
-
-                sscanf(color, "%x", &nColor);
-                v3 += 9;
-                v4 += 9;
+                escaped = false;
+                ++pos;
             }
         }
-        return 0;
+        return color;
     }
 
     void Application::PutSplashMainMenuLevelLoad(int, void*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C410
     }
 
-    void Application::PutSplashCallBackQuiet(int, void*)
+    void Application::PutSplashCallBackQuiet(int proc, void*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6A6E00
+        g_pApp->m_renderer->BeginScene();
+        g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_C, 0);
+        g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+        // The first call's time is remembered but never used.
+        static unsigned const startTime = g_Kernel->GetTimer().GetCurTime();
+        (void)startTime;
+        g_Kernel->GetTimer().GetCurTime();
+        g_pApp->m_renderer->SetBlend(rend::BM_NONE, false);
+        g_pApp->m_renderer->SetAlphaTest(0);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+        g_pApp->m_renderer->SetWhiteTexture(0);
+        float x1 = 3.0f;
+        float y1 = 750.0f;
+        float x2 = static_cast<float>(static_cast<double>(proc) * 10.21 + 3.0);
+        float y2 = 765.0f;
+        g_pApp->m_renderer->RelToAbs(x1, y1);
+        g_pApp->m_renderer->RelToAbs(x2, y2);
+        g_pApp->PutSprite2Abs(x1, y1, 0.0f, 0.0f, x2, y2, 1.0f, 1.0f, 0xFFAAAAAA);
+        g_pApp->m_renderer->PopZbState();
+        g_pApp->m_renderer->EndScene();
+        g_pApp->m_renderer->PresentScene();
     }
 
-    void Application::RenderQuadXyzwct1(float, float, float, unsigned)
+    void Application::RenderQuadXyzwct1(float x, float y, float sz, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AFDC0
+        if (static_cast<unsigned>(m_numPointsVerts + 4) >= 4000)
+        {
+            FlushQuads();
+        }
+
+        auto* v = &m_pointsVertsWct1[m_numPointsVerts];
+        m_numPointsVerts += 4;
+        auto const set = [clr](rend::VertexXYZWCT1& vert, float vx, float vy, float tu, float tv)
+        {
+            vert.x = vx;
+            vert.y = vy;
+            vert.z = 0.0f;
+            vert.w = 0.5f;
+            vert.c = clr;
+            vert.tu = tu;
+            vert.tv = tv;
+        };
+        set(v[0], x - sz, y - sz, 0.0f, 0.0f);
+        set(v[1], x + sz, y - sz, 1.0f, 0.0f);
+        set(v[2], x + sz, y + sz, 1.0f, 1.0f);
+        set(v[3], x - sz, y + sz, 0.0f, 1.0f);
     }
 
-    void Application::DrawBoundingRadius(CVector const&, float, unsigned)
+    void Application::DrawBoundingRadius(CVector const& org, float r, unsigned clr)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B05A0
+        DrawCross(org, r, clr);
     }
 
     void Application::SetMouseXy(float absX, float absY)
@@ -3147,32 +4147,182 @@ namespace m3d
 
     int Application::GetCurGameMode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA940
+        return -1;
     }
 
-    int Application::HeightmapToNormalmap(unsigned short*, unsigned*, int, int)
+    int Application::HeightmapToNormalmap(unsigned short* src, unsigned* dst, int sx, int sy)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AFF10
+        // NOTE: each row converts only sx - 2 texels but skips a single source texel, so rows after the
+        // first drift by one texel per row and the last rows read past the height map; kept as shipped.
+        for (int row = sy; row > 0; --row)
+        {
+            for (int col = sx - 2; col > 0; --col)
+            {
+                int const h = src[0];
+                float const dx = static_cast<float>(src[1] - h);
+                float const dy = static_cast<float>(src[sx] - h);
+                float const len = static_cast<float>(
+                    1.0 / sqrt(static_cast<double>(dy) * dy + static_cast<double>(dx) * dx + 1.0000001f));
+                CVector normal;
+                normal.x = len * dx;
+                normal.y = len * dy;
+                normal.z = len;
+                *dst = VecToRgba(normal, static_cast<float>(h));
+                ++src;
+                ++dst;
+            }
+            ++src;
+        }
+        return 1;
     }
 
-    int Application::SetFontSelfMaking(CStr const&, float)
+    int Application::SetFontSelfMaking(CStr const& fontName, float height)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C560
+        // NOTE: the code page part of the parameters is an uninitialised stack slot in the binary.
+        ui::FontParams params;
+        params.ttfParams.style = 1;
+        params.ttfParams.codePage = 0;
+        return ui::Wnd::GetGfxServer()->SetFont(fontName, height, ui::FONT_TYPE_SELFMAKING, params);
     }
 
-    void Application::PutSplash(int, char const*)
+    void Application::PutSplash(int proc, char const* text)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5A0B10
+        BoundsBase<float> dizRect;
+        dizRect.x0 = 125.0f;
+        dizRect.y0 = 490.0f;
+        dizRect.width = 450.0f;
+        dizRect.height = 110.0f;
+
+        g_pApp->m_renderer->BeginScene();
+        g_pApp->m_renderer->ClearViewport(rend::M3DCLEAR_C, 0);
+        g_pApp->m_renderer->PushZbState(rend::ZB_DISABLE);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
+        if (m_texSplash.IsValid())
+        {
+            g_pApp->m_renderer->SetTexture(0, m_texSplash, -1.0);
+            g_pApp->PutSpriteRel(0.0f, 0.0f, 1024.0f, 768.0f, 0xFFFFFFFF);
+        }
+
+        g_pApp->m_renderer->SetTexture(
+            0, m_loadScreenInfo.m_picture.IsValid() ? m_loadScreenInfo.m_picture : m_defLoadPicture, -1.0);
+        float x1 = 110.0f;
+        float y1 = 87.0f;
+        float x2 = 909.0f;
+        float y2 = 624.0f;
+        g_pApp->m_renderer->RelToAbs(x1, y1);
+        g_pApp->m_renderer->RelToAbs(x2, y2);
+        g_pApp->PutSpriteAbs(x1, y1, x2, y2, 0xFFFFFFFF);
+
+        g_pApp->m_renderer->PushBlend(rend::BM_ALPHA);
+        g_pApp->m_renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        g_pApp->m_renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
+        g_pApp->m_renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
+        g_pApp->m_renderer->SetTexture(0, m_texProgr, -1.0);
+        g_pApp->PutSprite2Rel(
+            292.0f,
+            686.0f,
+            0.0f,
+            0.0f,
+            static_cast<float>(proc) * 4.68f + 292.0f,
+            717.0f,
+            static_cast<float>(proc) * 0.01f,
+            1.0f,
+            0xFFFFFFFF);
+        g_pApp->m_renderer->SetAlphaTest(0);
+
+        if (m_texSplash1.IsValid())
+        {
+            g_pApp->m_renderer->SetTexture(0, m_texSplash1, -1.0);
+            g_pApp->PutSpriteRel(74.0f, 48.0f, 367.0f, 341.0f, 0xFFFFFFFF);
+        }
+
+        // NOTE: the code page of the font parameters is an uninitialised stack slot in the binary.
+        ui::FontParams fontParams;
+        fontParams.ttfParams.style = 1;
+        fontParams.ttfParams.codePage = 0;
+
+        if (text)
+        {
+            ui::Wnd::GetGfxServer()->SetFont(CStr("SM_TimesNormal"), 15.0f, ui::FONT_TYPE_SELFMAKING, fontParams);
+            PointBase<float> size;
+            GetTextExtent(CStr(text), size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+            float x = 526.0f - size.x * 0.5f;
+            float y = 701.5f - size.y * 0.5f;
+            m_renderer->RelToAbs(x, y);
+            DrawTextAbsT(x, y, 0xFFFFFFFF, CStr(text), 0, -1);
+        }
+
+        CStr name;
+        if (!m_loadScreenInfo.m_diz0.empty())
+        {
+            name = m_loadScreenInfo.m_diz0;
+        }
+        else
+        {
+            name = CStr(g_Kernel->GetEngineCfg().m_levFileName.GetS());
+        }
+        ui::Wnd::GetGfxServer()->SetFont(CStr("SM_TimesNormal"), 17.0f, ui::FONT_TYPE_SELFMAKING, fontParams);
+        {
+            // The measured size is not used.
+            PointBase<float> size;
+            GetTextExtent(name, size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+            float x = 125.0f;
+            float y = 410.0f;
+            m_renderer->RelToAbs(x, y);
+            DrawTextAbsT(x, y, 0xFFF5E6BD, name, 0, -1);
+        }
+
+        if (!m_loadScreenInfo.m_diz1.empty())
+        {
+            ui::Wnd::GetGfxServer()->SetFont(CStr("SM_TimesNormal"), 20.0f, ui::FONT_TYPE_SELFMAKING, fontParams);
+            PointBase<float> size;
+            GetTextExtent(m_loadScreenInfo.m_diz1, size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+            float x = 125.0f;
+            float y = 440.0f;
+            m_renderer->RelToAbs(x, y);
+            DrawTextAbsT(x, y, 0xFFF5E6BD, m_loadScreenInfo.m_diz1, 0, -1);
+        }
+
+        if (!m_loadScreenInfo.m_diz2.empty())
+        {
+            // NOTE: only the client rectangles of the draw info are filled in; the destination window,
+            // original and clipped rectangles are uninitialised stack memory in the binary (zeroed here).
+            ui::DrawInfo di{};
+            di.m_clientRect = dizRect;
+            di.m_clientClippedRect = dizRect;
+
+            char colorBuf[16];
+            sprintf_s(colorBuf, "%x", 0xFFF5E6BD);
+            CStr const colorCode = CStr("@") + CStr(colorBuf);
+            CStr const coloredText = colorCode + m_loadScreenInfo.m_diz2;
+            PointBase<float> at(0.0f, 0.0f);
+            ui::Wnd::GetGfxServer()->AddText(di, at, coloredText, 1, TW_WORD_WRAP, TF_LEFT);
+        }
+
+        g_pApp->m_renderer->PopBlend();
+        g_pApp->m_renderer->PopZbState();
+        g_pApp->m_renderer->EndScene();
+        g_pApp->m_renderer->PresentScene();
     }
 
-    int Application::DrawTextRel(float, float, unsigned, CStr const&, unsigned, int)
+    int Application::DrawTextRel(float x, float y, unsigned dwColor, CStr const& strText, unsigned dwFlags, int fid)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x41D680
+        CStr tStrText;
+        tStrText = strText;
+        m_renderer->RelToAbs(x, y);
+        return DrawTextAbsT(x, y, dwColor, tStrText, dwFlags, fid);
     }
 
     HWND Application::GetRenderWindow() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C690
+        return m_renderWindow;
     }
 
     void Application::PutSprite2Abs(
@@ -3195,44 +4345,46 @@ namespace m3d
         float zval,
         unsigned c)
     {
-        //TODO: check this and refactor!!!
+        auto const handle = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZWCT1);
         int vofs = 0;
-        auto vbs = g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1);
-        auto mem = static_cast<float*>(g_pApp->m_renderer->LockVbStreaming(vbs, rend::VERTEX_XYZWCT1, vofs, nullptr));
+        auto* vertex = static_cast<m3d::rend::VertexXYZWCT1*>(
+            M3D_RENDERER->LockVbStreaming(handle, rend::VERTEX_XYZWCT1, vofs, nullptr));
 
-        auto* memInt = reinterpret_cast<unsigned*>(mem);
-        mem[5] = tu1;
-        mem[6] = tv1;
-        mem[0] = x1;
-        mem[1] = y1;
-        mem[2] = zval;
-        mem[3] = 0.1;
-        memInt[4] = c;
-        mem[7] = x2;
-        mem[8] = y2;
-        mem[12] = tu2;
-        mem[13] = tv2;
-        mem[9] = zval;
-        mem[10] = 0.1;
-        memInt[11] = c;
-        mem[14] = x3;
-        mem[15] = y3;
-        mem[19] = tu3;
-        mem[16] = zval;
-        mem[20] = tv3;
-        mem[17] = 0.1;
-        memInt[18] = c;
-        mem[23] = zval;
-        mem[21] = x4;
-        mem[26] = tu4;
-        mem[22] = y4;
-        mem[24] = 0.1;
-        memInt[25] = c;
-        mem[27] = tv4;
+        vertex[0].x = x1;
+        vertex[0].y = y1;
+        vertex[0].z = zval;
+        vertex[0].w = 0.1f;
+        vertex[0].c = c;
+        vertex[0].tu = tu1;
+        vertex[0].tv = tv1;
 
-        g_pApp->m_renderer->UnlockVb(vbs);
-        g_pApp->m_renderer->SetToStream0(vbs);
-        g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2);
+        vertex[1].x = x2;
+        vertex[1].y = y2;
+        vertex[1].z = zval;
+        vertex[1].w = 0.1f;
+        vertex[1].c = c;
+        vertex[1].tu = tu2;
+        vertex[1].tv = tv2;
+
+        vertex[2].x = x3;
+        vertex[2].y = y3;
+        vertex[2].z = zval;
+        vertex[2].w = 0.1f;
+        vertex[2].c = c;
+        vertex[2].tu = tu3;
+        vertex[2].tv = tv3;
+
+        vertex[3].x = x4;
+        vertex[3].y = y4;
+        vertex[3].z = zval;
+        vertex[3].w = 0.1f;
+        vertex[3].c = c;
+        vertex[3].tu = tu4;
+        vertex[3].tv = tv4;
+
+        M3D_RENDERER->UnlockVb(handle);
+        M3D_RENDERER->SetToStream0(handle);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_TRIANGLESTRIP, vofs, 2u);
     }
 
     void Application::PutSprite2Abs(
@@ -3251,27 +4403,241 @@ namespace m3d
 
     char const* Application::GetCallbackName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C620
+        return nullptr;
     }
 
-    ui::MbRetCodes Application::RunMsgBoxDlg(CStr const&, CStr const&, unsigned, bool)
+    ui::MbRetCodes Application::RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned flags, bool bPause)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C770
+        return ui::RunMsgBoxDlg(caption, message, flags, bPause);
     }
 
-    int Application::DrawTextAbsT(float, float, unsigned, CStr const&, unsigned, int)
+    int Application::DrawTextAbsT(float sx, float sy, unsigned dwColor, CStr const& str, unsigned dwFlags, int fid)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x66FC10
+        ui::Font* font = nullptr;
+        if (IsTextHieroglyphic(str) && g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+        {
+            ui::Wnd::GetGfxServer()->SetFont(ui::Wnd::GetGfxServer()->m_hieroglyphicFontId);
+            font = ui::Wnd::GetGfxServer()->GetCurFont();
+            if (!font)
+            {
+                return 0;
+            }
+        }
+        else if (fid != -1)
+        {
+            if (!ui::Wnd::GetGfxServer()->SetFont(fid))
+            {
+                return 0;
+            }
+            font = ui::Wnd::GetGfxServer()->GetFontById(fid);
+            if (!font)
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            font = ui::Wnd::GetGfxServer()->GetCurFont();
+            if (!font)
+            {
+                return 0;
+            }
+        }
+
+        int ntris = 0;
+        if (str.empty())
+        {
+            return 0;
+        }
+
+        if (dwFlags & 1)
+        {
+            // Centred on the given point.
+            CStr strPure(str);
+            PointBase<float> size;
+            GetTextExtent(strPure, size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+            sx -= size.x * 0.5f;
+            sy -= size.y * 0.5f;
+        }
+
+        auto const* text = reinterpret_cast<unsigned char const*>(str.c_str());
+        enterFontRender();
+        g_pApp->m_renderer->SetToStream0(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
+
+        float const startX = sx;
+        for (; *text; ++text)
+        {
+            unsigned char const c = *text;
+            if (c == '\n')
+            {
+                auto const tcsDef = font->GetTexCoord(0);
+                sx = startX;
+                // NOTE: a new line moves the pen up by the glyph height measured in texture pixels.
+                sy -= (tcsDef.m_coordinates[3] - tcsDef.m_coordinates[1]) * static_cast<float>(font->GetTexSz().x);
+                continue;
+            }
+            if (c < ' ')
+            {
+                continue;
+            }
+
+            auto const tcs = font->GetTexCoord(c);
+            auto const* sym = font->m_symbols[c];
+            PointBase<float> glyphSz(0.0f, 0.0f);
+            float abcA = 0.0f;
+            if (sym)
+            {
+                glyphSz = sym->m_precalcedGlyphSz;
+                abcA = sym->m_abc.m_A;
+            }
+
+            // The drop shadow is offset down by a tenth of the glyph height.
+            float const ofsY = glyphSz.y * 0.1f;
+            sx = static_cast<float>(lrintf(sx));
+            sy = static_cast<float>(lrintf(sy));
+
+            int vofs = 0;
+            auto* v = static_cast<rend::VertexXYZWCT1*>(g_pApp->m_renderer->LockVbStreaming(
+                g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1), 12, vofs, nullptr));
+
+            float const left = sx - 0.5f;
+            float const right = sx + glyphSz.x - 0.5f;
+            float const top = sy - 0.5f;
+            float const bottom = glyphSz.y + sy - 0.5f;
+            float const u0 = tcs.m_coordinates[0];
+            float const v0 = tcs.m_coordinates[1];
+            float const u1 = tcs.m_coordinates[2];
+            float const v1 = tcs.m_coordinates[3];
+
+            auto const set =
+                [](rend::VertexXYZWCT1& vert, float x, float y, float z, float w, unsigned color, float tu, float tv)
+            {
+                vert.x = x;
+                vert.y = y;
+                vert.z = z;
+                vert.w = w;
+                vert.c = color;
+                vert.tu = tu;
+                vert.tv = tv;
+            };
+
+            // Shadow, shifted right by the glyph's A width and down by ofsY.
+            // NOTE: the shadow uses z = 0.9, w = 1.0 and the glyph z = 0.8, w = 0.9, as shipped.
+            unsigned const black = 0xFF000000;
+            set(v[0], left + abcA, bottom + ofsY, 0.9f, 1.0f, black, u0, v1);
+            set(v[1], left + abcA, top + ofsY, 0.9f, 1.0f, black, u0, v0);
+            set(v[2], right + abcA, bottom + ofsY, 0.9f, 1.0f, black, u1, v1);
+            set(v[3], right + abcA, top + ofsY, 0.9f, 1.0f, black, u1, v0);
+            set(v[4], right + abcA, bottom + ofsY, 0.9f, 1.0f, black, u1, v1);
+            set(v[5], left + abcA, top + ofsY, 0.9f, 1.0f, black, u0, v0);
+
+            set(v[6], left, bottom, 0.8f, 0.9f, dwColor, u0, v1);
+            set(v[7], left, top, 0.8f, 0.9f, dwColor, u0, v0);
+            set(v[8], right, bottom, 0.8f, 0.9f, dwColor, u1, v1);
+            set(v[9], right, top, 0.8f, 0.9f, dwColor, u1, v0);
+            set(v[10], right, bottom, 0.8f, 0.9f, dwColor, u1, v1);
+            set(v[11], left, top, 0.8f, 0.9f, dwColor, u0, v0);
+
+            g_pApp->m_renderer->UnlockVb(g_pApp->m_renderer->GetVbStreaming(rend::VERTEX_XYZWCT1));
+
+            std::vector<rend::TexHandle> const fontTextures = font->m_textures;
+            if (tcs.m_texId >= 0 && tcs.m_texId < static_cast<int>(fontTextures.size()))
+            {
+                auto const& tex = fontTextures[tcs.m_texId];
+                if (tex != ui::Wnd::GetGfxServer()->m_curFontTexture)
+                {
+                    g_pApp->m_renderer->SetTexture(0, tex, -1.0);
+                    ui::Wnd::GetGfxServer()->m_curFontTexture = tex;
+                }
+            }
+
+            g_pApp->m_renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, 4);
+            ntris += 4;
+            sx += font->m_symbols[c] ? font->m_symbols[c]->m_precalcedABCWidth : 0.0f;
+        }
+
+        finishFontRender();
+        return ntris;
     }
 
-    int Application::SaveExportDescToFile(fs::FileStream&, bool) const
+    int Application::SaveExportDescToFile(fs::FileStream& outputFile, bool skipEmpty) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8BC720
+        outputFile << "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-\n";
+        outputFile << "-==\n";
+        outputFile << "-== Log category  : Generic export description\n";
+        outputFile << "-== Type\t\t  : ";
+        if (skipEmpty)
+        {
+            outputFile << "Skipping those classes w/ empty export map\n";
+        }
+        else
+        {
+            outputFile << "All\n";
+        }
+        outputFile << "-== Build         : " << "retruxx - release version build v0.01" << "\n";
+        outputFile << "-==\n";
+        outputFile << "-== Note, this is a run-time info, so some functions and classes might\n";
+        outputFile << "-== be unavailable if, for instance, server is not loaded yet...\n";
+        outputFile << "-==\n";
+        outputFile << "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-\n\n";
+
+        Class** classes = nullptr;
+        unsigned numClasses = 0;
+        g_Kernel->GetListOfClasses(classes, numClasses);
+        outputFile << "** Classes **\n\n";
+        for (unsigned i = 0; i < numClasses; ++i)
+        {
+            Class* cls = classes[i];
+            bool print = true;
+            if (skipEmpty && CStr(cls->m_lExports->name).empty())
+            {
+                print = false;
+            }
+            if (print)
+            {
+                outputFile << GetClassDesc(cls).c_str();
+                outputFile << "\n\n";
+            }
+        }
+        delete[] classes;
+
+        outputFile << "\n\n\n";
+        outputFile << "** Global native functions **\n\n";
+        for (auto const& [name, desc] : g_Kernel->GetScriptServer().getRegisteredFunctionsDesc())
+        {
+            outputFile << GetNativeFuncDesc(name.c_str()).c_str();
+            outputFile << "\n\n";
+        }
+        return 1;
     }
 
-    void Application::DrawLine(CVector2 const&, CVector2 const&, unsigned)
+    void Application::DrawLine(CVector2 const& from, CVector2 const& to, unsigned color)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7B00E0
+        auto vb = M3D_RENDERER->GetVbStreaming(rend::VERTEX_XYZWCT1);
+        int vofs = 0;
+        auto* v = static_cast<rend::VertexXYZWCT1*>(M3D_RENDERER->LockVbStreaming(vb, 2, vofs, nullptr));
+        v[0].x = from.x;
+        v[0].y = from.y;
+        v[0].z = 0.5f;
+        v[0].w = 0.5f;
+        v[0].c = color;
+        v[0].tu = 0.0f;
+        v[0].tv = 0.0f;
+        v[1].x = to.x;
+        v[1].y = to.y;
+        v[1].z = 0.5f;
+        v[1].w = 0.5f;
+        v[1].c = color;
+        v[1].tu = 1.0f;
+        v[1].tv = 1.0f;
+        M3D_RENDERER->UnlockVb(vb);
+        M3D_RENDERER->SetToStream0(vb);
+        M3D_RENDERER->DrawPrimitive(rend::M3DPT_LINELIST, vofs, 1u);
     }
 
     void Application::DrawLine(CVector const& from, CVector const& to, unsigned color)
@@ -3297,46 +4663,118 @@ namespace m3d
 
     void Application::Pause()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5AA920
     }
 
-    CStr Application::GetClassDesc(Class*) const
+    CStr Application::GetClassDesc(Class* cls) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8BB710
+        if (!cls)
+        {
+            return CStr("");
+        }
+
+        CStr desc("");
+        Class* const baseClass = cls->m_fnGetBaseClass();
+        ExportInfo* exportInfo = cls->m_lExports;
+        desc = CStr("Class ") + CStr(cls->m_className);
+        if (baseClass)
+        {
+            desc += CStr(" : public ") + CStr(baseClass->m_className);
+        }
+        desc += CStr("\n");
+        desc += CStr("{\n");
+        if (!exportInfo->name)
+        {
+            desc += CStr("\t[Empty export table so far]\n");
+        }
+        for (; exportInfo->name; ++exportInfo)
+        {
+            desc += CStr("\t");
+            if (exportInfo->type == METHOD)
+            {
+                desc += CStr("[M] ");
+            }
+            if (exportInfo->type == NATIVE_METHOD)
+            {
+                desc += CStr("[N] ");
+            }
+            if (!CStr(exportInfo->returns).empty())
+            {
+                desc += CStr(exportInfo->returns) + CStr(" ");
+            }
+            else
+            {
+                desc += CStr("??? ");
+            }
+            desc += CStr(exportInfo->name);
+            if (!CStr(exportInfo->params).empty())
+            {
+                desc += CStr("( ") + CStr(exportInfo->params) + CStr(" )");
+            }
+            else
+            {
+                desc += CStr("()");
+            }
+            if (!CStr(exportInfo->desc).empty())
+            {
+                desc += CStr("   /* ") + CStr(exportInfo->desc) + CStr(" */");
+            }
+            desc += CStr("\n");
+        }
+        desc += CStr("}");
+        return desc;
     }
 
     void Application::ClearViewportToBlack()
     {
-        //TODO: check this and refactor
-        int v2;  // edi
-        int v3;  // esi
-
-        auto& config = g_Kernel->GetEngineCfg();
-        if (IsWindow(config.m_mainWnd))
+        // RVA 0x59C370
+        if (!::IsWindow(g_Kernel->GetEngineCfg().m_mainWnd))
         {
-            v2 = M3D_RENDERER->InScene();
-            v3 = 0;
-            if (v2 || (v3 = M3D_RENDERER->BeginScene()) != 0)
-            {
-                M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, -16777216u);
-                if (!v2)
-                {
-                    if (v3)
-                        M3D_RENDERER->EndScene();
-                }
-            }
-            M3D_RENDERER->PresentScene();
+            return;
         }
+        // Open a scene only if none is in progress, and close only the one opened here.
+        bool const wasInScene = M3D_RENDERER->InScene() != 0;
+        bool const sceneBegun = !wasInScene && M3D_RENDERER->BeginScene() != 0;
+        if (wasInScene || sceneBegun)
+        {
+            M3D_RENDERER->ClearViewport(rend::M3DCLEAR_CZ, 0xFF000000);
+            if (sceneBegun)
+            {
+                M3D_RENDERER->EndScene();
+            }
+        }
+        M3D_RENDERER->PresentScene();
     }
 
     CStr const& Application::GetStartupFolder() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59BF60
+        return m_startupFolder;
     }
 
-    void Application::PutSpriteAbs(float, float, float, unsigned)
+    void Application::PutSpriteAbs(float x, float y, float size2, unsigned c)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x673950
+        PutSprite2Abs(
+            x - size2,
+            y + size2,
+            x - size2,
+            y - size2,
+            x + size2,
+            y + size2,
+            x + size2,
+            y - size2,
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            1.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            c);
     }
 
     void Application::PutSpriteAbs(float x1, float y1, float x2, float y2, unsigned c)
@@ -3344,9 +4782,19 @@ namespace m3d
         PutSprite2Abs(x1, y2, x1, y1, x2, y2, x2, y1, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, c);
     }
 
-    void Application::PutSpriteAbs(float, float, float, float, float, float, float, float, unsigned)
+    void Application::PutSpriteAbs(
+        float x1,
+        float y1,
+        float x2,
+        float y2,
+        float x3,
+        float y3,
+        float x4,
+        float y4,
+        unsigned c)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x673A30
+        PutSprite2Abs(x1, y1, x2, y2, x3, y3, x4, y4, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, c);
     }
 
     DataServer& Application::GetAnimatedModelsServer()
@@ -3356,12 +4804,13 @@ namespace m3d
 
     bool Application::KillPostEffect(CStr const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59C670
+        return false;
     }
 
     DataServer& Application::GetDecalsServer()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return *m_serverDecals;
     }
 
     int Application::DrawTextRelClip(
@@ -3412,28 +4861,522 @@ namespace m3d
         return false;
     }
 
-    DbgCounter* Application::CreateCounter(char const*)
+    DbgCounter* Application::CreateCounter(char const* name)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B2A40
+        unsigned const idx = m_counterStack.AddCounter(name);
+        if (idx >= m_counterStack.m_numCounters)
+        {
+            return nullptr;
+        }
+        return m_counterStack.m_stack[idx];
     }
 
     void Application::texGenEnqueue(IGeneratedTexture*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75C9E0
     }
 
-    void Application::HandleCommand(int cmdId, CConsoleParams const&)
+    void Application::HandleCommand(int cmdId, CConsoleParams const& params)
     {
-        if (cmdId > 21)
+        // RVA 0x693050
+        switch (cmdId)
         {
+        case 0:
+            EnqueueMessage(1, 0, 0, 0, 0, CStr(), AIParam());
+            return;
+        case 1:
+            RunBenchmark();
+            return;
+        case 2:
+            if (params.NumOfTokens(' ') >= 3)
+            {
+                int const width = atoi(params.UnsafeStringToken(1, ' '));
+                int const height = atoi(params.UnsafeStringToken(2, ' '));
+                int fullScreen = 0;
+                if (params.NumOfTokens(' ') == 4)
+                {
+                    fullScreen = atoi(params.UnsafeStringToken(3, ' '));
+                }
+                EnqueueMessage(3, width, height, fullScreen, 0, CStr(), AIParam());
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Usage: /videomode <width> <heigth> [<fullscreen>]\n"));
+            }
+            return;
+        case 3:
+            g_Kernel->DumpMem("");
+            return;
+        case 5:
+            m_bDrawMemoryStats = !m_bDrawMemoryStats;
+            return;
+        case 6:
+            m_bDrawStats = !m_bDrawStats;
+            return;
+        case 7:
+            m_bDrawCounters = !m_bDrawCounters;
+            return;
+        case 8:
+            g_Kernel->GetFileServer().Reinitialize("data\\datasources.txt");
+            return;
+        case 9:
+        {
+            if (params.NumOfTokens(' ') < 2)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(
+                    CStr("Usage: /descExport <file name> [skip empty? (yes by default)]\n"));
+                return;
+            }
+            CStr const fileName(params.UnsafeStringToken(1, ' '));
+            int skipEmpty = 1;
+            if (params.NumOfTokens(' ') > 2)
+            {
+                skipEmpty = params.IntToken(2, ' ');
+            }
+            scoped_ptr<fs::FileStream> stream(g_Kernel->GetFileServer().CreateFileStream());
+            if (!stream->Open(fileName.c_str(), fs::IStream::OPEN_WRITE))
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Could not create file ") + fileName + CStr("\n"));
+                return;
+            }
+            SaveExportDescToFile(*stream, skipEmpty == 1);
+            g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Export description is saved to ") + fileName + CStr("\n"));
             return;
         }
-        RETRUXX_NOT_IMPLEMENTED;
+        case 10:
+        {
+            if (params.NumOfTokens(' ') < 2)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Usage: /descNative <native function name>\n"));
+                return;
+            }
+            CStr const desc = GetNativeFuncDesc(params.UnsafeStringToken(1, ' '));
+            g_Kernel->GetEngineCfg().m_console->PrintF(CStr("\nDescription:\n"));
+            if (desc.empty())
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("No such native found...\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(desc + CStr("\n"));
+            }
+            g_Kernel->GetEngineCfg().m_console->PrintF(CStr("\n"));
+            return;
+        }
+        case 11:
+        {
+            if (params.NumOfTokens(' ') < 2)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Usage: /descClass <class name>\n"));
+                return;
+            }
+            CStr const className(params.UnsafeStringToken(1, ' '));
+            CStr desc("");
+            Class** classes = nullptr;
+            unsigned numClasses = 0;
+            g_Kernel->GetListOfClasses(classes, numClasses);
+            for (unsigned i = 0; i < numClasses; ++i)
+            {
+                if (CStr(classes[i]->m_className) == className)
+                {
+                    desc = GetClassDesc(classes[i]);
+                    break;
+                }
+            }
+            delete[] classes;
+            g_Kernel->GetEngineCfg().m_console->PrintF(CStr("\nDescription:\n"));
+            if (desc.empty())
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("No such class found...\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(desc + CStr("\n"));
+            }
+            g_Kernel->GetEngineCfg().m_console->PrintF(CStr("\n"));
+            return;
+        }
+        case 12:
+            if (g_pApp->m_renderer->ReloadShaders())
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Reloaded shaders OK\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(
+                    CStr("Some errors occured while reloading shaders. See log...\n"));
+            }
+            return;
+        case 13:
+            m_bShowRenderStats = !m_bShowRenderStats;
+            return;
+        case 14:
+            m_bShowDeviceMemStats = !m_bShowDeviceMemStats;
+            return;
+        case 15:
+            m_bDrawGraph = !m_bDrawGraph;
+            return;
+        case 16:
+        {
+            int const numReloaded = g_pApp->m_renderer->ReloadTextures();
+            if (numReloaded)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(
+                    CStr("Reloaded ") + CStr(numReloaded) + CStr(" textures OK\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("No textures to reload\n"));
+            }
+            return;
+        }
+        case 17:
+            g_pApp->m_renderer->RepaintAllTexturesMips();
+            return;
+        case 18:
+        {
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_renderer->ReportTexturesInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_renderer->ReportTexturesInfo("UsedTextures.txt");
+            if (ok)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Textures info saved ok...\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Failed to save textures info...\n"));
+            }
+            return;
+        }
+        case 19:
+        {
+            char const defaultName[] = "vb_info.txt";
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_renderer->ReportVbsInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_renderer->ReportVbsInfo(defaultName);
+            if (ok)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Vertex buffers info saved ok...\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Failed to save vertex buffers info...\n"));
+            }
+            return;
+        }
+        case 20:
+        {
+            char const defaultName[] = "ib_info.txt";
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_renderer->ReportIbsInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_renderer->ReportIbsInfo(defaultName);
+            if (ok)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Index buffers info saved ok...\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Failed to save index buffers info...\n"));
+            }
+            return;
+        }
+        case 21:
+        {
+            CStr const levelName = NameFromFileName(CStr(g_Kernel->GetEngineCfg().m_levFileName.GetS()));
+            CStr const defaultLogFile =
+                CStr("models_") + CStr(levelName.substr(0, levelName.rfind('.')).c_str()) + CStr(".txt");
+            bool const ok = params.NumOfTokens(' ') >= 2 ?
+                g_pApp->m_serverAnimatedModels->ReportServerInfo(params.UnsafeStringToken(1, ' ')) :
+                g_pApp->m_serverAnimatedModels->ReportServerInfo(defaultLogFile.c_str());
+            if (ok)
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Models info saved ok...\n"));
+            }
+            else
+            {
+                g_Kernel->GetEngineCfg().m_console->PrintF(CStr("Failed to save models info...\n"));
+            }
+            return;
+        }
+        default:
+            return;
+        }
     }
 
     void Application::RunBenchmark()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8BCBD0
+        auto* const r = g_pApp->m_renderer;
+        r->MatPush();
+        r->MatPushProj();
+        r->PushBlend();
+        r->PushZbState();
+        int const wasInScene = r->InScene();
+        if (wasInScene)
+        {
+            r->EndScene();
+        }
+
+        CMatrix viewMat;
+        viewMat.lookAtLH(CVector(0.0f, 0.0f, -100.0f), CVector(0.0f, 0.0f, 0.0f), CVector(0.0f, 1.0f, 0.0f));
+        CMatrix projMat;
+        memset(&projMat, 0, sizeof(projMat));
+        projMat._11 = 0.002f;
+        projMat._22 = 0.002f;
+        projMat._33 = 0.0005f;
+        projMat.m[3][2] = 0.5f;
+        projMat.m[3][3] = 1.0f;
+        r->MatSet(viewMat);
+        r->MatSetProj(projMat);
+
+        rend::TexHandle tex = r->AddTexture(CStr("data\\env\\bgmount.tga"), 2u);
+
+        // ---- Fill rate: a full-screen quad.
+        int const width = r->GetViewport().m_width;
+        int const height = r->GetViewport().m_height;
+        int bpp = 0;
+        r->GetCurBppStr(&bpp);
+        float const mbPerFrame = static_cast<float>((bpp == 32 ? 4 : 2) * height * width) * 9.5367432e-7f;
+        M3D_LOG_INFO(
+            CStr("\n---------------------------------------------------------\nFillrate (") + CStr(width) + CStr("x") +
+            CStr(height) + CStr(")\n---------------------------------------------------------"));
+
+        auto quadVb = r->GetVbStreaming(rend::VERTEX_XYZCT1);
+        int vOfs = 0;
+        auto* q = static_cast<rend::VertexXYZCT1*>(r->LockVbStreaming(quadVb, 4, vOfs, nullptr));
+        auto const setQ = [](rend::VertexXYZCT1& v, float x, float y, unsigned c, float tu, float tv)
+        {
+            v.x = x;
+            v.y = y;
+            v.z = 0.0f;
+            v.c = c;
+            v.tu = tu;
+            v.tv = tv;
+        };
+        setQ(q[0], -500.0f, -500.0f, 0x7F0000FF, 0.0f, 0.0f);
+        setQ(q[1], 500.0f, -500.0f, 0x7F00FF00, 1.0f, 0.0f);
+        setQ(q[2], -500.0f, 500.0f, 0x7FFF00FF, 0.0f, 1.0f);
+        setQ(q[3], 500.0f, 500.0f, 0x7FFF0000, 1.0f, 1.0f);
+        r->UnlockVb(quadVb);
+
+        rend::TexHandle const noTex;
+        r->SetTexture(0, noTex, -1.0);
+        r->SetTexture(1, noTex, -1.0);
+        r->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+        r->SetStageState(0, rend::BM_ALPHA, rend::TS_DIFFUSE);
+        r->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        r->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+        r->SetBlend(rend::BM_NONE, false);
+        r->SetZbState(rend::ZB_DISABLE, false);
+        r->SetToStream0(quadVb);
+
+        auto const logFill = [&](char const* what)
+        {
+            float const mbPerSec = static_cast<float>(TestQuadFps(vOfs, &g_Kernel->GetTimer()) * mbPerFrame);
+            M3D_LOG_INFO(CStr(what) + CStr(mbPerSec) + CStr(" MB/sec"));
+        };
+        logFill("No texture, no zbuffer, no blend: ");
+
+        r->SetTexture(0, tex, -1.0);
+        r->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        r->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        logFill("Single texture, no zbuffer, no blend: ");
+
+        r->SetZbState(rend::ZB_ENABLE, false);
+        r->SetZFunc(rend::M3DCMP_LESSEQUAL, false);
+        logFill("Single texture, zbuffer accepts 100%, no blend: ");
+
+        r->SetZbState(rend::ZB_ENABLE, false);
+        r->SetZFunc(rend::M3DCMP_LESS, false);
+        logFill("Single texture, zbuffer denies 100%, no blend: ");
+
+        r->SetZbState(rend::ZB_ENABLE, false);
+        r->SetZFunc(rend::M3DCMP_LESSEQUAL, false);
+        r->SetBlend(rend::BM_ALPHA, false);
+        logFill("Single texture, zbuffer accepts 100%, alpha blend: ");
+
+        r->SetBlend(rend::BM_1_1, false);
+        logFill("Single texture, zbuffer accepts 100%, color blend: ");
+
+        r->SetBlend(rend::BM_NONE, false);
+        r->SetTexture(1, tex, -1.0);
+        r->SetStageState(1, rend::BM_COLOR, rend::TS_TEX_MODULATE_PREV);
+        r->SetStageState(1, rend::BM_ALPHA, rend::TS_DIFF_MODULATE_PREV);
+        logFill("Two textures, zbuffer accepts 100%, no blend: ");
+
+        r->SetBlend(rend::BM_1_1, false);
+        logFill("Two textures, zbuffer accepts 100%, color blend: ");
+
+        // ---- Transform and lighting: a tube of 1201 rings of 6 vertices.
+        // NOTE: the vertex and index arrays are never freed in the binary.
+        auto* const verts = new rend::VertexXYZNT1[7206];
+        auto* v = verts;
+        for (unsigned i = 0; i <= 1200; ++i)
+        {
+            double const di = static_cast<double>(i);
+            float const ringX = static_cast<float>(di * 0.0027083333f);
+            double const angle = 0.15707636f * di;
+            double const c = cos(angle);
+            double const s = sin(angle);
+            float const py = static_cast<float>(0.05f * c);
+            float const pz = static_cast<float>(0.05f * s);
+            float const ny = static_cast<float>(c);
+            float const nz = static_cast<float>(s);
+            float const tv = static_cast<float>(di * 0.00083333335f);
+            for (unsigned j = 0; j <= 5; ++j)
+            {
+                double const dj = static_cast<double>(j);
+                v->x = static_cast<float>(0.0079999994f * dj + ringX - 1.625f);
+                v->y = py;
+                v->z = pz;
+                v->nx = 0.0f;
+                v->ny = ny;
+                v->nz = nz;
+                v->tu = static_cast<float>(dj * 0.2f);
+                v->tv = tv;
+                ++v;
+            }
+        }
+
+        // A zig-zag strip over the rings, then expanded to a triangle list.
+        auto* const strip = new unsigned short[13201];
+        strip[0] = 0;
+        unsigned short* out = strip + 1;
+        int base = 0;
+        for (unsigned row = 0; row < 1200 && base <= 0xFFFF; ++row)
+        {
+            out[0] = static_cast<unsigned short>(base + 6);
+            out[1] = static_cast<unsigned short>(base + 1);
+            out[2] = static_cast<unsigned short>(base + 7);
+            out[3] = static_cast<unsigned short>(base + 2);
+            out[4] = static_cast<unsigned short>(base + 8);
+            out[5] = static_cast<unsigned short>(base + 3);
+            out[6] = static_cast<unsigned short>(base + 9);
+            out[7] = static_cast<unsigned short>(base + 4);
+            out[8] = static_cast<unsigned short>(base + 10);
+            out[9] = static_cast<unsigned short>(base + 5);
+            out[10] = static_cast<unsigned short>(base + 11);
+            out += 11;
+            base += 11;
+            if (++row >= 1200)
+            {
+                break;
+            }
+            out[0] = static_cast<unsigned short>(base + 6);
+            out[1] = static_cast<unsigned short>(base - 1);
+            out[2] = static_cast<unsigned short>(base + 5);
+            out[3] = static_cast<unsigned short>(base - 2);
+            out[4] = static_cast<unsigned short>(base + 4);
+            out[5] = static_cast<unsigned short>(base - 3);
+            out[6] = static_cast<unsigned short>(base + 3);
+            out[7] = static_cast<unsigned short>(base - 4);
+            out[8] = static_cast<unsigned short>(base + 2);
+            out[9] = static_cast<unsigned short>(base - 5);
+            out[10] = static_cast<unsigned short>(base + 1);
+            out += 11;
+            base += 1;
+        }
+
+        auto* const indices = new unsigned short[39597];
+        {
+            unsigned short a0 = strip[0];
+            unsigned short a1 = strip[1];
+            unsigned short* dst = indices;
+            for (int k = 2; k < 13201; ++k)
+            {
+                dst[0] = a0;
+                dst[1] = a1;
+                dst[2] = strip[k];
+                if (k & 1)
+                {
+                    a1 = strip[k];
+                }
+                else
+                {
+                    a0 = strip[k];
+                }
+                dst += 3;
+            }
+        }
+        delete[] strip;
+
+        M3D_LOG_INFO(
+            CStr("\n---------------------------------------------------------\nTnL (scene has ") + CStr(7206) +
+            CStr(" vertices and ") + CStr(13199) + CStr(" triangles), vertex size ") + CStr(32u) +
+            CStr("\n---------------------------------------------------------"));
+
+        rend::Material mtrl;
+        auto const setMaterial = [&]()
+        {
+            memset(&mtrl, 0, sizeof(mtrl));
+            mtrl.m_diffuse.r = mtrl.m_diffuse.g = mtrl.m_diffuse.b = mtrl.m_diffuse.a = 1.0f;
+            mtrl.m_ambient.r = mtrl.m_ambient.g = mtrl.m_ambient.b = mtrl.m_ambient.a = 1.0f;
+            r->MaterialSet(mtrl);
+        };
+        auto const fill = [&](rend::VbHandle const& vb, rend::IbHandle const& ib)
+        {
+            memcpy(r->LockVb(vb, 0, 0, 0), verts, sizeof(rend::VertexXYZNT1) * 7206);
+            r->UnlockVb(vb);
+            memcpy(r->LockIb(ib, 0, 0, 0), indices, sizeof(unsigned short) * 39597);
+            r->UnlockIb(ib);
+        };
+        auto const logGeom = [&](char const* what)
+        {
+            float const mtris = static_cast<float>(TestGeom(13199, &g_Kernel->GetTimer()) * 0.013199f);
+            M3D_LOG_INFO(CStr(what) + CStr(mtris) + CStr(" MTris/sec"));
+        };
+
+        rend::VbHandle vb = r->AddVb(rend::VERTEX_XYZNT1, 7206, CStr("Benchmark"), 0);
+        rend::IbHandle ib = r->AddIb(39597, false);
+        fill(vb, ib);
+        r->SetTexture(0, noTex, -1.0);
+        r->SetTexture(1, noTex, -1.0);
+        r->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
+        r->SetStageState(0, rend::BM_ALPHA, rend::TS_DIFFUSE);
+        r->SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
+        r->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
+        r->SetBlend(rend::BM_NONE, false);
+        r->SetZbState(rend::ZB_ENABLE, false);
+        r->SetToStream0(vb);
+        r->SetIndices(ib, 0);
+        setMaterial();
+        r->SetLighting(true, false);
+        logGeom("Non optimized vb (managed), lighting on, no tex ");
+
+        // NOTE: the "optimized" pass just refills the same buffers.
+        fill(vb, ib);
+        setMaterial();
+        r->SetLighting(true, false);
+        logGeom("Optimized vb (managed), lighting on, no tex ");
+
+        r->ReleaseVb(vb);
+        r->ReleaseIb(ib);
+
+        vb = r->AddVb(rend::VERTEX_XYZNT1, 7206, CStr("Benchmark"), 0x200);
+        ib = r->AddIb(39597, true);
+        fill(vb, ib);
+        setMaterial();
+        r->SetTexture(0, tex, -1.0);
+        r->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
+        r->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
+        r->SetLighting(true, false);
+        logGeom("Optimized vb (default), lighting on, tex on (explicit uv) ");
+
+        r->TgEnableSetLinearSt(0, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, false, 0.0f, 0.0f, 1.0f, 1.0f);
+        logGeom("Optimized vb (default), lighting on, tex on (texgen) ");
+
+        r->ReleaseVb(vb);
+        r->ReleaseIb(ib);
+        r->ReleaseTexture(tex);
+        if (wasInScene)
+        {
+            r->BeginScene();
+        }
+        r->PopZbState();
+        r->PopBlend();
+        r->MatPop(false);
+        r->MatPopProj();
     }
 
     void Application::ShowSystemCursor(bool bShow)
@@ -3450,21 +5393,52 @@ namespace m3d
         }
     }
 
-    //TODO: return MHZ?
-    long long Application::GetCpuFrequency(unsigned)
+    long long Application::GetCpuFrequency(unsigned uiMeasureMSecs)
     {
+        // RVA 0x78B190
+        // Measures the time-stamp counter rate in Hz against the performance counter over uiMeasureMSecs.
         int cpuInfo[4] = {0};
-        __cpuid(cpuInfo, 0);
-        if (cpuInfo[0] >= 0x16)
+        __cpuid(cpuInfo, 1);
+        LARGE_INTEGER freq;
+        if (!(cpuInfo[3] & 0x10) || !::QueryPerformanceFrequency(&freq))  // no TSC
         {
-            __cpuid(cpuInfo, 0x16);
-            return cpuInfo[0];
+            return 0;
         }
-        return 0;
+
+        // Pin to the first CPU at the highest priority while measuring.
+        HANDLE const process = ::GetCurrentProcess();
+        HANDLE const thread = ::GetCurrentThread();
+        DWORD const priorityClass = ::GetPriorityClass(process);
+        int const threadPriority = ::GetThreadPriority(thread);
+        DWORD_PTR processMask = 0;
+        DWORD_PTR systemMask = 0;
+        ::GetProcessAffinityMask(process, &processMask, &systemMask);
+        ::SetPriorityClass(process, REALTIME_PRIORITY_CLASS);
+        ::SetThreadPriority(thread, THREAD_PRIORITY_TIME_CRITICAL);
+        ::SetProcessAffinityMask(process, 1);
+
+        __cpuid(cpuInfo, 0);  // serialise before reading the TSC
+        LARGE_INTEGER startTime;
+        ::QueryPerformanceCounter(&startTime);
+        unsigned __int64 const startTicks = __rdtsc();
+        ::Sleep(uiMeasureMSecs);
+        LARGE_INTEGER endTime;
+        ::QueryPerformanceCounter(&endTime);
+        unsigned __int64 const endTicks = __rdtsc();
+
+        ::SetProcessAffinityMask(process, processMask);
+        ::SetThreadPriority(thread, threadPriority);
+        ::SetPriorityClass(process, priorityClass);
+
+        double const ticks = static_cast<double>(static_cast<__int64>(endTicks - startTicks));
+        double const seconds =
+            static_cast<double>(endTime.QuadPart - startTime.QuadPart) / static_cast<double>(freq.QuadPart);
+        return static_cast<long long>(ticks / seconds);
     }
 
     void Application::FlushQuads()
     {
+        // RVA 0x7AF8C0
         int vOfs = 0;
         if (m_numPointsVerts)
         {
@@ -3472,7 +5446,7 @@ namespace m3d
             memcpy(vbStream, m_sourceVerts, this->m_numPointsVerts * this->m_pointsVertsSz);
 
             M3D_RENDERER->UnlockVb(this->m_pointsVertsVb);
-            // TODO: check this
+            // The shared quad index buffer is based at the vertex offset the streaming lock returned.
             M3D_RENDERER->SetIndices(this->m_pointsVertsIb, vOfs);
             M3D_RENDERER->SetToStream0(this->m_pointsVertsVb);
             if (m_flushQuadsShader)
@@ -3520,14 +5494,41 @@ namespace m3d
         }
     }
 
-    void Application::EnqueueEvent(Event const&)
+    void Application::EnqueueEvent(Event const& event)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59EBE0
+        int head = m_eventsQueueHead + 1;
+        if (static_cast<unsigned>(head) >= 5000)
+        {
+            head = 0;
+        }
+        // A full queue drops the event.
+        if (m_eventsQueueTail != head)
+        {
+            m_eventsQueue[m_eventsQueueHead] = event;
+            m_eventsQueueHead = head;
+        }
     }
 
-    bool Application::GetEvent(Event&, bool)
+    bool Application::GetEvent(Event& event, bool removeFromQueue)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59BF10
+        if (m_eventsQueueTail == m_eventsQueueHead)
+        {
+            return false;
+        }
+
+        event = m_eventsQueue[m_eventsQueueTail];
+        if (removeFromQueue)
+        {
+            int tail = m_eventsQueueTail + 1;
+            if (static_cast<unsigned>(tail) >= 5000)
+            {
+                tail = 0;
+            }
+            m_eventsQueueTail = tail;
+        }
+        return true;
     }
 
     void Application::finishFontRender()
@@ -3541,476 +5542,339 @@ namespace m3d
 
     int Application::DrawStringRelClip(ui::FormattedLine const& fl, ui::DrawInfo const& di)
     {
-        // TODO: generated code
-        if (fl.m_isHieroglyphic && M3D_KERNEL->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+        // RVA 0x685920
+        if (fl.m_isHieroglyphic && g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
         {
-            GetGfxServer()->SetFont(GetGfxServer()->m_hieroglyphicFontId);
+            ui::Wnd::GetGfxServer()->SetFont(ui::Wnd::GetGfxServer()->m_hieroglyphicFontId);
         }
 
-        ui::Font* fnt = GetGfxServer()->GetCurFont();
+        ui::Font* const fnt = ui::Wnd::GetGfxServer()->GetCurFont();
         if (!fnt)
         {
             return 0;
         }
 
-        CStr text = fl.m_text;
+        CStr text(fl.m_text);
         int lastLeadingSpacePos = -1;
-        int textLen = text.length();
-
-        // Handle TF_FULL formatting (justified text)
+        int trimmedLen = fl.m_text.length();
         if (fl.m_format == TF_FULL)
         {
-            // Count leading spaces
-            int leadingSpaces = 0;
-            if (textLen > 0 && text[0] == '@')
+            int const len = fl.m_text.length();
+            char const* const src = fl.m_text.c_str();
+            // A leading "@xxxxxxxx" colour code is skipped when counting the indentation.
+            int i = src[0] == '@' ? 9 : 0;
+            if (i < len)
             {
-                leadingSpaces = 9;  // Skip command prefix
+                int count = -1;
+                for (; i < len && src[i] == ' '; ++i)
+                {
+                    ++count;
+                }
+                // NOTE: this is the number of leading spaces minus one, not a position, so it is off by
+                // nine when the line starts with a colour code.
+                lastLeadingSpacePos = count;
             }
-
-            // Count consecutive leading spaces
-            for (int i = leadingSpaces; i < textLen; i++)
+            for (int j = len - 1; j >= 0 && src[j] == ' '; --j)
             {
-                if (text[i] != ' ')
-                    break;
-                leadingSpaces++;
-                lastLeadingSpacePos = i;
+                --trimmedLen;
             }
-
-            // Count trailing spaces
-            int trailingSpaces = 0;
-            for (int i = textLen - 1; i >= 0; i--)
-            {
-                if (text[i] != ' ')
-                    break;
-                trailingSpaces++;
-            }
-
-            // Trim trailing spaces
-            if (trailingSpaces > 0)
-            {
-                text = text.substr(0, textLen - trailingSpaces);
-                textLen = text.length();
-            }
+            text = text.substr(0, trimmedLen);
         }
 
-        // Measure text extent
+        int const textLen = text.length();
         PointBase<float> sz;
-        GetTextExtent(text, sz, -1, 0, 0, 0, 0, 0);
+        GetTextExtent(text, sz, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
 
-        // Calculate text bounds based on format
         BoundsBase<float> textBounds;
         switch (fl.m_format)
         {
         case TF_CENTER:
-            textBounds.x0 = fl.m_origin.x - (sz.x * 0.5f);
+            textBounds.x0 = fl.m_origin.x - sz.x * 0.5f;
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = ((sz.x * 0.5f) + fl.m_origin.x) - fl.m_origin.x - (sz.x * 0.5);
-            textBounds.height = fl.m_origin.y + sz.y - fl.m_origin.y;
+            textBounds.width = (sz.x * 0.5f + fl.m_origin.x) - textBounds.x0;
+            textBounds.height = (fl.m_origin.y + sz.y) - fl.m_origin.y;
             break;
-
         case TF_LEFT:
             textBounds.x0 = fl.m_origin.x;
             textBounds.y0 = fl.m_origin.y;
             textBounds.width = (fl.m_origin.x + sz.x) - fl.m_origin.x;
             textBounds.height = (fl.m_origin.y + sz.y) - fl.m_origin.y;
             break;
-
         case TF_RIGHT:
             textBounds.x0 = fl.m_origin.x - sz.x;
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = (fl.m_origin.x + sz.x) - fl.m_origin.x;
-            textBounds.height = (fl.m_origin.y + sz.y) - fl.m_origin.y;
+            textBounds.width = fl.m_origin.x - textBounds.x0;
+            textBounds.height = (textBounds.y0 + sz.y) - textBounds.y0;
             break;
-
         case TF_FULL:
             textBounds.x0 = di.m_clientRect.x0;
             textBounds.y0 = fl.m_origin.y;
-            textBounds.width = di.m_clientRect.width + di.m_clientRect.x0 - di.m_clientRect.x0;
-            textBounds.height = fl.m_origin.y + sz.y - fl.m_origin.y;
+            textBounds.width = (di.m_clientRect.width + di.m_clientRect.x0) - textBounds.x0;
+            textBounds.height = (textBounds.y0 + sz.y) - textBounds.y0;
+            break;
+        default:
             break;
         }
 
-        // Calculate clipping
-        BoundsBase<float> clipRect = di.m_clientClippedRect;
-        BoundsBase<float> visibleBounds;
-
-        // Check if text is completely outside clip region
-        if (textBounds.x0 + textBounds.width < clipRect.x0 || textBounds.x0 > clipRect.x0 + clipRect.width ||
-            textBounds.y0 + textBounds.height < clipRect.y0 || textBounds.y0 > clipRect.y0 + clipRect.height)
+        BoundsBase<float> const visible = di.m_clientClippedRect.Intersect(textBounds);
+        if (visible.Empty())
         {
-            // Text is completely invisible
             return 0;
         }
 
-        // Calculate visible portion
-        visibleBounds.x0 = std::max(textBounds.x0, clipRect.x0);
-        visibleBounds.y0 = std::max(textBounds.y0, clipRect.y0);
-        visibleBounds.width =
-            std::min(textBounds.x0 + textBounds.width, clipRect.x0 + clipRect.width) - visibleBounds.x0;
-        visibleBounds.height =
-            std::min(textBounds.y0 + textBounds.height, clipRect.y0 + clipRect.height) - visibleBounds.y0;
+        bool const doClip =
+            !(textBounds.x0 == visible.x0 && textBounds.y0 == visible.y0 && textBounds.width == visible.width &&
+              textBounds.height == visible.height);
 
-        bool doClip =
-            (textBounds.x0 != visibleBounds.x0 || textBounds.y0 != visibleBounds.y0 ||
-             textBounds.width != visibleBounds.width || textBounds.height != visibleBounds.height);
-
-        // Handle text clipping
+        int firstVisibleChar = -1;
         int firstInvisibleChar = textLen;
         CStr leftInvisibleSubstr;
         CStr rightInvisibleSubstr;
-        int firstVisibleChar = -1;
-
         if (doClip)
         {
-            // Convert clip coordinates to text space
-            BoundsBase<float> textSpaceClip = visibleBounds;
-
+            // The visible part in the text's own coordinates.
+            BoundsBase<float> localClip = visible;
             switch (fl.m_format)
             {
             case TF_CENTER:
-                textSpaceClip.x0 -= (fl.m_origin.x - (sz.x * 0.5f));
-                textSpaceClip.y0 -= fl.m_origin.y;
+                localClip.x0 = (0.0f - (fl.m_origin.x - sz.x * 0.5f)) + visible.x0;
+                localClip.y0 = (0.0f - fl.m_origin.y) + visible.y0;
                 break;
-
             case TF_LEFT:
             case TF_FULL:
-                textSpaceClip.x0 -= fl.m_origin.x;
-                textSpaceClip.y0 -= fl.m_origin.y;
+                localClip.x0 = (0.0f - fl.m_origin.x) + visible.x0;
+                localClip.y0 = (0.0f - fl.m_origin.y) + visible.y0;
                 break;
-
             case TF_RIGHT:
-                textSpaceClip.x0 -= (fl.m_origin.x - sz.x);
-                textSpaceClip.y0 -= fl.m_origin.y;
+                localClip.x0 = (0.0f - (fl.m_origin.x - sz.x)) + visible.x0;
+                localClip.y0 = (0.0f - fl.m_origin.y) + visible.y0;
                 break;
-
             default:
                 break;
             }
-
-            // Get clipped text portions
+            PointBase<float> clippedSz;
             GetTextExtent(
                 text,
-                sz,
+                clippedSz,
                 -1,
-                &textSpaceClip,
+                &localClip,
                 &firstVisibleChar,
                 &firstInvisibleChar,
                 &leftInvisibleSubstr,
                 &rightInvisibleSubstr);
         }
 
-        // Calculate starting position
         float curX = 0.0f;
-        if (doClip && !leftInvisibleSubstr.empty())
+        for (int j = 0; j < leftInvisibleSubstr.length(); ++j)
         {
-            // Calculate width of invisible left portion
-            for (int i = 0; i < leftInvisibleSubstr.length(); i++)
-            {
-                unsigned char ch = leftInvisibleSubstr.c_str()[i];
-                if (ch < 32)
-                    continue;
-
-                ui::Font::SymbolInfo* sym = fnt->m_symbols[ch];
-                if (sym)
-                {
-                    curX += sym->m_precalcedABCWidth;
-                }
-            }
+            auto const* sym = fnt->m_symbols[static_cast<unsigned char>(leftInvisibleSubstr.c_str()[j])];
+            curX += sym ? sym->m_precalcedABCWidth : 0.0f;
         }
 
-        // Calculate text origin based on format
         PointBase<float> at;
         switch (fl.m_format)
         {
         case TF_CENTER:
-            at.x = fl.m_origin.x - (sz.x * 0.5f);
+            at.x = fl.m_origin.x - sz.x * 0.5f;
             at.y = fl.m_origin.y;
             break;
-
         case TF_LEFT:
         case TF_FULL:
             at = fl.m_origin;
             break;
-
         case TF_RIGHT:
             at.x = fl.m_origin.x - sz.x;
             at.y = fl.m_origin.y;
             break;
-
         default:
-            at = fl.m_origin;
             break;
         }
+        g_pApp->m_renderer->RelToAbs(at.x, at.y);
+        BoundsBase<float> lclip = visible;
+        g_pApp->m_renderer->RelToAbs(lclip.x0, lclip.y0);
+        g_pApp->m_renderer->RelToAbs(lclip.width, lclip.height);
 
-        // Convert to absolute coordinates
-        M3D_RENDERER->RelToAbs(at.x, at.y);
-        BoundsBase<float> absClip = visibleBounds;
-        M3D_RENDERER->RelToAbs(absClip.x0, absClip.y0);
-        M3D_RENDERER->RelToAbs(absClip.width, absClip.height);
-
-        // Get color
-        unsigned int clr = fl.m_color;
+        unsigned clr = fl.m_color;
         if (firstVisibleChar != -1)
         {
-            CStr visibleText = text.substr(0, firstVisibleChar);
-            float foundColor = FindLastColorInStr(visibleText);
-            if (foundColor != 0.0f)
+            if (unsigned const lastColor = FindLastColorInStr(text.substr(0, firstVisibleChar)))
             {
-                clr = static_cast<unsigned int>(foundColor);
+                clr = lastColor;
             }
         }
 
-        // Calculate space width for justified text
-        float spaceW = 0.0f;
-        float extraSpace = 0.0f;
-
-        if (fnt->m_symbols[' '])
-        {
-            spaceW = fnt->m_symbols[' ']->m_precalcedABCWidth;
-        }
-
+        float spaceW = fnt->m_symbols[' '] ? fnt->m_symbols[' ']->m_precalcedABCWidth : 0.0f;
         if (fl.m_format == TF_FULL)
         {
-            // Count spaces for justification
-            int spaceCount = 0;
-            for (int i = lastLeadingSpacePos + 1; i < textLen; i++)
+            int numSpaces = 0;
+            for (int i = lastLeadingSpacePos + 1; i < textLen; ++i)
             {
                 if (text.c_str()[i] == ' ')
                 {
-                    spaceCount++;
+                    ++numSpaces;
                 }
             }
-
-            if (spaceCount > 0)
-            {
-                // Calculate extra space to distribute
-                PointBase<float> absSz = sz;
-                M3D_RENDERER->RelToAbs(absSz.x, absSz.y);
-
-                BoundsBase<float> absClient = di.m_clientRect;
-                M3D_RENDERER->RelToAbs(absClient.x0, absClient.y0);
-                M3D_RENDERER->RelToAbs(absClient.width, absClient.height);
-
-                float availableWidth = absClient.width;
-                float textWidth = absSz.x;
-                extraSpace = (availableWidth - textWidth) / spaceCount;
-                spaceW += extraSpace;
-            }
+            PointBase<float> absSz = sz;
+            g_pApp->m_renderer->RelToAbs(absSz.x, absSz.y);
+            BoundsBase<float> absClient = di.m_clientRect;
+            g_pApp->m_renderer->RelToAbs(absClient.x0, absClient.y0);
+            g_pApp->m_renderer->RelToAbs(absClient.width, absClient.height);
+            // NOTE: a justified line without inner spaces divides by zero here.
+            spaceW =
+                (static_cast<float>(numSpaces) * spaceW + (absClient.width - absSz.x)) / static_cast<float>(numSpaces);
         }
 
-        // Render visible characters
-        bool inColorCode = false;
-        int charIndex = (firstVisibleChar != -1) ? firstVisibleChar : 0;
-
-        while (charIndex < firstInvisibleChar)
+        // '@' + 8 hex digits sets the colour; '#' escapes the next '@', '#', '$' or '&'; '$' and '&' are dropped.
+        bool escaped = false;
+        for (int idx = firstVisibleChar + 1; idx < firstInvisibleChar; ++idx)
         {
-            unsigned char ch = text.c_str()[charIndex];
-
-            if (ch < 32)
+            unsigned char const ch = text.c_str()[idx];
+            if (ch < ' ')
             {
-                // Control character
-                inColorCode = false;
-                charIndex++;
+                escaped = false;
                 continue;
             }
-
-            if (ch == '@' && !inColorCode)
+            if (!escaped)
             {
-                // Command prefix
-                // Parse color code
-                if (charIndex + 9 <= textLen)
+                if (ch == '@')
                 {
-                    char colorStr[9];
-                    strncpy(colorStr, text.c_str() + charIndex + 1, 8);
-                    colorStr[8] = '\0';
-                    sscanf(colorStr, "%x", &clr);
+                    if (textLen > idx + 8)
+                    {
+                        char colorBuf[9];
+                        memcpy(colorBuf, text.c_str() + idx + 1, 8);
+                        colorBuf[8] = 0;
+                        sscanf_s(colorBuf, "%x", &clr);
+                        idx += 8;
+                    }
+                    continue;
                 }
-                charIndex += 9;
-                continue;
-            }
-
-            if (ch == '#' && !inColorCode)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-                // Color code start
-                inColorCode = true;
-                charIndex++;
-                continue;
-            }
-
-            if ((ch == '$' || ch == '&') && !inColorCode)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-                // Other special characters
-                charIndex++;
-                continue;
-            }
-
-            if (inColorCode)
-            {
-                RETRUXX_NOT_IMPLEMENTED;
-                // Parse color code
-                if (charIndex + 8 <= textLen)
+                if (ch == '#')
                 {
-                    char colorStr[9];
-                    strncpy(colorStr, text.c_str() + charIndex, 8);
-                    colorStr[8] = '\0';
-                    sscanf(colorStr, "%x", &clr);
-                    charIndex += 8;
+                    escaped = true;
+                    continue;
                 }
-                inColorCode = false;
-                continue;
+                if (ch == '$' || ch == '&')
+                {
+                    continue;
+                }
             }
+            escaped = false;
 
-            // Render character
-            ui::Font::SymbolInfo* sym = fnt->m_symbols[ch];
-            if (!sym)
+            auto const* sym = fnt->m_symbols[ch];
+            float glyphW = sym ? sym->m_precalcedGlyphSz.x : 0.0f;
+            float const glyphH = sym ? sym->m_precalcedGlyphSz.y : 0.0f;
+            bool const stretchedSpace = ch == ' ' && idx > lastLeadingSpacePos;
+            float abcA = 0.0f;
+            if (stretchedSpace)
             {
-                charIndex++;
-                continue;
+                glyphW = spaceW;
             }
-
-            float charWidth = sym->m_precalcedABCWidth;
-            float glyphWidth = sym->m_precalcedGlyphSz.x;
-            float glyphHeight = sym->m_precalcedGlyphSz.y;
-
-            // Adjust space width for justified text
-            if (ch == ' ' && charIndex > lastLeadingSpacePos)
+            else if (sym)
             {
-                charWidth = spaceW;
-                glyphWidth = spaceW;
+                abcA = sym->m_abc.m_A;
             }
+            float const w = glyphW;
 
-            // Calculate character position
-            float x0 = floorf(at.x + curX + sym->m_abc.m_A) + 0.5;
-            float y0 = floorf(at.y) + 0.5;
-            float x1 = x0 + glyphWidth;
-            float y1 = y0 + glyphHeight;
+            float x0 = static_cast<float>(static_cast<int>(abcA + at.x + curX)) + 0.5f;
+            float y0 = static_cast<float>(static_cast<int>(at.y)) + 0.5f;
+            float x1 = x0 + glyphW;
+            float y1 = y0 + glyphH;
 
-            // Get texture coordinates
-            float tx0 = sym->m_tcs.m_coordinates[0];
-            float ty0 = sym->m_tcs.m_coordinates[1];
-            float tx1 = sym->m_tcs.m_coordinates[2];
-            float ty1 = sym->m_tcs.m_coordinates[3];
-
-            // Apply clipping
-            float clippedX0 = x0;
-            float clippedX1 = x1;
-            float clippedY0 = y0;
-            float clippedY1 = y1;
-            float clippedTx0 = tx0;
-            float clippedTx1 = tx1;
-            float clippedTy0 = ty0;
-            float clippedTy1 = ty1;
-
+            ui::Font::TextureCoordinates tcs;
+            if (sym)
+            {
+                tcs = sym->m_tcs;
+            }
+            float tx0 = tcs.m_coordinates[0];
+            float ty0 = tcs.m_coordinates[1];
+            float tx1 = tcs.m_coordinates[2];
+            float ty1 = tcs.m_coordinates[3];
             if (doClip)
             {
-                // Horizontal clipping
-                if (charIndex == firstVisibleChar && absClip.x0 > x0)
+                float const clipRight = lclip.width + lclip.x0;
+                float const clipBottom = lclip.height + lclip.y0;
+                float const origX1 = x1;
+                float const origY1 = y1;
+                if (idx == firstVisibleChar + 1 && lclip.x0 > x0)
                 {
-                    float clipRatio = (absClip.x0 - x0) / glyphWidth;
-                    clippedX0 = absClip.x0;
-                    clippedTx0 += (tx1 - tx0) * clipRatio;
+                    tx0 = (lclip.x0 - x0) / w * (tcs.m_coordinates[2] - tcs.m_coordinates[0]) + tcs.m_coordinates[0];
+                    x0 = lclip.x0;
                 }
-
-                if (charIndex == firstInvisibleChar - 1 && x1 > absClip.x0 + absClip.width)
+                if (idx == firstInvisibleChar - 1 && origX1 > clipRight)
                 {
-                    float clipRatio = (x1 - (absClip.x0 + absClip.width)) / glyphWidth;
-                    clippedX1 = absClip.x0 + absClip.width;
-                    clippedTx1 -= (tx1 - tx0) * clipRatio;
+                    tx1 =
+                        (origX1 - clipRight) / w * (tcs.m_coordinates[0] - tcs.m_coordinates[2]) + tcs.m_coordinates[2];
+                    x1 = clipRight;
                 }
-
-                // Vertical clipping
-                if (absClip.y0 > y0)
+                float const origY0 = y0;
+                if (lclip.y0 > origY0)
                 {
-                    float clipRatio = (absClip.y0 - y0) / glyphHeight;
-                    clippedY0 = absClip.y0;
-                    clippedTy0 += (ty1 - ty0) * clipRatio;
+                    ty0 = (lclip.y0 - origY0) / glyphH * (tcs.m_coordinates[3] - tcs.m_coordinates[1]) +
+                        tcs.m_coordinates[1];
+                    y0 = lclip.y0;
                 }
-
-                if (y1 > absClip.y0 + absClip.height)
+                if (origY1 > clipBottom)
                 {
-                    float clipRatio = (y1 - (absClip.y0 + absClip.height)) / glyphHeight;
-                    clippedY1 = absClip.y0 + absClip.height;
-                    clippedTy1 -= (ty1 - ty0) * clipRatio;
+                    ty1 = (origY1 - clipBottom) / glyphH * (tcs.m_coordinates[1] - tcs.m_coordinates[3]) +
+                        tcs.m_coordinates[3];
+                    y1 = clipBottom;
                 }
             }
 
-            if (sym->m_tcs.m_texId >= 0)
+            if (tcs.m_texId >= 0 && tcs.m_texId < static_cast<int>(fnt->m_textures.size()))
             {
-                // Check if texture needs to be changed
-                if (fnt->m_textures[sym->m_tcs.m_texId] != GetGfxServer()->m_curFontTexture)
+                auto const& tex = fnt->m_textures[tcs.m_texId];
+                if (tex != ui::Wnd::GetGfxServer()->m_curFontTexture)
                 {
-                    if (GetGfxServer()->m_curFontTexture.IsValid())
+                    if (ui::Wnd::GetGfxServer()->m_curFontTexture.IsValid())
                     {
                         FlushQuads();
                     }
-                    M3D_RENDERER->SetTexture(0, fnt->m_textures[sym->m_tcs.m_texId], -1.0f);
-                    GetGfxServer()->m_curFontTexture = fnt->m_textures[sym->m_tcs.m_texId];
+                    g_pApp->m_renderer->SetTexture(0, tex, -1.0);
+                    ui::Wnd::GetGfxServer()->m_curFontTexture = tex;
                 }
             }
 
-            // Render quad
-            rend::VertexXYZWCT1* vertices = RenderQuadXyzwct1GetNextPtr();
-            if (vertices)
+            auto* v = RenderQuadXyzwct1GetNextPtr();
+            v[0].x = x0;
+            v[0].y = y0;
+            v[0].tu = tx0;
+            v[0].tv = ty0;
+            v[1].x = x1;
+            v[1].y = y0;
+            v[1].tu = tx1;
+            v[1].tv = ty0;
+            v[2].x = x1;
+            v[2].y = y1;
+            v[2].tu = tx1;
+            v[2].tv = ty1;
+            v[3].x = x0;
+            v[3].y = y1;
+            v[3].tu = tx0;
+            v[3].tv = ty1;
+            for (int k = 0; k < 4; ++k)
             {
-                // Set up quad vertices
-                for (int i = 0; i < 4; i++)
-                {
-                    vertices[i].z = 0.0f;
-                    vertices[i].w = 0.5f;
-                    vertices[i].c = clr;
-                }
-
-                // Vertex 0: top-left
-                vertices[0].x = clippedX0;
-                vertices[0].y = clippedY0;
-                vertices[0].tu = clippedTx0;
-                vertices[0].tv = clippedTy0;
-
-                // Vertex 1: top-right
-                vertices[1].x = clippedX1;
-                vertices[1].y = clippedY0;
-                vertices[1].tu = clippedTx1;
-                vertices[1].tv = clippedTy0;
-
-                // Vertex 2: bottom-right
-                vertices[2].x = clippedX1;
-                vertices[2].y = clippedY1;
-                vertices[2].tu = clippedTx1;
-                vertices[2].tv = clippedTy1;
-
-                // Vertex 3: bottom-left
-                vertices[3].x = clippedX0;
-                vertices[3].y = clippedY1;
-                vertices[3].tu = clippedTx0;
-                vertices[3].tv = clippedTy1;
+                v[k].z = 0.0f;
+                v[k].w = 0.5f;
+                v[k].c = clr;
             }
 
-            // Advance cursor
-            if (ch == ' ' && charIndex > lastLeadingSpacePos)
-            {
-                curX += spaceW;
-            }
-            else
-            {
-                curX += charWidth;
-            }
-
-            charIndex++;
+            curX += stretchedSpace ? spaceW : (sym ? sym->m_precalcedABCWidth : 0.0f);
         }
-
         return 1;
     }
 
     unsigned long Application::texGenThread(void*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x75C9D0
+        return 1;
     }
 
-    int Application::AdjustWindowForChange(HWND, bool)
+    int Application::AdjustWindowForChange(HWND hWnd, bool bFullScreen)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x59BC50
+        SetWindowLongA(hWnd, GWL_STYLE, GetStyleForRenderWindow(bFullScreen));
+        return 1;
     }
 
     void Application::enterFontRender()
@@ -4048,6 +5912,7 @@ namespace m3d
 
     void Application::CaptureAndClipSystemCursor(bool bState)
     {
+        // RVA 0x59C6A0
         if (bState)
         {
             if (m_renderWindow)
@@ -4056,7 +5921,7 @@ namespace m3d
 
                 RECT rect;
                 ::GetClientRect(m_renderWindow, &rect);
-                //TODO: check this
+                // Convert both corners of the client rect to screen coordinates.
                 ::ClientToScreen(this->m_renderWindow, reinterpret_cast<LPPOINT>(&rect.left));
                 ::ClientToScreen(this->m_renderWindow, reinterpret_cast<LPPOINT>(&rect.right));
                 ::ClipCursor(&rect);
@@ -4076,27 +5941,22 @@ namespace m3d
 
     void Application::DiscardAllEvents()
     {
-        // TODO: check this
-        while (true)
+        // RVA 0x5A7CB0
+        // Resets every queued event (releasing its string and AIParam) and empties the ring buffer.
+        Event const emptyEvent;
+        while (m_eventsQueueTail != m_eventsQueueHead)
         {
-            if (m_eventsQueueTail == m_eventsQueueHead)
-            {
-                break;
-            }
-
-            m_eventsQueue[m_eventsQueueTail] = {};
-
-            auto v3 = m_eventsQueueTail + 1;
-            if (v3 >= 5000)
-                v3 = 0;
-            m_eventsQueueTail = v3;
+            m_eventsQueue[m_eventsQueueTail] = emptyEvent;
+            m_eventsQueueTail = (m_eventsQueueTail + 1 >= 5000) ? 0 : m_eventsQueueTail + 1;
         }
     }
 
     unsigned long Application::GetStyleForRenderWindow(bool bFullScreen) const
     {
-        //TODO: consts
-        return bFullScreen ? -1878523904 : -1865547776;
+        // RVA 0x59BC30
+        // 0x90080000 fullscreen, 0x90CE0000 windowed (caption, sizing border, minimise box).
+        return bFullScreen ? (WS_POPUP | WS_VISIBLE | WS_SYSMENU)
+                           : (WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX);
     }
 
     DbgCounterStack& Application::GetDbgCounterStack()
@@ -4123,10 +5983,11 @@ namespace m3d
         CStr const& param4,
         AIParam const& param5)
     {
+        // RVA 0x5A70C0
         Event ev;
-        ev.m_timeStamp = g_Kernel->GetTimer().GetCurTime() * 0.001;
+        // Reads the timer's current time as is, without advancing it.
+        ev.m_timeStamp = g_Kernel->GetTimer()._GetCurTime() * 0.001;
         ev.m_eventType = msg;
-        //TODO: check order
         ev.m_intEv[0] = param0;
         ev.m_intEv[1] = param1;
         ev.m_intEv[2] = p2;

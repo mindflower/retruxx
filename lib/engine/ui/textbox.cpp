@@ -1,4 +1,7 @@
 #include <ui/textbox.h>
+#include <ui/scroll.h>
+#include <ui/ui_srv.h>
+#include <m3dapp.h>
 
 namespace m3d
 {
@@ -27,17 +30,28 @@ namespace m3d
 
         CStr TextBoxWnd::GetText() const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return m_caption;
         }
 
         Object* TextBoxWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x702A30 - Clone runs the copy ctor, unlike most windows in
+            // this codebase which hand back a fresh default-constructed one.
+            return new TextBoxWnd(*this);
         }
 
-        int TextBoxWnd::SetVScrollToPos(unsigned)
+        int TextBoxWnd::SetVScrollToPos(unsigned pos)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            if (!m_scrollVWnd)
+            {
+                return 0;
+            }
+            if (pos > 100)
+            {
+                pos = 100;
+            }
+            m_scrollVWnd->SetCurPos(m_scrollVWnd->GetMaxPos() * static_cast<float>(pos) * 0.01f);
+            return 1;
         }
 
         Class* TextBoxWnd::GetClass() const
@@ -55,7 +69,7 @@ namespace m3d
             return 1;
         }
 
-        int TextBoxWnd::Create(BoundsBase<float> const& rc, unsigned flags, int id)
+        int TextBoxWnd::Create(BoundsBase<float> const& rc, unsigned flags, unsigned id)
         {
             auto result = ListBoxWnd<m3d::ui::FormattedLine>::Create(rc, flags, id);
             if (result)
@@ -67,30 +81,69 @@ namespace m3d
             return result;
         }
 
-        TextBoxWnd::~TextBoxWnd()
-        {
-            RETRUXX_NOT_IMPLEMENTED;
-        }
+        TextBoxWnd::~TextBoxWnd() = default;
 
         void TextBoxWnd::RecalcLayout()
         {
-            // TODO: implement TextBoxWnd::RecalcLayout
-            //RETRUXX_NOT_IMPLEMENTED;
+            retruxx::vector<m3d::ui::FormattedLine> linesOfText;
+
+            BoundsBase<float> const clientBounds = GetClientBounds();
+
+            DrawInfo di{};
+            di.m_clientRect.x0 = 0.0f;
+            di.m_clientRect.y0 = 0.0f;
+            di.m_clientRect.width = clientBounds.width;
+            di.m_clientRect.height = clientBounds.height;
+            di.m_clientClippedRect = di.m_clientRect;
+
+            Wnd::m_gfx->SetFont(m_defFont);
+
+            float x;
+            if (m_textFormat == TF_CENTER)
+            {
+                x = m_bounds.width * 0.5f;
+            }
+            else if (m_textFormat == TF_RIGHT)
+            {
+                x = m_bounds.width;
+            }
+            else
+            {
+                x = 0.0f;
+            }
+
+            PointBase<float> at;
+            at.x = x;
+            at.y = 0.0f;
+
+            M3D_APP->FormatText(linesOfText, at, m_caption, di, TW_WORD_WRAP, m_textFormat);
+
+            RemoveAllItems();
+
+            unsigned int const color =
+                ((m_style & 2) != 0 || (m_style & 0x80000) != 0) ? m_textColorDisabled : m_textColor;
+            for (auto& line : linesOfText)
+            {
+                line.m_color = color;
+                AddItem(line);
+            }
         }
 
-        int TextBoxWnd::OnPaint(DrawInfo const&)
+        int TextBoxWnd::OnPaint(DrawInfo const& di)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            return ListBoxWnd<m3d::ui::FormattedLine>::OnPaint(di);
         }
 
-        TextBoxWnd::TextBoxWnd(TextBoxWnd const&)
+        TextBoxWnd::TextBoxWnd(TextBoxWnd const& w) : FormattedStringsListBoxWnd(w)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x702780 - chains to the FormattedStringsListBoxWnd copy ctor;
+            // m_textFormat comes across with the rest of the Wnd state rather
+            // than being reset to TF_FULL.
         }
 
         TextBoxWnd::TextBoxWnd()
         {
             m_textFormat = TF_FULL;
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

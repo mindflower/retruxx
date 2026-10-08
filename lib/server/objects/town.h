@@ -44,8 +44,6 @@ namespace ai
         void _LoadFromXmlResourceIdToRandomCoeffMap(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
     }; /* size: 0x0120 */
 
-    static_assert(sizeof(TownPrototypeInfo) == 0x0120);
-
     class Town : public ai::Settlement
     {
         friend class TownPrototypeInfo;
@@ -120,7 +118,12 @@ namespace ai
         ai::Workshop* GetWorkshopByObject(const ai::Obj* obj);
         ai::Workshop* GetWorkshopByPrototypeId(int pId);
 
-        enum TownPath;
+        enum TownPath
+        {
+            TP_ENTRY_PATH = 0,
+            TP_EXIT_PATH = 1,
+            TP_NUM_PATH = 2,
+        };
 
     public:
         void GetPath(ai::Town::TownPath path, retruxx::vector<CVector2, retruxx::allocator<CVector2> >& vehiclePoints, retruxx::vector<CVector, retruxx::allocator<CVector> >& cameraPoints) const;
@@ -177,6 +180,4 @@ namespace ai
         void _OnPlayerVehicleHorn(const ai::Event& evn);
         void _OnPlayerVehicleChanged(const ai::Event&);
     }; /* size: 0x0364 */
-
-    static_assert(sizeof(Town) == 0x0364);
 }

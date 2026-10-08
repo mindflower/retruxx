@@ -1,6 +1,7 @@
 #include "barricade.h"
 
 #include <stdexcept>
+#include "core/kernel.h"
 #include "base/objcontainer.h"
 #include "base/prototypemanager.h"
 
@@ -30,9 +31,15 @@ namespace ai
         return result;
     }
 
-    void BarricadePrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
+    void BarricadePrototypeInfo::_InternalCopyFrom(PrototypeInfo const& rhs)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8423B0
+        // NOTE: skips ObjPrefabPrototypeInfo's own copy: the prefab's object infos are copied
+        // here directly after the SimplePhysicObj part.
+        BarricadePrototypeInfo const& other = static_cast<BarricadePrototypeInfo const&>(rhs);
+        SimplePhysicObjPrototypeInfo::operator=(other);
+        m_objInfos = other.m_objInfos;
+        m_probability = other.m_probability;
     }
 
     m3d::Class* Barricade::GetClass() const
@@ -51,14 +58,29 @@ namespace ai
         return ObjPrefab::GetPropertyId(propName);
     }
 
-    eGObjPropertySaveStatus Barricade::GetPropertySaveStatus(int) const
+    eGObjPropertySaveStatus Barricade::GetPropertySaveStatus(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x841B50
+        auto it = m_propertiesSaveStatesMap.find(id);
+        if (it != m_propertiesSaveStatesMap.end())
+        {
+            return it->second;
+        }
+        return SimplePhysicObj::GetPropertySaveStatus(id);
     }
 
-    CStr Barricade::GetPropertyName(int) const
+    CStr Barricade::GetPropertyName(int id) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x841D80
+        // A linear search, since the map is keyed by name.
+        for (auto const& property : m_propertiesMap)
+        {
+            if (property.second == id)
+            {
+                return property.first;
+            }
+        }
+        return SimplePhysicObj::GetPropertyName(id);
     }
 
     BarricadePrototypeInfo const* Barricade::GetPrototypeInfo() const
@@ -66,9 +88,14 @@ namespace ai
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BarricadePrototypeInfo const);
     }
 
-    void Barricade::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>&) const
+    void Barricade::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Declared in the PDB but never emitted in the shipped build; the usual property-map pattern.
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.second);
+        }
+        SimplePhysicObj::GetPropertiesIDs(Props);
     }
 
     void Barricade::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
@@ -81,9 +108,14 @@ namespace ai
         }
     }
 
-    void Barricade::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>&) const
+    void Barricade::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // Declared in the PDB but never emitted in the shipped build; the usual property-map pattern.
+        for (auto const& property : m_propertiesMap)
+        {
+            Props.insert(property.first);
+        }
+        SimplePhysicObj::GetPropertiesNames(Props);
     }
 
     void Barricade::Registration()
@@ -109,30 +141,55 @@ namespace ai
         return 1;
     }
 
-    void Barricade::RegisterProperty(char const*, int, eGObjPropertySaveStatus)
+    void Barricade::RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x841F70
+        // The default save status is not stored.
+        m_propertiesMap[Name] = id;
+        if (saveStatus)
+        {
+            m_propertiesSaveStatesMap[id] = saveStatus;
+        }
     }
 
-    bool Barricade::_GetPropertyDefaultInternal(int, m3d::AIParam&) const
+    bool Barricade::_GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8422D0
+        // NOTE: the default is 1, not the prototype's probability (the prototype is fetched
+        // and ignored).
+        GetPrototypeInfo();
+        if (propertyId != 67)
+        {
+            return SimplePhysicObj::_GetPropertyDefaultInternal(propertyId, retVal);
+        }
+        retVal = 1.0f;
+        return true;
     }
 
     Barricade::~Barricade() = default;
 
-    bool Barricade::_GetPropertyInternal(int, m3d::AIParam&) const
+    bool Barricade::_GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x842270
+        if (propertyId != 67)
+        {
+            return SimplePhysicObj::_GetPropertyInternal(propertyId, retVal);
+        }
+        retVal = m_probability.value().get();
+        return true;
     }
 
     m3d::Object* Barricade::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x8415D0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* Barricade::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x841410
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 }  // namespace ai

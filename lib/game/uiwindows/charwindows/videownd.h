@@ -4,59 +4,57 @@
 
 class ContextModelWnd;
 
-class VideoWnd :  public ChildPanel
+class VideoWnd : public ChildPanel
 {
 public:
+    int ShowModelByObjId(int objId, ref_ptr<m3d::ui::Wnd> srcWindow);
+    int ShowModelByPrototypeId(int prototyprId, ref_ptr<m3d::ui::Wnd> srcWindow);
+    int HideModel(ref_ptr<m3d::ui::Wnd> srcWindow);
+    ref_ptr<m3d::ui::Wnd> GetSrcWindow() const;
+    int GetObjId() const;
+    int GetPrototypeId() const;
+
     enum BgMode
     {
-        BGMODE_BUYVEHICLE = 0x0,
-        BGMODE_WORKSHOP = 0x1,
-        BGMODE_SHOP = 0x2,
-        BGMODE_GROUND = 0x3,
-        BGMODE_NUM_BGMODES = 0x4,
-        BGMODE_INVALID = 0x4,
+        BGMODE_BUYVEHICLE = 0,
+        BGMODE_WORKSHOP = 1,
+        BGMODE_SHOP = 2,
+        BGMODE_GROUND = 3,
+        BGMODE_NUM_BGMODES = 4,
+        BGMODE_INVALID = 4,
     };
 
-    class AuxInfo
+    struct VideoWnd::AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_wndModelName;
+        AuxInfo(VideoWnd::AuxInfo const&);
         AuxInfo();
+    }; /* size: 0x000c */
 
-    private:
-        CStr m_wndModelName;
-    };
-
-public:
-    static m3d::Object * CreateObject();
-    int ShowModelByPrototypeId(int, ref_ptr<m3d::ui::Wnd>);
-    int GetPrototypeId() const ;
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    int HideModel(ref_ptr<m3d::ui::Wnd>);
-    virtual m3d::Class * GetClass() const ;
-    int GetObjId() const ;
-    int ShowModelByObjId(int, ref_ptr<m3d::ui::Wnd>);
-    ref_ptr<m3d::ui::Wnd> GetSrcWindow() const ;
-    virtual ~VideoWnd();
 protected:
-    virtual int GameDataSetup();
-    VideoWnd();
-    VideoWnd(VideoWnd const &);
-    bool IsDisabled() const ;
-    void ShowBgModel(BgMode);
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    bool IsDisabled() const;
     void OnNewFrame();
-    virtual int GameDataClear(bool);
     void UpdateBgMode();
-    void UpdateBgModel(BgMode);
-    virtual int GameDataUpdate(void *,int);
-    BgMode DetectBgMode() const ;
+    void ShowBgModel(VideoWnd::BgMode bgMode);
+    void UpdateBgModel(VideoWnd::BgMode bgMode);
+    VideoWnd::BgMode DetectBgMode() const;
+
+    /* 0x0224 */ ContextModelWnd* m_wndModel;
+    /* 0x0228 */ VideoWnd::AuxInfo m_aif;
+    /* 0x0234 */ ref_ptr<m3d::ui::Wnd> m_srcWindow;
+    /* 0x0238 */ VideoWnd::BgMode m_bgMode;
+
+    VideoWnd();
+    VideoWnd(VideoWnd const& rhs);
 
 public:
-    RT_CLASS_DECLARE(VideoWnd);
-
-private:
-    ContextModelWnd *m_wndModel;
-    VideoWnd::AuxInfo m_aif;
-    ref_ptr<m3d::ui::Wnd> m_srcWindow;
-    VideoWnd::BgMode m_bgMode;
-};
+    virtual ~VideoWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classVideoWnd;
+}; /* size: 0x023c */

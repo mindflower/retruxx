@@ -8,6 +8,7 @@
 #include "retruxx/common.h"
 
 #include <cmath>
+#include <utility>
 
 CVector CMatrix::vecRot(CVector const& v) const
 {
@@ -20,7 +21,28 @@ CVector CMatrix::vecRot(CVector const& v) const
 
 CMatrix CMatrix::getInverseRotTranslate() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x635720. Inverse of a rigid transform (rotation + translation only):
+    // transpose the 3x3 rotation and re-express the translation in that
+    // transposed frame. Only valid when the rotation part is orthonormal -
+    // any scale or shear is not undone.
+    CMatrix res;
+    res._11 = _11;
+    res._12 = _21;
+    res._13 = _31;
+    res._14 = 0.0f;
+    res._21 = _12;
+    res._22 = _22;
+    res._23 = _32;
+    res._24 = 0.0f;
+    res._31 = _13;
+    res._32 = _23;
+    res._33 = _33;
+    res._34 = 0.0f;
+    res._41 = -(_11 * _41) - (_12 * _42) - (_13 * _43);
+    res._42 = -(_21 * _41) - (_22 * _42) - (_23 * _43);
+    res._43 = -(_31 * _41) - (_32 * _42) - (_33 * _43);
+    res._44 = 1.0f;
+    return res;
 }
 
 void CMatrix::zero()
@@ -30,17 +52,48 @@ void CMatrix::zero()
 
 CMatrix CMatrix::getTransposed() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4058D0
+    CMatrix res;
+    res._11 = _11;
+    res._12 = _21;
+    res._13 = _31;
+    res._14 = _41;
+    res._21 = _12;
+    res._22 = _22;
+    res._23 = _32;
+    res._24 = _42;
+    res._31 = _13;
+    res._32 = _23;
+    res._33 = _33;
+    res._34 = _43;
+    res._41 = _14;
+    res._42 = _24;
+    res._43 = _34;
+    res._44 = _44;
+    return res;
 }
 
 CMatrix CMatrix::getInverseRot() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x875E50. A plain transpose of all sixteen elements, which inverts an
+    // orthonormal rotation; it is byte for byte what getTransposed does.
+    return getTransposed();
 }
 
-void CMatrix::FromInvBasis(CVector const&, CVector const&, CVector const&)
+void CMatrix::FromInvBasis(CVector const& x, CVector const& y, CVector const& z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5F9D70. Writes the three vectors as the matrix ROWS, which is the
+    // transpose of FromBasis and the counterpart to GetInvBasis.
+    zero();
+    _11 = x.x;
+    _12 = x.y;
+    _13 = x.z;
+    _21 = y.x;
+    _22 = y.y;
+    _23 = y.z;
+    _31 = z.x;
+    _32 = z.y;
+    _33 = z.z;
 }
 
 void CMatrix::DecomposeScale(float& x, float& y, float& z)
@@ -127,19 +180,71 @@ float CMatrix::GetScaleZ() const
     return sqrt(_33 * _33 + _23 * _23 + _13 * _13);
 }
 
-void CMatrix::shadow(CVector4 const&, CPlane const&)
+void CMatrix::shadow(CVector4 const& light, CPlane const& plane)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8A1E10 - the classic planar projection matrix. CPlane keeps the
+    // plane as "n.p == m_dist", so the four component form is (n, -m_dist) and
+    // the light/plane dot product picks up a minus in front of the w term.
+    float const nDotL = light.x * plane.m_normal.x;
+    float const dot = (light.y * plane.m_normal.y + plane.m_normal.z * light.z + nDotL) -
+        plane.m_dist * light.w;
+
+    _11 = dot - nDotL;
+    _21 = -(light.x * plane.m_normal.y);
+    _31 = -(light.x * plane.m_normal.z);
+    _41 = plane.m_dist * light.x;
+
+    _12 = -(light.y * plane.m_normal.x);
+    _22 = dot - light.y * plane.m_normal.y;
+    _32 = -(light.y * plane.m_normal.z);
+    _42 = light.y * plane.m_dist;
+
+    _13 = -(plane.m_normal.x * light.z);
+    _23 = -(light.z * plane.m_normal.y);
+    _33 = dot - plane.m_normal.z * light.z;
+    _43 = plane.m_dist * light.z;
+
+    _14 = -(light.w * plane.m_normal.x);
+    _24 = -(light.w * plane.m_normal.y);
+    _34 = -(light.w * plane.m_normal.z);
+    _44 = plane.m_dist * light.w + dot;
 }
 
-void CMatrix::GetInvBasis(CVector&, CVector&, CVector&) const
+void CMatrix::GetInvBasis(CVector& x, CVector& y, CVector& z) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x70AC10. Reads the matrix ROWS - the transposed, i.e. inverted,
+    // basis. Reading columns here would just repeat GetBasis.
+    x.x = _11;
+    x.y = _12;
+    x.z = _13;
+    y.x = _21;
+    y.y = _22;
+    y.z = _23;
+    z.x = _31;
+    z.y = _32;
+    z.z = _33;
 }
 
-void CMatrix::composeSRT(CVector const&, CMatrix const&, CVector const&)
+void CMatrix::composeSRT(CVector const& s, CMatrix const& rot, CVector const& t)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63ECB0. Scales each row of the rotation by the matching scale
+    // component and drops the translation in; the fourth column is zeroed.
+    _11 = s.x * rot._11;
+    _12 = rot._12 * s.x;
+    _13 = rot._13 * s.x;
+    _14 = 0.0f;
+    _21 = rot._21 * s.y;
+    _22 = rot._22 * s.y;
+    _23 = rot._23 * s.y;
+    _24 = 0.0f;
+    _31 = rot._31 * s.z;
+    _32 = rot._32 * s.z;
+    _33 = rot._33 * s.z;
+    _34 = 0.0f;
+    _41 = t.x;
+    _42 = t.y;
+    _43 = t.z;
+    _44 = 1.0f;
 }
 
 void CMatrix::reflect(CPlane const& p)
@@ -166,9 +271,30 @@ void CMatrix::reflect(CPlane const& p)
     _43 = p.m_normal.z * p.m_dist * 2.0f;
 }
 
-void CMatrix::translation(CVector const&)
+void CMatrix::translation(float x, float y, float z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x41DC80
+    zero();
+    _11 = 1.0f;
+    _22 = 1.0f;
+    _33 = 1.0f;
+    _44 = 1.0f;
+    _41 = x;
+    _42 = y;
+    _43 = z;
+}
+
+void CMatrix::translation(CVector const& t)
+{
+    // RVA 0x5130F0
+    zero();
+    _11 = 1.0f;
+    _22 = 1.0f;
+    _33 = 1.0f;
+    _44 = 1.0f;
+    _41 = t.x;
+    _42 = t.y;
+    _43 = t.z;
 }
 
 void CMatrix::getYPR(float& y, float& p, float& r) const
@@ -199,8 +325,8 @@ void CMatrix::getYPR(float& y, float& p, float& r) const
 
 void CMatrix::rotTranslate(Quaternion const& rot, CVector const& pos)
 {
-    // TODO: generated code
-    // Calculate intermediate values for the rotation matrix
+    // RVA 0x512F30 - the rotation matrix of a unit quaternion (row-vector convention), with
+    // pos as the translation row.
     float const xx = rot.x * rot.x;
     float const yy = rot.y * rot.y;
     float const zz = rot.z * rot.z;
@@ -211,8 +337,6 @@ void CMatrix::rotTranslate(Quaternion const& rot, CVector const& pos)
     float const yw = rot.y * rot.w;
     float const zw = rot.z * rot.w;
 
-    // Build the rotation matrix from quaternion
-    // First row
     _11 = 1.0f - 2.0f * (yy + zz);
     _12 = 2.0f * (xy + zw);
     _13 = 2.0f * (xz - yw);
@@ -274,14 +398,30 @@ CVector CMatrix::vecMul(CVector const& v) const
     return result;
 }
 
-CVector4 CMatrix::vecMul(CVector4 const&) const
+CVector4 CMatrix::vecMul(CVector4 const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7A46D0. Row-vector convention, same as the CVector overload but
+    // with w taken from the vector rather than assumed to be one.
+    CVector4 result;
+    result.x = v.x * _11 + v.y * _21 + v.z * _31 + v.w * _41;
+    result.y = v.x * _12 + v.y * _22 + v.z * _32 + v.w * _42;
+    result.z = v.x * _13 + v.y * _23 + v.z * _33 + v.w * _43;
+    result.w = v.x * _14 + v.y * _24 + v.z * _34 + v.w * _44;
+    return result;
 }
 
-void CMatrix::GetBasis(CVector&, CVector&, CVector&) const
+void CMatrix::GetBasis(CVector& x, CVector& y, CVector& z) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5C74C0. The basis vectors are the matrix columns.
+    x.x = _11;
+    x.y = _21;
+    x.z = _31;
+    y.x = _12;
+    y.y = _22;
+    y.z = _32;
+    z.x = _13;
+    z.y = _23;
+    z.z = _33;
 }
 
 CVector CMatrix::getOrg() const
@@ -289,134 +429,198 @@ CVector CMatrix::getOrg() const
     return {_41, _42, _43};
 }
 
-CVector CMatrix::vecRotBack(CVector const&) const
+CVector CMatrix::vecRotBack(CVector const& v) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x405FC0. Rotates by the transposed 3x3, i.e. undoes vecRot for an
+    // orthonormal matrix, and ignores the translation.
+    CVector result;
+    result.x = v.x * _11 + v.y * _12 + v.z * _13;
+    result.y = v.x * _21 + v.y * _22 + v.z * _23;
+    result.z = v.x * _31 + v.y * _32 + v.z * _33;
+    return result;
 }
 
-void CMatrix::FromBasis(CVector const&, CVector const&, CVector const&)
+void CMatrix::FromBasis(CVector const& x, CVector const& y, CVector const& z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x7BB020. Writes the three vectors as the matrix columns.
+    zero();
+    _11 = x.x;
+    _21 = x.y;
+    _31 = x.z;
+    _12 = y.x;
+    _22 = y.y;
+    _32 = y.z;
+    _13 = z.x;
+    _23 = z.y;
+    _33 = z.z;
+}
+
+// The four members below are declared in matrix.h but were never defined in retruxx; the
+// renderer (dxrender9) needs them. They are restored from the original binary, where the
+// engine's inline versions were instantiated into dxrender9's matrices.obj / clipPlanes.obj.
+
+// orig 0x625930 matrix.h:222
+float CMatrix::calcDeterminantSimple() const
+{
+    return (_11 * _22 - _12 * _21) * _33 - (_23 * _11 - _13 * _21) * _32 + (_23 * _12 - _13 * _22) * _31;
+}
+
+// orig 0x625970 matrix.h:435 - inverse of an affine (rotation / scale + translation) matrix; a
+// singular matrix gives the zero matrix.
+CMatrix CMatrix::getInverseSimple() const
+{
+    CMatrix res;
+    float det = calcDeterminantSimple();
+    if (det == 0.0f)
+    {
+        res.zero();
+        return res;
+    }
+
+    float idet = 1.0f / det;
+
+    res._11 = (_33 * _22 - _23 * _32) * idet;
+    res._12 = (_13 * _32 - _33 * _12) * idet;
+    res._13 = (_23 * _12 - _13 * _22) * idet;
+    res._14 = 0.0f;
+
+    res._21 = (_23 * _31 - _33 * _21) * idet;
+    res._22 = (_33 * _11 - _13 * _31) * idet;
+    res._23 = (_13 * _21 - _23 * _11) * idet;
+    res._24 = 0.0f;
+
+    res._31 = (_21 * _32 - _31 * _22) * idet;
+    res._32 = (_12 * _31 - _32 * _11) * idet;
+    res._33 = (_11 * _22 - _12 * _21) * idet;
+    res._34 = 0.0f;
+
+    res._41 = ((_33 * _42 - _43 * _32) * _21 + (_41 * _32 - _42 * _31) * _23 + (_43 * _31 - _33 * _41) * _22) * idet;
+    res._42 = ((_43 * _11 - _13 * _41) * _32 + (_12 * _41 - _42 * _11) * _33 + (_13 * _42 - _12 * _43) * _31) * idet;
+    res._43 = ((_12 * _21 - _11 * _22) * _43 + (_23 * _11 - _13 * _21) * _42 + (_13 * _22 - _23 * _12) * _41) * idet;
+    res._44 = 1.0f;
+
+    return res;
+}
+
+// orig 0x6278e0 matrix.h:803
+void CMatrix::transposeInplace()
+{
+    std::swap(_12, _21);
+    std::swap(_13, _31);
+    std::swap(_14, _41);
+    std::swap(_23, _32);
+    std::swap(_24, _42);
+    std::swap(_34, _43);
+}
+
+// orig 0x627950 matrix.h:1264 - the inverse transpose: the matrix that transforms plane
+// coefficients the way this matrix transforms points.
+void CMatrix::createPlaneTransform()
+{
+    CMatrix inv = getInverse();
+    inv.transposeInplace();
+    *this = inv;
 }
 
 CMatrix CMatrix::getInverse() const
 {
-    // TODO: generated code
-    CMatrix result;
-    // Temporary arrays for the augmented matrix [A|I]
-    float r1[8], r2[8], r3[8], r4[8];
-    float* s[4] = {r1, r2, r3, r4};
-
-    // Initialize augmented matrix: original matrix + identity matrix
+    // RVA 0x512490 - Gauss-Jordan elimination on the augmented matrix [M | I] with scaled
+    // partial pivoting. A row of zeros, or a zero last pivot, gives the identity.
+    // NOTE: only the last pivot is checked for zero. A zero pivot earlier on is divided by
+    // and the result fills with infinities and NaNs, as in the shipped code.
+    float rows[4][8];
+    float* s[4];
     for (int i = 0; i < 4; ++i)
     {
-        float* row = s[i];
-
-        // Copy original matrix row
-        row[0] = this->m[i][0];
-        row[1] = this->m[i][1];
-        row[2] = this->m[i][2];
-        row[3] = this->m[i][3];
-
-        // Add identity matrix columns
+        s[i] = rows[i];
         for (int j = 0; j < 4; ++j)
         {
-            row[4 + j] = (i == j) ? 1.0f : 0.0f;
+            s[i][j] = m[i][j];
+            s[i][4 + j] = i == j ? 1.0f : 0.0f;
         }
     }
 
-    // Scale factors for each row (for pivoting)
-    float scp[4];
+    CMatrix identityResult;
+    identityResult.identity();
+
+    // Each row's largest magnitude, used to scale the pivot search.
+    float scale[4];
     for (int i = 0; i < 4; ++i)
     {
-        float* row = s[i];
-        scp[i] = std::max(std::max(std::abs(row[0]), std::abs(row[1])), std::max(std::abs(row[2]), std::abs(row[3])));
-
-        if (scp[i] == 0.0f)
+        scale[i] = std::fabs(s[i][0]);
+        for (int j = 1; j < 4; ++j)
         {
-            // Matrix is singular, return identity
-            result.identity();
-            return result;
+            float const a = std::fabs(s[i][j]);
+            if (a > scale[i])
+            {
+                scale[i] = a;
+            }
+        }
+        if (scale[i] == 0.0f)
+        {
+            return identityResult;
         }
     }
 
-    // Gaussian elimination with partial pivoting
-    for (int pivot = 0; pivot < 4; ++pivot)
+    // Forward elimination.
+    for (int p = 0; p < 4; ++p)
     {
-        // Find pivot row with maximum scaled value in current column
-        int maxRow = pivot;
-        float maxVal = std::abs(s[pivot][pivot] / scp[pivot]);
-
-        for (int row = pivot + 1; row < 4; ++row)
+        int best = p;
+        float bestVal = std::fabs(s[p][p] / scale[p]);
+        for (int r = p + 1; r < 4; ++r)
         {
-            float scaledVal = std::abs(s[row][pivot] / scp[row]);
-            if (scaledVal > maxVal)
+            float const val = std::fabs(s[r][p] / scale[r]);
+            if (val > bestVal)
             {
-                maxVal = scaledVal;
-                maxRow = row;
+                bestVal = val;
+                best = r;
             }
         }
-
-        // Swap rows if necessary
-        if (maxRow != pivot)
+        if (best != p)
         {
-            std::swap(s[pivot], s[maxRow]);
-            std::swap(scp[pivot], scp[maxRow]);
+            std::swap(s[p], s[best]);
+            std::swap(scale[p], scale[best]);
         }
 
-        // Check if pivot element is zero (matrix is singular)
-        if (s[pivot][pivot] == 0.0f)
+        for (int r = p + 1; r < 4; ++r)
         {
-            result.identity();
-            return result;
-        }
-
-        // Eliminate entries below the pivot
-        for (int row = pivot + 1; row < 4; ++row)
-        {
-            float factor = s[row][pivot] / s[pivot][pivot];
-            s[row][pivot] = 0.0f;
-
-            // Subtract factor * pivot row from current row
-            for (int col = pivot + 1; col < 8; ++col)
+            float const factor = s[r][p] / s[p][p];
+            s[r][p] = 0.0f;
+            for (int col = p + 1; col < 8; ++col)
             {
-                s[row][col] -= factor * s[pivot][col];
+                s[r][col] = s[r][col] - s[p][col] * factor;
             }
         }
     }
 
-    // Check if last pivot is zero
     if (s[3][3] == 0.0f)
     {
-        result.identity();
-        return result;
+        return identityResult;
     }
 
-    // Back substitution
-    CMatrix minv;
-    for (int i = 3; i >= 0; --i)
+    // Back substitution on the unnormalised rows; each row is divided by its pivot last.
+    for (int c = 3; c > 0; --c)
     {
-        float* row = s[i];
-        float pivotInverse = 1.0f / row[i];
-
-        // Solve for identity matrix columns
-        for (int j = 0; j < 4; ++j)
+        for (int r = c - 1; r >= 0; --r)
         {
-            minv.m[i][j] = row[4 + j] * pivotInverse;
-        }
-
-        // Eliminate entries above the pivot
-        for (int rowAbove = 0; rowAbove < i; ++rowAbove)
-        {
-            float factor = s[rowAbove][i];
-            for (int col = 0; col < 4; ++col)
+            float const factor = s[r][c] / s[c][c];
+            for (int col = r + 1; col < 8; ++col)
             {
-                s[rowAbove][4 + col] -= factor * minv.m[i][col];
+                s[r][col] = s[r][col] - s[c][col] * factor;
             }
         }
     }
 
-    return minv;
+    CMatrix inverse;
+    for (int i = 0; i < 4; ++i)
+    {
+        float const invPivot = 1.0f / s[i][i];
+        for (int j = 0; j < 4; ++j)
+        {
+            inverse.m[i][j] = s[i][4 + j] * invPivot;
+        }
+    }
+    return inverse;
 }
 
 CMatrix& CMatrix::operator*=(CMatrix const& lhs)
@@ -442,24 +646,57 @@ void CMatrix::perspectiveFovLH(float fovY, float aspect, float z0, float z1)
     this->_22 = 1.0 / tan(fovY * 0.5);
 }
 
-void CMatrix::rotZ(float)
+void CMatrix::rotZ(float a)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4069A0
+    float const s = std::sin(a);
+    float const c = std::cos(a);
+    zero();
+    _11 = c;
+    _12 = s;
+    _21 = -s;
+    _22 = c;
+    _33 = 1.0f;
+    _44 = 1.0f;
 }
 
-void CMatrix::rotY(float)
+void CMatrix::rotY(float a)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4068F0
+    float const s = std::sin(a);
+    float const c = std::cos(a);
+    zero();
+    _11 = c;
+    _13 = -s;
+    _22 = 1.0f;
+    _31 = s;
+    _33 = c;
+    _44 = 1.0f;
 }
 
-void CMatrix::rotX(float)
+void CMatrix::rotX(float a)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x406960
+    float const s = std::sin(a);
+    float const c = std::cos(a);
+    zero();
+    _11 = 1.0f;
+    _22 = c;
+    _23 = s;
+    _32 = -s;
+    _33 = c;
+    _44 = 1.0f;
 }
 
-void CMatrix::orthoLH(float, float, float, float)
+void CMatrix::orthoLH(float w, float h, float z0, float z1)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8A1DA0
+    zero();
+    _11 = 2.0f / w;
+    _22 = 2.0f / h;
+    _33 = 1.0f / (z1 - z0);
+    _43 = z0 / (z0 - z1);
+    _44 = 1.0f;
 }
 
 void CMatrix::rotYPR(float y, float p, float r)
@@ -504,14 +741,16 @@ void CMatrix::rotYPR(float y, float p, float r)
     *this = matYaw * matPitch * matRoll;
 }
 
-float CMatrix::operator()(int, int) const
+float CMatrix::operator()(int i, int j) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x5FEAC0. Row major, unchecked.
+    return m[i][j];
 }
 
-float& CMatrix::operator()(int, int)
+float& CMatrix::operator()(int i, int j)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8C71E0. Row major, unchecked.
+    return m[i][j];
 }
 
 void CMatrix::setOrg(CVector const& org)
@@ -521,14 +760,24 @@ void CMatrix::setOrg(CVector const& org)
     _43 = org.z;
 }
 
-void CMatrix::scaling(float)
+void CMatrix::scaling(float x)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x8CB7C0
+    zero();
+    _11 = x;
+    _22 = x;
+    _33 = x;
+    _44 = 1.0f;
 }
 
-void CMatrix::scaling(float, float, float)
+void CMatrix::scaling(float x, float y, float z)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63EC70
+    zero();
+    _11 = x;
+    _22 = y;
+    _33 = z;
+    _44 = 1.0f;
 }
 
 void CMatrix::identity()
@@ -595,7 +844,18 @@ void CMatrix::lookAtLH(CVector const& eye, CVector const& at, CVector const& up)
     _44 = 1.0f;
 }
 
-void CMatrix::shear(float, float, float, float, float, float)
+void CMatrix::shear(float sxy, float sxz, float syx, float syz, float szx, float szy)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63ED80
+    zero();
+    _11 = 1.0f;
+    _22 = 1.0f;
+    _33 = 1.0f;
+    _44 = 1.0f;
+    _12 = sxy;
+    _13 = sxz;
+    _21 = syx;
+    _23 = syz;
+    _31 = szx;
+    _32 = szy;
 }

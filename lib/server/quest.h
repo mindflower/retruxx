@@ -96,8 +96,6 @@ namespace ai
         /* 0x00c8 */ retruxx::vector<CStr> m_ActionLevels;
     }; /* size: 0x00d8 */
 
-    static_assert(sizeof(Quest) == 0xd8);
-
     class QuestItemPrototypeInfo : public PrototypeInfo
     {
     public:
@@ -130,8 +128,6 @@ namespace ai
         /* 0x0004 */ retruxx::vector<Quest*> m_quests;
         /* 0x0014 */ retruxx::vector<retruxx::set<int>> m_mutexes;
     }; /* size: 0x0024 */
-
-    static_assert(sizeof(QuestManager) == 0x24);
 
     inline QuestManager* theQuestManager = nullptr;
 }

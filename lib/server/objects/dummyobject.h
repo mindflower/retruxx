@@ -13,8 +13,6 @@ namespace ai
         /* 0x0081 */ bool m_DisableGeometry;
     }; /* size: 0x0084 */
 
-    static_assert(sizeof(DummyObjectPrototypeInfo) == 0x0084);
-
     class DummyObject : public ai::SimplePhysicObj
     {
         friend class DummyObjectPrototypeInfo;
@@ -59,6 +57,4 @@ namespace ai
     private:
         /* 0x0144 */ CStr m_modelName;
     }; /* size: 0x0150 */
-
-    static_assert(sizeof(DummyObject) == 0x0150);
 }

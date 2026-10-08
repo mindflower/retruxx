@@ -17,6 +17,7 @@ add_subdirectory(ui)
 add_subdirectory(video)
 add_subdirectory(weather)
 add_subdirectory(wheeltraces)
+add_subdirectory(zlib)
 
 target_sources(retruxx_lib PRIVATE
     benchmark.cpp
@@ -36,13 +37,13 @@ target_sources(retruxx_lib PRIVATE
     gsmodel.cpp
     landscapeoverlays.cpp
     level.cpp
+    graphinfo.cpp
     m3dapp.cpp
     m3dapp_console.cpp
     m3dfont.cpp
     particles.cpp
     prefabs.cpp
     ps_attractors.cpp
-    ps_serialization.cpp
     psprops.cpp
     renderhelpers.cpp
     serialization.cpp

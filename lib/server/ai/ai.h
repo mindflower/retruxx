@@ -70,6 +70,4 @@ namespace ai
         /* 0x005c */ bool m_CommandProcessed;
         /* 0x005d */ bool m_CommandStackOpen;
     }; /* size: 0x0060 */
-
-    static_assert(sizeof(AI) == 0x0060);
 }

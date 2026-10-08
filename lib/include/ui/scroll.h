@@ -42,15 +42,15 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(ScrollWnd);
 
-        private:
-            int m_vertical = 0;
-            bool m_tracking;
-            float m_maxPos = 0;
-            float m_curPos;
-            float m_thumbSz = 0.0;
-            float m_hitPosInThumb = 0.0;
-            ButtonWnd* m_btn0 = nullptr;
-            ButtonWnd* m_btn1 = nullptr;
+        protected:
+            /* 0x0220 */ int m_vertical = 0;
+            /* 0x0224 */ bool m_tracking = false;
+            /* 0x0228 */ float m_maxPos = 0.0;
+            /* 0x022c */ float m_curPos = 0.0;
+            /* 0x0230 */ float m_thumbSz = 0.0;
+            /* 0x0234 */ float m_hitPosInThumb = 0.0;
+            /* 0x0238 */ ButtonWnd* m_btn0 = nullptr;
+            /* 0x023c */ ButtonWnd* m_btn1 = nullptr;
         };
     }
 }

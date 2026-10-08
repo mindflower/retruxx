@@ -25,8 +25,13 @@ enum OPT_ACTIONS
     OA_RESTORE_STATE = 0x2,
 };
 
+class PostEffect;
+
 class PostEffectModel
 {
+    // A running effect drives the model's units and exit conditions directly.
+    friend class PostEffect;
+
     using VarList = std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*> > >;
 
 public:

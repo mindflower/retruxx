@@ -1,5 +1,7 @@
 #include "genericbody.h"
 
+extern "C" void __cdecl _assert(char const* message, char const* file, unsigned line);
+
 namespace ai
 {
 	RT_CLASS_EXPORTS_BEGIN(GenericBody)
@@ -14,24 +16,34 @@ namespace ai
 
     GenericBody::GenericBody()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x904510
+        // NOTE: the shipped constructor is an assert(0), so a GenericBody can never be
+        // built. The class is only here to hold a slot in the body hierarchy.
+        _assert("0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\PhysicBodies\\GenericBody.h", 17);
     }
 
-    GenericBody::GenericBody(const ai::GenericBody& rhs)
+    GenericBody::GenericBody(const ai::GenericBody&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9044E0 - likewise an assert(0); a body is not copyable.
+        _assert("0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\PhysicBodies\\GenericBody.h", 18);
     }
 
     GenericBody::~GenericBody() = default;
 
     m3d::Object* GenericBody::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x904550
+        // NOTE: it really does build one and then return nullptr - the constructor
+        // asserts, so the return is unreachable tail code the compiler emitted anyway.
+        new GenericBody();
+        return nullptr;
     }
 
     m3d::Object* GenericBody::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9045A0 - see Clone above.
+        new GenericBody();
+        return nullptr;
     }
 
     m3d::Class* GenericBody::GetBaseClass()

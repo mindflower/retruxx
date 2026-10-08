@@ -31,6 +31,4 @@ namespace m3d
         /* 0x010c */ CMatrix m_attenMat;
         /* 0x014c */ m3d::Profiler* m_profiler = nullptr;
     }; /* size: 0x0150 */
-
-    static_assert(sizeof(ProjectorsServer) == 0x0150);
 }

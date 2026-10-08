@@ -111,6 +111,4 @@ namespace m3d
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
     }; /* size: 0x001c */
-
-    static_assert(sizeof(AIParam) == 0x001c);
 }

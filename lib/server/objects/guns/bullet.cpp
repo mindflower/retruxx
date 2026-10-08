@@ -1,5 +1,6 @@
 #include "bullet.h"
 
+#include "core/kernel.h"
 #include "core/profilerstack.h"
 #include "scene/scenegraph.h"
 #include "scene/servers/dataserver.h"
@@ -17,7 +18,7 @@ namespace ai
 
     bool BulletPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
-        const auto res = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
+        auto const res = ShellPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (res)
         {
             _SetGeomType(GEOM_TYPE_RAY);
@@ -117,6 +118,11 @@ namespace ai
 
     void Bullet::SpecifyTracer(CVector const& endPos)
     {
+        if (!m_tracer)
+        {
+            return;
+        }
+
         static retruxx::vector<CVector> trace(2);
 
         trace[0] = GetPosition();
@@ -167,8 +173,8 @@ namespace ai
             static retruxx::vector<CVector> trace(2);
 
             auto* ray = _Ray();
-            const auto len = ray->GetLength();
-            const auto dir = ray->GetDirection();
+            auto const len = ray->GetLength();
+            auto const dir = ray->GetDirection();
 
             trace[0] = GetPosition();
             trace[1].x = (len * dir.x) + trace[0].x;
@@ -208,7 +214,8 @@ namespace ai
 
     void Bullet::TransferPhysicParamsToSceneGraphNode()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7C1250 - a bullet is a ray that lives for one frame and owns no visual node of
+        // its own, so there is nothing to push to the scene graph.
     }
 
     m3d::Class* Bullet::GetBaseClass()
@@ -218,7 +225,7 @@ namespace ai
 
     BulletPrototypeInfo const* Bullet::GetPrototypeInfo() const
     {
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), const BulletPrototypeInfo);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BulletPrototypeInfo const);
     }
 
     Bullet::~Bullet()
@@ -258,11 +265,15 @@ namespace ai
 
     m3d::Object* Bullet::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7C14A0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 
     m3d::Object* Bullet::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7C12E0
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
-}
+}  // namespace ai

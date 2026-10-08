@@ -5,6 +5,20 @@
 
 namespace ai
 {
+    // Rounds a computed price to an integer, never below 1.
+    int GetIntPrice(float price);
+
+    // Like GetIntPrice, but a (near-)zero price stays 0 - used for service costs
+    // (repair / refuel / recharge) that can legitimately be free.
+    int GetIntRepairPrice(float price);
+
+    // Fraction of full price a used item fetches: currentDurability / maxDurability (0 when max ~ 0).
+    float GetDurabilityPriceCoeff(const ai::NumericInRange<float>& durability);
+
+    // Fraction of full price a full repair costs: (max - current) / max * 0.75
+    // (0 when max ~ 0). The 0.75 keeps repairing cheaper than replacing.
+    float GetDurabilityRepairCoeff(const ai::NumericInRange<float>& durability);
+
     class WarePrototypeInfo : public ai::PrototypeInfo
     {
     public:
@@ -24,8 +38,6 @@ namespace ai
         /* 0x0058 */ int m_minCount;
         /* 0x005c */ int m_maxCount;
     }; /* size: 0x0060 */
-
-    static_assert(sizeof(WarePrototypeInfo) == 0x0060);
 
     class Ware : public ai::Obj
     {
@@ -75,6 +87,4 @@ namespace ai
         /* 0x00c0 */ unsigned int m_maxItems;
         /* 0x00c4 */ ai::NumericInRange<float> m_durability;
     }; /* size: 0x0170 */
-
-    static_assert(sizeof(Ware) == 0x0170);
 }

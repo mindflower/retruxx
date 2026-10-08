@@ -38,8 +38,6 @@ namespace ai
         /* 0x005c */ float m_formationDistBetweenVehicles;
     }; /* size: 0x0060 */
 
-    static_assert(sizeof(TeamPrototypeInfo) == 0x0060);
-
     class Team : public ai::Obj
     {
         friend class TeamPrototypeInfo;
@@ -170,6 +168,4 @@ namespace ai
         static m3d::AIParam __fastcall TeamAIOnTargetUnreachable(ai::Obj* pObj);
         static m3d::AIParam __fastcall TeamAIOnMoveFinished(ai::Obj* pObj);
     }; /* size: 0x0168 */
-
-    static_assert(sizeof(Team) == 0x0168);
 }

@@ -7,6 +7,8 @@
 #include <server/objects/physicbodies/geoms/geom.h>
 #include <server/objects/physicbodies/geoms/sphereforintersection.h>
 
+class ContextModelWnd;
+
 namespace m3d
 {
     class DbgCounter;
@@ -29,11 +31,30 @@ namespace ai
         /* 0x0044 */ float m_lookRadius;
     }; /* size: 0x0048 */
 
-    static_assert(sizeof(PhysicObjPrototypeInfo) == 0x0048);
-
     class PhysicObj : public Obj
     {
         friend class IntersectionManager;
+        // ContextModelWnd reads the skin number of the vehicle a cabin or basket
+        // is mounted on, so the preview matches the vehicle's paint job.
+        friend class ::ContextModelWnd;
+        // Vehicle reads other objects' intersection obstacles to size its pick-up and rescue checks.
+        friend class Vehicle;
+        friend class CombatMastermind;
+        // PlasmaBunch's and Rocket's constructors mark themselves as physically enabled while their
+        // body stays off.
+        friend class PlasmaBunch;
+        friend class Rocket;
+        friend class MortarShell;
+        friend class Submarine;
+        // Keeps the boss out of the physics by hand.
+        friend class Boss03;
+        // Hitches its trailer's body.
+        friend class ArticulatedVehicle;
+        // Reads the obstacle radius when placing generated vehicles.
+        friend class VehiclesGeneratorPrototypeInfo;
+        // Reads the obstacle radius when placing vehicles passed to a new map.
+        friend class PassageData;
+
     protected:
         virtual ~PhysicObj() override /* 0x00 */;
 
@@ -219,8 +240,8 @@ namespace ai
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x1a0 */;
     }; /* size: 0x0120 */
 
-    static_assert(sizeof(PhysicObj) == 0x0120);
-
     
     CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const*);
+    CVector getPhysicObjOrPhysicBodyLinearVelocity(ai::Obj const*);
+    CVector getPhysicObjOrPhysicBodyDirection(ai::Obj const*);
 }

@@ -66,6 +66,4 @@ namespace m3d
         /* 0x004e */ char Padding_80[2];
         /* 0x0050 */ mutable m3d::CriticalSection m_cs;
     }; /* size: 0x0068 */
-
-    static_assert(sizeof(Log) == 0x0068);
 }

@@ -9,7 +9,11 @@ namespace m3d
 {
     CClient::~CClient()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C0350
+        M3D_RENDERER->UnregisterResetCallback(this);
+        delete m_world;
+        m_world = nullptr;
+        PredictDone();
     }
 
     SgNode* CClient::CreateServerControlledNode(int numModel)
@@ -53,7 +57,8 @@ namespace m3d
 
     char const* CClient::GetCallbackName() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFD60
+        return nullptr;
     }
 
     CClient::CClient()
@@ -71,7 +76,8 @@ namespace m3d
 
     void CClient::OnBeforeDeviceReset()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFD40
+        m_world->GetLandscape().Invalidate();
     }
 
     int CClient::Init()
@@ -84,12 +90,14 @@ namespace m3d
 
     void CClient::OnAfterDeviceReset()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFD50
+        m_world->GetLandscape().Restore();
     }
 
     int CClient::RecieveData(CSimpleNetPacket const*, ai::CServer*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFD00 - the network client does nothing.
+        return 1;
     }
 
     void CClient::PredictInit()
@@ -98,12 +106,13 @@ namespace m3d
 
     bool CClient::HandleCVar(CVar const*, CConsoleParams const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFD80
+        return false;
     }
 
     void CClient::PredictUpdateNode(SgNode*, Quaternion const&, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AD570 - empty; prediction is not used.
     }
 
     void CClient::PredictUpdate(int, unsigned)
@@ -112,22 +121,22 @@ namespace m3d
 
     void CClient::PredictAddNode(SgNode*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AD580 - empty.
     }
 
     void CClient::PredictDone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AD550 - empty.
     }
 
     void CClient::HandleCommand(int, CConsoleParams const&)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFD70 - empty.
     }
 
     void CClient::PredictRemoveNode(SgNode*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x7AD590 - empty.
     }
 
     CWorld& CClient::GetWorld()

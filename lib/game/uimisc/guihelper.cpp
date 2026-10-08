@@ -7,15 +7,48 @@
 #include "core/log.h"
 #include "file/fileenum.h"
 #include "file/fileserver.h"
+#include "server/objects/bar.h"
+#include "server/objects/basket.h"
+#include "server/objects/building.h"
+#include "server/objects/cabin.h"
+#include "server/objects/chassis.h"
+#include "server/objects/dynamicquest.h"
+#include "server/objects/dynamicquestpeace.h"
+#include "game/uimisc/objectcollection.h"
+#include "server/queststate.h"
+#include "game/uimisc/questinfo.h"
+#include "server/objects/gadget.h"
+#include "server/objects/player.h"
+#include "server/objects/town.h"
 #include "server/objects/vehicle.h"
+#include "server/objects/workshop.h"
+#include "server/geomrepository.h"
+#include "server/geomrepositoryitem.h"
+#include "server/objects/base/complexphysicobj.h"
+#include "server/objects/base/prototypemanager.h"
 #include "server/objects/base/objcontainer.h"
+#include "server/objects/guns/compoundgun.h"
+#include "server/objects/guns/gun.h"
+#include "server/izvratrepository.h"
+#include "server/objects/guns/bulletlauncher.h"
+#include "server/objects/ware.h"
+#include "server/objects/article.h"
+#include "game/uimanager/uidefs.h"
+#include "game/uiwindows/charwindows/znayukakprodatwnd.h"
 #include "server/objects/physicbodies/vehiclepart.h"
+#include "server/objects/physicbodies/compoundvehiclepart.h"
+#include "server/server.h"
 #include "ui/ui.h"
 #include "ui/button.h"
+#include "ui/font.h"
 #include "ui/image.h"
 #include "ui/ui_srv.h"
+#include <m3dapp.h>
+#include "game/m3dgame.h"  // CMiracle3d - M3D_APP->m_pInterfaceManager (help::ftoa)
 
 #include <sstream>
+#include <math/vector.h>
+#include <renderer/i_renderer.h>
 #include <server/resourcemanager.h>
 
 namespace m3d
@@ -27,30 +60,38 @@ namespace help
 {
     void DeleteAllFilesInDirectory(char const* dir)
     {
-        auto fileMask = dir + CStr("\\*.*");
-        WIN32_FIND_DATAA data;
-        auto file = FindFirstFileA(fileMask.c_str(), &data);
-        if (file = INVALID_HANDLE_VALUE)
+        // RVA 0x552820 - deletes the files (not subfolders) of `dir`, also forgetting them in the file server.
+        WIN32_FIND_DATAA findData;
+        auto const hf = FindFirstFileA((CStr(dir) + CStr("\\*.*")).c_str(), &findData);
+        if (hf == INVALID_HANDLE_VALUE)
         {
-            FindClose(INVALID_HANDLE_VALUE);
+            FindClose(hf);
             return;
         }
-        CStr strDir(dir);
-        assert(strDir.length() > 0);
-        strDir += "\\";
-        do
+
+        CStr strDir = dir;
+        M3D_ASSERT(strDir.length() > 0);
+        if (strDir.c_str()[strDir.length() - 1] != '\\' && strDir.c_str()[strDir.length() - 1] != '/')
         {
-            auto fileName = data.cFileName;
-            if (fileName != "." && fileName != "..")
+            strDir += CStr("\\");
+        }
+
+        // NOTE: the loop starts with FindNextFileA, so the entry returned by
+        // FindFirstFileA is never deleted (normally it is just ".").
+        while (FindNextFileA(hf, &findData))
+        {
+            if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
             {
-                auto fullName = strDir + fileName;
-                auto attr = GetFileAttributesA(fullName.c_str());
-                SetFileAttributesA(fullName.c_str(), attr & 0xFA);
-                DeleteFileA(fullName.c_str());
-                m3d::g_Kernel->GetFileServer().RemoveFile(fullName.c_str());
+                continue;
             }
-        } while (FindNextFileA(file, &data));
-        FindClose(file);
+            CStr const fileName = strDir + CStr(findData.cFileName);
+            // Clear the read-only and system bits so the file can be deleted.
+            auto const attr = GetFileAttributesA(fileName.c_str());
+            SetFileAttributesA(fileName.c_str(), (attr & ~0xFFul) | (attr & 0xFA));
+            DeleteFileA(fileName.c_str());
+            m3d::g_Kernel->GetFileServer().RemoveFile(fileName.c_str());
+        }
+        FindClose(hf);
     }
 
     CStr GetCurrentLevelName()
@@ -63,6 +104,109 @@ namespace help
             }
         }
         return {};
+    }
+
+    namespace
+    {
+        // RVA 0x555520 - a dynamic quest reports a richer set of states than the
+        // journal cares about; only "in progress", "done" and "failed" map across.
+        UnifyQuestStatus DynamicQuestStatus2UnifyQuestStatus(ai::DynamicQuest::QuestStatus status)
+        {
+            switch (status)
+            {
+            case ai::DynamicQuest::STATUS_PROCESSING:
+                return QUESTSTATUS_NONCOMPLETE;
+            case ai::DynamicQuest::STATUS_COMPLETE:
+                return QUESTSTATUS_COMPLETE;
+            case ai::DynamicQuest::STATUS_FAILED:
+                return QUESTSTATUS_FAILED;
+            default:
+                return QUESTSTATUS_INVALID;
+            }
+        }
+    }  // namespace
+
+    UnifyQuestStatus GetQuestUnifyStatusByQuestId(help::QuestType questType, int questId)
+    {
+        // RVA 0x5555B0 - static and dynamic quests keep their progress in two
+        // completely different places, so both are folded onto one scale here.
+        if (questType == QUESTTYPE_STATIC)
+        {
+            ai::QuestState const* qs = ai::theQuestStateManager->GetQuestStateById(questId);
+            if (qs)
+            {
+                switch (qs->GetCompleteStatus())
+                {
+                case ai::QuestState::NOT_COMPLETE:
+                    return QUESTSTATUS_NONCOMPLETE;
+                case ai::QuestState::COMPLETE:
+                    return QUESTSTATUS_COMPLETE;
+                case ai::QuestState::FAILED:
+                    return QUESTSTATUS_FAILED;
+                default:
+                    break;
+                }
+            }
+        }
+        else if (questType == QUESTTYPE_DYNAMIC)
+        {
+            ai::Obj* obj = ai::theObjects->GetEntityByObjId(questId);
+            if (obj && obj->IsKindOf(&ai::DynamicQuest::m_classDynamicQuest))
+            {
+                return DynamicQuestStatus2UnifyQuestStatus(static_cast<ai::DynamicQuest*>(obj)->GetQuestStatus());
+            }
+        }
+        return QUESTSTATUS_INVALID;
+    }
+
+    bool CanNavPointBeAddedOnQuest(help::QuestType questType, int questId)
+    {
+        // RVA 0x555650
+        if (questType == QUESTTYPE_NUM_QUEST_TYPES || questId == -1 ||
+            GetQuestUnifyStatusByQuestId(questType, questId) != QUESTSTATUS_NONCOMPLETE)
+        {
+            return false;
+        }
+
+        QuestInfoManager* qim = M3D_APP->m_pInterfaceManager->GetQuestInfoManager();
+        QuestInfo const* qi = (questType == QUESTTYPE_STATIC) ? qim->GetQuestInfoForStaticQuest(questId) :
+                                                                qim->GetQuestInfoForDynamicQuest(questId);
+        // Without a coordinate on this level there is nowhere for the point to go.
+        return qi && qi->GetCoordinateForMap(GetCurrentLevelName()) != nullptr;
+    }
+
+    bool IsPeaceWithEnemyAvailable(int enemyBelong)
+    {
+        // RVA 0x555320
+        if (!ai::thePlayer || ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), enemyBelong) != ai::RS_ENEMY)
+        {
+            return false;
+        }
+
+        std::set<int> const* peaceQuests = M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(
+            &ai::DynamicQuestPeace::m_classDynamicQuestPeace);
+        if (!peaceQuests)
+        {
+            return false;
+        }
+
+        for (auto it = peaceQuests->begin(); it != peaceQuests->end(); ++it)
+        {
+            ai::Obj* obj = ai::theObjects->GetEntityByObjId(*it);
+            if (!obj || !obj->IsKindOf(&ai::DynamicQuestPeace::m_classDynamicQuestPeace))
+            {
+                continue;
+            }
+            // NOTE: a peace quest stores the clan it settles with in its target
+            // *object* id field, so this compares an objId slot against a belong.
+            auto* quest = static_cast<ai::DynamicQuest*>(obj);
+            if (quest->GetQuestStatus() <= ai::DynamicQuest::STATUS_PROCESSING &&
+                quest->GetTargetObjId() == enemyBelong)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     int CloneWndWithChildren(m3d::ui::Wnd const* srcWnd, m3d::ui::Wnd* dstWnd)
@@ -194,9 +338,186 @@ namespace help
         return 0;
     }
 
-    int CreateWindowsDir(CStr const&)
+    int CreateWindowsDir(CStr const& dirPath)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x551EB0 - creates every missing component of `dirPath`, walking
+        // into each one in turn, and restores the current directory afterwards.
+        if (dirPath.empty())
+        {
+            M3D_LOG_INFO("CreateWindowsFolder error - empty dir name");
+            return 0;
+        }
+
+        char saveDir[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, saveDir);
+
+        retruxx::vector<CStr> subDirs;
+        m3d::Tokenize(dirPath, subDirs, "\\/");
+        for (auto const& subDir : subDirs)
+        {
+            auto const attr = GetFileAttributesA(subDir.c_str());
+            if ((attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY) == 0) &&
+                !CreateDirectoryA(subDir.c_str(), nullptr))
+            {
+                M3D_LOG_INFO("CreateWindowsFolder error - cannot create folder " + subDir);
+                SetCurrentDirectoryA(saveDir);
+                return 0;
+            }
+            if (!SetCurrentDirectoryA(subDir.c_str()))
+            {
+                M3D_LOG_INFO("CreateWindowsDir error - cannot set folder " + subDir + " as current");
+                SetCurrentDirectoryA(saveDir);
+                return 0;
+            }
+        }
+        SetCurrentDirectoryA(saveDir);
+        return 1;
+    }
+
+    int GetWarePricesForTown(ai::Town const* town, retruxx::map<int, CVector2>& prices)
+    {
+        // RVA 0x555420 - buy (x) and sell (y) price of every ware in the town's shop.
+        prices.clear();
+        if (!town || !GetShopForTown(town))
+        {
+            return 0;
+        }
+
+        retruxx::vector<int> warePrototypeIds;
+        ai::thePrototypeManager->GetPrototypeIdsByResourceId(
+            ai::theResourceManager->GetResourceId(CStr("GOODS")), warePrototypeIds);
+        int const townId = town->GetId();
+        for (auto const prototypeId : warePrototypeIds)
+        {
+            auto const buyPrice = static_cast<float>(GetBuyPriceByPrototypeId(prototypeId, townId));
+            auto const sellPrice = static_cast<float>(GetSellPriceByPrototypeId(prototypeId, townId));
+            prices.insert({prototypeId, CVector2(buyPrice, sellPrice)});
+        }
+        return 1;
+    }
+
+    bool CopyDirectory(char const* src, char const* dst)
+    {
+        // RVA 0x552B50 - copies the files (not subfolders' contents) of `src`
+        // into `dst`, which is created if needed and emptied first.
+        char currentDir[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, currentDir);
+        if (!CreateDirectoryExA(currentDir, dst, nullptr) && GetLastError() != ERROR_ALREADY_EXISTS)
+        {
+            return false;
+        }
+        SetLastError(0);
+        DeleteAllFilesInDirectory(dst);
+
+        WIN32_FIND_DATAA findData;
+        auto const hf = FindFirstFileA((CStr(src) + CStr("\\*.*")).c_str(), &findData);
+        if (hf == INVALID_HANDLE_VALUE)
+        {
+            FindClose(hf);
+            return true;
+        }
+
+        CStr strSrc = src;
+        M3D_ASSERT(strSrc.length() > 0);
+        if (strSrc.c_str()[strSrc.length() - 1] != '\\' && strSrc.c_str()[strSrc.length() - 1] != '/')
+        {
+            strSrc += CStr("\\");
+        }
+        CStr strDst = dst;
+        M3D_ASSERT(strDst.length() > 0);
+        if (strDst.c_str()[strDst.length() - 1] != '\\' && strDst.c_str()[strDst.length() - 1] != '/')
+        {
+            strDst += CStr("\\");
+        }
+
+        // NOTE: the loop starts with FindNextFileA, so the entry returned by
+        // FindFirstFileA is never copied (normally it is just ".").
+        while (FindNextFileA(hf, &findData))
+        {
+            if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+            {
+                continue;
+            }
+            CStr const srcFileName = strSrc + CStr(findData.cFileName);
+            CStr const destFileName = strDst + CStr(findData.cFileName);
+            // Clear the read-only and system bits so the copy can be overwritten.
+            auto const attr = GetFileAttributesA(srcFileName.c_str());
+            SetFileAttributesA(srcFileName.c_str(), (attr & ~0xFFul) | (attr & 0xFA));
+            CopyFileA(srcFileName.c_str(), destFileName.c_str(), FALSE);
+            m3d::g_Kernel->GetFileServer().AddFile(destFileName.c_str());
+        }
+        FindClose(hf);
+        return GetLastError() == ERROR_NO_MORE_FILES;
+    }
+
+    int DeleteWindowsDir(CStr const& dirPath)
+    {
+        // RVA 0x5521D0 - recursively deletes the folder's contents, then the
+        // folder itself. The current directory is left at the startup folder.
+        if (!SetCurrentDirectoryA(dirPath.c_str()))
+        {
+            return 0;
+        }
+
+        WIN32_FIND_DATAA findData;
+        auto const hFind = FindFirstFileA("*.*", &findData);
+        if (hFind != INVALID_HANDLE_VALUE)
+        {
+            bool bNoMoreFiles = false;
+            do
+            {
+                // NOTE: the original returns here without closing the search handle.
+                if (!SetCurrentDirectoryA(dirPath.c_str()))
+                {
+                    return 0;
+                }
+
+                CStr const saveName = findData.cFileName;
+                CStr const fullName = dirPath + "\\" + saveName;
+                auto const attributes = findData.dwFileAttributes;
+                // NOTE: any other FindNextFileA failure is not treated as the end,
+                // so the loop would revisit the stale entry indefinitely.
+                if (!FindNextFileA(hFind, &findData) && GetLastError() == ERROR_NO_MORE_FILES)
+                {
+                    bNoMoreFiles = true;
+                }
+
+                if (attributes & FILE_ATTRIBUTE_DIRECTORY)
+                {
+                    if (strcmp(saveName.c_str(), ".") != 0 && strcmp(saveName.c_str(), "..") != 0)
+                    {
+                        DeleteWindowsDir(fullName);
+                    }
+                }
+                else
+                {
+                    DeleteFileA(saveName.c_str());
+                }
+            } while (!bNoMoreFiles);
+        }
+
+        // The handle is closed even when FindFirstFileA failed.
+        FindClose(hFind);
+        if (!SetCurrentDirectoryA(M3D_APP->GetStartupFolder().c_str()))
+        {
+            return 0;
+        }
+        if (!RemoveDirectoryA(dirPath.c_str()))
+        {
+            LPSTR lpMsgBuf = nullptr;
+            FormatMessageA(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr,
+                GetLastError(),
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                reinterpret_cast<LPSTR>(&lpMsgBuf),
+                0,
+                nullptr);
+            M3D_LOG_INFO("DeleteWindowsDir error - fail to remove dir " + dirPath + "; error: " + CStr(lpMsgBuf));
+            LocalFree(lpMsgBuf);
+            return 0;
+        }
+        return 1;
     }
 
     CStr GetMapNameFromFileName(CStr const& fileName)
@@ -213,6 +534,462 @@ namespace help
         std::ostringstream ss;
         ss << std::hex << clr;
         return CStr("@") + ss.str().c_str();
+    }
+
+    CStr ftoa(float fVal, int precision)
+    {
+        if (precision == -1)
+        {
+            precision = M3D_APP->m_pInterfaceManager->GetDefaultFloatPrecision();
+        }
+        if (precision < 0)
+        {
+            precision = 0;
+        }
+        else if (precision > 10)
+        {
+            precision = 10;
+        }
+        CStr str;
+        str.format("%0.*f", precision, fVal);
+        return str;
+    }
+
+    int GetSellPriceByObjId(int objId, int townId)
+    {
+        if (objId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* townObj = ai::theObjects->GetEntityByObjId(townId);
+        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj) : nullptr;
+        auto* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (obj && !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            obj = nullptr;
+        }
+        if (!town || !obj)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByObject(obj);
+        return workshop ? static_cast<int>(workshop->GetObjectBuyPrice(obj)) : -2;
+    }
+
+    bool IsVehiclePartNameAGunPartName(CStr const& vpName)
+    {
+        // RVA 0x555860
+        int const gunResourceId = ai::theResourceManager->GetResourceId(CStr("GUN"));
+        int const vpResourceId =
+            ai::theResourceManager->GetResourceId(ai::theResourceManager->GetResourceNameByVehiclePartName(vpName));
+        return ai::theResourceManager->bResourceIsKindOf(vpResourceId, gunResourceId);
+    }
+
+    void GetAllVehiclePartsThatCanBeAttached(int vehicleId, std::vector<CStr, std::allocator<CStr>>& vpNames)
+    {
+        // RVA 0x553320
+        vpNames.clear();
+        auto* vehicle =
+            vehicleId == -1 ? nullptr : RT_DYNCAST(ai::theObjects->GetEntityByObjId(vehicleId), ai::Vehicle);
+        if (!vehicle)
+        {
+            return;
+        }
+        auto const* proto = vehicle->GetPrototypeInfo();
+        if (!proto)
+        {
+            return;
+        }
+        auto const& allPartNames = proto->GetAllPartNames();
+        for (int i = 0; i < static_cast<int>(allPartNames.size()); ++i)
+        {
+            if (vehicle->CanPartBeAttached(allPartNames[i]))
+            {
+                vpNames.push_back(allPartNames[i]);
+            }
+        }
+    }
+
+    void GetGunPartNamesThatCanBeAttached(int vehicleId, std::vector<CStr, std::allocator<CStr>>& gunPartNames)
+    {
+        // RVA 0x553420
+        gunPartNames.clear();
+        std::vector<CStr> allPartNames;
+        GetAllVehiclePartsThatCanBeAttached(vehicleId, allPartNames);
+        for (int i = 0; i < static_cast<int>(allPartNames.size()); ++i)
+        {
+            if (IsVehiclePartNameAGunPartName(allPartNames[i]))
+            {
+                gunPartNames.push_back(allPartNames[i]);
+            }
+        }
+    }
+
+    bool CanWareBeBuyed(int warePrototypeId, int townId)
+    {
+        // RVA 0x5512D0
+        auto* town = townId == -1 ? nullptr : RT_DYNCAST(ai::theObjects->GetEntityByObjId(townId), ai::Town);
+        if (!town)
+        {
+            return false;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByPrototypeId(warePrototypeId);
+        if (!workshop)
+        {
+            return false;
+        }
+        ai::Article* article = workshop->GetArticle(warePrototypeId);
+        return article && article->IsSellable();
+    }
+
+    int GetSellPriceByPrototypeId(int objPrototypeId, int townId)
+    {
+        // RVA 0x550C60
+        if (objPrototypeId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* town = RT_DYNCAST(ai::theObjects->GetEntityByObjId(townId), ai::Town);
+        if (!town)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByPrototypeId(objPrototypeId);
+        if (!workshop)
+        {
+            return -2;
+        }
+        return static_cast<int>(workshop->GetArticleBuyPriceByPrototypeId(objPrototypeId));
+    }
+
+    int GetBuyPriceByPrototypeId(int objPrototypeId, int townId)
+    {
+        // RVA 0x550CE0
+        if (objPrototypeId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* town = RT_DYNCAST(ai::theObjects->GetEntityByObjId(townId), ai::Town);
+        if (!town)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByPrototypeId(objPrototypeId);
+        if (!workshop || !CanWareBeBuyed(objPrototypeId, townId))
+        {
+            return -3;
+        }
+        return static_cast<int>(workshop->GetArticleSellPriceByPrototypeId(objPrototypeId));
+    }
+
+    int GetBuyPriceByObjId(int objId, int townId)
+    {
+        if (objId == -1 || townId == -1)
+        {
+            return -1;
+        }
+        auto* townObj = ai::theObjects->GetEntityByObjId(townId);
+        auto* town = (townObj && townObj->IsKindOf(&ai::Town::m_classTown)) ? static_cast<ai::Town*>(townObj) : nullptr;
+        auto* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (obj && !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            obj = nullptr;
+        }
+        if (!town || !obj)
+        {
+            return -1;
+        }
+        ai::Workshop* workshop = town->GetWorkshopByObject(obj);
+        return workshop ? static_cast<int>(workshop->GetObjectSellPrice(obj)) : -3;
+    }
+
+    void GunFullReload(ai::Obj* gun)
+    {
+        // RVA 0x553C60 - a full charge and a full pool, ready to fire.
+        if (!gun)
+        {
+            return;
+        }
+        unsigned int chargeSize = 0;
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            chargeSize = static_cast<ai::Gun*>(gun)->GetChargeSize();
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            chargeSize = static_cast<ai::CompoundGun*>(gun)->GetChargeSize();
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            static_cast<ai::Gun*>(gun)->SetShellsInCurrentCharge(chargeSize);
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            static_cast<ai::CompoundGun*>(gun)->SetShellsInCurrentCharge(chargeSize);
+        }
+        unsigned int poolSize = 0;
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            poolSize = static_cast<ai::Gun*>(gun)->GetShellsPoolSize();
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            poolSize = static_cast<ai::CompoundGun*>(gun)->GetShellsPoolSize();
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            static_cast<ai::Gun*>(gun)->SetShellsInPool(poolSize);
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            static_cast<ai::CompoundGun*>(gun)->SetShellsInPool(poolSize);
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            static_cast<ai::Gun*>(gun)->SetChargeState(ai::Gun::csReady);
+        }
+        else if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            static_cast<ai::CompoundGun*>(gun)->SetChargeState(ai::Gun::csReady);
+        }
+    }
+
+    void RepairVehiclePart(ai::VehiclePart* vp)
+    {
+        // RVA 0x556BB0 - full durability, and a gun is also fully reloaded.
+        if (!vp)
+        {
+            return;
+        }
+        if (vp->IsKindOf(&ai::CompoundVehiclePart::m_classCompoundVehiclePart))
+        {
+            auto* cvp = static_cast<ai::CompoundVehiclePart*>(vp);
+            cvp->SetDurability(cvp->GetMaxDurability());
+        }
+        else
+        {
+            vp->Durability().setToMax();
+        }
+        if (vp->IsKindOf(&ai::Gun::m_classGun) || vp->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            GunFullReload(vp);
+        }
+    }
+
+    void RepairVehicle(ai::Vehicle* v)
+    {
+        // RVA 0x556B10 - full health, and every part repaired.
+        if (!v)
+        {
+            return;
+        }
+        v->Health().setToMax();
+        for (auto it = v->begin(); it != v->end(); ++it)
+        {
+            RepairVehiclePart(it->second);
+        }
+    }
+
+    void RepairObj(ai::Obj* o)
+    {
+        // RVA 0x556AD0
+        if (!o)
+        {
+            return;
+        }
+        if (o->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            RepairVehicle(static_cast<ai::Vehicle*>(o));
+        }
+        else if (o->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
+        {
+            RepairVehiclePart(static_cast<ai::VehiclePart*>(o));
+        }
+    }
+
+    bool IsGadgetCompatibleWithVehicle(int gadgetId, int vehicleId)
+    {
+        // RVA 0x554550 - the vehicle has room for at least one gadget of this kind.
+        if (gadgetId == -1 || vehicleId == -1)
+        {
+            return false;
+        }
+        ai::Obj* gadget = ai::theObjects->GetEntityByObjId(gadgetId);
+        if (!gadget || !gadget->IsKindOf(&ai::Gadget::m_classGadget))
+        {
+            return false;
+        }
+        ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (!vehicleObj || !vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            return false;
+        }
+        ai::PrototypeInfo const* proto = gadget->GetPrototypeInfo();
+        if (!proto)
+        {
+            return false;
+        }
+        CStr const resourceName = ai::theResourceManager->GetResourceName(proto->m_resourceId);
+        return static_cast<ai::Vehicle*>(vehicleObj)->GetMaxGadgets(resourceName) > 0;
+    }
+
+    bool IsChildObjCompatibleWithVehicle(int objId, int vehicleId)
+    {
+        // RVA 0x5544C0
+        if (objId == -1 || vehicleId == -1)
+        {
+            return false;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj || !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            return false;
+        }
+        if (obj->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
+        {
+            return IsVehiclePartCompatibleWithVehicle(objId, vehicleId);
+        }
+        if (!obj->IsKindOf(&ai::Gadget::m_classGadget))
+        {
+            return false;
+        }
+        return IsGadgetCompatibleWithVehicle(objId, vehicleId);
+    }
+
+    void GetObjetsInRepositoryByResourceType(
+        ai::GeomRepository const* repository,
+        int resourceId,
+        std::vector<int, std::allocator<int>>& objIds)
+    {
+        // RVA 0x5530B0
+        objIds.clear();
+        if (!repository || resourceId == -1)
+        {
+            return;
+        }
+
+        int const numItems = static_cast<int>(repository->GetNumItems());
+        for (int i = 0; i < numItems; ++i)
+        {
+            ai::GeomRepositoryItem const item = repository->GetItem(i);
+            ai::Obj* obj = ai::theObjects->GetEntityByObjId(item.GetObjId());
+            if (!obj || !obj->IsKindOf(&ai::Obj::m_classObj))
+            {
+                continue;
+            }
+
+            ai::PrototypeInfo const* prototypeInfo = obj->GetPrototypeInfo();
+            if (prototypeInfo && ai::theResourceManager->bResourceIsKindOf(prototypeInfo->m_resourceId, resourceId))
+            {
+                objIds.push_back(obj->GetId());
+            }
+        }
+    }
+
+    bool IsVehiclePartCompatibleWithVehicle(int vpId, int vehicleId)
+    {
+        // RVA 0x5531B0 - walks the vehicle prototype's part slots and reports
+        // whether any still-attachable one accepts the part's resource.
+        if (vpId == -1 || vehicleId == -1)
+        {
+            return false;
+        }
+
+        ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
+        ai::Vehicle* vehicle = (vehicleObj && vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle)) ?
+            static_cast<ai::Vehicle*>(vehicleObj) :
+            nullptr;
+
+        ai::Obj* vpObj = ai::theObjects->GetEntityByObjId(vpId);
+        ai::VehiclePart* vp = (vpObj && vpObj->IsKindOf(&ai::VehiclePart::m_classVehiclePart)) ?
+            static_cast<ai::VehiclePart*>(vpObj) :
+            nullptr;
+
+        if (!vehicle || !vp)
+        {
+            return false;
+        }
+
+        ai::PrototypeInfo const* vpPrototypeInfo = ai::thePrototypeManager->GetPrototypeInfo(vp->GetPrototypeId());
+        if (!vpPrototypeInfo)
+        {
+            return false;
+        }
+        int const vpResourceId = vpPrototypeInfo->m_resourceId;
+
+        auto const* vehiclePrototypeInfo =
+            static_cast<ai::ComplexPhysicObjPrototypeInfo const*>(vehicle->GetPrototypeInfo());
+        if (!vehiclePrototypeInfo)
+        {
+            return false;
+        }
+
+        auto const& allPartNames = vehiclePrototypeInfo->GetAllPartNames();
+        for (int i = 0; i < static_cast<int>(allPartNames.size()); ++i)
+        {
+            CStr const& partName = allPartNames[i];
+            if (!vehicle->CanPartBeAttached(partName))
+            {
+                continue;
+            }
+            auto const* partDescription = vehiclePrototypeInfo->GetPartDescriptionByName(partName);
+            if (partDescription &&
+                ai::theResourceManager->bResourceIsKindOf(vpResourceId, partDescription->GetPartResourceId()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void GetCompatibleVehiclePartsFromWorkshop(
+        int workshopId,
+        int vpResourceId,
+        int vehicleId,
+        std::vector<int, std::allocator<int>>& ids)
+    {
+        // RVA 0x553D70
+        ids.clear();
+        if (workshopId == -1 || vpResourceId == -1 || vehicleId == -1)
+        {
+            return;
+        }
+
+        ai::Obj* workshopObj = ai::theObjects->GetEntityByObjId(workshopId);
+        if (!workshopObj || !workshopObj->IsKindOf(&ai::Workshop::m_classWorkshop))
+        {
+            return;
+        }
+        auto* workshop = static_cast<ai::Workshop*>(workshopObj);
+
+        ai::Obj* vehicleObj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (!vehicleObj || !vehicleObj->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            return;
+        }
+
+        if (!ai::theResourceManager->bResourceIsKindOf(
+                vpResourceId, ai::theResourceManager->GetResourceId(CStr("VEHICLE_PART"))))
+        {
+            return;
+        }
+
+        ai::GeomRepository const* repository =
+            workshop->GetRepositoryByType(ai::Workshop::GetRepositoryTypeByResourceId(vpResourceId));
+        if (!repository)
+        {
+            return;
+        }
+
+        std::vector<int> allIds;
+        GetObjetsInRepositoryByResourceType(repository, vpResourceId, allIds);
+        for (int i = 0; i < static_cast<int>(allIds.size()); ++i)
+        {
+            if (IsVehiclePartCompatibleWithVehicle(allIds[i], vehicleId))
+            {
+                ids.push_back(allIds[i]);
+            }
+        }
     }
 
     void GetGunsForVehicle(int vehicleId, retruxx::vector<ai::Obj*>& guns)
@@ -242,42 +1019,265 @@ namespace help
             }
         }
     }
-    ActionType GetRandomMoveAnimation(m3d::AnimatedModel*)
+    void GetAllMoveAnimations(retruxx::vector<ActionType>& moveAnimations)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        moveAnimations.clear();
+        moveAnimations.push_back(AT_BLOCK1);
+        moveAnimations.push_back(AT_BLOCK2);
+        moveAnimations.push_back(AT_DEATH1);
+        moveAnimations.push_back(AT_DEATH2);
     }
 
-    bool IsBoss(ai::Obj const*)
+    void GetAllStandAnimations(retruxx::vector<ActionType>& standAnimations)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        standAnimations.clear();
+        standAnimations.push_back(AT_STAND1);
+        standAnimations.push_back(AT_STAND2);
+        standAnimations.push_back(AT_MOVE1);
     }
+
+    ActionType GetRandomMoveAnimation(m3d::AnimatedModel* model)
+    {
+        if (!model)
+        {
+            return AT_NUMTYPES;
+        }
+        retruxx::vector<ActionType> moveAnimations;
+        GetAllMoveAnimations(moveAnimations);
+        return moveAnimations[rand() % moveAnimations.size()];
+    }
+
+    ActionType GetRandomStandAnimation(m3d::AnimatedModel* model)
+    {
+        if (!model)
+        {
+            return AT_NUMTYPES;
+        }
+        retruxx::vector<ActionType> standAnimations;
+        GetAllStandAnimations(standAnimations);
+        return standAnimations[rand() % standAnimations.size()];
+    }
+
+    bool IsMoveAnimation(ActionType action)
+    {
+        // RVA 0x5560C0
+        retruxx::vector<ActionType> moveAnimations;
+        GetAllMoveAnimations(moveAnimations);
+        return std::find(begin(moveAnimations), end(moveAnimations), action) != end(moveAnimations);
+    }
+
+    bool IsStandAnimation(ActionType action)
+    {
+        // RVA 0x556120
+        retruxx::vector<ActionType> standAnimations;
+        GetAllStandAnimations(standAnimations);
+        return std::find(begin(standAnimations), end(standAnimations), action) != end(standAnimations);
+    }
+
+    void RandomizeCurAnimationOnFinish(
+        m3d::AnimatedModel* model,
+        m3d::AnimInfo* animInfo,
+        help::_ActionType nextActionType)
+    {
+        // RVA 0x5561E0
+        if (!model || !animInfo)
+        {
+            return;
+        }
+        auto const* curAnimation = animInfo->GetCurAnimation();
+        if (!curAnimation)
+        {
+            return;
+        }
+
+        short const numFrames = curAnimation->m_numFrames;
+        if (numFrames != 0 && animInfo->CurAnimFrame() < numFrames - 2)
+        {
+            return;
+        }
+
+        ActionType const action = curAnimation->m_action;
+        if (action == AT_NUMTYPES)
+        {
+            return;
+        }
+
+        ActionType next = AT_NUMTYPES;
+        switch (nextActionType)
+        {
+        case _AT_STAND:
+            next = GetRandomStandAnimation(model);
+            break;
+        case _AT_MOVE:
+            model->SetNextForAnimation(action, GetRandomMoveAnimation(model));
+            return;
+        case _AT_NUMTYPES:
+            // Stay within whichever set the current animation came from; an
+            // action in neither set queues nothing at all.
+            if (IsMoveAnimation(action))
+            {
+                model->SetNextForAnimation(action, GetRandomMoveAnimation(model));
+                return;
+            }
+            if (!IsStandAnimation(action))
+            {
+                return;
+            }
+            next = GetRandomStandAnimation(model);
+            break;
+        default:
+            break;
+        }
+        model->SetNextForAnimation(action, next);
+    }
+
+    int GetScaledFontId(int patternFontId, float wantedFontSz)
+    {
+        auto* gfx = m3d::ui::Wnd::GetGfxServer();
+        m3d::ui::Font const* patternFont = gfx->GetFontById(patternFontId);
+        if (!patternFont)
+        {
+            return -1;
+        }
+
+        CStr const fontName = patternFont->m_nameShort;
+        m3d::ui::FontType const type = patternFont->m_type;
+
+        m3d::ui::FontParams params;
+        if (type == m3d::ui::FONT_TYPE_SELFMAKING)
+        {
+            params.ttfParams.style = 1;
+        }
+        else
+        {
+            params.ttfParams.style = patternFont->m_style;
+        }
+        params.ttfParams.codePage = M3D_APP->m_codePage.CodePage;
+
+        return gfx->GetFontId(fontName, wantedFontSz, type, params);
+    }
+
+    bool IsBoss(ai::Obj const* obj)
+    {
+        // RVA 0x555900
+        if (!obj)
+        {
+            return false;
+        }
+        ai::PrototypeInfo const* proto = obj->GetPrototypeInfo();
+        if (!proto)
+        {
+            return false;
+        }
+        return ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, ai::theResourceManager->GetResourceId("BOSS"));
+    }
+
     CStr GetClanAbbreviationByName(CStr const& clanName)
     {
-        return clanName + "_abb";
+        return M3D_APP->GetStringByStringId0(clanName + "_abb");
     }
-    CStr GetClanFullNameByName(CStr const&)
+
+    CStr GetClanFullNameByName(CStr const& clanName)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x551BD0
+        return M3D_APP->GetStringByStringId0(clanName);
     }
+
     CStr GetClanNameByBelong(int clanBelong)
     {
         return "Belong_" + CStr(clanBelong);
     }
-    CStr GetKeysForImpulse(int)
+
+    CStr GetKeysForImpulse(int impulseId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x555980 - renders every key combination bound to `impulseId` as
+        // ["Key1" + "Key2"], with alternative combinations separated by ", ".
+        CStr strKeys;
+        std::vector<std::vector<int>> const keySets = M3D_APP->m_pImpulses->GetKeysForImpulse(impulseId, 0);
+
+        for (int i = 0; i < static_cast<int>(keySets.size()); ++i)
+        {
+            std::vector<int> const& keySet = keySets[i];
+            for (int j = 0; j < static_cast<int>(keySet.size()); ++j)
+            {
+                CStr const keyName = M3D_APP->m_pImpulses->GetKeyNameById(keySet[j]);
+                CStr const keyFullName = M3D_APP->GetStringByStringId0(keyName);
+                strKeys += CStr("\"") + keyFullName + "\"";
+                if (j < static_cast<int>(keySet.size()) - 1)
+                {
+                    strKeys += " + ";
+                }
+            }
+            if (i < static_cast<int>(keySets.size()) - 1)
+            {
+                strKeys += ", ";
+            }
+        }
+        return strKeys;
+    }
+    CStr CreateTooltipForImpulse(int impulseId)
+    {
+        // RVA 0x555D50
+        return M3D_APP->GetStringByStringId0("KeySet") + ": " + GetKeysForImpulse(impulseId);
+    }
+    ai::Vehicle* GetPlayerVehicle()
+    {
+        // RVA 0x5513B0
+        return ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr;
+    }
+    int GetPlayerVehicleId()
+    {
+        // RVA 0x5513D0
+        ai::Vehicle const* vehicle = GetPlayerVehicle();
+        return vehicle ? vehicle->GetId() : -1;
     }
     CStr GetServiceSymbols()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5534E0
+        return ".~!@#$%^&*|\\/\"<>?:";
     }
     CStr GetServiceSymbolsForVisualisation()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5534F0 - the symbols separated by spaces, with the engine's own markup characters escaped by '#'.
+        CStr const symbols(".~!@#$%^&*|\\/\"<>?:");
+        CStr strRes;
+        int const len = symbols.c_str() ? static_cast<int>(strlen(symbols.c_str())) : 0;
+        CStr const engineSymbols("|@$#&");
+        for (int i = 0; i < len; ++i)
+        {
+            char const c = symbols.c_str()[i];
+            if (strchr(engineSymbols.c_str(), c))
+            {
+                strRes += CStr("#");
+            }
+            char const sym[2] = {symbols.c_str()[i], 0};
+            strRes += CStr(sym);
+            if (i < len - 1)
+            {
+                strRes += CStr(" ");
+            }
+        }
+        return strRes;
     }
-    CStr GetVehiclePartNameByResourceId(int)
+
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        CStr const CABIN_21("CABIN");
+        CStr const BASKET_21("BASKET");
+    }  // namespace
+
+    CStr GetVehiclePartNameByResourceId(int vpResourceId)
+    {
+        // RVA 0x554150 - the resource name of the part's kind, empty for anything else.
+        if (ai::theResourceManager->bResourceIsKindOf(vpResourceId, ai::theResourceManager->GetResourceId("CABIN")))
+        {
+            return CABIN_21;
+        }
+        if (ai::theResourceManager->bResourceIsKindOf(vpResourceId, ai::theResourceManager->GetResourceId("BASKET")))
+        {
+            return BASKET_21;
+        }
+        return CStr();
     }
     int RoundHealth(float val)
     {
@@ -288,10 +1288,63 @@ namespace help
         return 1;
     }
 
-    void SetWndTextAlpha(m3d::ui::Wnd*, unsigned char)
+    void SetWndTextAlpha(m3d::ui::Wnd* w, unsigned char alpha)
     {
-        // TODO: implement SetWndTextAlpha
-        // RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x554F60 - sets the alpha of the text colour and of every inline "@AARRGGBB" colour code in the text;
+        // "#@" is an escaped '@'.
+        if (!w)
+        {
+            return;
+        }
+        unsigned int const color = m3d::ui::Wnd::GetGfxServer()->GetColor(w->GetTextColor());
+        w->SetTextColor((static_cast<unsigned int>(alpha) << 24) | (color & 0xFFFFFF));
+
+        CStr const a = w->GetText();
+        if (!a.c_str() || !strlen(a.c_str()))
+        {
+            return;
+        }
+        CStr newText;
+        int const len = static_cast<int>(strlen(a.c_str()));
+        int idx = 0;
+        while (idx < len)
+        {
+            char const* at = strchr(a.c_str() + idx, '@');
+            if (!at)
+            {
+                break;
+            }
+            idx = static_cast<int>(at - a.c_str());
+            if (idx + 9 > len)
+            {
+                break;
+            }
+            if (idx - 1 >= 0 && a.c_str()[idx - 1] == '#')
+            {
+                // NOTE: the '@' is skipped by 2, not 1; harmless as the next strchr finds the same codes.
+                idx += 2;
+            }
+            else
+            {
+                char strAlpha[16];
+                sprintf(strAlpha, "%02x", alpha);
+                if (!newText.c_str() || !strlen(newText.c_str()))
+                {
+                    newText = a;
+                }
+                const_cast<char*>(newText.c_str())[idx + 1] = strAlpha[0];
+                const_cast<char*>(newText.c_str())[idx + 2] = strAlpha[1];
+                idx += 9;
+            }
+            if (idx < 0)
+            {
+                break;
+            }
+        }
+        if (newText.c_str() && strlen(newText.c_str()))
+        {
+            w->SetText(newText);
+        }
     }
 
     bool WindowsDirExists(CStr const& dirPath)
@@ -306,8 +1359,881 @@ namespace help
         return fileAttributes != -1 && (fileAttributes & 0x10) == 0;
     }
 
-    int DestroyVehicle(int)
+    bool IsWndValid(m3d::ui::Wnd const* w)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return w && M3D_APP->IsWndAlive(w, -1) && w->Valid();
+    }
+
+    int DestroyVehicle(int vehicleId)
+    {
+        // RVA 0x553F40. An unset id counts as success - there was nothing to destroy.
+        if (vehicleId == -1)
+        {
+            return 1;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(vehicleId);
+        if (!obj || !obj->IsKindOf(&ai::Vehicle::m_classVehicle))
+        {
+            return 0;
+        }
+        obj->Remove();
+        return 1;
+    }
+
+    NavPoint::ObjectType GetNpObjectTypeByQuestType(help::QuestType questType)
+    {
+        // RVA 0x5557B0
+        if (questType == QUESTTYPE_STATIC)
+        {
+            return NavPoint::OBJECT_TYPE_STATIC_QUEST;
+        }
+        if (questType == QUESTTYPE_DYNAMIC)
+        {
+            return NavPoint::OBJECT_TYPE_DYNAMIC_QUEST;
+        }
+        return NavPoint::OBJECT_TYPE_INVALID;
+    }
+
+    ai::Vehicle* CreateVehicleFromPrototype(int prototypeId)
+    {
+        // RVA 0x553ED0
+        if (prototypeId == -1)
+        {
+            return nullptr;
+        }
+        int const objId = ai::theObjects->CreateNewObject(prototypeId, "VehicleToSell", -1, -1);
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        return (obj && obj->IsKindOf(&ai::Vehicle::m_classVehicle)) ? static_cast<ai::Vehicle*>(obj) : nullptr;
+    }
+
+    void RemoveAllPartsFromVehicle(ai::Vehicle* vehicle)
+    {
+        // RVA 0x553FA0 - strips every part except the chassis, which the vehicle
+        // cannot exist without.
+        for (auto it = vehicle->begin(); it != vehicle->end();)
+        {
+            // Advance before touching the part: both calls below can erase the
+            // entry we are standing on.
+            auto const cur = it++;
+            ai::VehiclePart* part = cur->second;
+            if (!part || part->GetPartName() == CStr("CHASSIS"))
+            {
+                continue;
+            }
+            CStr const partName = cur->first;
+            vehicle->SetPartByName(partName, nullptr, true);
+            part->Remove();
+        }
+    }
+
+    ai::Bar* GetBarWithBarmanForTown(ai::Town const* town)
+    {
+        if (!town)
+        {
+            return nullptr;
+        }
+        for (auto* building : town->GetBuildingByType(ai::BAR))
+        {
+            if (building && building->IsKindOf(&ai::Bar::m_classBar))
+            {
+                auto* bar = static_cast<ai::Bar*>(building);
+                if (bar->bWithBarman())
+                {
+                    return bar;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    ai::Bar* GetBarWithoutBarmanForTown(ai::Town const* town)
+    {
+        if (!town)
+        {
+            return nullptr;
+        }
+        for (auto* building : town->GetBuildingByType(ai::BAR))
+        {
+            if (building && building->IsKindOf(&ai::Bar::m_classBar))
+            {
+                auto* bar = static_cast<ai::Bar*>(building);
+                if (!bar->bWithBarman())
+                {
+                    return bar;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    ai::Building* GetShopForTown(ai::Town const* town)
+    {
+        if (!town)
+        {
+            return nullptr;
+        }
+        // Matches the shipped game (RVA 0x554C20): it fetches the SHOP buildings
+        // but type-checks the first one against ai::Workshop.
+        auto const buildings = town->GetBuildingByType(ai::SHOP);
+        if (!buildings.empty() && buildings.front() && buildings.front()->IsKindOf(&ai::Workshop::m_classWorkshop))
+        {
+            return buildings.front();
+        }
+        return nullptr;
+    }
+
+    ai::Building* GetWorkshopForTown(ai::Town const* town)
+    {
+        if (!town)
+        {
+            return nullptr;
+        }
+        auto const buildings = town->GetBuildingByType(ai::WORKSHOP);
+        if (!buildings.empty() && buildings.front() && buildings.front()->IsKindOf(&ai::Workshop::m_classWorkshop))
+        {
+            return buildings.front();
+        }
+        return nullptr;
+    }
+
+    PointBase<float> GetRelScreenPtByWorldPos(CVector const& worldPos)
+    {
+        // RVA 0x154350
+        CVector const orgInv = M3D_RENDERER->MatGetOrgInv();
+        CVector const relToCam{worldPos.x - orgInv.x, worldPos.y - orgInv.y, worldPos.z - orgInv.z};
+        CVector const screenPt = M3D_RENDERER->Project(relToCam);
+
+        PointBase<float> result{screenPt.x, screenPt.y};
+        M3D_RENDERER->AbsToRel(result.x, result.y);
+        return result;
+    }
+
+    ai::eTolerance GetObjTolerance(int objId)
+    {
+        if (!ai::thePlayer)
+        {
+            return ai::RS_MAX;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj)
+        {
+            return ai::RS_MAX;
+        }
+        return ai::pServer->CheckTolerance(ai::thePlayer->GetBelong(), obj->GetBelong());
+    }
+
+    bool CanGunFire(ai::Obj const* gun)
+    {
+        // RVA 0x554E60
+        if (!gun)
+        {
+            return false;
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            return static_cast<ai::Gun const*>(gun)->CanFire();
+        }
+        if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            return static_cast<ai::CompoundGun const*>(gun)->CanFire();
+        }
+        return false;
+    }
+
+    bool CanGunShotToSeenObj(ai::Obj const* gun)
+    {
+        // RVA 0x554DE0 - whether the gun can hit what the player's vehicle is looking at, if that is alive.
+        if (!gun || !ai::thePlayer)
+        {
+            return false;
+        }
+        ai::Vehicle const* vehicle = ai::thePlayer->GetVehicle();
+        if (!vehicle)
+        {
+            return false;
+        }
+        int const targetId = vehicle->GetSeenObjId();
+        if (targetId == -1)
+        {
+            return false;
+        }
+        ai::Obj* target = ai::theObjects->GetEntityByObjId(targetId);
+        if (!target || !target->IsAlive())
+        {
+            return false;
+        }
+        if (gun->IsKindOf(&ai::Gun::m_classGun))
+        {
+            return static_cast<ai::Gun const*>(gun)->CanShotToTarget(targetId);
+        }
+        if (gun->IsKindOf(&ai::CompoundGun::m_classCompoundGun))
+        {
+            return static_cast<ai::CompoundGun const*>(gun)->CanShotToTarget(targetId);
+        }
+        return false;
+    }
+
+    bool IsGunWithCharging(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->IsWithCharging();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->IsWithCharging();
+        }
+        return false;
+    }
+
+    unsigned int GetGunChargeSize(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetChargeSize();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetChargeSize();
+        }
+        return 0;
+    }
+
+    unsigned int GetGunShellsInCurrentCharge(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellsInCurrentCharge();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellsInCurrentCharge();
+        }
+        return 0;
+    }
+
+    unsigned int GetGunShellsInPool(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellsInPool();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellsInPool();
+        }
+        return 0;
+    }
+
+    void SetGunShellsInCurrentCharge(ai::Obj* gun, int value)
+    {
+        // RVA 0x553BA0
+        if (auto* g = RT_DYNCAST(gun, ai::Gun))
+        {
+            g->SetShellsInCurrentCharge(value);
+        }
+        else if (auto* cg = RT_DYNCAST(gun, ai::CompoundGun))
+        {
+            cg->SetShellsInCurrentCharge(value);
+        }
+    }
+
+    void SetGunShellsInPool(ai::Obj* gun, int value)
+    {
+        // RVA 0x553BE0
+        if (auto* g = RT_DYNCAST(gun, ai::Gun))
+        {
+            g->SetShellsInPool(value);
+        }
+        else if (auto* cg = RT_DYNCAST(gun, ai::CompoundGun))
+        {
+            cg->SetShellsInPool(value);
+        }
+    }
+
+    int GetGunShellPrototypeId(ai::Obj const* gun)
+    {
+        // RVA 0x553B60
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellPrototypeId();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellPrototypeId();
+        }
+        return -1;
+    }
+
+    float GetGunRechargingTime(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetRechargingTime();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetRechargingTime();
+        }
+        return 0.0f;
+    }
+
+    float GetGunCurrentRechargingTime(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetCurrentRechargingTime();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetCurrentRechargingTime();
+        }
+        return 0.0f;
+    }
+
+    ai::FiringTypes GetGunFiringType(ai::Obj const* gun)
+    {
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            if (auto const* pi = g->GetPrototypeInfo())
+            {
+                return pi->m_firingType;
+            }
+        }
+        else if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            if (auto const* pi = cg->GetPrototypeInfo())
+            {
+                return pi->GetFiringType();
+            }
+        }
+        return ai::FT_NUM_FIRING_TYPES;
+    }
+
+    bool IsGunWithShellsPoolLimit(ai::Obj const* gun)
+    {
+        // RVA 0x5514A0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->IsWithShellsPoolLimit();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->IsWithShellsPoolLimit();
+        }
+        return false;
+    }
+
+    bool CanGunBeReloaded(ai::Obj const* gun)
+    {
+        // RVA 0x5538B0
+        return IsGunWithCharging(gun) && IsGunWithShellsPoolLimit(gun);
+    }
+
+    int GetFuelPriceForOneUnit(int vehicleId, int townId)
+    {
+        // RVA 0x553940 - NOTE: the shipped body only checks that both ids resolve
+        // and then returns a flat 1; there is no per-town fuel pricing.
+        ai::Obj* vehicle = ai::theObjects->GetEntityByObjId(vehicleId);
+        ai::Obj* town = ai::theObjects->GetEntityByObjId(townId);
+        bool const bVehicle = vehicle && vehicle->IsKindOf(&ai::Vehicle::m_classVehicle);
+        bool const bTown = town && town->IsKindOf(&ai::Town::m_classTown);
+        return (bVehicle && bTown) ? 1 : -1;
+    }
+
+    unsigned int GetGunShellsPoolSize(ai::Obj const* gun)
+    {
+        // RVA 0x5516A0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetShellsPoolSize();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetShellsPoolSize();
+        }
+        return 0;
+    }
+
+    ai::DamageType GetGunDamageType(ai::Obj const* gun)
+    {
+        // RVA 0x5516E0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetDamageType();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetDamageType();
+        }
+        return ai::DAMAGE_NUM_TYPES;
+    }
+
+    float GetGunDamage(ai::Obj const* gun)
+    {
+        // RVA 0x551720
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->GetDamage();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetDamage();
+        }
+        return 0.0f;
+    }
+
+    float GetGunDurability(ai::Obj const* gun)
+    {
+        // RVA 0x554EA0 - a plain gun reads the durability component directly,
+        // a compound one asks the base class.
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->Durability().value().get();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetDurability();
+        }
+        return 0.0f;
+    }
+
+    float GetGunMaxDurability(ai::Obj const* gun)
+    {
+        // RVA 0x554EE0
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->Durability().maxValue().get();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->GetMaxDurability();
+        }
+        return 0.0f;
+    }
+
+    bool IsGunDurabilityEnoughForFiring(ai::Obj const* gun)
+    {
+        // RVA 0x554F20
+        if (auto const* g = RT_DYNCAST(gun, ai::Gun const))
+        {
+            return g->IsDurabilityEnoughForFiring();
+        }
+        if (auto const* cg = RT_DYNCAST(gun, ai::CompoundGun const))
+        {
+            return cg->IsDurabilityEnoughForFiring();
+        }
+        return false;
+    }
+
+    float GetGunAccuracy(ai::Obj const* gun)
+    {
+        // RVA 0x5517B0 - compound guns are followed down to their first sub-part
+        // until a bullet launcher turns up.
+        ai::Obj const* current = gun;
+        while (current)
+        {
+            if (auto const* bl = RT_DYNCAST(current, ai::BulletLauncher const))
+            {
+                return bl->GetAccuracyClamped();
+            }
+            auto const* cg = RT_DYNCAST(current, ai::CompoundGun const);
+            if (!cg)
+            {
+                // A gun that is not a bullet launcher has no spread to report.
+                return 100.0f;
+            }
+            current = cg->begin()->second.vp;
+        }
+        return 0.0f;
+    }
+
+    CStr DamageType2Str(ai::DamageType damageType)
+    {
+        // RVA 0x5513F0
+        struct DamageType2StrEntry
+        {
+            ai::DamageType m_damageType;
+            char const* m_damageName;
+        };
+        static DamageType2StrEntry const l_damageType2Str[] = {
+            {ai::DAMAGE_PIERCING, "Piercing"},
+            {ai::DAMAGE_BLAST, "Blast"},
+            {ai::DAMAGE_ENERGY, "Energy"},
+            {ai::DAMAGE_WATER, "Water"},
+        };
+
+        for (auto const& entry : l_damageType2Str)
+        {
+            if (entry.m_damageType == damageType)
+            {
+                return entry.m_damageName;
+            }
+        }
+        return {};
+    }
+
+    int GetBaseBuyPriceByObjId(int objId)
+    {
+        // RVA 0x550D70 - the list price, with no town or workshop coefficients
+        // applied.
+        if (objId == -1)
+        {
+            return -1;
+        }
+        ai::Obj const* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj || !obj->IsKindOf(&ai::Obj::m_classObj))
+        {
+            return -1;
+        }
+        return static_cast<int>(obj->GetPrice(nullptr));
+    }
+
+    ObjectOwnerType GetObjectOwnerType(int objId)
+    {
+        // RVA 0x550EA0 - while the trade window is up it is the authority on who
+        // owns what; otherwise ownership follows the repository the object is in.
+        if (objId == -1)
+        {
+            return OWNER_INVALID;
+        }
+        ai::Obj* obj = ai::theObjects->GetEntityByObjId(objId);
+        if (!obj)
+        {
+            return OWNER_INVALID;
+        }
+
+        ref_ptr<m3d::ui::Wnd> const wndZnayuKakProdat =
+            M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_ZNAYU_KAK_PRODAT);
+        if (wndZnayuKakProdat && wndZnayuKakProdat->IsKindOf(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd) &&
+            wndZnayuKakProdat->IsChildOf(M3D_APP))
+        {
+            switch (static_cast<ZnayuKakProdatWnd const*>(wndZnayuKakProdat.get())->GetItemBelong(objId))
+            {
+            case ZnayuKakProdatWnd::BELONG_PLAYER:
+                return OWNER_PLAYER;
+            case ZnayuKakProdatWnd::BELONG_WORKSHOP:
+                return OWNER_TOWN;
+            default:
+                return OWNER_INVALID;
+            }
+        }
+
+        ai::Vehicle* playerVehicle = GetPlayerVehicle();
+        ai::Vehicle* workshopVehicle = M3D_APP->m_pInterfaceManager->GetVehicleSellingInWorkshop();
+        ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+
+        ai::GeomRepository const* parentRepository = obj->GetParentRepository();
+        if (parentRepository)
+        {
+            if (playerVehicle && parentRepository == playerVehicle->GetRepository())
+            {
+                return OWNER_PLAYER;
+            }
+            if (town)
+            {
+                auto const& buildings = town->GetAllBuildings();
+                for (int i = 0; i < static_cast<int>(buildings.size()); ++i)
+                {
+                    auto* building = buildings[i];
+                    if (!building || !building->IsKindOf(&ai::Workshop::m_classWorkshop))
+                    {
+                        continue;
+                    }
+                    auto* workshop = static_cast<ai::Workshop*>(building);
+                    for (int type = ai::WORKSHOP_GOODS; type < ai::WORKSHOP_NUM_TYPES; ++type)
+                    {
+                        if (parentRepository ==
+                            workshop->GetRepositoryByType(static_cast<ai::WorkshopRepositoryType>(type)))
+                        {
+                            return OWNER_TOWN;
+                        }
+                    }
+                }
+                if (workshopVehicle && parentRepository == workshopVehicle->GetRepository())
+                {
+                    return OWNER_TOWN;
+                }
+                return OWNER_INVALID;
+            }
+            return OWNER_OTHER;
+        }
+
+        // Loose objects: a vehicle, part or gadget still counts as "other",
+        // anything else has no owner at all.
+        if (obj->IsKindOf(&ai::Vehicle::m_classVehicle) || obj->IsKindOf(&ai::VehiclePart::m_classVehiclePart) ||
+            obj->IsKindOf(&ai::Gadget::m_classGadget))
+        {
+            return OWNER_OTHER;
+        }
+        return OWNER_INVALID;
+    }
+
+    int GetPriceSmart(int objId)
+    {
+        // RVA 0x551180
+        if (objId == -1)
+        {
+            return -1;
+        }
+
+        ref_ptr<m3d::ui::Wnd> const wndZnayuKakProdat =
+            M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_ZNAYU_KAK_PRODAT);
+        if (wndZnayuKakProdat && wndZnayuKakProdat->IsKindOf(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd) &&
+            wndZnayuKakProdat->IsChildOf(M3D_APP))
+        {
+            return static_cast<ZnayuKakProdatWnd const*>(wndZnayuKakProdat.get())->GetItemCost(objId);
+        }
+
+        ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+        switch (GetObjectOwnerType(objId))
+        {
+        case OWNER_PLAYER:
+            if (town)
+            {
+                return GetSellPriceByObjId(objId, town->GetId());
+            }
+            break;
+        case OWNER_TOWN:
+            return town ? GetBuyPriceByObjId(objId, town->GetId()) : GetBaseBuyPriceByObjId(objId);
+        case OWNER_OTHER:
+            break;
+        default:
+            return -1;
+        }
+        return ai::GetIntPrice(static_cast<float>(GetBaseBuyPriceByObjId(objId)) * 0.5f);
+    }
+
+    float Angle0To2Pi(float angle)
+    {
+        float const turns = static_cast<float>(static_cast<int>(angle * 0.15915494f));
+        if (angle >= 0.0f)
+        {
+            return angle - turns * 6.2831855f;
+        }
+        return angle - turns * 6.2831855f + 6.2831855f;
+    }
+
+    float AngleMinusPiToPi(float angle)
+    {
+        float const turns = static_cast<float>(static_cast<int>(angle * 0.15915494f));
+        if (angle > 3.1415927f)
+        {
+            return angle - turns * 6.2831855f - 6.2831855f;
+        }
+        if (angle < -3.1415927f)
+        {
+            return angle - turns * 6.2831855f + 6.2831855f;
+        }
+        return angle;
+    }
+
+    namespace
+    {
+        bool GetPropertyValFromObj(float& propertyVal, ai::Obj const* obj, int propertyId)
+        {
+            propertyVal = 0.0f;
+            if (!obj || propertyId == -1)
+            {
+                return false;
+            }
+            m3d::AIParam const prop = obj->GetPropertyById(propertyId);
+            if (prop.GetType() != m3d::AIPARAM_FLOAT)
+            {
+                return false;
+            }
+            propertyVal = prop.GetAsFloat();
+            return true;
+        }
+
+        bool GetDefaultPropertyValFromObj(float& propertyVal, ai::Obj const* obj, int propertyId)
+        {
+            propertyVal = 0.0f;
+            if (!obj || propertyId == -1)
+            {
+                return false;
+            }
+            m3d::AIParam const prop = obj->GetPropertyDefaultById(propertyId);
+            if (prop.GetType() != m3d::AIPARAM_FLOAT)
+            {
+                return false;
+            }
+            propertyVal = prop.GetAsFloat();
+            return true;
+        }
+
+        bool IsGadgetModificationApplicableToObjProperty(
+            ai::GadgetPrototypeInfo::ModificationInfo const& modification,
+            ai::Obj const* obj,
+            int propertyId)
+        {
+            if (!obj || propertyId == -1 || modification.m_propertyName.empty())
+            {
+                return false;
+            }
+            if (!(obj->GetPropertyName(propertyId) == modification.m_propertyName))
+            {
+                return false;
+            }
+            ai::PrototypeInfo const* protoInfo = obj->GetPrototypeInfo();
+            if (!protoInfo)
+            {
+                return false;
+            }
+
+            switch (modification.m_applierInfo.applierType)
+            {
+            case ai::GadgetPrototypeInfo::GA_VEHICLE:
+                return obj->IsKindOf(&ai::Vehicle::m_classVehicle);
+            case ai::GadgetPrototypeInfo::GA_OBJECT_BY_RESOURCE:
+                return ai::theResourceManager->bResourceIsKindOf(
+                    protoInfo->m_resourceId, modification.m_applierInfo.targetResourceId);
+            case ai::GadgetPrototypeInfo::GA_GUN_BY_TYPE:
+                if (ai::theResourceManager->bResourceIsKindOf(
+                        protoInfo->m_resourceId, ai::theResourceManager->GetResourceId("GUN")))
+                {
+                    return GetGunFiringType(obj) == modification.m_applierInfo.targetFiringType;
+                }
+                return false;
+            default:
+                return false;
+            }
+        }
+
+        // The objects a given vehicle property is actually stored on: most
+        // chassis stats live on the chassis part, cabin-driven stats (speed,
+        // torque, control) on the cabin, and the two "storage capacity"
+        // properties are shared between the cabin and basket.
+        void GetVehicleObjectsForProperty(
+            ai::Vehicle const* vehicle,
+            int propertyId,
+            std::vector<ai::Obj const*>& objects)
+        {
+            objects.clear();
+            if (!vehicle)
+            {
+                return;
+            }
+            switch (propertyId)
+            {
+            case 9:
+            case 10:
+            case 26:
+            case 27:
+                if (auto const* chassis = vehicle->GetChassis())
+                {
+                    objects.push_back(chassis);
+                }
+                break;
+            case 12:
+                objects.push_back(vehicle);
+                break;
+            case 19:
+            case 20:
+                if (auto const* cabin = vehicle->GetCabin())
+                {
+                    objects.push_back(cabin);
+                    if (auto const* basket = vehicle->GetBasket())
+                    {
+                        objects.push_back(basket);
+                    }
+                }
+                break;
+            case 22:
+            case 23:
+            case 25:
+                if (auto const* cabin = vehicle->GetCabin())
+                {
+                    objects.push_back(cabin);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        bool GetBasePropertyValFromObjImpl(
+            float& basePropertyVal,
+            ai::Obj const* obj,
+            ai::Vehicle const* vehicle,
+            int propertyId)
+        {
+            basePropertyVal = 0.0f;
+            if (!obj || !vehicle || propertyId == -1)
+            {
+                return false;
+            }
+            float value = 0.0f;
+            if (!GetPropertyValFromObj(value, obj, propertyId))
+            {
+                return false;
+            }
+            float defaultValue = 0.0f;
+            if (!GetDefaultPropertyValFromObj(defaultValue, obj, propertyId))
+            {
+                return false;
+            }
+
+            // Undo every installed gadget modification that applies to this
+            // property, recovering the value the object would have without them.
+            for (auto const& entry : vehicle->GetGadgets())
+            {
+                ai::Gadget const* gadget = entry.second;
+                if (!gadget)
+                {
+                    continue;
+                }
+                auto const* gadgetPi = gadget->GetPrototypeInfo();
+                if (!gadgetPi)
+                {
+                    continue;
+                }
+                for (auto const& modification : gadgetPi->GetModifications())
+                {
+                    if (!IsGadgetModificationApplicableToObjProperty(modification, obj, propertyId))
+                    {
+                        continue;
+                    }
+                    if (modification.m_modificationType == ai::GadgetPrototypeInfo::ModificationInfo::MULTIPLY)
+                    {
+                        value -= modification.m_value.GetAsFloat() * defaultValue;
+                    }
+                    else
+                    {
+                        value -= modification.m_value.GetAsFloat();
+                    }
+                }
+            }
+            basePropertyVal = value;
+            return true;
+        }
+    }  // namespace
+
+    float GetBasePropertyValFromObj(ai::Obj const* obj, ai::Vehicle const* vehicle, int propertyId)
+    {
+        float value = 0.0f;
+        GetBasePropertyValFromObjImpl(value, obj, vehicle, propertyId);
+        return value;
+    }
+
+    float GetBasePropertyValFromVehicle(ai::Vehicle const* vehicle, int propertyId)
+    {
+        if (!vehicle || propertyId == -1)
+        {
+            return 0.0f;
+        }
+        std::vector<ai::Obj const*> objects;
+        GetVehicleObjectsForProperty(vehicle, propertyId, objects);
+
+        float total = 0.0f;
+        for (ai::Obj const* obj : objects)
+        {
+            float value = 0.0f;
+            if (!obj || !GetBasePropertyValFromObjImpl(value, obj, vehicle, propertyId))
+            {
+                return 0.0f;
+            }
+            total += value;
+        }
+        return total;
     }
 }  // namespace help

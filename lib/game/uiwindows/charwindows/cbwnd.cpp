@@ -1,7 +1,18 @@
 #include "cbwnd.h"
+#include "izvratrepositorywnd.h"
 #include "vehiclepartwnd.h"
+#include "core/kernel.h"
 #include "core/log.h"
 #include <game/m3dgame.h>
+#include <game/uimanager/truxxuimanager.h>
+#include <game/uimanager/uidefs.h>
+#include <i_event.h>
+#include <ui/image.h>
+#include <server/objects/base/objcontainer.h>
+#include <server/objects/physicbodies/vehiclepart.h>
+#include <server/resourcemanager.h>
+#include <server/geomrepositoryitem.h>
+#include <server/objects/vehicle.h>
 
 RT_CLASS_EXPORTS_BEGIN(CBWnd)
 RT_CLASS_EXPORTS_END;
@@ -14,19 +25,46 @@ CBWnd::CBAuxInfo::CBAuxInfo()
     m_wndDisabledBgName = "wndDisabledBg";
 }
 
-void CBWnd::SetPartId(int)
+m3d::Class* CBWnd::GetBaseClass()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return RT_CLASS_LOCAL(ChildPanel);
+}
+
+m3d::Class* CBWnd::GetRtClass() const
+{
+    return RT_CLASS_LOCAL(CBWnd);
+}
+
+CBWnd::CBWnd()
+{
+    m_wndHidePictureBg = nullptr;
+    m_wndDisabledBg = nullptr;
+    m_vehicleType = InventoryWnd::VEHICLETYPE_INVALID;
+    m_mainPartId = -1;
+}
+
+CBWnd::~CBWnd()
+{
+    CBWnd::SetVehicleId(-1);
+    CBWnd::ClearChildVehicleParts();
+    // m_wndChildVehicleParts, m_mainPartName, m_cbAif and the Wnd base are
+    // destroyed by the compiler-chained destructors.
+}
+
+InventoryWnd::VehicleType CBWnd::GetVehicleTypeByGuiId(int) const
+{
+    return InventoryWnd::VEHICLETYPE_INVALID;
 }
 
 int CBWnd::GetPartId() const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return m_mainPartId;
 }
+
+// ---------------------------------------------------------------------------
 
 void CBWnd::SetVehicleId(int vehicleId)
 {
-    // TODO: check this
     if ((m_gameDataFlags & 1) != 0)
     {
         ChildPanel::SetVehicleId(vehicleId);
@@ -42,29 +80,27 @@ void CBWnd::SetVehicleId(int vehicleId)
     }
 }
 
-m3d::Class* CBWnd::GetBaseClass()
+void CBWnd::SetPartId(int partId)
 {
-    return RT_CLASS_LOCAL(ChildPanel);
-}
-
-CBWnd::~CBWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-m3d::Class* CBWnd::GetRtClass() const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-InventoryWnd::VehicleType CBWnd::GetVehicleTypeByGuiId(int) const
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-void CBWnd::UpdateOnVehiclepartChanged(CStr const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4407B0
+    if (partId != -1)
+    {
+        auto* obj = ai::theObjects->GetEntityByObjId(partId);
+        if (!obj || !obj->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
+        {
+            return;
+        }
+        // Only a part of this window's kind is taken.
+        if (CStr::my_strcmp(static_cast<ai::VehiclePart*>(obj)->GetPartName().c_str(), m_mainPartName.c_str()) != 0)
+        {
+            return;
+        }
+    }
+    m_mainPartId = partId;
+    if (IsChildOf(M3D_APP))
+    {
+        FullUpdate();
+    }
 }
 
 void CBWnd::UpdateOnMainPartChanged()
@@ -74,39 +110,155 @@ void CBWnd::UpdateOnMainPartChanged()
 
 void CBWnd::SetupChildVehicleParts()
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int CBWnd::GameDataClear(bool)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
-
-int CBWnd::GameDataSetup()
-{
-    if ((this->m_gameDataFlags & 2) == 0)
-    {
-        // TODO: implement CBWnd::GameDataSetup
-        //RETRUXX_NOT_IMPLEMENTED;
-        return 1;
-    }
-    if ((this->m_gameDataFlags & 1) != 0)
-        return 1;
-
-    M3D_LOG_ERR("CBWnd: error - fail to init because of a bad resource");
-    return 0;
+    // Empty in the shipped game (RVA 0x4408C0): the base class has no child
+    // parts of its own. BasketWnd and CabinWnd override this and do drive
+    // CreateChildVehiclePartWindow.
 }
 
 void CBWnd::ClearChildVehicleParts()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    for (auto& entry : m_wndChildVehicleParts)
+    {
+        if (entry.second)
+        {
+            M3D_APP->m_pInterfaceManager->RemoveWindow(entry.second->GetGuiId());
+        }
+    }
+    m_wndChildVehicleParts.clear();
 }
 
-int CBWnd::GameDataUpdate(void*, int)
+void CBWnd::UpdateOnVehiclepartChanged(CStr const& partName)
 {
-    // TODO: implement GameDataUpdate
-    //  RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) != 0 && IsChildOf(M3D_APP) &&
+        !CStr::my_strcmp(partName.c_str(), m_mainPartName.c_str()))
+    {
+        UpdateOnMainPartChanged();
+    }
+}
+
+void CBWnd::SetDisabledLook(bool bDisabled)
+{
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        m_wndHidePictureBg->ShowWindow(bDisabled);
+        m_wndDisabledBg->ShowWindow(bDisabled);
+    }
+}
+
+void CBWnd::OnFinishTrade()
+{
+    if (m_vehicleType == InventoryWnd::VEHICLETYPE_WORKSHOP)
+    {
+        SetVehicleId(-1);
+        GameDataClear(false);
+    }
+}
+
+void CBWnd::FullUpdate()
+{
+    UpdateOnMainPartChanged();
+}
+
+int CBWnd::GameDataClear(bool)
+{
+    SetVehicleId(-1);
+    ClearChildVehicleParts();
+    return 1;
+}
+
+int CBWnd::GameDataSetup()
+{
+    if ((m_gameDataFlags & 2) == 0)
+    {
+        m_vehicleType = GetVehicleTypeByGuiId(m_guiId);
+        bool ok = m_vehicleType != InventoryWnd::VEHICLETYPE_INVALID;
+
+        auto* child = GetChildByName(m_cbAif.m_wndHidePictureBgName);
+        if (child && child->IsKindOf(&m3d::ui::ImageWnd::m_classImageWnd))
+        {
+            m_wndHidePictureBg = static_cast<m3d::ui::ImageWnd*>(child);
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_cbAif.m_wndHidePictureBgName +
+                         " is not found or incorrect type");
+            ok = false;
+        }
+
+        child = GetChildByName(m_cbAif.m_wndDisabledBgName);
+        if (child && child->IsKindOf(&m3d::ui::ImageWnd::m_classImageWnd))
+        {
+            m_wndDisabledBg = static_cast<m3d::ui::ImageWnd*>(child);
+            if (ok)
+            {
+                m_gameDataFlags |= 1u;
+                m_wndHidePictureBg->ShowWindow(true);
+                m_wndDisabledBg->ShowWindow(true);
+            }
+        }
+        else
+        {
+            M3D_LOG_INFO("Get control error: control " + m_cbAif.m_wndDisabledBgName +
+                         " is not found or incorrect type");
+        }
+    }
+
+    if ((m_gameDataFlags & 1) != 0)
+    {
+        return 1;
+    }
+    M3D_LOG_INFO("CBWnd: error - fail to init because of a bad resource");
     return 0;
+}
+
+int CBWnd::GameDataUpdate(void* data, int dataType)
+{
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
+
+    switch (dataType)
+    {
+    case 32:
+        // RVA 0x440580 - a child part of this vehicle was sold off: it is taken off the vehicle and put back
+        // through AddThing, flushing to the reference chests unless the ground window is up.
+        if (data)
+        {
+            const auto* evt = static_cast<const m3d::Event*>(data);
+            if (evt->m_intEv[0] == m_vehicleId)
+            {
+                auto const it = m_wndChildVehicleParts.find(evt->m_strEv);
+                ai::Vehicle* vehicle = GetVehicle();
+                if (vehicle && it != m_wndChildVehicleParts.end() && it->second)
+                {
+                    vehicle->SetPartByName(evt->m_strEv, nullptr, false);
+                    ai::GeomRepositoryItem const item = it->second->GetAsRepositoryItem();
+                    ref_ptr<m3d::ui::Wnd> const groundWnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_GROUND);
+                    bool const bFlushInReferenceChests = !groundWnd || !groundWnd->IsChildOf(M3D_APP);
+                    vehicle->AddThing(item, bFlushInReferenceChests);
+                }
+            }
+        }
+        break;
+    case 34:
+        OnFinishTrade();
+        return 1;
+    case 65:
+        if (data)
+        {
+            const auto* evt = static_cast<const m3d::Event*>(data);
+            if (evt->m_intEv[0] == GetVehicleId())
+            {
+                UpdateOnVehiclepartChanged(evt->m_strEv);
+                return 1;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+    return 1;
 }
 
 int CBWnd::OnBeforeAddToWndStation()
@@ -123,30 +275,73 @@ int CBWnd::OnAfterRemoveFromWndStation()
     return m3d::ui::Wnd::OnAfterRemoveFromWndStation();
 }
 
-void CBWnd::OnFinishTrade()
+int CBWnd::CreateChildVehiclePartWindow(CStr const& partName, PointBase<float> const& origin)
 {
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    // RVA 0x440990 - builds the little VehiclePartWnd that sits on top of the
+    // cabin/basket picture for one of its child parts (a gun, a cargo slot).
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return 0;
+    }
 
-void CBWnd::FullUpdate()
-{
-    UpdateOnMainPartChanged();
-}
+    int const resourceId =
+        ai::theResourceManager->GetResourceId(ai::theResourceManager->GetResourceNameByVehiclePartName(partName));
+    if (resourceId == -1)
+    {
+        return 0;
+    }
 
-CBWnd::CBWnd()
-{
-    m_wndHidePictureBg = 0;
-    m_wndDisabledBg = 0;
-    m_vehicleType = InventoryWnd::VEHICLETYPE_INVALID;
-    m_mainPartId = -1;
-}
+    auto* wnd = static_cast<VehiclePartWnd*>(M3D_KERNEL->New("VehiclePartWnd"));
+    if (!wnd)
+    {
+        return 0;
+    }
 
-void CBWnd::SetDisabledLook(bool)
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+    // The window is sized in repository cells, so the cell size comes from the
+    // player's inventory window rather than from anything local.
+    PointBase<int> const geomSize = ai::theResourceManager->GetResource(resourceId)->GetGeomSize();
 
-int CBWnd::CreateChildVehiclePartWindow(CStr const&, PointBase<float> const&)
-{
-    RETRUXX_NOT_IMPLEMENTED;
+    ref_ptr<m3d::ui::Wnd> const wndPlayerRepository =
+        M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_PLAYERVEHICLE_INVENTORY);
+
+    PointBase<float> cellSz{0.0f, 0.0f};
+    if (wndPlayerRepository && wndPlayerRepository->IsKindOf(&IzvratRepositoryWnd::m_classIzvratRepositoryWnd))
+    {
+        cellSz = static_cast<RepositoryWnd const*>(wndPlayerRepository.get())->GetCellSize();
+    }
+
+    BoundsBase<float> b;
+    b.x0 = origin.x;
+    b.y0 = origin.y;
+    b.width = static_cast<float>(geomSize.x) * cellSz.x;
+    b.height = static_cast<float>(geomSize.y) * cellSz.y;
+
+    if (!wnd->Create(CStr(), 0x200u, b, 0))
+    {
+        wnd->DecRef();
+        return 0;
+    }
+
+    wnd->SetPane(m_cbAif.m_vehiclePartPaneName);
+    wnd->SetPaneFlags(6);
+    wnd->SetVehicleId(m_vehicleId);
+    wnd->SetPartName(partName);
+
+    AddChild(wnd);
+    MoveChildToFirstPosition(wnd);
+    m_wndChildVehicleParts.insert(VehiclePartPair(partName, wnd));
+
+    int guiId = -1;
+    M3D_APP->m_pInterfaceManager->AddWindow(wnd, guiId, false, false);
+
+    // The part window listens for the vehicle/repository events the character
+    // screen raises while parts are moved around.
+    std::vector<int> events;
+    for (int event = 91; event <= 98; ++event)
+    {
+        events.push_back(event);
+    }
+    events.push_back(65);
+    M3D_APP->m_pInterfaceManager->SetEventsForWindow(guiId, events);
+    return 1;
 }

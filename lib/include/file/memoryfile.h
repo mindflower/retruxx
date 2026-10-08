@@ -1,8 +1,6 @@
 #pragma once
 #include "filestream.h"
 #include "package.h"
-//TODO: windows.h
-#include <Windows.h>
 
 namespace m3d
 {

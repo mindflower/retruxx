@@ -1,44 +1,50 @@
 #pragma once
 #include "cblist.h"
 
-class CabinButton :  public CBButton
+class CabinButton : public CBButton
 {
-public:
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    virtual ~CabinButton();
+    struct CabinAuxInfo
+    {
+        /* 0x0000 */ CStr m_wndSpeedName;
+        /* 0x000c */ CStr m_wndTorqueName;
+        /* 0x0018 */ CStr m_wndControlName;
+        CabinAuxInfo(CabinButton::CabinAuxInfo const&);
+        CabinAuxInfo();
+    }; /* size: 0x0024 */
+
 protected:
-    CabinButton(CabinButton const &);
+    virtual int CreateChildren() override /* 0x120 */;
+    virtual int FullUpdate() override /* 0x124 */;
+    /* 0x0250 */ m3d::ui::Wnd* m_wndSpeed;
+    /* 0x0254 */ m3d::ui::Wnd* m_wndTorque;
+    /* 0x0258 */ m3d::ui::Wnd* m_wndControl;
+    static CabinButton::CabinAuxInfo m_caif;
     CabinButton();
-    virtual int FullUpdate();
-    virtual int CreateChildren();
+    CabinButton(CabinButton const& rhs);
 
 public:
+    virtual ~CabinButton() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
     RT_CLASS_DECLARE(CabinButton);
+}; /* size: 0x025c */
 
-private:
-    m3d::ui::Wnd *m_wndSpeed;
-    m3d::ui::Wnd *m_wndTorque;
-    m3d::ui::Wnd *m_wndControl;
-};
-
-class CabinList :  public CBList
+class CabinList : public CBList
 {
-public:
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    virtual ~CabinList();
-    static m3d::Class * GetBaseClass();
 protected:
-    CabinList(CabinList const &);
+    virtual int GetCBResourceId() const override /* 0x11c */;
+    virtual CBButton* CreateItem() const override /* 0x120 */;
+    virtual void PostTriggerEventOnBuyCb() override /* 0x12c */;
     CabinList();
-    virtual int GetCBResourceId() const ;
-    virtual CBButton * CreateItem() const ;
-    virtual void PostTriggerEventOnBuyCb();
+    CabinList(CabinList const& rhs);
 
 public:
+    virtual ~CabinList() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
     RT_CLASS_DECLARE(CabinList);
-};
+}; /* size: 0x028c */

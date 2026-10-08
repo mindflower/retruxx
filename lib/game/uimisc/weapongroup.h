@@ -77,6 +77,10 @@ protected:
     WeaponGroup(const WeaponGroup& rhs);
 
 public:
+    // Present in the binary (RVA 0x585FE0) but missing from the PDB class dump.
+    WeaponGroup& operator=(const WeaponGroup& rhs);
+
+public:
     virtual ~WeaponGroup() override /* 0x00 */;
     virtual m3d::Object* Clone() override /* 0x04 */;
     static m3d::Object* __fastcall CreateObject();

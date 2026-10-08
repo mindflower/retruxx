@@ -6,81 +6,79 @@ namespace ai
 {
     class Npc;
     class Bar;
-}
+}  // namespace ai
 
 class PlayerMoneyWnd;
 class NpcModelWnd;
 class ConversationWnd;
+class TownDlg;
+class BarDlg;
 
-class TalkWithNpcDlg :  public ChildPanel
+class TalkWithNpcDlg : public ChildPanel
 {
 public:
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    private:
-        CStr m_wndConversationName;
-        CStr m_wndNpcImageName;
-        CStr m_wndTopPanelName;
-        CStr m_wndBottomPanelName;
-        CStr m_lblNpcNameName;
-    };
+    int Show(int npcId);
+    void Hide(bool bLeaveTown);
+    int SetupForNpc(int npcId);
+    ai::Npc* GetNpc() const;
 
     enum ShowType
     {
-        SHOWTYPE_IN_TOWN = 0x0,
-        SHOWTYPE_IN_BAR = 0x1,
-        SHOWTYPE_IN_FIELD = 0x2,
-        SHOWTYPE_UNDEFINED = 0x3,
+        SHOWTYPE_IN_TOWN = 0,
+        SHOWTYPE_IN_BAR = 1,
+        SHOWTYPE_IN_FIELD = 2,
+        SHOWTYPE_UNDEFINED = 3,
     };
 
-public:
-    virtual ~TalkWithNpcDlg();
-    ai::Npc * GetNpc() const ;
-    void Hide(bool);
-    virtual m3d::Class * GetClass() const ;
-    int SetupForNpc(int);
-    int Show(int);
-    virtual m3d::Object * Clone();
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_wndConversationName;
+        /* 0x000c */ CStr m_wndNpcImageName;
+        /* 0x0018 */ CStr m_wndTopPanelName;
+        /* 0x0024 */ CStr m_wndBottomPanelName;
+        /* 0x0030 */ CStr m_lblNpcNameName;
+        AuxInfo(TalkWithNpcDlg::AuxInfo const&);
+        AuxInfo();
+    }; /* size: 0x003c */
 
 protected:
-    bool IsValid() const ;
-    bool IsTownDlgShowingNow() const ;
-    int GetNpcToTalkWithFromLocation(int) const ;
-    void OnBarNpc(void *);
-    TalkWithNpcDlg();
-    TalkWithNpcDlg(TalkWithNpcDlg const &);
-    virtual int OnActivate(bool);
-    virtual int GameDataClear(bool);
-    void FillPanels();
-    virtual int OnAfterAddToWndStation();
-    ref_ptr<class TownDlg> GetTownDlg() const ;
-    bool IsBarDlgShowingNow() const ;
-    virtual int GameDataUpdate(void *,int);
-    ref_ptr<class BarDlg> GetBarDlg() const ;
-    virtual void OnExit();
-    void OnLocationNpc(void *);
-    m3d::rend::TexHandle GetNpcBg(int) const ;
-    virtual int GameDataSetup();
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
+        /* 0xc8 */;
+    virtual int OnAfterAddToWndStation() override /* 0x00 */;
+    virtual int OnActivate(bool on) override /* 0x00 */;
+    bool IsValid() const;
+    void OnLocationNpc(void* data);
+    void OnBarNpc(void* data);
+    ref_ptr<TownDlg> GetTownDlg() const;
+    ref_ptr<BarDlg> GetBarDlg() const;
+    ai::Bar const* GetBar() const;
+    bool IsTownDlgShowingNow() const;
+    bool IsBarDlgShowingNow() const;
+    int GetNpcToTalkWithFromLocation(int locationId) const;
     void UpdateOnStartConversation();
-    ai::Bar const * GetBar() const ;
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    void FillPanels();
+    virtual void OnExit() override /* 0x124 */;
+    m3d::rend::TexHandle GetNpcBg(int npcId) const;
+    /* 0x0224 */ ref_ptr<ConversationWnd> m_wndConversation;
+    /* 0x0228 */ ref_ptr<NpcModelWnd> m_wndNpcImage;
+    /* 0x022c */ ref_ptr<PlayerMoneyWnd> m_wndPlayerMoney;
+    /* 0x0230 */ TalkWithNpcDlg::AuxInfo m_aif;
+    /* 0x026c */ TalkWithNpcDlg::ShowType m_showType;
+    /* 0x0270 */ m3d::ui::Wnd* m_wndTopPanel;
+    /* 0x0274 */ m3d::ui::Wnd* m_wndBottomPanel;
+    /* 0x0278 */ m3d::ui::Wnd* m_lblNpcName;
+    /* 0x027c */ int m_npcId;
+    TalkWithNpcDlg();
+    TalkWithNpcDlg(TalkWithNpcDlg const& rhs);
 
 public:
-    RT_CLASS_DECLARE(TalkWithNpcDlg);
-
-private:
-    ref_ptr<ConversationWnd> m_wndConversation;
-    ref_ptr<NpcModelWnd> m_wndNpcImage;
-    ref_ptr<PlayerMoneyWnd> m_wndPlayerMoney;
-    TalkWithNpcDlg::AuxInfo m_aif;
-    TalkWithNpcDlg::ShowType m_showType;
-    m3d::ui::Wnd *m_wndTopPanel;
-    m3d::ui::Wnd *m_wndBottomPanel;
-    m3d::ui::Wnd *m_lblNpcName;
-    int m_npcId;
-};
+    virtual ~TalkWithNpcDlg() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x04 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    static m3d::Class m_classTalkWithNpcDlg;
+}; /* size: 0x0280 */

@@ -23,8 +23,6 @@ namespace m3d
 
 namespace m3d
 {
-    //TODO: add static functions
-
     namespace cmn
     {
         class IniFile : public IBase
@@ -116,6 +114,7 @@ namespace m3d
     }
 
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
+    int WriteXmlFile(char const* filename, cmn::XmlFile* xmlFile, CStr* errorStr);
     int SafeStrAttrib(CStr&, cmn::XmlNode const*, char const*);
     bool SafeClrAttrib(unsigned int&, m3d::cmn::XmlNode const*, char const*);
     bool SafeIntAttrib(int&, m3d::cmn::XmlNode const*, char const*);
@@ -125,7 +124,7 @@ namespace m3d
     bool SafeBoolAttrib(bool&, m3d::cmn::XmlNode const*, char const*);
     bool SafeVector2Attrib(CVector2&, m3d::cmn::XmlNode const*, char const*);
     bool SafeVectorAttrib(CVector&, m3d::cmn::XmlNode const*, char const*);
-    bool SafeQuaternionAttrib(Quaternion&, m3d::cmn::XmlNode const*, char const*);
+    int SafeQuaternionAttrib(Quaternion&, m3d::cmn::XmlNode const*, char const*);
     void Tokenize(CStr const&, retruxx::vector<CStr>&, char const*);
 
     template<class T>

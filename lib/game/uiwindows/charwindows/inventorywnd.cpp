@@ -39,10 +39,7 @@ m3d::Class* InventoryWnd::GetClass() const
     return RT_CLASS_LOCAL(InventoryWnd);
 }
 
-InventoryWnd::~InventoryWnd()
-{
-    RETRUXX_NOT_IMPLEMENTED;
-}
+InventoryWnd::~InventoryWnd() = default;
 
 void InventoryWnd::SetVehicleId(int vehicleId)
 {
@@ -64,14 +61,39 @@ m3d::Object* InventoryWnd::CreateObject()
     return new InventoryWnd;
 }
 
-void InventoryWnd::SetTradeVehicleId(int, ZnayuKakProdatWnd::TradeType)
+void InventoryWnd::SetTradeVehicleId(int vehicleId, ZnayuKakProdatWnd::TradeType tradeType)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if ((m_gameDataFlags & 1) == 0 || m_vehicleType != VEHICLETYPE_WORKSHOP || vehicleId == -1 ||
+        tradeType == ZnayuKakProdatWnd::TRADETYPE_NUM_TRADETYPES)
+    {
+        return;
+    }
+
+    m_tradeType = tradeType;
+    ChildPanel::SetVehicleId(vehicleId);
+
+    switch (tradeType)
+    {
+    case ZnayuKakProdatWnd::TRADETYPE_VEHICLE:
+        m_wndCabin->SetVehicleId(vehicleId);
+        m_wndBasket->SetVehicleId(vehicleId);
+        break;
+    case ZnayuKakProdatWnd::TRADETYPE_CABIN:
+        m_wndCabin->SetVehicleId(vehicleId);
+        m_wndBasket->SetVehicleId(-1);
+        break;
+    case ZnayuKakProdatWnd::TRADETYPE_BASKET:
+        m_wndCabin->SetVehicleId(-1);
+        m_wndBasket->SetVehicleId(vehicleId);
+        break;
+    default:
+        break;
+    }
 }
 
 m3d::Object* InventoryWnd::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    return new InventoryWnd(*this);
 }
 
 InventoryWnd::InventoryWnd()
@@ -80,14 +102,13 @@ InventoryWnd::InventoryWnd()
     m_tradeType = ZnayuKakProdatWnd::TRADETYPE_NUM_TRADETYPES;
 }
 
-InventoryWnd::InventoryWnd(InventoryWnd const&)
+InventoryWnd::InventoryWnd(InventoryWnd const&) : InventoryWnd()
 {
-    RETRUXX_NOT_IMPLEMENTED;
 }
 
 void InventoryWnd::RemoveCBWindows()
 {
-    // Only execute if game data flag 1 is set
+    // RVA 0x52B20 - gives the cabin and basket back their saved bounds and animations.
     if ((m_gameDataFlags & 1) == 0)
     {
         return;
@@ -141,106 +162,72 @@ int InventoryWnd::GameDataUpdate(void*, int dataType)
     return 1;
 }
 
-InventoryWnd::VehicleType InventoryWnd::GetVehicleTypeByGuiId(int) const
+InventoryWnd::VehicleType InventoryWnd::GetVehicleTypeByGuiId(int guiId) const
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    switch (guiId - IW_WND_PLAYER_INVENTORY)
+    {
+    case 0:
+        return VEHICLETYPE_PLAYER;
+    case 1:
+        return VEHICLETYPE_WORKSHOP;
+    default:
+        return VEHICLETYPE_INVALID;
+    }
 }
 
 int InventoryWnd::GameDataSetup()
 {
-    // TODO: generated code InventoryWnd::GameDataSetup
-    // Early return if already processed
-    if ((m_gameDataFlags & 2) != 0)
+    // RVA 0x52570
+    if ((m_gameDataFlags & 2) == 0)
     {
-        // Game data already set up for this window
-        return (m_gameDataFlags & 1) != 0 ? 1 : 0;
-    }
-
-    // Determine vehicle type based on GUI ID
-    m_vehicleType = VEHICLETYPE_INVALID;
-    if (m_guiId == IW_WND_PLAYER_INVENTORY)
-    {
-        m_vehicleType = VEHICLETYPE_PLAYER;
-    }
-    else if (m_guiId == IW_WND_WORKSHOP_INVENTORY)
-    {
-        m_vehicleType = VEHICLETYPE_WORKSHOP;
-    }
-
-    // Determine cabin and basket GUI IDs based on vehicle type
-    int cabinGuiId = -1;
-    int basketGuiId = -1;
-
-    switch (m_vehicleType)
-    {
-    case VEHICLETYPE_PLAYER:
-        cabinGuiId = IW_WND_PLAYER_CABIN;
-        basketGuiId = IW_WND_PLAYER_BASKET;
-        break;
-    case VEHICLETYPE_WORKSHOP:
-        cabinGuiId = IW_WND_WORKSHOP_CABIN;
-        basketGuiId = IW_WND_WORKSHOP_BASKET;
-        break;
-    default:
-        // Invalid vehicle type
-        M3D_LOG_INFO("InventoryWnd: error - fail to init because of a bad resource");
-        return 0;
-    }
-
-    // Get and setup cabin window
-    ref_ptr<m3d::ui::Wnd> tempCabinWnd = M3D_APP->m_pInterfaceManager->GetWindow(cabinGuiId);
-
-    if (tempCabinWnd && tempCabinWnd->IsKindOf(&CabinWnd::m_classCabinWnd))
-    {
-        // Store the cabin window reference
-        m_wndCabin = static_cast<CabinWnd*>(tempCabinWnd.get());
-
-        if (m_wndCabin)
+        m_vehicleType = GetVehicleTypeByGuiId(m_guiId);
+        bool validType = true;
+        int cabinGuiId = -1;
+        int basketGuiId = -1;
+        switch (m_vehicleType)
         {
-            // Save animation states
+        case VEHICLETYPE_PLAYER:
+            cabinGuiId = IW_WND_PLAYER_CABIN;
+            basketGuiId = IW_WND_PLAYER_BASKET;
+            break;
+        case VEHICLETYPE_WORKSHOP:
+            cabinGuiId = IW_WND_WORKSHOP_CABIN;
+            basketGuiId = IW_WND_WORKSHOP_BASKET;
+            break;
+        default:
+            validType = false;
+            break;
+        }
+
+        ref_ptr<m3d::ui::Wnd> wndCabin = M3D_APP->m_pInterfaceManager->GetWindow(cabinGuiId);
+        if (wndCabin && wndCabin->IsKindOf(&CabinWnd::m_classCabinWnd))
+        {
+            m_wndCabin = static_cast<CabinWnd*>(wndCabin.get());
             m_childSaveInfo.m_bCabinOnShowAnimationEnabled = m_wndCabin->GetOnShowAnimation().m_bEnabled;
             m_childSaveInfo.m_bCabinOnHideAnimationEnabled = m_wndCabin->GetOnHideAnimation().m_bEnabled;
-
-            // Save bounds
             m_childSaveInfo.m_cabinB = m_wndCabin->GetBounds();
         }
-    }
 
-    // Get and setup basket window
-    ref_ptr<m3d::ui::Wnd> tempBasketWnd = M3D_APP->m_pInterfaceManager->GetWindow(basketGuiId);
-
-    if (tempBasketWnd && tempBasketWnd->IsKindOf(&BasketWnd::m_classBasketWnd))
-    {
-        // Store the basket window reference
-        m_wndBasket = static_cast<BasketWnd*>(tempBasketWnd.get());
-
-        if (m_wndBasket)
+        ref_ptr<m3d::ui::Wnd> wndBasket = M3D_APP->m_pInterfaceManager->GetWindow(basketGuiId);
+        if (wndBasket && wndBasket->IsKindOf(&BasketWnd::m_classBasketWnd))
         {
-            // Save animation states
+            m_wndBasket = static_cast<BasketWnd*>(wndBasket.get());
             m_childSaveInfo.m_bBasketOnShowAnimationEnabled = m_wndBasket->GetOnShowAnimation().m_bEnabled;
             m_childSaveInfo.m_bBasketOnHideAnimationEnabled = m_wndBasket->GetOnHideAnimation().m_bEnabled;
-
-            // Save bounds
             m_childSaveInfo.m_basketB = m_wndBasket->GetBounds();
-
-            // If we also have a cabin window, mark game data as valid
-            if (m_wndCabin)
+            // NOTE: the cabin window is not required here, so a missing cabin passes setup and
+            // AddCBWindows later trips the ref_ptr null assert on m_wndCabin; as shipped.
+            if (validType)
             {
-                m_gameDataFlags |= 1;  // Set valid flag
+                m_gameDataFlags |= 1;
             }
         }
     }
 
-    // Mark as processed
-    m_gameDataFlags |= 2;
-
-    // Return success if we have valid game data
     if ((m_gameDataFlags & 1) != 0)
     {
         return 1;
     }
-
-    // Log error if setup failed
     M3D_LOG_INFO("InventoryWnd: error - fail to init because of a bad resource");
     return 0;
 }
@@ -260,41 +247,49 @@ int InventoryWnd::OnAfterRemoveFromWndStation()
 
 void InventoryWnd::OnPlayerVehicleChanged()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    if (m_vehicleType != VEHICLETYPE_PLAYER)
+    {
+        return;
+    }
+    auto* vehicleControlledByPlayer = m3d::pClient->GetWorld().GetVehicleControlledByPlayer();
+    SetVehicleId(vehicleControlledByPlayer ? vehicleControlledByPlayer->GetId() : -1);
 }
 
 void InventoryWnd::AddCBWindows()
 {
-    // TOOD: generated code InventoryWnd::AddCBWindows
-    // Only execute if game data flag 1 is set
+    // RVA 0x528E0 - the cabin and basket become children, placed at the left edge, without their own animations.
     if ((m_gameDataFlags & 1) == 0)
     {
         return;
     }
 
     // Add cabin window if not already a child
-    if (m_wndCabin && !m_wndCabin->IsChildOf(this))
+    if (!m_wndCabin->IsChildOf(this))
     {
         // Disable animations
         m_wndCabin->EnableOnShowAnimation(false);
         m_wndCabin->EnableOnHideAnimation(false);
 
         // Set bounds from saved info
-        m_wndCabin->SetBounds(m_childSaveInfo.m_cabinB, true);
+        auto bounds = m_childSaveInfo.m_cabinB;
+        bounds.x0 = 0.0;
+        m_wndCabin->SetBounds(bounds, true);
 
         // Add as child
         AddChild(m_wndCabin.get());
     }
 
     // Add basket window if not already a child
-    if (m_wndBasket && !m_wndBasket->IsChildOf(this))
+    if (!m_wndBasket->IsChildOf(this))
     {
         // Disable animations
         m_wndBasket->EnableOnShowAnimation(false);
         m_wndBasket->EnableOnHideAnimation(false);
 
         // Set bounds from saved info
-        m_wndBasket->SetBounds(m_childSaveInfo.m_basketB, true);
+        auto bounds = m_childSaveInfo.m_basketB;
+        bounds.x0 = 0.0;
+        m_wndBasket->SetBounds(bounds, true);
 
         // Add as child
         AddChild(m_wndBasket.get());

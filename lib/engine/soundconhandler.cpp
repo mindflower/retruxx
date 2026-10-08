@@ -39,14 +39,14 @@ namespace m3d
         }
         else if (var == &g_Kernel->GetEngineCfg().m_snd_2dVolume)
         {
-            if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
             {
                 Application::g_pApp->m_sound->SetGroupVolume(1, intToken);
             }
         }
         else if (var == &g_Kernel->GetEngineCfg().m_snd_3dVolume)
         {
-            if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
             {
                 Application::g_pApp->m_sound->SetGroupVolume(2, intToken);
             }

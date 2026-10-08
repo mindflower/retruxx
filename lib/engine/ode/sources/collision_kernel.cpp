@@ -234,6 +234,7 @@ dxGeom::dxGeom (dSpaceID _space, int is_placeable)
   next = 0;
   tome = 0;
   parent_space = 0;
+  parent_transform = 0;
   dSetZero (aabb,6);
   category_bits = ~0;
   collide_bits = ~0;
@@ -349,6 +350,13 @@ dBodyID dGeomGetBody (dxGeom *g)
 {
   dAASSERT (g);
   return g->body;
+}
+
+
+dGeomID dGeomGetParentTransform (dxGeom *g)
+{
+  // RVA 0x600620 (engine extension)
+  return g->parent_transform;
 }
 
 
@@ -502,84 +510,36 @@ unsigned long dGeomGetCollideBits (dxGeom *g)
 }
 
 
+// retruxx: moves a geom to its space's enabled or disabled list to match its flag.
+static void relinkGeomByEnabledState (dxGeom *g)
+{
+  if (!g->parent_space) return;
+  if (g->next) g->next->tome = g->tome;
+  *g->tome = g->next;
+  dxSpace *space = g->parent_space;
+  dxGeom **first = (g->gflags & GEOM_ENABLED) ? &space->m_firstEnabled : &space->m_firstDisabled;
+  g->next = *first;
+  g->tome = first;
+  if (*first) (*first)->tome = &g->next;
+  *first = g;
+}
+
 void dGeomEnable (dxGeom *g)
 {
-	dAASSERT (g);
-  if ((g->gflags & GEOM_ENABLED) == 0)
-    {
-        // Clear the enabled flag (set to disabled)
-        g->gflags |= GEOM_ENABLED;
-        
-        // Only process if the geometry is in a space
-        if (g->parent_space != nullptr)
-        {
-            // Remove geometry from its current list (enabled list)
-            if (g->next != nullptr)
-            {
-                g->next->tome = g->tome;
-            }
-            *g->tome = g->next;
-            
-            // Add geometry to the disabled list
-            dxSpace* space = g->parent_space;
-            
-            // Determine which list head to use based on enabled state
-            dxGeom** targetListHead = ((g->gflags & GEOM_ENABLED) != 0) 
-                ? &space->m_firstEnabled 
-                : &space->m_firstDisabled;
-            
-            g->next = *targetListHead;
-            g->tome = targetListHead;
-            
-            if (*targetListHead != nullptr)
-            {
-                (*targetListHead)->tome = &g->next;
-            }
-            
-            *targetListHead = g;
-        }
-    }
+  // RVA 0x600530 - retruxx: spaces keep enabled and disabled geoms in separate lists.
+  dAASSERT (g);
+  if (g->gflags & GEOM_ENABLED) return;
+  g->gflags |= GEOM_ENABLED;
+  relinkGeomByEnabledState (g);
 }
 
 void dGeomDisable (dxGeom *g)
 {
-	dAASSERT (g);
-  // TODO: generated code
-  // Check if the geometry is currently enabled (bit 3 = enabled flag)
-    if ((g->gflags & GEOM_ENABLED) != 0)
-    {
-        // Clear the enabled flag (set to disabled)
-        g->gflags &= ~GEOM_ENABLED;
-        
-        // Only process if the geometry is in a space
-        if (g->parent_space != nullptr)
-        {
-            // Remove geometry from its current list (enabled list)
-            if (g->next != nullptr)
-            {
-                g->next->tome = g->tome;
-            }
-            *g->tome = g->next;
-            
-            // Add geometry to the disabled list
-            dxSpace* space = g->parent_space;
-            
-            // Determine which list head to use based on enabled state
-            dxGeom** targetListHead = ((g->gflags & GEOM_ENABLED) != 0) 
-                ? &space->m_firstEnabled 
-                : &space->m_firstDisabled;
-            
-            g->next = *targetListHead;
-            g->tome = targetListHead;
-            
-            if (*targetListHead != nullptr)
-            {
-                (*targetListHead)->tome = &g->next;
-            }
-            
-            *targetListHead = g;
-        }
-    }
+  // RVA 0x600580 - see dGeomEnable.
+  dAASSERT (g);
+  if (!(g->gflags & GEOM_ENABLED)) return;
+  g->gflags &= ~GEOM_ENABLED;
+  relinkGeomByEnabledState (g);
 }
 
 int dGeomIsEnabled (dxGeom *g)
@@ -591,20 +551,23 @@ int dGeomIsEnabled (dxGeom *g)
 //retruxx
 void dGeomUnlinkFromBody (dxGeom* g)
 {
+    // RVA 0x6005E0
     dAASSERT(g);
-    g->gflags |= 0x10;
+    g->gflags |= GEOM_BODY_UNLINKED;
 }
 
 void dGeomLinkToBody (dxGeom* g)
 {
+    // RVA 0x6005F0
     dAASSERT(g);
-    g->gflags &= ~0x10;
+    g->gflags &= ~GEOM_BODY_UNLINKED;
 }
 
 dxBody* dGeomGetLinkedBody (dxGeom* g)
 {
+    // RVA 0x600600 - contacts with an unlinked geom are attached to the static environment instead of its body.
     dAASSERT(g);
-    if ((g->gflags & 0x1000) != 0)
+    if ((g->gflags & GEOM_BODY_UNLINKED) != 0)
         return 0;
     return g->body;
 }

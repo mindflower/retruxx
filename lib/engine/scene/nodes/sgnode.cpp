@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "core/kernel.h"
+#include "core/timer.h"
 #include "core/console/cvar.h"
 #include "client.h"
 #include "world.h"
@@ -19,7 +20,10 @@
 
 RT_CLASS_EXPORT_METHOD_DEFINE(SgNode, GetOrigin)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x63F430
+    auto* const node = static_cast<m3d::SgNode*>(context->asObject(0, "SgNode"));
+    context->pushVector(node->GetOrigin());
+    return 1;
 }
 
 int cntUpdateNeededChecks = 0;
@@ -63,7 +67,8 @@ namespace m3d
 
     CVector const& SgNode::GetOrigin() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x616D90
+        return m_origin;
     }
 
     CMatrix const& SgNode::GetCurrentMatrix() const
@@ -73,7 +78,8 @@ namespace m3d
 
     int SgNode::GetPrevThinkTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634460
+        return m_prevThinkTime;
     }
 
     int SgNode::SetScale(CVector const& scale)
@@ -109,9 +115,40 @@ namespace m3d
         return this->m_isXFormDirty || this->m_isOwnBoundingBoxDirty || this->m_isChildDirty;
     }
 
-    int SgNode::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+    int SgNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x666B70 - only values that differ from the defaults are written.
+        if (!Object::WriteToXmlNode(file, writeTo))
+        {
+            return 1;
+        }
+        if (m_origin.x != 0.0f || m_origin.y != 0.0f || m_origin.z != 0.0f)
+        {
+            writeTo->SetAttribute("org", CStr::format_("%.3f %.3f %.3f", m_origin.x, m_origin.y, m_origin.z).c_str());
+            writeTo->SetAttribute("orgRel", CStr(static_cast<int>(m_isOriginRelative)).c_str());
+        }
+        if (m_rotation.x != 0.0f || m_rotation.y != 0.0f || m_rotation.z != 0.0f || 1.0f != m_rotation.w)
+        {
+            writeTo->SetAttribute(
+                "rot",
+                CStr::format_("%.4f %.4f %.4f %.4f", m_rotation.x, m_rotation.y, m_rotation.z, m_rotation.w).c_str());
+        }
+        if (1.0f != m_scaling.x || 1.0f != m_scaling.y || 1.0f != m_scaling.z)
+        {
+            writeTo->SetAttribute(
+                "scale", CStr::format_("%.3f %.3f %.3f", m_scaling.x, m_scaling.y, m_scaling.z).c_str());
+        }
+        if (m_srvId != -1)
+        {
+            // The server item's name when there is a server, its raw handle otherwise.
+            if (GetServer())
+            {
+                writeTo->SetAttribute("id", GetServer()->GetNameByItem(m_srvId).c_str());
+                return 1;
+            }
+            writeTo->SetAttribute("id", CStr(m_srvId).c_str());
+        }
+        return 1;
     }
 
     CVector const& SgNode::GetOriginWorldAbs() const
@@ -119,9 +156,10 @@ namespace m3d
         return m_currentWorldOrigin;
     }
 
-    void SgNode::SetPrevThinkTime(int)
+    void SgNode::SetPrevThinkTime(int t)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634470
+        m_prevThinkTime = t;
     }
 
     CVector const& SgNode::GetScale() const
@@ -134,9 +172,14 @@ namespace m3d
         return RT_CLASS_LOCAL(SgNode);
     }
 
-    int SgNode::SetServerItemProperty(unsigned, void*) const
+    int SgNode::SetServerItemProperty(unsigned propId, void* property) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x63EBE0
+        if (!GetServer() || m_srvId == -1)
+        {
+            return 0;
+        }
+        return GetServer()->SetItemProperty(m_srvId, propId, property);
     }
 
     int SgNode::Think(int, int)
@@ -147,7 +190,8 @@ namespace m3d
 
     int SgNode::GetTtl() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634440
+        return m_ttl;
     }
 
     void SgNode::CanBeFree()
@@ -156,7 +200,8 @@ namespace m3d
 
     CVector const& SgNode::GetOriginWorldAbsForSphere() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6343E0
+        return m_originWorldAbsForSphere;
     }
 
     int SgNode::RemoveChild(Object* node)
@@ -168,12 +213,14 @@ namespace m3d
 
     int SgNode::GetNextThinkTime() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x634450
+        return m_nextThinkTime;
     }
 
     int SgNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x643C50
+        return 0;
     }
 
     Quaternion const& SgNode::GetRotation() const
@@ -250,7 +297,8 @@ namespace m3d
 
     Aabb SgNode::GetAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x234400
+        return m_boundingBox;
     }
 
     int SgNode::AddChild(Object* node)
@@ -278,7 +326,6 @@ namespace m3d
             return 1;
         }
 
-        // TODO: check this 0 models
         auto item = server->GetItemByName(idAttr, true);
         if (item == -1)
         {
@@ -286,8 +333,8 @@ namespace m3d
             if (!IsKindOf(&m3d::SgSoundSourceNode::m_classSgSoundSourceNode))
             {
                 M3D_LOG_INFO(
-                    "ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " + CStr(GetName()) +
-                    ". Taking a 0 model.");
+                    "ReadFromXmlNode: GetItemByName for name = " + CStr(idAttr) + " failed for node " +
+                    CStr(GetName()) + ". Taking a 0 model.");
             }
         }
         this->SetProperty(4360u, &item);
@@ -296,12 +343,14 @@ namespace m3d
 
     TransparencyParams& SgNode::GetTransparencyParams()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x4F1390
+        return m_transparencyParams;
     }
 
     void SgNode::SetBoundingBoxDirty()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x80EAD0
+        m_isOwnBoundingBoxDirty = true;
     }
 
     void SgNode::RemoveImmediateAfterParent(bool YesOrNo)
@@ -311,7 +360,7 @@ namespace m3d
 
     unsigned SgNode::GetContourColor()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_contourColor;
     }
 
     Quaternion const& SgNode::GetRotationWorldAbs() const
@@ -361,7 +410,8 @@ namespace m3d
 
     float SgNode::GetBoundingRadius() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x6343F0
+        return m_boundingRadius;
     }
 
     void SgNode::GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const
@@ -392,7 +442,7 @@ namespace m3d
 
     float SgNode::GetContourWidth()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return m_contourWidth;
     }
 
     int SgNode::SetOriginAbs(CVector const& origin)
@@ -414,16 +464,16 @@ namespace m3d
 
     int SgNode::UpdateXForm(bool onlyVis, bool parentDirty)
     {
-        // TODO: generated code
-        if (this->m_isRootNode)
+        // RVA 0x642320 - brings the node's own and world transforms, bounding box and bounding sphere up to date,
+        // recursing into the children (only the dirty branches when onlyVis).
+        if (m_isRootNode)
         {
             cntUpdateNeededChecks = 0;
             cntChildUpdates = 0;
         }
-
-        auto v138 = m_isChildDirty;
+        bool const childWasDirty = m_isChildDirty;
         ++cntChildUpdates;
-        bool const boxWasDirty = m_isOwnBoundingBoxDirty | (m_isXFormDirty & 1);
+        bool const boxWasDirty = m_isOwnBoundingBoxDirty || m_isXFormDirty;
         if (boxWasDirty)
         {
             UpdateOwnBoundingBox();
@@ -436,447 +486,154 @@ namespace m3d
             m_isOwnBoundingBoxDirty = false;
         }
 
-        float v18 = 0.0f;
-        CVector origin = m_origin;
+        // Own transform: scale, rotate, then translate (the origin's height relative to the ground if so flagged).
         if (m_isXFormDirty)
         {
             m_isXFormDirty = false;
-
+            CVector origin = m_origin;
             if (m_isOriginRelative)
             {
-                origin.y = m3d::pClient->GetWorld().GetLandscape().GetHeight(origin.x, origin.z, -1, 1) + origin.y;
+                origin.y = pClient->GetWorld().GetLandscape().GetHeight(origin.x, origin.z, -1, 1) + origin.y;
             }
-
-            CMatrix unScale;
-            CMatrix rt;
-            auto v8 = this->m_rotation.z;
-            auto v9 = this->m_rotation.y;
-            auto v10 = v8 * this->m_rotation.w;
-            auto v11 = this->m_rotation.x * v8;
-            auto z = this->m_rotation.x * this->m_rotation.x;
-            auto v12 = this->m_rotation.x * this->m_rotation.w;
-            auto y = this->m_rotation.x * this->m_rotation.y;
-            auto x = this->m_rotation.z * this->m_rotation.y;
-            auto v140 = this->m_rotation.y * this->m_rotation.w;
-            auto v13 = v8 * v8;
-            auto v14 = v9 * v9;
-            unScale._11 = 1.0 - (float)((float)(v13 + v14) * 2.0);
-            unScale._21 = (float)(y - v10) * 2.0;
-            unScale._31 = (float)(v140 + v11) * 2.0;
-            unScale._12 = (float)(v10 + y) * 2.0;
-            unScale._22 = 1.0 - (float)((float)(v13 + z) * 2.0);
-            unScale._33 = 1.0 - (float)((float)(v14 + z) * 2.0);
-            unScale._32 = (float)(x - v12) * 2.0;
-            unScale._13 = ((float)(v11 - v140) * 2.0);
-            unScale._14 = 0.0;
-            unScale._23 = ((float)(v12 + x) * 2.0);
-            unScale._24 = 0.0;
-            memset(&unScale.m[2][3], 0, 16);
-            unScale._44 = 1.0;
-
-            rt = unScale;
-            this->m_ownXForm._11 = rt._11 * this->m_scaling.x;
-            auto _21 = rt._21;
-            this->m_ownXForm._12 = rt._12 * this->m_scaling.x;
-            this->m_ownXForm._13 = rt._13 * this->m_scaling.x;
-            this->m_ownXForm._14 = 0.0;
-            this->m_ownXForm._21 = _21 * this->m_scaling.y;
-            this->m_ownXForm._22 = rt._22 * this->m_scaling.y;
-            this->m_ownXForm._23 = rt._23 * this->m_scaling.y;
-            this->m_ownXForm._24 = 0.0;
-            this->m_ownXForm._31 = this->m_scaling.z * rt._31;
-            this->m_ownXForm._32 = this->m_scaling.z * rt._32;
-            auto v16 = this->m_scaling.z * rt._33;
-            this->m_ownXForm._34 = 0.0;
-            this->m_ownXForm._41 = origin.x;
-            auto v17 = origin.y;
-            this->m_ownXForm._33 = v16;
-            v18 = 1.0;
-            this->m_ownXForm._42 = v17;
-            this->m_ownXForm._43 = origin.z;
-            this->m_ownXForm._44 = 1.0;
+            m_ownXForm.rotTranslate(m_rotation, origin);
+            float const scale[3] = {m_scaling.x, m_scaling.y, m_scaling.z};
+            for (int row = 0; row < 3; ++row)
+            {
+                for (int col = 0; col < 3; ++col)
+                {
+                    m_ownXForm.m[row][col] *= scale[row];
+                }
+            }
             parentDirty = true;
         }
-        if (!parentDirty)
-        {
-        }
-        else
-        {
-            v18 = 1.0;
-            m3d::SgNode* m_parent = (m3d::SgNode*)this->GetParent();
-            memcpy(&m_currentXForm, &m_ownXForm, sizeof(this->m_currentXForm));
 
-            if (m_parent)
+        // World transform, origin and rotation (the rotation from the unscaled world matrix, unless the parent is
+        // the root, when it is the own rotation).
+        if (parentDirty)
+        {
+            SgNode* const parent = static_cast<SgNode*>(GetParent());
+            m_currentXForm = m_ownXForm;
+            if (parent)
             {
-                auto _13 = this->m_currentXForm._13;
-                auto _14 = this->m_currentXForm._14;
-                auto _11 = this->m_currentXForm._11;
-                auto _12 = this->m_currentXForm._12;
-                this->m_currentXForm._11 =
-                    (float)((float)((float)(_14 * m_parent->m_currentXForm._41) + (float)(_13 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * _11)) +
-                    (float)(m_parent->m_currentXForm._21 * _12);
-                this->m_currentXForm._12 =
-                    (float)((float)((float)(_11 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _14)) +
-                            (float)(m_parent->m_currentXForm._32 * _13)) +
-                    (float)(_12 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._13 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _12) + (float)(_11 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _14)) +
-                    (float)(m_parent->m_currentXForm._33 * _13);
-                auto v24 = (float)(_14 * m_parent->m_currentXForm._44) + (float)(_13 * m_parent->m_currentXForm._34);
-                auto v25 = m_parent->m_currentXForm._14 * _11;
-                auto v26 = this->m_currentXForm._21;
-                auto v27 = v24 + v25;
-                auto v28 = m_parent->m_currentXForm._24 * _12;
-                auto _22 = this->m_currentXForm._22;
-                auto v30 = v27 + v28;
-                auto _23 = this->m_currentXForm._23;
-                this->m_currentXForm._14 = v30;
-                auto _24 = this->m_currentXForm._24;
-                this->m_currentXForm._21 =
-                    (float)((float)((float)(_24 * m_parent->m_currentXForm._41) + (float)(_23 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * v26)) +
-                    (float)(m_parent->m_currentXForm._21 * _22);
-                this->m_currentXForm._22 =
-                    (float)((float)((float)(v26 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _24)) +
-                            (float)(m_parent->m_currentXForm._32 * _23)) +
-                    (float)(_22 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._23 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _22) + (float)(v26 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _24)) +
-                    (float)(m_parent->m_currentXForm._33 * _23);
-                auto v33 = (float)(_24 * m_parent->m_currentXForm._44) + (float)(_23 * m_parent->m_currentXForm._34);
-                auto v34 = m_parent->m_currentXForm._14 * v26;
-                auto _31 = this->m_currentXForm._31;
-                auto v36 = v33 + v34;
-                auto v37 = m_parent->m_currentXForm._24 * _22;
-                auto _32 = this->m_currentXForm._32;
-                auto v39 = v36 + v37;
-                auto _33 = this->m_currentXForm._33;
-                this->m_currentXForm._24 = v39;
-                auto _34 = this->m_currentXForm._34;
-                this->m_currentXForm._31 =
-                    (float)((float)((float)(_34 * m_parent->m_currentXForm._41) + (float)(_33 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * _31)) +
-                    (float)(m_parent->m_currentXForm._21 * _32);
-                this->m_currentXForm._32 =
-                    (float)((float)((float)(_31 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _34)) +
-                            (float)(m_parent->m_currentXForm._32 * _33)) +
-                    (float)(_32 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._33 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _32) + (float)(_31 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _34)) +
-                    (float)(m_parent->m_currentXForm._33 * _33);
-                auto v42 = (float)(_34 * m_parent->m_currentXForm._44) + (float)(_33 * m_parent->m_currentXForm._34);
-                auto v43 = m_parent->m_currentXForm._14 * _31;
-                auto _41 = this->m_currentXForm._41;
-                auto v45 = v42 + v43;
-                auto v46 = m_parent->m_currentXForm._24 * _32;
-                auto _42 = this->m_currentXForm._42;
-                auto v48 = v45 + v46;
-                auto _43 = this->m_currentXForm._43;
-                this->m_currentXForm._34 = v48;
-                auto _44 = this->m_currentXForm._44;
-                this->m_currentXForm._41 =
-                    (float)((float)((float)(_44 * m_parent->m_currentXForm._41) + (float)(_43 * m_parent->m_currentXForm._31)) +
-                            (float)(m_parent->m_currentXForm._11 * _41)) +
-                    (float)(m_parent->m_currentXForm._21 * _42);
-                this->m_currentXForm._42 =
-                    (float)((float)((float)(_41 * m_parent->m_currentXForm._12) + (float)(m_parent->m_currentXForm._42 * _44)) +
-                            (float)(m_parent->m_currentXForm._32 * _43)) +
-                    (float)(_42 * m_parent->m_currentXForm._22);
-                this->m_currentXForm._43 =
-                    (float)((float)((float)(m_parent->m_currentXForm._23 * _42) + (float)(_41 * m_parent->m_currentXForm._13)) +
-                            (float)(m_parent->m_currentXForm._43 * _44)) +
-                    (float)(m_parent->m_currentXForm._33 * _43);
-                this->m_currentXForm._44 =
-                    (float)((float)((float)(_44 * m_parent->m_currentXForm._44) + (float)(_43 * m_parent->m_currentXForm._34)) +
-                            (float)(m_parent->m_currentXForm._14 * _41)) +
-                    (float)(m_parent->m_currentXForm._24 * _42);
+                m_currentXForm = m_ownXForm * parent->m_currentXForm;
             }
+            m_currentWorldOrigin = CVector(m_currentXForm._41, m_currentXForm._42, m_currentXForm._43);
 
-            auto v51 = this->m_currentXForm._42;
-            auto v52 = this->m_currentXForm._43;
-            auto v134 = this->m_currentXForm._41;
-            this->m_currentWorldOrigin.x = v134;
-            auto v135 = v51;
-            this->m_currentWorldOrigin.y = v51;
-            auto v136 = v52;
-            this->m_currentWorldOrigin.z = v52;
-
-            if (m_parent && m_parent->m_isRootNode)
+            if (parent && parent->m_isRootNode)
             {
-                this->m_currentWorldRotation.x = this->m_rotation.x;
-                this->m_currentWorldRotation.y = this->m_rotation.y;
-                auto w = this->m_rotation.w;
-                this->m_currentWorldRotation.z = this->m_rotation.z;
-                this->m_currentWorldRotation.w = w;
+                m_currentWorldRotation = m_rotation;
             }
             else
             {
-                CMatrix unScale;
-                unScale.zero();
-
-                CMatrix rt;
-                auto v54 = v18 / this->m_scaling.x;
-                rt._11 =
-                    (float)((float)((float)(unScale._21 * this->m_currentXForm._12) + (float)(unScale._31 * this->m_currentXForm._13)) +
-                            (float)(unScale._41 * this->m_currentXForm._14)) +
-                    (float)(this->m_currentXForm._11 * v54);
-                auto v55 = v18 / this->m_scaling.y;
-                auto v56 = v18 / this->m_scaling.z;
-                rt._12 = (float)((float)((float)(unScale._32 * this->m_currentXForm._13) + (float)(v55 * this->m_currentXForm._12)) +
-                                 (float)(unScale._42 * this->m_currentXForm._14)) +
-                    (float)(unScale._12 * this->m_currentXForm._11);
-                auto v57 = unScale._24 * this->m_currentXForm._12;
-                rt._13 = (float)((float)((float)(unScale._23 * this->m_currentXForm._12) + (float)(v56 * this->m_currentXForm._13)) +
-                                 (float)(unScale._43 * this->m_currentXForm._14)) +
-                    (float)(unScale._13 * this->m_currentXForm._11);
-                auto v58 = unScale._31 * this->m_currentXForm._23;
-                rt._14 = (float)((float)(v57 + (float)(unScale._34 * this->m_currentXForm._13)) +
-                                 (float)(unScale._14 * this->m_currentXForm._11)) +
-                    this->m_currentXForm._14;
-                auto v59 =
-                    (float)((float)((float)(v54 * this->m_currentXForm._21) + v58) + (float)(unScale._21 * this->m_currentXForm._22)) +
-                    (float)(unScale._41 * this->m_currentXForm._24);
-                auto v60 = unScale._12 * this->m_currentXForm._21;
-                rt._21 = v59;
-                rt._22 = (float)((float)((float)(unScale._32 * this->m_currentXForm._23) + v60) +
-                                 (float)(unScale._42 * this->m_currentXForm._24)) +
-                    (float)(v55 * this->m_currentXForm._22);
-                auto v61 = unScale._14 * this->m_currentXForm._21;
-                rt._23 = (float)((float)((float)(v56 * this->m_currentXForm._23) + (float)(unScale._13 * this->m_currentXForm._21)) +
-                                 (float)(unScale._23 * this->m_currentXForm._22)) +
-                    (float)(unScale._43 * this->m_currentXForm._24);
-                auto v62 = (float)((float)((float)(unScale._34 * this->m_currentXForm._23) + v61) +
-                                   (float)(unScale._24 * this->m_currentXForm._22)) +
-                    this->m_currentXForm._24;
-                auto v63 = unScale._31 * this->m_currentXForm._33;
-                rt._24 = v62;
-                auto v64 =
-                    (float)((float)((float)(v54 * this->m_currentXForm._31) + v63) + (float)(unScale._21 * this->m_currentXForm._32)) +
-                    (float)(unScale._41 * this->m_currentXForm._34);
-                auto v65 = unScale._12 * this->m_currentXForm._31;
-                rt._31 = v64;
-                auto v66 = v54 * this->m_currentXForm._41;
-                auto v67 = unScale._21 * this->m_currentXForm._42;
-                auto v68 = unScale._32 * this->m_currentXForm._43;
-                auto v69 = (float)((float)((float)(unScale._32 * this->m_currentXForm._33) + v65) +
-                                   (float)(unScale._42 * this->m_currentXForm._34)) +
-                    (float)(v55 * this->m_currentXForm._32);
-                auto v70 = unScale._13 * this->m_currentXForm._31;
-                rt._32 = v69;
-                auto v71 =
-                    (float)((float)((float)(v56 * this->m_currentXForm._33) + v70) + (float)(unScale._23 * this->m_currentXForm._32)) +
-                    (float)(unScale._43 * this->m_currentXForm._34);
-                auto v72 = unScale._14 * this->m_currentXForm._31;
-                rt._33 = v71;
-                rt._34 = (float)((float)((float)(unScale._34 * this->m_currentXForm._33) + v72) +
-                                 (float)(unScale._24 * this->m_currentXForm._32)) +
-                    this->m_currentXForm._34;
-                rt._41 = (float)((float)(v66 + (float)(unScale._31 * this->m_currentXForm._43)) + v67) +
-                    (float)(unScale._41 * this->m_currentXForm._44);
-                auto v73 = (float)((float)((float)(v56 * this->m_currentXForm._43) + (float)(unScale._13 * this->m_currentXForm._41)) +
-                                   (float)(unScale._23 * this->m_currentXForm._42)) +
-                    (float)(unScale._43 * this->m_currentXForm._44);
-                auto v74 =
-                    (float)((float)((float)(unScale._34 * this->m_currentXForm._43) + (float)(unScale._14 * this->m_currentXForm._41)) +
-                            (float)(unScale._24 * this->m_currentXForm._42)) +
-                    this->m_currentXForm._44;
-                rt._42 = (float)((float)(v68 + (float)(unScale._12 * this->m_currentXForm._41)) +
-                                 (float)(unScale._42 * this->m_currentXForm._44)) +
-                    (float)(v55 * this->m_currentXForm._42);
-
-                // TODO: check order
-                rt._43 = v74;
-                rt._44 = v73;
-
-                unScale = rt;
-                auto p_m_currentWorldRotation = &this->m_currentWorldRotation;
-                m_currentWorldRotation.FromMatrix(unScale);
-                auto x = (float)((float)((float)(p_m_currentWorldRotation->x * p_m_currentWorldRotation->x) +
-                                         (float)(this->m_currentWorldRotation.y * this->m_currentWorldRotation.y)) +
-                                 (float)(this->m_currentWorldRotation.z * this->m_currentWorldRotation.z)) +
-                    (float)(this->m_currentWorldRotation.w * this->m_currentWorldRotation.w);
-                if (x <= 0.0)
+                CMatrix unScaled = m_currentXForm;
+                float const invScale[3] = {1.0f / m_scaling.x, 1.0f / m_scaling.y, 1.0f / m_scaling.z};
+                for (int row = 0; row < 4; ++row)
                 {
-                    p_m_currentWorldRotation->x = 0.0;
-                    this->m_currentWorldRotation.y = 0.0;
-                    this->m_currentWorldRotation.z = 0.0;
-                    this->m_currentWorldRotation.w = 1.0;
+                    for (int col = 0; col < 3; ++col)
+                    {
+                        unScaled.m[row][col] *= invScale[col];
+                    }
+                }
+                Quaternion& q = m_currentWorldRotation;
+                q.FromMatrix(unScaled);
+                float const lengthSq = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+                if (lengthSq <= 0.0f)
+                {
+                    q = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
                 }
                 else
                 {
-                    auto v76 = 1.0 / sqrt(x);
-                    p_m_currentWorldRotation->x = v76 * p_m_currentWorldRotation->x;
-                    this->m_currentWorldRotation.y = v76 * this->m_currentWorldRotation.y;
-                    this->m_currentWorldRotation.z = v76 * this->m_currentWorldRotation.z;
-                    this->m_currentWorldRotation.w = v76 * this->m_currentWorldRotation.w;
+                    float const invLength = static_cast<float>(1.0 / sqrt(lengthSq));
+                    q = Quaternion(invLength * q.x, invLength * q.y, invLength * q.z, invLength * q.w);
                 }
             }
-
-            m3d::pClient->GetWorld().GetLandscape().UpdateNodeCollisionGeoms(this);
+            pClient->GetWorld().GetLandscape().UpdateNodeCollisionGeoms(this);
         }
 
         if (onlyVis)
         {
-            if (parentDirty || this->m_isChildDirty)
+            if (parentDirty || m_isChildDirty)
             {
-                this->m_isChildDirty = 0;
-                for (m3d::SgNode* firstChild = (m3d::SgNode*)this->GetFirstChild(); firstChild;
-                     firstChild = (m3d::SgNode*)firstChild->GetNextSibling())
+                m_isChildDirty = false;
+                for (auto* child = static_cast<SgNode*>(GetFirstChild()); child;
+                     child = static_cast<SgNode*>(child->GetNextSibling()))
                 {
                     ++cntUpdateNeededChecks;
-                    firstChild->UpdateXForm(onlyVis, parentDirty);
+                    child->UpdateXForm(onlyVis, parentDirty);
                 }
             }
         }
         else
         {
-            for (m3d::SgNode* firstChild = (m3d::SgNode*)this->GetFirstChild(); firstChild;
-                 firstChild = (m3d::SgNode*)firstChild->GetNextSibling())
+            for (auto* child = static_cast<SgNode*>(GetFirstChild()); child;
+                 child = static_cast<SgNode*>(child->GetNextSibling()))
             {
-                firstChild->UpdateXForm(false, parentDirty);
+                child->UpdateXForm(false, parentDirty);
             }
         }
 
-        if (boxWasDirty || v138)
+        // The bounding box: the own box, embracing (except for the root) the children's boxes moved by their
+        // origins, skipping sound sources and sprites.
+        if (boxWasDirty || childWasDirty)
         {
-            auto v7 = !this->m_isRootNode;
-            this->m_boundingBox.m_box[0] = this->m_ownBoundingBox.m_box[0];
-            this->m_boundingBox.m_box[1] = this->m_ownBoundingBox.m_box[1];
-            this->m_boundingBox.m_box[2] = this->m_ownBoundingBox.m_box[2];
-            this->m_boundingBox.m_box[3] = this->m_ownBoundingBox.m_box[3];
-            auto v80 = this->m_ownBoundingBox.m_box[5];
-            this->m_boundingBox.m_box[4] = this->m_ownBoundingBox.m_box[4];
-            this->m_boundingBox.m_box[5] = v80;
-            if (v7)
+            m_boundingBox = m_ownBoundingBox;
+            if (!m_isRootNode)
             {
-                for (m3d::SgNode* j = (m3d::SgNode*)this->GetFirstChild(); j; j = (m3d::SgNode*)j->GetNextSibling())
+                for (auto* child = static_cast<SgNode*>(GetFirstChild()); child;
+                     child = static_cast<SgNode*>(child->GetNextSibling()))
                 {
-                    if (j->GetClass() != &m3d::SgSoundSourceNode::m_classSgSoundSourceNode &&
-                        j->GetClass() != &m3d::SgSpriteNode::m_classSgSpriteNode)
+                    if (child->GetClass() == &SgSoundSourceNode::m_classSgSoundSourceNode ||
+                        child->GetClass() == &SgSpriteNode::m_classSgSpriteNode)
                     {
-                        Aabb box;
-                        auto v82 = j->m_boundingBox.m_box[1];
-                        box.m_box[0] = j->m_boundingBox.m_box[0];
-                        auto v83 = j->m_boundingBox.m_box[2];
-                        box.m_box[0] = box.m_box[0] + j->m_origin.x;
-                        box.m_box[1] = v82;
-                        auto v84 = j->m_boundingBox.m_box[3];
-                        box.m_box[1] = box.m_box[1] + j->m_origin.y;
-                        box.m_box[2] = v83;
-                        auto v85 = v83 + j->m_origin.z;
-                        auto v86 = j->m_boundingBox.m_box[4];
-                        box.m_box[2] = v85;
-                        box.m_box[3] = v84;
-                        auto v87 = v84 + j->m_origin.x;
-                        auto v88 = j->m_boundingBox.m_box[5];
-                        box.m_box[3] = v87;
-                        box.m_box[4] = v86;
-                        auto v89 = v86 + j->m_origin.y;
-                        box.m_box[5] = v88;
-                        box.m_box[4] = v89;
-                        box.m_box[5] = v88 + j->m_origin.z;
-                        this->m_boundingBox.EmbraceBox(box);
+                        continue;
                     }
+                    Aabb box = child->m_boundingBox;
+                    box.m_box[0] += child->m_origin.x;
+                    box.m_box[1] += child->m_origin.y;
+                    box.m_box[2] += child->m_origin.z;
+                    box.m_box[3] += child->m_origin.x;
+                    box.m_box[4] += child->m_origin.y;
+                    box.m_box[5] += child->m_origin.z;
+                    m_boundingBox.EmbraceBox(box);
                 }
             }
-            auto v90 = this->m_boundingBox.m_box[2];
-            auto v91 = this->m_boundingBox.m_box[5];
-            auto v92 = this->m_boundingBox.m_box[1];
-            auto v93 = this->m_boundingBox.m_box[4];
-            origin.x = this->m_boundingBox.m_box[3] - this->m_boundingBox.m_box[0];
-            origin.z = v91 - v90;
-            origin.y = v93 - v92;
-            this->m_boundingRadius =
-                sqrt(origin.x * origin.x + (float)(v91 - v90) * (float)(v91 - v90) + (float)(v93 - v92) * (float)(v93 - v92)) * 0.5;
+            float const dx = m_boundingBox.m_box[3] - m_boundingBox.m_box[0];
+            float const dy = m_boundingBox.m_box[4] - m_boundingBox.m_box[1];
+            float const dz = m_boundingBox.m_box[5] - m_boundingBox.m_box[2];
+            m_boundingRadius = static_cast<float>(sqrt(dx * dx + dz * dz + dy * dy) * 0.5);
         }
 
-        auto v94 = this->m_boundingBox.m_box[5];
-        auto v95 = this->m_boundingBox.m_box[4];
-        auto v96 = this->m_boundingBox.m_box[2];
-        auto v97 = this->m_boundingBox.m_box[1];
-        origin.x = (float)(this->m_boundingBox.m_box[0] + this->m_boundingBox.m_box[3]) * 0.5;
-        auto y = this->m_currentWorldRotation.x * this->m_currentWorldRotation.x;
-        auto v98 = v96 + v94;
-        auto v99 = this->m_currentWorldRotation.z * this->m_currentWorldRotation.w;
-        auto v100 = v97 + v95;
-        auto v101 = this->m_currentWorldRotation.w * this->m_currentWorldRotation.x;
-        auto v142 = this->m_currentWorldRotation.y * this->m_currentWorldRotation.x;
-        auto v102 = this->m_currentWorldRotation.z * this->m_currentWorldRotation.y;
-        auto v103 = this->m_currentWorldRotation.z * this->m_currentWorldRotation.x;
-        origin.z = v98 * 0.5;
-        auto v104 = this->m_currentWorldRotation.z;
-        auto x = v102;
-        auto v105 = this->m_currentWorldRotation.y * this->m_currentWorldRotation.w;
-        origin.y = v100 * 0.5;
-        auto v106 = this->m_currentWorldRotation.y;
-        auto z = v105;
-        auto v107 = v106 * v106;
+        // The bounding sphere's centre: the box centre, rotated (not scaled) into the world.
+        CVector const center(
+            (m_boundingBox.m_box[0] + m_boundingBox.m_box[3]) * 0.5f,
+            (m_boundingBox.m_box[1] + m_boundingBox.m_box[4]) * 0.5f,
+            (m_boundingBox.m_box[2] + m_boundingBox.m_box[5]) * 0.5f);
+        CMatrix worldRotation;
+        worldRotation.rotTranslate(m_currentWorldRotation, m_currentWorldOrigin);
+        m_originWorldAbsForSphere = worldRotation.vecMul(center);
 
-        CMatrix rt;
-        rt._21 = (float)(v142 - v99) * 2.0;
-        rt._31 = (float)(v105 + v103) * 2.0;
-        rt._22 = 1.0 - (float)((float)((float)(v104 * v104) + y) * 2.0);
-        rt._23 = (float)(v101 + x) * 2.0;
-        auto v108 = (float)((float)((float)((float)(1.0 - (float)((float)((float)(v104 * v104) + v107) * 2.0)) * origin.x) +
-                                    (float)(origin.z * rt._31)) +
-                            (float)(origin.y * rt._21)) +
-            this->m_currentWorldOrigin.x;
-        auto v109 = (float)((float)((float)((float)(v103 - v105) * 2.0) * origin.x) +
-                            (float)(origin.z * (float)(1.0 - (float)((float)(v107 + y) * 2.0)))) +
-            (float)(origin.y * rt._23);
-        auto v135 = this->m_currentWorldOrigin.y +
-            (float)((float)((float)((float)((float)(v99 + v142) * 2.0) * origin.x) + (float)(origin.z * (float)((float)(x - v101) * 2.0))) +
-                    (float)(origin.y * rt._22));
-        auto v110 = this->m_currentWorldOrigin.z;
-        auto v111 = v135;
-        auto v134 = v108;
-        this->m_originWorldAbsForSphere.x = v108;
-        this->m_originWorldAbsForSphere.y = v111;
-        auto v136 = v110 + v109;
-        this->m_originWorldAbsForSphere.z = v110 + v109;
-        if (this->GetClass() == &m3d::SgNode::m_classSgNode)
+        // A plain group node's own box is its whole box, taken back out of its world scale.
+        if (GetClass() == &SgNode::m_classSgNode)
         {
-            auto v112 = this->m_boundingBox.m_box[1];
-            this->m_ownBoundingBox.m_box[0] = this->m_boundingBox.m_box[0];
-            auto v113 = this->m_boundingBox.m_box[2];
-            this->m_ownBoundingBox.m_box[1] = v112;
-            auto v114 = this->m_boundingBox.m_box[3];
-            this->m_ownBoundingBox.m_box[2] = v113;
-            auto v115 = this->m_boundingBox.m_box[4];
-            this->m_ownBoundingBox.m_box[3] = v114;
-            auto v116 = this->m_boundingBox.m_box[5];
-            this->m_ownBoundingBox.m_box[4] = v115;
-            this->m_ownBoundingBox.m_box[5] = v116;
-
-            this->m_currentXForm.DecomposeScale(x, y, z);
-            auto v117 = this->m_ownBoundingBox.m_box[3] * (float)(1.0 / x);
-            auto v118 = 1.0 / y;
-            auto v119 = 1.0 / z;
-            this->m_ownBoundingBox.m_box[0] = (float)(1.0 / x) * this->m_ownBoundingBox.m_box[0];
-            auto v120 = v118 * this->m_ownBoundingBox.m_box[4];
-            auto v121 = v118 * this->m_ownBoundingBox.m_box[1];
-            this->m_ownBoundingBox.m_box[4] = v120;
-            auto v122 = v119 * this->m_ownBoundingBox.m_box[5];
-            auto v123 = v119 * this->m_ownBoundingBox.m_box[2];
-            this->m_ownBoundingBox.m_box[3] = v117;
-            this->m_ownBoundingBox.m_box[1] = v121;
-            this->m_ownBoundingBox.m_box[5] = v122;
-            this->m_ownBoundingBox.m_box[2] = v123;
+            m_ownBoundingBox = m_boundingBox;
+            float sx = 0.0f;
+            float sy = 0.0f;
+            float sz = 0.0f;
+            m_currentXForm.DecomposeScale(sx, sy, sz);
+            m_ownBoundingBox.m_box[0] *= 1.0f / sx;
+            m_ownBoundingBox.m_box[3] *= 1.0f / sx;
+            m_ownBoundingBox.m_box[1] *= 1.0f / sy;
+            m_ownBoundingBox.m_box[4] *= 1.0f / sy;
+            m_ownBoundingBox.m_box[2] *= 1.0f / sz;
+            m_ownBoundingBox.m_box[5] *= 1.0f / sz;
         }
 
-        if (this->m_isRootNode)
+        if (m_isRootNode)
         {
-            CStr checks = "UpdateXForm checks = " + CStr(cntUpdateNeededChecks);
-            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(checks.c_str());
-
-            CStr updateXForms = "UpdateXForms = " + CStr(cntChildUpdates);
-            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(updateXForms.c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(
+                ("UpdateXForm checks = " + CStr(cntUpdateNeededChecks)).c_str());
+            M3D_APP->GetDbgCounterStack().DrawStringThisFrame(("UpdateXForms = " + CStr(cntChildUpdates)).c_str());
         }
-
         return 1;
     }
 
@@ -914,29 +671,110 @@ namespace m3d
         return result;
     }
 
-    int SgNode::GetPropertiesList(retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>&) const
+    int SgNode::GetPropertiesList(
+        retruxx::set<unsigned, retruxx::less<unsigned>, retruxx::allocator<unsigned>>& properties) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x643870 - NOTE: of the ten 4352.. properties SetProperty accepts, only 4353 is listed.
+        int const result = Object::GetPropertiesList(properties);
+        if (!result)
+        {
+            return result;
+        }
+        for (unsigned i = 0; i < 3; ++i)
+        {
+            properties.insert(i);
+        }
+        properties.insert(4353);
+        return 1;
     }
 
     Aabb SgNode::GetOwnAabb() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x512EA0
+        return m_ownBoundingBox;
     }
 
-    float SgNode::IntersectRay(CVector const&, CVector const&, SgNode*&, Class*)
+    float SgNode::IntersectRay(CVector const& v0, CVector const& dir, SgNode*& hitNode, Class*)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x642140 - against the node's own bounds; a ray starting inside them misses (-1).
+        CVector const bbMin(m_ownBoundingBox.m_box[0], m_ownBoundingBox.m_box[1], m_ownBoundingBox.m_box[2]);
+        CVector const bbMax(m_ownBoundingBox.m_box[3], m_ownBoundingBox.m_box[4], m_ownBoundingBox.m_box[5]);
+        Obb obb;
+        obb.Create(bbMin, bbMax, m_currentXForm, true);
+
+        float const dy = v0.y - obb.m_origin.y;
+        float const dz = v0.z - obb.m_origin.z;
+        float const dx = v0.x - obb.m_origin.x;
+        float const local[3] = {
+            obb.m_basis[2].x * dz + obb.m_basis[1].x * dy + obb.m_basis[0].x * dx,
+            obb.m_basis[2].y * dz + obb.m_basis[1].y * dy + obb.m_basis[0].y * dx,
+            obb.m_basis[2].z * dz + obb.m_basis[1].z * dy + obb.m_basis[0].z * dx};
+        float const obbMin[3] = {obb.m_min.x, obb.m_min.y, obb.m_min.z};
+        float const obbMax[3] = {obb.m_max.x, obb.m_max.y, obb.m_max.z};
+        int i = 0;
+        for (; i < 3; ++i)
+        {
+            if (obbMin[i] > local[i] || local[i] > obbMax[i])
+            {
+                break;
+            }
+        }
+        if (i == 3)
+        {
+            return -1.0f;
+        }
+        hitNode = this;
+        return obb.IntersectRay(v0, dir);
     }
 
     void SgNode::Restart()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5B8700
     }
 
-    CMatrix SgNode::MatrixFromFlags(SgNodeRenderFlags, void*) const
+    namespace
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // The sway applied to "wavy" server items, rebuilt once per frame.
+        int s_waveMatrixFrame = -1;
+        CMatrix s_waveMatrix;
+    }  // namespace
+
+    CMatrix SgNode::MatrixFromFlags(SgNodeRenderFlags nrf, void* data) const
+    {
+        // RVA 0x63F4A0 - the node's world matrix combined with the matrix passed in (to its right or left), swaying
+        // first if the server item is wavy.
+        int wavy = 0;
+        if (GetServer() && m_srvId != -1)
+        {
+            GetServer()->GetItemProperty(m_srvId, 1, &wavy);
+        }
+        int const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        if (wavy && s_waveMatrixFrame != curFrame)
+        {
+            // A shear of x and y by z about the plane z = 25.
+            s_waveMatrixFrame = curFrame;
+            double const time = M3D_KERNEL->GetTimer().GetFrameStartTimeSec();
+            CMatrix shear;
+            shear.identity();
+            shear._31 = static_cast<float>(sin(time) * 0.0099999998f);
+            shear._32 = static_cast<float>(cos(time) * 0.0099999998f);
+            CMatrix up;
+            up.translation(0.0f, 0.0f, 25.0f);
+            CMatrix down;
+            down.translation(0.0f, 0.0f, -25.0f);
+            s_waveMatrix = up * shear * down;
+        }
+
+        CMatrix const& other = *static_cast<CMatrix const*>(data);
+        switch (nrf & (NRF_RMUL_BY_MAT | NRF_LMUL_BY_MAT))
+        {
+        case NRF_RMUL_BY_MAT:
+            return wavy ? (s_waveMatrix * m_currentXForm) * other : m_currentXForm * other;
+        case NRF_LMUL_BY_MAT:
+            return wavy ? (other * s_waveMatrix) * m_currentXForm : other * m_currentXForm;
+        default:
+            return wavy ? s_waveMatrix * m_currentXForm : m_currentXForm;
+        }
     }
 
     void SgNode::UpdateOwnBoundingBox()
@@ -964,90 +802,47 @@ namespace m3d
 
     SgNode::~SgNode()
     {
-        // TODO: generated code SgNode::~SgNode
-        // TODO: check all this stuff
-        SceneGraph& sceneGraph = pClient->GetWorld().GetGraph();
-
-        // Remove and process all children
+        // RVA 0x643E60 - each child is either deleted with the node (when it asks to be, or the whole graph is being
+        // torn down) or handed to the scene root at its world placement, to be removed once everything below it
+        // is free.
+        SceneGraph* const sceneGraph = pClient ? &pClient->GetWorld().GetGraph() : nullptr;
         while (GetFirstChild())
         {
-            SgNode* child = static_cast<SgNode*>(GetFirstChild());
+            auto* child = static_cast<SgNode*>(GetFirstChild());
             UnlinkChild(child);
-
-            if (child->m_removeImmediateAfterParent || (sceneGraph.IsInUnlinkAndDeleteAll()))
+            if (child->m_removeImmediateAfterParent || (sceneGraph && sceneGraph->IsInUnlinkAndDeleteAll()))
             {
-                // Immediate deletion case
                 if (child->m_isInRemoveIfFree)
                 {
                     M3D_LOG_WARN(
-                        "Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) + ", parent name = '" +
-                        CStr(GetName()) + "'");
+                        "Warning: deleting node which is in RemoveIfFree, name = '" + CStr(child->GetName()) +
+                        "', parent name = '" + CStr(GetName()) + "'");
                 }
-                // TODO: check this DecRef
-                delete child;  // Calls child's destructor
+                delete child;
+                continue;
             }
-            else
+
+            sceneGraph->LinkThinkNode(child);
+            child->m_initedWithRitual = static_cast<Ritual>(child->m_initedWithRitual | 1u);
+            sceneGraph->GetRootNode()->AddChild(child);
+            sceneGraph->InsertInUpdateXFormList(child);
+            child->SetOriginAbs(child->m_currentWorldOrigin);
+            child->SetRotation(child->m_currentWorldRotation);
+            sceneGraph->LinkNode(child);
+            ForEachDescendant(child, [](SgNode* node) { node->CanBeFree(); });
+            sceneGraph->InsertInRemoveIfFree(child);
+            if (m_isInRemoveIfFree)
             {
-                // Re-parent child to scene graph root
-
-                // Add to think list
-                sceneGraph.LinkThinkNode(child);
-                child->m_initedWithRitual = static_cast<Ritual>(child->m_initedWithRitual | 1u);
-
-                // Re-parent to scene graph root
-                sceneGraph.GetRootNode()->AddChild(child);
-                sceneGraph.InsertInUpdateXFormList(child);
-
-                // Preserve world transform
-                child->SetOriginAbs(child->m_currentWorldOrigin);
-                child->SetRotation(child->m_currentWorldRotation);
-
-                // Link node into scene graph
-                sceneGraph.LinkNode(child);
-
-                // Process child hierarchy using stack
-                std::vector<SgNode*> stack;
-                stack.push_back(child);
-
-                while (!stack.empty())
-                {
-                    SgNode* current = stack.back();
-                    stack.pop_back();
-
-                    // Process all children of current node
-                    SgNode* grandChild = static_cast<SgNode*>(current->GetFirstChild());
-                    while (grandChild)
-                    {
-                        grandChild->CanBeFree();
-
-                        // If grandchild has children, add to stack for processing
-                        if (grandChild->GetFirstChild())
-                        {
-                            stack.push_back(grandChild);
-                        }
-
-                        grandChild = static_cast<SgNode*>(grandChild->GetNextSibling());
-                    }
-                }
-
-                // Schedule for deferred removal
-                sceneGraph.InsertInRemoveIfFree(child);
-
-                if (m_isInRemoveIfFree)
-                {
-                    M3D_LOG_WARN(
-                        "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) + ", parent name = '" +
-                        CStr(GetName()) + "'");
-                }
+                M3D_LOG_WARN(
+                    "Adding child in RemoveIfFree in destructor, child name = '" + CStr(child->GetName()) +
+                    "', parent name = '" + CStr(GetName()) + "'");
             }
         }
 
-        // Remove from contour list if contoured
         if (m_isContoured)
         {
-            sceneGraph.DeleteFromContourList(this);
+            sceneGraph->DeleteFromContourList(this);
         }
-
         RitualInDestructor();
     }
 
@@ -1170,6 +965,14 @@ namespace m3d
 
     void SgNode::InternalInit()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x643940
+        m_frameVisible = 0;
+        m_frameVisible2 = 0;
+        m_onScreenSize = 0.0f;
+        m_predictIdx = 0;
+        m_isRootNode = false;
+        m_forGraph = nullptr;
+        m_isWaitingForRender = false;
+        m_initedWithRitual = RITUAL_NONE;
     }
 }  // namespace m3d

@@ -19,6 +19,11 @@ namespace m3d
     class CWorld;
 }
 
+namespace m3d
+{
+    struct sArgStack;
+}
+
 namespace ai
 {
     class ObjContainer;
@@ -38,8 +43,12 @@ namespace ai
         CLIENT_GAME = 0x2,
     };
 
+    int n_EndCinematic(m3d::sArgStack& scriptStack);
+
     class CServer : public m3d::IConHandler
     {
+        // The n_EndCinematic script callback clears the cinematic flag directly.
+        friend int ::ai::n_EndCinematic(m3d::sArgStack&);
     public:
         /* 0x0004 */ ai::Map* pGlobalMap;
         CServer(const ai::CServer&);

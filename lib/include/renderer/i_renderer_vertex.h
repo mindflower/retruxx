@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 struct CVector;
 class CVector4;
 
@@ -7,7 +9,7 @@ namespace m3d
 {
     namespace rend
     {
-        enum VertexType
+        enum VertexType : int32_t
         {
             VERTEX_XYZ = 0x0,
             VERTEX_XYZT1 = 0x1,
@@ -35,13 +37,16 @@ namespace m3d
             VERTEX_XYZT1I = 0x17,
         };
 
+        // Vertex layouts are shared with the renderer DLLs and vertex buffers: fixed-width
+        // fields, 4-byte packing.
+#pragma pack(push, 4)
         struct VertexXYZWC
         {
             float x;
             float y;
             float z;
             float w;
-            unsigned int c;
+            uint32_t c;
 
         public:
             void xyzw(float,float,float,float);
@@ -83,12 +88,10 @@ namespace m3d
             /* 0x0004 */ float y;
             /* 0x0008 */ float z;
             /* 0x000c */ float w;
-            /* 0x0010 */ unsigned int c;
+            /* 0x0010 */ uint32_t c;
             /* 0x0014 */ float tu;
             /* 0x0018 */ float tv;
         }; /* size: 0x001c */
-
-        static_assert(sizeof(VertexXYZWCT1) == 0x001c);
 
         struct VertexXYZCT2
         {
@@ -99,25 +102,38 @@ namespace m3d
             /* 0x0000 */ float x;
             /* 0x0004 */ float y;
             /* 0x0008 */ float z;
-            /* 0x000c */ unsigned int c;
+            /* 0x000c */ uint32_t c;
             /* 0x0010 */ float tu0;
             /* 0x0014 */ float tv0;
             /* 0x0018 */ float tu1;
             /* 0x001c */ float tv1;
         }; /* size: 0x0020 */
 
-        static_assert(sizeof(VertexXYZCT2) == 0x0020);
-
         struct VertexXYZC
         {
             float x;
             float y;
             float z;
-            unsigned int c;
+            uint32_t c;
 
         public:
             void xyz(CVector const&);
         };
+
+        struct VertexXYZNC
+        {
+            void xyz(const CVector& v);
+            void xyz(float xx, float yy, float zz);
+            void n(float nnx, float nny, float nnz);
+            void n(const CVector& nn);
+            /* 0x0000 */ float x;
+            /* 0x0004 */ float y;
+            /* 0x0008 */ float z;
+            /* 0x000c */ float nx;
+            /* 0x0010 */ float ny;
+            /* 0x0014 */ float nz;
+            /* 0x0018 */ uint32_t c;
+        }; /* size: 0x001c */
 
         struct VertexXYZT1I
         {
@@ -126,8 +142,8 @@ namespace m3d
             float z;
             float tu;
             float tv;
-            __int16 i1;
-            __int16 i2;
+            int16_t i1;
+            int16_t i2;
 
         public:
             void uv0(float, float);
@@ -142,12 +158,10 @@ namespace m3d
             /* 0x0000 */ float x;
             /* 0x0004 */ float y;
             /* 0x0008 */ float z;
-            /* 0x000c */ unsigned int c;
+            /* 0x000c */ uint32_t c;
             /* 0x0010 */ float tu;
             /* 0x0014 */ float tv;
         }; /* size: 0x0018 */
-
-        static_assert(sizeof(VertexXYZCT1) == 0x0018);
 
         struct VertexXYZNCT2
         {
@@ -157,7 +171,7 @@ namespace m3d
             float nx;
             float ny;
             float nz;
-            unsigned int c;
+            uint32_t c;
             float tu0;
             float tv0;
             float tu1;
@@ -167,8 +181,21 @@ namespace m3d
         struct VertexLandscape
         {
             float y;
-            __int16 xz;
-            __int16 uv;
+            int16_t xz;
+            int16_t uv;
         };
+#pragma pack(pop)
+
+        static_assert(sizeof(VertexXYZWC) == 0x0014);
+        static_assert(sizeof(VertexXYZNT1) == 0x0020);
+        static_assert(sizeof(VertexXYZ) == 0x000c);
+        static_assert(sizeof(VertexXYZWCT1) == 0x001c);
+        static_assert(sizeof(VertexXYZCT2) == 0x0020);
+        static_assert(sizeof(VertexXYZC) == 0x0010);
+        static_assert(sizeof(VertexXYZNC) == 0x001c);
+        static_assert(sizeof(VertexXYZT1I) == 0x0018);
+        static_assert(sizeof(VertexXYZCT1) == 0x0018);
+        static_assert(sizeof(VertexXYZNCT2) == 0x002c);
+        static_assert(sizeof(VertexLandscape) == 0x0008);
     }
 }

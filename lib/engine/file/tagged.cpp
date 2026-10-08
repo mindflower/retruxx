@@ -5,6 +5,40 @@
 #include <file/filestream.h>
 #include <file/tagged.h>
 
+namespace
+{
+    // RVA 0x975900 - zlib's crc32: the standard reflected CRC-32 (0xEDB88320), and 0
+    // for a null buffer.
+    unsigned crc32(unsigned crc, unsigned char const* buf, unsigned len)
+    {
+        static unsigned table[256] = {};
+        static bool tableReady = false;
+        if (!tableReady)
+        {
+            for (unsigned n = 0; n < 256; ++n)
+            {
+                unsigned c = n;
+                for (int k = 0; k < 8; ++k)
+                {
+                    c = (c & 1) ? 0xEDB88320u ^ (c >> 1) : c >> 1;
+                }
+                table[n] = c;
+            }
+            tableReady = true;
+        }
+        if (!buf)
+        {
+            return 0;
+        }
+        crc = ~crc;
+        while (len--)
+        {
+            crc = table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
+        }
+        return ~crc;
+    }
+}  // namespace
+
 namespace m3d
 {
     namespace fs
@@ -21,14 +55,34 @@ namespace m3d
             }
         }
 
-        auxTaggedFile::eError auxTaggedFile::addChunk(unsigned)
+        auxTaggedFile::eError auxTaggedFile::addChunk(unsigned _chunkTag)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7A3F20
+            if (!m_bOpened)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (m_openflag != CREATE && m_openflag != CREATE_IGNORE_CRC)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (findChunk(_chunkTag) != m_lAllChunks.size())
+            {
+                return TAG_EXISTS;
+            }
+            mChunk chunk;
+            chunk.chunk_header.tag = _chunkTag;
+            chunk.chunk_header.size = 0;
+            chunk.chunk_header.offset = 0;
+            chunk.chunk_header.crc32 = 0;
+            m_lAllChunks.push_back(chunk);
+            return SUCCESS;
         }
 
-        bool auxTaggedFile::isChunkPresent(unsigned) const
+        bool auxTaggedFile::isChunkPresent(unsigned _chunkTag) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x5B26C0
+            return findChunk(_chunkTag) < m_lAllChunks.size();
         }
 
         auxTaggedFile::eError auxTaggedFile::getChunkDataCopy(unsigned _chunkTag, void* _data) const
@@ -37,7 +91,8 @@ namespace m3d
             {
                 return NOT_INITIALIZED;
             }
-            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC && m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
+            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC &&
+                m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
             {
                 return NOT_INITIALIZED;
             }
@@ -46,18 +101,73 @@ namespace m3d
             {
                 return TAG_NOT_FOUND;
             }
-            memcpy(_data, reinterpret_cast<void*>(m_lAllChunks[chunkNum].chunk_header.offset), m_lAllChunks[chunkNum].chunk_header.size);
+            memcpy(
+                _data,
+                reinterpret_cast<void*>(m_lAllChunks[chunkNum].chunk_header.offset),
+                m_lAllChunks[chunkNum].chunk_header.size);
             return SUCCESS;
         }
 
-        auxTaggedFile::eError auxTaggedFile::addChunkDataCopy(unsigned, unsigned, void const*)
+        auxTaggedFile::eError auxTaggedFile::addChunkDataCopy(unsigned _chunkTag, unsigned _size, void const* _data)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7A3050
+            if (!m_bOpened)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (m_openflag != CREATE && m_openflag != CREATE_IGNORE_CRC)
+            {
+                return NOT_INITIALIZED;
+            }
+            unsigned const chunkNum = findChunk(_chunkTag);
+            if (chunkNum == m_lAllChunks.size())
+            {
+                return TAG_NOT_FOUND;
+            }
+            mChunk& chunk = m_lAllChunks[chunkNum];
+            chunk.chunk_header.size += _size;
+            mChunkData cdata;
+            cdata.size = _size;
+            cdata.is_copy = true;
+            cdata.data = new unsigned char[_size];
+            memcpy(cdata.data, _data, _size);
+            // The checksum is kept only when the file is created with CRC checking.
+            if (m_openflag == CREATE)
+            {
+                chunk.chunk_header.crc32 =
+                    crc32(chunk.chunk_header.crc32, static_cast<unsigned char const*>(cdata.data), _size);
+            }
+            chunk.chunk_data.push_back(cdata);
+            return SUCCESS;
         }
 
-        auxTaggedFile::eError auxTaggedFile::setFormatTitle(char const*)
+        auxTaggedFile::eError auxTaggedFile::setFormatTitle(char const* _format_name)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7A1CA0
+            if (!m_bOpened)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (m_openflag != CREATE && m_openflag != CREATE_IGNORE_CRC)
+            {
+                return NOT_INITIALIZED;
+            }
+            // The title is stored in a fixed 30 byte field, so longer ones are cut to 29 chars.
+            delete[] m_format_name;
+            m_format_name = nullptr;
+            size_t const len = strlen(_format_name);
+            m_format_name = new char[30];
+            memset(m_format_name, 0, 30);
+            if (len >= 30)
+            {
+                strncpy(m_format_name, _format_name, 29);
+                m_format_name[29] = '\0';
+            }
+            else
+            {
+                strcpy(m_format_name, _format_name);
+            }
+            return SUCCESS;
         }
 
         auxTaggedFile::eError auxTaggedFile::getFormatTitle(char** _formatName)
@@ -66,7 +176,8 @@ namespace m3d
             {
                 return NOT_INITIALIZED;
             }
-            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC && m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
+            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC &&
+                m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
             {
                 return NOT_INITIALIZED;
             }
@@ -80,7 +191,8 @@ namespace m3d
             {
                 return NOT_INITIALIZED;
             }
-            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC && m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
+            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC &&
+                m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
             {
                 return NOT_INITIALIZED;
             }
@@ -99,7 +211,8 @@ namespace m3d
             {
                 return NOT_INITIALIZED;
             }
-            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC && m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
+            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC &&
+                m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
             {
                 return NOT_INITIALIZED;
             }
@@ -107,24 +220,84 @@ namespace m3d
             return SUCCESS;
         }
 
-        auxTaggedFile::eError auxTaggedFile::setFormatVersion(unsigned)
+        auxTaggedFile::eError auxTaggedFile::setFormatVersion(unsigned _version)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7A1D70
+            if (!m_bOpened)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (m_openflag != CREATE && m_openflag != CREATE_IGNORE_CRC)
+            {
+                return NOT_INITIALIZED;
+            }
+            m_format_version = _version;
+            return SUCCESS;
         }
 
-        auxTaggedFile::eError auxTaggedFile::getChunkInfo(unsigned, auxChunkInfo&) const
+        auxTaggedFile::eError auxTaggedFile::getChunkInfo(unsigned _chunkTag, auxChunkInfo& _info) const
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7A26A0
+            if (!m_bOpened)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (m_openflag != PROCESS_NORMAL && m_openflag != PROCESS_NORMAL_IGNORE_CRC &&
+                m_openflag != PROCESS_MAPPED && m_openflag != PROCESS_MAPPED_IGNORE_CRC)
+            {
+                return NOT_INITIALIZED;
+            }
+            unsigned const chunkNum = findChunk(_chunkTag);
+            if (chunkNum == m_lAllChunks.size())
+            {
+                return TAG_NOT_FOUND;
+            }
+            _info = m_lAllChunks[chunkNum].chunk_header;
+            return SUCCESS;
         }
 
-        auxTaggedFile::eError auxTaggedFile::addChunkData(unsigned, unsigned, void const*)
+        auxTaggedFile::eError auxTaggedFile::addChunkData(unsigned _chunkTag, unsigned _size, void const* _data)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x7A2FA0
+            if (!m_bOpened)
+            {
+                return NOT_INITIALIZED;
+            }
+            if (m_openflag != CREATE && m_openflag != CREATE_IGNORE_CRC)
+            {
+                return NOT_INITIALIZED;
+            }
+            unsigned const chunkNum = findChunk(_chunkTag);
+            if (chunkNum == m_lAllChunks.size())
+            {
+                return TAG_NOT_FOUND;
+            }
+            mChunk& chunk = m_lAllChunks[chunkNum];
+            chunk.chunk_header.size += _size;
+            mChunkData cdata;
+            cdata.size = _size;
+            // The caller's buffer is only referenced; it has to live until Close.
+            cdata.is_copy = false;
+            cdata.data = const_cast<void*>(_data);
+            // The checksum is kept only when the file is created with CRC checking.
+            if (m_openflag == CREATE)
+            {
+                chunk.chunk_header.crc32 =
+                    crc32(chunk.chunk_header.crc32, static_cast<unsigned char const*>(cdata.data), _size);
+            }
+            chunk.chunk_data.push_back(cdata);
+            return SUCCESS;
         }
 
         auxTaggedFile::eError auxTaggedFile::Open(char const* _fname, eOpenFlag _flag)
         {
-            //TODO: check this
+            // RVA 0x7A3A10 - CREATE opens the file for writing (the chunks go out on Close);
+            // PROCESS_NORMAL reads the whole file into memory through the file server, so it
+            // also finds packed files; PROCESS_MAPPED maps a plain file from disk. Either way
+            // the chunk table is indexed and the format name (tag 0xF001) and version (tag
+            // 0xF002) are read.
+            // NOTE: a failure after the chunk table has been read leaves the file marked open
+            // with its chunks listed but its data freed, as in the shipped code.
             if (_flag != PROCESS_MAPPED && _flag != PROCESS_MAPPED_IGNORE_CRC)
             {
                 if (_flag != PROCESS_NORMAL && _flag != PROCESS_NORMAL_IGNORE_CRC)
@@ -173,9 +346,9 @@ namespace m3d
                     return BAD_NUM_CHUNKS;
                 }
                 auto fileData = reinterpret_cast<unsigned*>(static_cast<char*>(m_pFileData) + 12);
-                for (unsigned i = 0; i <_header->numChunks; ++i)
+                // Each table entry is tag, size, offset, crc; the offset is turned into a pointer.
+                for (unsigned i = 0; i < _header->numChunks; ++i)
                 {
-                    //TODO: check this
                     mChunk chunk;
                     chunk.chunk_header.tag = fileData[0];
                     chunk.chunk_header.size = fileData[1];
@@ -184,6 +357,8 @@ namespace m3d
                     mChunkData data;
                     data.is_copy = false;
                     data.size = fileData[1];
+                    // NOTE: the shipped code leaves data uninitialised here; nothing reads it for
+                    // a chunk that is not a copy.
                     data.data = nullptr;
                     chunk.chunk_header.offset += reinterpret_cast<unsigned>(m_pFileData);
                     chunk.chunk_data.push_back(data);
@@ -200,13 +375,13 @@ namespace m3d
                 }
                 m_format_name = new char[strlen(formatName) + 1];
                 strcpy(m_format_name, formatName);
-                m_format_name[strlen(formatName)] = '\0';
                 if (getChunkDataCopy(0xF002, &m_format_version) == SUCCESS)
                 {
                     return SUCCESS;
                 }
                 delete[] m_pFileData;
                 delete[] m_format_name;
+                m_format_name = nullptr;
                 return BAD_FORMAT;
             }
             m_hFile = ::CreateFileA(_fname, 0x80000000, 1u, 0, 3u, 0x80u, 0);
@@ -250,7 +425,6 @@ namespace m3d
             auto fileData = reinterpret_cast<unsigned*>(static_cast<char*>(m_pFileData) + 12);
             for (unsigned i = 0; i < _header->numChunks; ++i)
             {
-                //TODO: check this
                 mChunk chunk;
                 chunk.chunk_header.tag = fileData[0];
                 chunk.chunk_header.size = fileData[1];
@@ -267,22 +441,24 @@ namespace m3d
             }
             m_bOpened = true;
             m_openflag = _flag;
+            // NOTE: unlike the in-memory path, a missing format name or version is not checked
+            // for here; a file without a 0xF001 chunk crashes on the strlen.
             char* formatName = nullptr;
             getChunkData(0xF001, reinterpret_cast<void**>(&formatName));
             m_format_name = new char[strlen(formatName) + 1];
             strcpy(m_format_name, formatName);
-            m_format_name[size] = '\0';
             getChunkDataCopy(0xF002, &m_format_version);
             return SUCCESS;
         }
 
         auxTaggedFile::eError auxTaggedFile::Close()
         {
-            //TODO: generated code
+            // RVA 0x7A3FD0 - a created file gets its format chunks and is written out (header, chunk table, then
+            // the chunk data, freeing the copies); an opened one releases its image and chunk list.
             if (!m_bOpened)
                 return eError::NOT_INITIALIZED;
 
-            const eOpenFlag openFlag = m_openflag;
+            eOpenFlag const openFlag = m_openflag;
 
             // Handle CREATE or CREATE_IGNORE_CRC mode
             if (openFlag == CREATE || openFlag == CREATE_IGNORE_CRC)
@@ -306,24 +482,23 @@ namespace m3d
                     header.numChunks = static_cast<uint32_t>(m_lAllChunks.size());
 
                     DWORD numWritten = 0;
-                    if (!WriteFile(m_hFile, &header, sizeof(header), &numWritten, 0) ||
-                        numWritten != sizeof(header))
+                    if (!WriteFile(m_hFile, &header, sizeof(header), &numWritten, 0) || numWritten != sizeof(header))
                     {
                         CloseHandle(m_hFile);
-                        return COMMON_ERROR; // Error code
+                        return COMMON_ERROR;  // Error code
                     }
 
                     // Calculate data offset after all chunk headers
-                    uint32_t dataOffset = sizeof(header) +
-                        static_cast<uint32_t>(m_lAllChunks.size() * sizeof(auxChunkInfo));
+                    uint32_t dataOffset =
+                        sizeof(header) + static_cast<uint32_t>(m_lAllChunks.size() * sizeof(auxChunkInfo));
 
                     // Write chunk headers
                     for (auto& chunk : m_lAllChunks)
                     {
                         chunk.chunk_header.offset = dataOffset;
 
-                        if (!WriteFile(m_hFile, &chunk.chunk_header, sizeof(chunk.chunk_header),
-                            &numWritten, 0) || numWritten != sizeof(chunk.chunk_header))
+                        if (!WriteFile(m_hFile, &chunk.chunk_header, sizeof(chunk.chunk_header), &numWritten, 0) ||
+                            numWritten != sizeof(chunk.chunk_header))
                         {
                             CloseHandle(m_hFile);
                             return COMMON_ERROR;
@@ -337,8 +512,7 @@ namespace m3d
                     {
                         for (auto& data : chunk.chunk_data)
                         {
-                            if (!WriteFile(m_hFile, data.data, data.size, &numWritten, 0) ||
-                                numWritten != data.size)
+                            if (!WriteFile(m_hFile, data.data, data.size, &numWritten, 0) || numWritten != data.size)
                             {
                                 CloseHandle(m_hFile);
                                 return COMMON_ERROR;
@@ -361,22 +535,18 @@ namespace m3d
             }
 
             // Common cleanup for both PROCESS modes
-            if (openFlag == PROCESS_MAPPED || openFlag == PROCESS_MAPPED_IGNORE_CRC ||
-                openFlag == PROCESS_NORMAL || openFlag == PROCESS_NORMAL_IGNORE_CRC)
+            if (openFlag == PROCESS_MAPPED || openFlag == PROCESS_MAPPED_IGNORE_CRC || openFlag == PROCESS_NORMAL ||
+                openFlag == PROCESS_NORMAL_IGNORE_CRC)
             {
-                if (m_pFileData &&
-                    (openFlag == PROCESS_NORMAL || openFlag == PROCESS_NORMAL_IGNORE_CRC))
+                if (m_pFileData && (openFlag == PROCESS_NORMAL || openFlag == PROCESS_NORMAL_IGNORE_CRC))
                 {
                     delete[] m_pFileData;
                 }
 
-                // Clean up chunk data
+                // NOTE: only the lists are released, as shipped: data added to an opened file with a copy is
+                // leaked (the loaded chunks point into the file image).
                 for (auto& chunk : m_lAllChunks)
                 {
-                    for (auto& data : chunk.chunk_data)
-                    {
-                        delete[] data.data;
-                    }
                     chunk.chunk_data.clear();
                 }
 
@@ -386,9 +556,10 @@ namespace m3d
 
             // Clean up format name
             delete[] m_format_name;
+            m_format_name = nullptr;
 
             m_bOpened = false;
-            return SUCCESS; // Success
+            return SUCCESS;  // Success
         }
 
         unsigned auxTaggedFile::findChunk(unsigned _chunkTag) const
@@ -404,5 +575,5 @@ namespace m3d
             }
             return result;
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

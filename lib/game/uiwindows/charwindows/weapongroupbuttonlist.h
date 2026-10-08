@@ -17,80 +17,117 @@ public:
         STATE_DISABLED = 0x2,
     };
 
-    class AuxInfo
-    {
-    public:
-        AuxInfo();
-
-    private:
-        CStr m_texIdSelected;
-        CStr m_texIdUnselectedOut;
-        CStr m_texIdUnselectedIn;
-        CStr m_texIdDisabled;
-    };
-
 public:
-    static m3d::Object* CreateObject();
-    virtual m3d::Class* GetClass() const;
-    virtual m3d::Object* Clone();
+    int SetupForGroup(int groupId);
     int GetGroupId() const;
-    void SetState(State);
-    virtual ~WeaponGroupButton();
-    int SetupForGroup(int);
-    State GetState() const;
-    static m3d::Class* GetBaseClass();
+    void SetState(WeaponGroupButton::State state);
+    WeaponGroupButton::State GetState() const;
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_texIdSelected;
+        /* 0x000c */ CStr m_texIdUnselectedOut;
+        /* 0x0018 */ CStr m_texIdUnselectedIn;
+        /* 0x0024 */ CStr m_texIdDisabled;
+        AuxInfo(WeaponGroupButton::AuxInfo const& rhs);
+        AuxInfo();
+    }; /* size: 0x0030 */
+
 protected:
+    void GetTexturesByState(
+        WeaponGroupButton::State state,
+        int groupId,
+        m3d::rend::TexHandle& texOut,
+        m3d::rend::TexHandle& texIn,
+        m3d::rend::TexHandle& texDown) const;
     void UpdateTextures();
+
+    /* 0x023c */ int m_groupId;
+    /* 0x0240 */ WeaponGroupButton::State m_state;
+    /* 0x0244 */ WeaponGroupButton::AuxInfo m_aif;
+
     WeaponGroupButton();
-    WeaponGroupButton(WeaponGroupButton const&);
-    void GetTexturesByState(State, int, m3d::rend::TexHandle&, m3d::rend::TexHandle&, m3d::rend::TexHandle&) const;
+    WeaponGroupButton(WeaponGroupButton const& rhs);
 
 public:
+    virtual ~WeaponGroupButton() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(WeaponGroupButton);
+}; /* size: 0x0274 */
 
-private:
-    int m_groupId;
-    WeaponGroupButton::State m_state;
-    WeaponGroupButton::AuxInfo m_aif;
-};
-
-
-class WeaponGroupButtonList :  public m3d::ui::Wnd
+class WeaponGroupButtonList : public m3d::ui::Wnd
 {
 public:
-    virtual m3d::Object * Clone();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
-    virtual ~WeaponGroupButtonList();
-    int SetupForGunPart(CStr const &,int);
+    int SetupForGunPart(CStr const& gunPartName, int vehicleId);
+
+    using WeaponGroupButtonVector = std::vector<WeaponGroupButton*, std::allocator<WeaponGroupButton*>>;
+    using ButtonVector = std::vector<m3d::ui::ButtonWnd*, std::allocator<m3d::ui::ButtonWnd*>>;
+
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_wndPatternName;
+        /* 0x000c */ CStr m_patternWeaponGroupButtonName;
+        /* 0x0018 */ CStr m_wndPatternWeaponSlotName;
+        AuxInfo(WeaponGroupButtonList::AuxInfo const& rhs);
+        AuxInfo();
+    }; /* size: 0x0024 */
+
+    struct Pattern
+    {
+        Pattern(WeaponGroupButtonList::Pattern const& rhs);
+        Pattern();
+        ~Pattern();
+        void IncRef();
+        void DecRef();
+        int GetRef() const;
+
+        /* 0x0000 */ m3d::ui::Wnd* m_wndPattern;
+        /* 0x0004 */ ButtonVector m_patternWeaponGroupButtons;
+        void Clear();
+        /* 0x0014 */ int m_ref;
+    }; /* size: 0x0018 */
 
 protected:
-    ai::Vehicle const * GetVehicle() const ;
-    int GetCurGroupId() const ;
-    void UpdateCurGroupId();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
-    static int __fastcall LoadPattern(m3d::ui::Wnd *);
-    virtual int CreateChildren();
-    void OnVehiclePartChanged(void *);
-    virtual int CreateFromPattern();
-    virtual int GameDataUpdate(void *,int);
-    void OnBtnWeaponGroupClick(m3d::ui::Wnd *,int, m3d::AIParam const &);
-    WeaponGroupButtonList(WeaponGroupButtonList const &);
-    WeaponGroupButtonList();
-    bool IsSetForGun() const ;
-    void AddWeaponToGroup(int);
-    void UpdateButtonsState();
-    void OnKeyBindingsChanged();
-    ai::VehiclePart const * GetGun() const ;
-    void UpdateButtonsTooltips();
+    virtual int CreateFromPattern() /* 0x11c */;
+    virtual int CreateChildren() /* 0x120 */;
+    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
+    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
+        /* 0xc8 */;
+    void OnBtnWeaponGroupClick(m3d::ui::Wnd* wndFrom, int wndFromId, m3d::AIParam const& data);
     void OnWeaponGroupChanged();
+    void OnVehiclePartChanged(void* data);
+    int GetCurGroupId() const;
+    void UpdateCurGroupId();
+    bool IsSetForGun() const;
+    void UpdateButtonsState();
+    void AddWeaponToGroup(int groupId);
+    ai::Vehicle const* GetVehicle() const;
+    ai::VehiclePart const* GetGun() const;
+    void OnKeyBindingsChanged();
+    void UpdateButtonsTooltips();
+
+    /* 0x0220 */ WeaponGroupButtonVector m_weaponGroupButtons;
+    /* 0x0230 */ CStr m_gunPartName;
+    /* 0x023c */ int m_vehicleId;
+    static inline WeaponGroupButtonList::Pattern m_pattern;
+    static inline WeaponGroupButtonList::AuxInfo m_aif;
+
+    WeaponGroupButtonList();
+    WeaponGroupButtonList(WeaponGroupButtonList const& rhs);
 
 public:
+    virtual ~WeaponGroupButtonList() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(WeaponGroupButtonList);
 
-private:
-    std::vector<WeaponGroupButton *> m_weaponGroupButtons;
-    CStr m_gunPartName;
-    int m_vehicleId;
-};
+    // WeaponSlotList owns the shared pattern's lifetime, holding a reference
+    // across GameDataSetup / destruction.
+    friend class WeaponSlotList;
+}; /* size: 0x0240 */

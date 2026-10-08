@@ -1,5 +1,8 @@
 #include "vehiclesplinter.h"
 
+#include "base/prototypemanager.h"
+#include <core/kernel.h>
+
 #include <stdexcept>
 
 namespace ai
@@ -10,12 +13,13 @@ namespace ai
 
     Obj* VehicleSplinterPrototypeInfo::CreateTargetObject() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851C90
+        return new VehicleSplinter(*this);
     }
 
     VehicleSplinter::VehicleSplinter(VehicleSplinterPrototypeInfo const& prototype) : DummyObject(prototype)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851C60 - a plain DummyObject; unlike ParticleSplinter it stays in its own space.
     }
 
     m3d::Class* VehicleSplinter::GetBaseClass()
@@ -25,26 +29,29 @@ namespace ai
 
     VehicleSplinterPrototypeInfo const* VehicleSplinter::GetPrototypeInfo() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x852080
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), VehicleSplinterPrototypeInfo const);
     }
 
     m3d::Class* VehicleSplinter::GetClass() const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851C50
+        return RT_CLASS_LOCAL(VehicleSplinter);
     }
 
-    VehicleSplinter::~VehicleSplinter()
-    {
-        RETRUXX_NOT_IMPLEMENTED;
-    }
+    VehicleSplinter::~VehicleSplinter() = default;
 
     m3d::Object* VehicleSplinter::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851D00
+        SYS_ERROR("!\"Object cannot be cloned\"");
+        return nullptr;
     }
 
     m3d::Object* VehicleSplinter::CreateObject()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x851EC0
+        SYS_ERROR("!\"Object cannot be created directly\"");
+        return nullptr;
     }
 }

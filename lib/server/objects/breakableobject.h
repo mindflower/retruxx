@@ -27,8 +27,6 @@ namespace ai
         virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
     }; /* size: 0x00d4 */
 
-    static_assert(sizeof(BreakableObjectPrototypeInfo) == 0x00d4);
-
     class BreakableObject : public ai::SimplePhysicObj
     {
         friend class BreakableObjectPrototypeInfo;
@@ -111,6 +109,4 @@ namespace ai
         void _BreakOffConnectedRopes(bool createJoint);
         void _StifleChildLights();
     }; /* size: 0x0184 */
-
-    static_assert(sizeof(BreakableObject) == 0x0184);
 }

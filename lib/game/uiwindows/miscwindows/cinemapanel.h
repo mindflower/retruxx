@@ -17,6 +17,8 @@ class ItemModelWnd;
 
 class CinemaPanel : public m3d::ui::Wnd
 {
+    friend class CMiracle3d;
+
 public:
     void Clear();
     void OnHide();

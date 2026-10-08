@@ -39,6 +39,7 @@ void dGeomSetData (dGeomID, void *);
 void *dGeomGetData (dGeomID);
 void dGeomSetBody (dGeomID, dBodyID);
 dBodyID dGeomGetBody (dGeomID);
+dGeomID dGeomGetParentTransform (dGeomID);
 void dGeomSetPosition (dGeomID, dReal x, dReal y, dReal z);
 void dGeomSetRotation (dGeomID, const dMatrix3 R);
 void dGeomSetQuaternion (dGeomID, const dQuaternion);

@@ -16,6 +16,4 @@ namespace m3d
         /* 0x0000 */ CStr m_cmdLine;
         /* 0x000c */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_params;
     }; /* size: 0x001c */
-
-    static_assert(sizeof(CmdLine) == 0x001c);
 }

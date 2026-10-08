@@ -7,42 +7,35 @@ namespace m3d
     {
         class ComboBoxWnd;
     }
-}
+}  // namespace m3d
 
-class RequestDifficultyWnd :  public m3d::ui::ModalWnd
+class RequestDifficultyWnd : public m3d::ui::ModalWnd
 {
-public:
-    class AuxInfo
+    struct AuxInfo
     {
-    public:
+        /* 0x0000 */ CStr m_cbDifficultyLevelsName;
+        AuxInfo(RequestDifficultyWnd::AuxInfo const&);
         AuxInfo();
-
-    public:
-        CStr m_cbDifficultyLevelsName = "cbDifficultyLevels";
-    };
-
-public:
-    virtual m3d::Class * GetClass() const ;
-    virtual m3d::Object * Clone();
-    virtual ~RequestDifficultyWnd();
-    static m3d::Object * CreateObject();
-    static m3d::Class * GetBaseClass();
+    }; /* size: 0x000c */
 
 protected:
-    RequestDifficultyWnd(RequestDifficultyWnd const &);
-    RequestDifficultyWnd();
+    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int OnBeforeRemoveFromWndStation() override /* 0x00 */;
     void FillDifficultyLevelsList();
-    virtual int OnKey(unsigned short,unsigned char,unsigned int);
-    virtual int OnBeforeRemoveFromWndStation();
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
     void Clear();
     void ApplyDifficultyLevel();
-    virtual int OnBeforeAddToWndStation();
-    virtual int GameDataSetup();
+    /* 0x0224 */ m3d::ui::ComboBoxWnd* m_cbDifficultyLevels;
+    /* 0x0228 */ RequestDifficultyWnd::AuxInfo m_aif;
+    RequestDifficultyWnd();
+    RequestDifficultyWnd(RequestDifficultyWnd const& rhs);
 
 public:
+    virtual ~RequestDifficultyWnd() override /* 0x00 */;
+    virtual m3d::Object* Clone() override /* 0x00 */;
+    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* __fastcall GetBaseClass();
+    virtual m3d::Class* GetClass() const override /* 0x00 */;
     RT_CLASS_DECLARE(RequestDifficultyWnd);
-
-private:
-    m3d::ui::ComboBoxWnd *m_cbDifficultyLevels = nullptr;
-    RequestDifficultyWnd::AuxInfo m_aif;
-};
+}; /* size: 0x0234 */

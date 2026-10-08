@@ -61,19 +61,39 @@ namespace m3d
         {
         }
 
-        int LineWnd::WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*)
+        int LineWnd::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x674D30
+            if (!Wnd::WriteToXmlNode(file, writeTo))
+            {
+                return 0;
+            }
+            writeTo->SetAttribute("lineDirection", CStr(static_cast<int>(m_direction)).c_str());
+            return 1;
         }
 
-        void LineWnd::SetDirection(LineWndDirection)
+        void LineWnd::SetDirection(LineWndDirection dir)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x72A5F0 - turning the line swaps its extents so the thickness
+            // stays on the other axis.
+            if (m_direction != dir)
+            {
+                auto const width = m_bounds.width;
+                m_bounds.width = m_bounds.height;
+                m_bounds.height = width;
+            }
+            m_direction = dir;
+        }
+
+        LineWndDirection LineWnd::GetDirection()
+        {
+            return m_direction;
         }
 
         Object* LineWnd::Clone()
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x72A310
+            return new LineWnd(*this);
         }
 
         int LineWnd::ReadFromXmlNode(cmn::XmlFile* xmlFile, cmn::XmlNode* xmlNode)
@@ -83,6 +103,9 @@ namespace m3d
             {
                 return res;
             }
+            // NOTE: the shipped code copies an uninitialised stack slot into
+            // m_direction when the attribute is missing; leaving the current value
+            // alone is the only sane reading of that.
             SafeEnumAttrib(m_direction, xmlNode, "lineDirection");
             m_bounds = strToBounds(xmlNode->GetAttribute("org"));
             return 1;
@@ -95,30 +118,36 @@ namespace m3d
 
         void LineWnd::OnNcPaint(DrawInfo const& di, unsigned clr)
         {
-            //TODO: check this
+            // RVA 0x72A510 - the line is always exactly as thick as its pane's bar
+            // texture, so the bounds are pinned back on every paint.
             auto pane = GetGfxServer()->GetPane(m_paneName);
-            float width = 0.0;
+            float thickness = 0.0;
             if (pane && pane->m_frame[0])
             {
-                width = pane->m_frame[0]->m_barTexWidth;
+                thickness = pane->m_frame[0]->m_barTexWidth;
             }
             if (m_direction)
             {
-                if (m_bounds.width != width)
+                if (m_bounds.width != thickness)
                 {
-                    m_bounds.width = width;
+                    m_bounds.width = thickness;
                 }
             }
-            else
+            else if (m_bounds.height != thickness)
             {
-                m_bounds.height = width;
+                m_bounds.height = thickness;
             }
+
+            auto const b = GetBounds();
             BoundsBase<float> rect;
             rect.x0 = 0.0;
             rect.y0 = 0.0;
-            rect.width = GetBounds().width;
-            rect.height = GetBounds().height;
-            GetGfxServer()->AddFlatAxialPane0(di, rect, clr, m_paneFlags, m_paneName, m_bgFlags);
+            rect.width = b.width;
+            rect.height = b.height;
+            // The direction doubles as the background flag: a vertical line asks
+            // the pane for its other bar.
+            GetGfxServer()->AddFlatAxialPane0(
+                di, rect, clr, m_paneFlags, m_paneName, static_cast<PaneFlagBg>(m_direction != LINEWND_HORIZONTAL));
         }
 
         int LineWnd::OnPaint(DrawInfo const& di)
@@ -134,9 +163,12 @@ namespace m3d
             return 1;
         }
 
-        LineWnd::LineWnd(LineWnd const&)
+        LineWnd::LineWnd(LineWnd const& lw)
+            : Wnd(lw)
         {
-            RETRUXX_NOT_IMPLEMENTED;
+            // RVA 0x72A280 - the shipped copy constructor builds the Wnd base from
+            // rhs and, unlike the default one, leaves m_direction uninitialised and
+            // does not set up the "line3" pane.
         }
 
         LineWnd::LineWnd()

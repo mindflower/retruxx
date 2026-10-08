@@ -13,9 +13,30 @@
 
 namespace m3d
 {
-    CStr EngineConfig::GetNameByModelId(int)
+    CStr EngineConfig::GetNameByModelId(int modelId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5C01A0 - the inverse of GetModelIdByName: the high bits say which server the id belongs to.
+        if ((modelId & 0x1000000) != 0)
+        {
+            return M3D_APP->GetSpritesServer().GetNameByItem(modelId - 0x1000000);
+        }
+        if ((modelId & 0x800000) != 0)
+        {
+            return M3D_APP->GetLightsServer().GetNameByItem(modelId - 0x800000);
+        }
+        if ((modelId & 0x400000) != 0)
+        {
+            return pClient->GetWorld().GetFxNames()[modelId - 0x400000];
+        }
+        if ((modelId & 0x200000) != 0)
+        {
+            return M3D_APP->GetAnimatedModelsServer().GetNameByItem(modelId - 0x200000);
+        }
+        if ((modelId & 0x100000) != 0)
+        {
+            return M3D_APP->GetProjectorsServer().GetNameByItem(modelId - 0x100000);
+        }
+        return CStr();
     }
 
     float EngineConfig::GetHeight(float x, float y)
@@ -23,9 +44,10 @@ namespace m3d
         return pClient->GetWorld().GetLandscape().GetHeight(x, y, -1, true);
     }
 
-    int EngineConfig::Save(CStr const&)
+    int EngineConfig::Save(CStr const& fname)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x74AF80
+        return m_console->Save(fname);
     }
 
     int EngineConfig::GetModelIdByName(CStr const& name)
@@ -69,17 +91,32 @@ namespace m3d
 
     EngineConfig::~EngineConfig()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x74AF90 - the cvars are destroyed as members.
+        if (m_console->DecRef() <= 0)
+        {
+            m_console = nullptr;
+        }
     }
 
-    float EngineConfig::GetAttackAnimationFrametime(int, int)
+    float EngineConfig::GetAttackAnimationFrametime(int modelId, int actionId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFF00 - -1 when the model is not an animated model or has no attack frame for the action.
+        if (modelId >= 0x200000 && modelId < 0x400000)
+        {
+            PropSrvAttackframeTime info;
+            info.m_action = actionId;
+            if (M3D_APP->GetAnimatedModelsServer().GetItemProperty(modelId - 0x200000, PROP_SRV_ATTACK_FRAMETIME, &info)
+                && info.m_attackFrameTime >= 0.0f)
+            {
+                return info.m_attackFrameTime;
+            }
+        }
+        return -1.0f;
     }
 
     EngineConfig::EngineConfig()
     {
-        //TODO: check all this shit!!
+        // RVA 0x74BBF0 - creates the console and registers every engine cvar with its default.
         g_Kernel->AddClass(RT_CLASS_LOCAL(IConsole));
         m_console = ConsoleFactory();
         m_console->IncRef();
@@ -592,45 +629,29 @@ namespace m3d
         m_fadingTimeBeforeNextMap.Init("fadingTimeBeforeNextMap", "2.f", CVar::CVAR_FLOAT, CVar::CVAR_READONLY);
         m_console->RegisterCVar(&m_fadingTimeBeforeNextMap, 0);
 
-        unsigned int markerColors[16] = { 0 };
-        markerColors[0] = 0;
-        markerColors[1] = 128;
-        markerColors[2] = 0x8000;
-        markerColors[3] = 32896;
-        markerColors[4] = 0x7FFFFF; //TODO: check this
-        markerColors[5] = 0x80007F; //TODO: check this
-        markerColors[6] = 0x807FFF; //TODO: check this
-        markerColors[7] = 0x808080; //TODO: check this
-        markerColors[8] = 0x808080; //TODO: check this
-        markerColors[9] = 255;
-        markerColors[10] = 65280;
-        markerColors[11] = 0xFFFF;
-        markerColors[12] = 16711680;
-        markerColors[13] = 16711935;
-        markerColors[14] = 16776960;
-        markerColors[15] = 0xFFFFFF;
-
-        int i = 0;
-        for (auto& color : m_markerColors)
+        // The marker colours, as "r g b a" of 0x00RRGGBB values. All are initialised before any is registered,
+        // and they are registered after the video cvars.
+        unsigned int const markerColors[16] = {0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080,
+                                               0x808000, 0x808080, 0x808080, 0x0000FF, 0x00FF00, 0x00FFFF,
+                                               0xFF0000, 0xFF00FF, 0xFFFF00, 0xFFFFFF};
+        for (int i = 0; i < 16; ++i)
         {
-            auto const name = "markerColor" + CStr(i);
-            char sn[32] = { 0 };
-
-            //TODO: check and refactor this shit!!!
-            auto colorComponents = reinterpret_cast<unsigned __int8*>(&markerColors[i]);
-            sprintf(sn, "%d %d %d %d", colorComponents[2], colorComponents[1], colorComponents[0], colorComponents[3]);
-            color.Init(name.c_str(), sn, CVar::CVAR_COLOR, CVar::CVAR_ARCHIVE);
-
-            m_console->RegisterCVar(&color, 0);
-            ++i;
+            unsigned int const color = markerColors[i];
+            char value[32] = {0};
+            sprintf(value, "%d %d %d %d", (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, color >> 24);
+            m_markerColors[i].Init(("markerColor" + CStr(i)).c_str(), value, CVar::CVAR_COLOR, CVar::CVAR_ARCHIVE);
         }
 
         m_console->RegisterCVar(&m_video[0], 0);
         m_console->RegisterCVar(&m_video[1], 0);
         m_console->RegisterCVar(&m_video[2], 0);
         m_console->RegisterCVar(&m_video[3], 0);
+        for (auto& color : m_markerColors)
+        {
+            m_console->RegisterCVar(&color, 0);
+        }
 
-        i = 0;
+        int i = 0;
         for (auto& macro : m_r_shadersMacros)
         {
             auto const name = "shaderMacro" + CStr(i);
@@ -640,9 +661,19 @@ namespace m3d
         }
     }
 
-    float EngineConfig::GetAnimationLength(int, int)
+    float EngineConfig::GetAnimationLength(int modelId, int actionId)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x5BFEA0 - 0 when the model is not an animated model or the action is unknown.
+        if (modelId >= 0x200000 && modelId < 0x400000)
+        {
+            PropSrvActionTime info;
+            info.m_action = actionId;
+            if (M3D_APP->GetAnimatedModelsServer().GetItemProperty(modelId - 0x200000, PROP_SRV_ACTION_TIME, &info))
+            {
+                return info.m_delta;
+            }
+        }
+        return 0.0f;
     }
 
     int EngineConfig::Load(CStr const& fname)

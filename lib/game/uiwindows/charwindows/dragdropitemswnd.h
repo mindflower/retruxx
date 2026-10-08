@@ -7,7 +7,16 @@ class DragDropItemsWnd;
 
 class ItemAcceptInfo
 {
+    friend class DragDropItemsWnd;
+    friend class ItemWnd;
+    friend class RepositoryWnd;
+    // ShopWnd re-points m_eventSrcWnd at whichever tab accepted the drop.
+    friend class ShopWnd;
+    // WareWnd reads both fields when answering a quick drop.
+    friend class WareWnd;
+
 public:
+    ItemAcceptInfo(m3d::ui::Wnd* eventSrcWnd, m3d::ui::Wnd* eventDstWnd, ai::GeomRepositoryItem const& item);
     ItemAcceptInfo(ItemAcceptInfo const&);
 
 private:
@@ -18,7 +27,22 @@ private:
 
 class GeomSlot : public m3d::ui::ImageWnd
 {
+    // RepositoryWnd owns the slots it creates and touches their item / draw-style
+    // fields directly (matches the shipped game).
+    friend class RepositoryWnd;
+    // WareWnd inspects the dragged item to decide whether it may be dropped.
+    friend class WareWnd;
+
 public:
+    struct AuxInfo
+    {
+        /* 0x0000 */ CStr m_unsuitableTexName;
+        /* 0x000c */ CStr m_tooRichTexName;
+        /* 0x0018 */ PointBase<float> m_icoSz;
+        /* 0x0020 */ float m_space;
+        AuxInfo();
+    };
+
     GeomSlot();
     void SetDrawStyle(int);
     int GetDrawStyle() const;
@@ -29,6 +53,10 @@ public:
 protected:
     virtual int OnPaint(m3d::ui::DrawInfo const&);
 
+    static GeomSlot::AuxInfo m_aif;
+    static m3d::rend::TexHandle m_unsuitableTex;
+    static m3d::rend::TexHandle m_tooRichTex;
+
 private:
     ai::GeomRepositoryItem m_item;
     int m_gsStyle;
@@ -36,6 +64,10 @@ private:
 
 class DragSlot : public GeomSlot
 {
+    friend class DragDropItemsWnd;
+    friend class ItemWnd;
+    friend class RepositoryWnd;
+
 public:
     DragSlot(DragDropItemsWnd*);
     virtual ~DragSlot();

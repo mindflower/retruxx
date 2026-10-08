@@ -48,5 +48,5 @@ namespace ai
         m3d::CameraPath* m_currentFlyPath;
         float m_currentFlyTime;
         int m_controlledObjId;
-    };
+    }; /* size: 0x00d8 */
 }

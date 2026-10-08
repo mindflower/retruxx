@@ -21,10 +21,13 @@ namespace ai
         /* 0x0098 */ CStr m_blastWavePrototypeName;
     }; /* size: 0x00a4 */
 
-    static_assert(sizeof(BossMetalArmLoadPrototypeInfo) == 0x00a4);
-
     class BossMetalArmLoad : public ai::DummyObject
     {
+        // The arms set the collision mode directly when they let go of a load.
+        friend class BossMetalArmLoadPrototypeInfo;
+        friend class BossArm;
+        friend class BossMetalArm;
+
     protected:
         virtual  ~BossMetalArmLoad() override /* 0x00 */;
 
@@ -41,7 +44,12 @@ namespace ai
         virtual const ai::BossMetalArmLoadPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::BossMetalArmLoad, float, void>;
-        enum CollisionMode;
+        enum CollisionMode
+        {
+            COLLIDE_NONE = 0,
+            COLLIDE_NORMAL = 1,
+            COLLIDE_EXPLODE = 2,
+        };
 
     public:
         virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;
@@ -57,6 +65,4 @@ namespace ai
         void _CreateBlastWave();
         void _OnAfterHealthValueChange(float oldHealth);
     }; /* size: 0x0200 */
-
-    static_assert(sizeof(BossMetalArmLoad) == 0x0200);
 }

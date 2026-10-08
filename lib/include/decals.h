@@ -6,10 +6,25 @@
 #include <math/vector2.h>
 #include <renderer/i_renderer.h>
 
+namespace ai
+{
+    class VehiclePart;
+}
+
 namespace m3d
 {
     class DecalSource
     {
+        // DecalsServer::SetItemProperty fills one of these in from the caller's
+        // DecalData plus the prototype's dimensions.
+        friend class DecalsServer;
+        // Decal::Init reads the whole description to build its clip planes.
+        friend class Decal;
+        // DecalsList measures a new decal against the last one placed.
+        friend class DecalsList;
+        // VehiclePart writes the decals it carries into a save and into its map-passage data.
+        friend class ai::VehiclePart;
+
     private:
         CVector center;
         CVector normal;
@@ -21,6 +36,11 @@ namespace m3d
 
     class DecalInfo
     {
+        // DecalsList fills these in when a decal is placed in the pools.
+        friend class DecalsList;
+        // VehiclePart writes the decals it carries into a save and into its map-passage data.
+        friend class ai::VehiclePart;
+
     private:
         DecalSource source;
         void* mesh;
@@ -33,6 +53,9 @@ namespace m3d
 
     class Decal
     {
+        // DecalsList owns the work decal and reads the clipped result out of it.
+        friend class DecalsList;
+
     public:
         void Init(DecalSource const&, GeometryInfo const&);
 

@@ -444,13 +444,21 @@ void dGeomRaySet (dGeomID g, dReal px, dReal py, dReal pz,
   dUASSERT (g && g->type == dRayClass,"argument not a ray");
   dReal* rot = g->R;
   dReal* pos = g->pos;
+  dVector3 n;
   pos[0] = px;
   pos[1] = py;
   pos[2] = pz;
 
-  rot[0*4+2] = dx;
-  rot[1*4+2] = dy;
-  rot[2*4+2] = dz;
+  // The direction is stored as the third column of the rotation and must be a
+  // unit vector - ray collisions parametrise hits as pos + t*dir for t up to
+  // the ray length, so an unnormalised direction scales the ray's reach.
+  n[0] = dx;
+  n[1] = dy;
+  n[2] = dz;
+  dNormalize3 (n);
+  rot[0*4+2] = n[0];
+  rot[1*4+2] = n[1];
+  rot[2*4+2] = n[2];
   dGeomMoved (g);
 }
 

@@ -19,6 +19,11 @@ namespace ai
 
     class GoDataForLoad
     {
+        // CompositeObj fills these in from a save and plays them back onto its pieces.
+        friend class CompositeObj;
+        // JointedObj does the same for the members of a ragdoll.
+        friend class JointedObj;
+
     private:
         CVector pos;
         Quaternion rot;

@@ -39,7 +39,10 @@ enum {
   dxBodyFlagFiniteRotationAxis = 2,	// use finite rotations only along axis
   dxBodyDisabled = 4,			// body is disabled
   dxBodyNoGravity = 8,			// body is not influenced by gravity
-  dxBodyAutoDisable = 16		// enable auto-disable on body
+  dxBodyAutoDisable = 16,		// enable auto-disable on body
+  // retruxx: damping is applied to the body in dxStepBody (Targem's addition; bit 16 of the
+  // flags in the shipped build)
+  dxBodyFlagDamping = 0x10000
 };
 
 
@@ -87,6 +90,12 @@ struct dxContactParameters {
 };
 
 
+struct dxDamping
+{
+	dReal m_linearDamping;
+	dReal m_angularDamping;
+};
+
 struct dxBody : public dObject {
   dxJointNode *firstjoint;	// list of attached joints
   int flags;			// some dxBodyFlagXXX flags
@@ -108,12 +117,7 @@ struct dxBody : public dObject {
 
     // retruxx
   void (*m_changeEnabledStateCallback)(dxBody*);
-};
-
-struct dxDamping
-{
-	dReal m_linearDamping;
-	dReal m_angularDamping;
+  dxDamping m_damping;		// retruxx: per-body velocity damping (see dxBodyFlagDamping)
 };
 
 

@@ -14,6 +14,9 @@ public:
         AuxInfo();
 
     private:
+        // NOTE: not a friend in the header this class was extracted from,
+        // but VehicleInfoPanel::GameDataSetup needs to read this name.
+        friend class VehicleInfoPanel;
         CStr m_wndFuelName;
     };
 

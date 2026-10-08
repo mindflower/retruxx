@@ -26,9 +26,9 @@ namespace ai
     {
     }
 
+    // RVA 0x904480
     AIFunc::AIFunc()
     {
-        RETRUXX_NOT_IMPLEMENTED;
     }
 
     CStr const& AIFunc::GetName() const

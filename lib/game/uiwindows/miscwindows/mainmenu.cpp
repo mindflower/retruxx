@@ -5,6 +5,7 @@
 #include "config.h"
 #include "video.h"
 #include "game/profile.h"
+#include "game/uimisc/guihelper.h"
 
 RT_CLASS_EXPORTS_BEGIN(MainMenuUI)
     RT_CLASS_EXPORTS_END;
@@ -21,7 +22,7 @@ m3d::Class* MainMenuUI::GetClass() const
 
 MainMenuUI::~MainMenuUI()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C1410: no owned resources (m_aif CStr + ~Wnd chain).
 }
 
 m3d::Object* MainMenuUI::CreateObject()
@@ -36,12 +37,22 @@ m3d::Class* MainMenuUI::GetBaseClass()
 
 void MainMenuUI::OnFinishVideoPlaying()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C1990: mirror of OnStartVideoPlaying - release the mouse capture and
+    // restore the hardware cursor.
+    if (IsChildOf(M3D_APP))
+    {
+        M3D_APP->CaptureMouse(nullptr);
+        if (M3D_APP->IsDXCursorEnabled())
+        {
+            M3D_APP->m_renderer->ShowDXCursor(true);
+        }
+    }
 }
 
 m3d::Object* MainMenuUI::Clone()
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C1130: allocates, runs the plain Wnd ctor + m_aif, copies nothing.
+    return new MainMenuUI(*this);
 }
 
 int MainMenuUI::OnBeforeAddToWndStation()
@@ -56,7 +67,7 @@ MainMenuUI::MainMenuUI()
 
 MainMenuUI::MainMenuUI(MainMenuUI const&)
 {
-    RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C1300: default-constructs the Wnd base + m_aif and copies nothing.
 }
 
 void MainMenuUI::OnNewGame()
@@ -200,16 +211,20 @@ int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
 
 void MainMenuUI::OnCurProfileChanged()
 {
-    // TODO: implement MainMenuUI::OnCurProfileChanged
-    //if ((m_gameDataFlags & 1) != 0)
-    //{
-    //    auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
-    //    if (profile)
-    //    {
-    //        
-    //    }
-    //}
-   // RETRUXX_NOT_IMPLEMENTED;
+    // RVA 0x4C19F0
+    if ((m_gameDataFlags & 1) == 0)
+    {
+        return;
+    }
+    auto const prefix = M3D_APP->GetStringByStringId0(m_aif.m_strIdProfile) + ": ";
+    if (auto profile = M3D_APP->GetProfileManager()->GetCurProfile())
+    {
+        m_wndProfile->SetText(prefix + help::Color2Str(m_aif.m_colorProfileName) + profile->GetName());
+    }
+    else
+    {
+        m_wndProfile->SetText(prefix + M3D_APP->GetStringByStringId0(m_aif.m_strIdProfileDontChosen));
+    }
 }
 
 int MainMenuUI::GameDataUpdate(void* data, int dataType)

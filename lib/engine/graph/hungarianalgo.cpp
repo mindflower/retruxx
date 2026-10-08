@@ -11,119 +11,81 @@ namespace Graph
         std::vector<int>* parentY,
         int* freeYVertex)
     {
-        // TODO: generated code canAddChain
-        size_t const n = costMatrix.getSize();
-
-        // Reset parent arrays to unvisited state
+        // RVA 0x948750 - breadth-first search from X vertex startVertexX for an augmenting path: along zero-weight
+        // edges not in the matching to Y, and along matched edges back to X. Records the path in the parents (the
+        // root's X parent is -2) and returns the free Y vertex reached.
+        int const n = static_cast<int>(costMatrix.getSize());
         parentX->assign(n, -1);
         parentY->assign(n, -1);
-
-        std::queue<TQueueVertex> bfsQueue;
-
-        // Start BFS from the given X vertex
-        bfsQueue.push({true, startVertexX});
-        (*parentX)[startVertexX] = -2;  // Special marker for root
-
-        while (!bfsQueue.empty())
+        std::queue<TQueueVertex> queue;
+        queue.push(TQueueVertex(true, startVertexX));
+        (*parentX)[startVertexX] = -2;
+        while (!queue.empty())
         {
-            TQueueVertex current = bfsQueue.front();
-            bfsQueue.pop();
-
+            TQueueVertex const current = queue.front();
+            queue.pop();
             if (current.inFirstPartite)
             {
-                // We're at an X vertex - look for edges to Y vertices
                 int const x = current.index;
-
-                for (int y = 0; y < static_cast<int>(n); ++y)
+                for (int y = 0; y < n; ++y)
                 {
-                    // Check for zero-cost edge (within tolerance)
-                    if (std::fabs(costMatrix(x, y)) < 1.0e-10f)
+                    if (fabs(costMatrix(x, y)) < 1.0e-10 && (*parentY)[y] == -1 && matchingX[x] != y)
                     {
-                        // Check if this Y vertex is unvisited and the edge is not in current matching
-                        if ((*parentY)[y] == -1 && matchingX[x] != y)
-                        {
-                            (*parentY)[y] = x;  // Record that we reached Y from X
-                            bfsQueue.push({false, y});
-                        }
+                        (*parentY)[y] = x;
+                        queue.push(TQueueVertex(false, y));
                     }
                 }
+                continue;
             }
-            else
+            int const y = current.index;
+            int const matchedX = matchingY[y];
+            if (matchedX == -1)
             {
-                // We're at a Y vertex
-                int const y = current.index;
-
-                if (matchingY[y] == -1)
-                {
-                    // Found a free Y vertex - we have an augmenting path!
-                    *freeYVertex = y;
-                    return true;
-                }
-                else
-                {
-                    // This Y vertex is matched to some X vertex
-                    int const matchedX = matchingY[y];
-
-                    if ((*parentX)[matchedX] == -1)
-                    {
-                        (*parentX)[matchedX] = y;  // Record that we reached X from Y
-                        bfsQueue.push({true, matchedX});
-                    }
-                }
+                *freeYVertex = y;
+                return true;
+            }
+            if ((*parentX)[matchedX] == -1)
+            {
+                (*parentX)[matchedX] = y;
+                queue.push(TQueueVertex(true, matchedX));
             }
         }
-
-        // No augmenting path found from this starting vertex
         return false;
     }
 
     void NormalizeHungarianMatrix(CSquareMatrix<float>* m)
     {
-        // TODO: generated code NormalizeHungarianMatrix
-        if (!m || m->getSize() == 0)
+        // RVA 0x948540 - subtracts each row's minimum from the row, then each column's from the column.
+        // NOTE: the minimum search starts from 1e10, so entries above that are not reduced below it.
+        int const size = static_cast<int>(m->getSize());
+        for (int i = 0; i < size; ++i)
         {
-            return;
-        }
-
-        size_t size = m->getSize();
-
-        // First pass: normalize rows
-        for (size_t i = 0; i < size; ++i)
-        {
-            // Find minimum value in the current row
-            float minVal = std::numeric_limits<float>::max();
-            for (size_t j = 0; j < size; ++j)
+            float minValue = 1.0e10f;
+            for (int j = 0; j < size; ++j)
             {
-                if ((*m)(i, j) < minVal)
+                if (minValue > (*m)(i, j))
                 {
-                    minVal = (*m)(i, j);
+                    minValue = (*m)(i, j);
                 }
             }
-
-            // Subtract the minimum value from each element in the row
-            for (size_t j = 0; j < size; ++j)
+            for (int j = 0; j < size; ++j)
             {
-                (*m)(i, j) -= minVal;
+                (*m)(i, j) = (*m)(i, j) - minValue;
             }
         }
-
-        // Second pass: normalize columns
-        for (size_t j = 0; j < size; ++j)
+        for (int j = 0; j < size; ++j)
         {
-            // Find minimum value in the current column
-            float minVal = std::numeric_limits<float>::max();
-            for (size_t i = 0; i < size; ++i)
+            float minValue = 1.0e10f;
+            for (int i = 0; i < size; ++i)
             {
-                if ((*m)(i, j) < minVal)
+                if (minValue > (*m)(i, j))
                 {
-                    minVal = (*m)(i, j);
+                    minValue = (*m)(i, j);
                 }
             }
-
-            // Subtract the minimum value from each element in the column
-            for (size_t i = 0; i < size; ++i)
+            for (int i = 0; i < size; ++i)
             {
-                (*m)(i, j) -= minVal;
+                (*m)(i, j) = (*m)(i, j) - minValue;
             }
         }
     }
@@ -152,9 +114,36 @@ namespace Graph
         }
     }
 
-    void applyOperation(CSquareMatrix<float>*, std::vector<int> const&, std::vector<int> const&)
+    void applyOperation(CSquareMatrix<float>* m, std::vector<int> const& parentX, std::vector<int> const& parentY)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x9483E0 - finds the smallest weight between a reached X vertex and an unreached Y vertex, subtracts
+        // it along those edges and adds it along the edges from unreached X to reached Y.
+        int const size = static_cast<int>(m->getSize());
+        float delta = 1.0e10f;
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                if (parentX[i] != -1 && parentY[j] == -1 && delta > (*m)(i, j))
+                {
+                    delta = (*m)(i, j);
+                }
+            }
+        }
+        for (int i = 0; i < size; ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                if (parentX[i] != -1 && parentY[j] == -1)
+                {
+                    (*m)(i, j) = (*m)(i, j) - delta;
+                }
+                if (parentX[i] == -1 && parentY[j] != -1)
+                {
+                    (*m)(i, j) = (*m)(i, j) + delta;
+                }
+            }
+        }
     }
 
     TQueueVertex::TQueueVertex(bool inFirstPartite_, int index_)
@@ -180,80 +169,41 @@ namespace Graph
 
     std::vector<int> getMinValuedMatching(Graph::CSquareMatrix<float> m)
     {
-        // TODO: generated code getMinValuedMatching
-        // Normalize the matrix for Hungarian algorithm
+        // RVA 0x948C10 - the Hungarian algorithm: for each X vertex, augment the matching along a zero-weight path,
+        // adjusting the weights until one exists. Returns each X vertex's matched Y vertex.
         NormalizeHungarianMatrix(&m);
-
-        // Initialize matchings with -1 (unmatched)
-        std::vector<int> matchingX(m.getSize(), -1);
-        std::vector<int> matchingY(m.getSize(), -1);
-
-        // Try to find matches for each vertex in X
-        for (size_t i = 0; i < m.getSize(); ++i)
+        int const size = static_cast<int>(m.getSize());
+        std::vector<int> matchingX(size, -1);
+        std::vector<int> matchingY(size, -1);
+        for (int i = 0; i < size; ++i)
         {
-            if (matchingX[i] == -1)
+            while (matchingX[i] == -1)
             {
-                bool matched = false;
-
-                // Keep trying until this vertex is matched
-                while (!matched)
+                std::vector<int> parentX;
+                std::vector<int> parentY;
+                int freeVertexIndex = -1;
+                if (canAddChain(m, matchingX, matchingY, i, &parentX, &parentY, &freeVertexIndex))
                 {
-                    std::vector<int> parentX(m.getSize(), -1);
-                    std::vector<int> parentY(m.getSize(), -1);
-                    int freeVertexIndex = -1;
-
-                    // Try to find an augmenting path
-                    if (canAddChain(m, matchingX, matchingY, static_cast<int>(i), &parentX, &parentY, &freeVertexIndex))
-                    {
-                        // Found augmenting path, update matching
-                        addChain(&matchingX, &matchingY, parentX, parentY, freeVertexIndex);
-                        matched = true;
-                    }
-                    else
-                    {
-                        // No augmenting path found, apply Hungarian operation
-                        applyOperation(&m, parentX, parentY);
-                    }
-
-                    // parentX and parentY will be automatically cleaned up when they go out of scope
+                    addChain(&matchingX, &matchingY, parentX, parentY, freeVertexIndex);
+                }
+                else
+                {
+                    applyOperation(&m, parentX, parentY);
                 }
             }
         }
-
         return matchingX;
     }
 
     float getMatchingValue(Graph::CSquareMatrix<float> const& m, std::vector<int> const& matching)
     {
-        // TODO: generated code getMatchingValue
-        if (matching.empty() || m.getSize() == 0)
+        // RVA 0x948A20 - the total weight of the matched edges.
+        // NOTE: the shipped code also counts how often each vertex is matched and never uses the counts.
+        float value = 0.0f;
+        for (size_t i = 0; i < matching.size(); ++i)
         {
-            return 0.0;
+            value = m(static_cast<int>(i), matching[i]) + value;
         }
-
-        // Count how many times each vertex appears in the matching
-        std::vector<int> count(m.getSize(), 0);
-
-        // Count occurrences of each target vertex in the matching
-        for (int sourceVertex : matching)
-        {
-            if (sourceVertex >= 0 && sourceVertex < static_cast<int>(count.size()))
-            {
-                count[sourceVertex]++;
-            }
-        }
-
-        // Calculate the total value of the matching
-        double totalValue = 0.0;
-        for (size_t sourceVertex = 0; sourceVertex < matching.size(); ++sourceVertex)
-        {
-            int targetVertex = matching[sourceVertex];
-            if (targetVertex >= 0 && targetVertex < static_cast<int>(m.getSize()))
-            {
-                totalValue += m(sourceVertex, targetVertex);
-            }
-        }
-
-        return totalValue;
+        return value;
     }
 }  // namespace Graph

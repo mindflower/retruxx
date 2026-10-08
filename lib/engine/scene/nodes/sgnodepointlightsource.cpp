@@ -21,7 +21,7 @@ namespace m3d
 
     Object* SgPointLightSourceNode::Clone()
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        return new SgPointLightSourceNode(*this);
     }
 
     DataServer* SgPointLightSourceNode::GetServer() const
@@ -46,13 +46,14 @@ namespace m3d
 
     int SgPointLightSourceNode::Render(SgNodeRenderFlags, void*, int, int)
     {
-        // TODO: check this
+        // RVA 0x79E1F0 - the radius property holds float bits.
         if (m_srvId == -1)
+        {
             return 0;
-
+        }
         m3d::RiForLightsServer ri;
         ri.m_localXForm = m_currentXForm;
-        ri.m_radius = m_props[1];
+        memcpy(&ri.m_radius, &m_props[1], sizeof(ri.m_radius));
         GetServer()->RenderItem(m_srvId, &ri);
         return 1;
     }
@@ -73,9 +74,18 @@ namespace m3d
         return 0;
     }
 
-    int SgPointLightSourceNode::GetPropertiesList(retruxx::set<unsigned>&) const
+    int SgPointLightSourceNode::GetPropertiesList(retruxx::set<unsigned>& props) const
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        // RVA 0x79E260
+        if (!SgNode::GetPropertiesList(props))
+        {
+            return 0;
+        }
+        props.insert(PROP_NODE_HANDLE);
+        props.insert(PROP_LS_COLOR);
+        props.insert(PROP_LS_RADIUS);
+        props.insert(PROP_LS_BRIGHTNESS);
+        return 1;
     }
 
     Class* SgPointLightSourceNode::GetClass() const
@@ -96,9 +106,12 @@ namespace m3d
         RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
-    SgPointLightSourceNode::SgPointLightSourceNode(SgPointLightSourceNode const&)
+    SgPointLightSourceNode::SgPointLightSourceNode(SgPointLightSourceNode const& node) : SgNode(node)
     {
-        RETRUXX_NOT_IMPLEMENTED;
+        m_props[0] = node.m_props[0];
+        m_props[1] = node.m_props[1];
+        m_props[2] = node.m_props[2];
+        RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
 
     void SgPointLightSourceNode::UpdateOwnBoundingBox()

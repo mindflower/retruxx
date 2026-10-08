@@ -69,9 +69,13 @@ namespace m3d
 
         ~PoolManager()
         {
-            for (auto& elem : Pool)
+            // RVA 0x768460 (PoolManager<ParticlesList>) - the blocks' memory is released without running destructors:
+            // a free block's object has already been destroyed by Delete, so destroying it again would free its
+            // resources twice.
+            // NOTE: objects still in use at this point are not destroyed either, as shipped.
+            for (auto* elem : Pool)
             {
-                delete elem;
+                ::operator delete(elem);
             }
         }
     };
