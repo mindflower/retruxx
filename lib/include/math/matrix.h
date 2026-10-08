@@ -122,5 +122,43 @@ struct CMatrix
 // Passed to the renderer DLL and read whole from model files.
 static_assert(sizeof(CMatrix) == 0x0040);
 
-CMatrix operator*(CMatrix const& a, CMatrix const& b);
-CMatrix operator+(CMatrix const& a, CMatrix const& b);
+// Row-vector convention: a * b applies a first, then b.
+inline CMatrix operator*(CMatrix const& a, CMatrix const& b)
+{
+    CMatrix res;
+
+    res._11 = a._11 * b._11 + a._12 * b._21 + a._13 * b._31 + a._14 * b._41;
+    res._12 = a._11 * b._12 + a._12 * b._22 + a._13 * b._32 + a._14 * b._42;
+    res._13 = a._11 * b._13 + a._12 * b._23 + a._13 * b._33 + a._14 * b._43;
+    res._14 = a._11 * b._14 + a._12 * b._24 + a._13 * b._34 + a._14 * b._44;
+
+    res._21 = a._21 * b._11 + a._22 * b._21 + a._23 * b._31 + a._24 * b._41;
+    res._22 = a._21 * b._12 + a._22 * b._22 + a._23 * b._32 + a._24 * b._42;
+    res._23 = a._21 * b._13 + a._22 * b._23 + a._23 * b._33 + a._24 * b._43;
+    res._24 = a._21 * b._14 + a._22 * b._24 + a._23 * b._34 + a._24 * b._44;
+
+    res._31 = a._31 * b._11 + a._32 * b._21 + a._33 * b._31 + a._34 * b._41;
+    res._32 = a._31 * b._12 + a._32 * b._22 + a._33 * b._32 + a._34 * b._42;
+    res._33 = a._31 * b._13 + a._32 * b._23 + a._33 * b._33 + a._34 * b._43;
+    res._34 = a._31 * b._14 + a._32 * b._24 + a._33 * b._34 + a._34 * b._44;
+
+    res._41 = a._41 * b._11 + a._42 * b._21 + a._43 * b._31 + a._44 * b._41;
+    res._42 = a._41 * b._12 + a._42 * b._22 + a._43 * b._32 + a._44 * b._42;
+    res._43 = a._41 * b._13 + a._42 * b._23 + a._43 * b._33 + a._44 * b._43;
+    res._44 = a._41 * b._14 + a._42 * b._24 + a._43 * b._34 + a._44 * b._44;
+
+    return res;
+}
+
+inline CMatrix operator+(CMatrix const& a, CMatrix const& b)
+{
+    CMatrix res;
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            res.m[i][j] = a.m[i][j] + b.m[i][j];
+        }
+    }
+    return res;
+}

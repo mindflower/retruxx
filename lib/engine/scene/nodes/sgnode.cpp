@@ -624,7 +624,7 @@ namespace m3d
             float const dx = m_boundingBox.m_box[3] - m_boundingBox.m_box[0];
             float const dy = m_boundingBox.m_box[4] - m_boundingBox.m_box[1];
             float const dz = m_boundingBox.m_box[5] - m_boundingBox.m_box[2];
-            m_boundingRadius = static_cast<float>(sqrt(dx * dx + dz * dz + dy * dy) * 0.5);
+            m_boundingRadius = static_cast<float>(sqrt(dx * dx + dz * dz + dy * dy) * 0.5f);
         }
 
         // The bounding sphere's centre: the box centre, rotated (not scaled) into the world.
@@ -721,29 +721,9 @@ namespace m3d
     float SgNode::IntersectRay(CVector const& v0, CVector const& dir, SgNode*& hitNode, Class*)
     {
         // RVA 0x642140 - against the node's own bounds; a ray starting inside them misses (-1).
-        CVector const bbMin(m_ownBoundingBox.m_box[0], m_ownBoundingBox.m_box[1], m_ownBoundingBox.m_box[2]);
-        CVector const bbMax(m_ownBoundingBox.m_box[3], m_ownBoundingBox.m_box[4], m_ownBoundingBox.m_box[5]);
         Obb obb;
-        obb.Create(bbMin, bbMax, m_currentXForm, true);
-
-        float const dy = v0.y - obb.m_origin.y;
-        float const dz = v0.z - obb.m_origin.z;
-        float const dx = v0.x - obb.m_origin.x;
-        float const local[3] = {
-            obb.m_basis[2].x * dz + obb.m_basis[1].x * dy + obb.m_basis[0].x * dx,
-            obb.m_basis[2].y * dz + obb.m_basis[1].y * dy + obb.m_basis[0].y * dx,
-            obb.m_basis[2].z * dz + obb.m_basis[1].z * dy + obb.m_basis[0].z * dx};
-        float const obbMin[3] = {obb.m_min.x, obb.m_min.y, obb.m_min.z};
-        float const obbMax[3] = {obb.m_max.x, obb.m_max.y, obb.m_max.z};
-        int i = 0;
-        for (; i < 3; ++i)
-        {
-            if (obbMin[i] > local[i] || local[i] > obbMax[i])
-            {
-                break;
-            }
-        }
-        if (i == 3)
+        obb.Create(m_ownBoundingBox, m_currentXForm, true);
+        if (obb.IsPtInside(v0))
         {
             return -1.0f;
         }

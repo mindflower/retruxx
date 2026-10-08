@@ -127,17 +127,15 @@ namespace m3d
         }
         else
         {
-            auto r = 10.0;
+            auto r = 10.0f;
             auto* v3 = GetServer();
             v3->GetItemProperty(this->m_srvId, 8449, &r);
-            auto v4 = r;
-            auto v5 = 0.0f - r;
-            this->m_ownBoundingBox.m_box[0] = 0.0f - r;
-            this->m_ownBoundingBox.m_box[1] = v5;
-            this->m_ownBoundingBox.m_box[3] = v4;
-            this->m_ownBoundingBox.m_box[4] = v4;
-            this->m_ownBoundingBox.m_box[5] = v4;
-            this->m_ownBoundingBox.m_box[2] = v5;
+            this->m_ownBoundingBox.m_box[0] = -r;
+            this->m_ownBoundingBox.m_box[1] = -r;
+            this->m_ownBoundingBox.m_box[2] = -r;
+            this->m_ownBoundingBox.m_box[3] =  r;
+            this->m_ownBoundingBox.m_box[4] =  r;
+            this->m_ownBoundingBox.m_box[5] =  r;
         }
     }
 }  // namespace m3d

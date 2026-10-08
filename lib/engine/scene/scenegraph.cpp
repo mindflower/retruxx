@@ -1860,13 +1860,9 @@ namespace m3d
 
     void SceneGraph::LightSetupSunForWorld()
     {
-        m3d::rend::LightSource ls;
-        ls.m_type = rend::M3DLIGHT_DIRECTIONAL;
-        ls.m_direction.x = 0.0 - m_owner->GetSun(0.0).x;
-        ls.m_direction.y = 0.0 - m_owner->GetSun(0.0).y;
-        ls.m_direction.z = 0.0 - m_owner->GetSun(0.0).z;
-        ls.m_origin = ls.m_direction;
-        ls.m_range = 1000.0;
+        // RVA 0x7AF540 - light 0 shines along the reversed sun vector, coloured by the weather.
+        rend::LightSource ls;
+        ls.init(rend::M3DLIGHT_DIRECTIONAL, -m_owner->GetSun(0.0f));
         ls.m_diffuse = m_owner->GetWeatherDiffuseColor();
         ls.m_ambient = m_owner->GetWeatherAmbientColor();
 

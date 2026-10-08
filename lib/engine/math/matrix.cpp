@@ -103,68 +103,6 @@ void CMatrix::DecomposeScale(float& x, float& y, float& z)
     z = GetScaleZ();
 }
 
-CMatrix operator*(CMatrix const& a, CMatrix const& b)
-{
-    CMatrix res;
-
-    // Row 1
-    res._11 = a._11 * b._11 + a._12 * b._21 + a._13 * b._31 + a._14 * b._41;
-    res._12 = a._11 * b._12 + a._12 * b._22 + a._13 * b._32 + a._14 * b._42;
-    res._13 = a._11 * b._13 + a._12 * b._23 + a._13 * b._33 + a._14 * b._43;
-    res._14 = a._11 * b._14 + a._12 * b._24 + a._13 * b._34 + a._14 * b._44;
-
-    // Row 2
-    res._21 = a._21 * b._11 + a._22 * b._21 + a._23 * b._31 + a._24 * b._41;
-    res._22 = a._21 * b._12 + a._22 * b._22 + a._23 * b._32 + a._24 * b._42;
-    res._23 = a._21 * b._13 + a._22 * b._23 + a._23 * b._33 + a._24 * b._43;
-    res._24 = a._21 * b._14 + a._22 * b._24 + a._23 * b._34 + a._24 * b._44;
-
-    // Row 3
-    res._31 = a._31 * b._11 + a._32 * b._21 + a._33 * b._31 + a._34 * b._41;
-    res._32 = a._31 * b._12 + a._32 * b._22 + a._33 * b._32 + a._34 * b._42;
-    res._33 = a._31 * b._13 + a._32 * b._23 + a._33 * b._33 + a._34 * b._43;
-    res._34 = a._31 * b._14 + a._32 * b._24 + a._33 * b._34 + a._34 * b._44;
-
-    // Row 4
-    res._41 = a._41 * b._11 + a._42 * b._21 + a._43 * b._31 + a._44 * b._41;
-    res._42 = a._41 * b._12 + a._42 * b._22 + a._43 * b._32 + a._44 * b._42;
-    res._43 = a._41 * b._13 + a._42 * b._23 + a._43 * b._33 + a._44 * b._43;
-    res._44 = a._41 * b._14 + a._42 * b._24 + a._43 * b._34 + a._44 * b._44;
-
-    return res;
-}
-
-CMatrix operator+(CMatrix const& a, CMatrix const& b)
-{
-    CMatrix res;
-
-    // Row 1
-    res._11 = a._11 + b._11;
-    res._12 = a._12 + b._12;
-    res._13 = a._13 + b._13;
-    res._14 = a._14 + b._14;
-
-    // Row 2
-    res._21 = a._21 + b._21;
-    res._22 = a._22 + b._22;
-    res._23 = a._23 + b._23;
-    res._24 = a._24 + b._24;
-
-    // Row 3
-    res._31 = a._31 + b._31;
-    res._32 = a._32 + b._32;
-    res._33 = a._33 + b._33;
-    res._34 = a._34 + b._34;
-
-    // Row 4
-    res._41 = a._41 + b._41;
-    res._42 = a._42 + b._42;
-    res._43 = a._43 + b._43;
-    res._44 = a._44 + b._44;
-
-    return res;
-}
-
 float CMatrix::GetScaleX() const
 {
     return sqrt(_31 * _31 + _21 * _21 + _11 * _11);
@@ -637,13 +575,14 @@ CVector CMatrix::getOrgInv() const
 
 void CMatrix::perspectiveFovLH(float fovY, float aspect, float z0, float z1)
 {
-    memset(this, 0, sizeof(CMatrix));
-    auto v5 = z1 / (z1 - z0);
-    this->_33 = v5;
-    this->_43 = 0.0f - (v5 * z0);
-    this->_34 = 1.0f;
-    this->_11 = 1.0f / std::tan(fovY * aspect * 0.5f);
-    this->_22 = 1.0f / std::tan(fovY * 0.5f);
+    // RVA 0x41D7F0 - NOTE: the x scale is cot(fovY * aspect / 2), not cot(fovY / 2) / aspect. The
+    // tangents are taken on the FPU stack at full precision, which tan(double) comes closest to.
+    zero();
+    _33 = z1 / (z1 - z0);
+    _43 = 0.0f - _33 * z0;
+    _34 = 1.0f;
+    _11 = static_cast<float>(1.0 / std::tan(static_cast<double>(fovY * aspect * 0.5f)));
+    _22 = static_cast<float>(1.0 / std::tan(static_cast<double>(fovY * 0.5f)));
 }
 
 void CMatrix::rotZ(float a)

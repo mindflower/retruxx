@@ -2245,10 +2245,10 @@ namespace m3d
         auto v8 = reduceFactor * e;
         this->m_fogTerm.x = reduceFactor * e;
         this->m_fogTerm.z = v7;
-        this->m_fogTerm.y = 1.0 / (float)(v8 - v7);
+        this->m_fogTerm.y = 1.0f / (float)(v8 - v7);
         auto const& v9 = m3d::g_Kernel->GetTimer();
         auto v10 = m3d::g_Kernel->GetTimer().GetFrameStartTimeSec() + m3d::g_Kernel->GetTimer().GetFrameStartTimeSec();
-        this->m_treeBendTerm.z = 0.0;
+        this->m_treeBendTerm.z = 0.0f;
         this->m_globalFxParamFogNotActuated = 1;
         this->m_globalFxParamDiffuseNotActuated = 1;
         this->m_globalFxParamAmbientNotActuated = 1;
@@ -2256,8 +2256,8 @@ namespace m3d
         this->m_globalFxParamPlantAmbientNotActuated = 1;
         this->m_globalFxParamTreeBendTermNotActuated = 1;
         this->m_globalFxParamSpecularNotActuated = 1;
-        this->m_treeBendTerm.x = sin(v10) * 0.0099999998;
-        this->m_treeBendTerm.y = cos(v10) * 0.0099999998;
+        this->m_treeBendTerm.x = std::sin(v10) * 0.0099999998f;
+        this->m_treeBendTerm.y = std::cos(v10) * 0.0099999998f;
     }
 }  // namespace m3d
 

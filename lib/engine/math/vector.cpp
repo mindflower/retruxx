@@ -30,27 +30,6 @@ CVector CVector::operator-() const
     return {-x, -y, -z};
 }
 
-CVector CVector::operator-(CVector const& rhs) const
-{
-    CVector res = *this;
-    res -= rhs;
-    return res;
-}
-
-CVector CVector::operator*(float const v) const
-{
-    CVector res = *this;
-    res *= v;
-    return res;
-}
-
-CVector CVector::operator+(CVector const& rhs) const
-{
-    CVector res = *this;
-    res += rhs;
-    return res;
-}
-
 CVector& CVector::operator*=(float const v)
 {
     x *= v;

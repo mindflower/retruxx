@@ -32,6 +32,49 @@ void Obb::Create(const CVector& min, const CVector& max, const CMatrix& mat, boo
     }
 }
 
+void Obb::Create(Aabb const& aabb, CMatrix const& mat, bool noScale)
+{
+    // RVA 0x641EF0
+    Create(aabb.Min(), aabb.Max(), mat, noScale);
+}
+
+CVector Obb::toLocalRotate(CVector const& v) const
+{
+    // RVA 0x63F280 - a world-space direction expressed along the box axes (rotation only, no origin).
+    return CVector(
+        m_basis[0].x * v.x + m_basis[1].x * v.y + m_basis[2].x * v.z,
+        m_basis[0].y * v.x + m_basis[1].y * v.y + m_basis[2].y * v.z,
+        m_basis[0].z * v.x + m_basis[1].z * v.y + m_basis[2].z * v.z);
+}
+
+int Obb::IsPtInside(CVector const& v) const
+{
+    // RVA 0x63F310 - inclusive on every axis, in the box's own frame.
+    CVector const xv = toLocalRotate(v - m_origin);
+    for (int i = 0; i < 3; ++i)
+    {
+        if (m_min[i] > xv[i] || xv[i] > m_max[i])
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int Obb::IsPtInside2(CVector const& v) const
+{
+    // RVA 0x645750 - IsPtInside on x and y only; z is ignored.
+    CVector const xv = toLocalRotate(v - m_origin);
+    for (int i = 0; i < 2; ++i)
+    {
+        if (m_min[i] > xv[i] || xv[i] > m_max[i])
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 // RVA 0x641AE0 - keeps the part of a convex polygon behind the plane (dot(v, plane.xyz) - plane.w < 0), in place.
 // Returns the new vertex count: the polygon as is when nothing lies in front, 0 when nothing lies behind.
 int clipFrontSideInPlace(CVector* verts, int nverts, float* plane)
