@@ -283,10 +283,11 @@ namespace ai
 
     void Geom::CheckCollisionCells()
     {
+        // RVA 0x756C50 - the cell box is inclusive, as in LinkToCollisionCells.
         auto& landscape = pServer->GetWorld()->GetLandscape();
-        for (auto x = m_curAabb.x0; x < m_curAabb.x1; ++x)
+        for (auto x = m_curAabb.x0; x <= m_curAabb.x1; ++x)
         {
-            for (auto z = m_curAabb.z0; z < m_curAabb.z1; ++z)
+            for (auto z = m_curAabb.z0; z <= m_curAabb.z1; ++z)
             {
                 auto* item = landscape.GetCollisionCellItem(x, z);
                 if (item)
