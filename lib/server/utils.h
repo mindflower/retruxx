@@ -52,6 +52,7 @@ namespace ai
     int DebugText(CVector const&, float, float, unsigned int, CStr const&);
     void DebugLine(CVector const&, CVector const&, unsigned int);
     void DebugLineOnGround(CVector const&, CVector const&, float, unsigned int);
+    void DebugCross(CVector const&, unsigned int, float, float);
     CVector GetGroundPos(CVector const&, bool, bool);
     CVector GetGroundPos(CVector2 const&, bool);
     PointBase<float> clampIntoLandscape(PointBase<float> const&);

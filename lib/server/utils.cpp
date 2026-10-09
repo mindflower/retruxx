@@ -194,6 +194,16 @@ namespace ai
         M3D_APP->DrawLine(pp1, pp2, color);
     }
 
+    void DebugCross(CVector const& pos, unsigned int color, float size, float hover)
+    {
+        // RVA 0x6AA910 - the two diagonals of a size x size square around pos, `hover` above the ground.
+        float const half = size * 0.5f;
+        DebugLineOnGround(
+            CVector(pos.x + half, pos.y, pos.z + half), CVector(pos.x - half, pos.y, pos.z - half), hover, color);
+        DebugLineOnGround(
+            CVector(pos.x - half, pos.y, pos.z + half), CVector(pos.x + half, pos.y, pos.z - half), hover, color);
+    }
+
     CVector GetGroundPos(CVector const& pos, bool withCollisions, bool forVehicle)
     {
         // RVA 0x6A9F80
