@@ -201,8 +201,8 @@ bool CDevice::ReportTexturesInfo(const char* fileName)
     std::vector<CTexMap*> textures[TT_NUM_TYPES];
     unsigned int numTexs[TT_NUM_TYPES] = { 0 };
 
-    unsigned int numTextures = m_texMaps.size();
-    for (unsigned int i = 0; i < numTextures; i++)
+    std::size_t numTextures = m_texMaps.size();
+    for (std::size_t i = 0; i < numTextures; i++)
     {
         CTexMap* texMap = m_texMaps[i];
 

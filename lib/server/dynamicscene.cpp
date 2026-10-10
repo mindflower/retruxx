@@ -7,9 +7,18 @@
 #include <ode/odecpp.h>
 
 #include "config.h"
+#include "cinematic.h"
 #include "geomobject.h"
+#include "landscape.h"
 #include "level.h"
+#include "m3dapp.h"
+#include "map.h"
+#include "obstacle.h"
 #include "passagedata.h"
+#include "playerpassmap.h"
+#include "utils.h"
+#include "core/kernel.h"
+#include "scene/scenegraph.h"
 #include "colliders/breakableobjectcolliders.h"
 #include "colliders/bulletcolliders.h"
 #include "colliders/colliderkrnl.h"
@@ -1143,6 +1152,7 @@ namespace ai
     void DynamicScene::RenderDebugInfo()
     {
         // RVA 0x60A700
+        m3d::Cinematic* const cinematic = M3D_APP->m_cinematic;
         bool const bWaypointDebug = M3D_ENGINE_CFG.m_ai_waypoint_debug.GetB();
         bool const bDebugPhysicObjects = M3D_ENGINE_CFG.m_ai_physicobject_debug.GetB();
         bool const bDebugTeams = M3D_ENGINE_CFG.m_ai_team_debug.GetB();
@@ -1158,7 +1168,8 @@ namespace ai
         bool debugAnything = false;
 
         if (bWaypointDebug || bDebugPhysicObjects || bDebugTeams || bDebugPassmap || bDebugPlayerPassmap ||
-            bDebugLocations || bDebugMouse || bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns)
+            bDebugLocations || bDebugMouse || bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns ||
+            cinematic->GetDebugMode())
         {
             debugAnything = true;
             M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
@@ -1209,13 +1220,137 @@ namespace ai
                     }
                 }
             }
-            // NOTE: not reimplemented yet (debug cvars only). After the per-object pass, the shipped code
-            // (RVA 0x60A700) walks the visible scene cells (SceneGraph::SortedCellsFetch, radius from
-            // m_lsViewDistanceDivider * 8 + 4, clamped to 4..12) and draws: for ai_passmap_debug a DebugCross per
-            // global-map cell 5 above the ground (white = 0x80, green = 0xA0, blue = 0xFF, grey otherwise), for
-            // ai_playerpassmap_debug a green/red cross per player-passmap cell, and for ai_obstacles_debug every
-            // obstacle of the cell's collision item; then for ai_mouse_debug the ray under the mouse cursor, and
-            // finally Cinematic::RenderDebugInfo.
+
+            // Walk the visible scene cells: crosses over the global-map / player-passmap cells each one covers,
+            // and the obstacles of its collision item.
+            if (bDebugPassmap || bDebugObstacles || bDebugPlayerPassmap)
+            {
+                m3d::Landscape& landscape = pServer->GetWorld()->GetLandscape();
+                Map* const map = Map::theGlobalMap;
+                PlayerPassMap const* const playerPassMap = pServer->GetPlayerPassMap();
+
+                int const radius = std::clamp(
+                    static_cast<int>(M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF() * 8.0f + 4.0f), 4, 12);
+                m3d::SceneGraph& graph = m3d::pClient->GetWorld().GetGraph();
+                graph.SortedCellsStartFetching(0, radius);
+
+                int xi;
+                int zi;
+                int v;
+                int y;
+                while (graph.SortedCellsFetch(xi, zi, v, y))
+                {
+                    if (v == 0)
+                    {
+                        continue;
+                    }
+
+                    if (bDebugPassmap || bDebugPlayerPassmap)
+                    {
+                        // The map cells under this scene cell (VISCELL_EDGE_LENGTH = 128), clamped to the map.
+                        CVector2 const& cellSize = map->GetCellSize();
+                        MapIndex const& lastIndex = map->GetLastIndex();
+                        float const scaleX = 1.0f / cellSize.x;
+                        float const scaleZ = 1.0f / cellSize.y;
+                        int const x0 = std::clamp(
+                            static_cast<int>(static_cast<float>(xi) * scaleX * 128.0f), 0, lastIndex.x);
+                        int const z0 = std::clamp(
+                            static_cast<int>(static_cast<float>(zi) * scaleZ * 128.0f), 0, lastIndex.y);
+                        int const x1 = std::clamp(
+                            static_cast<int>(static_cast<float>(xi + 1) * scaleX * 128.0f) + 1, 0, lastIndex.x);
+                        int const z1 = std::clamp(
+                            static_cast<int>(static_cast<float>(zi + 1) * scaleZ * 128.0f) + 1, 0, lastIndex.y);
+
+                        for (int x = x0; x < x1; ++x)
+                        {
+                            for (int z = z0; z < z1; ++z)
+                            {
+                                CVector pos;
+                                pos.x = (static_cast<float>(x) + 0.5f) * cellSize.x;
+                                pos.y = 0.0f;
+                                pos.z = (static_cast<float>(z) + 0.5f) * cellSize.y;
+                                pos.y = M3D_ENGINE_CFG.GetHeight(pos.x, pos.z) + 5.0f;
+
+                                if (bDebugPassmap)
+                                {
+                                    unsigned int color = 0xFF808080;
+                                    if (map->GetValue(x, z) == 0x80)
+                                    {
+                                        color = 0xFFFFFFFF;
+                                    }
+                                    else if (map->GetValue(x, z) == 0xA0)
+                                    {
+                                        color = 0xFF00FF00;
+                                    }
+                                    else if (map->GetValue(x, z) == 0xFF)
+                                    {
+                                        color = 0xFF0000FF;
+                                    }
+                                    DebugCross(pos, color, 15.0f, 1.0f);
+                                }
+
+                                if (bDebugPlayerPassmap)
+                                {
+                                    unsigned int const color =
+                                        playerPassMap->GetValue(x, z) ? 0xFF00FF00 : 0xFFFF0000;
+                                    DebugCross(pos, color, 15.0f, 2.0f);
+                                }
+                            }
+                        }
+                    }
+
+                    if (bDebugObstacles)
+                    {
+                        if (auto const* item = landscape.GetCollisionCellItem(xi, zi))
+                        {
+                            for (auto const& obstacle : item->GetObstacles())
+                            {
+                                obstacle->RenderDebugInfo();
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (bDebugObstacles)
+            {
+                for (auto const* obj : *theObjects)
+                {
+                    if (IS_KIND_OF(obj, PhysicObj))
+                    {
+                        static_cast<PhysicObj const*>(obj)->RenderObstacleDebugInfo();
+                    }
+                }
+            }
+
+            // The point under the mouse cursor: a ray from the camera against units and the landscape.
+            if (bDebugMouse)
+            {
+                m3d::Class* const clGu = M3D_KERNEL->FindClass("SgGameUnitNode");
+                m3d::Class* const clLs = M3D_KERNEL->FindClass("Landscape");
+                retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> classes;
+                classes.insert(clLs);
+                classes.insert(clGu);
+
+                m3d::SceneGraph& graph = pServer->GetWorld()->GetGraph();
+                CVector const org = M3D_APP->m_curCamera.m_worldOrigin;
+                float const mouseY = static_cast<float>(M3D_APP->GetMouseY());
+                float const mouseX = static_cast<float>(M3D_APP->GetMouseX());
+                CVector const dir = M3D_RENDERER->Unproject(CVector2(mouseX, mouseY));
+                CVector const dest(
+                    dir.x * 20000.0f + org.x, dir.y * 20000.0f + org.y, dir.z * 20000.0f + org.z);
+
+                CVector hitPoint;
+                if (graph.TraceLine(hitPoint, org, dest, classes, 0))
+                {
+                    DebugCircle(hitPoint, 1.0f, 0xFFFFFF00);
+                }
+            }
+        }
+
+        if (cinematic->GetDebugMode())
+        {
+            cinematic->RenderDebugInfo();
         }
 
         if (debugAnything)
