@@ -339,13 +339,15 @@ namespace m3d
 
             int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override
             {
+                // Only the two scroll keys are taken; any other key (Esc among them) goes on to the parent.
                 unsigned const k = key & 0xff;
-                if (k == 0x1b || k == 0x1c)
+                if (k != 0x1b && k != 0x1c)
                 {
-                    if (state != 0)
-                    {
-                        Scroll(k == 0x1b);
-                    }
+                    return 0;
+                }
+                if (state != 0)
+                {
+                    Scroll(k == 0x1b);
                 }
                 return 1;
             }
