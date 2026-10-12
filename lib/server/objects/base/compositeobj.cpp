@@ -93,27 +93,33 @@ namespace ai
             m_Anim->GetBoneAnim(m_bonesIndices[i]).m_lastUpdatedFrame = curFrame;
         }
 
-        // Bones that carry no geom of their own follow whichever bone they hang from, and the model's box
-        // grows to take in every geom-driven bone.
+        // Bones that carry no geom of their own are rebuilt from their local pose: under their parent, or, for
+        // a root, where the model stood when it broke, with the model's box grown to take that spot in.
         for (int i = 0; i < m_Model->m_header.m_numNodes; ++i)
         {
             m3d::BoneAnim& boneAnim = m_Anim->GetBoneAnim(i);
             if (boneAnim.m_lastUpdatedFrame == curFrame)
             {
-                Aabb boneBox = m_Model->m_box;
-                boneBox.m_box[0] += boneAnim.m_curMatrix._41;
-                boneBox.m_box[1] += boneAnim.m_curMatrix._42;
-                boneBox.m_box[2] += boneAnim.m_curMatrix._43;
-                boneBox.m_box[3] += boneAnim.m_curMatrix._41;
-                boneBox.m_box[4] += boneAnim.m_curMatrix._42;
-                boneBox.m_box[5] += boneAnim.m_curMatrix._43;
-                m_Anim->m_curBox.EmbraceBox(boneBox);
                 continue;
             }
+            CMatrix localMat;
+            localMat.rotTranslate(boneAnim.m_rotation, boneAnim.m_translation);
             if (boneAnim.m_parentIdx >= 0)
             {
-                boneAnim.m_curMatrix = boneAnim.m_curMatrix * m_Anim->GetBoneAnim(boneAnim.m_parentIdx).m_curMatrix;
+                boneAnim.m_curMatrix = localMat * m_Anim->GetBoneAnim(boneAnim.m_parentIdx).m_curMatrix;
+                continue;
             }
+            boneAnim.m_curMatrix = localMat * m_initialNodeTransform * invMatWorld;
+
+            CVector const offset = m_initialNodeTransform.getOrg() - m_Position;
+            Aabb modelBox = m_Model->m_box;
+            modelBox.m_box[0] += offset.x;
+            modelBox.m_box[1] += offset.y;
+            modelBox.m_box[2] += offset.z;
+            modelBox.m_box[3] += offset.x;
+            modelBox.m_box[4] += offset.y;
+            modelBox.m_box[5] += offset.z;
+            m_Anim->m_curBox.EmbraceBox(modelBox);
         }
 
         m3d::Configuration* cfg = nullptr;
