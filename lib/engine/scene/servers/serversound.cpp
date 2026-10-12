@@ -456,7 +456,7 @@ namespace m3d
         }
 
         auto soundItem = new SoundItem();
-        soundItem->type = SOUND_TYPE_DOUBLE;
+        soundItem->type = SOUND_TYPE_TRIPLE;
         soundItem->soundIds[0] = soundId1;
         soundItem->soundIds[1] = soundId2;
         soundItem->soundIds[2] = soundId3;

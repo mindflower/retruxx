@@ -1126,7 +1126,7 @@ int LSWnd::GameDataUpdate(void* data, int dataType)
     case 42:
         OnCurProfileParamChanged(data);
         return 1;
-    case 47:
+    case 46:
         OnScreenshotRelease(data);
         return 1;
     }

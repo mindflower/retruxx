@@ -7,8 +7,11 @@
 // on (checked against the game's own fmod.dll where they are not documented):
 //  - channels: the driver's channel count is a table kept here; FMOD Core is given more virtual
 //    voices than that so it never steals a channel by itself. FSOUND_FREE takes the next free
-//    channel round robin; when all are busy it steals the one with the lowest priority not above
-//    the new sound's, the oldest among equals, and fails without an error when there is none.
+//    channel round robin; when all are busy it steals the one with the lowest priority below the
+//    new sound's, the oldest among equals, and fails without an error when there is none. A sound
+//    never takes the channel of one with the same priority: the driver gives nearly every sound the
+//    same priority and keeps all channels busy in traffic, so stealing among equals cut the oldest
+//    sound - the weather loop - every few frames, which the original does not do.
 //  - channel handles: FMOD 3 handed out ints that carry the channel index in the low 12 bits and a
 //    reuse count above (the driver masks with 0xfff). The same encoding is produced here; an index
 //    without a reuse count (the driver's own loop counters) addresses whatever the index holds.
@@ -21,6 +24,15 @@
 //  - samples and streams are 3D unless opened with FSOUND_2D, and, as FMOD 3's software mixer did
 //    not position stereo data, a stereo sound is played in 2D whatever its mode says.
 //  - the stream end callback fires only when the stream reaches its end, not when it is stopped.
+//  - streams are opened with FMOD_NONBLOCKING (the open itself is still waited for, so the driver can read
+//    their mode and length straight away): FMOD Core otherwise rewinds and prebuffers a stream on the calling
+//    thread on every play, sleeping until the data is in, where FMOD 3 started it in the background. A play
+//    that finds the stream still busy is refused without an error, and the driver retries it next frame. The
+//    loop mode the driver asks for is kept per stream and given to each channel, since a busy stream refuses
+//    FMOD_Sound_SetMode.
+//  - with RETRUXX_FSOUND_LOG set in the environment, fsound.log (in the working directory) records each stream
+//    play, each channel stolen from a playing sound, each stream channel the driver stops and each stream
+//    channel that ends by itself.
 //  - before FSOUND_Init and after FSOUND_Close every call fails with FMOD_ERR_UNINITIALIZED, as in
 //    FMOD 3; the driver closes FMOD before it frees its samples and streams.
 //
@@ -34,9 +46,11 @@
 
 #include <map>
 #include <set>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include <windows.h>
 
 namespace
 {
@@ -102,6 +116,9 @@ namespace
         std::map<FMOD_SOUND*, EndCallback> endCallbacks;
         std::map<FMOD_SOUND*, int> maxPlaybacks;
         std::set<FMOD_SOUND*> streams;
+        // The loop bits last asked for each stream; a stream busy in the background refuses
+        // FMOD_Sound_SetMode, so they are applied to the channel at play time instead.
+        std::map<FMOD_SOUND*, FMOD_MODE> streamLoop;
 
         State() : nextSlot(0), playSeq(0)
         {
@@ -112,6 +129,22 @@ namespace
     State* g_state = 0;
     int g_numChannels = 0;
     int g_lastError = F3_ERR_NONE;
+    FILE* g_log = 0;
+
+    void LogLine(const char* what, FMOD_SOUND* sound, int slot, const char* extra = "")
+    {
+        if (!g_log)
+        {
+            return;
+        }
+        char name[128] = "?";
+        if (sound)
+        {
+            FMOD_Sound_GetName(sound, name, sizeof(name));
+        }
+        fprintf(g_log, "%10lu  %-14s slot %2d  %s%s\n", GetTickCount(), what, slot, name, extra);
+        fflush(g_log);
+    }
 
     FSOUND_OPENCALLBACK g_open = 0;
     FSOUND_CLOSECALLBACK g_close = 0;
@@ -278,11 +311,35 @@ namespace
         exinfo.cbsize = sizeof(exinfo);
         exinfo.fileoffset = (unsigned int)offset;
         exinfo.length = (unsigned int)length;
+        bool const stream = (kind & FMOD_CREATESTREAM) != 0;
         FMOD_SOUND* sound = 0;
-        if (!Check(FMOD_System_CreateSound(g_system, name, kind | ToCoreMode(mode), (offset || length) ? &exinfo : 0,
-                                           &sound)))
+        if (!Check(FMOD_System_CreateSound(g_system, name, kind | ToCoreMode(mode) | (stream ? FMOD_NONBLOCKING : 0),
+                                           (offset || length) ? &exinfo : 0, &sound)))
         {
             return 0;
+        }
+        if (stream)
+        {
+            // The driver reads the stream's mode and length right after opening it, so the open is waited
+            // for here; only the later plays and seeks run in the background.
+            FMOD_OPENSTATE state = FMOD_OPENSTATE_LOADING;
+            FMOD_RESULT result = FMOD_OK;
+            for (;;)
+            {
+                result = FMOD_Sound_GetOpenState(sound, &state, 0, 0, 0);
+                if (result != FMOD_OK || state == FMOD_OPENSTATE_READY || state == FMOD_OPENSTATE_ERROR)
+                {
+                    break;
+                }
+                Sleep(1);
+            }
+            if (result != FMOD_OK || state != FMOD_OPENSTATE_READY)
+            {
+                Check(result != FMOD_OK ? result : FMOD_ERR_FILE_BAD);
+                FMOD_Sound_Release(sound);
+                return 0;
+            }
+            g_state->streamLoop[sound] = LoopBits(mode);
         }
         DemoteStereoTo2D(sound);
         // FMOD 3 loaded every sound with the highest priority.
@@ -377,6 +434,10 @@ namespace
             return FMOD_OK;
         }
         FMOD_Channel_SetUserData(chan, 0);
+        if (!info->stoppedByUser && g_state && g_state->streams.count(info->sound))
+        {
+            LogLine("ENDED stream", info->sound, -1);
+        }
         if (!info->stoppedByUser && g_state)
         {
             std::map<FMOD_SOUND*, EndCallback>::iterator it = g_state->endCallbacks.find(info->sound);
@@ -432,12 +493,21 @@ namespace
         std::vector<Channel>& channels = s.channels;
 
         // A stream plays on one channel at a time: playing it again hands out the channel it has.
-        if (s.streams.count(sound))
+        bool const stream = s.streams.count(sound) != 0;
+        if (stream)
         {
             int slot = SlotOf(sound);
             if (slot >= 0)
             {
                 return MakeHandle(slot, channels[slot].gen);
+            }
+            // Still rewinding or seeking in the background: refused without an error, before any channel
+            // is taken for it; the driver tries again next frame.
+            FMOD_OPENSTATE state = FMOD_OPENSTATE_READY;
+            if (FMOD_Sound_GetOpenState(sound, &state, 0, 0, 0) != FMOD_OK ||
+                (state != FMOD_OPENSTATE_READY && state != FMOD_OPENSTATE_PLAYING))
+            {
+                return -1;
             }
         }
 
@@ -473,14 +543,14 @@ namespace
             }
         }
 
-        // All busy: steal the lowest priority not above the new sound's, the oldest among equals;
+        // All busy: steal the lowest priority below the new sound's, the oldest among equals;
         // none means the play is refused, without an error.
         if (slot < 0)
         {
             for (int i = 0; i < n; ++i)
             {
                 const Channel& c = channels[i];
-                if (c.priority > priority)
+                if (c.priority >= priority)
                 {
                     continue;
                 }
@@ -497,11 +567,29 @@ namespace
         }
 
         Channel& c = channels[slot];
+        if (g_log && Busy(c))
+        {
+            char thief[160] = "?";
+            char extra[200];
+            FMOD_Sound_GetName(sound, thief, sizeof(thief));
+            _snprintf_s(extra, sizeof(extra), _TRUNCATE, " (pri %d)  <- by %s (pri %d)", c.priority, thief, priority);
+            LogLine("STOLEN", c.sound, slot, extra);
+        }
         StopSlot(c);
         FMOD_CHANNEL* chan = 0;
-        if (!Check(FMOD_System_PlaySound(g_system, sound, 0, startpaused ? 1 : 0, &chan)))
+        FMOD_RESULT const result = FMOD_System_PlaySound(g_system, sound, 0, startpaused ? 1 : 0, &chan);
+        if (stream && result == FMOD_ERR_NOTREADY)
         {
             return -1;
+        }
+        if (!Check(result))
+        {
+            return -1;
+        }
+        if (stream)
+        {
+            FMOD_Channel_SetMode(chan, s.streamLoop[sound]);
+            LogLine("PLAY stream", sound, slot, s.streamLoop[sound] & FMOD_LOOP_NORMAL ? "  (looped)" : "");
         }
         PlayInfo* info = new PlayInfo;
         info->sound = sound;
@@ -565,6 +653,10 @@ namespace
             g_lastError = F3_ERR_BUSY;
             return 0;
         }
+        if (getenv("RETRUXX_FSOUND_LOG") && !g_log)
+        {
+            g_log = fopen("fsound.log", "w");
+        }
         if (!Check(FMOD_System_Create(&g_system, FMOD_VERSION)))
         {
             g_system = 0;
@@ -620,6 +712,11 @@ namespace
         delete g_state;
         g_state = 0;
         g_numChannels = 0;
+        if (g_log)
+        {
+            fclose(g_log);
+            g_log = 0;
+        }
     }
 
     void F_API Update(void)
@@ -692,6 +789,7 @@ namespace
         g_state->endCallbacks.erase(sound);
         g_state->maxPlaybacks.erase(sound);
         g_state->streams.erase(sound);
+        g_state->streamLoop.erase(sound);
         Check(FMOD_Sound_Release(sound));
     }
 
@@ -710,11 +808,22 @@ namespace
             return 0;
         }
         FMOD_SOUND* sound = (FMOD_SOUND*)sptr;
+        bool const stream = g_state->streams.count(sound) != 0;
+        if (stream)
+        {
+            g_state->streamLoop[sound] = LoopBits(mode);
+        }
         FMOD_MODE core = 0;
         FMOD_Sound_GetMode(sound, &core);
         core &= ~(FMOD_LOOP_OFF | FMOD_LOOP_NORMAL | FMOD_LOOP_BIDI | FMOD_2D | FMOD_3D);
         core |= ToCoreMode(mode);
-        if (!Check(FMOD_Sound_SetMode(sound, core)))
+        FMOD_RESULT const result = FMOD_Sound_SetMode(sound, core);
+        if (stream && result == FMOD_ERR_NOTREADY)
+        {
+            // Busy in the background; the loop bits recorded above reach the channel at play time.
+            return 1;
+        }
+        if (!Check(result))
         {
             return 0;
         }
@@ -825,6 +934,10 @@ namespace
         if (!slot || !slot->chan)
         {
             return 0;
+        }
+        if (g_state->streams.count(slot->sound))
+        {
+            LogLine("STOP stream", slot->sound, (int)(slot - &g_state->channels[0]));
         }
         StopSlot(*slot);
         return 1;
