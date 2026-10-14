@@ -79,7 +79,6 @@ namespace ai
         int m_curAttackAction;
         int m_numExplodedLoads;
         bool m_bCurLoadExploded;
-        char Padding_147[3];
         retruxx::vector<int, retruxx::allocator<int> > m_loadProrotypeIds;
         CVector m_curLoadVelocity;
         void _OnObjectDie(const ai::Event& evn);

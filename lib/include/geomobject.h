@@ -68,12 +68,10 @@ namespace m3d
         void SetBounds(const PointBase<int>& startCell, const PointBase<int>& endCell);
         const PointBase<int>& GetStartCell();
         const PointBase<int>& GetEndCell();
-        char Padding_169[3];
 
     private:
         dxGeom* m_geom;
         bool m_bMayBeEnabled;
-        char Padding_170[3];
         PointBase<int> m_startCell;
         PointBase<int> m_endCell;
         int m_enabledCellsCount;

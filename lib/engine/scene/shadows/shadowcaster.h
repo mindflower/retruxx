@@ -21,7 +21,6 @@ namespace m3d
 
     private:
         bool m_bIsLocked;
-        char Padding_123[3];
         unsigned int m_numVerts;
         unsigned int m_numFaces;
         unsigned int m_numEdges;

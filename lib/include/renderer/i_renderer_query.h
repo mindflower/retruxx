@@ -96,7 +96,6 @@ namespace m3d
 
         private:
             m3d::rend::QueryReturnValue::Type m_type;
-            char Padding_204[4];
             union
             {
                 bool b;

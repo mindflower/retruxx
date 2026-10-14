@@ -124,7 +124,6 @@ protected:
     std::set<int, std::less<int>, std::allocator<int>> m_visiblePrototypeIds;
     std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>> m_relatedPrototypeIds;
     bool m_bInitedOnce;
-    char Padding_206[3];
     std::vector<int, std::allocator<int>> m_clanBelongsVector;
     std::set<int, std::less<int>, std::allocator<int>> m_clanBelongsSet;
     int m_prevInfoObjId;

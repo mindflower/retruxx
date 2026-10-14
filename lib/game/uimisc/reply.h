@@ -96,6 +96,5 @@ public:
     std::vector<CStr, std::allocator<CStr>> GetAllHelloReplyNamesForDynamicNpc();
     std::map<CStr, Reply*, std::less<CStr>, std::allocator<std::pair<CStr const, Reply*>>> m_replies;
     bool m_isInited = false;
-    char Padding_203[3];
     int m_lastScriptConditionValue;
 };

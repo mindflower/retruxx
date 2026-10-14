@@ -140,7 +140,6 @@ namespace ai
 
     private:
         bool m_shouldInitializeWorkshops;
-        char Padding_45[3];
         retruxx::map<int, float, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, float> > > m_resourceIdToCoeff;
         retruxx::vector<ai::Building*, retruxx::allocator<ai::Building*> > m_buildings;
         retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> > m_targetClasses;
@@ -155,14 +154,12 @@ namespace ai
         int m_PlayerPathIndex;
         bool m_QuestsGenerated;
         bool m_VehicleShouldBeMoved;
-        char Padding_46[2];
         CVector m_NewPosForVehicle;
         CVector m_NewDirForVehicle;
         ai::Vehicle* m_VehicleToBeMoved;
         float m_timeFromLastEnterTown;
         CameraModes m_OldCameraMode;
         bool m_bOpenGateToPlayer;
-        char Padding_47[3];
         CStr m_caravanLocationName;
         bool m_bRuined;
         ai::DynamicQuest* _GenerateDynamicQuest();

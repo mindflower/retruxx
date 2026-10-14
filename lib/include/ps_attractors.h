@@ -41,13 +41,11 @@ namespace m3d
         CStr m_Name;
         CStr m_ClassName;
         bool m_On;
-        char Padding_185[3];
         WorkTime m_wtime;
         TimeMode m_timemode;
         ForceMode m_mode;
         WorkMode m_State;
         bool m_emitterOn;
-        char Padding_186[3];
         Force m_force[3];
         CVector m_org;
         CoordinatesSystemType m_csType;
@@ -83,7 +81,6 @@ namespace m3d
         float m_ttlMax;
         float m_resettime;
         bool m_localStop;
-        char Padding_67[3];
         float m_stopTime;
         float m_start;
         void Set(float ttlmin, float ttlmax, float max, float emit, float emitSt, float emitFin, float emitRpt);

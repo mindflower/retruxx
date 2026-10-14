@@ -89,14 +89,12 @@ namespace ai
         retruxx::map<CStr, m3d::AIParam> m_variables;
         ai::Trigger::eTriggerState m_state;
         bool m_StateKeep;
-        char Padding_295[3];
         int m_Count;
         float m_timeOutForTimePeriod;
         unsigned int m_framesForFramesPassed;
         CStr m_flyPathForCinematicFly;
         int m_idForCinemaMsg;
         bool m_bScriptPresent;
-        char Padding_296[3];
         CStr m_triggerScriptFuncName;
         retruxx::vector<int> m_ObjIDs;
 

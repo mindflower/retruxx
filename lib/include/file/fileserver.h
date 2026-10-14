@@ -42,7 +42,6 @@ namespace m3d
 
             bool m_Initialized = false;
             bool m_EnableMapping = false;
-            char Padding_132[2];
             m3d::CriticalSection m_cs;
 
             using PackagePrt = ref_ptr<m3d::fs::Package>;

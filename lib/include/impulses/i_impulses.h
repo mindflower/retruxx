@@ -18,7 +18,6 @@ namespace m3d
         float UnpackWheel() const;
         int m_impId;
         bool m_state;
-        char Padding_319[3];
         int m_gameMode;
         unsigned int m_info0;
         unsigned int m_info1;

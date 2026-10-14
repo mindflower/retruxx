@@ -55,7 +55,6 @@ namespace ai
 
     private:
         bool m_bGenerated;
-        char Padding_274[3];
         float m_criticalTeamDist;
         float m_criticalTeamTime;
         float m_timeBeyondCriticalDist;

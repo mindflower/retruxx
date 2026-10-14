@@ -62,7 +62,6 @@ namespace ai
         retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState> > m_StateStack1;
         ai::DecisionMatrix* m_pDM;
         bool m_fStateStack2Changed;
-        char Padding_177[3];
         retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Messages2;
         retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Messages1;
         retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Commands;

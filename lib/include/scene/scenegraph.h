@@ -194,7 +194,6 @@ namespace m3d
         m3d::SceneGraph::CellItems m_cellItems[4096];
         bool m_easyRelink;
         bool m_cellsPrepared;
-        char Padding_163[2];
         m3d::SgNode m_rootNode;
         m3d::SgNode m_landscapeNode;
         m3d::CWorld* m_owner;
@@ -234,18 +233,15 @@ namespace m3d
         bool m_noModelCull;
         bool m_bIsInUnlinkAndDeleteAll;
         bool m_bIsPurgingRemoveIfFree;
-        char Padding_164;
         m3d::IsNodeTransparent* m_transparencyTest;
         m3d::SgNode* TraceLineThruCellNodesForClass(float& tt, int cx, int cz, const CVector& v0, const CVector& dir, m3d::Class* wantClazz, retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> >& dontCheckTwice, unsigned int traceMode);
         unsigned char m_enableMap[65536];
         unsigned char m_enableVisSpaceMask;
-        char Padding_165[79];
         char m_sortedCellsX[240000];
         char m_sortedCellsY[240000];
         int m_sortedCellsCurRadius;
         int m_sortedCellsEndRadius;
         int m_sortedCellsCurCell;
-        char Padding_166[116];
         void enableVisibleCells_r(CClipper& frusta, float* box, unsigned int or );
         void enableCellsSetRect(float* rc, unsigned int v0, unsigned int v1);
         void enableCellsSetRect(int* rc, unsigned int or , unsigned int and);

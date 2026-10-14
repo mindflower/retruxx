@@ -49,7 +49,6 @@ namespace ai
         unsigned int m_size;
         CVector2* m_pPath;
         bool m_bSearching;
-        char Padding_120[3];
         ai::eSearchResult m_SearchResult;
         unsigned int v;
         unsigned int w;
@@ -59,7 +58,6 @@ namespace ai
         ai::MapIndex m_minIndex;
         ai::MapIndex m_maxIndex;
         unsigned char m_blockedValue;
-        char Padding_121[3];
         int m_radius;
         float m_PathLength;
         ai::DHeap* pHeap;

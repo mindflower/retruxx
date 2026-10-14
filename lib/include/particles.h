@@ -67,7 +67,6 @@ namespace m3d
         bool m_meshAutoEmitted;
         bool m_renderCalled;
         bool m_updateCalled;
-        char Padding_33;
         CMatrix** m_local;
         void** m_meshEmitterVerts;
         retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> > m_VertexTypes;
@@ -101,11 +100,9 @@ namespace m3d
         CStr m_ClassName;
         bool m_Specific;
         bool m_HaveTrail;
-        char Padding_68[2];
         int m_trailLen;
         bool m_CreateOne;
         bool m_autoMeshEmitter;
-        char Padding_69[2];
         float m_meshradius;
         int m_points;
         CVector m_point1;
@@ -117,10 +114,8 @@ namespace m3d
         bool m_forv;
         bool m_back;
         bool m_orient;
-        char Padding_70;
         float m_scaleparts;
         bool m_updateXForm;
-        char Padding_71[3];
         float m_SpriteAngle;
         int m_TexTiling;
         m3d::rend::TexHandle m_texAdd;

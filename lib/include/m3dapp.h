@@ -189,7 +189,6 @@ namespace m3d
         void* m_procTexThreadHandle = nullptr;
         unsigned long m_procTexThreadId;
         static unsigned long __stdcall texGenThread(void* context);
-        char Padding_309[4];
         m3d::Event m_eventsQueue[5000];
         int m_eventsQueueHead = 0;
         int m_eventsQueueTail = 0;
@@ -199,7 +198,6 @@ namespace m3d
         float m_mouseSensitivity = 1.0;
         bool m_bMouseYAxisFlipped = false;
         bool m_bMouseXAxisFlipped = false;
-        char Padding_310[2];
         retruxx::vector<m3d::IEventHandler*, retruxx::allocator<m3d::IEventHandler*> > m_allEventHandlers;
         bool GetEvent(m3d::Event& event, bool removeFromQueue);
         void EnqueueEvent(const m3d::Event& event);
@@ -244,7 +242,6 @@ namespace m3d
         bool m_breakLoop = false;
         static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
         LRESULT MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-        char Padding_311[3];
         int m_isAppActive = 0;
         int CheckAndLogPlatform();
         int64_t GetCpuFrequency(unsigned int uiMeasureMSecs);
@@ -334,7 +331,6 @@ namespace m3d
         retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_cachedSoundIDs;
         bool m_stopallsounds;
         bool m_pauseAllowed;
-        char Padding_312[2];
         int m_timeFromLevelLoaded;
         m3d::CIntHash<int> m_belongToIdxHash;
         m3d::CameraController* GetCameraController();
@@ -377,7 +373,6 @@ namespace m3d
         void WaitForAnykey();
         void ForbidRendering();
         void AllowRendering();
-        char Padding_313;
         m3d::mVideoPlayer* M3dVideoPlayer;
         void ClearViewportToBlack();
         bool m_bDoNotLoadMainmenuLevel;
@@ -386,7 +381,6 @@ namespace m3d
         struct DetailSettings
         {
             bool m_dsShadows;
-            char Padding_308[3];
             float m_lsViewDistanceDivider;
             int m_lsWaterMethod;
             float m_NPatchLevel;
@@ -396,7 +390,6 @@ namespace m3d
             DetailSettings();
         };
 
-        char Padding_314[3];
 
     public:
         m3d::Application::DetailSettings m_detailSettings;
@@ -434,7 +427,6 @@ namespace m3d
             PointBase<int> m_lastPos;
         };
 
-        char Padding_315[3];
 
     private:
         m3d::Application::MouseInfo m_mouseInfo;
@@ -447,7 +439,6 @@ namespace m3d
 
     public:
         bool m_bGuiWasHiddenBeforeCinematic = false;
-        char Padding_316[3];
         m3d::Cinematic* m_cinematic;
         virtual int HandleCinematic(float dT);
         CCamera m_curCamera;

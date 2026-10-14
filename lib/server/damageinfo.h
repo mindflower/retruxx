@@ -18,7 +18,6 @@ namespace ai
         int attackerId;
         int attackingAgentId;
         bool bDamageFriends;
-        char Padding_297[3];
         int gunPrototypeId;
         float damage;
         ai::DamageType damageType;

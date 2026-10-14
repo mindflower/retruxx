@@ -126,7 +126,6 @@ namespace m3d
         CStr m_name;
         bool m_persistant = true;
         bool m_isChildDirty = false;
-        char Padding_3[2];
 
     private:
         m3d::Object* m_parent = nullptr;

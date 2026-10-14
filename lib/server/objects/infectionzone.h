@@ -108,7 +108,6 @@ namespace ai
         ai::InfectionTeam* _GetInfectionTeam();
         ai::InfectionLair* _GetInfectionLair();
         bool m_hadPlayerInside;
-        char Padding_276[3];
         float m_baseTimeoutForRespawn;
         float m_timeoutForRespawn;
         float m_timeForRespawn;

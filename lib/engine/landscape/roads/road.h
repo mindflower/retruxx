@@ -30,7 +30,6 @@ namespace m3d
         unsigned int m_modelNum;
         unsigned int m_skinNumber;
         bool m_asCliff;
-        char Padding_267[3];
         float m_minX;
         float m_maxX;
         float m_maxWorldY;
@@ -47,7 +46,6 @@ namespace m3d
         m3d::GeomObjectRoad* m_geomObject;
         bool m_bRoadDrawn;
         bool m_bInverted;
-        char Padding_268[2];
         CVector m_boundCenter;
         float m_boundRadius;
         int m_frameVisible;

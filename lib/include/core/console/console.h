@@ -37,7 +37,7 @@ namespace m3d
     //IMPORTANT: fields and members order is strict
     struct IConHandler
     {
-       ;
+        virtual ~IConHandler() = default;
         virtual void HandleCommand(int, const m3d::CConsoleParams&) = 0;
         virtual bool HandleCVar(const m3d::CVar*, const m3d::CConsoleParams&) = 0;
     };

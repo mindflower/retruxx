@@ -45,12 +45,10 @@ namespace m3d
         m3d::Configuration m_cfg;
         bool m_manualAnimControl;
         bool m_castShadow;
-        char Padding_212[2];
         int m_frameUpdated;
         int m_lastTimeUpdated;
         int m_skipFrames;
         bool m_passable;
-        char Padding_213[3];
         ai::Obstacle* m_obstacle;
         bool m_imposted;
     };

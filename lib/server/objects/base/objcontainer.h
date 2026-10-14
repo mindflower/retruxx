@@ -13,7 +13,6 @@ namespace ai
 
     class GameTime
     {
-        //char Padding_42[4];
 
     private:
         int64_t m_milliSeconds;
@@ -77,7 +76,6 @@ namespace ai
             int m_nextId;
             ai::Obj* m_value;
             bool m_isValid;
-            char Padding_197[3];
             int m_totalObjects;
             Node();
         };
@@ -239,7 +237,6 @@ namespace ai
         m3d::CStrHash<CStr> m_ObjectFullNames;
         ai::GameTime m_GameTime;
         bool m_GameTimePaused;
-        char Padding_198[3];
         unsigned int m_denyCreationCount;
         int m_numRemovalsLastFrame;
         retruxx::vector<int, retruxx::allocator<int> > m_objIdsToUpdate;

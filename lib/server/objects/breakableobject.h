@@ -64,7 +64,6 @@ namespace ai
         float m_causeForce;
         bool m_initVelocities;
         bool m_bPositioningOnGround;
-        char Padding_329[2];
         retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > m_connectedRopes;
 
     public:

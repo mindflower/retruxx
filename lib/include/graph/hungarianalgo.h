@@ -7,7 +7,6 @@ namespace Graph
     struct TQueueVertex
     {
         bool inFirstPartite;
-        char Padding_146[3];
         int index;
         TQueueVertex(bool inFirstPartite_, int index_);
     };

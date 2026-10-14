@@ -58,7 +58,6 @@ private:
     unsigned int m_modelCfg;
     int m_modelSlot;
     bool m_bModelAutosized;
-    char Padding_235[3];
     MsgInfo::MsgType m_msgType;
     float m_fontSize;
     float m_scrollSpeed;

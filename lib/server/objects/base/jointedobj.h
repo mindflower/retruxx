@@ -95,7 +95,6 @@ namespace ai
         retruxx::vector<dxJoint*, retruxx::allocator<dxJoint*> > m_externalJoints;
         retruxx::vector<ai::ExternalJointInfo, retruxx::allocator<ai::ExternalJointInfo> > m_externalJointsInfo;
         bool m_onLoad;
-        char Padding_102[3];
         retruxx::vector<CMatrix, retruxx::allocator<CMatrix> > m_JointToGeom;
         CStr m_modelName;
         m3d::SgNode* m_node;
@@ -105,12 +104,10 @@ namespace ai
         float m_strech;
         CVector m_Position;
         bool m_deadTimerActive;
-        char Padding_103[3];
         float m_deadTimer;
         bool m_testVisibility;
         bool m_enabled;
         bool m_disableTimerActive;
-        char Padding_104;
         float m_disableTimer;
         retruxx::vector<ai::GoDataForLoad, retruxx::allocator<ai::GoDataForLoad> > m_dataForLoad;
         retruxx::map<unsigned int, ai::GoDataForLoad, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, ai::GoDataForLoad> > > m_edataForLoad;
@@ -123,7 +120,6 @@ namespace ai
 
     protected:
         bool m_asRope;
-        char Padding_105[3];
         retruxx::map<int, ai::JointedObj::SplineBones, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::JointedObj::SplineBones> > > m_splineNeighbours;
     };
 }

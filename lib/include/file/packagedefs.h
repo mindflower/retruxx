@@ -10,7 +10,6 @@ namespace m3d
             unsigned long FileDateHigh;
             unsigned long FileDateLow;
             bool IsArchived;
-            char Padding_57[3];
             unsigned long reserved1;
             unsigned int FilePositionDisp2;
             unsigned int FileSizeDisp2Inv;

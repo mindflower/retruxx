@@ -88,11 +88,9 @@ struct PSProps
     char m_ClassName[50];
     bool m_Specific;
     bool m_HaveTrail;
-    char Padding_193[2];
     int32_t m_trailLen;
     bool m_CreateOne;
     bool m_autoMeshEmitter;
-    char Padding_194[2];
     float m_meshradius;
     int32_t m_points;
     CVector m_point1;
@@ -104,14 +102,11 @@ struct PSProps
     bool m_forv;
     bool m_back;
     bool m_orient;
-    char Padding_195;
     float m_scaleparts;
     bool m_updateXForm;
-    char Padding_196[3];
     float m_SpriteAngle;
     int32_t m_TexTiling;
     char m_texName[50];
-    char Padding_197[2];
     PsShaderType m_shaderType;
     float m_emitAtPeriod;
     WorkTime m_wtime;
@@ -120,7 +115,6 @@ struct PSProps
     float m_ttlMax;
     float m_resettime;
     bool m_localStop;
-    char Padding_198[3];
     float m_stopTime;
     float m_start;
     Force m_x0[3];
@@ -144,13 +138,11 @@ struct AttrProps
     char m_Name[50];
     char m_ClassName[50];
     bool m_On;
-    char Padding_173[3];
     WorkTime m_wtime;
     TimeMode m_timemode;
     ForceMode m_mode;
     WorkMode m_State;
     bool m_emitterOn;
-    char Padding_174[3];
     Force m_force[3];
     CVector m_org;
     CoordinatesSystemType m_csType;

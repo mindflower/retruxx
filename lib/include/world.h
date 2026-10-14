@@ -71,12 +71,10 @@ namespace m3d
         m3d::CVar m_sunColorB;
         m3d::CVar m_fogStart;
         bool m_isWeatherActual;
-        char Padding_168[3];
         dxGeom* m_borderWallGeoms[6];
 
     protected:
         m3d::Landscape m_landscape;
-        char Padding_169[116];
         m3d::SceneGraph m_sceneGraph;
         m3d::RoadManager m_roadManager;
         m3d::WeatherManager m_weatherManager;
@@ -153,7 +151,6 @@ namespace m3d
         struct EffectsData
         {
             bool onlyOne;
-            char Padding_166[3];
             m3d::SgNode* effect;
             retruxx::vector<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> > effects;
         };
@@ -176,7 +173,6 @@ namespace m3d
 
     private:
         m3d::Profiler* m_profilerUpdateOde;
-        char Padding_170[120];
 
         void LoadStaticObstacles();
         void CreatePlayerPassMapGeoms();

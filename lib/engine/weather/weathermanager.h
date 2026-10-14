@@ -29,7 +29,6 @@ namespace m3d
         m3d::GlobalTimeParams m_curDayTime;
         float m_globalTimeParams[4];
         bool m_bEdit = false;
-        char Padding_90[3];
         m3d::rend::VbHandle m_vbSky;
         m3d::rend::IbHandle m_ibSky;
         m3d::CWorld* m_owner;

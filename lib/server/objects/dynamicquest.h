@@ -115,11 +115,9 @@ namespace ai
         virtual void _OnHirerBecamesEnemyWithPlayer();
         void _SetStatus(ai::DynamicQuest::QuestStatus newStatus);
         int m_reward;
-        char Padding_43[4];
         ai::GameTime m_takeGameTime;
         ai::FadingMsgId m_fadingMsgIdOnComplete;
         bool m_bShowMessageForAddMoney;
-        char Padding_44[3];
 
     private:
         ai::DynamicQuest::QuestStatus m_questStatus;

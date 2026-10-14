@@ -56,11 +56,9 @@ namespace ai
         m3d::SgNode* m_SplashEffect;
         short m_SplashType;
         bool m_MakeSplash;
-        char Padding_303;
         unsigned int m_wheelType;
         float m_curAngle;
         bool m_bModelBroken;
-        char Padding_304[3];
         m3d::SgNode* m_suspensionNode;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;

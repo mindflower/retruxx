@@ -94,7 +94,6 @@ namespace ai
         CVector m_causePos;
         float m_causeForce;
         bool m_initVelocities;
-        char Padding_373[3];
         float m_walkSpeed;
         float m_turnSpeed;
         float m_maxStandTime;
@@ -108,7 +107,6 @@ namespace ai
         ai::NumericInRangeRegenerating<float> m_walkTtl;
         bool m_bMustChangePath;
         bool m_bMustWalk;
-        char Padding_374[2];
         retruxx::vector<CVector, retruxx::allocator<CVector> > m_dummyPath;
         void _SetWalkState(ai::PhysicUnit::WalkState newWalkState);
     };

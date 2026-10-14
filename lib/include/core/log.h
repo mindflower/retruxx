@@ -51,7 +51,6 @@ namespace m3d
 
     private:
         bool m_logStarted = false;
-        char Padding_79[3];
         retruxx::string m_fileName;
         unsigned int m_sourceLine = 0;
         retruxx::string m_sourceFile;
@@ -63,7 +62,6 @@ namespace m3d
 
         const CStr& headerString(const m3d::eLogFlags logFlags) const;
 
-        char Padding_80[2];
         mutable m3d::CriticalSection m_cs;
     };
 }

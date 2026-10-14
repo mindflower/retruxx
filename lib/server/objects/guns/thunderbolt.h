@@ -51,7 +51,6 @@ namespace ai
             int m_ObjId;
             bool m_launcher;
             bool m_dependant;
-            char Padding_133[2];
             retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> > m_masterPoints;
 
         public:
@@ -76,7 +75,6 @@ namespace ai
             ai::Thunderbolt::ThunderboltPoint m_Finish;
             unsigned int m_nSteps;
             bool m_EffectCreated;
-            char Padding_134[3];
             m3d::SgNode* m_EffectNode;
             const retruxx::vector<CVector, retruxx::allocator<CVector> >& SegmentFinding(const Segment& seg) const;
 

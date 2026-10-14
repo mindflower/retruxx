@@ -191,10 +191,8 @@ private:
     retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > > m_savedPrices;
     bool m_bSavedPricesPersistant;
     bool m_bRuined;
-    char Padding_133[2];
     CStr m_passageAddress;
     bool m_bIsActive;
-    char Padding_134[3];
     int m_objectId;
     int m_belong;
 };

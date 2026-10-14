@@ -42,7 +42,6 @@ protected:
     float m_scrollPixelSpeed;
     float m_textOrigin;
     bool m_bScrollingEnabled;
-    char Padding_294[3];
     BoundsBase<float> m_textBounds;
 
     AutoScrollTextWnd();

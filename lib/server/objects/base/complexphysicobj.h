@@ -179,7 +179,6 @@ namespace ai
 
     private:
         bool m_isContoured;
-        char Padding_89[3];
         int m_targetId;
         float m_timeoutForReAimGuns;
         CVector m_currentTargetPos;

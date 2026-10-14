@@ -58,7 +58,6 @@ namespace ai
         int m_decisionMatrixNum;
         float m_takingRadius;
         unsigned char m_priority;
-        char Padding_208[3];
         CStr m_hornSoundName;
         float m_cameraHeight;
         float m_cameraMaxDist;
@@ -384,7 +383,6 @@ namespace ai
 
         private:
             bool m_bWheelPresent;
-            char Padding_175[3];
             ai::Wheel* m_wheel;
         };
 
@@ -406,7 +404,6 @@ namespace ai
         bool m_bHorn;
         bool m_bGodMode;
         bool m_bImmortalMode;
-        char Padding_178;
         int m_stoppageMode;
         int m_onOilMode;
         int m_inSmokeScreenMode;
@@ -418,7 +415,6 @@ namespace ai
         unsigned int m_shootTypeChangeTime;
         unsigned int m_shootTimeToWait;
         bool m_bIsShooting;
-        char Padding_179[3];
         retruxx::map<int, ai::Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Gadget*> > > m_gadgets;
         float m_antiMissileGadgetSavingRadius;
         float m_diffRatio;
@@ -427,13 +423,10 @@ namespace ai
         float m_highGearShiftLimit;
         float m_steeringSpeed;
         bool m_bIsTrailer;
-        char Padding_180[3];
         float m_cruisingSpeed;
         bool m_maxSpeedLimited;
-        char Padding_181[3];
         float m_maxSpeedLimit;
         bool m_maxTorqueForced;
-        char Padding_182[3];
         float m_maxTorqueForcedValue;
         int m_currentGear;
         float m_throttle;
@@ -459,7 +452,6 @@ namespace ai
         mutable retruxx::set<ref_ptr<ai::Obstacle>> m_pastNearbyObstacles;
         mutable CVector m_pastTakingSpherePosition;
         mutable bool m_bAllowPickUpMessage;
-        char Padding_183[3];
         mutable int m_pastNumNearbyChests;
         mutable int m_currentNumNearbyChests;
         scoped_ptr<ai::Box> m_lookBox;
@@ -470,17 +462,14 @@ namespace ai
         CVector m_bumperPoint;
         bool m_bIsControlledByPlayer;
         bool m_bIsMovingAlongExternalPath;
-        char Padding_184[2];
         int m_pathIndex;
         bool m_bCanBeDistractedFromMoving;
-        char Padding_185[3];
         CVector m_size;
         CVector m_currentDestination;
         ai::Path* m_pPath;
         int m_pathNum;
         unsigned char m_priority;
         bool m_bCustomControl;
-        char Padding_186[2];
         ai::Vehicle::CustomWeaponControlType m_customControlWeapons;
         CVector m_customControlWeaponsTarget;
         int m_customControlWeaponsTargetObjId;
@@ -491,7 +480,6 @@ namespace ai
     private:
         retruxx::map<int, bool, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, bool> > > m_gunsPointed;
         bool m_bRocketLaunchersPresent;
-        char Padding_187[3];
         int m_indexInTeam;
         ai::Vehicle::VehicleMoveStatus m_moveStatus;
         ai::Vehicle::VehicleAttackStatus m_attackStatus;
@@ -519,13 +507,11 @@ namespace ai
         ai::NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
         int m_numWheelsTouchingGround;
         bool m_bHidden;
-        char Padding_188[3];
         int m_lockedObjId;
         int m_toBeLockedObjId;
         float m_timeToLockTarget;
         bool m_bMustGetOutOfDifficultPlace;
         mutable bool m_bWasStuck;
-        char Padding_189[2];
         mutable CVector m_prevPosToCheckStuck;
         mutable float m_timeOutToCheckStuck;
         mutable CVector m_curSteeringForce;
@@ -579,7 +565,6 @@ namespace ai
         void _GetOutOfDifficlultPlaceInternal();
         float _GetCabinControlCoeff() const;
 
-        char Padding_190[3];
         int m_soundRechargeChannelId;
 
     public:

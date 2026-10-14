@@ -127,7 +127,6 @@ namespace ai
     private:
         void _OnMoneyValueAfterChange(int oldMoneyValue);
         ai::NumericBoundedBelow<int> m_money;
-        //char Padding_24[120];
         int m_vehicleObjId;
         ai::RadioManager* m_radioManager;
         retruxx::vector<CStr> m_questItemPrototypeNames;
@@ -142,7 +141,6 @@ namespace ai
         unsigned int m_skinNumber;
         unsigned int m_cfgNumber;
         bool m_huntQuestIsTaken;
-        char Padding_25[3];
         int m_curNumForVehicleWithoutName;
         void _OnObjectDie(const ai::Event& evn);
         void _OnNoticeEnemy(const ai::Event& evn);

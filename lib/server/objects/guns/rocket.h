@@ -66,7 +66,6 @@ namespace ai
         CVector m_initVelDir;
         float m_initVelValue;
         bool m_withAngleLimit;
-        char Padding_336[3];
         int m_numCircles;
     };
 }

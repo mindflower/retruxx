@@ -79,7 +79,6 @@ public:
         m3d::ui::ImageWnd* m_wnd;
         ElectronicDigitalWnd::Symbol m_symbol;
         bool m_bReserved;
-        char Padding_99[3];
         ElectronicDigitalWnd::DigitalSize m_digitalSize;
     };
 

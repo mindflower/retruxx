@@ -1974,7 +1974,6 @@ namespace m3d
         {
             bool m_bDoLoop;
             bool m_bImmediate;
-            char Padding_330[2];
             int m_channelId;
         };
 

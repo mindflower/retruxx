@@ -154,7 +154,6 @@ protected:
 
 protected:
     bool m_isInited;
-    char Padding_114[3];
     PointBase<int> m_geomSize;
     std::vector<GeomSlot*, std::allocator<GeomSlot*>> m_slots;
     PointBase<float> m_cellSize;
@@ -166,7 +165,6 @@ protected:
     RepositoryWnd::RepositoryType m_type;
     RepositoryWnd::AuxInfo m_aif;
     bool m_isSpecialized;
-    char Padding_115[3];
     std::vector<int, std::allocator<int>> m_compatibleResourceIds;
     std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>> m_itemStyles;
     int m_defaultItemStyle;

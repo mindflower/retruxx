@@ -373,7 +373,6 @@ namespace ai
         int m_updatingObjId;
         bool m_bIsUpdating;
         bool m_bMustBeUpdating;
-        char Padding_13[2];
         unsigned int m_flags;
         unsigned int m_actionID;
         unsigned int m_prevActionID;
@@ -381,20 +380,17 @@ namespace ai
         bool m_bNeedPostLoad;
         bool m_bMustCreateVisualPart;
         bool m_bPassedToAnotherMap;
-        char Padding_14;
         int m_belong;
         int m_parentId;
         GeomRepository* m_parentRepository;
         int m_LastDamageSource;
         mutable bool m_bIsAlreadySaved;
-        char Padding_15[3];
         Obj::HierarchyType m_hierarchyType;
         int m_prototypeId;
         retruxx::map<int, Obj*> m_allChildren;
         retruxx::vector<int> m_appliedPrefixIds;
         retruxx::vector<int> m_appliedSuffixIds;
         bool m_bAffixesWasApplied;
-        char Padding_16[3];
         retruxx::vector<Modifier> m_modifiers;
 
         struct EventRecipientInfo

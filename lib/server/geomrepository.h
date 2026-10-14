@@ -26,7 +26,6 @@ namespace ai
 
     protected:
         bool m_Changed;
-        char Padding_207[3];
         PointBase<int> m_geomSize;
         std::vector<ai::GeomRepositoryItem, std::allocator<ai::GeomRepositoryItem> > m_slots;
         std::set<int, std::less<int>, std::allocator<int> > m_referenceChests;

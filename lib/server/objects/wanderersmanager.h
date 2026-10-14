@@ -44,7 +44,6 @@ namespace ai
             WayPoint(const ai::WanderersManager::WayPoint& __that);
             WayPoint(bool transition, const CVector2& position, const CStr& wayPointName, int locationId);
             bool m_transition;
-            char Padding_72[3];
             CVector2 m_position;
             int m_locationId;
             CStr m_name;

@@ -70,7 +70,6 @@ namespace m3d
             m3d::ui::Wnd* GetWndForMousePoint(m3d::ui::Wnd* curWnd, const PointBase<float>& pt, bool affectAll);
             int CheckForMouseDblClick(m3d::ui::Wnd* w, const PointBase<float>& pt, unsigned int mouseState, PointBase<float>& prevClickPt);
             int CheckForMouseClick(m3d::ui::Wnd* w, bool set, const PointBase<float>* pt);
-            char Padding_77[3];
 
         protected:
             PointBase<float> m_prevMouseCoord;

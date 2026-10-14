@@ -21,7 +21,6 @@ namespace ai
     protected:
         bool m_bCollisionTrimeshAllowed;
         void _SetGeomType(ai::GeomType geomType);
-        char Padding_57[3];
 
     private:
         ai::GeomType m_geomType;
@@ -113,7 +112,6 @@ namespace ai
         retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
         float m_scale;
         bool m_deadTimerActive;
-        char Padding_12[3];
         float m_deadTimer;
         bool m_testVisibility;
     };

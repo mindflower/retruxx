@@ -158,21 +158,18 @@ namespace m3d
         Aabb m_boundingBox;
         Aabb m_ownBoundingBox;
         bool m_isOriginRelative;
-        char Padding_110[3];
         unsigned int m_isXFormDirty;
         bool m_isOwnBoundingBoxDirty;
         bool m_removeImmediateAfterParent;
         bool m_isRemoveIfFree;
         bool m_isInRemoveIfFree;
         bool m_isContoured;
-        char Padding_111[3];
         unsigned int m_contourColor;
         float m_contourWidth;
         int m_frameTransparent;
         m3d::TransparencyType m_transparencyType;
         m3d::TransparencyParams m_transparencyParams;
         bool m_isWaitingForRender;
-        char Padding_112[3];
         int m_srvId;
 
     public:
@@ -180,7 +177,6 @@ namespace m3d
         int m_frameVisible2;
         float m_onScreenSize;
         bool m_isRootNode;
-        char Padding_113[3];
 
     protected:
         // retruxx adaptation: the server slots PROP_SERVER_SLOT / PROP_SERVER_SLOT_1 hold the

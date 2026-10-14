@@ -88,7 +88,6 @@ protected:
     void UpdateIcon();
     void UpdateNpTexture();
     bool m_isSelected;
-    char Padding_56[3];
     help::UnifyQuestStatus m_questStatus;
     static QuestStatusBtn::AuxInfo m_aif;
     NavPoint::NavPointType m_npType;
@@ -135,7 +134,6 @@ protected:
     void UpdateTextColor();
     virtual int OnPaint(m3d::ui::DrawInfo const& clipToIt) override;
     bool m_isSelected;
-    char Padding_270[3];
     help::UnifyQuestStatus m_questStatus;
     static QuestLabel::AuxInfo m_aif;
     QuestLabel();

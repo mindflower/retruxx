@@ -20,7 +20,6 @@ namespace ai
     public:
         int m_decisionMatrixNum;
         bool m_bRemoveWhenChildrenDead;
-        char Padding_263[3];
         int m_formationPrototypeId;
         TeamPrototypeInfo();
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
@@ -34,7 +33,6 @@ namespace ai
 
     private:
         bool m_overridesDistBetweenVehicles;
-        char Padding_264[3];
         float m_formationDistBetweenVehicles;
     };
 
@@ -117,7 +115,6 @@ namespace ai
         virtual void _DoUnderAttack(int attackerId);
         virtual void _DoPosUnreachable();
         void _RemoveVehicles();
-        char Padding_217[2];
 
     private:
         ai::AI m_AI;
@@ -129,7 +126,6 @@ namespace ai
         retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector> > > m_steeringForceMap;
         bool m_needAdjustBehaviour;
         bool m_bFrozen;
-        char Padding_218[2];
         CStr m_TeamTacticName;
         int m_TeamTacticId;
         bool m_TeamTacticShouldBeAssigned;

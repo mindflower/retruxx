@@ -176,7 +176,6 @@ namespace m3d
             CStr m_strTextColorDisabled = "@ff7f7f7f";
             bool m_gotFocus = false;
             bool m_mouseOver = false;
-            char Padding_22[2];
             unsigned int m_id = 0;
             CStr m_bgTextureName;
             m3d::rend::TexHandle m_bgTexture;
@@ -276,7 +275,6 @@ namespace m3d
             virtual void SetCursorShow(bool state);
             virtual bool GetCursorShow() const;
             virtual int GetCursor(m3d::ui::Cursor& cur);
-            char Padding_23[2];
 
         protected:
             // retruxx adaptation: the window's user value; the shipped build was unsigned int and the
@@ -295,7 +293,6 @@ namespace m3d
 
         protected:
             bool m_modalAttachedToStation;
-            char Padding_24[3];
             m3d::TextWrapFlags m_textWrap = TextWrapFlags::TW_WORD_WRAP;
             m3d::TextFormatFlags m_textFormat = TextFormatFlags::TF_LEFT;
 
@@ -398,7 +395,6 @@ namespace m3d
                 CStr AnimationType2Str(m3d::ui::Wnd::AnimationInfo::AnimationType animationType) const;
                 bool m_bEnabled;
                 bool m_bImmediate;
-                char Padding_20[2];
                 PointBase<float> m_startPt;
                 PointBase<float> m_endPt;
                 m3d::ui::Wnd::AnimationInfo::AnimationType m_animationType;
@@ -436,7 +432,6 @@ namespace m3d
             m3d::ui::Wnd::AnimationInfo m_currentAnimation;
             bool m_bSuspendedUnlink = false;
             bool m_bSuspendedParentUnlink = false;
-            char Padding_25[2];
             PointBase<float> m_baseOrigin;
             int m_animationSoundMoveChannelId = -1;
             int ProcessAnimation(int curTime, int deltaTime);

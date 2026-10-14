@@ -98,7 +98,6 @@ protected:
     unsigned int m_curMessageEndTime;
     bool m_bIsShowingMessage;
     bool m_bSkipMessage;
-    char Padding_196[2];
     m3d::ui::Wnd* m_wndText;
     ItemModelWnd* m_wndsPortraits[2];
     CinemaPanel::PanelType m_panelType;

@@ -53,7 +53,6 @@ protected:
     void UpdateTooltip();
     void UpdateToleranceColor();
     bool m_bSelected;
-    char Padding_149[3];
     m3d::rend::TexHandle m_texSelection;
 
     static inline MapMarkIcoWnd::AuxInfo m_aif;

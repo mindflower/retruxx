@@ -198,7 +198,6 @@ namespace ai
         CVector m_massCenter;
         dxSpace* m_spaceId;
         bool m_bIsSpaceOwner;
-        char Padding_10[3];
         dBody* m_body;
 
         void _CreateSpace(bool bForUntransfer);
@@ -229,7 +228,6 @@ namespace ai
         int m_bIsUpdatingByODE;
         int m_enabledCellsCount;
         bool m_bBodyEnabledLastFrame;
-        char Padding_11[3];
         int m_skinNumber;
         float m_timeFromLastCollisionEffect;
         static inline m3d::DbgCounter* m_countRelinksToCollisionCells = nullptr;

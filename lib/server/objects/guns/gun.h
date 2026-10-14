@@ -37,7 +37,6 @@ namespace ai
         float m_lowStopAngle;
         float m_highStopAngle;
         bool m_ignoreStopAnglesWhenFire;
-        char Padding_128;
         unsigned short m_explosionType;
         int m_decalId;
         float m_recoilForce;
@@ -48,7 +47,6 @@ namespace ai
         unsigned int m_ShellsPoolSize;
         bool m_WithCharging;
         bool m_WithShellsPoolLimit;
-        char Padding_129[2];
         int m_blastWavePrototypeId;
         ai::FiringTypes m_firingType;
 
@@ -191,7 +189,6 @@ namespace ai
         unsigned int GetBarrelsNum();
         virtual bool _bIsUsingVolley() const;
         virtual bool _bIsVolleyFiring() const;
-        char Padding_35[3];
 
     private:
         int m_shellPrototypeId;
@@ -210,7 +207,6 @@ namespace ai
         m3d::SgNode* m_barrelNode;
         bool m_bWasShot;
         bool m_bJustShot;
-        char Padding_36[2];
         float m_initialHorizAngle;
         CMatrix _CalcMatrixForNextShot() const;
         void _GetCurrentOffsetAngles(float& alpha, float& beta) const;

@@ -96,7 +96,6 @@ protected:
     MainGameInterfaceWnd::AuxInfo m_aif;
     int m_nearbyTownId;
     bool m_bNearbyChests;
-    char Padding_78[3];
     int m_bossId;
     MainGameInterfaceWnd();
     MainGameInterfaceWnd(const MainGameInterfaceWnd& rhs);

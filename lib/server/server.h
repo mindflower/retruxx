@@ -110,7 +110,6 @@ namespace ai
 
     private:
         bool m_StartServerUpdates;
-        char Padding_218[3];
         m3d::CWorld* m_pWorld;
         m3d::Level* m_level;
         ai::DynamicScene* m_pDynamicScene;
@@ -123,7 +122,6 @@ namespace ai
         CVector cam;
         bool PrevState;
         bool fPause;
-        char Padding_219[2];
         int m_lastId;
         float m_averageElapsedTime;
         retruxx::vector<float, retruxx::allocator<float> > m_lastElapsedTimes;
@@ -132,7 +130,6 @@ namespace ai
         bool m_Accumulation;
         bool m_AveElapsedTimeUsed;
         bool m_InCinematic;
-        char Padding_220;
         int m_LastSenderID;
         m3d::Profiler* m_profilerTmpForServer;
         m3d::Profiler* m_collideProfiler;

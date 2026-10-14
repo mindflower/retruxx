@@ -40,7 +40,6 @@ namespace m3d
     struct LPoint
     {
         char name[30];
-        char Padding_306[2];
         float x;
         float y;
         float z;

@@ -298,7 +298,6 @@ namespace m3d
     struct DAnimation
     {
         m3d::DRAFT_AnimationHeader Info;
-        char Padding_201[3];
         retruxx::vector<m3d::DRAFT_HierarchyChange> HierarchyChanges;
         retruxx::vector<retruxx::vector<m3d::DRAFT_Transform>> AnimationKeys;
     };

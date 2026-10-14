@@ -75,11 +75,9 @@ namespace ai
         int m_questId;
         int m_parentQuestId;
         bool m_bSubscribeAutomatic;
-        char Padding_160[3];
         retruxx::vector<int> m_subQuestIds;
         SubQuestCondition m_subQuestCondition;
         bool m_bCheckAllSubQuests;
-        char Padding_161[3];
         retruxx::vector<int> m_subsequentQuestIds;
         retruxx::vector<int> m_precedingQuestIds;
         ConditionToGive m_conditionToGive;
@@ -91,7 +89,6 @@ namespace ai
         CStr m_funcOnFail;
         CStr m_funcOnTake;
         CStr m_funcOnCanBeGiven;
-        char Padding_162[4];
         int64_t m_TimeForComplete;
         retruxx::vector<CStr> m_ActionLevels;
     };

@@ -145,7 +145,6 @@ namespace ai
         void _SetScenegraphNode(const CVector& pos, const Quaternion& rot);
         int _GetCurAnimationFrame() const;
         int _GetNodeRealAnimAction() const;
-        char Padding_31[3];
 
     private:
         ai::PhysicObj* m_ownerPhysicObj;
@@ -153,11 +152,9 @@ namespace ai
 
         static inline m3d::DbgCounter* m_countNodeRelinks = nullptr;
 
-        char Padding_32[3];
         int m_animAction;
         int m_effectAction;
         bool m_bAnimationIsStopped;
-        char Padding_33[3];
         int m_loadedAnimTime;
 
         void _DeleteNode();

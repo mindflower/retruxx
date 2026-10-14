@@ -27,7 +27,6 @@ namespace ai
         retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_loadPoints;
         CStr m_blowEffectName;
         bool m_canBeUsedInAutogenerating;
-        char Padding_127[3];
         float m_repairCoef;
         retruxx::vector<ai::TriMesh*, retruxx::allocator<ai::TriMesh*> > m_modelMeshes;
         retruxx::vector<ai::Box*, retruxx::allocator<ai::Box*> > m_boundsForMeshes;
@@ -155,7 +154,6 @@ namespace ai
     public:
         m3d::SgNode* m_SplashEffect;
         bool m_MakeSplash;
-        char Padding_34[3];
         retruxx::map<int, m3d::SgNode*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, m3d::SgNode*> > > m_decals;
         virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;

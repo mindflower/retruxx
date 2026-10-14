@@ -60,7 +60,6 @@ namespace m3d
     struct LoadSkins
     {
         bool loadAllSkins = true;
-        char Padding_101[3];
         retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > loadSkins;
     };
 
@@ -107,7 +106,6 @@ namespace m3d
         struct HierarchyChange
         {
             short ownIdx;
-            char Padding_244[2];
             m3d::DRAFT_Change changeType;
             short newParentIdx;
         };
@@ -124,7 +122,6 @@ namespace m3d
         struct AnimationTransform
         {
             short idx;
-            char Padding_245[2];
             float tx;
             float ty;
             float tz;
@@ -141,13 +138,11 @@ namespace m3d
             struct Infl
             {
                 short m_boneIdx;
-                char Padding_247[2];
                 float m_boneWeight;
                 CVector m_offsetVec;
                 CVector m_offsetNormal;
             };
 
-            char Padding_248[2];
             m3d::AnimatedModel::Influences::Infl m_influences[4];
         };
 
@@ -213,10 +208,8 @@ namespace m3d
             short m_fps;
             short m_numChanges;
             short m_nextAnimation;
-            char Padding_249[2];
             ActionType m_action;
             char m_name[25];
-            char Padding_250[3];
             m3d::AnimatedModel::HierarchyChange* m_hierChanges;
             m3d::AnimatedModel::AnimationTransform* m_nodesPositions;
         };
@@ -226,18 +219,15 @@ namespace m3d
         static inline CStr m_cubemapTexName;
         static inline CStr m_cubemapTexPath;
         m3d::AnimatedModel::ModelInfo m_header;
-        char Padding_251[2];
         retruxx::string m_Name;
         retruxx::string m_PathToFile;
         bool m_composite;
         bool m_passable;
-        char Padding_252[2];
         m3d::AnimatedModel::Bone* m_boneInitialPos;
         CMatrix m_Dummy;
         m3d::AnimatedModel::Mesh* m_meshes;
         unsigned int m_numMeshes;
         bool m_bVerification;
-        char Padding_253[3];
         m3d::AnimatedModel::Animation* m_animations;
         short m_animRemap[32];
         m3d::DCollisionData m_Collision;
@@ -247,7 +237,6 @@ namespace m3d
         retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > > m_Skins;
         m3d::LoadSkins m_loadSkins;
         bool m_hasCubemap;
-        char Padding_254[3];
         retruxx::vector<m3d::MeshesGroup, retruxx::allocator<m3d::MeshesGroup> > m_MhGroups;
         unsigned int m_cfgSize;
         CStr DefinePathToTexture(const CStr& fileName);
@@ -382,7 +371,6 @@ namespace m3d
 
     protected:
         bool m_Empty;
-        char Padding_270[3];
         m3d::BoneAnim* m_bonesAnim;
         m3d::AnimatedModel* m_forModel;
         m3d::AnimatedModel::Animation* m_curAnimation;
@@ -395,7 +383,6 @@ namespace m3d
         int m_stickToLastFrame;
         int m_blendFramesNum;
         bool m_isBlending;
-        char Padding_271[3];
         m3d::BoneAnim* m_bonesAnimPrev;
         m3d::AnimatedModel::Animation* m_curAnimationPrev;
         int m_curAnimFramePrev;

@@ -75,7 +75,6 @@ private:
 private:
     std::vector<int, std::allocator<int> > m_dynamicUnits;
     bool m_allInstant;
-    char Padding_265[3];
     CONDITION_UNITE m_conditionUnite;
     float* m_pVarVal;
 };

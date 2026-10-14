@@ -16,7 +16,6 @@ namespace m3d
             uint32_t FileDateHigh;
             uint32_t FileDateLow;
             bool IsArchived;
-            char Padding_16[3];
             uint32_t reserved1;
             uint32_t FilePositionDisp2;
             uint32_t FileSizeDisp2Inv;
@@ -61,10 +60,8 @@ namespace m3d
             void* m_hFile;
             void* m_hMapping;
             bool m_UseMapping;
-            char Padding_54[3];
             unsigned int m_NextID;
             bool m_EraseZipBuffers;
-            char Padding_55[3];
             unsigned char* m_Data;
             unsigned int m_FileSize;
             int OpenPackageFile(const char* PackageName);

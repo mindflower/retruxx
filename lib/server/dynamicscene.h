@@ -40,7 +40,6 @@ namespace ai
         struct SoilProps
         {
             short m_splashType;
-            char Padding_30[2];
             CStr m_splashTypeName;
             CStr m_wheelTraceTextureName;
             float m_friction;

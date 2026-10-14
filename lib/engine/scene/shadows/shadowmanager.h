@@ -30,10 +30,8 @@ namespace m3d
 
     private:
         bool m_bIsShadowsEnabled;
-        char Padding_215[3];
         unsigned int m_shadowColor;
         bool m_bInScene;
-        char Padding_216[3];
         CVector m_lightDir;
         m3d::ShadowVolume* m_volumes[100];
         CVector m_objLightDir[100];

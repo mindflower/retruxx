@@ -144,7 +144,6 @@ namespace m3d
             void EraseObstacle(ai::Obstacle* ob);
             const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& GetPhysicObjIds() const;
             const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >& GetObstacles() const;
-            char Padding_152[2];
             retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > m_physicObjIds;
             retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >* m_obstacles;
         };
@@ -190,7 +189,6 @@ namespace m3d
         int m_currWaterQuery;
         bool m_isWaterVisible;
         bool m_currentWaterVis;
-        char Padding_157[2];
         m3d::rend::IbHandle m_shoresIb;
         m3d::rend::VbHandle m_shoresVb;
         m3d::rend::IEffect* m_shoresShader;
@@ -260,12 +258,10 @@ namespace m3d
             float m_h0;
             float m_h1;
             bool m_iswatercell = false;
-            char Padding_153[3];
             float m_minwater;
             float m_maxwater;
             float m_lodDelta[5];
             bool m_lodDeltaCreated = false;
-            char Padding_154[3];
             float m_normalTheta = 0.0;
             CVector m_normalAverage;
         };
@@ -314,7 +310,6 @@ namespace m3d
         void DrawSolidLandscape(m3d::Landscape::LandRenderMode landMode, int lod);
         m3d::CFlare m_flares;
         bool m_dirtyReflection;
-        char Padding_158[3];
         m3d::rend::TexHandle m_texRtReflection;
         m3d::rend::TexHandle m_texRtRefraction;
         m3d::rend::TexHandle m_baseWaterTex;
@@ -491,7 +486,6 @@ namespace m3d
             m3d::CliffGeometryTypes m_cliffGeometryType;
             m3d::CliffOpenEndOrientation m_cliffOrientation;
             bool m_mirrored;
-            char Padding_156[3];
             int m_rotate;
             int m_numVertices;
             int m_numIndices;
@@ -543,7 +537,6 @@ namespace m3d
         m3d::cmn::vector<m3d::cmn::vector<unsigned int> > m_cellsPerTex;
         CStr m_pathTile;
         bool m_loadAllTextures;
-        char Padding_159[3];
         retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_usedTexturesList;
 
     public:
@@ -727,7 +720,6 @@ struct GrassModelInfo
     unsigned short numVerts;
     unsigned short numTris;
     unsigned short numIndices;
-    char Padding_121[2];
     CStr modelName;
     float boundRadius;
 };

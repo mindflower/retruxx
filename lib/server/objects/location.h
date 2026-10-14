@@ -108,14 +108,12 @@ namespace ai
         ai::NumericInRangeRegenerating<float> m_timeForNextCheck;
         std::set<m3d::Class*, std::less<m3d::Class*>, std::allocator<m3d::Class*>> m_targetClasses;
         bool m_bIsActive;
-        char Padding_173[3];
         float m_lookingTimeOut;
         ai::Location::LocationType m_locationType;
         std::set<enum ai::eTolerance, std::less<enum ai::eTolerance>, std::allocator<enum ai::eTolerance>>
             m_toleranceSet;
         CStr m_passageAddress;
         bool m_bPassageActive;
-        char Padding_174[3];
         CStr m_correspondingPassageLocationName;
         std::vector<ai::Npc*, std::allocator<ai::Npc*>> m_npcs;
         int m_numFramesPassed;

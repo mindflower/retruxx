@@ -123,7 +123,6 @@ namespace m3d
         m3d::CinematicState m_state;
         bool m_bWasSkipped;
         bool m_bWasSkippedInEnterFadeOut;
-        char Padding_205[2];
         m3d::CVar m_fadePeriod;
 
         using CinematicItems = std::list<m3d::CinematicItem, std::allocator<m3d::CinematicItem> >;
@@ -188,7 +187,6 @@ namespace m3d
     private:
         std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath> > > m_paths;
         bool m_bDebugMode;
-        char Padding_206[3];
         int m_curDebugPointNum;
         unsigned int m_numConsecutiveItemPlayingNow;
         CVector _GetPointToLookAt() const;

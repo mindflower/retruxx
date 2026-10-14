@@ -20,7 +20,6 @@ namespace m3d
         int m_stripSize;
         m3d::SkidQuad m_last[2];
         bool m_binUse;
-        char Padding_87[3];
         int m_timeStamp;
         int m_lastFramestamp;
         int m_soilType;

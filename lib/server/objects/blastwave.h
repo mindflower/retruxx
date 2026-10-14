@@ -77,7 +77,6 @@ namespace ai
         int m_frameWhenCreated;
         unsigned int m_Frame;
         short m_rocketExplosionType;
-        char Padding_200[2];
         m3d::SgNode* m_EffectNode;
         int m_emitterId;
         bool m_bCollided;

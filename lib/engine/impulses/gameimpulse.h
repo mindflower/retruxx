@@ -52,7 +52,6 @@ namespace m3d
         bool m_isInited;
         bool m_isBinded;
         bool m_bSuppressEvent;
-        char Padding_324;
         std::map<int, m3d::KeyBindStation, std::less<int>, std::allocator<std::pair<int const, m3d::KeyBindStation> > > m_bindings;
         std::map<int, bool, std::less<int>, std::allocator<std::pair<int const, bool> > > m_impulseStates;
         std::map<int, bool, std::less<int>, std::allocator<std::pair<int const, bool> > > m_impulseResetAfterRead;

@@ -47,7 +47,6 @@ protected:
     bool m_bInRotationByHandMode;
     float m_defaultRotationAngleX;
     bool m_bAutosized;
-    char Padding_227[3];
     CVector m_defaultTranslation;
     ItemModelWnd();
     ItemModelWnd(ItemModelWnd const& rhs);

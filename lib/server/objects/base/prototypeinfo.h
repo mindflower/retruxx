@@ -30,7 +30,6 @@ namespace ai
         bool m_bIsUpdating;
         bool m_bVisibleInEncyclopedia;
         bool m_bApplyAffixes;
-        char Padding_13;
         unsigned int m_price;
         virtual  ~PrototypeInfo();
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
@@ -47,7 +46,6 @@ namespace ai
     protected:
         virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs);
         bool m_bIsAbstract;
-        char Padding_14[3];
         CStr m_parentPrototypeName;
 
     private:

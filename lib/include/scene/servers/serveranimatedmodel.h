@@ -74,7 +74,6 @@ namespace m3d
         CVector m_colorSpecular;
         bool m_tessellate = true;
         bool m_alreadyCached = false;
-        char Padding_366[2];
         m3d::MeshMaterialManager m_MeshMaterialManager;
         m3d::ShadowManager* m_ShadowMan = nullptr;
         int m_numShadowingNodes = 0;
@@ -89,7 +88,6 @@ namespace m3d
         bool m_globalFxParamFrameStartTimeNotActuated;
         bool m_globalFxParamTreeBendTermNotActuated;
         bool m_globalFxParamSpecularNotActuated;
-        char Padding_367;
         m3d::rend::IHlslShader* m_impostorVs = nullptr;
         m3d::rend::IHlslShader* m_impostorPs = nullptr;
         void RenderModelForImpostor(m3d::AnimatedModel* mdl, float rotY, int offX, int offY);
@@ -127,14 +125,12 @@ struct DynamicModel
     unsigned char m_numLods;
     unsigned char m_curLod;
     bool m_useImpostors;
-    char Padding_270;
     m3d::rend::TexHandle m_impostorTex;
     m3d::rend::VbHandle m_impostorVb;
     m3d::rend::IbHandle m_impostorIb;
     unsigned short m_numVerts;
     unsigned short m_numTris;
     unsigned short m_numIndices;
-    char Padding_271[2];
     float m_impostorDisplacement;
     void _createImpostorShit();
     void _releaseImpostorShit();

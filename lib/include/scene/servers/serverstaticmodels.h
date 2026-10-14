@@ -20,7 +20,6 @@ namespace m3d
         bool m_preparedToRender = true;
         bool m_alreadyCached = false;
         int PrepareToRender();
-        char Padding_237[2];
         retruxx::vector<unsigned char*, retruxx::allocator<unsigned char*> > m_shots;
         bool m_tessellate = true;
 
@@ -39,7 +38,6 @@ namespace m3d
 
     protected:
         virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override;
-        char Padding_238[3];
 
     private:
         m3d::Profiler* m_profiler = nullptr;
