@@ -15,11 +15,11 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndCounterName;
-        /* 0x000c */ CStr m_strHuntTime;
+        CStr m_wndCounterName;
+        CStr m_strHuntTime;
         AuxInfo(const CounterWnd::AuxInfo&);
         AuxInfo();
-    }; /* size: 0x0018 */
+    };
 
     enum CounterType
     {
@@ -29,9 +29,9 @@ public:
     };
 
 protected:
-    virtual int GameDataSetup() override /* 0x104 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     void OnDynamicQuestStateChanged(void* data);
     int SetupForHuntQuest(int dQuestId);
     void CheckAndShow();
@@ -42,18 +42,18 @@ protected:
     void GetMinAndSecFromTime(float time, int& minutes, int& secundes) const;
     const ai::DynamicQuestHunt* GetQuestHunt() const;
     void OnStartLevel(void* data);
-    /* 0x0220 */ CounterWnd::AuxInfo m_aif;
-    /* 0x0238 */ ElectronicDigitalWnd* m_wndCounter;
-    /* 0x023c */ CounterWnd::CounterType m_counterType;
-    /* 0x0240 */ int m_dQuestId;
+    CounterWnd::AuxInfo m_aif;
+    ElectronicDigitalWnd* m_wndCounter;
+    CounterWnd::CounterType m_counterType;
+    int m_dQuestId;
     CounterWnd();
     CounterWnd(const CounterWnd& rhs);
 
 public:
-    virtual ~CounterWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~CounterWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classCounterWnd;
-}; /* size: 0x0244 */
+};

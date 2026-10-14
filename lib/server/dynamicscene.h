@@ -18,10 +18,10 @@ namespace ai
     class TraceLineCallback
     {
     public:
-        virtual  ~TraceLineCallback() /* 0x00 */;
-        virtual bool CollideId(int) const = 0 /* 0x04 */;
-        virtual bool CollidePhysicObj(const ai::PhysicObj*) const = 0 /* 0x08 */;
-    }; /* size: 0x0004 */
+        virtual  ~TraceLineCallback();
+        virtual bool CollideId(int) const = 0;
+        virtual bool CollidePhysicObj(const ai::PhysicObj*) const = 0;
+    };
 
     class DynamicScene : public m3d::Object
     {
@@ -30,25 +30,25 @@ namespace ai
         DynamicScene(const ai::DynamicScene& __formal);
 
     public:
-        virtual  ~DynamicScene() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
+        virtual  ~DynamicScene() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classDynamicScene;
 
         struct SoilProps
         {
-            /* 0x0000 */ short m_splashType;
-            /* 0x0002 */ char Padding_30[2];
+            short m_splashType;
+            char Padding_30[2];
             CStr m_splashTypeName;
             CStr m_wheelTraceTextureName;
-            /* 0x001c */ float m_friction;
-            /* 0x0020 */ float m_resistance;
-            /* 0x0024 */ int m_idx;
+            float m_friction;
+            float m_resistance;
+            int m_idx;
             SoilProps();
             void LoadFromXml(const m3d::cmn::XmlNode* xmlNode);
-        }; /* size: 0x0028 */
+        };
 
     private:
         retruxx::vector<ai::DynamicScene::SoilProps, retruxx::allocator<ai::DynamicScene::SoilProps> > m_soilProps;
@@ -68,8 +68,8 @@ namespace ai
         retruxx::vector<CStr, retruxx::allocator<CStr> > m_BoVehicleEffectNames;
         retruxx::vector<retruxx::vector<CStr, retruxx::allocator<CStr> >, retruxx::allocator<retruxx::vector<CStr, retruxx::allocator<CStr> > > > m_BoShellEffectNames;
         retruxx::vector<CStr, retruxx::allocator<CStr> > m_decalsNames;
-        /* 0x0144 */ int m_clashDecalId;
-        /* 0x0148 */ float m_physicTimeAccumulator;
+        int m_clashDecalId;
+        float m_physicTimeAccumulator;
 
     public:
         static void __fastcall Clear();
@@ -118,7 +118,7 @@ namespace ai
         void _InitWheelTraces();
         void _RecalcWheelEffectNames();
         void _AddSoilEffectNameForWheelTypeName(const CStr& wheelTypeName);
-    }; /* size: 0x0160 */
+    };
 
     // ODE's broadphase hands every candidate pair here; defined in dynamicscene.cpp.
     void NearCallback(void* data, dxGeom* geom1, dxGeom* geom2);
@@ -134,12 +134,12 @@ namespace ai
     class ObjIdExceptionalTraceLineCallback : public ai::TraceLineCallback
     {
     private:
-        /* 0x0004 */ std::vector<int, std::allocator<int>> m_Exceptions;
+        std::vector<int, std::allocator<int>> m_Exceptions;
 
     public:
         ObjIdExceptionalTraceLineCallback(const ai::ObjIdExceptionalTraceLineCallback&);
         ObjIdExceptionalTraceLineCallback(const std::vector<int, std::allocator<int>>& Exceptions);
-        virtual bool CollideId(int objId) const override /* 0x04 */;
-        virtual bool CollidePhysicObj(const ai::PhysicObj* physicObj) const override /* 0x08 */;
-    }; /* size: 0x0014 */
+        virtual bool CollideId(int objId) const override;
+        virtual bool CollidePhysicObj(const ai::PhysicObj* physicObj) const override;
+    };
 }

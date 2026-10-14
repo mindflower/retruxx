@@ -17,8 +17,8 @@ namespace
         {
             m_soundId = id;
         }
-        /* 0x0000 */ int m_soundId;
-    }; /* size: 0x0004 */
+        int m_soundId;
+    };
 }
 
 namespace m3d

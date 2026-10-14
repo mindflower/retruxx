@@ -16,19 +16,19 @@ class CDevice;
 class HlslShaderImpl : public m3d::rend::IHlslShader
 {
 public:
-    /* 0x0008 */ unsigned int m_numConstants;
-    /* 0x000c */ CStr m_fileName;
-    /* 0x0018 */ std::vector<m3d::rend::CompileParam> m_compileParams;
-    /* 0x0028 */ CStr m_entryPoint;
-    /* 0x0034 */ Profile m_profile;
+    unsigned int m_numConstants;
+    CStr m_fileName;
+    std::vector<m3d::rend::CompileParam> m_compileParams;
+    CStr m_entryPoint;
+    Profile m_profile;
     union
     {
-        /* 0x0038 */ void* m_shader;
-        /* 0x0038 */ IDirect3DVertexShader9* m_vs;
-        /* 0x0038 */ IDirect3DPixelShader9* m_ps;
+        void* m_shader;
+        IDirect3DVertexShader9* m_vs;
+        IDirect3DPixelShader9* m_ps;
     };
-    /* 0x003c */ ID3DXConstantTable* m_constantTable;
-    /* 0x0040 */ unsigned int m_numPrimitives;
+    ID3DXConstantTable* m_constantTable;
+    unsigned int m_numPrimitives;
 
     static CDevice* m_dev;
 
@@ -66,4 +66,4 @@ public:
     void OnDeviceRestore();
     void Invalidate();
     bool IsVertexShader() const;
-}; /* size: 0x0044 */
+};

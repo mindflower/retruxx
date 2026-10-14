@@ -12,11 +12,11 @@ namespace m3d
             GlyphButton(m3d::ui::GlyphButton const& rhs);
 
         public:
-            virtual ~GlyphButton() override /* 0x00 */;
-            virtual Object* Clone() override /* 0x00 */;
+            virtual ~GlyphButton() override;
+            virtual Object* Clone() override;
             static Object* __fastcall CreateObject();
             static Class* __fastcall GetBaseClass();
-            virtual Class* GetClass() const override /* 0x00 */;
+            virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(GlyphButton);
 
             enum GlyphButtonType
@@ -28,9 +28,9 @@ namespace m3d
                 GBTYPE_USER = 4,
             };
 
-            virtual int CreateGlyphButton(BoundsBase<float> const& rc, GlyphButtonType type) /* 0x124 */;
-            virtual int CreateGlyphButton(unsigned int style, BoundsBase<float> const& rc, GlyphButtonType type, CStr const& caption, unsigned int id, rend::TexHandle glyph, rend::TexHandle glyphDisabled) /* 0x124 */;
-            virtual int CreateGlyphButton(unsigned int style, BoundsBase<float> const& rc, GlyphButtonType type, CStr const& caption, unsigned int id, CStr glyphFile, CStr glyphFileDisabled) /* 0x124 */;
+            virtual int CreateGlyphButton(BoundsBase<float> const& rc, GlyphButtonType type);
+            virtual int CreateGlyphButton(unsigned int style, BoundsBase<float> const& rc, GlyphButtonType type, CStr const& caption, unsigned int id, rend::TexHandle glyph, rend::TexHandle glyphDisabled);
+            virtual int CreateGlyphButton(unsigned int style, BoundsBase<float> const& rc, GlyphButtonType type, CStr const& caption, unsigned int id, CStr glyphFile, CStr glyphFileDisabled);
             float GetGlyphHeight();
             void SetGlyphHeight(float height);
             void SetGlyphTexture(rend::TexHandle tex, rend::TexHandle texDisabled);
@@ -40,12 +40,12 @@ namespace m3d
             rend::TexHandle GetGlyphTextureDisabled() const;
 
         protected:
-            virtual int OnPaint(DrawInfo const& di) override /* 0x00 */;
+            virtual int OnPaint(DrawInfo const& di) override;
 
-            /* 0x023c */ rend::TexHandle m_glyphTexture;
-            /* 0x0240 */ rend::TexHandle m_glyphTextureDisabled;
-            /* 0x0244 */ float m_glyphHeight = 0.0f;
-            /* 0x0248 */ float m_space = 0.0f;
-        }; /* size: 0x024c */
+            rend::TexHandle m_glyphTexture;
+            rend::TexHandle m_glyphTextureDisabled;
+            float m_glyphHeight = 0.0f;
+            float m_space = 0.0f;
+        };
     }
 }

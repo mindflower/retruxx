@@ -2408,122 +2408,122 @@ namespace m3d
 #pragma pack(push, 1)
         struct tGamHeader
         {
-            /* 0x0000 */ int16_t iNumTriMeshes;
-            /* 0x0002 */ int16_t iNumSkinMeshes;
-            /* 0x0004 */ int16_t iNumStaticMeshes;
-            /* 0x0006 */ int16_t iNumAnimations;
-            /* 0x0008 */ int16_t iNumMaterials;
-            /* 0x000a */ int16_t iNumBones;
-            /* 0x000c */ uint32_t uCfgSize;
-        }; /* size: 0x0010 */
+            int16_t iNumTriMeshes;
+            int16_t iNumSkinMeshes;
+            int16_t iNumStaticMeshes;
+            int16_t iNumAnimations;
+            int16_t iNumMaterials;
+            int16_t iNumBones;
+            uint32_t uCfgSize;
+        };
 
         struct tGamBone
         {
-            /* 0x0000 */ char cName[40];
-            /* 0x0028 */ int32_t iParentIndex;
-            /* 0x002c */ float fTranslationX;
-            /* 0x0030 */ float fTranslationY;
-            /* 0x0034 */ float fTranslationZ;
-            /* 0x0038 */ float fQuaterninonX;
-            /* 0x003c */ float fQuaterninonY;
-            /* 0x0040 */ float fQuaterninonZ;
-            /* 0x0044 */ float fQuaterninonW;
-            /* 0x0048 */ float fInitialMatrixInv[4][4];
-        }; /* size: 0x0088 */
+            char cName[40];
+            int32_t iParentIndex;
+            float fTranslationX;
+            float fTranslationY;
+            float fTranslationZ;
+            float fQuaterninonX;
+            float fQuaterninonY;
+            float fQuaterninonZ;
+            float fQuaterninonW;
+            float fInitialMatrixInv[4][4];
+        };
 
         struct tGamMeshHeader
         {
-            /* 0x0000 */ char cName[40];
-            /* 0x0028 */ int32_t iMeshType;
-            /* 0x002c */ int32_t iParentId;
-            /* 0x0030 */ uint32_t uGroupId;
-            /* 0x0034 */ int32_t iMaterialNumber;
-            /* 0x0038 */ uint32_t uVertexTypeSize;
-            /* 0x003c */ rend::VertexType vtVertexType;
-            /* 0x0040 */ int32_t iNumVertices;
-            /* 0x0044 */ int32_t iNumFaces;
-        }; /* size: 0x0048 */
+            char cName[40];
+            int32_t iMeshType;
+            int32_t iParentId;
+            uint32_t uGroupId;
+            int32_t iMaterialNumber;
+            uint32_t uVertexTypeSize;
+            rend::VertexType vtVertexType;
+            int32_t iNumVertices;
+            int32_t iNumFaces;
+        };
 
         struct tGamInfluence
         {
-            /* 0x0000 */ int16_t sBoneIdx;
-            /* 0x0002 */ float fBoneWeight;
-            /* 0x0006 */ float fOffsetVecX;
-            /* 0x000a */ float fOffsetVecY;
-            /* 0x000e */ float fOffsetVecZ;
-            /* 0x0012 */ float fOffsetNormalX;
-            /* 0x0016 */ float fOffsetNormalY;
-            /* 0x001a */ float fOffsetNormalZ;
-        }; /* size: 0x001e */
+            int16_t sBoneIdx;
+            float fBoneWeight;
+            float fOffsetVecX;
+            float fOffsetVecY;
+            float fOffsetVecZ;
+            float fOffsetNormalX;
+            float fOffsetNormalY;
+            float fOffsetNormalZ;
+        };
 
         struct tGamInfluences
         {
-            /* 0x0000 */ uint16_t uNumBones;
-            /* 0x0002 */ tGamInfluence pIfluences[4];
-        }; /* size: 0x007a */
+            uint16_t uNumBones;
+            tGamInfluence pIfluences[4];
+        };
 
         struct tGamAabb
         {
-            /* 0x0000 */ float pBox[6];
-        }; /* size: 0x0018 */
+            float pBox[6];
+        };
 
         struct tGamAnimationHeader
         {
-            /* 0x0000 */ char cName[25];
-            /* 0x0019 */ int16_t sNumFrames;
-            /* 0x001b */ int16_t sNumFPS;
-            /* 0x001d */ int16_t sNextAnimation;
-            /* 0x001f */ int16_t sNumChanges;
-            /* 0x0021 */ int16_t sNumNodes;
-            /* 0x0023 */ int32_t Action;
-        }; /* size: 0x0027 */
+            char cName[25];
+            int16_t sNumFrames;
+            int16_t sNumFPS;
+            int16_t sNextAnimation;
+            int16_t sNumChanges;
+            int16_t sNumNodes;
+            int32_t Action;
+        };
 
         struct tGamAnimationHierarchyChange
         {
-            /* 0x0000 */ int32_t Type;
-            /* 0x0004 */ int16_t sIdx;
-            /* 0x0006 */ int16_t sNewParent;
-        }; /* size: 0x0008 */
+            int32_t Type;
+            int16_t sIdx;
+            int16_t sNewParent;
+        };
 
         struct tGamAnimationTransform
         {
-            /* 0x0000 */ int16_t sIdx;
-            /* 0x0002 */ float fTranslationX;
-            /* 0x0006 */ float fTranslationY;
-            /* 0x000a */ float fTranslationZ;
-            /* 0x000e */ float fQuaterninonX;
-            /* 0x0012 */ float fQuaterninonY;
-            /* 0x0016 */ float fQuaterninonZ;
-            /* 0x001a */ float fQuaterninonW;
-        }; /* size: 0x001e */
+            int16_t sIdx;
+            float fTranslationX;
+            float fTranslationY;
+            float fTranslationZ;
+            float fQuaterninonX;
+            float fQuaterninonY;
+            float fQuaterninonZ;
+            float fQuaterninonW;
+        };
 
         struct tGamMaterialHeader
         {
-            /* 0x0000 */ rend::Material mMaterial;
-            /* 0x0044 */ uint32_t uTextureLayersNumber;
-            /* 0x0048 */ char cShaderName[100];
-        }; /* size: 0x00ac */
+            rend::Material mMaterial;
+            uint32_t uTextureLayersNumber;
+            char cShaderName[100];
+        };
 
         struct tGamTextureInfo
         {
-            /* 0x0000 */ char cFileName[40];
-            /* 0x0028 */ uint32_t uUVSet;
-            /* 0x002c */ int32_t Type;
-        }; /* size: 0x0030 */
+            char cFileName[40];
+            uint32_t uUVSet;
+            int32_t Type;
+        };
 
         struct tGamCollisionHeader
         {
-            /* 0x0000 */ uint32_t uPointsNumber;
-            /* 0x0004 */ uint32_t uTrianglesNumber;
-        }; /* size: 0x0008 */
+            uint32_t uPointsNumber;
+            uint32_t uTrianglesNumber;
+        };
 
         struct tGamMeshGroupHeader
         {
-            /* 0x0000 */ char cGroupName[20];
-            /* 0x0014 */ int32_t iVisibleAtOnceMin;
-            /* 0x0018 */ int32_t iVisibleAtOnceMax;
-            /* 0x001c */ uint32_t uNumMeshes;
-        }; /* size: 0x0020 */
+            char cGroupName[20];
+            int32_t iVisibleAtOnceMin;
+            int32_t iVisibleAtOnceMax;
+            uint32_t uNumMeshes;
+        };
 #pragma pack(pop)
 
         static_assert(sizeof(tGamHeader) == 0x0010);

@@ -25,13 +25,13 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_texIdSelected;
-        /* 0x000c */ CStr m_texIdUnselectedOut;
-        /* 0x0018 */ CStr m_texIdUnselectedIn;
-        /* 0x0024 */ CStr m_texIdDisabled;
+        CStr m_texIdSelected;
+        CStr m_texIdUnselectedOut;
+        CStr m_texIdUnselectedIn;
+        CStr m_texIdDisabled;
         AuxInfo(WeaponGroupButton::AuxInfo const& rhs);
         AuxInfo();
-    }; /* size: 0x0030 */
+    };
 
 protected:
     void GetTexturesByState(
@@ -42,9 +42,9 @@ protected:
         m3d::rend::TexHandle& texDown) const;
     void UpdateTextures();
 
-    /* 0x023c */ int m_groupId;
-    /* 0x0240 */ WeaponGroupButton::State m_state;
-    /* 0x0244 */ WeaponGroupButton::AuxInfo m_aif;
+    int m_groupId;
+    WeaponGroupButton::State m_state;
+    WeaponGroupButton::AuxInfo m_aif;
 
     WeaponGroupButton();
     WeaponGroupButton(WeaponGroupButton const& rhs);
@@ -56,7 +56,7 @@ public:
     static m3d::Class* __fastcall GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(WeaponGroupButton);
-}; /* size: 0x0274 */
+};
 
 class WeaponGroupButtonList : public m3d::ui::Wnd
 {
@@ -68,12 +68,12 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndPatternName;
-        /* 0x000c */ CStr m_patternWeaponGroupButtonName;
-        /* 0x0018 */ CStr m_wndPatternWeaponSlotName;
+        CStr m_wndPatternName;
+        CStr m_patternWeaponGroupButtonName;
+        CStr m_wndPatternWeaponSlotName;
         AuxInfo(WeaponGroupButtonList::AuxInfo const& rhs);
         AuxInfo();
-    }; /* size: 0x0024 */
+    };
 
     struct Pattern
     {
@@ -84,19 +84,19 @@ public:
         void DecRef();
         int GetRef() const;
 
-        /* 0x0000 */ m3d::ui::Wnd* m_wndPattern;
-        /* 0x0004 */ ButtonVector m_patternWeaponGroupButtons;
+        m3d::ui::Wnd* m_wndPattern;
+        ButtonVector m_patternWeaponGroupButtons;
         void Clear();
-        /* 0x0014 */ int m_ref;
-    }; /* size: 0x0018 */
+        int m_ref;
+    };
 
 protected:
-    virtual int CreateFromPattern() /* 0x11c */;
-    virtual int CreateChildren() /* 0x120 */;
+    virtual int CreateFromPattern();
+    virtual int CreateChildren();
     static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
     virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-        /* 0xc8 */;
+       ;
     void OnBtnWeaponGroupClick(m3d::ui::Wnd* wndFrom, int wndFromId, m3d::AIParam const& data);
     void OnWeaponGroupChanged();
     void OnVehiclePartChanged(void* data);
@@ -110,9 +110,9 @@ protected:
     void OnKeyBindingsChanged();
     void UpdateButtonsTooltips();
 
-    /* 0x0220 */ WeaponGroupButtonVector m_weaponGroupButtons;
-    /* 0x0230 */ CStr m_gunPartName;
-    /* 0x023c */ int m_vehicleId;
+    WeaponGroupButtonVector m_weaponGroupButtons;
+    CStr m_gunPartName;
+    int m_vehicleId;
     static inline WeaponGroupButtonList::Pattern m_pattern;
     static inline WeaponGroupButtonList::AuxInfo m_aif;
 
@@ -130,4 +130,4 @@ public:
     // WeaponSlotList owns the shared pattern's lifetime, holding a reference
     // across GameDataSetup / destruction.
     friend class WeaponSlotList;
-}; /* size: 0x0240 */
+};

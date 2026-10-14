@@ -38,14 +38,14 @@ namespace m3d
 
         struct FormattedLine
         {
-            /* 0x0000 */ unsigned int m_color;
+            unsigned int m_color;
             CStr m_text;
             PointBase<float> m_origin;
-            /* 0x0018 */ m3d::TextFormatFlags m_format;
-            /* 0x001c */ bool m_isHieroglyphic;
+            m3d::TextFormatFlags m_format;
+            bool m_isHieroglyphic;
             FormattedLine(CStr text);
             FormattedLine();
-        }; /* size: 0x0020 */
+        };
 
         class GfxServer
         {

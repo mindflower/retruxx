@@ -169,8 +169,8 @@ namespace
             return (az * az + ay * ay) + ax * ax > (bz * bz + by * by) + bx * bx;
         }
 
-        /* 0x0000 */ m3d::Landscape::GrassInstance** m_instances;
-        /* 0x0004 */ CVector const& m_cameraPos;
+        m3d::Landscape::GrassInstance** m_instances;
+        CVector const& m_cameraPos;
     };
 }  // namespace
 
@@ -242,9 +242,9 @@ namespace m3d
 
     struct AlphaSpecial
     {
-        /* 0x0000 */ int m_maskindex;
-        /* 0x0004 */ int m_rotate;
-    }; /* size: 0x0008 */
+        int m_maskindex;
+        int m_rotate;
+    };
     ;
 
     AlphaSpecial specialMapper[16] = {

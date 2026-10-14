@@ -31,28 +31,28 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndPortraitName;
-        /* 0x000c */ CStr m_wndPortraitOverlayName;
-        /* 0x0018 */ CStr m_wndTextName;
-        /* 0x0024 */ CStr m_wndUpPanelName;
-        /* 0x0030 */ CStr m_wndDownPanelName;
-        /* 0x003c */ CStr m_wndScrollImageName;
-        /* 0x0048 */ CStr m_wndScrollImageUpOverlayName;
-        /* 0x0054 */ CStr m_wndScrollImageDownOverlayName;
-        /* 0x0060 */ CStr m_wndScrollTextName;
+        CStr m_wndPortraitName;
+        CStr m_wndPortraitOverlayName;
+        CStr m_wndTextName;
+        CStr m_wndUpPanelName;
+        CStr m_wndDownPanelName;
+        CStr m_wndScrollImageName;
+        CStr m_wndScrollImageUpOverlayName;
+        CStr m_wndScrollImageDownOverlayName;
+        CStr m_wndScrollTextName;
         AuxInfo(const CinemaPanel::AuxInfo&);
         AuxInfo();
-    }; /* size: 0x006c */
+    };
     
     struct MessageTimeInfo
     {
-        /* 0x0000 */ int m_msgId;
-        /* 0x0004 */ float m_delay;
+        int m_msgId;
+        float m_delay;
         MessageTimeInfo(int msgId, float delay);
-    }; /* size: 0x0008 */
+    };
 
 protected:
-    /* 0x0220 */ std::deque<CinemaPanel::MessageTimeInfo, std::allocator<CinemaPanel::MessageTimeInfo> > m_msgInfos;
+    std::deque<CinemaPanel::MessageTimeInfo, std::allocator<CinemaPanel::MessageTimeInfo> > m_msgInfos;
 
     enum PanelType
     {
@@ -62,9 +62,9 @@ protected:
     };
 
 protected:
-    virtual int OnPaint(const m3d::ui::DrawInfo& di) override /* 0x88 */;
-    virtual int GameDataSetup() override /* 0x104 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int OnPaint(const m3d::ui::DrawInfo& di) override;
+    virtual int GameDataSetup() override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     int _SetMsg(int msgId);
     int StopSound();
     void UpdateAnimation();
@@ -90,33 +90,33 @@ protected:
     void ClearScroll();
     static const int NUM_PORTRAIT_SLOTS;
     static const int CINEMA_MSG_DEFAULT_TIME;
-    /* 0x0234 */ CinemaPanel::AuxInfo m_aif;
-    /* 0x02a0 */ int m_soundTableId;
-    /* 0x02a4 */ int m_soundChannelId;
-    /* 0x02a8 */ int m_minTimeToExists;
-    /* 0x02ac */ unsigned int m_curMessageStartTime;
-    /* 0x02b0 */ unsigned int m_curMessageEndTime;
-    /* 0x02b4 */ bool m_bIsShowingMessage;
-    /* 0x02b5 */ bool m_bSkipMessage;
-    /* 0x02b6 */ char Padding_196[2];
-    /* 0x02b8 */ m3d::ui::Wnd* m_wndText;
-    /* 0x02bc */ ItemModelWnd* m_wndsPortraits[2];
-    /* 0x02c4 */ CinemaPanel::PanelType m_panelType;
-    /* 0x02c8 */ m3d::ui::ImageWnd* m_wndPortraitOverlay;
-    /* 0x02cc */ m3d::ui::Wnd* m_wndUpPanel;
-    /* 0x02d0 */ m3d::ui::Wnd* m_wndDownPanel;
-    /* 0x02d4 */ m3d::ui::ImageWnd* m_wndScrollImage;
-    /* 0x02d8 */ m3d::ui::ImageWnd* m_wndScrollImageUpOverlay;
-    /* 0x02dc */ m3d::ui::ImageWnd* m_wndScrollImageDownOverlay;
-    /* 0x02e0 */ AutoScrollTextWnd* m_wndScrollText;
+    CinemaPanel::AuxInfo m_aif;
+    int m_soundTableId;
+    int m_soundChannelId;
+    int m_minTimeToExists;
+    unsigned int m_curMessageStartTime;
+    unsigned int m_curMessageEndTime;
+    bool m_bIsShowingMessage;
+    bool m_bSkipMessage;
+    char Padding_196[2];
+    m3d::ui::Wnd* m_wndText;
+    ItemModelWnd* m_wndsPortraits[2];
+    CinemaPanel::PanelType m_panelType;
+    m3d::ui::ImageWnd* m_wndPortraitOverlay;
+    m3d::ui::Wnd* m_wndUpPanel;
+    m3d::ui::Wnd* m_wndDownPanel;
+    m3d::ui::ImageWnd* m_wndScrollImage;
+    m3d::ui::ImageWnd* m_wndScrollImageUpOverlay;
+    m3d::ui::ImageWnd* m_wndScrollImageDownOverlay;
+    AutoScrollTextWnd* m_wndScrollText;
     CinemaPanel();
     CinemaPanel(const CinemaPanel& rhs);
 
 public:
-    virtual  ~CinemaPanel() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual  ~CinemaPanel() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classCinemaPanel;
-}; /* size: 0x02e4 */
+};

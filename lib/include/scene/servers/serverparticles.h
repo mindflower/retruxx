@@ -6,17 +6,17 @@
 
 struct PsInfoForNode
 {
-    /* 0x0000 */ m3d::ParticlesList* m_list = nullptr;
-    /* 0x0004 */ m3d::SgNode* m_nodeForMesh = nullptr;
-    /* 0x0008 */ m3d::DataServer* m_serverForMesh = nullptr;
-    /* 0x000c */ int m_itemForMesh = 0;
-    /* 0x0010 */ int m_numMesh = 0;
-}; /* size: 0x0014 */
+    m3d::ParticlesList* m_list = nullptr;
+    m3d::SgNode* m_nodeForMesh = nullptr;
+    m3d::DataServer* m_serverForMesh = nullptr;
+    int m_itemForMesh = 0;
+    int m_numMesh = 0;
+};
 
 struct ParticleBases
 {
-    /* 0x0000 */ m3d::ParticleBase AllPB[15];
-}; /* size: 0x0618 */
+    m3d::ParticleBase AllPB[15];
+};
 
 namespace m3d
 {
@@ -26,21 +26,21 @@ namespace m3d
     {
     public:
         ParticlesServer();
-        virtual  ~ParticlesServer() override /* 0x00 */;
-        virtual int Init() override /* 0x04 */;
-        virtual int Release() override /* 0x08 */;
-        virtual int AddItem(const char* params, const char* id) override /* 0x0c */;
-        virtual int RemoveItem(int id) override /* 0x18 */;
-        virtual int GetItemProperty(int id, int prop, void* dest) override /* 0x10 */;
-        virtual int SetItemProperty(int id, int prop, void* src) override /* 0x14 */;
-        virtual void UpdateItem(int id, void* params) override /* 0x30 */;
-        virtual void RegisterNode(m3d::SgNode* node) override /* 0x34 */;
-        virtual void UnregisterNode(m3d::SgNode* node) override /* 0x38 */;
-        virtual int SaveAllLoadedEntities(const char* filename) override /* 0x4c */;
+        virtual  ~ParticlesServer() override;
+        virtual int Init() override;
+        virtual int Release() override;
+        virtual int AddItem(const char* params, const char* id) override;
+        virtual int RemoveItem(int id) override;
+        virtual int GetItemProperty(int id, int prop, void* dest) override;
+        virtual int SetItemProperty(int id, int prop, void* src) override;
+        virtual void UpdateItem(int id, void* params) override;
+        virtual void RegisterNode(m3d::SgNode* node) override;
+        virtual void UnregisterNode(m3d::SgNode* node) override;
+        virtual int SaveAllLoadedEntities(const char* filename) override;
         void SaveAllLoadedEntitiesToBPS();
         void ResetItem(m3d::SgNode* node);
-        virtual void RenderItem(int id, void* params) override /* 0x1c */;
-        virtual int RenderNodeSet(m3d::SgNode** nodes, unsigned int numNodes, m3d::RenderNodeInfo rni) override /* 0x20 */;
+        virtual void RenderItem(int id, void* params) override;
+        virtual int RenderNodeSet(m3d::SgNode** nodes, unsigned int numNodes, m3d::RenderNodeInfo rni) override;
 
         using CVectorVector = retruxx::vector<CVector, retruxx::allocator<CVector> >;
 
@@ -51,12 +51,12 @@ namespace m3d
 
     protected:
         void AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist);
-        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override /* 0x58 */;
+        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override;
 
     private:
-        /* 0x0048 */ m3d::Profiler* m_profiler = nullptr;
-        /* 0x004c */ m3d::Profiler* m_profilerUpdate = nullptr;
-    }; /* size: 0x0050 */
+        m3d::Profiler* m_profiler = nullptr;
+        m3d::Profiler* m_profilerUpdate = nullptr;
+    };
 
     extern PoolManager<PsInfoForNode> Info_PoolManager;
     extern PoolManager<m3d::ParticlesList> PL_PoolManager;

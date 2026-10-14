@@ -30,7 +30,7 @@ namespace ai
         void RenderDebugInfo() const;
 
     private:
-        /* 0x0000 */ std::vector<CVector2, std::allocator<CVector2>> m_vehiclePoints;
-        /* 0x0010 */ std::vector<CVector, std::allocator<CVector>> m_cameraPoints;
-    }; /* size: 0x0020 */
+        std::vector<CVector2, std::allocator<CVector2>> m_vehiclePoints;
+        std::vector<CVector, std::allocator<CVector>> m_cameraPoints;
+    };
 }  // namespace ai

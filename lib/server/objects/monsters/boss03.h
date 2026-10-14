@@ -15,30 +15,30 @@ namespace ai
     class Boss03PrototypeInfo : public ai::AnimatedComplexPhysicObjPrototypeInfo
     {
     public:
-        /* 0x0090 */ retruxx::vector<int, retruxx::allocator<int> > m_dronePrototypeIds;
-        /* 0x00a0 */ int m_maxDrones;
-        /* 0x00a4 */ CVector m_droneRelPosition;
-        /* 0x00b0 */ Quaternion m_droneRelRotation;
-        /* 0x00c0 */ float m_maxHealth;
-        /* 0x00c4 */ float m_maxHorizAngularVelocity;
-        /* 0x00c8 */ float m_horizAngularAcceleration;
-        /* 0x00cc */ float m_maxVertAngularVelocity;
-        /* 0x00d0 */ float m_vertAngularAcceleration;
-        /* 0x00d4 */ float m_maxLinearVelocity;
-        /* 0x00d8 */ float m_linearAcceleration;
-        /* 0x00dc */ float m_pathTrackTiltAngle;
-        /* 0x00e0 */ float m_maxShootingTime;
-        /* 0x00e4 */ float m_defaultHover;
-        /* 0x00e8 */ float m_hoverForPlacingDrones;
+        retruxx::vector<int, retruxx::allocator<int> > m_dronePrototypeIds;
+        int m_maxDrones;
+        CVector m_droneRelPosition;
+        Quaternion m_droneRelRotation;
+        float m_maxHealth;
+        float m_maxHorizAngularVelocity;
+        float m_horizAngularAcceleration;
+        float m_maxVertAngularVelocity;
+        float m_vertAngularAcceleration;
+        float m_maxLinearVelocity;
+        float m_linearAcceleration;
+        float m_pathTrackTiltAngle;
+        float m_maxShootingTime;
+        float m_defaultHover;
+        float m_hoverForPlacingDrones;
         Boss03PrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void PostLoad() override /* 0x00 */;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
 
     private:
-        /* 0x00ec */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_dronePrototypeNames;
-    }; /* size: 0x00fc */
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_dronePrototypeNames;
+    };
 
     class Boss03 : public ai::AnimatedComplexPhysicObj
     {
@@ -49,36 +49,36 @@ namespace ai
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss03, ai::Modifier, float, bool>;
 
     protected:
-        virtual  ~Boss03() override /* 0x00 */;
+        virtual  ~Boss03() override;
 
     private:
         Boss03(const ai::Boss03PrototypeInfo& prototypeInfo);
         Boss03(const ai::Boss03&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss03;
-        virtual const ai::Boss03PrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual const ai::Boss03PrototypeInfo* GetPrototypeInfo() const override;
 
     protected:
         static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
+        virtual int GetPropertyId(const char* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
         static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
         enum LiveStatus
         {
@@ -112,17 +112,17 @@ namespace ai
         };
 
     public:
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
-        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x00 */;
-        virtual void CreateChildren() override /* 0x00 */;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-        virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;
-        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override /* 0x00 */;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual bool RemoveChild(ai::Obj* pChild) override;
+        virtual void CreateChildren() override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual bool ApplyModifier(const ai::Modifier& modifier) override;
+        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override;
         bool StartPlacingDrone();
         void StartMoving(const CVector& destination, const CVector& finalDirection);
         void NoticePlayer();
@@ -130,28 +130,28 @@ namespace ai
         float GetHealth() const;
 
     protected:
-        virtual void _InternalPostLoad() override /* 0x00 */;
-        virtual void _InternalCreateVisualPart() override /* 0x00 */;
-        virtual void _Construct(bool bForAnimation) override /* 0x00 */;
+        virtual void _InternalPostLoad() override;
+        virtual void _InternalCreateVisualPart() override;
+        virtual void _Construct(bool bForAnimation) override;
 
     private:
-        /* 0x014c */ ai::NumericInRange<float> m_health;
-        /* 0x01f8 */ CVector m_linearVelocity;
-        /* 0x0204 */ CVector m_relAngularVelocity;
-        /* 0x0210 */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForDrones;
-        /* 0x0220 */ retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForShooting;
-        /* 0x0230 */ ai::Boss03::LiveStatus m_liveStatus;
-        /* 0x0234 */ ai::Boss03::DroneSpawningStatus m_droneSpawningStatus;
-        /* 0x0238 */ float m_dronePlacingTimeout;
-        /* 0x023c */ float m_shootingTimeout;
-        /* 0x0240 */ ai::Boss03::PathTrackingStatus m_pathTrackingStatus;
-        /* 0x0244 */ CVector m_desiredDestination;
-        /* 0x0250 */ CVector m_desiredDirection;
-        /* 0x025c */ ai::Team* m_droneTeam;
-        /* 0x0260 */ CStr m_pathNameForFlyingWithWings;
-        /* 0x026c */ m3d::CameraPath* m_currentFlyPath;
-        /* 0x0270 */ float m_currentFlyTime;
-        /* 0x0274 */ float m_keyPartsMaxDurability;
+        ai::NumericInRange<float> m_health;
+        CVector m_linearVelocity;
+        CVector m_relAngularVelocity;
+        retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForDrones;
+        retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForShooting;
+        ai::Boss03::LiveStatus m_liveStatus;
+        ai::Boss03::DroneSpawningStatus m_droneSpawningStatus;
+        float m_dronePlacingTimeout;
+        float m_shootingTimeout;
+        ai::Boss03::PathTrackingStatus m_pathTrackingStatus;
+        CVector m_desiredDestination;
+        CVector m_desiredDirection;
+        ai::Team* m_droneTeam;
+        CStr m_pathNameForFlyingWithWings;
+        m3d::CameraPath* m_currentFlyPath;
+        float m_currentFlyTime;
+        float m_keyPartsMaxDurability;
         void _UpdateLivePlacingDrones(float elapsedTime);
         void _UpdateLiveFightingWithWings(float elapsedTime);
         void _UpdatePathTracking(float elapsedTime);
@@ -175,5 +175,5 @@ namespace ai
 
     public:
         static void __fastcall Registration();
-    }; /* size: 0x0278 */
+    };
 }

@@ -34,21 +34,21 @@ namespace m3d
         {
             struct
             {
-                /* 0x0000 */ float x;
-                /* 0x0004 */ float y;
-                /* 0x0008 */ float z;
-                /* 0x000c */ float w;
-            }; /* size: 0x0010 */
-            /* 0x0000 */ int id = 0;
-            /* 0x0000 */ float Value;
-            /* 0x0000 */ retruxx::vector<CStr>* m_NameList;
-            /* 0x0000 */ retruxx::vector<int>* m_NumList;
-            /* 0x0000 */ CStr* m_Str;
+                float x;
+                float y;
+                float z;
+                float w;
+            };
+            int id = 0;
+            float Value;
+            retruxx::vector<CStr>* m_NameList;
+            retruxx::vector<int>* m_NumList;
+            CStr* m_Str;
             // retruxx adaptation: an object pointer travelling as an ID (see FromPointer); the slot is
             // pointer-sized already, the shipped build read it back through id.
-            /* 0x0000 */ void* m_ptr;
-        }; /* size: 0x0010 */
-        /* 0x0010 */ m3d::eAIParamType Type = AIPARAM_UNDEFINE;
+            void* m_ptr;
+        };
+        m3d::eAIParamType Type = AIPARAM_UNDEFINE;
         void Detach();
         void Copy(const m3d::AIParam& PParam);
         void ConvertFromString(void* retVal, m3d::eAIParamType ToType) const;
@@ -57,19 +57,19 @@ namespace m3d
 
         struct RepEl
         {
-            /* 0x0000 */ CStr m_prototypeName;
-            /* 0x000c */ int m_Amount;
+            CStr m_prototypeName;
+            int m_Amount;
             bool operator==(const m3d::AIParam::RepEl&);
             RepEl(const m3d::AIParam::RepEl&);
             RepEl(const CStr&, const int&);
-        }; /* size: 0x0010 */
+        };
 
     protected:
         static int __fastcall CompareRepEl(const void*, const void*);
 
     public:
-        /* 0x0014 */ CStr(*NameFromNum)(const m3d::AIParam*, int) = nullptr;
-        /* 0x0018 */ int (*NumFromName)(const m3d::AIParam*, CStr&) = nullptr;
+        CStr(*NameFromNum)(const m3d::AIParam*, int) = nullptr;
+        int (*NumFromName)(const m3d::AIParam*, CStr&) = nullptr;
         void ReadFromString(const CStr& Str);
         void Clear();
         ~AIParam();
@@ -117,5 +117,5 @@ namespace m3d
         CStr GetAsStr() const;
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
-    }; /* size: 0x001c */
+    };
 }

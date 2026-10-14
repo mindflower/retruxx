@@ -26,15 +26,15 @@ namespace ai
     public:
         struct CellAabb
         {
-            /* 0x0000 */ int x0;
-            /* 0x0004 */ int z0;
-            /* 0x0008 */ int x1;
-            /* 0x000c */ int z1;
+            int x0;
+            int z0;
+            int x1;
+            int z1;
             CellAabb();
             ai::Geom::CellAabb& operator+=(ai::Geom::CellAabb const&);
-        }; /* size: 0x0010 */
+        };
 
-        virtual ~Geom() /* 0x00 */;
+        virtual ~Geom();
         dxGeom* GetGeomId() const;
         CVector GetPosition() const;
         Quaternion GetRotation() const;
@@ -58,13 +58,13 @@ namespace ai
         void RelinkToCollisionCells(int physicObjId);
         void CheckCollisionCells();
         ai::Geom::CellAabb GetCollisionCellAabb() const;
-        virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
+        virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
 
     protected:
         Geom(dxGeom* const geomId, void (*movedCallback)(dxGeom*));
-        /* 0x0004 */ dxGeom* m_geomId;
+        dxGeom* m_geomId;
 
     private:
-        /* 0x0008 */ ai::Geom::CellAabb m_curAabb;
-    }; /* size: 0x0018 */
+        ai::Geom::CellAabb m_curAabb;
+    };
 }  // namespace ai

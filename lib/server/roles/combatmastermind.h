@@ -13,6 +13,6 @@ namespace ai
         void GenerateLineOfFireAvoidanceSteeringForces(retruxx::map<int, CVector>& steeringForces);
 
     private:
-        /* 0x0000 */ int m_teamId;
-    }; /* size: 0x0004 */
+        int m_teamId;
+    };
 }

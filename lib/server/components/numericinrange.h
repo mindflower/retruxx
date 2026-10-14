@@ -14,15 +14,15 @@ namespace ai
         using ThisBeforeApplyModifierCallback = ai::MemberFunctionTwoArgsRef<ai::NumericInRange<T>, ai::Modifier, T, bool>;
 
     public:
-        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
-        /* 0x0018 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
-        /* 0x0020 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMaxValueApplyModifier = nullptr;
-        /* 0x0028 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
-        /* 0x0030 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
-        /* 0x0038 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMaxValueChange = nullptr;
-        /* 0x0040 */ ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
-        /* 0x0048 */ ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
-        /* 0x0050 */ ai::FuncPtrOneArg<T, void> m_AfterMaxValueChange = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMaxValueApplyModifier = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeMaxValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterMaxValueChange = nullptr;
 
         NumericInRange(T value, T minValue, T maxValue) :
             m_value(value),
@@ -188,8 +188,8 @@ namespace ai
             // RVA 0x5CDB10 (float) / 0x834FF0 (int)
             return m_BeforeMaxValueApplyModifier(modifier, newValue);
         }
-        /* 0x0058 */ ai::Numeric<T> m_value;
-        /* 0x0074 */ ai::Numeric<T> m_minValue;
-        /* 0x0090 */ ai::Numeric<T> m_maxValue;
-    }; /* size: 0x00ac */
+        ai::Numeric<T> m_value;
+        ai::Numeric<T> m_minValue;
+        ai::Numeric<T> m_maxValue;
+    };
 }

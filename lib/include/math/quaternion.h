@@ -5,10 +5,10 @@ struct CVector;
 
 struct Quaternion
 {
-    /* 0x0000 */ float x = 0.0;
-    /* 0x0004 */ float y = 0.0;
-    /* 0x0008 */ float z = 0.0;
-    /* 0x000c */ float w = 0.0;
+    float x = 0.0;
+    float y = 0.0;
+    float z = 0.0;
+    float w = 0.0;
 
     Quaternion(const CMatrix& m);
     Quaternion(float qx, float qy, float qz, float qw);
@@ -36,7 +36,7 @@ struct Quaternion
     float& operator[](unsigned int i);
     float operator[](unsigned int) const;
     void fromYPR(float Yaw, float Pitch, float Roll);
-}; /* size: 0x0010 */
+};
 
 static_assert(sizeof(Quaternion) == 0x0010);
 

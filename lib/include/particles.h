@@ -27,25 +27,25 @@ namespace m3d
         CVector m_vel;
         CVector m_accel;
         CVector m_dir;
-        /* 0x0054 */ float m_size;
-        /* 0x0058 */ unsigned int m_curClr;
+        float m_size;
+        unsigned int m_curClr;
         CVector m_forigin;
-    }; /* size: 0x0068 */
+    };
 
     struct Particle : public m3d::ParticleBase
     {
-        /* 0x0068 */ int m_trailSize;
-        /* 0x006c */ m3d::ParticleBase* m_trail;
-        /* 0x0070 */ float m_time0;
-        /* 0x0074 */ float m_fade;
-        /* 0x0078 */ float m_ttl;
-        /* 0x007c */ m3d::rend::BlendMode m_blendMode;
-        /* 0x0080 */ m3d::Particle* m_next;
+        int m_trailSize;
+        m3d::ParticleBase* m_trail;
+        float m_time0;
+        float m_fade;
+        float m_ttl;
+        m3d::rend::BlendMode m_blendMode;
+        m3d::Particle* m_next;
         void Step(float dt);
         Particle(const m3d::Particle&);
         Particle();
         ~Particle();
-    }; /* size: 0x0084 */
+    };
 
     class ParticlesList
     {
@@ -58,27 +58,27 @@ namespace m3d
         void SetAutoMeshEmitterPoints(int mode, int numVerts, float radius, CVector point1, CVector point2);
         void SetCurrentXForm(const CMatrix&);
         void Step(float dt);
-        /* 0x0000 */ unsigned int m_maxParticles;
-        /* 0x0004 */ unsigned int m_numParticles;
-        /* 0x0008 */ m3d::Particle* m_particles;
+        unsigned int m_maxParticles;
+        unsigned int m_numParticles;
+        m3d::Particle* m_particles;
         CMatrix m_curXFormToWorld;
-        /* 0x004c */ float m_time;
-        /* 0x0050 */ float m_spriteAngle;
-        /* 0x0054 */ bool m_meshAutoEmitted;
-        /* 0x0055 */ bool m_renderCalled;
-        /* 0x0056 */ bool m_updateCalled;
-        /* 0x0057 */ char Padding_33;
-        /* 0x0058 */ CMatrix** m_local;
-        /* 0x005c */ void** m_meshEmitterVerts;
+        float m_time;
+        float m_spriteAngle;
+        bool m_meshAutoEmitted;
+        bool m_renderCalled;
+        bool m_updateCalled;
+        char Padding_33;
+        CMatrix** m_local;
+        void** m_meshEmitterVerts;
         retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> > m_VertexTypes;
         retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_VertexTypeSizes;
-        /* 0x0080 */ int** m_meshEmitterInds;
-        /* 0x0084 */ int* m_numMeshEmitterVerts;
-        /* 0x0088 */ int* m_numMeshEmitterInds;
-        /* 0x008c */ int m_numMeshes;
-        /* 0x0090 */ int m_numSkinMesh;
-        /* 0x0094 */ m3d::rend::IbHandle* m_skinIb;
-        /* 0x0098 */ unsigned int m_numIb;
+        int** m_meshEmitterInds;
+        int* m_numMeshEmitterVerts;
+        int* m_numMeshEmitterInds;
+        int m_numMeshes;
+        int m_numSkinMesh;
+        m3d::rend::IbHandle* m_skinIb;
+        unsigned int m_numIb;
         CVector m_vel;
         CVector m_accel;
         CVector m_origin;
@@ -86,56 +86,56 @@ namespace m3d
         CVector m_mrotvel;
         CVector m_rotaccel;
         CVector m_worldVel;
-        /* 0x00f0 */ float m_RandShader;
-        /* 0x00f4 */ float m_PhaseTime;
-        /* 0x00f8 */ float m_start1;
+        float m_RandShader;
+        float m_PhaseTime;
+        float m_start1;
         CVector m_point2Max;
         m3d::TraceLineManager m_TLM;
-        /* 0x011c */ float m_maxSize;
-    }; /* size: 0x0120 */
+        float m_maxSize;
+    };
 
     class ParticleSystem
     {
     public:
         CStr m_Name;
         CStr m_ClassName;
-        /* 0x001c */ bool m_Specific;
-        /* 0x001d */ bool m_HaveTrail;
-        /* 0x001e */ char Padding_68[2];
-        /* 0x0020 */ int m_trailLen;
-        /* 0x0024 */ bool m_CreateOne;
-        /* 0x0025 */ bool m_autoMeshEmitter;
-        /* 0x0026 */ char Padding_69[2];
-        /* 0x0028 */ float m_meshradius;
-        /* 0x002c */ int m_points;
+        bool m_Specific;
+        bool m_HaveTrail;
+        char Padding_68[2];
+        int m_trailLen;
+        bool m_CreateOne;
+        bool m_autoMeshEmitter;
+        char Padding_69[2];
+        float m_meshradius;
+        int m_points;
         CVector m_point1;
         CVector m_point2;
         CVector m_point2Max;
-        /* 0x0054 */ int m_colors[20];
-        /* 0x00a4 */ float m_sizes[20];
-        /* 0x00f4 */ PBlendMode m_blendMode;
-        /* 0x00f8 */ bool m_forv;
-        /* 0x00f9 */ bool m_back;
-        /* 0x00fa */ bool m_orient;
-        /* 0x00fb */ char Padding_70;
-        /* 0x00fc */ float m_scaleparts;
-        /* 0x0100 */ bool m_updateXForm;
-        /* 0x0101 */ char Padding_71[3];
-        /* 0x0104 */ float m_SpriteAngle;
-        /* 0x0108 */ int m_TexTiling;
+        int m_colors[20];
+        float m_sizes[20];
+        PBlendMode m_blendMode;
+        bool m_forv;
+        bool m_back;
+        bool m_orient;
+        char Padding_70;
+        float m_scaleparts;
+        bool m_updateXForm;
+        char Padding_71[3];
+        float m_SpriteAngle;
+        int m_TexTiling;
         m3d::rend::TexHandle m_texAdd;
         CStr m_texName;
-        /* 0x011c */ PsShaderType m_shaderType;
-        /* 0x0120 */ m3d::rend::IEffect* m_shader;
+        PsShaderType m_shaderType;
+        m3d::rend::IEffect* m_shader;
         m3d::Emitter m_Emitter;
-        /* 0x0150 */ Force m_x0[3];
-        /* 0x0180 */ CoordinatesSystemType m_x0Cst;
-        /* 0x0184 */ Force m_pos[3];
+        Force m_x0[3];
+        CoordinatesSystemType m_x0Cst;
+        Force m_pos[3];
         retruxx::vector<m3d::Attr*, retruxx::allocator<m3d::Attr*> > m_Attractors;
-        /* 0x01c4 */ float m_parentDependency;
+        float m_parentDependency;
         Aabb m_bBox;
-        /* 0x01e0 */ int m_numvert;
-        /* 0x01e4 */ bool m_backflag;
+        int m_numvert;
+        bool m_backflag;
         static m3d::ParticleSystem* __fastcall New(const CStr& ClassName);
         static m3d::ParticleSystem* __fastcall Factory(const PSProps& psprops, const retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos);
         static m3d::ParticleSystem* __fastcall Factory(const char* fileName);
@@ -143,10 +143,10 @@ namespace m3d
         static void __fastcall SetInterpolateColorsOnLoad(bool c);
         ParticleSystem(const m3d::ParticleSystem&);
         ParticleSystem();
-        virtual  ~ParticleSystem() /* 0x00 */;
-        virtual int Update(m3d::ParticlesList* parts, float lastFrameSecs, float fader) /* 0x04 */;
-        virtual int Render(const CMatrix* local, m3d::ParticlesList* parts) /* 0x08 */;
-        virtual void Reset(m3d::ParticlesList* parts) /* 0x0c */;
+        virtual  ~ParticleSystem();
+        virtual int Update(m3d::ParticlesList* parts, float lastFrameSecs, float fader);
+        virtual int Render(const CMatrix* local, m3d::ParticlesList* parts);
+        virtual void Reset(m3d::ParticlesList* parts);
 
         using CVectorVector = retruxx::vector<CVector, retruxx::allocator<CVector> >;
 
@@ -154,13 +154,13 @@ namespace m3d
         void AddParticle(m3d::ParticlesList* parts, const CVector* pos);
         void AddParticles(m3d::ParticlesList* parts, const retruxx::vector<CVector, retruxx::allocator<CVector> >* newPoses);
         void MoveParticles(m3d::ParticlesList* parts, const retruxx::vector<CVector, retruxx::allocator<CVector> >* newPoses);
-        virtual m3d::cmn::XmlNode* Write(m3d::fs::FileStream& out, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* root, CStr name) /* 0x10 */;
-        virtual int Read(m3d::fs::FileStream& in, m3d::cmn::XmlFile* m_file, m3d::cmn::XmlNode* psroot) /* 0x14 */;
+        virtual m3d::cmn::XmlNode* Write(m3d::fs::FileStream& out, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* root, CStr name);
+        virtual int Read(m3d::fs::FileStream& in, m3d::cmn::XmlFile* m_file, m3d::cmn::XmlNode* psroot);
         int ReadVolumeParams(ref_ptr<m3d::cmn::XmlNode>& force);
         int ReadRenderParams(ref_ptr<m3d::cmn::XmlNode>& vis);
         int ReadMeshParams(ref_ptr<m3d::cmn::XmlNode>& mesh);
-        virtual void ReadFromProtos(const PSProps& psprops, const retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos) /* 0x18 */;
-        virtual void WriteToProtos(PSProps& psprops, retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos) /* 0x1c */;
+        virtual void ReadFromProtos(const PSProps& psprops, const retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos);
+        virtual void WriteToProtos(PSProps& psprops, retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos);
         void InterpolateColors();
         void SetParticleColor(m3d::Particle* pParticle, float fader);
         void setParticleSize(m3d::Particle* p);
@@ -190,9 +190,9 @@ namespace m3d
         int GetTimeDiscretion() const;
         void GetPsMesh(float&, int&) const;
         const CStr& GetTextureName() const;
-        virtual float GetBoundRadius() const /* 0x20 */;
-        virtual bool IsLocal() /* 0x24 */;
-    }; /* size: 0x01e8 */
+        virtual float GetBoundRadius() const;
+        virtual bool IsLocal();
+    };
 
     class StripOnePS : public ParticleSystem
     {

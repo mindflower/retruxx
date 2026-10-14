@@ -15,12 +15,12 @@ namespace ai
         virtual Obj* CreateTargetObject() const;
 
     private:
-        /* 0x0080 */ float m_velocity;
-        /* 0x0084 */ float m_acceleration;
-        /* 0x0088 */ float m_flyTime;
-        /* 0x008c */ int m_blastWavePrototypeId;
-        /* 0x0090 */ CStr m_blastWavePrototypeName;
-    }; /* size: 0x009c */
+        float m_velocity;
+        float m_acceleration;
+        float m_flyTime;
+        int m_blastWavePrototypeId;
+        CStr m_blastWavePrototypeName;
+    };
 
     class MortarShell : public Shell
     {
@@ -49,8 +49,8 @@ namespace ai
         RT_CLASS_DECLARE(MortarShell);
 
     private:
-        /* 0x0150 */ NumericInRangeRegenerating<float> m_lifeTime;
-        /* 0x0228 */ CVector m_initialVelocity;
-        /* 0x0234 */ CVector m_initialPosition;
-    }; /* size: 0x0240 */
+        NumericInRangeRegenerating<float> m_lifeTime;
+        CVector m_initialVelocity;
+        CVector m_initialPosition;
+    };
 }

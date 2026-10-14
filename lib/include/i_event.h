@@ -326,9 +326,9 @@ namespace m3d
 
     struct IEventHandler
     {
-        virtual ~IEventHandler() = default /* 0x00 */;
-        virtual int HandleEvent(m3d::Event const&) = 0 /* 0x04 */;
-    }; /* size: 0x0004 */
+        virtual ~IEventHandler() = default;
+        virtual int HandleEvent(m3d::Event const&) = 0;
+    };
 
     struct Event
     {
@@ -344,7 +344,7 @@ namespace m3d
             unsigned short m_ushortEv[8];
             short m_shortEv[8];
             unsigned char m_byteEv[16];
-        }; /* size: 0x0010 */
+        };
 
         // retruxx adaptation: the shipped build also viewed the union above as void*[4] and
         // IEventHandler*[4] and passed window and object pointers through it, which only fits
@@ -353,5 +353,5 @@ namespace m3d
         void* m_ptrEv[2] = {};
 
         CStr Dump() const;
-    }; /* size: 0x0048 */
+    };
 }  // namespace m3d

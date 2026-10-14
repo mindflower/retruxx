@@ -23,10 +23,10 @@ public:
     // Where a parameter's D3DX handle lives and what the SPACE annotation says about it.
     struct auxParamDesc
     {
-        /* 0x0000 */ int space;
-        /* 0x0004 */ bool isShared;
-        /* 0x0008 */ D3DXHANDLE d3dxHandle;
-    }; /* size: 0x000c */
+        int space;
+        bool isShared;
+        D3DXHANDLE d3dxHandle;
+    };
 
     // In the original IEffect::TechniqueDesc carries two more fields than HTA's (maxInstances and the user
     // render parameters, 0x44 bytes in all). The executable reads only the HTA part, so the original
@@ -43,27 +43,27 @@ public:
 
         struct UserParam
         {
-            /* 0x0000 */ CStr name;
-            /* 0x000c */ UserParamType type;
-        }; /* size: 0x0010 */
+            CStr name;
+            UserParamType type;
+        };
 
-        /* 0x0030 */ int maxInstances;
-        /* 0x0034 */ std::vector<UserParam> userParams;
-    }; /* size: 0x0044 */
+        int maxInstances;
+        std::vector<UserParam> userParams;
+    };
 
     struct TechniqueDescInternal
     {
-        /* 0x0000 */ TechniqueDesc publicDesc;
-        /* 0x0044 */ D3DXHANDLE handle;
-    }; /* size: 0x0048 */
+        TechniqueDesc publicDesc;
+        D3DXHANDLE handle;
+    };
 
-    /* 0x0008 */ bool m_bApplyGlobalParams;
-    /* 0x000c */ CStr m_fileName;
-    /* 0x0018 */ std::vector<m3d::rend::CompileParam> m_compileParams;
-    /* 0x0028 */ ID3DXEffect* m_effect;
-    /* 0x002c */ bool m_hasBeenValidated;
-    /* 0x002d */ bool m_didNotValidate;
-    /* 0x0030 */ auxParamDesc m_parameterHandles[m3d::rend::IEffect::NumParameters];
+    bool m_bApplyGlobalParams;
+    CStr m_fileName;
+    std::vector<m3d::rend::CompileParam> m_compileParams;
+    ID3DXEffect* m_effect;
+    bool m_hasBeenValidated;
+    bool m_didNotValidate;
+    auxParamDesc m_parameterHandles[m3d::rend::IEffect::NumParameters];
     /* ...... */ nShaderParams m_curParams;
     /* ...... */ unsigned int m_numTechniques;
     /* ...... */ int m_curTechnique;

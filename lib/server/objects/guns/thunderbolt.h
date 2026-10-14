@@ -11,15 +11,15 @@ namespace ai
     class ThunderboltPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        /* 0x0040 */ float m_flyTime;
-        /* 0x0044 */ float m_Damage;
-        /* 0x0048 */ float m_AverageSegmentLength;
+        float m_flyTime;
+        float m_Damage;
+        float m_AverageSegmentLength;
         CStr m_EffectName;
         ThunderboltPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x08 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-    }; /* size: 0x0058 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     // A branching lightning bolt from a ThunderboltLauncher to a set of targets. It lives for
     // m_flyTime seconds, damaging every target a branch touches.
@@ -28,18 +28,18 @@ namespace ai
         friend class ThunderboltPrototypeInfo;
 
     protected:
-        virtual  ~Thunderbolt() override /* 0x00 */;
+        virtual  ~Thunderbolt() override;
 
     private:
         Thunderbolt(const ai::ThunderboltPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classThunderbolt;
-        virtual const ai::ThunderboltPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual const ai::ThunderboltPrototypeInfo* GetPrototypeInfo() const override;
 
         using Points = retruxx::vector<CVector, retruxx::allocator<CVector> >;
         using Segments = retruxx::vector<Segment, retruxx::allocator<Segment> >;
@@ -48,10 +48,10 @@ namespace ai
         {
         private:
             CVector m_Point;
-            /* 0x000c */ int m_ObjId;
-            /* 0x0010 */ bool m_launcher;
-            /* 0x0011 */ bool m_dependant;
-            /* 0x0012 */ char Padding_133[2];
+            int m_ObjId;
+            bool m_launcher;
+            bool m_dependant;
+            char Padding_133[2];
             retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> > m_masterPoints;
 
         public:
@@ -65,7 +65,7 @@ namespace ai
             void setPoint(const CVector& point);
             void setDependencies(const retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> >& dependencies);
             const CVector& getThunderboltPoint();
-        }; /* size: 0x0024 */
+        };
 
         using ThunderboltPoints = retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> >;
         
@@ -74,10 +74,10 @@ namespace ai
         private:
             ai::Thunderbolt::ThunderboltPoint m_Start;
             ai::Thunderbolt::ThunderboltPoint m_Finish;
-            /* 0x0048 */ unsigned int m_nSteps;
-            /* 0x004c */ bool m_EffectCreated;
-            /* 0x004d */ char Padding_134[3];
-            /* 0x0050 */ m3d::SgNode* m_EffectNode;
+            unsigned int m_nSteps;
+            bool m_EffectCreated;
+            char Padding_134[3];
+            m3d::SgNode* m_EffectNode;
             const retruxx::vector<CVector, retruxx::allocator<CVector> >& SegmentFinding(const Segment& seg) const;
 
         public:
@@ -90,14 +90,14 @@ namespace ai
             const CVector& getFinishPoint();
             int getStartObjId() const;
             int getFinishObjId() const;
-        }; /* size: 0x0054 */
+        };
 
         using ThunderboltSegments = retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment> >;
 
     public:
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x80 */;
-        virtual void Remove() override /* 0x54 */;
-        virtual void RenderDebugInfo() const override /* 0xe4 */;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void Remove() override;
+        virtual void RenderDebugInfo() const override;
         void setTargets(const retruxx::vector<CVector, retruxx::allocator<CVector> >& targets);
         void setTargets(const retruxx::vector<int, retruxx::allocator<int> >& targets);
         retruxx::vector<int, retruxx::allocator<int> > getTargets() const;
@@ -105,8 +105,8 @@ namespace ai
         const CVector& getOrigin() const;
         void setSourceId(int S, bool launcher);
         int getSourceId() const;
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const /* 0x110 */;
-        virtual bool CanLookAtTarget() const /* 0x114 */;
+        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const;
+        virtual bool CanLookAtTarget() const;
 
     private:
         ai::NumericInRangeRegenerating<float> m_lifeTime;
@@ -116,5 +116,5 @@ namespace ai
         retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment> > getThunderboltSegmentsInt(ai::Thunderbolt::ThunderboltPoint& org, retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> >& targets);
         void calcThunderboltSegments();
         void Render();
-    }; /* size: 0x01dc */
+    };
 }

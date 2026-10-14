@@ -8,7 +8,7 @@ namespace ai
     class AIMatrix
     {
     private:
-        /* 0x0000 */ ai::DecisionMatrix* m_pDM;
+        ai::DecisionMatrix* m_pDM;
         CStr m_name;
 
     public:
@@ -17,5 +17,5 @@ namespace ai
         ai::DecisionMatrix* GetPtr() const;
         const CStr& GetName() const;
         void Delete();
-    }; /* size: 0x0010 */
+    };
 }

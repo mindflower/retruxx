@@ -400,7 +400,7 @@ namespace m3d
             m3d::rend::Colorf m_ambient;
             m3d::rend::Colorf m_specular;
             m3d::rend::Colorf m_emissive;
-            /* 0x0040 */ float m_specularPower;
+            float m_specularPower;
 
             void init(const m3d::rend::Colorf& diff)
             {
@@ -408,7 +408,7 @@ namespace m3d
                 this->m_diffuse = diff;
                 this->m_ambient = diff;
             }
-        }; /* size: 0x0044 */
+        };
 #pragma pack(pop)
 
         // Stored as-is in model files and passed to the renderer DLLs.
@@ -439,12 +439,12 @@ namespace m3d
             unsigned int GetSize() const;
             m3d::rend::VertexType GetVertexType() const;
             m3d::rend::VbHandle GetVbHandle() const;
-            /* 0x0000 */ uint32_t Offset;
-            /* 0x0004 */ uint32_t Size;
-            /* 0x0008 */ uint32_t RealOffset;
-            /* 0x000c */ m3d::rend::VertexType VertType;
+            uint32_t Offset;
+            uint32_t Size;
+            uint32_t RealOffset;
+            m3d::rend::VertexType VertType;
             m3d::rend::VbHandle Vb;
-        }; /* size: 0x0014 */
+        };
 #pragma pack(pop)
 
         static_assert(sizeof(VbPoolField) == 0x0014);
@@ -455,11 +455,11 @@ namespace m3d
             unsigned int GetOffset() const;
             unsigned int GetSize() const;
             m3d::rend::IbHandle GetIbHandle() const;
-            /* 0x0000 */ uint32_t Offset;
-            /* 0x0004 */ uint32_t Size;
-            /* 0x0008 */ uint32_t RealOffset;
+            uint32_t Offset;
+            uint32_t Size;
+            uint32_t RealOffset;
             m3d::rend::IbHandle Ib;
-        }; /* size: 0x0010 */
+        };
 #pragma pack(pop)
 
         static_assert(sizeof(IbPoolField) == 0x0010);
@@ -474,21 +474,21 @@ namespace m3d
 #pragma pack(push, 4)
         struct LightSource
         {
-            /* 0x0000 */ m3d::rend::LightType m_type;
+            m3d::rend::LightType m_type;
             m3d::rend::Colorf m_diffuse;
             m3d::rend::Colorf m_specular;
             m3d::rend::Colorf m_ambient;
             CVector m_origin;
             CVector m_direction;
-            /* 0x004c */ float m_range;
-            /* 0x0050 */ float m_falloff;
-            /* 0x0054 */ float m_attenuation0;
-            /* 0x0058 */ float m_attenuation1;
-            /* 0x005c */ float m_attenuation2;
-            /* 0x0060 */ float m_theta;
-            /* 0x0064 */ float m_phi;
+            float m_range;
+            float m_falloff;
+            float m_attenuation0;
+            float m_attenuation1;
+            float m_attenuation2;
+            float m_theta;
+            float m_phi;
             void init(m3d::rend::LightType type, const CVector& pos);
-        }; /* size: 0x0068 */
+        };
 #pragma pack(pop)
 
         static_assert(sizeof(LightSource) == 0x0068);
@@ -545,7 +545,7 @@ namespace m3d
             ShaderMacro(const m3d::rend::ShaderMacro&);
             ShaderMacro(const char* n, const char* d);
             ShaderMacro();
-        }; /* size: 0x0018 */
+        };
 #pragma pack(pop)
 
         // Didnt true for x64
@@ -554,16 +554,16 @@ namespace m3d
 #pragma pack(push, 4)
         struct IRenderResource
         {
-            /* 0x0000 */;
+           ;
             IRenderResource(const m3d::rend::IRenderResource&);
             IRenderResource();
-            virtual int AddRef() /* 0x00 */;
-            virtual int Release() /* 0x04 */;
-            virtual int GetRefCount() /* 0x08 */;
-            virtual bool IsValid() const = 0 /* 0x0c */;
-            /* 0x0004 */ int32_t m_refCount;
-            virtual  ~IRenderResource() /* 0x10 */;
-        }; /* size: 0x0008 */
+            virtual int AddRef();
+            virtual int Release();
+            virtual int GetRefCount();
+            virtual bool IsValid() const = 0;
+            int32_t m_refCount;
+            virtual  ~IRenderResource();
+        };
 #pragma pack(pop)
 
         // Didnt true for x64
@@ -596,15 +596,15 @@ namespace m3d
             };
 
         public:
-            virtual m3d::rend::IQuery::Type GetType() const = 0 /* 0x14 */;
-            virtual void Begin() = 0 /* 0x18 */;
-            virtual void End() = 0 /* 0x1c */;
-            virtual m3d::rend::IQuery::State GetState() = 0 /* 0x20 */;
-            virtual const m3d::rend::QueryReturnValue& GetData() = 0 /* 0x24 */;
+            virtual m3d::rend::IQuery::Type GetType() const = 0;
+            virtual void Begin() = 0;
+            virtual void End() = 0;
+            virtual m3d::rend::IQuery::State GetState() = 0;
+            virtual const m3d::rend::QueryReturnValue& GetData() = 0;
 
         protected:
-            virtual  ~IQuery() override /* 0x00 */;
-        }; /* size: 0x0008 */
+            virtual  ~IQuery() override;
+        };
 
         struct IHlslShader : public m3d::rend::IRenderResource
         {
@@ -626,23 +626,23 @@ namespace m3d
             using ParameterHandle = std::uintptr_t;
 
             static const ParameterHandle INVALID_PARAM;
-            virtual unsigned int GetNumberOfParams() const = 0 /* 0x14 */;
-            virtual ParameterHandle GetParamHandleByName(const char*) = 0 /* 0x18 */;
-            virtual void SetInt(ParameterHandle, int) = 0 /* 0x1c */;
-            virtual void SetFloat(ParameterHandle, float) = 0 /* 0x20 */;
-            virtual void SetVector4(ParameterHandle, const CVector4&) = 0 /* 0x24 */;
-            virtual void SetVector3(ParameterHandle, const CVector&) = 0 /* 0x28 */;
-            virtual void SetFloat4(ParameterHandle, const nFloat4&) = 0 /* 0x2c */;
-            virtual void SetMatrix(ParameterHandle, const CMatrix&) = 0 /* 0x30 */;
-            virtual void SetIntArray(ParameterHandle, const int*, int) = 0 /* 0x34 */;
-            virtual void SetFloatArray(ParameterHandle, const float*, int) = 0 /* 0x38 */;
-            virtual void SetFloat4Array(ParameterHandle, const nFloat4*, int) = 0 /* 0x3c */;
-            virtual void SetVector4Array(ParameterHandle, const CVector4*, int) = 0 /* 0x40 */;
-            virtual void SetMatrixArray(ParameterHandle, const CMatrix*, int) = 0 /* 0x44 */;
-            virtual void SetMatrixPointerArray(ParameterHandle, const CMatrix**, int) = 0 /* 0x48 */;
-            virtual void Apply() = 0 /* 0x4c */;
-            virtual  ~IHlslShader() override /* 0x00 */;
-        }; /* size: 0x0008 */
+            virtual unsigned int GetNumberOfParams() const = 0;
+            virtual ParameterHandle GetParamHandleByName(const char*) = 0;
+            virtual void SetInt(ParameterHandle, int) = 0;
+            virtual void SetFloat(ParameterHandle, float) = 0;
+            virtual void SetVector4(ParameterHandle, const CVector4&) = 0;
+            virtual void SetVector3(ParameterHandle, const CVector&) = 0;
+            virtual void SetFloat4(ParameterHandle, const nFloat4&) = 0;
+            virtual void SetMatrix(ParameterHandle, const CMatrix&) = 0;
+            virtual void SetIntArray(ParameterHandle, const int*, int) = 0;
+            virtual void SetFloatArray(ParameterHandle, const float*, int) = 0;
+            virtual void SetFloat4Array(ParameterHandle, const nFloat4*, int) = 0;
+            virtual void SetVector4Array(ParameterHandle, const CVector4*, int) = 0;
+            virtual void SetMatrixArray(ParameterHandle, const CMatrix*, int) = 0;
+            virtual void SetMatrixPointerArray(ParameterHandle, const CMatrix**, int) = 0;
+            virtual void Apply() = 0;
+            virtual  ~IHlslShader() override;
+        };
 
         struct IAsmShader : public m3d::rend::IRenderResource
         {
@@ -652,9 +652,9 @@ namespace m3d
                 PIXEL_SHADER = 1,
             };
 
-            virtual void Apply() = 0 /* 0x14 */;
-            virtual  ~IAsmShader() override /* 0x00 */;
-        }; /* size: 0x0008 */
+            virtual void Apply() = 0;
+            virtual  ~IAsmShader() override;
+        };
 
         struct IEffect : public m3d::rend::IRenderResource
         {
@@ -699,40 +699,40 @@ namespace m3d
             struct TechniqueDesc
             {
                 CStr name;
-                /* 0x000c */ uint32_t numPasses;
+                uint32_t numPasses;
                 CStr briefDesc;
                 CStr vertexFormatStr;
-                /* 0x0028 */ m3d::rend::VertexType vertexFormat;
-                /* 0x002c */ bool tangentSpaceUsed;
-                /* 0x002d */ bool isDefault;
-                /* 0x002e */ bool isPS20;
-                /* 0x002f */ bool useAlpha;
-            }; /* size: 0x0030 */
+                m3d::rend::VertexType vertexFormat;
+                bool tangentSpaceUsed;
+                bool isDefault;
+                bool isPS20;
+                bool useAlpha;
+            };
 #pragma pack(pop)
             // Didnt true for x64
             // static_assert(sizeof(TechniqueDesc) == 0x0030);
 
-            virtual unsigned int GetNumTechniques() const = 0 /* 0x14 */;
-            virtual const m3d::rend::IEffect::TechniqueDesc& GetTechniqueDesc(unsigned int) const = 0 /* 0x18 */;
-            virtual void SetCurTechnique(unsigned int) = 0 /* 0x1c */;
-            virtual unsigned int GetCurTechnique() const = 0 /* 0x20 */;
-            virtual void SetDefaultTechnique(bool) = 0 /* 0x24 */;
-            virtual bool IsParameterUsed(m3d::rend::IEffect::Parameter) = 0 /* 0x28 */;
-            virtual void SetInt(m3d::rend::IEffect::Parameter, int) = 0 /* 0x2c */;
-            virtual void SetFloat(m3d::rend::IEffect::Parameter, float) = 0 /* 0x30 */;
-            virtual void SetVector4(m3d::rend::IEffect::Parameter, const CVector4&) = 0 /* 0x34 */;
-            virtual void SetVector3(m3d::rend::IEffect::Parameter, const CVector&) = 0 /* 0x38 */;
-            virtual void SetFloat4(m3d::rend::IEffect::Parameter, const nFloat4&) = 0 /* 0x3c */;
-            virtual void SetMatrix(m3d::rend::IEffect::Parameter, const CMatrix&) = 0 /* 0x40 */;
-            virtual void SetTexture(m3d::rend::IEffect::Parameter, m3d::rend::TexHandle*) = 0 /* 0x44 */;
-            virtual void SetIntArray(m3d::rend::IEffect::Parameter, const int*, int) = 0 /* 0x48 */;
-            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, const float*, int) = 0 /* 0x4c */;
-            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, const nFloat4*, int) = 0 /* 0x50 */;
-            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, const CVector4*, int) = 0 /* 0x54 */;
-            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, const CMatrix*, int) = 0 /* 0x58 */;
-            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, const CMatrix**, int) = 0 /* 0x5c */;
-            virtual  ~IEffect() override /* 0x00 */;
-        }; /* size: 0x0008 */
+            virtual unsigned int GetNumTechniques() const = 0;
+            virtual const m3d::rend::IEffect::TechniqueDesc& GetTechniqueDesc(unsigned int) const = 0;
+            virtual void SetCurTechnique(unsigned int) = 0;
+            virtual unsigned int GetCurTechnique() const = 0;
+            virtual void SetDefaultTechnique(bool) = 0;
+            virtual bool IsParameterUsed(m3d::rend::IEffect::Parameter) = 0;
+            virtual void SetInt(m3d::rend::IEffect::Parameter, int) = 0;
+            virtual void SetFloat(m3d::rend::IEffect::Parameter, float) = 0;
+            virtual void SetVector4(m3d::rend::IEffect::Parameter, const CVector4&) = 0;
+            virtual void SetVector3(m3d::rend::IEffect::Parameter, const CVector&) = 0;
+            virtual void SetFloat4(m3d::rend::IEffect::Parameter, const nFloat4&) = 0;
+            virtual void SetMatrix(m3d::rend::IEffect::Parameter, const CMatrix&) = 0;
+            virtual void SetTexture(m3d::rend::IEffect::Parameter, m3d::rend::TexHandle*) = 0;
+            virtual void SetIntArray(m3d::rend::IEffect::Parameter, const int*, int) = 0;
+            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, const float*, int) = 0;
+            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, const nFloat4*, int) = 0;
+            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, const CVector4*, int) = 0;
+            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, const CMatrix*, int) = 0;
+            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, const CMatrix**, int) = 0;
+            virtual  ~IEffect() override;
+        };
 
         //IMPORTANT: fields and member order is strict!
         struct IRenderer : public IBase

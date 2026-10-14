@@ -8,7 +8,7 @@ namespace ai
     {
     private:
         retruxx::vector<unsigned int> m_container;
-        /* 0x0010 */ unsigned int m_sideSize = 0;
+        unsigned int m_sideSize = 0;
 
     public:
         PlayerPassMap(const ai::PlayerPassMap&);
@@ -21,5 +21,5 @@ namespace ai
         bool GetValue(unsigned int x, unsigned int y) const;
         void SetValue(unsigned int x, unsigned int y, bool bValue);
         bool IsEmpty() const;
-    }; /* size: 0x0014 */
+    };
 }

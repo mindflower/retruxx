@@ -14,18 +14,18 @@ namespace ai
         BoxyBody(const ai::BoxyBody& rhs);
 
     public:
-        virtual  ~BoxyBody() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual  ~BoxyBody() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoxyBody;
         CVector GetSize() const;
         void SetSize(const CVector&);
-        virtual void SetMass(float newMassValue) override /* 0x160 */;
+        virtual void SetMass(float newMassValue) override;
 
     private:
         const ai::Box* _Box() const;
         ai::Box* _Box();
-    }; /* size: 0x0158 */
+    };
 }

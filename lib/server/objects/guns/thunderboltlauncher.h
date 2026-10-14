@@ -7,11 +7,11 @@ namespace ai
     {
     public:
         ThunderboltLauncherPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x00 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-        /* 0x0198 */ float m_ActionDist;
-    }; /* size: 0x019c */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
+        float m_ActionDist;
+    };
 
     // Throws a branching lightning bolt at every enemy in range on its side of the vehicle.
     class ThunderboltLauncher : public ai::Gun
@@ -19,23 +19,23 @@ namespace ai
         friend class ThunderboltLauncherPrototypeInfo;
 
     protected:
-        virtual ~ThunderboltLauncher() override /* 0x00 */;
+        virtual ~ThunderboltLauncher() override;
 
     private:
         ThunderboltLauncher(const ai::ThunderboltLauncherPrototypeInfo& prototypeInfo);
         ThunderboltLauncher(const ai::ThunderboltLauncher&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(ThunderboltLauncher);
-        virtual const ai::ThunderboltLauncherPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
-        virtual bool CanFire() const override /* 0x190 */;
+        virtual const ai::ThunderboltLauncherPrototypeInfo* GetPrototypeInfo() const override;
+        virtual bool CanFire() const override;
 
     protected:
-        /* 0x0330 */ std::vector<int, std::allocator<int> > m_enemies;
-        virtual void _LaunchShells() override /* 0x198 */;
-    }; /* size: 0x0340 */
+        std::vector<int, std::allocator<int> > m_enemies;
+        virtual void _LaunchShells() override;
+    };
 }

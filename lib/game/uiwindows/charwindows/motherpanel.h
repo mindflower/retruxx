@@ -77,39 +77,39 @@ public:
 
     struct MotherPanel::AuxSuspendedShow
     {
-        /* 0x0000 */ std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>>
+        std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>>
             m_previousPanelsToRemain;
-        /* 0x0010 */ std::vector<
+        std::vector<
             std::pair<enum MotherPanel::ChildPanelId, int>,
             std::allocator<std::pair<enum MotherPanel::ChildPanelId, int>>>
             m_suspendedPanels;
         AuxSuspendedShow(MotherPanel::AuxSuspendedShow const&);
         AuxSuspendedShow();
         void Reset();
-    }; /* size: 0x0020 */
+    };
 
     struct MotherPanel::AuxInfo
     {
-        /* 0x0000 */ CStr m_tabBtnName;
-        /* 0x000c */ CStr m_wndDecorName;
-        /* 0x0018 */ CStr m_wndDecorBarName;
-        /* 0x0024 */ CStr m_wndDecorBgName;
-        /* 0x0030 */ CStr m_btnExitName;
-        /* 0x003c */ CStr m_wndTopPanelName;
-        /* 0x0048 */ CStr m_pickUpSoundName;
+        CStr m_tabBtnName;
+        CStr m_wndDecorName;
+        CStr m_wndDecorBarName;
+        CStr m_wndDecorBgName;
+        CStr m_btnExitName;
+        CStr m_wndTopPanelName;
+        CStr m_pickUpSoundName;
         AuxInfo(MotherPanel::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0054 */
+    };
 
 protected:
-    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int RemoveChild(m3d::Object* w) override /* 0x00 */;
-    virtual int RemoveChildForce(m3d::Object* w) override /* 0x00 */;
+    virtual int OnAfterRemoveFromWndStation() override;
+    virtual int OnBeforeAddToWndStation() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataSetup() override;
+    virtual int RemoveChild(m3d::Object* w) override;
+    virtual int RemoveChildForce(m3d::Object* w) override;
     virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data)
-        override /* 0x00 */;
+        override;
     int AddChildPanel(ref_ptr<ChildPanel> childPanel, MotherPanel::ChildPanelId panelId);
     int RemoveChildPanel(ref_ptr<ChildPanel> childPanel);
     int RemoveChildPanelById(MotherPanel::ChildPanelId panelId);
@@ -143,7 +143,7 @@ protected:
     void ClearPanels(
         std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>> const&
             previousPanelsToRemain);
-    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
     bool CanChildPanelBeLaunchedNow(MotherPanel::ChildPanelId panelId) const;
     void OnEndWndAnimation();
     bool IsPanelPresent(int guiId) const;
@@ -176,34 +176,34 @@ protected:
             std::allocator<std::pair<enum MotherPanel::ChildPanelId, int>>> const& panels);
     void AdjustAnimationOnHidePanel(m3d::ui::Wnd* panel);
     bool PickUpItemsFromGround();
-    /* 0x0224 */ std::map<
+    std::map<
         enum MotherPanel::ChildPanelId,
         ref_ptr<ChildPanel>,
         std::less<enum MotherPanel::ChildPanelId>,
         std::allocator<std::pair<enum MotherPanel::ChildPanelId const, ref_ptr<ChildPanel>>>>
         m_panels;
-    /* 0x0230 */ MotherPanel::AuxSuspendedShow m_suspendedShow;
-    /* 0x0250 */ std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>>
+    MotherPanel::AuxSuspendedShow m_suspendedShow;
+    std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>>
         m_secondPanelLevel;
-    /* 0x0260 */ int m_hackedWorkshopVehicleId;
-    /* 0x0264 */ std::vector<MotherPanelTabButton*, std::allocator<MotherPanelTabButton*>> m_tabButtons;
-    /* 0x0274 */ MotherPanel::Tab m_curTabId;
-    /* 0x0278 */ MotherPanel::Tab m_lastTabId;
-    /* 0x027c */ MotherPanel::AuxInfo m_aif;
-    /* 0x02d0 */ m3d::ui::Wnd* m_wndDecor;
-    /* 0x02d4 */ m3d::ui::ImageWnd* m_wndDecorBar;
-    /* 0x02d8 */ m3d::ui::ButtonWnd* m_btnExit;
-    /* 0x02dc */ ref_ptr<PlayerMoneyWnd> m_wndPlayerMoney;
-    /* 0x02e0 */ m3d::ui::Wnd* m_wndTopPanel;
-    /* 0x02e4 */ bool m_bCurMapLocal;
+    int m_hackedWorkshopVehicleId;
+    std::vector<MotherPanelTabButton*, std::allocator<MotherPanelTabButton*>> m_tabButtons;
+    MotherPanel::Tab m_curTabId;
+    MotherPanel::Tab m_lastTabId;
+    MotherPanel::AuxInfo m_aif;
+    m3d::ui::Wnd* m_wndDecor;
+    m3d::ui::ImageWnd* m_wndDecorBar;
+    m3d::ui::ButtonWnd* m_btnExit;
+    ref_ptr<PlayerMoneyWnd> m_wndPlayerMoney;
+    m3d::ui::Wnd* m_wndTopPanel;
+    bool m_bCurMapLocal;
     MotherPanel();
     MotherPanel(MotherPanel const& rhs);
 
 public:
-    virtual ~MotherPanel() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
+    virtual ~MotherPanel() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classMotherPanel;
-}; /* size: 0x02e8 */
+};

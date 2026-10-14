@@ -58,8 +58,8 @@ namespace m3d
         class tConstStrHashIt;
 
     private:
-        /* 0x0000 */ tStrHash m_hash;
-    }; /* size: 0x000c */
+        tStrHash m_hash;
+    };
 
     // K is the key type: unsigned int as in the original, or a pointer-sized integer where the
     // original keyed by an address (the window station's registry of live windows).
@@ -104,6 +104,6 @@ namespace m3d
         class tConstHashIt;
 
     private:
-        /* 0x0000 */ tHash m_hash;
-    }; /* size: 0x0028 */
+        tHash m_hash;
+    };
 }

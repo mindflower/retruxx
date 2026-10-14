@@ -10,52 +10,52 @@ namespace ai
     {
     public:
         WanderersManagerPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-    }; /* size: 0x0040 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class WanderersManager : public ai::Obj
     {
         friend class WanderersManagerPrototypeInfo;
     protected:
-        virtual  ~WanderersManager() override /* 0x00 */;
+        virtual  ~WanderersManager() override;
 
     private:
         WanderersManager(const ai::WanderersManagerPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classWanderersManager;
-        virtual const ai::WanderersManagerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x80 */;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        virtual const ai::WanderersManagerPrototypeInfo* GetPrototypeInfo() const override;
+        virtual int OnEvent(const ai::Event& evn) override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
 
         struct WayPoint
         {
             WayPoint(const ai::WanderersManager::WayPoint& __that);
             WayPoint(bool transition, const CVector2& position, const CStr& wayPointName, int locationId);
-            /* 0x0000 */ bool m_transition;
-            /* 0x0001 */ char Padding_72[3];
+            bool m_transition;
+            char Padding_72[3];
             CVector2 m_position;
-            /* 0x000c */ int m_locationId;
+            int m_locationId;
             CStr m_name;
-        }; /* size: 0x001c */
+        };
         
         struct CaravanInfo
         {
             CStr m_prototypeName;
             retruxx::vector<int, retruxx::allocator<int> > m_wayPointIndices;
             void LoadFromXML(const ai::WanderersManager* manager, m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
-        }; /* size: 0x001c */
+        };
 
     public:
         unsigned int GetCaravansNum() const;
@@ -64,7 +64,7 @@ namespace ai
         const ai::WanderersManager::WayPoint& GetWayPoint(unsigned int) const;
 
     protected:
-        virtual void _InternalPostLoad() override /* 0xfc */;
+        virtual void _InternalPostLoad() override;
 
         using StrToWayPointIndexMap = retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > >;
         using WayPoints = retruxx::vector<ai::WanderersManager::WayPoint, retruxx::allocator<ai::WanderersManager::WayPoint> >;
@@ -75,17 +75,17 @@ namespace ai
 
         struct WandererState
         {
-            /* 0x0000 */ int m_wayPointIndex;
-            /* 0x0004 */ int m_precisePathIndex;
-            /* 0x0008 */ int m_caravanInfoIndex;
-            /* 0x000c */ int m_precisePathBegin;
-            /* 0x0010 */ int m_precisePathEnd;
-            /* 0x0014 */ float m_timeout;
+            int m_wayPointIndex;
+            int m_precisePathIndex;
+            int m_caravanInfoIndex;
+            int m_precisePathBegin;
+            int m_precisePathEnd;
+            float m_timeout;
             retruxx::vector<CVector2, retruxx::allocator<CVector2> > m_precisePath;
             WandererState(const ai::WanderersManager::WandererState& __that);
             WandererState();
             void LoadFromXML(ai::WanderersManager* manager, m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
-        }; /* size: 0x0028 */
+        };
 
         using WandererStates = retruxx::map<int, ai::WanderersManager::WandererState, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::WanderersManager::WandererState> > >;
 
@@ -95,13 +95,13 @@ namespace ai
         retruxx::map<retruxx::pair<int, int>, retruxx::vector<CVector2, retruxx::allocator<CVector2> >, retruxx::less<retruxx::pair<int, int> >, retruxx::allocator<retruxx::pair<retruxx::pair<int, int> const, retruxx::vector<CVector2, retruxx::allocator<CVector2> > > > > m_precisePaths;
         retruxx::vector<ai::WanderersManager::CaravanInfo, retruxx::allocator<ai::WanderersManager::CaravanInfo> > m_caravanInfos;
         retruxx::vector<int, retruxx::allocator<int> > m_vagabondPrototypeIds;
-        /* 0x0108 */ int m_maxTeamCount;
-        /* 0x010c */ float m_rebornTimeout;
+        int m_maxTeamCount;
+        float m_rebornTimeout;
         retruxx::map<int, ai::WanderersManager::WandererState, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::WanderersManager::WandererState> > > m_wandererStates;
         retruxx::vector<int, retruxx::allocator<int> > m_waitingVagabonds;
         retruxx::vector<int, retruxx::allocator<int> > m_guardVehiclesIds;
         retruxx::vector<int, retruxx::allocator<int> > m_transitionIndices;
-        /* 0x014c */ float m_timeBeforeReborn;
+        float m_timeBeforeReborn;
         void _LoadWayPointsFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
         void _LoadPrecisePathsFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
         void _LoadCaravansInfoFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
@@ -124,5 +124,5 @@ namespace ai
         void _OnObjectDie(const ai::Event& evn);
         void _OnObjectEntersLocation(const ai::Event& evn);
         void _OnLostGuardsNeedDirection(const ai::Event& evn);
-    }; /* size: 0x0150 */
+    };
 }

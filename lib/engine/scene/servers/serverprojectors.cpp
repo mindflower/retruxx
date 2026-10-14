@@ -22,8 +22,8 @@ namespace
     // projector's description as read from its .xml.
     struct ProjectorProto
     {
-        /* 0x0000 */ int m_radius = 0;
-        /* 0x0004 */ m3d::rend::TexHandle m_texture;
+        int m_radius = 0;
+        m3d::rend::TexHandle m_texture;
     };
 
     // Property id: read a projector's radius back as a float.
@@ -33,8 +33,8 @@ namespace
     // radius.
     struct ProjectorRenderInfo
     {
-        /* 0x0000 */ CMatrix m_xform;
-        /* 0x0040 */ float m_radius;
+        CMatrix m_xform;
+        float m_radius;
     };
 
     float const VISCELL_EDGE_LENGTH_16 = 128.0f;
@@ -42,10 +42,10 @@ namespace
 
 struct ProjectorStats
 {
-    /* 0x0000 */ int numProjToRender;
-    /* 0x0004 */ int numCellsRendered;
-    /* 0x0008 */ int numModelsRendered;
-    /* 0x000c */ int curFrame;
+    int numProjToRender;
+    int numCellsRendered;
+    int numModelsRendered;
+    int curFrame;
 
     void Zero()
     {
@@ -63,7 +63,7 @@ struct ProjectorStats
         this->numProjToRender = 0;
         this->numCellsRendered = 0;
     }
-}; /* size: 0x0010 */
+};
 
 namespace m3d
 {

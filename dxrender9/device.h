@@ -106,15 +106,15 @@ inline int MeshId(MeshHandle const& h)
 // A sub-allocation of a pooled vertex or index buffer (vb_man.cpp / ib_man.cpp).
 struct PoolFieldInfo
 {
-    /* 0x0000 */ unsigned int Size;
-    /* 0x0004 */ unsigned int Offset;
+    unsigned int Size;
+    unsigned int Offset;
 
     // orig 0x634480 device.h:160
     bool operator==(PoolFieldInfo const& A) const
     {
         return Offset == A.Offset && Size == A.Size;
     }
-}; /* size: 0x0008 */
+};
 
 class CDevice : public IRenderer
 {
@@ -122,57 +122,57 @@ public:
     class CVertexBuffer
     {
     public:
-        /* 0x0000 */ IDirect3DVertexBuffer9* m_vb;
-        /* 0x0004 */ D3DVERTEXBUFFER_DESC m_desc;
-        /* 0x001c */ IDirect3DVertexDeclaration9* m_vertexDecl;
-        /* 0x0020 */ int m_vertSz;
-        /* 0x0024 */ int m_curPos;
-        /* 0x0028 */ int m_refs;
-        /* 0x002c */ int m_locked;
-        /* 0x0030 */ int m_lockedAtPresent;
-        /* 0x0034 */ CStr m_vbName;
+        IDirect3DVertexBuffer9* m_vb;
+        D3DVERTEXBUFFER_DESC m_desc;
+        IDirect3DVertexDeclaration9* m_vertexDecl;
+        int m_vertSz;
+        int m_curPos;
+        int m_refs;
+        int m_locked;
+        int m_lockedAtPresent;
+        CStr m_vbName;
 
         CVertexBuffer();
-    }; /* size: 0x0040 */
+    };
 
     class CIndexBuffer
     {
     public:
-        /* 0x0000 */ IDirect3DIndexBuffer9* m_ib;
-        /* 0x0004 */ D3DINDEXBUFFER_DESC m_desc;
-        /* 0x0018 */ int m_curPos;
-        /* 0x001c */ int m_refs;
-        /* 0x0020 */ int m_locked;
+        IDirect3DIndexBuffer9* m_ib;
+        D3DINDEXBUFFER_DESC m_desc;
+        int m_curPos;
+        int m_refs;
+        int m_locked;
 
         CIndexBuffer();
-    }; /* size: 0x0024 */
+    };
 
     // One Direct3D texture object. Several CTexture entries (texture ids) may share a map, and an
     // animated texture owns several maps.
     class CTexMap
     {
     public:
-        /* 0x0000 */ unsigned int m_usage;
-        /* 0x0004 */ D3DPOOL m_pool;
-        /* 0x0008 */ D3DFORMAT m_fmt;
-        /* 0x000c */ unsigned int m_flags;
+        unsigned int m_usage;
+        D3DPOOL m_pool;
+        D3DFORMAT m_fmt;
+        unsigned int m_flags;
         union
         {
-            /* 0x0010 */ D3DSURFACE_DESC m_desc2d;
-            /* 0x0010 */ D3DVOLUME_DESC m_desc3d;
+            D3DSURFACE_DESC m_desc2d;
+            D3DVOLUME_DESC m_desc3d;
         };
         union
         {
-            /* 0x0030 */ IDirect3DBaseTexture9* m_pTex;
-            /* 0x0030 */ IDirect3DTexture9* m_pTex2d;
-            /* 0x0030 */ IDirect3DCubeTexture9* m_pTexCube;
-            /* 0x0030 */ IDirect3DVolumeTexture9* m_pTex3d;
+            IDirect3DBaseTexture9* m_pTex;
+            IDirect3DTexture9* m_pTex2d;
+            IDirect3DCubeTexture9* m_pTexCube;
+            IDirect3DVolumeTexture9* m_pTex3d;
         };
-        /* 0x0034 */ TexType m_type;
-        /* 0x0038 */ CStr m_fileName;
-        /* 0x0044 */ unsigned int m_lastFileSize;
-        /* 0x0048 */ FILETIME m_lastFileDate;
-        /* 0x0050 */ int m_refs;
+        TexType m_type;
+        CStr m_fileName;
+        unsigned int m_lastFileSize;
+        FILETIME m_lastFileDate;
+        int m_refs;
 
         CTexMap();
         ~CTexMap();
@@ -182,377 +182,377 @@ public:
         bool Is2D();
         bool IsCube();
         bool Is3D();
-    }; /* size: 0x0054 */
+    };
 
     // A texture id as seen by the engine: sampler state plus the maps it is made of.
     class CTexture
     {
     public:
-        /* 0x0000 */ D3DTEXTUREADDRESS m_address[3];
-        /* 0x000c */ D3DTEXTUREFILTERTYPE m_magFilter;
-        /* 0x0010 */ D3DTEXTUREFILTERTYPE m_minFilter;
-        /* 0x0014 */ D3DTEXTUREFILTERTYPE m_mipFilter;
-        /* 0x0018 */ unsigned int m_borderColor;
-        /* 0x001c */ int m_maxAnisotropy;
-        /* 0x0020 */ float m_lodBias;
-        /* 0x0024 */ int m_lodMax;
-        /* 0x0028 */ int m_refs;
-        /* 0x002c */ int m_fps;
-        /* 0x0030 */ unsigned int m_looped;
-        /* 0x0038 */ double m_timeStamp;  // the PDB says float, the constructor stores 8 bytes
-        /* 0x0040 */ CStr m_fileName;
-        /* 0x004c */ std::vector<CTexMap*> m_maps;
+        D3DTEXTUREADDRESS m_address[3];
+        D3DTEXTUREFILTERTYPE m_magFilter;
+        D3DTEXTUREFILTERTYPE m_minFilter;
+        D3DTEXTUREFILTERTYPE m_mipFilter;
+        unsigned int m_borderColor;
+        int m_maxAnisotropy;
+        float m_lodBias;
+        int m_lodMax;
+        int m_refs;
+        int m_fps;
+        unsigned int m_looped;
+        double m_timeStamp;  // the PDB says float, the constructor stores 8 bytes
+        CStr m_fileName;
+        std::vector<CTexMap*> m_maps;
 
         CTexture();
         CTexture(CTexture const& that);
         ~CTexture();
         int addRef();
         int release();
-    }; /* size: 0x0060 */
+    };
 
     class CMesh
     {
     public:
-        /* 0x0000 */ ID3DXMesh* m_mesh;
-        /* 0x0004 */ ID3DXPMesh* m_pmesh;
-        /* 0x0008 */ int m_refs;
-        /* 0x000c */ void* m_verts;
-        /* 0x0010 */ int m_numVerts;
-        /* 0x0014 */ unsigned short* m_indices;
-        /* 0x0018 */ int m_numTris;
-        /* 0x001c */ VertexType m_vertexType;
+        ID3DXMesh* m_mesh;
+        ID3DXPMesh* m_pmesh;
+        int m_refs;
+        void* m_verts;
+        int m_numVerts;
+        unsigned short* m_indices;
+        int m_numTris;
+        VertexType m_vertexType;
 
         CMesh();
-    }; /* size: 0x0020 */
+    };
 
     // Key of the effect and HLSL shader caches: file name plus compile parameters.
     struct ShaderIdData
     {
-        /* 0x0000 */ CStr filename;
-        /* 0x000c */ std::vector<CompileParam> compileParams;
+        CStr filename;
+        std::vector<CompileParam> compileParams;
 
         ShaderIdData(CStr const& fname, std::vector<CompileParam> const& cp);
         bool operator<(ShaderIdData const& a) const;
-    }; /* size: 0x001c */
+    };
 
     struct MacroData
     {
-        /* 0x0000 */ ShaderMacro macro;
-        /* 0x0018 */ bool userDefined;
+        ShaderMacro macro;
+        bool userDefined;
 
         MacroData();
-    }; /* size: 0x001c */
+    };
 
     struct DXCursorInfo
     {
-        /* 0x0000 */ TexHandle m_texId;
-        /* 0x0004 */ int m_xHotSpot;
-        /* 0x0008 */ int m_yHotSpot;
-        /* 0x000c */ int m_frame;
+        TexHandle m_texId;
+        int m_xHotSpot;
+        int m_yHotSpot;
+        int m_frame;
 
         DXCursorInfo();
         void SetUp(TexHandle const& texId, int xHotSpot, int yHotSpot, int frame);
-    }; /* size: 0x0010 */
+    };
 
-    /* 0x0004 */ int m_refCount;
-    /* 0x0008 */ IBase* m_parent;
-    /* 0x000c */ int m_presents;
+    int m_refCount;
+    IBase* m_parent;
+    int m_presents;
 
     // vb_man.cpp
-    /* 0x0010 */ std::vector<CVertexBuffer> m_vbs;
-    /* 0x0020 */ std::vector<VertexType> m_VbPoolTypes;
-    /* 0x0030 */ std::vector<std::vector<VbHandle>> m_VbPoolBuffers;
-    /* 0x0040 */ std::vector<std::list<PoolFieldInfo>> m_VbPoolFields;
-    /* 0x0050 */ unsigned int const m_VbPoolSize;
+    std::vector<CVertexBuffer> m_vbs;
+    std::vector<VertexType> m_VbPoolTypes;
+    std::vector<std::vector<VbHandle>> m_VbPoolBuffers;
+    std::vector<std::list<PoolFieldInfo>> m_VbPoolFields;
+    unsigned int const m_VbPoolSize;
 
     // ib_man.cpp
-    /* 0x0054 */ std::vector<CIndexBuffer> m_ibs;
-    /* 0x0064 */ std::vector<IbHandle> m_IbPoolBuffers;
-    /* 0x0074 */ std::list<PoolFieldInfo> m_IbPoolFields;
-    /* 0x0080 */ unsigned int const m_IbPoolSize;
+    std::vector<CIndexBuffer> m_ibs;
+    std::vector<IbHandle> m_IbPoolBuffers;
+    std::list<PoolFieldInfo> m_IbPoolFields;
+    unsigned int const m_IbPoolSize;
 
     // texture_man.cpp
-    /* 0x0084 */ std::vector<CTexMap*> m_texMaps;
-    /* 0x0094 */ std::vector<CTexture> m_textures;
-    /* 0x00a4 */ TexHandle m_texFrameBufer;
-    /* 0x00a8 */ std::map<int, TexHandle> m_texBufferedRT;
+    std::vector<CTexMap*> m_texMaps;
+    std::vector<CTexture> m_textures;
+    TexHandle m_texFrameBufer;
+    std::map<int, TexHandle> m_texBufferedRT;
 
     // mesh.cpp
-    /* 0x00b4 */ std::vector<CMesh> m_meshes;
+    std::vector<CMesh> m_meshes;
 
-    /* 0x00c4 */ D3DPRESENT_PARAMETERS m_d3dpp;
-    /* 0x00fc */ IDirect3D9* m_pD3D;
-    /* 0x0100 */ IDirect3DDevice9* m_pd3dDevice;
-    /* 0x0104 */ D3DCAPS9 m_d3dCaps;
-    /* 0x0234 */ D3DSURFACE_DESC m_d3dsdBackBuffer;
-    /* 0x0254 */ D3DDISPLAYMODE m_desktopMode;
-    /* 0x0264 */ D3DFORMAT m_surfaceFormat;
-    /* 0x0268 */ D3DFORMAT m_texFormat[2][2];  // [useAlpha][compressed]
-    /* 0x0278 */ D3DFORMAT m_texFormatRt;
-    /* 0x027c */ D3DFORMAT m_texFormatShadow;
-    /* 0x0280 */ D3DFORMAT m_texFormatDepth;
-    /* 0x0284 */ D3DFORMAT m_depthStencilFormat;
-    /* 0x0288 */ D3DFORMAT m_depthStencilFormatRt;
+    D3DPRESENT_PARAMETERS m_d3dpp;
+    IDirect3D9* m_pD3D;
+    IDirect3DDevice9* m_pd3dDevice;
+    D3DCAPS9 m_d3dCaps;
+    D3DSURFACE_DESC m_d3dsdBackBuffer;
+    D3DDISPLAYMODE m_desktopMode;
+    D3DFORMAT m_surfaceFormat;
+    D3DFORMAT m_texFormat[2][2];  // [useAlpha][compressed]
+    D3DFORMAT m_texFormatRt;
+    D3DFORMAT m_texFormatShadow;
+    D3DFORMAT m_texFormatDepth;
+    D3DFORMAT m_depthStencilFormat;
+    D3DFORMAT m_depthStencilFormatRt;
 
     // rendertarget.cpp: the render-to-texture state ("rts")
-    /* 0x028c */ IDirect3DSurface9* m_rtsPtr;
-    /* 0x0290 */ IDirect3DSurface9* m_rtsSaveZs;
-    /* 0x0294 */ IDirect3DSurface9* m_rtsSaveColor;
-    /* 0x0298 */ IDirect3DSurface9* m_rtsNewZs;
-    /* 0x029c */ std::map<unsigned int, IDirect3DSurface9*> m_rtsZSurfaces;
-    /* 0x02a8 */ int m_rtsWantZ;
-    /* 0x02ac */ Viewport m_rtsSaveViewport;
+    IDirect3DSurface9* m_rtsPtr;
+    IDirect3DSurface9* m_rtsSaveZs;
+    IDirect3DSurface9* m_rtsSaveColor;
+    IDirect3DSurface9* m_rtsNewZs;
+    std::map<unsigned int, IDirect3DSurface9*> m_rtsZSurfaces;
+    int m_rtsWantZ;
+    Viewport m_rtsSaveViewport;
 
-    /* 0x02c4 */ bool m_haveStencil;
-    /* 0x02c5 */ bool m_haveTwoSidedStencil;
-    /* 0x02c6 */ D3DGAMMARAMP m_gamma;
+    bool m_haveStencil;
+    bool m_haveTwoSidedStencil;
+    D3DGAMMARAMP m_gamma;
 
     // matrices.cpp
-    /* 0x08c8 */ CMatrix m_matViewStack[64];
-    /* 0x18c8 */ CMatrix m_matInvView;
-    /* 0x1908 */ int m_matViewStackTop;
-    /* 0x190c */ bool m_matViewIsNotActuated;
-    /* 0x190d */ bool m_matInvViewIsNotActuated;
-    /* 0x190e */ bool m_matWorldIsNotActuated;
-    /* 0x1910 */ CMatrix m_matProjStack[64];
-    /* 0x2910 */ int m_matProjStackTop;
-    /* 0x2914 */ CMatrix m_matWorldStack[64];
-    /* 0x3914 */ int m_matWorldStackTop;
+    CMatrix m_matViewStack[64];
+    CMatrix m_matInvView;
+    int m_matViewStackTop;
+    bool m_matViewIsNotActuated;
+    bool m_matInvViewIsNotActuated;
+    bool m_matWorldIsNotActuated;
+    CMatrix m_matProjStack[64];
+    int m_matProjStackTop;
+    CMatrix m_matWorldStack[64];
+    int m_matWorldStackTop;
 
-    /* 0x3918 */ Viewport m_curViewport;
-    /* 0x3930 */ D3DVIEWPORT9 m_curViewportD3D;
-    /* 0x3948 */ std::vector<m3d::IDeviceResetCallback*> m_resetCallbacks;
+    Viewport m_curViewport;
+    D3DVIEWPORT9 m_curViewportD3D;
+    std::vector<m3d::IDeviceResetCallback*> m_resetCallbacks;
 
     // The Direct3D state cache (rstCaches / the set* wrappers)
-    /* 0x3958 */ unsigned int m_curFVF;
-    /* 0x395c */ IDirect3DVertexDeclaration9* m_curVertexDecl;
-    /* 0x3960 */ IDirect3DVertexBuffer9* m_curVb[4];
-    /* 0x3970 */ unsigned int m_curStride[4];
-    /* 0x3980 */ IDirect3DIndexBuffer9* m_curIb;
-    /* 0x3984 */ unsigned int m_curIbBaseIdx;
-    /* 0x3988 */ IDirect3DBaseTexture9* m_curTexStages[8];
-    /* 0x39a8 */ unsigned int m_curTexStagesStates[8][33];
-    /* 0x3dc8 */ unsigned int m_curTexSamplerStates[8][14];
-    /* 0x3f88 */ unsigned int m_curStreamFreq[8];
-    /* 0x3fa8 */ unsigned int m_curRenderState[210];
-    /* 0x42f0 */ IDirect3DIndexBuffer9* m_latchedIb;
-    /* 0x42f4 */ unsigned int m_latchedIbBaseIdx;
-    /* 0x42f8 */ CMatrix m_curXForms[512];
-    /* 0xc2f8 */ bool m_latchedCheck;
-    /* 0xc2fc */ IDirect3DVertexShader9* m_curVertexShader;
-    /* 0xc300 */ IDirect3DPixelShader9* m_curPixelShader;
+    unsigned int m_curFVF;
+    IDirect3DVertexDeclaration9* m_curVertexDecl;
+    IDirect3DVertexBuffer9* m_curVb[4];
+    unsigned int m_curStride[4];
+    IDirect3DIndexBuffer9* m_curIb;
+    unsigned int m_curIbBaseIdx;
+    IDirect3DBaseTexture9* m_curTexStages[8];
+    unsigned int m_curTexStagesStates[8][33];
+    unsigned int m_curTexSamplerStates[8][14];
+    unsigned int m_curStreamFreq[8];
+    unsigned int m_curRenderState[210];
+    IDirect3DIndexBuffer9* m_latchedIb;
+    unsigned int m_latchedIbBaseIdx;
+    CMatrix m_curXForms[512];
+    bool m_latchedCheck;
+    IDirect3DVertexShader9* m_curVertexShader;
+    IDirect3DPixelShader9* m_curPixelShader;
 
-    /* 0xc304 */ IDirect3DCubeTexture9* m_NormalizingCubemap;
-    /* 0xc308 */ IDirect3DTexture9* m_SpecularPowerLookup;
+    IDirect3DCubeTexture9* m_NormalizingCubemap;
+    IDirect3DTexture9* m_SpecularPowerLookup;
 
     // Vertex declarations (InitVertexDeclarations)
-    /* 0xc30c */ IDirect3DVertexDeclaration9* m_vdXYZCT1;
-    /* 0xc310 */ IDirect3DVertexDeclaration9* m_vdXYZT1;
-    /* 0xc314 */ IDirect3DVertexDeclaration9* m_vdXYZNT1;
-    /* 0xc318 */ IDirect3DVertexDeclaration9* m_vdXYZNT2;
-    /* 0xc31c */ IDirect3DVertexDeclaration9* m_vdXYZNT3;
-    /* 0xc320 */ IDirect3DVertexDeclaration9* m_vdXYZN;
-    /* 0xc324 */ IDirect3DVertexDeclaration9* m_vdXYZ;
-    /* 0xc328 */ IDirect3DVertexDeclaration9* m_vdXYZW;
-    /* 0xc32c */ IDirect3DVertexDeclaration9* m_vdXYZC;
-    /* 0xc330 */ IDirect3DVertexDeclaration9* m_vdXYZNC;
-    /* 0xc334 */ IDirect3DVertexDeclaration9* m_vdXYZWCT1;
-    /* 0xc338 */ IDirect3DVertexDeclaration9* m_vdXYZWC;
-    /* 0xc33c */ IDirect3DVertexDeclaration9* m_vdXYZNCT1;
-    /* 0xc340 */ IDirect3DVertexDeclaration9* m_vdXYZNCT2;
-    /* 0xc344 */ IDirect3DVertexDeclaration9* m_vdXYZCT2;
-    /* 0xc348 */ IDirect3DVertexDeclaration9* m_vdXYZW4NCT1;
-    /* 0xc34c */ IDirect3DVertexDeclaration9* m_vdXYZW4TNCT1;
-    /* 0xc350 */ IDirect3DVertexDeclaration9* m_vdXYZNT1T;
-    /* 0xc354 */ IDirect3DVertexDeclaration9* m_vdXYZNCT1T;
-    /* 0xc358 */ IDirect3DVertexDeclaration9* m_vdXYZCT1_UVW;
-    /* 0xc35c */ IDirect3DVertexDeclaration9* m_vdXYZCT2_UVW;
-    /* 0xc360 */ IDirect3DVertexDeclaration9* m_vdXYZNCT1_UV2_S1;
-    /* 0xc364 */ IDirect3DVertexDeclaration9* m_vdWaterTest;
-    /* 0xc368 */ IDirect3DVertexDeclaration9* m_vdGrassTest;
-    /* 0xc36c */ IDirect3DVertexDeclaration9* m_vdImpostorTest;
-    /* 0xc370 */ IDirect3DVertexDeclaration9* m_vdYNI;
-    /* 0xc374 */ IDirect3DVertexDeclaration9* m_vdXYZT1I;
-    /* 0xc378 */ IDirect3DVertexDeclaration9* m_vdInstanceId;
-    /* 0xc37c */ std::map<std::pair<IDirect3DVertexDeclaration9*, IDirect3DVertexDeclaration9*>, IDirect3DVertexDeclaration9*>
+    IDirect3DVertexDeclaration9* m_vdXYZCT1;
+    IDirect3DVertexDeclaration9* m_vdXYZT1;
+    IDirect3DVertexDeclaration9* m_vdXYZNT1;
+    IDirect3DVertexDeclaration9* m_vdXYZNT2;
+    IDirect3DVertexDeclaration9* m_vdXYZNT3;
+    IDirect3DVertexDeclaration9* m_vdXYZN;
+    IDirect3DVertexDeclaration9* m_vdXYZ;
+    IDirect3DVertexDeclaration9* m_vdXYZW;
+    IDirect3DVertexDeclaration9* m_vdXYZC;
+    IDirect3DVertexDeclaration9* m_vdXYZNC;
+    IDirect3DVertexDeclaration9* m_vdXYZWCT1;
+    IDirect3DVertexDeclaration9* m_vdXYZWC;
+    IDirect3DVertexDeclaration9* m_vdXYZNCT1;
+    IDirect3DVertexDeclaration9* m_vdXYZNCT2;
+    IDirect3DVertexDeclaration9* m_vdXYZCT2;
+    IDirect3DVertexDeclaration9* m_vdXYZW4NCT1;
+    IDirect3DVertexDeclaration9* m_vdXYZW4TNCT1;
+    IDirect3DVertexDeclaration9* m_vdXYZNT1T;
+    IDirect3DVertexDeclaration9* m_vdXYZNCT1T;
+    IDirect3DVertexDeclaration9* m_vdXYZCT1_UVW;
+    IDirect3DVertexDeclaration9* m_vdXYZCT2_UVW;
+    IDirect3DVertexDeclaration9* m_vdXYZNCT1_UV2_S1;
+    IDirect3DVertexDeclaration9* m_vdWaterTest;
+    IDirect3DVertexDeclaration9* m_vdGrassTest;
+    IDirect3DVertexDeclaration9* m_vdImpostorTest;
+    IDirect3DVertexDeclaration9* m_vdYNI;
+    IDirect3DVertexDeclaration9* m_vdXYZT1I;
+    IDirect3DVertexDeclaration9* m_vdInstanceId;
+    std::map<std::pair<IDirect3DVertexDeclaration9*, IDirect3DVertexDeclaration9*>, IDirect3DVertexDeclaration9*>
         m_combinedVD;
 
-    /* 0xc388 */ int m_maxLights;
-    /* 0xc38c */ int m_inScene;
-    /* 0xc390 */ RenderStats m_stats;
-    /* 0xc3c0 */ DeviceMemStats m_devMemStats;
-    /* 0xc400 */ bool m_isDevMemStatsValid;
-    /* 0xc404 */ HRESULT m_lastResult;
-    /* 0xc408 */ int m_isActive;
+    int m_maxLights;
+    int m_inScene;
+    RenderStats m_stats;
+    DeviceMemStats m_devMemStats;
+    bool m_isDevMemStatsValid;
+    HRESULT m_lastResult;
+    int m_isActive;
 
     // The render state stacks (device.cpp). Each has 64 entries and a top index.
-    /* 0xc40c */ int m_stackAlphaTest[64];
-    /* 0xc50c */ unsigned int m_stackTopAlphaTest;
-    /* 0xc510 */ BlendMode m_stackBlend[64];
-    /* 0xc610 */ unsigned int m_stackTopBlend;
-    /* 0xc614 */ ZbState m_stackZbState[64];
-    /* 0xc714 */ unsigned int m_stackTopZbState;
-    /* 0xc718 */ Cull m_stackCull[64];
-    /* 0xc818 */ unsigned int m_stackTopCull;
-    /* 0xc81c */ CmpFunc m_stackZFunc[64];
-    /* 0xc91c */ unsigned int m_stackTopZFunc;
-    /* 0xc920 */ bool m_stackLighting[64];
-    /* 0xc960 */ unsigned int m_stackTopLighting;
-    /* 0xc964 */ unsigned int m_stackAmbient[64];
-    /* 0xca64 */ unsigned int m_stackTopAmbient;
-    /* 0xca68 */ bool m_stackFog[64];
-    /* 0xcaa8 */ unsigned int m_stackTopFog;
-    /* 0xcaac */ unsigned int m_stackFogColor[64];
-    /* 0xcbac */ unsigned int m_stackTopFogColor;
-    /* 0xcbb0 */ FogMode m_stackFogMode[64];
-    /* 0xccb0 */ unsigned int m_stackTopFogMode;
-    /* 0xccb4 */ float m_stackFogStart[64];
-    /* 0xcdb4 */ unsigned int m_stackTopFogStart;
-    /* 0xcdb8 */ float m_stackFogEnd[64];
-    /* 0xceb8 */ unsigned int m_stackTopFogEnd;
-    /* 0xcebc */ FillMode m_stackFillMode[64];
-    /* 0xcfbc */ unsigned int m_stackTopFillMode;
-    /* 0xcfc0 */ float m_stackZBias[64];
-    /* 0xd0c0 */ unsigned int m_stackTopZBias;
-    /* 0xd0c4 */ float m_stackZBiasSlopeScale[64];
-    /* 0xd1c4 */ unsigned int m_stackTopZBiasSlopeScale;
-    /* 0xd1c8 */ ShadeMode m_stackShadeMode[64];
-    /* 0xd2c8 */ unsigned int m_stackTopShadeMode;
-    /* 0xd2cc */ int m_stackPointSpriteEnable[64];
-    /* 0xd3cc */ unsigned int m_stackTopPointSpriteEnable;
-    /* 0xd3d0 */ int m_stackPointScaleEnable[64];
-    /* 0xd4d0 */ unsigned int m_stackTopPointScaleEnable;
-    /* 0xd4d4 */ float m_stackPointSizeMin[64];
-    /* 0xd5d4 */ unsigned int m_stackTopPointSizeMin;
-    /* 0xd5d8 */ float m_stackPointSizeMax[64];
-    /* 0xd6d8 */ unsigned int m_stackTopPointSizeMax;
-    /* 0xd6dc */ float m_stackPointSize[64];
-    /* 0xd7dc */ unsigned int m_stackTopPointSize;
-    /* 0xd7e0 */ float m_stackPointScaleA[64];
-    /* 0xd8e0 */ unsigned int m_stackTopPointScaleA;
-    /* 0xd8e4 */ float m_stackPointScaleB[64];
-    /* 0xd9e4 */ unsigned int m_stackTopPointScaleB;
-    /* 0xd9e8 */ float m_stackPointScaleC[64];
-    /* 0xdae8 */ unsigned int m_stackTopPointScaleC;
-    /* 0xdaec */ unsigned int m_stackTFactor[64];
-    /* 0xdbec */ unsigned int m_stackTopTFactor;
-    /* 0xdbf0 */ bool m_stackLocalViewer[64];
-    /* 0xdc30 */ unsigned int m_stackTopLocalViewer;
-    /* 0xdc34 */ bool m_stackSpecularLighting[64];
-    /* 0xdc74 */ unsigned int m_stackTopSpecularLighting;
-    /* 0xdc78 */ unsigned int m_stackColorWriteMask[64];
-    /* 0xdd78 */ unsigned int m_stackTopColorWriteMask;
-    /* 0xdd7c */ bool m_stackDithering[64];
-    /* 0xddbc */ unsigned int m_stackTopDithering;
-    /* 0xddc0 */ float m_stackNPatchLevel[64];
-    /* 0xdec0 */ unsigned int m_stackTopNPatchLevel;
-    /* 0xdec4 */ bool m_stackStencilState[64];
-    /* 0xdf04 */ unsigned int m_stackTopStencilState;
-    /* 0xdf08 */ unsigned int m_stackStencilMask[64];
-    /* 0xe008 */ unsigned int m_stackTopStencilMask;
-    /* 0xe00c */ unsigned int m_stackStencilRef[64];
-    /* 0xe10c */ unsigned int m_stackTopStencilRef;
-    /* 0xe110 */ unsigned int m_stackStencilWriteMask[64];
-    /* 0xe210 */ unsigned int m_stackTopStencilWriteMask;
-    /* 0xe214 */ CmpFunc m_stackStencilFunc[64];
-    /* 0xe314 */ unsigned int m_stackTopStencilFunc;
-    /* 0xe318 */ StencilOp m_stackStencilFail[64];
-    /* 0xe418 */ unsigned int m_stackTopStencilFail;
-    /* 0xe41c */ StencilOp m_stackStencilZFail[64];
-    /* 0xe51c */ unsigned int m_stackTopStencilZFail;
-    /* 0xe520 */ StencilOp m_stackStencilPass[64];
-    /* 0xe620 */ unsigned int m_stackTopStencilPass;
-    /* 0xe624 */ bool m_stackStencil2SidedEnable[64];
-    /* 0xe664 */ unsigned int m_stackTopStencil2SidedEnable;
-    /* 0xe668 */ CmpFunc m_stackStencilCcwFunc[64];
-    /* 0xe768 */ unsigned int m_stackTopStencilCcwFunc;
-    /* 0xe76c */ StencilOp m_stackStencilCcwFail[64];
-    /* 0xe86c */ unsigned int m_stackTopStencilCcwFail;
-    /* 0xe870 */ StencilOp m_stackStencilCcwZFail[64];
-    /* 0xe970 */ unsigned int m_stackTopStencilCcwZFail;
-    /* 0xe974 */ StencilOp m_stackStencilCcwPass[64];
-    /* 0xea74 */ unsigned int m_stackTopStencilCcwPass;
-    /* 0xea78 */ bool m_stackMultiSample[64];
-    /* 0xeab8 */ unsigned int m_stackTopMultiSample;
-    /* 0xeabc */ unsigned int m_stackMultiSampleMask[64];
-    /* 0xebbc */ unsigned int m_stackTopMultiSampleMask;
+    int m_stackAlphaTest[64];
+    unsigned int m_stackTopAlphaTest;
+    BlendMode m_stackBlend[64];
+    unsigned int m_stackTopBlend;
+    ZbState m_stackZbState[64];
+    unsigned int m_stackTopZbState;
+    Cull m_stackCull[64];
+    unsigned int m_stackTopCull;
+    CmpFunc m_stackZFunc[64];
+    unsigned int m_stackTopZFunc;
+    bool m_stackLighting[64];
+    unsigned int m_stackTopLighting;
+    unsigned int m_stackAmbient[64];
+    unsigned int m_stackTopAmbient;
+    bool m_stackFog[64];
+    unsigned int m_stackTopFog;
+    unsigned int m_stackFogColor[64];
+    unsigned int m_stackTopFogColor;
+    FogMode m_stackFogMode[64];
+    unsigned int m_stackTopFogMode;
+    float m_stackFogStart[64];
+    unsigned int m_stackTopFogStart;
+    float m_stackFogEnd[64];
+    unsigned int m_stackTopFogEnd;
+    FillMode m_stackFillMode[64];
+    unsigned int m_stackTopFillMode;
+    float m_stackZBias[64];
+    unsigned int m_stackTopZBias;
+    float m_stackZBiasSlopeScale[64];
+    unsigned int m_stackTopZBiasSlopeScale;
+    ShadeMode m_stackShadeMode[64];
+    unsigned int m_stackTopShadeMode;
+    int m_stackPointSpriteEnable[64];
+    unsigned int m_stackTopPointSpriteEnable;
+    int m_stackPointScaleEnable[64];
+    unsigned int m_stackTopPointScaleEnable;
+    float m_stackPointSizeMin[64];
+    unsigned int m_stackTopPointSizeMin;
+    float m_stackPointSizeMax[64];
+    unsigned int m_stackTopPointSizeMax;
+    float m_stackPointSize[64];
+    unsigned int m_stackTopPointSize;
+    float m_stackPointScaleA[64];
+    unsigned int m_stackTopPointScaleA;
+    float m_stackPointScaleB[64];
+    unsigned int m_stackTopPointScaleB;
+    float m_stackPointScaleC[64];
+    unsigned int m_stackTopPointScaleC;
+    unsigned int m_stackTFactor[64];
+    unsigned int m_stackTopTFactor;
+    bool m_stackLocalViewer[64];
+    unsigned int m_stackTopLocalViewer;
+    bool m_stackSpecularLighting[64];
+    unsigned int m_stackTopSpecularLighting;
+    unsigned int m_stackColorWriteMask[64];
+    unsigned int m_stackTopColorWriteMask;
+    bool m_stackDithering[64];
+    unsigned int m_stackTopDithering;
+    float m_stackNPatchLevel[64];
+    unsigned int m_stackTopNPatchLevel;
+    bool m_stackStencilState[64];
+    unsigned int m_stackTopStencilState;
+    unsigned int m_stackStencilMask[64];
+    unsigned int m_stackTopStencilMask;
+    unsigned int m_stackStencilRef[64];
+    unsigned int m_stackTopStencilRef;
+    unsigned int m_stackStencilWriteMask[64];
+    unsigned int m_stackTopStencilWriteMask;
+    CmpFunc m_stackStencilFunc[64];
+    unsigned int m_stackTopStencilFunc;
+    StencilOp m_stackStencilFail[64];
+    unsigned int m_stackTopStencilFail;
+    StencilOp m_stackStencilZFail[64];
+    unsigned int m_stackTopStencilZFail;
+    StencilOp m_stackStencilPass[64];
+    unsigned int m_stackTopStencilPass;
+    bool m_stackStencil2SidedEnable[64];
+    unsigned int m_stackTopStencil2SidedEnable;
+    CmpFunc m_stackStencilCcwFunc[64];
+    unsigned int m_stackTopStencilCcwFunc;
+    StencilOp m_stackStencilCcwFail[64];
+    unsigned int m_stackTopStencilCcwFail;
+    StencilOp m_stackStencilCcwZFail[64];
+    unsigned int m_stackTopStencilCcwZFail;
+    StencilOp m_stackStencilCcwPass[64];
+    unsigned int m_stackTopStencilCcwPass;
+    bool m_stackMultiSample[64];
+    unsigned int m_stackTopMultiSample;
+    unsigned int m_stackMultiSampleMask[64];
+    unsigned int m_stackTopMultiSampleMask;
 
-    /* 0xebc0 */ bool m_updateModelViewProj;
-    /* 0xebc1 */ bool m_updateModelViewProjWithWorld;
-    /* 0xebc2 */ bool m_updateModelMatrix;
+    bool m_updateModelViewProj;
+    bool m_updateModelViewProjWithWorld;
+    bool m_updateModelMatrix;
 
     // fsrt.cpp: the full-screen quad
-    /* 0xebc4 */ VbHandle m_fsQuadVb;
-    /* 0xebc8 */ IbHandle m_fsQuadIb;
+    VbHandle m_fsQuadVb;
+    IbHandle m_fsQuadIb;
 
     // The "GlobalStreaming" vertex buffers (InitVertexDeclarations / GetVbStreaming)
-    /* 0xebcc */ VbHandle m_vbXyz;
-    /* 0xebd0 */ VbHandle m_vbXyzc;
-    /* 0xebd4 */ VbHandle m_vbXyznc;
-    /* 0xebd8 */ VbHandle m_vbXyzct1;
-    /* 0xebdc */ VbHandle m_vbXyzwct1;
-    /* 0xebe0 */ VbHandle m_vbXyznt1;
-    /* 0xebe4 */ VbHandle m_vbXyznt2;
-    /* 0xebe8 */ VbHandle m_vbXyznt3;
-    /* 0xebec */ VbHandle m_vbXyznct2;
-    /* 0xebf0 */ VbHandle m_vbXyznct1;
-    /* 0xebf4 */ VbHandle m_vbXyznt1t;
-    /* 0xebf8 */ VbHandle m_vbXyznct1t;
+    VbHandle m_vbXyz;
+    VbHandle m_vbXyzc;
+    VbHandle m_vbXyznc;
+    VbHandle m_vbXyzct1;
+    VbHandle m_vbXyzwct1;
+    VbHandle m_vbXyznt1;
+    VbHandle m_vbXyznt2;
+    VbHandle m_vbXyznt3;
+    VbHandle m_vbXyznct2;
+    VbHandle m_vbXyznct1;
+    VbHandle m_vbXyznt1t;
+    VbHandle m_vbXyznct1t;
 
     // lights.cpp
-    /* 0xebfc */ D3DLIGHT9 m_lights[8];
-    /* 0xef3c */ int m_lightsEnabled[8];
-    /* 0xef5c */ Colorf m_ambientLight;
+    D3DLIGHT9 m_lights[8];
+    int m_lightsEnabled[8];
+    Colorf m_ambientLight;
 
     // clipplanes.cpp
-    /* 0xef6c */ int m_userClipPlaneEnabled;
-    /* 0xef70 */ bool m_userClipPlanesUpdated[6];
-    /* 0xef78 */ D3DXPLANE m_userClipPlanesWorld[6];
-    /* 0xefd8 */ D3DXPLANE m_userClipPlanesProj[6];
-    /* 0xf038 */ bool m_fastClipEnabled;
-    /* 0xf03c */ D3DXPLANE m_fastClipPlane;
-    /* 0xf04c */ CMatrix m_fastClipPlaneProjMatrix;
+    int m_userClipPlaneEnabled;
+    bool m_userClipPlanesUpdated[6];
+    D3DXPLANE m_userClipPlanesWorld[6];
+    D3DXPLANE m_userClipPlanesProj[6];
+    bool m_fastClipEnabled;
+    D3DXPLANE m_fastClipPlane;
+    CMatrix m_fastClipPlaneProjMatrix;
 
     // shaders/shaders.cpp
-    /* 0xf08c */ StateManager m_stateManager;
-    /* 0xf098 */ ID3DXEffectPool* m_globalFxPool;
-    /* 0xf09c */ std::map<ShaderIdData, EffectImpl*> m_effects;
-    /* 0xf0a8 */ std::map<ShaderIdData, HlslShaderImpl*> m_HlslShaders;
-    /* 0xf0b4 */ std::map<CStr, AsmShaderImpl*> m_AsmShaders;
-    /* 0xf0c0 */ std::vector<MacroData> m_shadersMacros;
-    /* 0xf0d0 */ std::vector<D3DXMACRO> m_d3dxMacros;
+    StateManager m_stateManager;
+    ID3DXEffectPool* m_globalFxPool;
+    std::map<ShaderIdData, EffectImpl*> m_effects;
+    std::map<ShaderIdData, HlslShaderImpl*> m_HlslShaders;
+    std::map<CStr, AsmShaderImpl*> m_AsmShaders;
+    std::vector<MacroData> m_shadersMacros;
+    std::vector<D3DXMACRO> m_d3dxMacros;
 
     // query.cpp
-    /* 0xf0e0 */ std::list<IQuery*> m_queries;
+    std::list<IQuery*> m_queries;
 
-    /* 0xf0ec */ bool m_featureSupported[FEATURE_NUM_FEATURES_15];
+    bool m_featureSupported[FEATURE_NUM_FEATURES_15];
 
     // fsrt.cpp: the full-screen render target
-    /* 0xf108 */ IDirect3DTexture9* m_fsRt;
-    /* 0xf10c */ IDirect3DSurface9* m_fsRtSurf;
-    /* 0xf110 */ IDirect3DSurface9* m_fsRtZBuffer;
-    /* 0xf114 */ unsigned int m_fsRtWidth;
-    /* 0xf118 */ unsigned int m_fsRtHeight;
-    /* 0xf11c */ IDirect3DVertexBuffer9* m_fsRtVb;
-    /* 0xf120 */ IDirect3DIndexBuffer9* m_fsRtIb;
-    /* 0xf124 */ IHlslShader* m_fsRtVs;
-    /* 0xf128 */ IHlslShader* m_fsRtPs;
+    IDirect3DTexture9* m_fsRt;
+    IDirect3DSurface9* m_fsRtSurf;
+    IDirect3DSurface9* m_fsRtZBuffer;
+    unsigned int m_fsRtWidth;
+    unsigned int m_fsRtHeight;
+    IDirect3DVertexBuffer9* m_fsRtVb;
+    IDirect3DIndexBuffer9* m_fsRtIb;
+    IHlslShader* m_fsRtVs;
+    IHlslShader* m_fsRtPs;
 
-    /* 0xf12c */ bool m_isNV30;
+    bool m_isNV30;
 
     // matrices.cpp: the camera
-    /* 0xf130 */ CMatrix m_viewMatrix;
-    /* 0xf170 */ CMatrix m_viewMatrixInv;
-    /* 0xf1b0 */ CVector m_viewOrigin;
-    /* 0xf1bc */ bool m_viewMatrixWasSetThisFrame;
+    CMatrix m_viewMatrix;
+    CMatrix m_viewMatrixInv;
+    CVector m_viewOrigin;
+    bool m_viewMatrixWasSetThisFrame;
 
-    /* 0xf1c0 */ ID3DXFont* m_pSysFont;
-    /* 0xf1c4 */ DXCursorInfo m_currentDXCursorInfo;
-    /* 0xf1d4 */ int m_activeStencilTarget;
-    /* 0xf1d8 */ int m_stencilLevel[2];
-    /* 0xf1e0 */ bool m_reloadAllTextures;
-    /* 0xf1e4 */ unsigned int m_renderThreadId;
-    /* 0xf1e8 */ bool m_bThreadSafeGuardEnabled;
+    ID3DXFont* m_pSysFont;
+    DXCursorInfo m_currentDXCursorInfo;
+    int m_activeStencilTarget;
+    int m_stencilLevel[2];
+    bool m_reloadAllTextures;
+    unsigned int m_renderThreadId;
+    bool m_bThreadSafeGuardEnabled;
 
     CDevice();
     virtual ~CDevice();

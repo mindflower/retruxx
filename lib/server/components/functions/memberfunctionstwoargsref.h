@@ -29,7 +29,7 @@ namespace ai
             }
             return *this;
         }
-    }; /* size: 0x0008 */
+    };
 
     template <typename TClass, typename T1, typename T2, typename RetType>
     class MemberFunctionTwoArgsRef : public ai::BaseFunctionTwoArgsRef<T1, T2, RetType>
@@ -53,7 +53,7 @@ namespace ai
             this->m_func = func;
         }
 
-        virtual bool Execute(const T1& arg1, T2& arg2) override /* 0x04 */
+        virtual bool Execute(const T1& arg1, T2& arg2) override
         {
             if (m_pT)
             {
@@ -63,7 +63,7 @@ namespace ai
         }
 
     private:
-        /* 0x0004 */ TClass* m_pT = nullptr;
-        /* 0x0008 */ bool (TClass::*m_func)(const T1&, T2&) = nullptr;
-    }; /* size: 0x000c */
+        TClass* m_pT = nullptr;
+        bool (TClass::*m_func)(const T1&, T2&) = nullptr;
+    };
 }

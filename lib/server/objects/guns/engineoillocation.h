@@ -7,8 +7,8 @@ namespace ai
     {
     public:
         EngineOilLocationPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0094 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     // An oil slick: vehicles inside it are in "on oil" mode.
     class EngineOilLocation : public ai::TemporaryLocation
@@ -16,22 +16,22 @@ namespace ai
         friend class EngineOilLocationPrototypeInfo;
 
     protected:
-        virtual ~EngineOilLocation() override /* 0x00 */;
+        virtual ~EngineOilLocation() override;
 
     private:
         EngineOilLocation(const ai::EngineOilLocationPrototypeInfo& prototypeInfo);
         EngineOilLocation(const ai::EngineOilLocation&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classEngineOilLocation;
-        virtual const ai::EngineOilLocationPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual const ai::EngineOilLocationPrototypeInfo* GetPrototypeInfo() const override;
 
     protected:
-        virtual void OnObjectIn(ai::Obj* object) override /* 0x00 */;
-        virtual void OnObjectOut(ai::Obj* object) override /* 0x00 */;
-    }; /* size: 0x0284 */
+        virtual void OnObjectIn(ai::Obj* object) override;
+        virtual void OnObjectOut(ai::Obj* object) override;
+    };
 }

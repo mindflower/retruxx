@@ -11,10 +11,10 @@ namespace ai
 {
     struct ColliderEntry
     {
-        /* 0x0000 */ int (*fn)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
-        /* 0x0004 */ int reverse;
+        int (*fn)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+        int reverse;
         ColliderEntry(int (*f)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool), int r);
-    }; /* size: 0x0008 */
+    };
 
     class ColliderKrnl
     {

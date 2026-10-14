@@ -9,50 +9,50 @@ namespace ai
     public:
         struct AttackActionInfo
         {
-            /* 0x0000 */ int m_frameToReleaseLoad;
-            /* 0x0004 */ ActionType m_action;
+            int m_frameToReleaseLoad;
+            ActionType m_action;
             AttackActionInfo();
             void LoadFromXML(const m3d::cmn::XmlNode* xmlNode);
-        }; /* size: 0x0008 */
+        };
 
         using AttackActionInfoVector = retruxx::vector<ai::BossArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossArmPrototypeInfo::AttackActionInfo> >;
 
     public:
-        /* 0x0110 */ float m_turningSpeed;
-        /* 0x0114 */ int m_frameToPickUpLoad;
-        /* 0x0118 */ int m_lpIdForLoad;
-        /* 0x011c */ int m_cruticalNumExplodedLoads;
-        /* 0x0120 */ retruxx::vector<ai::BossArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossArmPrototypeInfo::AttackActionInfo> > m_attacks;
+        float m_turningSpeed;
+        int m_frameToPickUpLoad;
+        int m_lpIdForLoad;
+        int m_cruticalNumExplodedLoads;
+        retruxx::vector<ai::BossArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossArmPrototypeInfo::AttackActionInfo> > m_attacks;
         BossArmPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x0c */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0130 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class BossArm : public ai::VehiclePart
     {
         friend class BossArmPrototypeInfo;
 
     protected:
-        virtual  ~BossArm() override /* 0x00 */;
+        virtual  ~BossArm() override;
 
     protected:
         BossArm(const ai::BossArmPrototypeInfo& prototypeInfo);
         BossArm(const ai::BossArm&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBossArm;
-        virtual const ai::BossArmPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual const ai::BossArmPrototypeInfo* GetPrototypeInfo() const override;
+        virtual int OnEvent(const ai::Event& evn) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
         int GetNumExploadedLoads() const;
 
         enum AttackState
@@ -64,7 +64,7 @@ namespace ai
         };
 
     protected:
-        /* 0x02c8 */ int m_loadObjId;
+        int m_loadObjId;
         ai::BossArm::AttackState _GetAttackState() const;
         void _SetAttackState(ai::BossArm::AttackState newState);
         void _PlaceLoadOnLoadpoint(float elapsedTime);
@@ -73,15 +73,15 @@ namespace ai
         const CVector& _GetCurLoadVelocity() const;
 
     private:
-        /* 0x02cc */ const float m_turningSpeed;
-        /* 0x02d0 */ ai::BossArm::AttackState m_attackState;
-        /* 0x02d4 */ CVector m_dirForCharging;
-        /* 0x02e0 */ int m_curAttackAction;
-        /* 0x02e4 */ int m_numExplodedLoads;
-        /* 0x02e8 */ bool m_bCurLoadExploded;
-        /* 0x02e9 */ char Padding_147[3];
-        /* 0x02ec */ retruxx::vector<int, retruxx::allocator<int> > m_loadProrotypeIds;
-        /* 0x02fc */ CVector m_curLoadVelocity;
+        const float m_turningSpeed;
+        ai::BossArm::AttackState m_attackState;
+        CVector m_dirForCharging;
+        int m_curAttackAction;
+        int m_numExplodedLoads;
+        bool m_bCurLoadExploded;
+        char Padding_147[3];
+        retruxx::vector<int, retruxx::allocator<int> > m_loadProrotypeIds;
+        CVector m_curLoadVelocity;
         void _OnObjectDie(const ai::Event& evn);
-    }; /* size: 0x0308 */
+    };
 }

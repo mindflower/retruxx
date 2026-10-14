@@ -39,16 +39,16 @@ namespace m3d
         CVector GetV() const;
         Quaternion GetQ() const;
 
-        /* 0x0000 */ m3d::sArg::eArgType m_type = ARGTYPE_VOID;
+        m3d::sArg::eArgType m_type = ARGTYPE_VOID;
         union
         {
-            /* 0x0004 */ int m_i = 0;
-            /* 0x0004 */ float m_f;
-            /* 0x0004 */ bool m_b;
-            /* 0x0004 */ char* m_s;
-            /* 0x0004 */ m3d::Object* m_o;
-            /* 0x0004 */ float m_v[3];
-            /* 0x0004 */ float m_q[4];
-        }; /* size: 0x000c */
-    }; /* size: 0x0014 */
+            int m_i = 0;
+            float m_f;
+            bool m_b;
+            char* m_s;
+            m3d::Object* m_o;
+            float m_v[3];
+            float m_q[4];
+        };
+    };
 }

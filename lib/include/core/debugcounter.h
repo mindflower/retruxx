@@ -39,16 +39,16 @@ namespace m3d
         ~DbgCounter();
         void SetName(const char* name);
 
-        /* 0x0000 */ m3d::DbgCounter::eType m_curType = DBG_COUNTER_STRING;
+        m3d::DbgCounter::eType m_curType = DBG_COUNTER_STRING;
         union
         {
-            /* 0x0004 */ int m_i = 0;
-            /* 0x0004 */ float m_f;
-            /* 0x0004 */ bool m_b;
-        }; /* size: 0x0004 */
-        /* 0x0008 */ retruxx::string m_s;
-        /* 0x0024 */ retruxx::string m_name;
-    }; /* size: 0x0040 */
+            int m_i = 0;
+            float m_f;
+            bool m_b;
+        };
+        retruxx::string m_s;
+        retruxx::string m_name;
+    };
 
     class Application;
 
@@ -72,9 +72,9 @@ namespace m3d
         const char* GetString(unsigned int id) const;
 
     private:
-        /* 0x0000 */ retruxx::vector<m3d::DbgCounter*, retruxx::allocator<m3d::DbgCounter*> > m_stack;
-        /* 0x0010 */ unsigned int m_numCounters = 0;
-        /* 0x0014 */ retruxx::vector<retruxx::string> m_stringStack;
-        /* 0x0024 */ unsigned int m_numStrings = 0;
-    }; /* size: 0x0028 */
+        retruxx::vector<m3d::DbgCounter*, retruxx::allocator<m3d::DbgCounter*> > m_stack;
+        unsigned int m_numCounters = 0;
+        retruxx::vector<retruxx::string> m_stringStack;
+        unsigned int m_numStrings = 0;
+    };
 }

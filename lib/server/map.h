@@ -8,21 +8,21 @@ namespace ai
 
     struct GMAPOFFSET
     {
-        /* 0x0000 */ int x;
-        /* 0x0004 */ int y;
+        int x;
+        int y;
         GMAPOFFSET(int Px, int Py);
-    }; /* size: 0x0008 */
+    };
 
     struct OffsetSet
     {
         std::vector<ai::GMAPOFFSET, std::allocator<ai::GMAPOFFSET> > m_Off;
-    }; /* size: 0x0010 */
+    };
 
     struct DirSet
     {
-        /* 0x0000 */ ai::OffsetSet m_Dir[8];
+        ai::OffsetSet m_Dir[8];
         void AddItem(bool IsDiag, int x, int y);
-    }; /* size: 0x0080 */
+    };
 
     class MapIndex
     {

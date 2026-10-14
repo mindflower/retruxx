@@ -35,16 +35,16 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndLowFuelLampName = "wndLowFuelLamp";
-        /* 0x000c */ CStr m_wndProgressBarName = "wndFuelProgressBar";
-        /* 0x0018 */ CStr m_wndValueName = "wndFuelValue";
-        /* 0x0024 */ CStr m_wndOverlayName = "wndFuelProgressBarOverlay";
-        /* 0x0030 */ CStr m_strFuelId = "Fuel";
-    }; /* size: 0x003c */
+        CStr m_wndLowFuelLampName = "wndLowFuelLamp";
+        CStr m_wndProgressBarName = "wndFuelProgressBar";
+        CStr m_wndValueName = "wndFuelValue";
+        CStr m_wndOverlayName = "wndFuelProgressBarOverlay";
+        CStr m_strFuelId = "Fuel";
+    };
 
 protected:
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
     void OnNewFrame();
     void FullUpdate(bool bForce);
     void UpdateProgressBar(float curFuel, float maxFuel);
@@ -53,23 +53,23 @@ protected:
     void UpdateTooltip(float curFuel, float maxFuel);
     ai::Vehicle const* GetVehicle() const;
     void GetFuel(float& curFuel, float& maxFuel) const;
-    /* 0x0220 */ FuelIndicatorInMainInterfaceWnd::Type m_type;
-    /* 0x0224 */ TwinklingLampWnd* m_wndLowFuelLamp;
-    /* 0x0228 */ m3d::ui::ProgressBarWnd* m_wndProgressBar;
-    /* 0x022c */ ElectronicDigitalWnd* m_wndValue;
-    /* 0x0230 */ int m_vehicleId;
+    FuelIndicatorInMainInterfaceWnd::Type m_type;
+    TwinklingLampWnd* m_wndLowFuelLamp;
+    m3d::ui::ProgressBarWnd* m_wndProgressBar;
+    ElectronicDigitalWnd* m_wndValue;
+    int m_vehicleId;
     static inline FuelIndicatorInMainInterfaceWnd::AuxInfo m_aif;
-    /* 0x0234 */ CStr m_strFuel;
-    /* 0x0240 */ float m_prevCurVal;
-    /* 0x0244 */ float m_prevMaxVal;
+    CStr m_strFuel;
+    float m_prevCurVal;
+    float m_prevMaxVal;
     FuelIndicatorInMainInterfaceWnd();
     FuelIndicatorInMainInterfaceWnd(FuelIndicatorInMainInterfaceWnd const& ths);
 
 public:
-    virtual ~FuelIndicatorInMainInterfaceWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~FuelIndicatorInMainInterfaceWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classFuelIndicatorInMainInterfaceWnd;
-}; /* size: 0x0248 */
+};

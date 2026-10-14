@@ -58,9 +58,9 @@ public:
             ElectronicDigitalWnd::Symbol symbol,
             ElectronicDigitalWnd::DigitalSize digitalSize) const;
         CStr GetTextureStrId(ElectronicDigitalWnd::Symbol symbol, ElectronicDigitalWnd::DigitalSize digitalSize) const;
-        /* 0x0000 */ m3d::rend::TexHandle m_textures[2][13];
-        /* 0x0068 */ int m_refCount;
-    }; /* size: 0x006c */
+        m3d::rend::TexHandle m_textures[2][13];
+        int m_refCount;
+    };
 
     struct Digital
     {
@@ -76,29 +76,29 @@ public:
         bool IsFree() const;
         void Show(bool bShow);
         void UpdateTexture();
-        /* 0x0000 */ m3d::ui::ImageWnd* m_wnd;
-        /* 0x0004 */ ElectronicDigitalWnd::Symbol m_symbol;
-        /* 0x0008 */ bool m_bReserved;
-        /* 0x0009 */ char Padding_99[3];
-        /* 0x000c */ ElectronicDigitalWnd::DigitalSize m_digitalSize;
-    }; /* size: 0x0010 */
+        m3d::ui::ImageWnd* m_wnd;
+        ElectronicDigitalWnd::Symbol m_symbol;
+        bool m_bReserved;
+        char Padding_99[3];
+        ElectronicDigitalWnd::DigitalSize m_digitalSize;
+    };
 
     using DigitalVector = std::vector<ElectronicDigitalWnd::Digital, std::allocator<ElectronicDigitalWnd::Digital>>;
 
 protected:
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     int GetFirstFreeSlot() const;
-    /* 0x0220 */ ElectronicDigitalWnd::DigitalSize m_digitalSize;
-    /* 0x0224 */ std::vector<ElectronicDigitalWnd::Digital, std::allocator<ElectronicDigitalWnd::Digital>> m_digitals;
-    /* 0x0234 */ unsigned int m_digitalColor;
+    ElectronicDigitalWnd::DigitalSize m_digitalSize;
+    std::vector<ElectronicDigitalWnd::Digital, std::allocator<ElectronicDigitalWnd::Digital>> m_digitals;
+    unsigned int m_digitalColor;
     static inline ElectronicDigitalWnd::DigitalTextures m_digitalTextures;
     ElectronicDigitalWnd();
 
 public:
-    virtual ~ElectronicDigitalWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~ElectronicDigitalWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classElectronicDigitalWnd;
-}; /* size: 0x0238 */
+};

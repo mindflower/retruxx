@@ -62,7 +62,7 @@ protected:
     virtual int GameDataUpdate(void*, int);
     virtual int CanAddDragItem(bool) override;
     virtual int AddItem(ai::GeomRepositoryItem const&) override;
-    virtual int GetResourceId() const = 0 /* 0x17c */;
+    virtual int GetResourceId() const = 0;
     bool IsHidden() const;
     class ai::Vehicle* GetVehicle() const;
     virtual void OnUpdateWhileNoDrag( PointBase<float> const&);

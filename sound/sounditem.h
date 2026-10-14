@@ -71,18 +71,18 @@ namespace snd
             return 0;
         }
 
-        /* 0x0000 */ FmodSoundType m_type;
+        FmodSoundType m_type;
         union
         {
-            /* 0x0004 */ FSOUND_SAMPLE* m_pSample;
-            /* 0x0004 */ FSOUND_STREAM* m_pStream;
-            /* 0x0004 */ FMUSIC_MODULE* m_pSong;
+            FSOUND_SAMPLE* m_pSample;
+            FSOUND_STREAM* m_pStream;
+            FMUSIC_MODULE* m_pSong;
         };
-        /* 0x0008 */ int m_group;
+        int m_group;
         // The engine's end-of-music callback. The original and Hard Truck Apocalypse's own
         // sound.dll call it with the sound id in ecx (__fastcall); the engine header spells the
         // pointer without a calling convention, so the manager stores it as this type.
-        /* 0x000c */ void(__fastcall* m_endCallback)(int);
-        /* 0x0010 */ CStr m_fileName;
-    }; /* size: 0x001c */
+        void(__fastcall* m_endCallback)(int);
+        CStr m_fileName;
+    };
 }

@@ -15,18 +15,18 @@ namespace ai
 
     struct DamageInfo
     {
-        /* 0x0000 */ int attackerId;
-        /* 0x0004 */ int attackingAgentId;
-        /* 0x0008 */ bool bDamageFriends;
-        /* 0x0009 */ char Padding_297[3];
-        /* 0x000c */ int gunPrototypeId;
-        /* 0x0010 */ float damage;
-        /* 0x0014 */ ai::DamageType damageType;
-        /* 0x0018 */ CStr damagedPartName;
-        /* 0x0024 */ CVector hitPos;
-        /* 0x0030 */ CVector hitDir;
-        /* 0x003c */ CVector normal;
-        /* 0x0048 */ int decalId;
+        int attackerId;
+        int attackingAgentId;
+        bool bDamageFriends;
+        char Padding_297[3];
+        int gunPrototypeId;
+        float damage;
+        ai::DamageType damageType;
+        CStr damagedPartName;
+        CVector hitPos;
+        CVector hitDir;
+        CVector normal;
+        int decalId;
 
         DamageInfo()
         {
@@ -47,5 +47,5 @@ namespace ai
             this->normal.z = 0.0;
             this->decalId = -1;
         }
-    }; /* size: 0x004c */
+    };
 }  // namespace ai

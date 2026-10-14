@@ -22,11 +22,11 @@ namespace ai
         AIManager(const ai::AIManager& rhs);
 
     public:
-        virtual  ~AIManager() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
+        virtual  ~AIManager() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classAIManager;
 
     private:
@@ -35,8 +35,8 @@ namespace ai
         std::vector<CStr, std::allocator<CStr> > m_Schemes;
 
     public:
-        /* 0x0064 */ unsigned int m_workTime;
-        /* 0x0068 */ float m_elapsedTime;
+        unsigned int m_workTime;
+        float m_elapsedTime;
 
     private:
         ai::DecisionMatrix* ReadNewMatrix(const char* FileName);
@@ -56,7 +56,7 @@ namespace ai
         void LogDump();
         ai::DecisionMatrix* CreateNewDecisionMatrix();
         ai::DecisionMatrix* LoadMatrix(const char* fileName);
-    }; /* size: 0x006c */
+    };
 
     void SetAIManager(AIManager*);
 

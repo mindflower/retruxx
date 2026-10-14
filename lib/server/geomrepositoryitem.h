@@ -14,12 +14,12 @@ namespace ai
             ITEMTYPE_OBJECT = 1,
         };
 
-        /* 0x0000 */ int m_resourceId;
-        /* 0x0004 */ int m_objId;
-        /* 0x0008 */ unsigned int m_amount;
-        /* 0x000c */ ai::GeomRepositoryItem::GeomRepositoryItemType m_repositoryItemType;
-        /* 0x0010 */ ai::GeomRepository* m_parentRepository;
-        /* 0x0014 */ PointBase<int> m_origin;
+        int m_resourceId;
+        int m_objId;
+        unsigned int m_amount;
+        ai::GeomRepositoryItem::GeomRepositoryItemType m_repositoryItemType;
+        ai::GeomRepository* m_parentRepository;
+        PointBase<int> m_origin;
         GeomRepositoryItem(const ai::GeomRepositoryItem& rhs);
         GeomRepositoryItem(int resourceId, unsigned int amount);
         GeomRepositoryItem(int objId);
@@ -50,7 +50,7 @@ namespace ai
         void _Init(int resourceId, int amount);
         void _Init(int objId);
         void _Init();
-    }; /* size: 0x001c */
+    };
 
     // Two items are equal when they share type, parent repository and origin, and
     // then - for object items - the same objId, or - for resource items - the same

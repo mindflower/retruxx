@@ -25,5 +25,5 @@ namespace ai
     private:
         static void _GetIntersectedObjectsCustom(retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >& objIds, const ai::Sphere* pLookSphere, const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> >& targetClasses, void (*)(void*, dxGeom*, dxGeom*), bool bCheckBoxes, bool bCheckPlayerPassmap);
         static inline ai::SphereForIntersection* m_firstLookingSphere = nullptr;
-    }; /* size: 0x0001 */
+    };
 }

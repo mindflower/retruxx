@@ -34,50 +34,50 @@ namespace ai
     class VehiclePrototypeInfo : public ai::ComplexPhysicObjPrototypeInfo
     {
     protected:
-        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override /* 0x00 */;
+        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override;
 
         struct WheelInfo
         {
             WheelInfo(const CStr wheelPrototypeName, ai::Wheel::WheelSteering steering);
             void PostLoad();
-            /* 0x0000 */ int m_wheelPrototypeId;
-            /* 0x0004 */ ai::Wheel::WheelSteering m_steering;
-            /* 0x0008 */ CStr m_wheelPrototypeName;
-        }; /* size: 0x0014 */
+            int m_wheelPrototypeId;
+            ai::Wheel::WheelSteering m_steering;
+            CStr m_wheelPrototypeName;
+        };
 
         using WheelInfoVector = retruxx::vector<ai::VehiclePrototypeInfo::WheelInfo, retruxx::allocator<ai::VehiclePrototypeInfo::WheelInfo> >;
 
     public:
-        /* 0x0090 */ retruxx::vector<ai::VehiclePrototypeInfo::WheelInfo, retruxx::allocator<ai::VehiclePrototypeInfo::WheelInfo> > m_wheelInfos;
-        /* 0x00a0 */ float m_diffRatio;
-        /* 0x00a4 */ float m_maxEngineRpm;
-        /* 0x00a8 */ float m_lowGearShiftLimit;
-        /* 0x00ac */ float m_highGearShiftLimit;
-        /* 0x00b0 */ float m_selfBrakingCoeff;
-        /* 0x00b4 */ float m_steeringSpeed;
-        /* 0x00b8 */ int m_decisionMatrixNum;
-        /* 0x00bc */ float m_takingRadius;
-        /* 0x00c0 */ unsigned char m_priority;
-        /* 0x00c1 */ char Padding_208[3];
-        /* 0x00c4 */ CStr m_hornSoundName;
-        /* 0x00d0 */ float m_cameraHeight;
-        /* 0x00d4 */ float m_cameraMaxDist;
-        /* 0x00d8 */ CStr m_destroyEffectNames[4];
-        /* 0x0108 */ int m_blastWavePrototypeId;
-        /* 0x010c */ float m_additionalWheelsHover;
-        /* 0x0110 */ float m_driftCoeff;
-        /* 0x0114 */ float m_pressingForce;
-        /* 0x0118 */ float m_healthRegeneration;
-        /* 0x011c */ float m_durabilityRegeneration;
+        retruxx::vector<ai::VehiclePrototypeInfo::WheelInfo, retruxx::allocator<ai::VehiclePrototypeInfo::WheelInfo> > m_wheelInfos;
+        float m_diffRatio;
+        float m_maxEngineRpm;
+        float m_lowGearShiftLimit;
+        float m_highGearShiftLimit;
+        float m_selfBrakingCoeff;
+        float m_steeringSpeed;
+        int m_decisionMatrixNum;
+        float m_takingRadius;
+        unsigned char m_priority;
+        char Padding_208[3];
+        CStr m_hornSoundName;
+        float m_cameraHeight;
+        float m_cameraMaxDist;
+        CStr m_destroyEffectNames[4];
+        int m_blastWavePrototypeId;
+        float m_additionalWheelsHover;
+        float m_driftCoeff;
+        float m_pressingForce;
+        float m_healthRegeneration;
+        float m_durabilityRegeneration;
         VehiclePrototypeInfo();
-        virtual  ~VehiclePrototypeInfo() override /* 0x00 */;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x00 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        virtual  ~VehiclePrototypeInfo() override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
 
     protected:
-        /* 0x0120 */ CStr m_blastWavePrototypeName;
-    }; /* size: 0x012c */
+        CStr m_blastWavePrototypeName;
+    };
 
     class Vehicle : public ComplexPhysicObj
     {
@@ -90,36 +90,36 @@ namespace ai
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Vehicle, ai::Modifier, float, bool>;
 
     protected:
-        virtual ~Vehicle() override /* 0x00 */;
+        virtual ~Vehicle() override;
 
     public:
         Vehicle(const ai::VehiclePrototypeInfo& prototypeInfo);
         Vehicle(const ai::Vehicle&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* CreateObject();
 
     public:
         static m3d::Class* GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classVehicle;
-        virtual const ai::VehiclePrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual const ai::VehiclePrototypeInfo* GetPrototypeInfo() const override;
 
     protected:
         static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
+        virtual int GetPropertyId(const char* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
         static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
         enum EffectActionsPoses
         {
@@ -165,21 +165,21 @@ namespace ai
         };
 
     public:
-        virtual void Remove() override /* 0x54 */;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
-        virtual void CreateChildren() override /* 0x00 */;
-        virtual void SetBelong(int newBelong) override /* 0x00 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
-        virtual bool RemoveChild(ai::Obj* pObj) override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-        virtual void TransferToSpace(dxSpace* newSpace) override /* 0x178 */;
-        virtual void SetPassedToAnotherMapStatus() override /* 0x50 */;
-        virtual bool ApplyModifier(const ai::Modifier& modifier) override /* 0x00 */;
-        virtual void SetPartByName(const CStr& partName, ai::VehiclePart* vehiclePart, bool bUnsafe) override /* 0x1a4 */;
+        virtual void Remove() override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void CreateChildren() override;
+        virtual void SetBelong(int newBelong) override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual bool RemoveChild(ai::Obj* pObj) override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void TransferToSpace(dxSpace* newSpace) override;
+        virtual void SetPassedToAnotherMapStatus() override;
+        virtual bool ApplyModifier(const ai::Modifier& modifier) override;
+        virtual void SetPartByName(const CStr& partName, ai::VehiclePart* vehiclePart, bool bUnsafe) override;
         const ai::Chassis* GetChassis() const;
         ai::Chassis* GetChassis();
         const ai::Cabin* GetCabin() const;
@@ -199,7 +199,7 @@ namespace ai
         float GetControl() const;
         void ActivateHeadLights(bool bActivate);
         void GetOutOfDifficultPlace();
-        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override /* 0x00 */;
+        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override;
         ai::Vehicle::VehicleMoveStatus GetMoveStatus() const;
         void SetMoveStatus(ai::Vehicle::VehicleMoveStatus moveStatus);
         ai::Vehicle::VehicleAttackStatus GetAttackStatus() const;
@@ -258,14 +258,14 @@ namespace ai
         bool FireFromWeaponByGunId(int gunId, bool enable);
         bool FireFromWeaponByGunPartName(const CStr& gunPartName, bool enable);
         bool DriveToPoint(const CVector& point, const CVector& nextPoint, bool bPrecisely, float elapsedTime);
-        virtual float GetMass() const override /* 0x00 */;
+        virtual float GetMass() const override;
         CVector GetSize() const;
-        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
-        virtual void SetRotationSelf(const Quaternion& rot) override /* 0x00 */;
+        virtual void SetPositionSelf(const CVector& pos) override;
+        virtual void SetRotationSelf(const Quaternion& rot) override;
         void SetGamePositionOnGround(const CVector& pos, bool bWithCollisions, bool bWithWater);
-        virtual CVector GetGeometricCenter() const override /* 0x00 */;
-        virtual CVector GetLinearVelocity() const override /* 0x00 */;
-        virtual void SetLinearVelocity(const CVector& linearVel) override /* 0x00 */;
+        virtual CVector GetGeometricCenter() const override;
+        virtual CVector GetLinearVelocity() const override;
+        virtual void SetLinearVelocity(const CVector& linearVel) override;
         void ResetPositionAndRotation();
         float GetCameraHeight() const;
         float GetCameraMaxDist() const;
@@ -295,9 +295,9 @@ namespace ai
         void SetTurningToGroundForceAndTorque(const CVector& pos, const CVector& force, const CVector& torque);
         CVector GetBumperPoint() const;
         const ai::Wheel* GetFirstExistingWheel() const;
-        virtual void RenderDebugInfo() const override /* 0xe4 */;
-        virtual void Flow(ai::Obj* partToFlow, float averageSpeed) override /* 0x1a8 */;
-        virtual void Blow(ai::Obj* partToBlow) override /* 0x1ac */;
+        virtual void RenderDebugInfo() const override;
+        virtual void Flow(ai::Obj* partToFlow, float averageSpeed) override;
+        virtual void Blow(ai::Obj* partToBlow) override;
         int SetExternalPath(const retruxx::vector<CVector2, retruxx::allocator<CVector2> >& path);
         int SetExternalPathByName(const char* pathName);
         void SetCanBeDistractedFromMoving(bool bCanBeDistracted);
@@ -316,20 +316,20 @@ namespace ai
         void DetachTrailer();
         bool TrailerExists() const;
         ai::Vehicle* GetTrailer() const;
-        virtual void SetUpdatingByODE(bool byODE) override /* 0x00 */;
+        virtual void SetUpdatingByODE(bool byODE) override;
         ai::VehicleRecollection* GetRecollection() const;
         CVector GetRecollectionPosition(float recollectionRange) const;
         float GetCollisionRadius() const;
         void IncNumWheelsTouchingGround();
-        virtual void SetSkin(int skin) override /* 0x184 */;
-        virtual void SetRandomSkin() override /* 0x1b0 */;
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0x00 */;
-        virtual unsigned int GetSchwarz() const override /* 0x00 */;
+        virtual void SetSkin(int skin) override;
+        virtual void SetRandomSkin() override;
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override;
+        virtual unsigned int GetSchwarz() const override;
         bool GetHorn() const;
         void SetHorn(bool bHorn);
         void HealWheels();
-        virtual void SetVisible() override /* 0xc8 */;
-        virtual void SetInvisible() override /* 0xcc */;
+        virtual void SetVisible() override;
+        virtual void SetInvisible() override;
         bool getGodMode() const;
         void setGodMode(bool bGod);
         bool getImmortalMode() const;
@@ -347,15 +347,15 @@ namespace ai
         void SetTurboThrottleTime(float time);
         float GetTurboThrottleValue() const;
         void SetTurboThrottleValue(float Value);
-        virtual void GetGeoms(retruxx::vector<ai::Geom*, retruxx::allocator<ai::Geom*> >& geoms) const override /* 0x1b4 */;
-        virtual ai::Obj* CloneObj() override /* 0x00 */;
-        virtual void ClearSavedStatus() override /* 0x00 */;
+        virtual void GetGeoms(retruxx::vector<ai::Geom*, retruxx::allocator<ai::Geom*> >& geoms) const override;
+        virtual ai::Obj* CloneObj() override;
+        virtual void ClearSavedStatus() override;
         float GetDriftCoeff() const;
         void ShowVehicle(bool bShow);
-        virtual void DisablePhysics() override /* 0x154 */;
-        virtual void EnablePhysics() override /* 0x158 */;
-        virtual void DisableGeometry(bool changePhysicState) override /* 0x15c */;
-        virtual void EnableGeometry(bool changePhysicState) override /* 0x160 */;
+        virtual void DisablePhysics() override;
+        virtual void EnablePhysics() override;
+        virtual void DisableGeometry(bool changePhysicState) override;
+        virtual void EnableGeometry(bool changePhysicState) override;
         ai::VehicleRole* GetRole() const;
         void SetRole(ai::VehicleRole* vr);
         int GetNpcMotionControllerId() const;
@@ -374,8 +374,8 @@ namespace ai
         class WheelRuntimeInfo
         {
         public:
-            /* 0x0000 */ CVector m_initialPos;
-            /* 0x000c */ Quaternion m_initialRot;
+            CVector m_initialPos;
+            Quaternion m_initialRot;
             WheelRuntimeInfo(ai::Wheel* wheel);
             bool IsWheelPresent() const;
             const ai::Wheel* GetWheel() const;
@@ -383,153 +383,153 @@ namespace ai
             void SetWheel(ai::Wheel* wheel);
 
         private:
-            /* 0x001c */ bool m_bWheelPresent;
-            /* 0x001d */ char Padding_175[3];
-            /* 0x0020 */ ai::Wheel* m_wheel;
-        }; /* size: 0x0024 */
+            bool m_bWheelPresent;
+            char Padding_175[3];
+            ai::Wheel* m_wheel;
+        };
 
         using WheelRuntimeInfoVector = retruxx::vector<ai::Vehicle::WheelRuntimeInfo, retruxx::allocator<ai::Vehicle::WheelRuntimeInfo> >;
 
     protected:
-        /* 0x014c */ retruxx::vector<ai::Vehicle::WheelRuntimeInfo, retruxx::allocator<ai::Vehicle::WheelRuntimeInfo> > m_wheels;
-        virtual void _InternalPostLoad() override /* 0x00 */;
-        virtual void _InternalCreateVisualPart() override /* 0x100 */;
-        virtual ai::AI* GetAIPtr() override /* 0x00 */;
-        virtual void _KeepSteer(float elapsedTime) /* 0x1cc */;
-        virtual void _UpdateOwnPhysics(float elapsedTime) override /* 0x00 */;
-        virtual void _PutContour() override /* 0x1c4 */;
-        virtual void _RemoveContour() override /* 0x1c8 */;
-        virtual float _CalcMassForBody() const override /* 0x1c0 */;
+        retruxx::vector<ai::Vehicle::WheelRuntimeInfo, retruxx::allocator<ai::Vehicle::WheelRuntimeInfo> > m_wheels;
+        virtual void _InternalPostLoad() override;
+        virtual void _InternalCreateVisualPart() override;
+        virtual ai::AI* GetAIPtr() override;
+        virtual void _KeepSteer(float elapsedTime);
+        virtual void _UpdateOwnPhysics(float elapsedTime) override;
+        virtual void _PutContour() override;
+        virtual void _RemoveContour() override;
+        virtual float _CalcMassForBody() const override;
 
     private:
-        /* 0x015c */ ai::AI m_AI;
-        /* 0x01bc */ bool m_bHorn;
-        /* 0x01bd */ bool m_bGodMode;
-        /* 0x01be */ bool m_bImmortalMode;
-        /* 0x01bf */ char Padding_178;
-        /* 0x01c0 */ int m_stoppageMode;
-        /* 0x01c4 */ int m_onOilMode;
-        /* 0x01c8 */ int m_inSmokeScreenMode;
-        /* 0x01cc */ float m_turboThrottleTime;
-        /* 0x01d0 */ float m_turboThrottleValue;
-        /* 0x01d4 */ float m_timeAfterDeath;
-        /* 0x01d8 */ unsigned int m_numBlownParts;
-        /* 0x01dc */ float m_timeAfterLastBlow;
-        /* 0x01e0 */ unsigned int m_shootTypeChangeTime;
-        /* 0x01e4 */ unsigned int m_shootTimeToWait;
-        /* 0x01e8 */ bool m_bIsShooting;
-        /* 0x01e9 */ char Padding_179[3];
-        /* 0x01ec */ retruxx::map<int, ai::Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Gadget*> > > m_gadgets;
-        /* 0x01f8 */ float m_antiMissileGadgetSavingRadius;
-        /* 0x01fc */ float m_diffRatio;
-        /* 0x0200 */ float m_maxEngineRpm;
-        /* 0x0204 */ float m_lowGearShiftLimit;
-        /* 0x0208 */ float m_highGearShiftLimit;
-        /* 0x020c */ float m_steeringSpeed;
-        /* 0x0210 */ bool m_bIsTrailer;
-        /* 0x0211 */ char Padding_180[3];
-        /* 0x0214 */ float m_cruisingSpeed;
-        /* 0x0218 */ bool m_maxSpeedLimited;
-        /* 0x0219 */ char Padding_181[3];
-        /* 0x021c */ float m_maxSpeedLimit;
-        /* 0x0220 */ bool m_maxTorqueForced;
-        /* 0x0221 */ char Padding_182[3];
-        /* 0x0224 */ float m_maxTorqueForcedValue;
-        /* 0x0228 */ int m_currentGear;
-        /* 0x022c */ float m_throttle;
-        /* 0x0230 */ float m_brake;
-        /* 0x0234 */ float m_realThrottle;
-        /* 0x0238 */ float m_engineRpm;
-        /* 0x023c */ float m_averageEngineRpm;
-        /* 0x0240 */ float m_driftCoeff;
-        /* 0x0244 */ float m_averageWheelAVel;
-        /* 0x0248 */ bool m_bAutoBrake;
-        /* 0x0249 */ bool m_bHandBrake;
+        ai::AI m_AI;
+        bool m_bHorn;
+        bool m_bGodMode;
+        bool m_bImmortalMode;
+        char Padding_178;
+        int m_stoppageMode;
+        int m_onOilMode;
+        int m_inSmokeScreenMode;
+        float m_turboThrottleTime;
+        float m_turboThrottleValue;
+        float m_timeAfterDeath;
+        unsigned int m_numBlownParts;
+        float m_timeAfterLastBlow;
+        unsigned int m_shootTypeChangeTime;
+        unsigned int m_shootTimeToWait;
+        bool m_bIsShooting;
+        char Padding_179[3];
+        retruxx::map<int, ai::Gadget*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Gadget*> > > m_gadgets;
+        float m_antiMissileGadgetSavingRadius;
+        float m_diffRatio;
+        float m_maxEngineRpm;
+        float m_lowGearShiftLimit;
+        float m_highGearShiftLimit;
+        float m_steeringSpeed;
+        bool m_bIsTrailer;
+        char Padding_180[3];
+        float m_cruisingSpeed;
+        bool m_maxSpeedLimited;
+        char Padding_181[3];
+        float m_maxSpeedLimit;
+        bool m_maxTorqueForced;
+        char Padding_182[3];
+        float m_maxTorqueForcedValue;
+        int m_currentGear;
+        float m_throttle;
+        float m_brake;
+        float m_realThrottle;
+        float m_engineRpm;
+        float m_averageEngineRpm;
+        float m_driftCoeff;
+        float m_averageWheelAVel;
+        bool m_bAutoBrake;
+        bool m_bHandBrake;
 
         using FloatDeque = retruxx::deque<float, retruxx::allocator<float> >;
 
     private:
-        /* 0x024c */ retruxx::deque<float, retruxx::allocator<float> > m_recentEngineRpms;
-        /* 0x0260 */ float m_steerRadians;
-        /* 0x0264 */ ai::Vehicle::TurningBackStatus m_turningBackStatus;
-        /* 0x0268 */ int m_seenObjId;
-        /* 0x026c */ CVector m_curLookAt;
-        /* 0x0278 */ int m_npcMotionControllerId;
-        /* 0x027c */ mutable retruxx::set<ref_ptr<ai::Obstacle>> m_currentNearbyObstacles;
-        /* 0x0288 */ mutable retruxx::set<ref_ptr<ai::Obstacle>> m_pastNearbyObstacles;
-        /* 0x0294 */ mutable CVector m_pastTakingSpherePosition;
-        /* 0x02a0 */ mutable bool m_bAllowPickUpMessage;
-        /* 0x02a1 */ char Padding_183[3];
-        /* 0x02a4 */ mutable int m_pastNumNearbyChests;
-        /* 0x02a8 */ mutable int m_currentNumNearbyChests;
-        /* 0x02ac */ scoped_ptr<ai::Box> m_lookBox;
-        /* 0x02b0 */ scoped_ptr<ai::Box> m_targetBox;
-        /* 0x02b4 */ retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> > m_targetClasses;
-        /* 0x02c0 */ CVector m_externalDestination;
-        /* 0x02cc */ int m_numOfDrivenWheels;
-        /* 0x02d0 */ CVector m_bumperPoint;
-        /* 0x02dc */ bool m_bIsControlledByPlayer;
-        /* 0x02dd */ bool m_bIsMovingAlongExternalPath;
-        /* 0x02de */ char Padding_184[2];
-        /* 0x02e0 */ int m_pathIndex;
-        /* 0x02e4 */ bool m_bCanBeDistractedFromMoving;
-        /* 0x02e5 */ char Padding_185[3];
-        /* 0x02e8 */ CVector m_size;
-        /* 0x02f4 */ CVector m_currentDestination;
-        /* 0x0300 */ ai::Path* m_pPath;
-        /* 0x0304 */ int m_pathNum;
-        /* 0x0308 */ unsigned char m_priority;
-        /* 0x0309 */ bool m_bCustomControl;
-        /* 0x030a */ char Padding_186[2];
-        /* 0x030c */ ai::Vehicle::CustomWeaponControlType m_customControlWeapons;
-        /* 0x0310 */ CVector m_customControlWeaponsTarget;
-        /* 0x031c */ int m_customControlWeaponsTargetObjId;
+        retruxx::deque<float, retruxx::allocator<float> > m_recentEngineRpms;
+        float m_steerRadians;
+        ai::Vehicle::TurningBackStatus m_turningBackStatus;
+        int m_seenObjId;
+        CVector m_curLookAt;
+        int m_npcMotionControllerId;
+        mutable retruxx::set<ref_ptr<ai::Obstacle>> m_currentNearbyObstacles;
+        mutable retruxx::set<ref_ptr<ai::Obstacle>> m_pastNearbyObstacles;
+        mutable CVector m_pastTakingSpherePosition;
+        mutable bool m_bAllowPickUpMessage;
+        char Padding_183[3];
+        mutable int m_pastNumNearbyChests;
+        mutable int m_currentNumNearbyChests;
+        scoped_ptr<ai::Box> m_lookBox;
+        scoped_ptr<ai::Box> m_targetBox;
+        retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> > m_targetClasses;
+        CVector m_externalDestination;
+        int m_numOfDrivenWheels;
+        CVector m_bumperPoint;
+        bool m_bIsControlledByPlayer;
+        bool m_bIsMovingAlongExternalPath;
+        char Padding_184[2];
+        int m_pathIndex;
+        bool m_bCanBeDistractedFromMoving;
+        char Padding_185[3];
+        CVector m_size;
+        CVector m_currentDestination;
+        ai::Path* m_pPath;
+        int m_pathNum;
+        unsigned char m_priority;
+        bool m_bCustomControl;
+        char Padding_186[2];
+        ai::Vehicle::CustomWeaponControlType m_customControlWeapons;
+        CVector m_customControlWeaponsTarget;
+        int m_customControlWeaponsTargetObjId;
 
         using GunPointedMap = retruxx::map<int, bool, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, bool> > >;
         using GunPointedMapPair = retruxx::pair<int const, bool>;
 
     private:
-        /* 0x0320 */ retruxx::map<int, bool, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, bool> > > m_gunsPointed;
-        /* 0x032c */ bool m_bRocketLaunchersPresent;
-        /* 0x032d */ char Padding_187[3];
-        /* 0x0330 */ int m_indexInTeam;
-        /* 0x0334 */ ai::Vehicle::VehicleMoveStatus m_moveStatus;
-        /* 0x0338 */ ai::Vehicle::VehicleAttackStatus m_attackStatus;
-        /* 0x033c */ ai::DamageType m_lastDamage;
-        /* 0x0340 */ ai::VehiclePart* m_lastDamagedPart;
-        /* 0x0344 */ ai::DamageType m_deathDamage;
-        /* 0x0348 */ ai::SphereForIntersection* m_takingSphere;
-        /* 0x034c */ ai::IzvratRepository* m_repository;
-        /* 0x0350 */ ai::GeomRepository* m_groundRepository;
-        /* 0x0354 */ retruxx::vector<enum ActionType, retruxx::allocator<enum ActionType> > m_effectActions;
-        /* 0x0364 */ CStr m_blastEffectName;
-        /* 0x0370 */ CStr m_destroyEffectNames[4];
-        /* 0x03a0 */ m3d::SgSoundSourceNode* m_engineHighSoundNode;
-        /* 0x03a4 */ m3d::SgSoundSourceNode* m_engineLowSoundNode;
-        /* 0x03a8 */ m3d::SgNode* m_hornSoundNode;
-        /* 0x03ac */ float m_cameraHeight;
-        /* 0x03b0 */ float m_cameraMaxDist;
-        /* 0x03b4 */ int m_trailerObjId;
-        /* 0x03b8 */ dxJoint* m_trailerJoint;
-        /* 0x03bc */ CVector m_relTrailerJointPosOnMe;
-        /* 0x03c8 */ CVector m_relTrailerJointPosOnTrailer;
-        /* 0x03d4 */ int m_recollectionId;
-        /* 0x03d8 */ ai::VehicleUpdater* m_ownUpdater;
-        /* 0x03dc */ int m_roleId;
-        /* 0x03e0 */ ai::NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
-        /* 0x04b8 */ int m_numWheelsTouchingGround;
-        /* 0x04bc */ bool m_bHidden;
-        /* 0x04bd */ char Padding_188[3];
-        /* 0x04c0 */ int m_lockedObjId;
-        /* 0x04c4 */ int m_toBeLockedObjId;
-        /* 0x04c8 */ float m_timeToLockTarget;
-        /* 0x04cc */ bool m_bMustGetOutOfDifficultPlace;
-        /* 0x04cd */ mutable bool m_bWasStuck;
-        /* 0x04ce */ char Padding_189[2];
-        /* 0x04d0 */ mutable CVector m_prevPosToCheckStuck;
-        /* 0x04dc */ mutable float m_timeOutToCheckStuck;
-        /* 0x04e0 */ mutable CVector m_curSteeringForce;
-        /* 0x04ec */ mutable bool m_bCurSteeringForceValid;
+        retruxx::map<int, bool, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, bool> > > m_gunsPointed;
+        bool m_bRocketLaunchersPresent;
+        char Padding_187[3];
+        int m_indexInTeam;
+        ai::Vehicle::VehicleMoveStatus m_moveStatus;
+        ai::Vehicle::VehicleAttackStatus m_attackStatus;
+        ai::DamageType m_lastDamage;
+        ai::VehiclePart* m_lastDamagedPart;
+        ai::DamageType m_deathDamage;
+        ai::SphereForIntersection* m_takingSphere;
+        ai::IzvratRepository* m_repository;
+        ai::GeomRepository* m_groundRepository;
+        retruxx::vector<enum ActionType, retruxx::allocator<enum ActionType> > m_effectActions;
+        CStr m_blastEffectName;
+        CStr m_destroyEffectNames[4];
+        m3d::SgSoundSourceNode* m_engineHighSoundNode;
+        m3d::SgSoundSourceNode* m_engineLowSoundNode;
+        m3d::SgNode* m_hornSoundNode;
+        float m_cameraHeight;
+        float m_cameraMaxDist;
+        int m_trailerObjId;
+        dxJoint* m_trailerJoint;
+        CVector m_relTrailerJointPosOnMe;
+        CVector m_relTrailerJointPosOnTrailer;
+        int m_recollectionId;
+        ai::VehicleUpdater* m_ownUpdater;
+        int m_roleId;
+        ai::NumericInRangeRegenerating<float> m_timeOutForNextIntersectionWithWorld;
+        int m_numWheelsTouchingGround;
+        bool m_bHidden;
+        char Padding_188[3];
+        int m_lockedObjId;
+        int m_toBeLockedObjId;
+        float m_timeToLockTarget;
+        bool m_bMustGetOutOfDifficultPlace;
+        mutable bool m_bWasStuck;
+        char Padding_189[2];
+        mutable CVector m_prevPosToCheckStuck;
+        mutable float m_timeOutToCheckStuck;
+        mutable CVector m_curSteeringForce;
+        mutable bool m_bCurSteeringForceValid;
 
         float _GetTimeOutForNextIntersectionWithWorld() const;
         void _DropChests();
@@ -579,8 +579,8 @@ namespace ai
         void _GetOutOfDifficlultPlaceInternal();
         float _GetCabinControlCoeff() const;
 
-        /* 0x04ed */ char Padding_190[3];
-        /* 0x04f0 */ int m_soundRechargeChannelId;
+        char Padding_190[3];
+        int m_soundRechargeChannelId;
 
     public:
         static void __fastcall Registration();
@@ -592,5 +592,5 @@ namespace ai
         static const char* __fastcall AttackStatusName(ai::Vehicle::VehicleAttackStatus);
         static ai::Vehicle::VehicleMoveStatus __fastcall MoveStatusID(const CStr&);
         static ai::Vehicle::VehicleAttackStatus __fastcall AttackStatusID(const CStr&);
-    }; /* size: 0x04f4 */
+    };
 }

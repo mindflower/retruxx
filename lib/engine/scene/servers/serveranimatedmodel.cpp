@@ -593,10 +593,10 @@ namespace m3d
     {
         struct ImpostoredMeshInfo
         {
-            /* 0x0000 */ m3d::SgAnimatedModelNode* nodeLookup;
-            /* 0x0004 */ m3d::AnimatedModel* modelLookup;
-            /* 0x0008 */ DynamicModel* dmLookup;
-        }; /* size: 0x000c */
+            m3d::SgAnimatedModelNode* nodeLookup;
+            m3d::AnimatedModel* modelLookup;
+            DynamicModel* dmLookup;
+        };
 
         struct MeshImposteredSortPred
         {
@@ -612,16 +612,16 @@ namespace m3d
                 return m_meshes[meshIdx1].nodeLookup->GetServerHandle() <
                     m_meshes[meshIdx2].nodeLookup->GetServerHandle();
             }
-            /* 0x0000 */ ImpostoredMeshInfo const* m_meshes;
-        }; /* size: 0x0004 */
+            ImpostoredMeshInfo const* m_meshes;
+        };
 
         struct MeshInfo
         {
-            /* 0x0000 */ m3d::AnimatedModel::Mesh* mesh;
-            /* 0x0004 */ m3d::DSurfaceMaterial* material;
-            /* 0x0008 */ m3d::SgAnimatedModelNode* nodeLookup;
-            /* 0x000c */ m3d::AnimatedModel* modelLookup;
-        }; /* size: 0x0010 */
+            m3d::AnimatedModel::Mesh* mesh;
+            m3d::DSurfaceMaterial* material;
+            m3d::SgAnimatedModelNode* nodeLookup;
+            m3d::AnimatedModel* modelLookup;
+        };
 
         struct MeshSortPred
         {
@@ -642,8 +642,8 @@ namespace m3d
                 }
                 return material1->Textures.data() < material2->Textures.data();
             }
-            /* 0x0000 */ MeshInfo const* m_meshes;
-        }; /* size: 0x0004 */
+            MeshInfo const* m_meshes;
+        };
 
         // Orders nodes by squared distance from the camera, nearest first.
         struct SortByDist
@@ -659,8 +659,8 @@ namespace m3d
                 return (db.x * db.x + db.y * db.y + db.z * db.z) > (da.x * da.x + da.y * da.y + da.z * da.z);
             }
 
-            /* 0x0000 */ CVector m_org;
-        }; /* size: 0x000c */
+            CVector m_org;
+        };
 
         // A material contributes an alpha-tested diffuse texture when it has any
         // texture at all and either carries no shader or its first technique is
@@ -1455,10 +1455,10 @@ namespace m3d
 
         struct RenderInfo
         {
-            /* 0x0000 */ m3d::SgNode* m_node;
-            /* 0x0004 */ unsigned int m_dt;
-            /* 0x0008 */ unsigned int m_fps;
-        }; /* size: 0x000c */
+            m3d::SgNode* m_node;
+            unsigned int m_dt;
+            unsigned int m_fps;
+        };
 
         auto* ri = (RenderInfo*)param;
         AnimInfo* anim = nullptr;

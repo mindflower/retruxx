@@ -14,16 +14,16 @@ namespace m3d
 
     struct CameraPathState
     {
-        /* 0x0000 */ CVector m_point;
-        /* 0x000c */ Quaternion m_rotation;
-        /* 0x001c */ float m_zoom;
-        /* 0x0020 */ float m_speed;
-        /* 0x0024 */ float m_flyTime;
+        CVector m_point;
+        Quaternion m_rotation;
+        float m_zoom;
+        float m_speed;
+        float m_flyTime;
         CameraPathState(const CVector& point, const Quaternion& rotation, float zoom, float flyTime, float speed);
         CameraPathState();
         void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
         void SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
-    }; /* size: 0x0028 */
+    };
 
     class CameraPath
     {
@@ -56,13 +56,13 @@ namespace m3d
         float GetFullLength() const;
 
     private:
-        /* 0x0000 */ std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> > m_cameraPathStates;
-        /* 0x0010 */ float m_fullLength;
-        /* 0x0014 */ float m_fullTime;
+        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> > m_cameraPathStates;
+        float m_fullLength;
+        float m_fullTime;
         void _Fix();
         void _DeFix();
         float _CalcSplineSegmentLength(unsigned int iPoint1, unsigned int iPoint2) const;
-    }; /* size: 0x0018 */
+    };
 
     enum CinematicState
     {
@@ -112,18 +112,18 @@ namespace m3d
         Cinematic(const m3d::Cinematic& cinematic);
 
     public:
-        virtual  ~Cinematic() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
+        virtual  ~Cinematic() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classCinematic;
-        /* 0x0034 */ int m_playTime;
-        /* 0x0038 */ int m_fadeStartTime;
-        /* 0x003c */ m3d::CinematicState m_state;
-        /* 0x0040 */ bool m_bWasSkipped;
-        /* 0x0041 */ bool m_bWasSkippedInEnterFadeOut;
-        /* 0x0042 */ char Padding_205[2];
+        int m_playTime;
+        int m_fadeStartTime;
+        m3d::CinematicState m_state;
+        bool m_bWasSkipped;
+        bool m_bWasSkippedInEnterFadeOut;
+        char Padding_205[2];
         m3d::CVar m_fadePeriod;
 
         using CinematicItems = std::list<m3d::CinematicItem, std::allocator<m3d::CinematicItem> >;
@@ -165,8 +165,8 @@ namespace m3d
         bool bCanUpdate() const;
         bool bMustBeNextCinematic() const;
         void SetCameraStates(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& states);
-        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x3c */;
-        virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x40 */;
+        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
         void DumpCurrentPath(const CStr& filename);
         bool GetDebugMode() const;
         void SetDebugMode(bool bDebug);
@@ -181,16 +181,16 @@ namespace m3d
 
     private:
         CStr m_folder;
-        /* 0x00f0 */ float m_curTime;
+        float m_curTime;
 
         using PathMap = std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath> > >;
 
     private:
         std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath> > > m_paths;
-        /* 0x0100 */ bool m_bDebugMode;
-        /* 0x0101 */ char Padding_206[3];
-        /* 0x0104 */ int m_curDebugPointNum;
-        /* 0x0108 */ unsigned int m_numConsecutiveItemPlayingNow;
+        bool m_bDebugMode;
+        char Padding_206[3];
+        int m_curDebugPointNum;
+        unsigned int m_numConsecutiveItemPlayingNow;
         CVector _GetPointToLookAt() const;
         CVector _GetBasePoint() const;
         Quaternion _GetBaseRotation() const;
@@ -198,5 +198,5 @@ namespace m3d
         bool _TakeNextCinematicItem();
         void _PushCinematicItem();
         bool _bIsFirstItemPlayingNow() const;
-    }; /* size: 0x010c */
+    };
 }

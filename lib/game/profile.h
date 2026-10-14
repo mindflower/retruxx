@@ -80,20 +80,20 @@ protected:
     CStr ParamId2Name(ProfileParam id) const;
     int SetParamsDefault();
     void Clear();
-    /* 0x0034 */ CStr m_name;
-    /* 0x0040 */ CStr m_folder;
-    /* 0x004c */ retruxx::map<enum ProfileParam, m3d::AIParam, retruxx::less<enum ProfileParam>, retruxx::allocator<retruxx::pair<enum ProfileParam const, m3d::AIParam> > > m_params;
+    CStr m_name;
+    CStr m_folder;
+    retruxx::map<enum ProfileParam, m3d::AIParam, retruxx::less<enum ProfileParam>, retruxx::allocator<retruxx::pair<enum ProfileParam const, m3d::AIParam> > > m_params;
     Profile();
     Profile(const Profile& rhs);
 
 public:
-    virtual  ~Profile() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual  ~Profile() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classProfile;
-}; /* size: 0x0058 */
+};
 
 class ProfileManager : public m3d::Object
 {
@@ -122,18 +122,18 @@ protected:
     int AddProfile(Profile* profile);
     const Profile* CreateDefaultProfile();
     int GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CStr> >& profileFiles) const;
-    /* 0x0034 */ retruxx::vector<Profile*, retruxx::allocator<Profile*> > m_profiles;
-    /* 0x0044 */ CStr m_curProfileName;
-    /* 0x0050 */ m3d::CVar m_cvPathToProfiles;
-    /* 0x007c */ m3d::CVar m_cvProfileFileName;
+    retruxx::vector<Profile*, retruxx::allocator<Profile*> > m_profiles;
+    CStr m_curProfileName;
+    m3d::CVar m_cvPathToProfiles;
+    m3d::CVar m_cvProfileFileName;
     ProfileManager();
     ProfileManager(const ProfileManager& rhs);
 
 public:
-    virtual  ~ProfileManager() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual  ~ProfileManager() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classProfileManager;
-}; /* size: 0x00a8 */
+};

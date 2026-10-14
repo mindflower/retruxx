@@ -22,25 +22,25 @@ namespace m3d
         // decal's description as read from its .xml.
         struct DecalProto
         {
-            /* 0x0000 */ float m_width = 0.1f;
-            /* 0x0004 */ float m_height = 0.1f;
-            /* 0x0008 */ float m_depth = 0.1f;
-            /* 0x000c */ rend::TexHandle m_texture;
+            float m_width = 0.1f;
+            float m_height = 0.1f;
+            float m_depth = 0.1f;
+            rend::TexHandle m_texture;
         };
 
         // What an SgDecalsNode hands the server for the decal properties: the
         // payload plus the node the decals live on.
         struct DecalParams
         {
-            /* 0x0000 */ void* m_data;
-            /* 0x0004 */ SgNode* m_node;
+            void* m_data;
+            SgNode* m_node;
         };
 
         // And what it hands RenderItem.
         struct DecalRenderParams
         {
-            /* 0x0000 */ CMatrix* m_transform;
-            /* 0x0004 */ SgNode* m_node;
+            CMatrix* m_transform;
+            SgNode* m_node;
         };
 
         DecalsList* GetDecalsList(SgNode* node)

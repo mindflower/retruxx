@@ -265,9 +265,9 @@ namespace m3d
 
         struct RenderInfo
         {
-            /* 0x0000 */ m3d::SgNode* m_node;
-            /* 0x0004 */ int m_currentSoundNum;
-        }; /* size: 0x0008 */
+            m3d::SgNode* m_node;
+            int m_currentSoundNum;
+        };
 
         RenderInfo ri;
         ri.m_node = this;

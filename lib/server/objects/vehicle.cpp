@@ -621,8 +621,8 @@ namespace ai
         class FlatLine
         {
         public:
-            /* 0x0000 */ CVector normal;
-            /* 0x000c */ CVector origin;
+            CVector normal;
+            CVector origin;
 
             FlatLine()
             {
@@ -670,15 +670,15 @@ namespace ai
                 CVector p2 = origin + halfSegment;
                 ai::DebugLineOnGround(p1, p2, 0.5, color);
             }
-        }; /* size: 0x0018 */
+        };
 
         struct DrivingValues
         {
-            /* 0x0000 */ FlatLine checkLine;
-            /* 0x0018 */ float checkCircleRadius;
-            /* 0x001c */ float nextAngle;
-            /* 0x0020 */ float brakingCircleRadius;
-        }; /* size: 0x0024 */
+            FlatLine checkLine;
+            float checkCircleRadius;
+            float nextAngle;
+            float brakingCircleRadius;
+        };
 
         // Signed ground-plane angle between the direction from the vehicle to point and the
         // segment from point to nextPoint.
@@ -4039,8 +4039,8 @@ namespace ai
             }
 
         private:
-            /* 0x0000 */ m3d::Profiler* m_profiler;
-        }; /* size: 0x0004 */
+            m3d::Profiler* m_profiler;
+        };
     }  // namespace
 
     void Vehicle::Update(float elapsedTime, unsigned workTime)

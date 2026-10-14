@@ -56,24 +56,24 @@ public:
 class WindowResourceInfo : public ResourceInfo
 {
 public:
-    virtual int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x3c */;
-    virtual bool IsValid() const override /* 0x40 */;
-    /* 0x0044 */ int m_wndGuiId = -1;
-    /* 0x0048 */ CStr m_className;
-    /* 0x0054 */ bool m_bShowImmediate = false;
+    virtual int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+    virtual bool IsValid() const override;
+    int m_wndGuiId = -1;
+    CStr m_className;
+    bool m_bShowImmediate = false;
 
 protected:
     WindowResourceInfo();
     WindowResourceInfo(const WindowResourceInfo& rhs);
 
 public:
-    virtual  ~WindowResourceInfo() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual  ~WindowResourceInfo() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classWindowResourceInfo;
-}; /* size: 0x0058 */
+};
 
 class IcoResourceInfo :  public ResourceInfo
 {

@@ -59,35 +59,35 @@ namespace m3d
 
     struct LoadSkins
     {
-        /* 0x0000 */ bool loadAllSkins = true;
-        /* 0x0001 */ char Padding_101[3];
-        /* 0x0004 */ retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > loadSkins;
-    }; /* size: 0x0010 */
+        bool loadAllSkins = true;
+        char Padding_101[3];
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > loadSkins;
+    };
 
     struct BoneAnim
     {
-        /* 0x0000 */ int m_lastUpdatedFrame;
-        /* 0x0004 */ CMatrix m_curMatrix;
-        /* 0x0044 */ Quaternion m_rotation;
-        /* 0x0054 */ CVector m_translation;
-        /* 0x0060 */ int m_parentIdx;
-    }; /* size: 0x0064 */
+        int m_lastUpdatedFrame;
+        CMatrix m_curMatrix;
+        Quaternion m_rotation;
+        CVector m_translation;
+        int m_parentIdx;
+    };
 
     struct MeshesGroup
     {
-        /* 0x0000 */ retruxx::string Name;
-        /* 0x001c */ retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > MeshesId;
-        /* 0x002c */ int VisibleAtOnceMax;
-        /* 0x0030 */ int VisibleAtOnceMin;
-        /* 0x0034 */ retruxx::vector<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >, retruxx::allocator<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > > > m_variants;
+        retruxx::string Name;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > MeshesId;
+        int VisibleAtOnceMax;
+        int VisibleAtOnceMin;
+        retruxx::vector<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >, retruxx::allocator<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > > > m_variants;
         void GetNextVariant(retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& variant);
-    }; /* size: 0x0044 */
+    };
 
     struct AnimAction
     {
-        /* 0x0000 */ char* m_name;
-        /* 0x0004 */ ActionType m_action;
-    }; /* size: 0x0008 */
+        char* m_name;
+        ActionType m_action;
+    };
 
     AnimAction* GetAnimActions();
 
@@ -106,101 +106,101 @@ namespace m3d
     public:
         struct HierarchyChange
         {
-            /* 0x0000 */ short ownIdx;
-            /* 0x0002 */ char Padding_244[2];
-            /* 0x0004 */ m3d::DRAFT_Change changeType;
-            /* 0x0008 */ short newParentIdx;
-        }; /* size: 0x000c */
+            short ownIdx;
+            char Padding_244[2];
+            m3d::DRAFT_Change changeType;
+            short newParentIdx;
+        };
 
         struct ModelInfo
         {
-            /* 0x0000 */ short m_numNodes = 0;
-            /* 0x0002 */ short m_numTriMeshes = 0;
-            /* 0x0004 */ short m_numSkinMeshes = 0;
-            /* 0x0006 */ short m_numStaticMeshes = 0;
-            /* 0x0008 */ short m_numAnimations = 0;
-        }; /* size: 0x000a */
+            short m_numNodes = 0;
+            short m_numTriMeshes = 0;
+            short m_numSkinMeshes = 0;
+            short m_numStaticMeshes = 0;
+            short m_numAnimations = 0;
+        };
 
         struct AnimationTransform
         {
-            /* 0x0000 */ short idx;
-            /* 0x0002 */ char Padding_245[2];
-            /* 0x0004 */ float tx;
-            /* 0x0008 */ float ty;
-            /* 0x000c */ float tz;
-            /* 0x0010 */ float qx;
-            /* 0x0014 */ float qy;
-            /* 0x0018 */ float qz;
-            /* 0x001c */ float qw;
-        }; /* size: 0x0020 */
+            short idx;
+            char Padding_245[2];
+            float tx;
+            float ty;
+            float tz;
+            float qx;
+            float qy;
+            float qz;
+            float qw;
+        };
 
         struct Influences
         {
-            /* 0x0000 */ unsigned short m_numBones;
+            unsigned short m_numBones;
 
             struct Infl
             {
-                /* 0x0000 */ short m_boneIdx;
-                /* 0x0002 */ char Padding_247[2];
-                /* 0x0004 */ float m_boneWeight;
-                /* 0x0008 */ CVector m_offsetVec;
-                /* 0x0014 */ CVector m_offsetNormal;
-            }; /* size: 0x0020 */
+                short m_boneIdx;
+                char Padding_247[2];
+                float m_boneWeight;
+                CVector m_offsetVec;
+                CVector m_offsetNormal;
+            };
 
-            /* 0x0002 */ char Padding_248[2];
-            /* 0x0004 */ m3d::AnimatedModel::Influences::Infl m_influences[4];
-        }; /* size: 0x0084 */
+            char Padding_248[2];
+            m3d::AnimatedModel::Influences::Infl m_influences[4];
+        };
 
         struct Mesh
         {
             Mesh(const m3d::AnimatedModel::Mesh&);
             Mesh();
             ~Mesh();
-            /* 0x0000 */ char m_meshName[40];
-            /* 0x0028 */ int m_meshType;
-            /* 0x002c */ int m_numNode;
-            /* 0x0030 */ unsigned int meshId;
-            /* 0x0034 */ unsigned int groupId;
-            /* 0x0038 */ int m_MaterialNumber;
-            /* 0x003c */ retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > >* m_pModelSkins;
-            /* 0x0040 */ retruxx::vector<m3d::DRAFT_VertexComponent, retruxx::allocator<m3d::DRAFT_VertexComponent> > m_VCHs;
-            /* 0x0050 */ unsigned int m_VertexTypeSize;
-            /* 0x0054 */ m3d::rend::VertexType m_VertexType;
-            /* 0x0058 */ int m_numVertices;
-            /* 0x005c */ void* m_verts;
-            /* 0x0060 */ int m_numDrawVerts;
-            /* 0x0064 */ void* m_drawVerts;
-            /* 0x0068 */ m3d::AnimatedModel::Influences* m_vertsInfluences;
-            /* 0x006c */ int* m_vertsRemap;
-            /* 0x0070 */ unsigned short* m_tris;
-            /* 0x0074 */ int m_numFaces;
-            /* 0x0078 */ unsigned short* m_drawIndices;
-            /* 0x007c */ int m_numDrawIndices;
-            /* 0x0080 */ int m_lastFrameUpdated;
-            /* 0x0084 */ m3d::rend::VbPoolField m_VbPoolField;
-            /* 0x0098 */ m3d::rend::IbPoolField m_IbPoolField;
+            char m_meshName[40];
+            int m_meshType;
+            int m_numNode;
+            unsigned int meshId;
+            unsigned int groupId;
+            int m_MaterialNumber;
+            retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > >* m_pModelSkins;
+            retruxx::vector<m3d::DRAFT_VertexComponent, retruxx::allocator<m3d::DRAFT_VertexComponent> > m_VCHs;
+            unsigned int m_VertexTypeSize;
+            m3d::rend::VertexType m_VertexType;
+            int m_numVertices;
+            void* m_verts;
+            int m_numDrawVerts;
+            void* m_drawVerts;
+            m3d::AnimatedModel::Influences* m_vertsInfluences;
+            int* m_vertsRemap;
+            unsigned short* m_tris;
+            int m_numFaces;
+            unsigned short* m_drawIndices;
+            int m_numDrawIndices;
+            int m_lastFrameUpdated;
+            m3d::rend::VbPoolField m_VbPoolField;
+            m3d::rend::IbPoolField m_IbPoolField;
             m3d::DSurfaceMaterial& GetMaterial(unsigned int SkinNumber) const;
-            /* 0x00a8 */ int m_numFacesWelded;
-            /* 0x00ac */ unsigned short* m_trisWelded;
-            /* 0x00b0 */ int m_numVertsWelded;
-            /* 0x00b4 */ CVector* m_vertsWelded;
-            /* 0x00b8 */ CVector* m_faceNormals;
+            int m_numFacesWelded;
+            unsigned short* m_trisWelded;
+            int m_numVertsWelded;
+            CVector* m_vertsWelded;
+            CVector* m_faceNormals;
             void ComputeShadowsRelatedStuff();
-        }; /* size: 0x00bc */
+        };
 
         struct Bone
         {
             Bone(const m3d::AnimatedModel::Bone& __that);
             Bone();
-            /* 0x0000 */ char m_boneName[40];
-            /* 0x0028 */ int m_ownIdx;
-            /* 0x002c */ int m_parentIdx;
-            /* 0x0030 */ CVector m_translation0;
-            /* 0x003c */ Quaternion m_quaternion0;
-        }; /* size: 0x004c */
+            char m_boneName[40];
+            int m_ownIdx;
+            int m_parentIdx;
+            CVector m_translation0;
+            Quaternion m_quaternion0;
+        };
 
     private:
-        /* 0x0000 */ CMatrix* m_initialBoneInvMatrices;
+        CMatrix* m_initialBoneInvMatrices;
         static int __cdecl sortBonesFunc(const void* a, const void* b);
 
     public:
@@ -208,48 +208,48 @@ namespace m3d
         {
             Animation();
             ~Animation();
-            /* 0x0000 */ short m_numNodes;
-            /* 0x0002 */ short m_numFrames;
-            /* 0x0004 */ short m_fps;
-            /* 0x0006 */ short m_numChanges;
-            /* 0x0008 */ short m_nextAnimation;
-            /* 0x000a */ char Padding_249[2];
-            /* 0x000c */ ActionType m_action;
-            /* 0x0010 */ char m_name[25];
-            /* 0x0029 */ char Padding_250[3];
-            /* 0x002c */ m3d::AnimatedModel::HierarchyChange* m_hierChanges;
-            /* 0x0030 */ m3d::AnimatedModel::AnimationTransform* m_nodesPositions;
-        }; /* size: 0x0034 */
+            short m_numNodes;
+            short m_numFrames;
+            short m_fps;
+            short m_numChanges;
+            short m_nextAnimation;
+            char Padding_249[2];
+            ActionType m_action;
+            char m_name[25];
+            char Padding_250[3];
+            m3d::AnimatedModel::HierarchyChange* m_hierChanges;
+            m3d::AnimatedModel::AnimationTransform* m_nodesPositions;
+        };
 
     protected:
         static inline retruxx::map<CStr, CStr, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, CStr> > > m_textureFiles;
         static inline CStr m_cubemapTexName;
         static inline CStr m_cubemapTexPath;
-        /* 0x0004 */ m3d::AnimatedModel::ModelInfo m_header;
-        /* 0x000e */ char Padding_251[2];
-        /* 0x0010 */ retruxx::string m_Name;
-        /* 0x002c */ retruxx::string m_PathToFile;
-        /* 0x0048 */ bool m_composite;
-        /* 0x0049 */ bool m_passable;
-        /* 0x004a */ char Padding_252[2];
-        /* 0x004c */ m3d::AnimatedModel::Bone* m_boneInitialPos;
-        /* 0x0050 */ CMatrix m_Dummy;
-        /* 0x0090 */ m3d::AnimatedModel::Mesh* m_meshes;
-        /* 0x0094 */ unsigned int m_numMeshes;
-        /* 0x0098 */ bool m_bVerification;
-        /* 0x0099 */ char Padding_253[3];
-        /* 0x009c */ m3d::AnimatedModel::Animation* m_animations;
-        /* 0x00a0 */ short m_animRemap[32];
-        /* 0x00e0 */ m3d::DCollisionData m_Collision;
-        /* 0x0100 */ retruxx::vector<m3d::DRAFT_Geom, retruxx::allocator<m3d::DRAFT_Geom> > m_Geoms;
-        /* 0x0110 */ retruxx::vector<m3d::DRAFT_HierGeom, retruxx::allocator<m3d::DRAFT_HierGeom> > m_HierGeoms;
-        /* 0x0120 */ retruxx::map<unsigned int, m3d::DRAFT_BoneBounds, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, m3d::DRAFT_BoneBounds> > > m_BonesBounds;
-        /* 0x012c */ retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > > m_Skins;
-        /* 0x013c */ m3d::LoadSkins m_loadSkins;
-        /* 0x014c */ bool m_hasCubemap;
-        /* 0x014d */ char Padding_254[3];
-        /* 0x0150 */ retruxx::vector<m3d::MeshesGroup, retruxx::allocator<m3d::MeshesGroup> > m_MhGroups;
-        /* 0x0160 */ unsigned int m_cfgSize;
+        m3d::AnimatedModel::ModelInfo m_header;
+        char Padding_251[2];
+        retruxx::string m_Name;
+        retruxx::string m_PathToFile;
+        bool m_composite;
+        bool m_passable;
+        char Padding_252[2];
+        m3d::AnimatedModel::Bone* m_boneInitialPos;
+        CMatrix m_Dummy;
+        m3d::AnimatedModel::Mesh* m_meshes;
+        unsigned int m_numMeshes;
+        bool m_bVerification;
+        char Padding_253[3];
+        m3d::AnimatedModel::Animation* m_animations;
+        short m_animRemap[32];
+        m3d::DCollisionData m_Collision;
+        retruxx::vector<m3d::DRAFT_Geom, retruxx::allocator<m3d::DRAFT_Geom> > m_Geoms;
+        retruxx::vector<m3d::DRAFT_HierGeom, retruxx::allocator<m3d::DRAFT_HierGeom> > m_HierGeoms;
+        retruxx::map<unsigned int, m3d::DRAFT_BoneBounds, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, m3d::DRAFT_BoneBounds> > > m_BonesBounds;
+        retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > > m_Skins;
+        m3d::LoadSkins m_loadSkins;
+        bool m_hasCubemap;
+        char Padding_254[3];
+        retruxx::vector<m3d::MeshesGroup, retruxx::allocator<m3d::MeshesGroup> > m_MhGroups;
+        unsigned int m_cfgSize;
         CStr DefinePathToTexture(const CStr& fileName);
         void SetTexture(const CStr& path, m3d::DRAFT_TextureType type, m3d::rend::TexHandle& texHandle);
         void NewEffect(const retruxx::string& name, m3d::rend::IEffect*& shader);
@@ -338,15 +338,15 @@ namespace m3d
         unsigned int GetNumAnimations() const;
         const m3d::AnimatedModel::Animation& GetAnimation(unsigned int) const;
         bool bIsPassable() const;
-        /* 0x0164 */ Aabb m_box;
-    }; /* size: 0x017c */
+        Aabb m_box;
+    };
 
     struct Configuration
     {
-        /* 0x0000 */ unsigned int m_num = 0;
-        /* 0x0004 */ retruxx::vector<m3d::AnimatedModel::Mesh*, retruxx::allocator<m3d::AnimatedModel::Mesh*> > m_meshes;
-        /* 0x0014 */ retruxx::vector<unsigned char, retruxx::allocator<unsigned char> > m_groupVariants;
-    }; /* size: 0x0024 */
+        unsigned int m_num = 0;
+        retruxx::vector<m3d::AnimatedModel::Mesh*, retruxx::allocator<m3d::AnimatedModel::Mesh*> > m_meshes;
+        retruxx::vector<unsigned char, retruxx::allocator<unsigned char> > m_groupVariants;
+    };
 
     class AnimInfo
     {
@@ -375,34 +375,34 @@ namespace m3d
         const CMatrix& GetCurrentLoadpointMatrix(int lpId) const;
         m3d::BoneAnim& GetBoneAnim(unsigned int j);
         void SetBoneCurMatrix(unsigned int j, const CMatrix& m);
-        /* 0x0000 */ Aabb m_curBox;
+        Aabb m_curBox;
         const m3d::AnimatedModel::Animation* GetCurAnimation() const;
         int GetStickToLastFrame() const;
         const m3d::AnimatedModel::Mesh& GetMesh(unsigned int MeshNum) const;
 
     protected:
-        /* 0x0018 */ bool m_Empty;
-        /* 0x0019 */ char Padding_270[3];
-        /* 0x001c */ m3d::BoneAnim* m_bonesAnim;
-        /* 0x0020 */ m3d::AnimatedModel* m_forModel;
-        /* 0x0024 */ m3d::AnimatedModel::Animation* m_curAnimation;
-        /* 0x0028 */ int m_curAnimFrame;
-        /* 0x002c */ int m_timeOutToNextFrame;
-        /* 0x0030 */ retruxx::vector<void*, retruxx::allocator<void*> > m_meshesVerts;
-        /* 0x0040 */ retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> > m_VertTypes;
-        /* 0x0050 */ retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_VertTypesSize;
-        /* 0x0060 */ int m_lastInterpolationUpdate;
-        /* 0x0064 */ int m_stickToLastFrame;
-        /* 0x0068 */ int m_blendFramesNum;
-        /* 0x006c */ bool m_isBlending;
-        /* 0x006d */ char Padding_271[3];
-        /* 0x0070 */ m3d::BoneAnim* m_bonesAnimPrev;
-        /* 0x0074 */ m3d::AnimatedModel::Animation* m_curAnimationPrev;
-        /* 0x0078 */ int m_curAnimFramePrev;
-        /* 0x007c */ int m_timeOutToNextFramePrev;
-        /* 0x0080 */ int m_lastInterpolationUpdatePrev;
-        /* 0x0084 */ int m_stickToLastFramePrev;
-    }; /* size: 0x0088 */
+        bool m_Empty;
+        char Padding_270[3];
+        m3d::BoneAnim* m_bonesAnim;
+        m3d::AnimatedModel* m_forModel;
+        m3d::AnimatedModel::Animation* m_curAnimation;
+        int m_curAnimFrame;
+        int m_timeOutToNextFrame;
+        retruxx::vector<void*, retruxx::allocator<void*> > m_meshesVerts;
+        retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> > m_VertTypes;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_VertTypesSize;
+        int m_lastInterpolationUpdate;
+        int m_stickToLastFrame;
+        int m_blendFramesNum;
+        bool m_isBlending;
+        char Padding_271[3];
+        m3d::BoneAnim* m_bonesAnimPrev;
+        m3d::AnimatedModel::Animation* m_curAnimationPrev;
+        int m_curAnimFramePrev;
+        int m_timeOutToNextFramePrev;
+        int m_lastInterpolationUpdatePrev;
+        int m_stickToLastFramePrev;
+    };
 
     ActionType GetActionByName(char const *);
 }

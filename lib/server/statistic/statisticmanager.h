@@ -12,19 +12,19 @@ namespace ai
         Statistic();
 
     public:
-        virtual  ~Statistic() override /* 0x00 */;
+        virtual  ~Statistic() override;
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetRtClass() const /* 0x3c */;
+        virtual m3d::Class* GetRtClass() const;
         static m3d::Class m_classStatistic;
-        /* 0x0034 */ bool m_bGlobalFlag;
-        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x40 */;
-        virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x44 */;
-        virtual CStr GetValue() const = 0 /* 0x48 */;
-        virtual void Zero() = 0 /* 0x4c */;
-        virtual m3d::AIParam GetValueAsAIParam() const = 0 /* 0x50 */;
+        bool m_bGlobalFlag;
+        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+        virtual CStr GetValue() const = 0;
+        virtual void Zero() = 0;
+        virtual m3d::AIParam GetValueAsAIParam() const = 0;
         bool GetGlobalFlag() const;
         void SetGlobalFlag(bool bGlobal);
-    }; /* size: 0x0038 */
+    };
 
     class StatisticManager
     {

@@ -17,7 +17,7 @@ namespace ai
 class RadarWnd : public m3d::ui::Wnd
 {
 public:
-    /* 0x0220 */ m3d::CVar m_cvDefaultRadarScanRadius;
+    m3d::CVar m_cvDefaultRadarScanRadius;
     void AllowNavPoints(bool bAllow);
     void AllowVehicles(bool bAllow);
     void AllowTurrets(bool bAllow);
@@ -40,11 +40,11 @@ public:
         float GetAngle() const;
         PointBase<float> const& GetSize() const;
         BoundsBase<float> GetBounds() const;
-        /* 0x0000 */ m3d::rend::TexHandle m_texture;
-        /* 0x0004 */ PointBase<float> m_coords;
-        /* 0x000c */ float m_angle;
-        /* 0x0010 */ PointBase<float> m_size;
-    }; /* size: 0x0018 */
+        m3d::rend::TexHandle m_texture;
+        PointBase<float> m_coords;
+        float m_angle;
+        PointBase<float> m_size;
+    };
 
     struct NpDistance
     {
@@ -56,10 +56,10 @@ public:
         int SetDistance(float distance);
         void Show(bool bShow);
         bool IsValid() const;
-        /* 0x0000 */ NavPoint::NavPointType m_navPointType;
-        /* 0x0004 */ ElectronicDigitalWnd* m_wndDigital;
-        /* 0x0008 */ int m_navPointId;
-    }; /* size: 0x000c */
+        NavPoint::NavPointType m_navPointType;
+        ElectronicDigitalWnd* m_wndDigital;
+        int m_navPointId;
+    };
 
     enum RadarIco
     {
@@ -106,31 +106,31 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_icoNames[24];
-        /* 0x0120 */ PointBase<float> m_icoSizeVehicleSmall;
-        /* 0x0128 */ PointBase<float> m_icoSizeVehicleLarge;
-        /* 0x0130 */ PointBase<float> m_icoSizeTurretSmall;
-        /* 0x0138 */ PointBase<float> m_icoSizeTurretLarge;
-        /* 0x0140 */ PointBase<float> m_icoSizeMainQuestFar;
-        /* 0x0148 */ PointBase<float> m_icoSizeMainQuestNear;
-        /* 0x0150 */ PointBase<float> m_icoSizeUserQuestFar;
-        /* 0x0158 */ PointBase<float> m_icoSizeUserQuestNear;
-        /* 0x0160 */ PointBase<float> m_icoSizeUserLocationFar;
-        /* 0x0168 */ PointBase<float> m_icoSizeUserLocationNear;
-        /* 0x0170 */ PointBase<float> m_icoSizeWorldside;
-        /* 0x0178 */ PointBase<float> m_rotationCenter;
-        /* 0x0180 */ float m_innerRadius;
-        /* 0x0184 */ float m_outerRadius;
-        /* 0x0188 */ CStr m_cameraSightTexName;
-        /* 0x0194 */ PointBase<float> m_cameraSightSz;
-        /* 0x019c */ CStr m_playerVehicleTexName;
-        /* 0x01a8 */ PointBase<float> m_playerVehicleSz;
-        /* 0x01b0 */ CStr m_highlightTexName;
-        /* 0x01bc */ BoundsBase<float> m_highlightB;
-        /* 0x01cc */ CStr m_wndsDistancesNames[3];
+        CStr m_icoNames[24];
+        PointBase<float> m_icoSizeVehicleSmall;
+        PointBase<float> m_icoSizeVehicleLarge;
+        PointBase<float> m_icoSizeTurretSmall;
+        PointBase<float> m_icoSizeTurretLarge;
+        PointBase<float> m_icoSizeMainQuestFar;
+        PointBase<float> m_icoSizeMainQuestNear;
+        PointBase<float> m_icoSizeUserQuestFar;
+        PointBase<float> m_icoSizeUserQuestNear;
+        PointBase<float> m_icoSizeUserLocationFar;
+        PointBase<float> m_icoSizeUserLocationNear;
+        PointBase<float> m_icoSizeWorldside;
+        PointBase<float> m_rotationCenter;
+        float m_innerRadius;
+        float m_outerRadius;
+        CStr m_cameraSightTexName;
+        PointBase<float> m_cameraSightSz;
+        CStr m_playerVehicleTexName;
+        PointBase<float> m_playerVehicleSz;
+        CStr m_highlightTexName;
+        BoundsBase<float> m_highlightB;
+        CStr m_wndsDistancesNames[3];
         AuxInfo(RadarWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x01f0 */
+    };
 
     using RadarItemVector = std::vector<RadarWnd::RadarItem*, std::allocator<RadarWnd::RadarItem*>>;
     using RadarItemMap = std::map<
@@ -146,18 +146,18 @@ protected:
     RadarWnd(RadarWnd const& rhs);
 
 public:
-    virtual ~RadarWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~RadarWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(RadarWnd);
-    virtual int GameDataSetup() override /* 0x104 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
-    virtual void OnPaintOverChildren(m3d::ui::DrawInfo const& di) override /* 0x8c */;
-    virtual int GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override /* 0x110 */;
-    virtual int GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override /* 0x114 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual void OnPaintOverChildren(m3d::ui::DrawInfo const& di) override;
+    virtual int GameDataSave(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override;
+    virtual int GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* guiNode) override;
     int UpdateOnNewFrame();
     int UpdateObjectsOnNewFrame(RadarItemMap& items, m3d::Class const* cls);
     int UpdateVehiclesOnNewFrame();
@@ -224,24 +224,24 @@ public:
     float CalculateDistanceToNavPoint(int npId) const;
     void Reset();
     CVector FixCoord(CVector const& originalNpCoord) const;
-    /* 0x024c */ RadarItemMap m_vehicleItems;
-    /* 0x0258 */ RadarItemMap m_turretItems;
-    /* 0x0264 */ RadarItemMap m_navPointItems;
-    /* 0x0270 */ RadarItemMap m_worldsideItems;
-    /* 0x027c */ DistanceVector m_distances;
-    /* 0x028c */ RadarWnd::AuxInfo m_aif;
-    /* 0x047c */ float m_scanRadius;
-    /* 0x0480 */ m3d::rend::TexHandle m_icoTextures[24];
-    /* 0x04e0 */ bool m_bNavPointsAllowed;
-    /* 0x04e1 */ bool m_bVehiclesAllowed;
-    /* 0x04e2 */ bool m_bTurretsAllowed;
-    /* 0x04e3 */ bool m_bDistancesAllowed;
-    /* 0x04e4 */ bool m_bNavPointsEnabled;
-    /* 0x04e5 */ bool m_bVehiclesEnabled;
-    /* 0x04e6 */ bool m_bTurretsEnabled;
-    /* 0x04e7 */ bool m_bDistancesEnabled;
-    /* 0x04e8 */ m3d::rend::TexHandle m_cameraSightTex;
-    /* 0x04ec */ m3d::rend::TexHandle m_playerVehicleTex;
-    /* 0x04f0 */ m3d::rend::TexHandle m_highlightTex;
-    /* 0x04f4 */ int m_test;
-}; /* size: 0x04f8 */
+    RadarItemMap m_vehicleItems;
+    RadarItemMap m_turretItems;
+    RadarItemMap m_navPointItems;
+    RadarItemMap m_worldsideItems;
+    DistanceVector m_distances;
+    RadarWnd::AuxInfo m_aif;
+    float m_scanRadius;
+    m3d::rend::TexHandle m_icoTextures[24];
+    bool m_bNavPointsAllowed;
+    bool m_bVehiclesAllowed;
+    bool m_bTurretsAllowed;
+    bool m_bDistancesAllowed;
+    bool m_bNavPointsEnabled;
+    bool m_bVehiclesEnabled;
+    bool m_bTurretsEnabled;
+    bool m_bDistancesEnabled;
+    m3d::rend::TexHandle m_cameraSightTex;
+    m3d::rend::TexHandle m_playerVehicleTex;
+    m3d::rend::TexHandle m_highlightTex;
+    int m_test;
+};

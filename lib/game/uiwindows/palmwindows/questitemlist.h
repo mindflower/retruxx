@@ -22,19 +22,19 @@ public:
         QuestItemList::ListType listType,
         BoundsBase<float> const& rc,
         unsigned int flags,
-        unsigned int id) /* 0x144 */;
+        unsigned int id);
     int SetupForParentQuest(int parentQuestId);
 
 protected:
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
-    virtual int OnAfterAddToWndStation() override /* 0x00 */;
-    virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override /* 0x134 */;
-    virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override /* 0x138 */;
-    virtual int DeleteItem(int itemIdx) override /* 0x13c */;
-    virtual int CompareItem(int itemIdx0, int itemIdx1) override /* 0x140 */;
-    virtual void SetCurSel(int idx) override /* 0x11c */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnBeforeAddToWndStation() override;
+    virtual int OnAfterAddToWndStation() override;
+    virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override;
+    virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override;
+    virtual int DeleteItem(int itemIdx) override;
+    virtual int CompareItem(int itemIdx0, int itemIdx1) override;
+    virtual void SetCurSel(int idx) override;
     QuestItem* CreateQuestItem(help::QuestType questType, int questId);
     int AddQuestItem(help::QuestType questType, int questId, bool select);
     int UpdateQuestItem(help::QuestType questType, int questId);
@@ -56,16 +56,16 @@ protected:
     void GetStaticQuestIdsToShow(std::vector<int, std::allocator<int>>& questIds) const;
     void GetDynamicQuestIdsToShow(std::vector<int, std::allocator<int>>& dQuestIds) const;
     QuestItem* GetQuestItemForAlphaNpTexture(help::QuestType questType, int questIdOnThatNpChanged) const;
-    /* 0x0238 */ QuestItemList::ListType m_listType;
-    /* 0x023c */ int m_parentQuestId;
+    QuestItemList::ListType m_listType;
+    int m_parentQuestId;
     QuestItemList();
     QuestItemList(QuestItemList const& rhs);
 
 public:
-    virtual ~QuestItemList() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
+    virtual ~QuestItemList() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classQuestItemList;
-}; /* size: 0x0240 */
+};

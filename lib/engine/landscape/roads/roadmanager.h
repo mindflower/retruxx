@@ -30,43 +30,43 @@ namespace m3d
 
     struct RoadSet
     {
-        /* 0x0000 */ CStr m_name;
-        /* 0x000c */ std::vector<m3d::AnimatedModel*, std::allocator<m3d::AnimatedModel*>> m_roadModels[4];
-        /* 0x004c */ std::vector<
+        CStr m_name;
+        std::vector<m3d::AnimatedModel*, std::allocator<m3d::AnimatedModel*>> m_roadModels[4];
+        std::vector<
             std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
             std::allocator<
                 std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
             m_boundVerts[4];
-        /* 0x008c */ std::vector<
+        std::vector<
             std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
             std::allocator<
                 std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
             m_fakeBoundVerts[4];
-        /* 0x00cc */ std::vector<
+        std::vector<
             std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
             std::allocator<
                 std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
             m_cliffBorders[4];
-        /* 0x010c */ float m_minX[4];
-        /* 0x011c */ float m_minZ[4];
-        /* 0x012c */ float m_maxX[4];
-        /* 0x013c */ float m_maxZ[4];
-        /* 0x014c */ float m_sizeZ[4];
-        /* 0x015c */ float m_sizeX[4];
-        /* 0x016c */ CVector m_scale;
-        /* 0x0178 */ CStr m_wheeltraceTexName;
-        /* 0x0184 */ int m_soilType;
+        float m_minX[4];
+        float m_minZ[4];
+        float m_maxX[4];
+        float m_maxZ[4];
+        float m_sizeZ[4];
+        float m_sizeX[4];
+        CVector m_scale;
+        CStr m_wheeltraceTexName;
+        int m_soilType;
         void Clear();
         int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
         RoadSet(const m3d::RoadSet&);
         RoadSet();
         ~RoadSet();
-    }; /* size: 0x0188 */
+    };
 
     class RoadTestCallBack
     {
     public:
-        virtual bool TestRoadNode(m3d::RoadNode*) const = 0 /* 0x00 */;
+        virtual bool TestRoadNode(m3d::RoadNode*) const = 0;
     };
 
     class RoadInRadius3dTest : public RoadTestCallBack
@@ -104,14 +104,14 @@ namespace m3d
     class RoadManager
     {
     private:
-        /* 0x0000 */ m3d::Landscape* m_owner;
-        /* 0x0004 */ retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*> >* m_coveredCells;
+        m3d::Landscape* m_owner;
+        retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*> >* m_coveredCells;
 
     public:
         RoadManager(const m3d::RoadManager&);
         RoadManager();
-        /* 0x0008 */ m3d::RoadNode* m_roadRoot;
-        /* 0x000c */ retruxx::vector<m3d::RoadSet*, retruxx::allocator<m3d::RoadSet*> > m_roadSets;
+        m3d::RoadNode* m_roadRoot;
+        retruxx::vector<m3d::RoadSet*, retruxx::allocator<m3d::RoadSet*> > m_roadSets;
         void ClearRoadSets();
         void RebuildStructures();
         void RebuildSomeNodes(retruxx::set<m3d::RoadNode*, retruxx::less<m3d::RoadNode*>, retruxx::allocator<m3d::RoadNode*> > nodesToRebuild, bool bNeedToRelink);
@@ -140,5 +140,5 @@ namespace m3d
         void CalcNodeData(m3d::RoadNode* rn);
         void LinkToBorder(m3d::RoadNode* rn, unsigned int idx, int link, CVector& res);
         bool GetAdjPoint(m3d::RoadNode* rn, unsigned int idx, int link, CVector& acceptor);
-    }; /* size: 0x001c */
+    };
 }

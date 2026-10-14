@@ -8,113 +8,113 @@ namespace ai
     {
     public:
         SimplePhysicObjPrototypeInfo();
-        virtual  ~SimplePhysicObjPrototypeInfo() override /* 0x00 */;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual ai::SimplePhysicBody* CreatePhysicBody() const /* 0x1c */;
+        virtual  ~SimplePhysicObjPrototypeInfo() override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::SimplePhysicBody* CreatePhysicBody() const;
         CVector GetSize() const;
         float GetRadius() const;
         const CStr& GetEngineModelName() const;
         float GetMassValue() const;
-        /* 0x0048 */ retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
+        retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
 
     protected:
-        /* 0x0058 */ bool m_bCollisionTrimeshAllowed;
+        bool m_bCollisionTrimeshAllowed;
         void _SetGeomType(ai::GeomType geomType);
-        /* 0x0059 */ char Padding_57[3];
+        char Padding_57[3];
 
     private:
-        /* 0x005c */ ai::GeomType m_geomType;
-        /* 0x0060 */ CStr m_engineModelName;
-        /* 0x006c */ CVector m_size;
-        /* 0x0078 */ float m_radius;
-        /* 0x007c */ float m_massValue;
-    }; /* size: 0x0080 */
+        ai::GeomType m_geomType;
+        CStr m_engineModelName;
+        CVector m_size;
+        float m_radius;
+        float m_massValue;
+    };
 
     class SimplePhysicObj : public ai::PhysicObj
     {
     protected:
-        virtual  ~SimplePhysicObj() override /* 0x00 */;
+        virtual  ~SimplePhysicObj() override;
 
     protected:
         SimplePhysicObj(const ai::SimplePhysicObjPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSimplePhysicObj;
-        virtual const ai::SimplePhysicObjPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual const ai::SimplePhysicObjPrototypeInfo* GetPrototypeInfo() const override;
 
     protected:
         static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
+        virtual int GetPropertyId(const char* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
         static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        virtual void Remove() override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void SetBelong(int newBelong) override /* 0x00 */;
+        virtual void Remove() override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void SetBelong(int newBelong) override;
         ai::SimplePhysicBody* GetPhysicBody();
         const ai::SimplePhysicBody* GetPhysicBody() const;
-        virtual CVector GetGeometricCenter() const override /* 0x00 */;
-        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodelist) const override /* 0x00 */;
-        virtual void TransferPhysicParamsToSceneGraphNode() override /* 0x00 */;
-        virtual void RelinkSceneGraphNode() override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-        virtual void TransferToSpace(dxSpace* newSpace) override /* 0x00 */;
-        virtual void RenderDebugInfo() const override /* 0x00 */;
-        virtual void DisableGeometry(bool changePhysicState) override /* 0x00 */;
-        virtual void EnableGeometry(bool changePhysicState) override /* 0x00 */;
-        virtual void LinkGeomsToCollisionCells() override /* 0x00 */;
-        virtual void UnlinkGeomsFromCollisionCells() override /* 0x00 */;
-        virtual void RelinkGeomsToCollisionCells() override /* 0x00 */;
-        virtual ai::Geom::CellAabb GetCollisionCellAabb() const override /* 0x00 */;
+        virtual CVector GetGeometricCenter() const override;
+        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodelist) const override;
+        virtual void TransferPhysicParamsToSceneGraphNode() override;
+        virtual void RelinkSceneGraphNode() override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void TransferToSpace(dxSpace* newSpace) override;
+        virtual void RenderDebugInfo() const override;
+        virtual void DisableGeometry(bool changePhysicState) override;
+        virtual void EnableGeometry(bool changePhysicState) override;
+        virtual void LinkGeomsToCollisionCells() override;
+        virtual void UnlinkGeomsFromCollisionCells() override;
+        virtual void RelinkGeomsToCollisionCells() override;
+        virtual ai::Geom::CellAabb GetCollisionCellAabb() const override;
         void SetMass(float newMassValue);
-        virtual void SetPassedToAnotherMapStatus() override /* 0x00 */;
-        virtual void SetSkin(int skin) override /* 0x00 */;
+        virtual void SetPassedToAnotherMapStatus() override;
+        virtual void SetSkin(int skin) override;
         static void __fastcall Registration();
-        virtual void SetVisible() override /* 0x00 */;
-        virtual void SetInvisible() override /* 0x00 */;
+        virtual void SetVisible() override;
+        virtual void SetInvisible() override;
         void SetScale(float scale, bool recalcMass);
         float GetScale();
-        virtual void SetDeadTimer(int resttime, bool testVisibility) /* 0x1a4 */;
+        virtual void SetDeadTimer(int resttime, bool testVisibility);
         bool bDeadTimerActive();
-        virtual void SetNodeAction(int action, bool forceRestartAction) /* 0x1a8 */;
-        virtual void SetNextForAnimation(int action, int nextAction) /* 0x1ac */;
-        virtual bool IsVisible() override /* 0x00 */;
+        virtual void SetNodeAction(int action, bool forceRestartAction);
+        virtual void SetNextForAnimation(int action, int nextAction);
+        virtual bool IsVisible() override;
 
     protected:
-        virtual void _Construct() /* 0x1b0 */;
-        virtual void _InternalPostLoad() override /* 0x00 */;
-        virtual void _InternalCreateVisualPart() override /* 0x00 */;
-        virtual void _UnlinkBodyFromGeoms() override /* 0x00 */;
-        virtual void _LinkBodyToGeoms() override /* 0x00 */;
-        virtual void _SetPositionToGeoms(const CVector& pos) override /* 0x00 */;
-        virtual void _SetRotationToGeoms(const Quaternion& rot) override /* 0x00 */;
+        virtual void _Construct();
+        virtual void _InternalPostLoad() override;
+        virtual void _InternalCreateVisualPart() override;
+        virtual void _UnlinkBodyFromGeoms() override;
+        virtual void _LinkBodyToGeoms() override;
+        virtual void _SetPositionToGeoms(const CVector& pos) override;
+        virtual void _SetRotationToGeoms(const Quaternion& rot) override;
         void _UpdatePhysicBodyByCollisionInfo(const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& collisionInfos);
         void _UpdateFullPhysicBodyByCollisionInfo(const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& collisionInfos);
         void _UpdateCollisionInfoFromPhysicBody();
-        /* 0x0120 */ ai::SimplePhysicBody* m_physicBody;
-        /* 0x0124 */ retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
-        /* 0x0134 */ float m_scale;
-        /* 0x0138 */ bool m_deadTimerActive;
-        /* 0x0139 */ char Padding_12[3];
-        /* 0x013c */ float m_deadTimer;
-        /* 0x0140 */ bool m_testVisibility;
-    }; /* size: 0x0144 */
+        ai::SimplePhysicBody* m_physicBody;
+        retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
+        float m_scale;
+        bool m_deadTimerActive;
+        char Padding_12[3];
+        float m_deadTimer;
+        bool m_testVisibility;
+    };
 }

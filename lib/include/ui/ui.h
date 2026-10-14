@@ -111,15 +111,15 @@ namespace m3d
             Wnd(m3d::ui::Wnd const& wnd);
 
         public:
-            virtual ~Wnd() override /* 0x00 */;
-            virtual m3d::Object* Clone() override /* 0x04 */;
+            virtual ~Wnd() override;
+            virtual m3d::Object* Clone() override;
             static m3d::Object* CreateObject();
             static m3d::Class* GetBaseClass();
-            virtual m3d::Class* GetClass() const override /* 0x34 */;
+            virtual m3d::Class* GetClass() const override;
             static m3d::Class m_classWnd;
 
         private:
-            /* 0x0034 */ int m_created = 0;
+            int m_created = 0;
             static inline m3d::ui::WndStation* m_wndStation;
 
         public:
@@ -134,56 +134,56 @@ namespace m3d
             };
 
         private:
-            /* 0x0038 */ m3d::ui::Wnd::DragMode m_dragMode = DragMode::DRAG_NONE;
-            /* 0x003c */ PointBase<float> m_dragStartPtLocal;
-            /* 0x0044 */ PointBase<float> m_dragCurPtLocal;
-            /* 0x004c */ PointBase<float> m_dragStartPt;
-            /* 0x0054 */ PointBase<float> m_dragCurPt;
+            m3d::ui::Wnd::DragMode m_dragMode = DragMode::DRAG_NONE;
+            PointBase<float> m_dragStartPtLocal;
+            PointBase<float> m_dragCurPtLocal;
+            PointBase<float> m_dragStartPt;
+            PointBase<float> m_dragCurPt;
             void StartDragMove(PointBase<float> const& pt);
             void FinishDragMove(int accept, PointBase<float> const& pt);
             void DoDragMove0(PointBase<float> const& pt);
             void DoDragMove(PointBase<float> const& pt);
 
         public:
-            virtual int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override /* 0x08 */;
-            virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* writeTo) override /* 0x10 */;
-            virtual int SetProperty(unsigned int propId, void* property) override /* 0x14 */;
-            virtual int GetProperty(unsigned int propId, void* property) const override /* 0x18 */;
-            virtual int GetPropertiesList(retruxx::set<unsigned int>& properties) const override /* 0x1c */;
+            virtual int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override;
+            virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* writeTo) override;
+            virtual int SetProperty(unsigned int propId, void* property) override;
+            virtual int GetProperty(unsigned int propId, void* property) const override;
+            virtual int GetPropertiesList(retruxx::set<unsigned int>& properties) const override;
 
         protected:
-            /* 0x005c */ CStr m_toolTipText;
-            /* 0x0068 */ int m_toolTipTimeOut = -1;
-            /* 0x006c */ m3d::ui::Wnd* m_toolTipWnd = nullptr;
-            /* 0x0070 */ m3d::ui::ScrollWnd* m_scrollHWnd = nullptr;
-            /* 0x0074 */ m3d::ui::ScrollWnd* m_scrollVWnd = nullptr;
+            CStr m_toolTipText;
+            int m_toolTipTimeOut = -1;
+            m3d::ui::Wnd* m_toolTipWnd = nullptr;
+            m3d::ui::ScrollWnd* m_scrollHWnd = nullptr;
+            m3d::ui::ScrollWnd* m_scrollVWnd = nullptr;
             void RemoveTooltip();
             m3d::ui::Wnd* CreateTooltipWnd();
             PointBase<float> GetOriginPoint() const;
 
         public:
-            /* 0x0078 */ int m_activationOrder = -1;
+            int m_activationOrder = -1;
 
         protected:
-            /* 0x007c */ CStr m_caption;
-            /* 0x0088 */ unsigned int m_style = 512;
-            /* 0x008c */ BoundsBase<float> m_bounds;
-            /* 0x009c */ retruxx::vector<float> m_clientEdges;
-            /* 0x00ac */ unsigned int m_curClr = 0;
-            /* 0x00b0 */ unsigned int m_textColor = -1;
-            /* 0x00b4 */ unsigned int m_textColorDisabled = -8421505;
-            /* 0x00b8 */ CStr m_strTextColor = "@ffffffff";
-            /* 0x00c4 */ CStr m_strTextColorDisabled = "@ff7f7f7f";
-            /* 0x00d0 */ bool m_gotFocus = false;
-            /* 0x00d1 */ bool m_mouseOver = false;
-            /* 0x00d2 */ char Padding_22[2];
-            /* 0x00d4 */ unsigned int m_id = 0;
-            /* 0x00d8 */ CStr m_bgTextureName;
-            /* 0x00e4 */ m3d::rend::TexHandle m_bgTexture;
-            /* 0x00e8 */ CStr m_paneName = "defaultWnd";
-            /* 0x00f4 */ int m_paneFlags = 7;
-            /* 0x00f8 */ m3d::ui::PaneFlagBg m_bgFlags = PaneFlagBg::PANE_FLAG_BG_OUT;
-            /* 0x00fc */ unsigned char m_mouseDown = 0;
+            CStr m_caption;
+            unsigned int m_style = 512;
+            BoundsBase<float> m_bounds;
+            retruxx::vector<float> m_clientEdges;
+            unsigned int m_curClr = 0;
+            unsigned int m_textColor = -1;
+            unsigned int m_textColorDisabled = -8421505;
+            CStr m_strTextColor = "@ffffffff";
+            CStr m_strTextColorDisabled = "@ff7f7f7f";
+            bool m_gotFocus = false;
+            bool m_mouseOver = false;
+            char Padding_22[2];
+            unsigned int m_id = 0;
+            CStr m_bgTextureName;
+            m3d::rend::TexHandle m_bgTexture;
+            CStr m_paneName = "defaultWnd";
+            int m_paneFlags = 7;
+            m3d::ui::PaneFlagBg m_bgFlags = PaneFlagBg::PANE_FLAG_BG_OUT;
+            unsigned char m_mouseDown = 0;
 
         public:
             int IsPtInBounds(PointBase<float> const& pt) const;
@@ -195,9 +195,9 @@ namespace m3d
             BoundsBase<float> ToParent(BoundsBase<float> const& b) const;
             unsigned int GetStyle() const;
             void SetStyle(unsigned int st);
-            virtual void SetPane(CStr const& name) /* 0x3c */;
+            virtual void SetPane(CStr const& name);
             CStr GetPaneName() const;
-            virtual void SetPaneFlags(int flags) /* 0x40 */;
+            virtual void SetPaneFlags(int flags);
             int GetPaneFlags() const;
             void SetBgFlags(m3d::ui::PaneFlagBg);
             m3d::ui::PaneFlagBg GetBgFlags() const;
@@ -217,128 +217,128 @@ namespace m3d
             int CreateWnd(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id);
 
         public:
-            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id) /* 0x44 */;
+            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id);
 
         private:
             int DestroyWnd();
 
         public:
             m3d::ui::WndStation* GetStation() const;
-            virtual int SetText(CStr const& caption) /* 0x48 */;
-            virtual CStr GetText() const /* 0x4c */;
-            virtual BoundsBase<float> GetBounds() const /* 0x50 */;
-            virtual BoundsBase<float> GetClientBounds() const /* 0x54 */;
-            virtual void SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin) /* 0x58 */;
-            virtual void SetClientEdges(retruxx::vector<float, retruxx::allocator<float>> const& clientEdges) /* 0x60 */;
-            virtual void SetClientEdges(float left, float top, float right, float bottom) /* 0x60 */;
+            virtual int SetText(CStr const& caption);
+            virtual CStr GetText() const;
+            virtual BoundsBase<float> GetBounds() const;
+            virtual BoundsBase<float> GetClientBounds() const;
+            virtual void SetBounds(BoundsBase<float> const& rect, bool bUpdateBaseOrigin);
+            virtual void SetClientEdges(retruxx::vector<float, retruxx::allocator<float>> const& clientEdges);
+            virtual void SetClientEdges(float left, float top, float right, float bottom);
             retruxx::vector<float, retruxx::allocator<float>> const& GetClientEdges() const;
-            virtual int AddChild(m3d::Object* w) override /* 0x20 */;
-            virtual int RemoveChild(m3d::Object* w) override /* 0x24 */;
-            virtual int RemoveChildForce(m3d::Object* w) /* 0x64 */;
-            virtual int OnBeforeAddToWndStation() /* 0x68 */;
-            virtual int OnAfterAddToWndStation() /* 0x6c */;
-            virtual int OnBeforeRemoveFromWndStation() /* 0x70 */;
-            virtual int OnAfterRemoveFromWndStation() /* 0x74 */;
-            virtual int SetBackground(m3d::rend::TexHandle bgTex) /* 0x7c */;
-            virtual int SetBackground(CStr const& bgTextureName) /* 0x7c */;
+            virtual int AddChild(m3d::Object* w) override;
+            virtual int RemoveChild(m3d::Object* w) override;
+            virtual int RemoveChildForce(m3d::Object* w);
+            virtual int OnBeforeAddToWndStation();
+            virtual int OnAfterAddToWndStation();
+            virtual int OnBeforeRemoveFromWndStation();
+            virtual int OnAfterRemoveFromWndStation();
+            virtual int SetBackground(m3d::rend::TexHandle bgTex);
+            virtual int SetBackground(CStr const& bgTextureName);
             m3d::rend::TexHandle GetBackground() const;
 
         protected:
             int CallParentNotify(unsigned int msg, m3d::AIParam const& data, bool urgent);
             int ReflectChildNotifyToParent(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data);
             void DrawNonClient(m3d::ui::DrawInfo const& di, unsigned int clr);
-            virtual void OnNcPaint(m3d::ui::DrawInfo const& di, unsigned int clr) /* 0x80 */;
-            virtual void DrawWndText(m3d::ui::DrawInfo const& di) /* 0x84 */;
-            virtual int OnPaint(m3d::ui::DrawInfo const& di) /* 0x88 */;
-            virtual void OnPaintOverChildren(m3d::ui::DrawInfo const& clipToIt) /* 0x8c */;
-            virtual int OnTick(int curTime, int deltaTime) /* 0x90 */;
-            virtual void OnDisplayChanged() /* 0x94 */;
-            virtual int OnMouseIn() /* 0x98 */;
-            virtual int OnMouseOut() /* 0x9c */;
-            virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas) /* 0xa0 */;
-            virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) /* 0xa4 */;
-            virtual int OnMouseButton1(unsigned int state, PointBase<float> const& at) /* 0xa8 */;
-            virtual int OnMouseButton2(unsigned int state, PointBase<float> const& at) /* 0xac */;
-            virtual int OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt) /* 0xb0 */;
-            virtual int OnMouseClick(PointBase<float> const& pt) /* 0xb4 */;
-            virtual int OnMouseWheel(int ticks, PointBase<float> const& at) /* 0xb8 */;
-            virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) /* 0xbc */;
-            virtual int OnLoosingFocus() /* 0xc0 */;
-            virtual int OnObtainingFocus() /* 0xc4 */;
-            virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data) /* 0xc8 */;
-            virtual int OnActivate(bool on) /* 0xcc */;
+            virtual void OnNcPaint(m3d::ui::DrawInfo const& di, unsigned int clr);
+            virtual void DrawWndText(m3d::ui::DrawInfo const& di);
+            virtual int OnPaint(m3d::ui::DrawInfo const& di);
+            virtual void OnPaintOverChildren(m3d::ui::DrawInfo const& clipToIt);
+            virtual int OnTick(int curTime, int deltaTime);
+            virtual void OnDisplayChanged();
+            virtual int OnMouseIn();
+            virtual int OnMouseOut();
+            virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas);
+            virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at);
+            virtual int OnMouseButton1(unsigned int state, PointBase<float> const& at);
+            virtual int OnMouseButton2(unsigned int state, PointBase<float> const& at);
+            virtual int OnMouseDblClick(PointBase<float> const& firstClickPt, PointBase<float> const& secondClickPt);
+            virtual int OnMouseClick(PointBase<float> const& pt);
+            virtual int OnMouseWheel(int ticks, PointBase<float> const& at);
+            virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state);
+            virtual int OnLoosingFocus();
+            virtual int OnObtainingFocus();
+            virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data);
+            virtual int OnActivate(bool on);
             m3d::ui::Wnd* GetNextActivatableChild(m3d::ui::Wnd* first, int back);
 
         private:
-            /* 0x00fd */ bool m_showCursor = true;
+            bool m_showCursor = true;
 
         public:
-            virtual void SetCursorShow(bool state) /* 0xd0 */;
-            virtual bool GetCursorShow() const /* 0xd4 */;
-            virtual int GetCursor(m3d::ui::Cursor& cur) /* 0xd8 */;
-            /* 0x00fe */ char Padding_23[2];
+            virtual void SetCursorShow(bool state);
+            virtual bool GetCursorShow() const;
+            virtual int GetCursor(m3d::ui::Cursor& cur);
+            char Padding_23[2];
 
         protected:
             // retruxx adaptation: the window's user value; the shipped build was unsigned int and the
             // weapon group buttons keep a window pointer in it, so it is a machine word here.
-            /* 0x0100 */ std::uintptr_t m_int;
+            std::uintptr_t m_int;
 
         public:
             void SetInt(std::uintptr_t ii);
             std::uintptr_t GetInt() const;
             bool IsVisible() const;
-            virtual void ShowWindow(bool show) /* 0xdc */;
-            virtual void EnableWindow(bool bEnable) /* 0xe0 */;
+            virtual void ShowWindow(bool show);
+            virtual void EnableWindow(bool bEnable);
             bool IsEnabled() const;
             void GrayWindow(bool);
             bool IsGrayed() const;
 
         protected:
-            /* 0x0104 */ bool m_modalAttachedToStation;
-            /* 0x0105 */ char Padding_24[3];
-            /* 0x0108 */ m3d::TextWrapFlags m_textWrap = TextWrapFlags::TW_WORD_WRAP;
-            /* 0x010c */ m3d::TextFormatFlags m_textFormat = TextFormatFlags::TF_LEFT;
+            bool m_modalAttachedToStation;
+            char Padding_24[3];
+            m3d::TextWrapFlags m_textWrap = TextWrapFlags::TW_WORD_WRAP;
+            m3d::TextFormatFlags m_textFormat = TextFormatFlags::TF_LEFT;
 
         public:
             void SetWrapMode(m3d::TextWrapFlags wrap);
             m3d::TextWrapFlags GetWrapMode() const;
-            virtual void SetFormatMode(m3d::TextFormatFlags format) /* 0xe4 */;
+            virtual void SetFormatMode(m3d::TextFormatFlags format);
             m3d::TextFormatFlags GetFormatMode() const;
             void AdjustForWndTextToFit(unsigned int uiFont, float maxWidth);
             void AdjustToFitChildren();
             void Centralize();
 
         protected:
-            /* 0x0110 */ int m_defFont = 0;
+            int m_defFont = 0;
 
         public:
-            virtual void SetDefaultFont(CStr const& name, float height, m3d::ui::FontType type, m3d::ui::FontParams params) /* 0xec */;
-            virtual void SetDefaultFont(int uiFont) /* 0xec */;
+            virtual void SetDefaultFont(CStr const& name, float height, m3d::ui::FontType type, m3d::ui::FontParams params);
+            virtual void SetDefaultFont(int uiFont);
             int GetDefaultFont() const;
             unsigned int GetTextColor() const;
-            virtual void SetTextColor(unsigned int textColor) /* 0xf0 */;
+            virtual void SetTextColor(unsigned int textColor);
             unsigned int GetTextColorDisabled() const;
-            virtual void SetTextColorDisabled(unsigned int textColor) /* 0xf4 */;
+            virtual void SetTextColorDisabled(unsigned int textColor);
             unsigned int GetColor() const;
-            virtual void SetColor(unsigned int color) /* 0xf8 */;
+            virtual void SetColor(unsigned int color);
             m3d::ui::ScrollWnd* GetScrollVWnd();
             m3d::ui::ScrollWnd* GetScrollHWnd();
-            virtual void SetScrollPane(CStr const& scrollPaneName) /* 0xfc */;
+            virtual void SetScrollPane(CStr const& scrollPaneName);
             CStr const& GetScrollPaneName() const;
-            virtual float GetFrameWidth() const /* 0x100 */;
+            virtual float GetFrameWidth() const;
 
         protected:
-            /* 0x0114 */ int m_gameDataFlags = 0;
-            /* 0x0118 */ CStr m_scrollPaneName = "Scroll1";
-            /* 0x0124 */ int m_guiId = -1;
+            int m_gameDataFlags = 0;
+            CStr m_scrollPaneName = "Scroll1";
+            int m_guiId = -1;
 
         public:
-            virtual int GameDataSetup() /* 0x104 */;
-            virtual int GameDataClear(bool beforeContinuousLevel) /* 0x108 */;
-            virtual int GameDataUpdate(void* data, int dataType) /* 0x10c */;
-            virtual int GameDataSave(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) /* 0x110 */;
-            virtual int GameDataLoad(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) /* 0x114 */;
-            virtual void GameDataSetDirty() /* 0x118 */;
+            virtual int GameDataSetup();
+            virtual int GameDataClear(bool beforeContinuousLevel);
+            virtual int GameDataUpdate(void* data, int dataType);
+            virtual int GameDataSave(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
+            virtual int GameDataLoad(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
+            virtual void GameDataSetDirty();
             int GetGameDataFlags();
             void SetGameDataFlags(int flags);
             void SetGuiId(int guiId);
@@ -347,7 +347,7 @@ namespace m3d
         private:
             void Register();
             void Unregister();
-            /* 0x0128 */ int m_uniqueId = -1;
+            int m_uniqueId = -1;
 
         public:
             int GetUniqueId() const;
@@ -396,23 +396,23 @@ namespace m3d
                 int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
                 m3d::ui::Wnd::AnimationInfo::AnimationType Str2AnimationType(CStr const& str) const;
                 CStr AnimationType2Str(m3d::ui::Wnd::AnimationInfo::AnimationType animationType) const;
-                /* 0x0000 */ bool m_bEnabled;
-                /* 0x0001 */ bool m_bImmediate;
-                /* 0x0002 */ char Padding_20[2];
-                /* 0x0004 */ PointBase<float> m_startPt;
-                /* 0x000c */ PointBase<float> m_endPt;
-                /* 0x0014 */ m3d::ui::Wnd::AnimationInfo::AnimationType m_animationType;
-                /* 0x0018 */ float m_startSpeed;
-                /* 0x001c */ float m_acceleration;
-                /* 0x0020 */ float m_curSpeed;
-                /* 0x0024 */ unsigned int m_delayTime;
-                /* 0x0028 */ unsigned int m_startTime;
-                /* 0x002c */ m3d::ui::Wnd::AnimationInfo::Purpose m_purpose;
-                /* 0x0030 */ CStr m_soundMoveName;
-                /* 0x003c */ CStr m_soundStopName;
-                /* 0x0048 */ bool m_bSoundMoveEnabled;
-                /* 0x0049 */ bool m_bSoundStopEnabled;
-            }; /* size: 0x004c */
+                bool m_bEnabled;
+                bool m_bImmediate;
+                char Padding_20[2];
+                PointBase<float> m_startPt;
+                PointBase<float> m_endPt;
+                m3d::ui::Wnd::AnimationInfo::AnimationType m_animationType;
+                float m_startSpeed;
+                float m_acceleration;
+                float m_curSpeed;
+                unsigned int m_delayTime;
+                unsigned int m_startTime;
+                m3d::ui::Wnd::AnimationInfo::Purpose m_purpose;
+                CStr m_soundMoveName;
+                CStr m_soundStopName;
+                bool m_bSoundMoveEnabled;
+                bool m_bSoundStopEnabled;
+            };
 
         public:
             void SetOnShowAnimation(m3d::ui::Wnd::AnimationInfo const& animationInfo);
@@ -431,18 +431,18 @@ namespace m3d
             PointBase<float> const& GetBaseOrigin() const;
 
         protected:
-            /* 0x012c */ m3d::ui::Wnd::AnimationInfo m_onShowAnimation;
-            /* 0x0178 */ m3d::ui::Wnd::AnimationInfo m_onHideAnimation;
-            /* 0x01c4 */ m3d::ui::Wnd::AnimationInfo m_currentAnimation;
-            /* 0x0210 */ bool m_bSuspendedUnlink = false;
-            /* 0x0211 */ bool m_bSuspendedParentUnlink = false;
-            /* 0x0212 */ char Padding_25[2];
-            /* 0x0214 */ PointBase<float> m_baseOrigin;
-            /* 0x021c */ int m_animationSoundMoveChannelId = -1;
+            m3d::ui::Wnd::AnimationInfo m_onShowAnimation;
+            m3d::ui::Wnd::AnimationInfo m_onHideAnimation;
+            m3d::ui::Wnd::AnimationInfo m_currentAnimation;
+            bool m_bSuspendedUnlink = false;
+            bool m_bSuspendedParentUnlink = false;
+            char Padding_25[2];
+            PointBase<float> m_baseOrigin;
+            int m_animationSoundMoveChannelId = -1;
             int ProcessAnimation(int curTime, int deltaTime);
             void OnEndAnimation(bool bUrgent);
             void StopAnimationMoveSound();
-        }; /* size: 0x0220 */
+        };
 
         class DrawInfo
         {

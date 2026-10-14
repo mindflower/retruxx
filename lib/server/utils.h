@@ -20,12 +20,12 @@ namespace ai
     class cmpByDistToOrg
     {
     private:
-        /* 0x0000 */ CVector m_Org;
+        CVector m_Org;
 
     public:
         cmpByDistToOrg(const CVector& Org);
         bool operator()(const int& objId1, const int& objId2) const;
-    }; /* size: 0x000c */
+    };
 
     void sortPhysicObjsByDistance(retruxx::vector<int>& vct, CVector const& org);
     class Path;

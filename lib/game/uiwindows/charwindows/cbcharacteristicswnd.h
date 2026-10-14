@@ -21,44 +21,44 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndPiercingValName;
-        /* 0x000c */ CStr m_wndBlastValName;
-        /* 0x0018 */ CStr m_wndEnergyValName;
-        /* 0x0024 */ CStr m_wndMaxDurabilityValName;
-        /* 0x0030 */ CStr m_wndWeightValName;
-        /* 0x003c */ CStr m_wndCBImageName;
-        /* 0x0048 */ CStr m_wndCBNameName;
+        CStr m_wndPiercingValName;
+        CStr m_wndBlastValName;
+        CStr m_wndEnergyValName;
+        CStr m_wndMaxDurabilityValName;
+        CStr m_wndWeightValName;
+        CStr m_wndCBImageName;
+        CStr m_wndCBNameName;
         AuxInfo(CBCharacteristicsWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0054 */
+    };
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
-    virtual void SetupForVehicle(int vehicleId) /* 0x12c */;
-    virtual void UpdateCharacteristics() override /* 0x120 */;
-    virtual void ClearCharacteristics() override /* 0x124 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual void SetupForVehicle(int vehicleId);
+    virtual void UpdateCharacteristics() override;
+    virtual void ClearCharacteristics() override;
     void UpdateOnCBChanged();
     void UpdateCBImage();
     void UpdateCBName();
     ai::VehiclePart const* GetCB() const;
-    /* 0x0240 */ m3d::ui::Wnd* m_wndPiercingVal;
-    /* 0x0244 */ m3d::ui::Wnd* m_wndBlastVal;
-    /* 0x0248 */ m3d::ui::Wnd* m_wndEnergyVal;
-    /* 0x024c */ m3d::ui::Wnd* m_wndMaxDurabilityVal;
-    /* 0x0250 */ m3d::ui::Wnd* m_wndWeightVal;
-    /* 0x0254 */ m3d::ui::ImageWnd* m_wndCBImage;
-    /* 0x0258 */ m3d::ui::Wnd* m_wndCBName;
-    /* 0x025c */ CBCharacteristicsWnd::AuxInfo m_aif;
-    /* 0x02b0 */ int m_cbId;
+    m3d::ui::Wnd* m_wndPiercingVal;
+    m3d::ui::Wnd* m_wndBlastVal;
+    m3d::ui::Wnd* m_wndEnergyVal;
+    m3d::ui::Wnd* m_wndMaxDurabilityVal;
+    m3d::ui::Wnd* m_wndWeightVal;
+    m3d::ui::ImageWnd* m_wndCBImage;
+    m3d::ui::Wnd* m_wndCBName;
+    CBCharacteristicsWnd::AuxInfo m_aif;
+    int m_cbId;
     CBCharacteristicsWnd();
     CBCharacteristicsWnd(CBCharacteristicsWnd const& rhs);
 
 public:
-    virtual ~CBCharacteristicsWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
+    virtual ~CBCharacteristicsWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classCBCharacteristicsWnd;
-}; /* size: 0x02b4 */
+};

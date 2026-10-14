@@ -5,7 +5,7 @@ struct CVector;
 class Aabb
 {
 public:
-    /* 0x0000 */ float m_box[6];
+    float m_box[6];
 
     void Create(const CVector& min, const CVector& max);
     void Offset(const CVector& ofs);
@@ -23,5 +23,5 @@ public:
     bool IsPtInside(const CVector&) const;
     bool IsPtInside2(const CVector& pt) const;
     void Draw(unsigned int clr);
-}; /* size: 0x0018 */
+};
 

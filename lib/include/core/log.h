@@ -50,20 +50,20 @@ namespace m3d
         void undent(const CStr& s, const m3d::eLogFlags logBits);
 
     private:
-        /* 0x0000 */ bool m_logStarted = false;
-        /* 0x0001 */ char Padding_79[3];
-        /* 0x0004 */ retruxx::string m_fileName;
-        /* 0x0020 */ unsigned int m_sourceLine = 0;
-        /* 0x0024 */ retruxx::string m_sourceFile;
-        /* 0x0040 */ unsigned int m_logMask = -1;
-        /* 0x0044 */ int m_indentCount = 0;
-        /* 0x0048 */ int m_indentChars = 4;
-        /* 0x004c */ bool m_lineCharsFlag = false;
-        /* 0x004d */ bool m_flushImmediately = true;
+        bool m_logStarted = false;
+        char Padding_79[3];
+        retruxx::string m_fileName;
+        unsigned int m_sourceLine = 0;
+        retruxx::string m_sourceFile;
+        unsigned int m_logMask = -1;
+        int m_indentCount = 0;
+        int m_indentChars = 4;
+        bool m_lineCharsFlag = false;
+        bool m_flushImmediately = true;
 
         const CStr& headerString(const m3d::eLogFlags logFlags) const;
 
-        /* 0x004e */ char Padding_80[2];
-        /* 0x0050 */ mutable m3d::CriticalSection m_cs;
-    }; /* size: 0x0068 */
+        char Padding_80[2];
+        mutable m3d::CriticalSection m_cs;
+    };
 }

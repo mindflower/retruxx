@@ -203,8 +203,8 @@ namespace m3d
         // it can reach the node's ParticlesList.
         struct ParticlesNodeParams
         {
-            /* 0x0000 */ CMatrix* m_localXForm;
-            /* 0x0004 */ SgNode* m_node;
+            CMatrix* m_localXForm;
+            SgNode* m_node;
         };
 
         ParticlesNodeParams ri;

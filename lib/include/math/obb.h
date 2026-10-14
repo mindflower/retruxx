@@ -10,7 +10,7 @@ public:
     CVector toWorld(const CVector& v) const;
     CVector toLocalRotate(const CVector& v) const;
     CVector m_origin;
-    /* 0x000c */ CVector m_basis[3];
+    CVector m_basis[3];
     CVector m_min;
     CVector m_max;
     void Create(const CVector& min, const CVector& max, const CMatrix& mat, bool noScale);
@@ -20,4 +20,4 @@ public:
     int IsPtInside(const CVector& v) const;
     int IsPtInside2(const CVector& v) const;
     Aabb GetBounds() const;
-}; /* size: 0x0048 */
+};

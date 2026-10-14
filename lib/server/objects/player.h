@@ -15,55 +15,55 @@ namespace ai
     {
     public:
         PlayerPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
+        virtual ai::Obj* CreateTargetObject() const override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
         const CStr& GetModelName() const;
         unsigned int GetSkinNumber() const;
         unsigned int GetCfgNumber() const;
 
     private:
-        /* 0x0040 */ CStr m_modelName;
-        /* 0x004c */ unsigned int m_skinNumber;
-        /* 0x0050 */ unsigned int m_cfgNumber;
-    }; /* size: 0x0054 */
+        CStr m_modelName;
+        unsigned int m_skinNumber;
+        unsigned int m_cfgNumber;
+    };
 
     class Player : public Obj
     {
         friend class PlayerPrototypeInfo;
     protected:
-        virtual ~Player() override /* 0x00 */;
+        virtual ~Player() override;
 
     private:
         Player(const ai::PlayerPrototypeInfo& prototypeInfo);
         Player(const ai::Player&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classPlayer;
-        virtual const ai::PlayerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual const ai::PlayerPrototypeInfo* GetPrototypeInfo() const override;
 
     protected:
         static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override /* 0x60 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override;
+        virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
+        virtual int GetPropertyId(const char* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
         static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus> m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+        virtual int OnEvent(const ai::Event& evn) override;
 
         enum PlayerFightState
         {
@@ -75,12 +75,12 @@ namespace ai
         };
 
     public:
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
-        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x9c */;
-        virtual void Remove() override /* 0x54 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x80 */;
-        virtual void SetPassedToAnotherMapStatus() override /* 0x50 */;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual bool RemoveChild(ai::Obj* pChild) override;
+        virtual void Remove() override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void SetPassedToAnotherMapStatus() override;
         ai::Vehicle* GetVehicle() const;
         void ChangeVehicleByNew(int newVehiclePrototypeId, bool bDeleteOldVehicle);
         void ChangeVehicleByExisting(int newVehicleObjId, bool bDeleteOldVehicle);
@@ -92,8 +92,8 @@ namespace ai
         float GetMaxHealth() const;
         float GetFuel() const;
         float GetMaxFuel() const;
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0xec */;
-        virtual unsigned int GetSchwarz() const override /* 0xf0 */;
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override;
+        virtual unsigned int GetSchwarz() const override;
         bool AddItemsToRepository(const char* prototypeName, int amount);
         bool RemoveItemsFromRepository(const char* prototypeName, int amount);
         bool HasAmountOfItemsInRepository(const char* prototypeName, int amount) const;
@@ -106,10 +106,10 @@ namespace ai
         int AddQuestItem(const CStr& itemPrototypeName);
         int RemoveQuestItem(const CStr& itemPrototypeName);
         const retruxx::vector<CStr>& GetQuestItemPrototypeNames() const;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         const ai::InfoCone& GetInfoCone() const;
         int GetInfoObjId() const;
         int GetRadioManagerId() const;
@@ -117,33 +117,33 @@ namespace ai
         unsigned int GetSkinNumber() const;
         unsigned int GetCfgNumber() const;
         bool HuntQuestIsTaken() const;
-        virtual void RenderDebugInfo() const override /* 0xe4 */;
+        virtual void RenderDebugInfo() const override;
 
     protected:
-        virtual void _InternalPostLoad() override /* 0xfc */;
+        virtual void _InternalPostLoad() override;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::Player, int, void>;
 
     private:
         void _OnMoneyValueAfterChange(int oldMoneyValue);
-        /* 0x00c0 */ ai::NumericBoundedBelow<int> m_money;
-        ///* 0x00c0 */ char Padding_24[120];
-        /* 0x0138 */ int m_vehicleObjId;
-        /* 0x013c */ ai::RadioManager* m_radioManager;
-        /* 0x0140 */ retruxx::vector<CStr> m_questItemPrototypeNames;
-        /* 0x0150 */ int m_infoObjId;
-        /* 0x0154 */ ai::InfoCone* m_infoCone;
-        /* 0x0158 */ float m_timeInfoObjTimeout;
-        /* 0x015c */ ai::Player::PlayerFightState m_playerFightState;
-        /* 0x0160 */ ai::Player::PlayerFightState m_prevPlayerFightState;
-        /* 0x0164 */ ai::NumericInRangeRegenerating<float> m_timeOfNoBattle;
-        /* 0x023c */ CStr m_lastSaveDir;
-        /* 0x0248 */ CStr m_modelName;
-        /* 0x0254 */ unsigned int m_skinNumber;
-        /* 0x0258 */ unsigned int m_cfgNumber;
-        /* 0x025c */ bool m_huntQuestIsTaken;
-        /* 0x025d */ char Padding_25[3];
-        /* 0x0260 */ int m_curNumForVehicleWithoutName;
+        ai::NumericBoundedBelow<int> m_money;
+        //char Padding_24[120];
+        int m_vehicleObjId;
+        ai::RadioManager* m_radioManager;
+        retruxx::vector<CStr> m_questItemPrototypeNames;
+        int m_infoObjId;
+        ai::InfoCone* m_infoCone;
+        float m_timeInfoObjTimeout;
+        ai::Player::PlayerFightState m_playerFightState;
+        ai::Player::PlayerFightState m_prevPlayerFightState;
+        ai::NumericInRangeRegenerating<float> m_timeOfNoBattle;
+        CStr m_lastSaveDir;
+        CStr m_modelName;
+        unsigned int m_skinNumber;
+        unsigned int m_cfgNumber;
+        bool m_huntQuestIsTaken;
+        char Padding_25[3];
+        int m_curNumForVehicleWithoutName;
         void _OnObjectDie(const ai::Event& evn);
         void _OnNoticeEnemy(const ai::Event& evn);
         void _OnUnderAttack(const ai::Event& evn);
@@ -151,7 +151,7 @@ namespace ai
         void _OnDynamicQuestComplete(const ai::Event& evn);
         void _OnDynamicQuestForgotten(const ai::Event& evn);
         void _OnDynamicQuestFailed(const ai::Event& evn);
-    }; /* size: 0x0264 */
+    };
 
     inline Player* thePlayer = nullptr;
 }

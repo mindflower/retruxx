@@ -10,8 +10,8 @@ namespace ai
         ai::FiringTypes GetFiringType() const;
 
     protected:
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x011c */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     // A gun made of several guns (for example twin barrels). Commands go to every part; the
     // charging and ammunition queries answer for the first part only.
@@ -20,19 +20,19 @@ namespace ai
         friend class CompoundGunPrototypeInfo;
 
     protected:
-        virtual ~CompoundGun() override /* 0x00 */;
+        virtual ~CompoundGun() override;
 
     private:
         CompoundGun(const ai::CompoundGunPrototypeInfo& prototypeInfo);
         CompoundGun(const ai::CompoundGun&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(CompoundGun);
-        virtual const ai::CompoundGunPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual const ai::CompoundGunPrototypeInfo* GetPrototypeInfo() const override;
         void SetProperTargetId(int targetObjId, int lockedObjIdForRockets);
         bool Fire(bool enable);
         void LookAtPoint(const CVector& lookAt, float elapsedTime);
@@ -60,13 +60,13 @@ namespace ai
         ai::Gun::ChargeState GetChargeState() const;
         float GetCurrentRechargingTime() const;
         void Recharge();
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override /* 0x00 */;
+        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override;
         bool IsDurabilityEnoughForFiring() const;
-        virtual bool CanFire() const /* 0x168 */;
+        virtual bool CanFire() const;
 
     private:
         // The first part answers the queries that are not summed over all parts. NOTE: the
         // shipped code does not check that there is one.
         Gun* _GetFirstGun() const;
-    }; /* size: 0x02d4 */
+    };
 }

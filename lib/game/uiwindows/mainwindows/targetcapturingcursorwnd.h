@@ -10,10 +10,10 @@ public:
     struct AuxInfo
     {
         AuxInfo();
-        /* 0x0000 */ CStr m_texName;
-        /* 0x000c */ PointBase<float> m_texCaptureSzBig;
-        /* 0x0014 */ PointBase<float> m_texCaptureSzSmall;
-    }; /* size: 0x001c */
+        CStr m_texName;
+        PointBase<float> m_texCaptureSzBig;
+        PointBase<float> m_texCaptureSzSmall;
+    };
 
     virtual m3d::Class * GetClass() const ;
     virtual ~TargetCapturingCursorWnd();

@@ -10,8 +10,8 @@ namespace m3d
         // node it belongs to, so the server can reach the node's DecalsList.
         struct DecalNodeParams
         {
-            /* 0x0000 */ void* m_data;
-            /* 0x0004 */ SgNode* m_node;
+            void* m_data;
+            SgNode* m_node;
         };
 
         int const PROP_SERVER_ID = 4360;

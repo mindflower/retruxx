@@ -79,49 +79,49 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_lstBindingsName;
+        CStr m_lstBindingsName;
         AuxInfo(BindKeysWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x000c */
+    };
 
     struct KeySetButton : public m3d::ui::ButtonWnd
     {
         KeySetButton(BindKeysWnd::KeySetButton const&);
         KeySetButton(BoundsBase<float>& rc);
-        virtual ~KeySetButton() override /* 0x00 */;
+        virtual ~KeySetButton() override;
 
         struct AuxInfo
         {
-            /* 0x0000 */ CStr m_filler;
-            /* 0x000c */ unsigned int m_normColor;
-            /* 0x0010 */ unsigned int m_twinkleColor;
-            /* 0x0014 */ unsigned int m_twinkleTime;
-            /* 0x0018 */ unsigned int m_selColor;
+            CStr m_filler;
+            unsigned int m_normColor;
+            unsigned int m_twinkleColor;
+            unsigned int m_twinkleTime;
+            unsigned int m_selColor;
             AuxInfo(BindKeysWnd::KeySetButton::AuxInfo const&);
             AuxInfo();
-        }; /* size: 0x001c */
+        };
 
-        virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
-        virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override /* 0x00 */;
-        virtual int OnMouseButton1(unsigned int state, PointBase<float> const& at) override /* 0x00 */;
-        virtual int OnMouseButton2(unsigned int state, PointBase<float> const& at) override /* 0x00 */;
-        virtual int OnMouseWheel(int ticks, PointBase<float> const& at) override /* 0x00 */;
-        virtual void OnNcPaint(m3d::ui::DrawInfo const& di, unsigned int clr) override /* 0x00 */;
-        virtual void DrawWndText(m3d::ui::DrawInfo const& di) override /* 0x00 */;
+        virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
+        virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override;
+        virtual int OnMouseButton1(unsigned int state, PointBase<float> const& at) override;
+        virtual int OnMouseButton2(unsigned int state, PointBase<float> const& at) override;
+        virtual int OnMouseWheel(int ticks, PointBase<float> const& at) override;
+        virtual void OnNcPaint(m3d::ui::DrawInfo const& di, unsigned int clr) override;
+        virtual void DrawWndText(m3d::ui::DrawInfo const& di) override;
         int SetUp(Impulse impId, retruxx::vector<int>& keySet);
         void OnRebind(retruxx::vector<int> const& newKeys);
         void OnAnotherInputOn();
         void OnAnotherInputOff();
         void SetBindText();
 
-        /* 0x023c */ BindKeysWnd::KeySetButton::AuxInfo m_aif;
-        /* 0x0258 */ Impulse m_impId;
-        /* 0x025c */ retruxx::vector<int> m_keySet;
-        /* 0x026c */ retruxx::vector<int> m_newKeySet;
-        /* 0x027c */ bool m_isInInputMode;
-        /* 0x027d */ bool m_isAnotherInInputMode;
-        /* 0x0280 */ unsigned int m_lastTwinkleTime;
-    }; /* size: 0x0284 */
+        BindKeysWnd::KeySetButton::AuxInfo m_aif;
+        Impulse m_impId;
+        retruxx::vector<int> m_keySet;
+        retruxx::vector<int> m_newKeySet;
+        bool m_isInInputMode;
+        bool m_isAnotherInInputMode;
+        unsigned int m_lastTwinkleTime;
+    };
 
     struct BindKeysItem
     {
@@ -129,78 +129,78 @@ public:
         {
             AuxInfo(BindKeysWnd::BindKeysItem::AuxInfo const&);
             AuxInfo();
-            /* 0x0000 */ float m_impWPerc;
-            /* 0x0004 */ float m_itemW;
-            /* 0x0008 */ float m_itemH;
-            /* 0x000c */ unsigned int m_lblColor;
-            /* 0x0010 */ CStr m_texIdBg;
-        }; /* size: 0x001c */
+            float m_impWPerc;
+            float m_itemW;
+            float m_itemH;
+            unsigned int m_lblColor;
+            CStr m_texIdBg;
+        };
 
         BindKeysItem(BindKeysWnd::BindKeysItem const&);
         BindKeysItem(float width);
         ~BindKeysItem();
         int SetUp(Impulse impId, retruxx::vector<retruxx::vector<int>> keys, m3d::Object* parent, int idx);
 
-        /* 0x0000 */ BindKeysWnd::KeySetButton* m_btns[2];
-        /* 0x0008 */ m3d::ui::Wnd* m_bg;
-        /* 0x000c */ m3d::ui::Wnd* m_impLabel;
-        /* 0x0010 */ Impulse m_impId;
-        /* 0x0014 */ BindKeysWnd::BindKeysItem::AuxInfo m_aif;
-    }; /* size: 0x0030 */
+        BindKeysWnd::KeySetButton* m_btns[2];
+        m3d::ui::Wnd* m_bg;
+        m3d::ui::Wnd* m_impLabel;
+        Impulse m_impId;
+        BindKeysWnd::BindKeysItem::AuxInfo m_aif;
+    };
 
     struct BindKeysList : public m3d::ui::ListBoxWnd<BindKeysWnd::BindKeysItem*>
     {
         struct AuxInfo
         {
-            /* 0x0000 */ CStr m_strBindReserved;
-            /* 0x000c */ CStr m_strBindExists;
-            /* 0x0018 */ CStr m_strOnlyBindExists;
+            CStr m_strBindReserved;
+            CStr m_strBindExists;
+            CStr m_strOnlyBindExists;
             AuxInfo(BindKeysWnd::BindKeysList::AuxInfo const&);
             AuxInfo();
-        }; /* size: 0x0024 */
+        };
 
         BindKeysList(BindKeysWnd::BindKeysList const&);
         BindKeysList();
-        virtual ~BindKeysList() override /* 0x00 */;
+        virtual ~BindKeysList() override;
         int CreateFromPattern(m3d::ui::StringsListBoxWnd* patternList, bool deleteSrc);
         int Rebind(Impulse impId);
         int CreateItems();
         bool IsImpulseForEdit(Impulse impId);
         int ProcessBinding(BindKeysWnd::KeySetButton* btn);
         int BindUnbind(int action, Impulse imp, retruxx::vector<int> const& keys);
-        virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override /* 0x134 */;
-        virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override /* 0x138 */;
-        virtual int DeleteItem(int itemIdx) override /* 0x13c */;
-        virtual int CompareItem(int itemIdx0, int itemIdx1) override /* 0x140 */;
-        virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override /* 0x00 */;
-        virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+        virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override;
+        virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override;
+        virtual int DeleteItem(int itemIdx) override;
+        virtual int CompareItem(int itemIdx0, int itemIdx1) override;
+        virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+        virtual int OnBeforeAddToWndStation() override;
 
-        /* 0x0238 */ BindKeysWnd::BindKeysList::AuxInfo m_aif;
-    }; /* size: 0x025c */
+        BindKeysWnd::BindKeysList::AuxInfo m_aif;
+    };
 
 protected:
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override /* 0xc8 */;
-    virtual int GameDataSetup() override /* 0x104 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
-    virtual int OnBeforeAddToWndStation() override /* 0x68 */;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+    virtual int GameDataSetup() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnBeforeAddToWndStation() override;
     void CancelBindings();
     void ApplyBindings();
     void LoadDefaultBindings();
 
-    /* 0x0220 */ BindKeysWnd::AuxInfo m_aif;
-    /* 0x022c */ bool m_isInited;
-    /* 0x022d */ bool m_isDirty;
-    /* 0x0230 */ BindKeysWnd::BindKeysList* m_lstBindings;
-    /* 0x0234 */ bool m_bChanged;
+    BindKeysWnd::AuxInfo m_aif;
+    bool m_isInited;
+    bool m_isDirty;
+    BindKeysWnd::BindKeysList* m_lstBindings;
+    bool m_bChanged;
 
     BindKeysWnd();
     BindKeysWnd(BindKeysWnd const& rhs);
 
 public:
-    virtual ~BindKeysWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~BindKeysWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(BindKeysWnd);
-}; /* size: 0x0238 */
+};

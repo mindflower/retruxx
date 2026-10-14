@@ -12,8 +12,8 @@ namespace ai
         using ThisAfterChangeCallback = ai::MemberFunctionOneArg<ai::NumericInRangeRegenerating<T>, T, void>;
 
     public:
-        /* 0x00ac */ ai::FuncPtrOneArgRef<T, bool> m_BeforeRegenerate;
-        /* 0x00b4 */ ai::FuncPtrOneArg<T, void> m_AfterRegenerationChange;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeRegenerate;
+        ai::FuncPtrOneArg<T, void> m_AfterRegenerationChange;
 
         NumericInRangeRegenerating(T value, T minValue, T maxValue, T regeneration) :
             NumericInRange(value, minValue, maxValue),
@@ -56,6 +56,6 @@ namespace ai
 
     private:
         void _OnAfterRegenerationChange(T oldRegeneration);
-        /* 0x00bc */ ai::Numeric<T> m_regeneration;
-    }; /* size: 0x00d8 */
+        ai::Numeric<T> m_regeneration;
+    };
 }

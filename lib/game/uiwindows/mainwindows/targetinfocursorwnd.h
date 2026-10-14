@@ -10,9 +10,9 @@ public:
     struct AuxInfo
     {
         AuxInfo();
-        /* 0x0000 */ CStr m_texName;
-        /* 0x000c */ PointBase<float> m_texSz;
-    }; /* size: 0x0014 */
+        CStr m_texName;
+        PointBase<float> m_texSz;
+    };
 
     static struct m3d::Class * GetBaseClass();
     virtual class m3d::Object * Clone();

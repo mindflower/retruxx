@@ -37,20 +37,20 @@ public:
 
 private:
     int LoadBigImage();
-    /* 0x0000 */ CStr m_name;
-    /* 0x000c */ CStr m_fullName;
-    /* 0x0018 */ CStr m_file;
-    /* 0x0024 */ CStr m_diz0;
-    /* 0x0030 */ CStr m_diz1;
-    /* 0x003c */ CStr m_imageFile0;
-    /* 0x0048 */ CStr m_imageFile1;
-    /* 0x0054 */ retruxx::vector<CStr> m_splasheNames;
-    /* 0x0064 */ retruxx::vector<CStr> m_musicBlockNames;
-    /* 0x0074 */ m3d::rend::TexHandle m_image0;
-    /* 0x0078 */ m3d::rend::TexHandle m_image1;
-    /* 0x007c */ retruxx::map<CStr, m3d::rend::TexHandle> m_splashes;
-    /* 0x0088 */ CVector m_north;
-}; /* size: 0x0094 */
+    CStr m_name;
+    CStr m_fullName;
+    CStr m_file;
+    CStr m_diz0;
+    CStr m_diz1;
+    CStr m_imageFile0;
+    CStr m_imageFile1;
+    retruxx::vector<CStr> m_splasheNames;
+    retruxx::vector<CStr> m_musicBlockNames;
+    m3d::rend::TexHandle m_image0;
+    m3d::rend::TexHandle m_image1;
+    retruxx::map<CStr, m3d::rend::TexHandle> m_splashes;
+    CVector m_north;
+};
 
 class LevelInfoManager : public m3d::Object
 {
@@ -88,11 +88,11 @@ protected:
     LevelInfoManager(const LevelInfoManager& rhs);
 
 public:
-    virtual  ~LevelInfoManager() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual  ~LevelInfoManager() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classLevelInfoManager;
 
     using LevelInfoMap = retruxx::map<int, LevelInfo*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, LevelInfo*> > >;
@@ -139,15 +139,15 @@ public:
     void UpdateKnownLevels();
     int AddObjectInfo(ObjectInfo* oi);
 
-    /* 0x0034 */ retruxx::map<int, LevelInfo*> m_levels;
-    /* 0x0040 */ int m_nextLevelInfoId;
-    /* 0x0044 */ retruxx::map<CStr, float> m_levelSizes;
-    /* 0x0050 */ retruxx::map<CStr, retruxx::map<CStr, ObjectInfo*>> m_levelObjects;
-    /* 0x005c */ retruxx::map<CStr, VisibilityMap*> m_visibilityMaps;
-    /* 0x0068 */ retruxx::set<CStr> m_knownLevels;
-    /* 0x0074 */ retruxx::set<CStr> m_visitedLevels;
-    /* 0x0080 */ m3d::CVar m_cvVisibilityRadius;
-}; /* size: 0x00ac */
+    retruxx::map<int, LevelInfo*> m_levels;
+    int m_nextLevelInfoId;
+    retruxx::map<CStr, float> m_levelSizes;
+    retruxx::map<CStr, retruxx::map<CStr, ObjectInfo*>> m_levelObjects;
+    retruxx::map<CStr, VisibilityMap*> m_visibilityMaps;
+    retruxx::set<CStr> m_knownLevels;
+    retruxx::set<CStr> m_visitedLevels;
+    m3d::CVar m_cvVisibilityRadius;
+};
 
 class ObjectInfo
 {
@@ -182,20 +182,20 @@ public:
 private:
     const m3d::Class* GetObjectClass() const;
 
-    /* 0x0000 */ CStr m_name;
-    /* 0x000c */ CStr m_fullName;
-    /* 0x0018 */ CStr m_prototypeName;
-    /* 0x0024 */ int m_prototypeId;
-    /* 0x0028 */ CVector m_position;
-    /* 0x0034 */ CStr m_levelName;
-    /* 0x0040 */ retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > > m_savedPrices;
-    /* 0x004c */ bool m_bSavedPricesPersistant;
-    /* 0x004d */ bool m_bRuined;
-    /* 0x004e */ char Padding_133[2];
-    /* 0x0050 */ CStr m_passageAddress;
-    /* 0x005c */ bool m_bIsActive;
-    /* 0x005d */ char Padding_134[3];
-    /* 0x0060 */ int m_objectId;
-    /* 0x0064 */ int m_belong;
-}; /* size: 0x0068 */
+    CStr m_name;
+    CStr m_fullName;
+    CStr m_prototypeName;
+    int m_prototypeId;
+    CVector m_position;
+    CStr m_levelName;
+    retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > > m_savedPrices;
+    bool m_bSavedPricesPersistant;
+    bool m_bRuined;
+    char Padding_133[2];
+    CStr m_passageAddress;
+    bool m_bIsActive;
+    char Padding_134[3];
+    int m_objectId;
+    int m_belong;
+};
 

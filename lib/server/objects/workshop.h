@@ -12,19 +12,19 @@ namespace ai
     public:
         WorkshopPriceCoeffProvider(const ai::WorkshopPriceCoeffProvider&);
         WorkshopPriceCoeffProvider(const ai::Workshop* workshop);
-        virtual float GetPriceCoeffForObj(const ai::Obj* obj) const override /* 0x04 */;
+        virtual float GetPriceCoeffForObj(const ai::Obj* obj) const override;
 
     private:
-        /* 0x0004 */ const ai::Workshop* m_workshop;
-    }; /* size: 0x0008 */
+        const ai::Workshop* m_workshop;
+    };
 
     class WorkshopPrototypeInfo : public ai::BuildingPrototypeInfo
     {
     public:
         WorkshopPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-    }; /* size: 0x0044 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     enum WorkshopRepositoryType
     {
@@ -39,26 +39,26 @@ namespace ai
     {
         friend class WorkshopPrototypeInfo;
     protected:
-        virtual  ~Workshop() override /* 0x00 */;
+        virtual  ~Workshop() override;
 
     private:
         Workshop(const ai::WorkshopPrototypeInfo& prototypeInfo);
         Workshop(const ai::Workshop&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classWorkshop;
-        virtual const ai::WorkshopPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void Remove() override /* 0x54 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual const ai::WorkshopPrototypeInfo* GetPrototypeInfo() const override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void Remove() override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
         ai::GeomRepository* GetRepositoryByType(int type) const;
         ai::GeomRepository* GetRepositoryByType(ai::WorkshopRepositoryType type) const;
         ai::GeomRepository* GetRepositoryByTypename(const CStr& type) const;
@@ -90,11 +90,11 @@ namespace ai
         using RepositoryTypeMap = retruxx::map<enum ai::WorkshopRepositoryType, ai::GeomRepository*, retruxx::less<enum ai::WorkshopRepositoryType>, retruxx::allocator<retruxx::pair<enum ai::WorkshopRepositoryType const, ai::GeomRepository*> > >;
 
     private:
-        /* 0x00d0 */ retruxx::map<enum ai::WorkshopRepositoryType, ai::GeomRepository*, retruxx::less<enum ai::WorkshopRepositoryType>, retruxx::allocator<retruxx::pair<enum ai::WorkshopRepositoryType const, ai::GeomRepository*> > > m_repositories;
+        retruxx::map<enum ai::WorkshopRepositoryType, ai::GeomRepository*, retruxx::less<enum ai::WorkshopRepositoryType>, retruxx::allocator<retruxx::pair<enum ai::WorkshopRepositoryType const, ai::GeomRepository*> > > m_repositories;
         // The two AddArticle overloads are const but put a missing article on the books, as the shipped
         // code does, so the map has to be mutable.
-        /* 0x00dc */ mutable retruxx::map<int, ai::Article, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Article> > > m_articles;
-        /* 0x00e8 */ ai::WorkshopPriceCoeffProvider* m_priceCoeffProvider;
+        mutable retruxx::map<int, ai::Article, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::Article> > > m_articles;
+        ai::WorkshopPriceCoeffProvider* m_priceCoeffProvider;
         float _GetRealObjectResourceCoeff(const ai::Obj* obj) const;
         unsigned int _GetRealObjectBuyPrice(const ai::Obj* obj) const;
         unsigned int _GetRealObjectSellPrice(const ai::Obj* obj) const;
@@ -103,7 +103,7 @@ namespace ai
         void _GetArticles(retruxx::vector<ai::Article, retruxx::allocator<ai::Article> >& articles) const;
         bool _ArticleExists(int articlePrototypeId) const;
         static int __fastcall _GetWarePrototypeId(int wareObjId);
-        /* 0x00ec */ retruxx::vector<int, retruxx::allocator<int> > m_originalObjectsInRepository;
+        retruxx::vector<int, retruxx::allocator<int> > m_originalObjectsInRepository;
         void ClearRepositoriesFromNonOriginalObjects();
-    }; /* size: 0x00fc */
+    };
 }

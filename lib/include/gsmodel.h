@@ -11,25 +11,25 @@ namespace m3d
 {
     struct ModelInfo
     {
-        /* 0x0000 */ unsigned int m_numVertices;
-        /* 0x0004 */ unsigned int m_numFaces;
-        /* 0x0008 */ char m_alpha;
-    }; /* size: 0x000c */
+        unsigned int m_numVertices;
+        unsigned int m_numFaces;
+        char m_alpha;
+    };
 
     // Collision chunk records of GSM files, copied byte for byte.
 #pragma pack(push, 4)
     struct CollisionDataHeader
     {
-        /* 0x0000 */ uint32_t numVertices;
-        /* 0x0004 */ uint32_t numFaces;
-    }; /* size: 0x0008 */
+        uint32_t numVertices;
+        uint32_t numFaces;
+    };
 
     struct CollidingVertex
     {
-        /* 0x0000 */ float x;
-        /* 0x0004 */ float y;
-        /* 0x0008 */ float z;
-    }; /* size: 0x000c */
+        float x;
+        float y;
+        float z;
+    };
 #pragma pack(pop)
 
     static_assert(sizeof(CollisionDataHeader) == 0x0008);
@@ -39,12 +39,12 @@ namespace m3d
 #pragma pack(push, 4)
     struct LPoint
     {
-        /* 0x0000 */ char name[30];
-        /* 0x001e */ char Padding_306[2];
-        /* 0x0020 */ float x;
-        /* 0x0024 */ float y;
-        /* 0x0028 */ float z;
-    }; /* size: 0x002c */
+        char name[30];
+        char Padding_306[2];
+        float x;
+        float y;
+        float z;
+    };
 #pragma pack(pop)
 
     static_assert(sizeof(LPoint) == 0x002c);
@@ -55,31 +55,31 @@ namespace m3d
     private:
         m3d::ModelInfo m_header;
         m3d::DSurfaceMaterial m_SurfaceMaterial;
-        /* 0x0080 */ m3d::rend::VertexType m_VertType;
-        /* 0x0084 */ unsigned int m_VertTypeSize;
-        /* 0x0088 */ unsigned short* m_drawIndices;
-        /* 0x008c */ int m_idxOffset;
-        /* 0x0090 */ int m_vertsOffset;
-        /* 0x0094 */ void* m_drawVerts;
+        m3d::rend::VertexType m_VertType;
+        unsigned int m_VertTypeSize;
+        unsigned short* m_drawIndices;
+        int m_idxOffset;
+        int m_vertsOffset;
+        void* m_drawVerts;
         m3d::CollisionDataHeader m_col_header;
-        /* 0x00a0 */ m3d::CollidingVertex* m_col_verts;
-        /* 0x00a4 */ unsigned short* m_col_idx;
-        /* 0x00a8 */ m3d::LPoint* m_loadPoints;
-        /* 0x00ac */ int m_numLoadPoints;
+        m3d::CollidingVertex* m_col_verts;
+        unsigned short* m_col_idx;
+        m3d::LPoint* m_loadPoints;
+        int m_numLoadPoints;
 
     public:
         Aabb m_box;
-        /* 0x00c8 */ int m_numDrawVerts;
-        /* 0x00cc */ int m_numDrawIndices;
-        /* 0x00d0 */ int m_numvbbank;
-        /* 0x00d4 */ int m_numibbank;
+        int m_numDrawVerts;
+        int m_numDrawIndices;
+        int m_numvbbank;
+        int m_numibbank;
 
     private:
         void CalculateBBox();
         void renderMesh();
         void renderBillboard(const CMatrix&, float);
-        /* 0x00d8 */ unsigned short* m_triIndices;
-        /* 0x00dc */ void* m_verts;
+        unsigned short* m_triIndices;
+        void* m_verts;
         int Load(const CStr& fname);
         int Load();
 
@@ -109,5 +109,5 @@ namespace m3d
         const unsigned short* GetTris() const;
         const m3d::rend::TexHandle GetTex(unsigned int) const;
         unsigned int GetVertTypeSize();
-    }; /* size: 0x00e0 */
+    };
 }

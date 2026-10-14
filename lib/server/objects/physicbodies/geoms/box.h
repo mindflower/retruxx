@@ -12,5 +12,5 @@ namespace ai
 
     private:
         Box(dxGeom* const geomId, void (*movedCalback)( dxGeom*));
-    }; /* size: 0x0018 */
+    };
 }

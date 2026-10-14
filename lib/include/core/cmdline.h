@@ -13,7 +13,7 @@ namespace m3d
         const CStr& GetParam(unsigned int) const;
 
     private:
-        /* 0x0000 */ CStr m_cmdLine;
-        /* 0x000c */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_params;
-    }; /* size: 0x001c */
+        CStr m_cmdLine;
+        retruxx::vector<CStr, retruxx::allocator<CStr> > m_params;
+    };
 }

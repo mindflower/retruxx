@@ -16,10 +16,10 @@ int statsInited = 0;
 
 struct PointLightStats
 {
-    /* 0x0000 */ int numLightsToRender = 0;
-    /* 0x0004 */ int numLightCellsRendered = 0;
-    /* 0x0008 */ int numLightModelsRendered = 0;
-    /* 0x000c */ int curFrame = 0;
+    int numLightsToRender = 0;
+    int numLightCellsRendered = 0;
+    int numLightModelsRendered = 0;
+    int curFrame = 0;
 
     void Zero()
     {
@@ -28,7 +28,7 @@ struct PointLightStats
         int numLightModelsRendered = 0;
     }
 
-}; /* size: 0x0010 */
+};
 
 namespace m3d
 {

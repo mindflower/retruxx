@@ -18,16 +18,16 @@ class CStr
     class ZeroCharHolder
     {
     private:
-        /* 0x0000 */ char m_zeroChar = 0;
+        char m_zeroChar = 0;
 
     public:
         ZeroCharHolder();
         operator char*();
-    }; /* size: 0x0001 */
+    };
 private:
-    /* 0x0000 */ char* m_charPtr = nullptr;
-    /* 0x0004 */ int32_t m_allocSz = 0;
-    /* 0x0008 */ CStr::ZeroCharHolder ZERO;
+    char* m_charPtr = nullptr;
+    int32_t m_allocSz = 0;
+    CStr::ZeroCharHolder ZERO;
     void cleanup();
     void realloc(int sz);
 
@@ -74,7 +74,7 @@ public:
     int Write(m3d::fs::IStream&);
     int Read(m3d::fs::IStream&);
     CStr& CStr::operator=(CStr const& rhs);
-}; /* size: 0x000c */
+};
 
 // Embedded in CVar and read by the original driver DLLs, so the layout is fixed.
 

@@ -17,13 +17,13 @@ namespace m3d
 #pragma pack(push, 4)
         struct GsmHeader
         {
-            /* 0x0000 */ char m_id[4];
-            /* 0x0004 */ int32_t m_version;
-            /* 0x0008 */ uint32_t m_numVertices;
-            /* 0x000c */ uint32_t m_numFaces;
-            /* 0x0010 */ char m_alpha;
-            /* 0x0011 */ char m_texname[128];
-        }; /* size: 0x0094 */
+            char m_id[4];
+            int32_t m_version;
+            uint32_t m_numVertices;
+            uint32_t m_numFaces;
+            char m_alpha;
+            char m_texname[128];
+        };
 #pragma pack(pop)
         static_assert(sizeof(GsmHeader) == 0x94);
 

@@ -30,12 +30,12 @@ public:
     {
         SaveInfo();
 
-        /* 0x0000 */ CStr m_folderName;
-        /* 0x000c */ CStr m_saveName;
-        /* 0x0018 */ m3d::AIParam m_gameTime;
-        /* 0x0034 */ CStr m_levelName;
-        /* 0x0040 */ _FILETIME m_saveModifyLocalTime;
-    }; /* size: 0x0048 */
+        CStr m_folderName;
+        CStr m_saveName;
+        m3d::AIParam m_gameTime;
+        CStr m_levelName;
+        _FILETIME m_saveModifyLocalTime;
+    };
 
 public:
     virtual ~SavesManager();

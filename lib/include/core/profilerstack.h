@@ -14,7 +14,7 @@ namespace m3d
         Profiler(const m3d::Profiler&);
         Profiler(const char* name);
         Profiler();
-        virtual ~Profiler() = default /* 0x00 */;
+        virtual ~Profiler() = default;
         void SetName(const char* name);
         const char* GetName() const;
         void StartFrame();
@@ -28,17 +28,17 @@ namespace m3d
         double GetAverageTime() const;
 
     private:
-        /* 0x0008 */ retruxx::string m_name;
-        /* 0x0024 */ unsigned int m_curFrame;
-        /* 0x0028 */ unsigned int m_numFramesToRecalculate;
-        /* 0x002c */ float m_performanceCounterFrequency;
-        /* 0x0030 */ int64_t m_totalClocks;
-        /* 0x0038 */ int64_t m_totalClocksPerFrame;
-        /* 0x0040 */ int64_t m_lastClocks;
-        /* 0x0048 */ int64_t m_totalClocksForRecalcFrames;
-        /* 0x0050 */ int64_t m_averageClocks;
+        retruxx::string m_name;
+        unsigned int m_curFrame;
+        unsigned int m_numFramesToRecalculate;
+        float m_performanceCounterFrequency;
+        int64_t m_totalClocks;
+        int64_t m_totalClocksPerFrame;
+        int64_t m_lastClocks;
+        int64_t m_totalClocksForRecalcFrames;
+        int64_t m_averageClocks;
         void Init();
-    }; /* size: 0x0058 */
+    };
 
     class Application;
 
@@ -60,9 +60,9 @@ namespace m3d
         unsigned int GetNumProfilers() const;
 
     private:
-        /* 0x0000 */ retruxx::vector<m3d::Profiler*, retruxx::allocator<m3d::Profiler*> > m_stack;
-        /* 0x0010 */ unsigned int m_numProfilers;
-    }; /* size: 0x0014 */
+        retruxx::vector<m3d::Profiler*, retruxx::allocator<m3d::Profiler*> > m_stack;
+        unsigned int m_numProfilers;
+    };
 
     class ProfilerPtr
     {
@@ -72,8 +72,8 @@ namespace m3d
         m3d::Profiler* GetProfiler() const;
 
     private:
-        /* 0x0000 */ m3d::Profiler* m_counter;
-    }; /* size: 0x0004 */
+        m3d::Profiler* m_counter;
+    };
 
     class FrameProfilerPtr
     {
@@ -83,6 +83,6 @@ namespace m3d
         ~FrameProfilerPtr();
 
     private:
-        /* 0x0000 */ m3d::Profiler* m_counter;
-    }; /* size: 0x0004 */
+        m3d::Profiler* m_counter;
+    };
 }

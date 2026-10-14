@@ -2,8 +2,8 @@
 
 struct CVector2
 {
-    /* 0x0000 */ float x = 0.0;
-    /* 0x0004 */ float y = 0.0;
+    float x = 0.0;
+    float y = 0.0;
     CVector2(const CVector2& vv);
     CVector2(float xx, float yy);
     CVector2();
@@ -19,4 +19,4 @@ struct CVector2
     CVector2& operator*=(float v);
     CVector2& operator/=(float);
     float randomValue() const;
-}; /* size: 0x0008 */
+};

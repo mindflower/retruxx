@@ -17,21 +17,21 @@ namespace m3d
 {
     struct OverrideRenderSettings
     {
-        /* 0x0000 */ int m_dontOverrideBlend;
-        /* 0x0004 */ m3d::rend::TextureState m_color0;
-        /* 0x0008 */ m3d::rend::TextureState m_alpha0;
-        /* 0x000c */ m3d::rend::TextureState m_color1;
-        /* 0x0010 */ m3d::rend::TextureState m_alpha1;
-        /* 0x0014 */ bool m_tessellate;
-    }; /* size: 0x0018 */
+        int m_dontOverrideBlend;
+        m3d::rend::TextureState m_color0;
+        m3d::rend::TextureState m_alpha0;
+        m3d::rend::TextureState m_color1;
+        m3d::rend::TextureState m_alpha1;
+        bool m_tessellate;
+    };
 
     // What SgStaticModelNode hands to RenderItem (SgStaticModelNode::Render::renderInfo in the PDB).
     struct StaticModelRenderInfo
     {
-        /* 0x0000 */ CMatrix* m_localXForm;
-        /* 0x0004 */ float m_alpha;
-        /* 0x0008 */ m3d::rend::Cull m_culling;
-    }; /* size: 0x000c */
+        CMatrix* m_localXForm;
+        float m_alpha;
+        m3d::rend::Cull m_culling;
+    };
 }
 
 int ModelsRenderHandleCommon(int id, void* params)

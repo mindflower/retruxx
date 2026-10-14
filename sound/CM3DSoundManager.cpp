@@ -156,24 +156,24 @@ namespace snd
         static signed char F_CALLBACKAPI _CommonMusicEndCallback(FSOUND_STREAM* stream, void* buff, int len,
                                                                  void* userdata);
 
-        /* 0x0004 */ int m_refCount;
-        /* 0x0008 */ IBase* m_parent;
-        /* 0x000c */ std::map<int, CSoundItem*> m_sounds;
-        /* 0x0018 */ std::vector<int> m_channels;
-        /* 0x0028 */ int m_nextSoundId;
-        /* 0x002c */ bool m_bChangeFlag;
-        /* 0x002d */ bool m_bNextMusicMustBeLooped;
-        /* 0x0030 */ int m_nNextMusic;
-        /* 0x0034 */ float m_CurValue;
-        /* 0x0038 */ int m_MaxValue;
-        /* 0x003c */ float m_musicFadeTime;
-        /* 0x0040 */ unsigned int m_bitsPerSample;
-        /* 0x0044 */ bool m_isInited;
+        int m_refCount;
+        IBase* m_parent;
+        std::map<int, CSoundItem*> m_sounds;
+        std::vector<int> m_channels;
+        int m_nextSoundId;
+        bool m_bChangeFlag;
+        bool m_bNextMusicMustBeLooped;
+        int m_nNextMusic;
+        float m_CurValue;
+        int m_MaxValue;
+        float m_musicFadeTime;
+        unsigned int m_bitsPerSample;
+        bool m_isInited;
         static CM3DSoundManager* m_instance;
-        /* 0x0048 */ std::map<CStr, SoundGroup*> m_soundGroupMap;
-        /* 0x0054 */ std::vector<SoundGroup*> m_soundGroupVector;
+        std::map<CStr, SoundGroup*> m_soundGroupMap;
+        std::vector<SoundGroup*> m_soundGroupVector;
         static m3d::CriticalSection m_musicEndCallbackCs;
-    }; /* size: 0x0064 */
+    };
 
     // orig 0x89b944 CM3DSoundManager.cpp (static member)
     CM3DSoundManager* CM3DSoundManager::m_instance = 0;

@@ -44,11 +44,11 @@ namespace
     struct ShadowStats
     {
         // RVA 0x8A1D10
-        /* 0x0000 */ int numToTexDIPs = 0;
-        /* 0x0004 */ int numPutDIPs = 0;
-        /* 0x0008 */ int numToTexPolys = 0;
-        /* 0x000c */ int numPutPolys = 0;
-        /* 0x0010 */ int numCells = 0;
+        int numToTexDIPs = 0;
+        int numPutDIPs = 0;
+        int numToTexPolys = 0;
+        int numPutPolys = 0;
+        int numCells = 0;
     };
 
     // RVA 0x8A2360 - builds the world -> shadow texture transform for one cell
@@ -113,7 +113,7 @@ namespace
             return (az * az + y * y) + ax * ax > (bz * bz + y * y) + bx * bx;
         }
 
-        /* 0x0000 */ CVector pos;
+        CVector pos;
     };
 
     CVector camOrg;

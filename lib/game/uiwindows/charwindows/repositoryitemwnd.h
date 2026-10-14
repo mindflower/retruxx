@@ -5,26 +5,26 @@ class RepositoryItemWnd : public ItemWnd
 {
 public:
     void SetUpForRepositoryItem(ai::GeomRepositoryItem const& repositoryItem);
-    virtual int CanAddDragItem(bool bSilent) override /* 0x124 */;
+    virtual int CanAddDragItem(bool bSilent) override;
 
 protected:
-    virtual void SetVehicleId(int VehicleId) override /* 0x170 */;
-    virtual ai::GeomRepositoryItem GetAsRepositoryItem() const override /* 0x178 */;
-    virtual int GiveUpItem(ai::GeomRepositoryItem const& item, m3d::ui::Wnd* targetWnd) override /* 0x160 */;
-    virtual bool SetItemObjId(int objId) override /* 0x194 */;
-    virtual int AddItem(ai::GeomRepositoryItem const& item) override /* 0x14c */;
-    virtual int DeactivateItem() override /* 0x1ac */;
-    virtual int ActivateItem(ai::GeomRepositoryItem const& item) override /* 0x1a8 */;
-    virtual bool IsValid() const override /* 0x1b0 */;
-    virtual int GetResourceId() const override /* 0x17c */;
-    virtual void SetupInfoWnd(ItemInfoWnd* infoWnd) override /* 0x180 */;
-    virtual bool NeedUpdateInfoWnd(ItemInfoWnd* infoWnd) const override /* 0x184 */;
-    virtual void LaunchEventOnItemDeactivation() const override /* 0x188 */;
-    virtual void UpdateItemValue() override /* 0x18c */;
+    virtual void SetVehicleId(int VehicleId) override;
+    virtual ai::GeomRepositoryItem GetAsRepositoryItem() const override;
+    virtual int GiveUpItem(ai::GeomRepositoryItem const& item, m3d::ui::Wnd* targetWnd) override;
+    virtual bool SetItemObjId(int objId) override;
+    virtual int AddItem(ai::GeomRepositoryItem const& item) override;
+    virtual int DeactivateItem() override;
+    virtual int ActivateItem(ai::GeomRepositoryItem const& item) override;
+    virtual bool IsValid() const override;
+    virtual int GetResourceId() const override;
+    virtual void SetupInfoWnd(ItemInfoWnd* infoWnd) override;
+    virtual bool NeedUpdateInfoWnd(ItemInfoWnd* infoWnd) const override;
+    virtual void LaunchEventOnItemDeactivation() const override;
+    virtual void UpdateItemValue() override;
     virtual int OnMouseButton1(unsigned int state, PointBase<float> const& at) override;
-    virtual bool CanChangeItem() const override /* 0x1b4 */;
+    virtual bool CanChangeItem() const override;
 
-    /* 0x02b0 */ ai::GeomRepository* m_repository;
+    ai::GeomRepository* m_repository;
 
     RepositoryItemWnd();
     RepositoryItemWnd(RepositoryItemWnd const& rhs);
@@ -36,4 +36,4 @@ public:
     static m3d::Class* __fastcall GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(RepositoryItemWnd);
-}; /* size: 0x02b4 */
+};

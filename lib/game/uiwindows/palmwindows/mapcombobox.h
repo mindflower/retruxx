@@ -9,16 +9,16 @@ public:
     CStr GetSelectedMapName() const;
 
 protected:
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     int OnStartLevel();
     MapComboBox();
 
 public:
-    virtual ~MapComboBox() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
+    virtual ~MapComboBox() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classMapComboBox;
-}; /* size: 0x0258 */
+};

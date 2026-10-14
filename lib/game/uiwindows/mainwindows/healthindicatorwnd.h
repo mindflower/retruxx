@@ -18,7 +18,7 @@ public:
     };
 
 public:
-    virtual int CreateFromPattern(m3d::ui::Wnd* p, bool deleteSrc) /* 0x128 */;
+    virtual int CreateFromPattern(m3d::ui::Wnd* p, bool deleteSrc);
     void SetVehicleId(int vehicleId);
     void SetType(HealthIndicatorWnd::Type type);
 
@@ -32,33 +32,33 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_barTexNames[3][3];
-        /* 0x006c */ CStr m_strHealthId;
+        CStr m_barTexNames[3][3];
+        CStr m_strHealthId;
         AuxInfo(HealthIndicatorWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0078 */
+    };
 
 protected:
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int UpdateOnNewFrame() /* 0x12c */;
-    virtual void UpdateValue() /* 0x130 */;
-    virtual void UpdateBarTexture() /* 0x134 */;
-    virtual void UpdateTooltip() /* 0x138 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int UpdateOnNewFrame();
+    virtual void UpdateValue();
+    virtual void UpdateBarTexture();
+    virtual void UpdateTooltip();
     ai::Vehicle* GetVehicle() const;
     void SetBarTextures(CStr const& texGreenName, CStr const& texYellowName, CStr const& texRedName);
-    /* 0x0244 */ int m_vehicleId;
+    int m_vehicleId;
     static inline HealthIndicatorWnd::AuxInfo m_aif;
-    /* 0x0248 */ m3d::rend::TexHandle m_barTextures[3];
-    /* 0x0254 */ HealthIndicatorWnd::Type m_type;
-    /* 0x0258 */ CStr m_strHealth;
+    m3d::rend::TexHandle m_barTextures[3];
+    HealthIndicatorWnd::Type m_type;
+    CStr m_strHealth;
     HealthIndicatorWnd();
     HealthIndicatorWnd(HealthIndicatorWnd const& rhs);
 
 public:
-    virtual ~HealthIndicatorWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~HealthIndicatorWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classHealthIndicatorWnd;
-}; /* size: 0x0264 */
+};

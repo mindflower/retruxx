@@ -15,17 +15,17 @@ namespace ai
     {
         struct Circle
         {
-            /* 0x0000 */ CVector2 m_center;
-            /* 0x0008 */ float m_radius;
-            /* 0x000c */ float m_sqrRadius;
-        }; /* size: 0x0010 */
+            CVector2 m_center;
+            float m_radius;
+            float m_sqrRadius;
+        };
 
         // A vehicle's line of fire, on the ground plane: from its own circle to its target.
         struct AimInfo
         {
-            /* 0x0000 */ Circle m_vehicleCircle;
-            /* 0x0010 */ CVector2 m_targetPos;
-            /* 0x0018 */ CVector2 m_direction;
+            Circle m_vehicleCircle;
+            CVector2 m_targetPos;
+            CVector2 m_direction;
 
             // RVA 0x8AAED0 - whether the line of fire runs through the circle: either end inside
             // it, or the line passing within its radius between the ends.

@@ -84,22 +84,22 @@ namespace m3d
         int GetRefCount() const;
 
     private:
-        /* 0x0004 */ int m_refCount = 0;
-    }; /* size: 0x0008 */
+        int m_refCount = 0;
+    };
 
     //IMPORTANT: fields and members order is strict c
     class Object : public RefCountedBase
     {
     public:
-        virtual m3d::Object* Clone() /* 0x04 */;
-        virtual int ReadFromXmlNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* node) /* 0x08 */;
-        virtual int ReadFromXmlNodeAfterAdd(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) /* 0x0c */;
-        virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* writeTo) /* 0x10 */;
+        virtual m3d::Object* Clone();
+        virtual int ReadFromXmlNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* node);
+        virtual int ReadFromXmlNodeAfterAdd(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
+        virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* writeTo);
         bool GetPersistance() const;
         void SetPersistance(bool per);
-        virtual int SetProperty(unsigned int propId, void* prop) /* 0x14 */;
-        virtual int GetProperty(unsigned int propId, void* prop) const /* 0x18 */;
-        virtual int GetPropertiesList(retruxx::set<unsigned int>& properties) const /* 0x1c */;
+        virtual int SetProperty(unsigned int propId, void* prop);
+        virtual int GetProperty(unsigned int propId, void* prop) const;
+        virtual int GetPropertiesList(retruxx::set<unsigned int>& properties) const;
         m3d::Object* GetParent() const;
         m3d::Object* GetFirstChild() const;
         m3d::Object* GetLastChild() const;
@@ -109,11 +109,11 @@ namespace m3d
         m3d::Object* GetChildByName(const CStr& str) const;
         bool IsDirectChild(const m3d::Object* w) const;
         bool IsChildOf(const m3d::Object* wnd) const;
-        virtual int AddChild(m3d::Object* node) /* 0x20 */;
+        virtual int AddChild(m3d::Object* node);
         int LinkChildAtHead(m3d::Object* node);
         int LinkChildAtTail(m3d::Object* node);
         int UnlinkChild(m3d::Object* node);
-        virtual int RemoveChild(m3d::Object* node) /* 0x24 */;
+        virtual int RemoveChild(m3d::Object* node);
         int RemoveAllChildren();
         void MoveChildToFirstPosition(m3d::Object* wnd);
         void MoveChildToLastPosition(m3d::Object* wnd);
@@ -123,32 +123,32 @@ namespace m3d
         bool GetChildDirty() const;
 
     protected:
-        /* 0x0008 */ CStr m_name;
-        /* 0x0014 */ bool m_persistant = true;
-        /* 0x0015 */ bool m_isChildDirty = false;
-        /* 0x0016 */ char Padding_3[2];
+        CStr m_name;
+        bool m_persistant = true;
+        bool m_isChildDirty = false;
+        char Padding_3[2];
 
     private:
-        /* 0x0018 */ m3d::Object* m_parent = nullptr;
-        /* 0x001c */ m3d::Object* m_firstChild = nullptr;
-        /* 0x0020 */ m3d::Object* m_lastChild = nullptr;
-        /* 0x0024 */ m3d::Object* m_nextSibling = nullptr;
-        /* 0x0028 */ m3d::Object* m_prevSibling = nullptr;
-        /* 0x002c */ int m_numChildren = 0;
+        m3d::Object* m_parent = nullptr;
+        m3d::Object* m_firstChild = nullptr;
+        m3d::Object* m_lastChild = nullptr;
+        m3d::Object* m_nextSibling = nullptr;
+        m3d::Object* m_prevSibling = nullptr;
+        int m_numChildren = 0;
 
     protected:
         m3d::Object* ChildNodeFromXmlNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
 
     public:
         m3d::Object* ChildNodeFromXmlFile(const char* extStr);
-        virtual int IncWeakRef() /* 0x28 */;
-        virtual int DecWeakRef() /* 0x2c */;
-        virtual int GetWeakRefCount() /* 0x30 */;
-        /* 0x0030 */ void* m_scriptHandle = nullptr;
+        virtual int IncWeakRef();
+        virtual int DecWeakRef();
+        virtual int GetWeakRefCount();
+        void* m_scriptHandle = nullptr;
 
         static m3d::Class m_classObject;
-        virtual m3d::Class* GetClass() const /* 0x34 */;
-        virtual const char* GetClassNameA() const /* 0x38 */;
+        virtual m3d::Class* GetClass() const;
+        virtual const char* GetClassNameA() const;
         bool IsKindOf(const char* className) const;
         bool IsKindOf(const m3d::Class* object) const;
         static m3d::Class* __fastcall GetBaseClass();
@@ -157,7 +157,7 @@ namespace m3d
     protected:
         Object(const m3d::Object& clazz);
         Object();
-    }; /* size: 0x0034 */
+    };
 
     enum eExportType
     {

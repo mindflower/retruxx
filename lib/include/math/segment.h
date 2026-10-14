@@ -4,8 +4,8 @@
 class Segment
 {
 private:
-    /* 0x0000 */ CVector m_begin;
-    /* 0x000c */ CVector m_end;
+    CVector m_begin;
+    CVector m_end;
 
 public:
     Segment(const Segment&);
@@ -18,4 +18,4 @@ public:
     CVector& end();
     const CVector& end() const;
     const CVector getDirection() const;
-}; /* size: 0x0018 */
+};

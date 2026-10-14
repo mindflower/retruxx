@@ -30,12 +30,12 @@ public:
     float GetDefaultRotationAngleX() const;
 
 protected:
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
-    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
-    virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override /* 0x00 */;
-    virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas) override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual int OnBeforeAddToWndStation() override;
+    virtual int OnAfterRemoveFromWndStation() override;
+    virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override;
+    virtual int OnMouseMove(PointBase<float> const& pt, PointBase<float> const& deltas) override;
     void SetupModel();
     void AddOneNode(m3d::SgNode* node, CMatrix const& InvMatr, Quaternion const& rot, bool withChilds);
     void AddOneNode(m3d::SgNode* node, CMatrix const& InvMatr, bool useRotation, bool withChilds);
@@ -52,25 +52,25 @@ protected:
     void EmbraceCompoundGunAabb(Aabb& aabb, ai::CompoundGun const* cgun) const;
     void SetRotationByHandMode(bool bState);
 
-    /* 0x02a4 */ int m_objId;
-    /* 0x02a8 */ PointBase<float> m_rotationAngle;
-    /* 0x02b0 */ float m_rotationVelocity;
-    /* 0x02b4 */ float m_rotationByHandVelocity;
-    /* 0x02b8 */ bool m_bAllowRotate;
-    /* 0x02b9 */ bool m_bAllowRotateByHandX;
-    /* 0x02ba */ bool m_bAllowRotateByHandY;
-    /* 0x02bb */ bool m_bInRotationByHandMode;
-    /* 0x02bc */ float m_defaultRotationAngleX;
-    /* 0x02c0 */ Aabb m_aabb;
+    int m_objId;
+    PointBase<float> m_rotationAngle;
+    float m_rotationVelocity;
+    float m_rotationByHandVelocity;
+    bool m_bAllowRotate;
+    bool m_bAllowRotateByHandX;
+    bool m_bAllowRotateByHandY;
+    bool m_bInRotationByHandMode;
+    float m_defaultRotationAngleX;
+    Aabb m_aabb;
 
     ComplexModelWnd();
     ComplexModelWnd(ComplexModelWnd const& rhs);
 
 public:
-    virtual ~ComplexModelWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~ComplexModelWnd() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classComplexModelWnd;
-}; /* size: 0x02d8 */
+};

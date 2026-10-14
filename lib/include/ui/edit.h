@@ -12,17 +12,17 @@ namespace m3d
             EditWnd(m3d::ui::EditWnd const& ew);
 
         public:
-            virtual ~EditWnd() override /* 0x00 */;
-            virtual Object* Clone() override /* 0x04 */;
+            virtual ~EditWnd() override;
+            virtual Object* Clone() override;
             static Object* __fastcall CreateObject();
             static Class* __fastcall GetBaseClass();
-            virtual Class* GetClass() const override /* 0x34 */;
+            virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(EditWnd);
 
-            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id) override /* 0x44 */;
+            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id) override;
             void SetQuickEraseState(bool bQuickErase);
             bool IsInQuickEraseState() const;
-            virtual int SetText(CStr const& caption) override /* 0x48 */;
+            virtual int SetText(CStr const& caption) override;
             unsigned int GetCursorColor() const;
             void SetCursorColor(unsigned int color);
             int GetCursorPosition() const;
@@ -32,21 +32,21 @@ namespace m3d
             int CursorPos2StrPos(int cursorPos) const;
             void DeleteSymbol(int cursorPos);
             CStr GetVisibleText() const;
-            virtual int WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo) override /* 0x10 */;
-            virtual int ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node) override /* 0x08 */;
+            virtual int WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo) override;
+            virtual int ReadFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node) override;
             int IncrementCursorPosition();
             int DecrementCursorPosition();
 
         protected:
-            virtual int OnPaint(DrawInfo const& di) override /* 0x88 */;
-            virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0xbc */;
-            virtual int OnActivate(bool on) override /* 0xcc */;
-            virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override /* 0xa4 */;
+            virtual int OnPaint(DrawInfo const& di) override;
+            virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
+            virtual int OnActivate(bool on) override;
+            virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override;
 
-            /* 0x0220 */ bool m_bQuickEraseState = false;
-            /* 0x0224 */ int m_cursorPosition = 0;
-            /* 0x0228 */ unsigned int m_cursorColor = 0;
-            /* 0x022c */ CStr m_strCursorColor;
-        }; /* size: 0x0238 */
+            bool m_bQuickEraseState = false;
+            int m_cursorPosition = 0;
+            unsigned int m_cursorColor = 0;
+            CStr m_strCursorColor;
+        };
     }
 }

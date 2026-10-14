@@ -17,7 +17,7 @@ namespace m3d
         {
         public:
             FileServer();
-            virtual  ~FileServer() /* 0x00 */;
+            virtual  ~FileServer();
             int Shutdown();
             int Initialize(const char* dataSourcesFile);
             int Reinitialize(const char* dataSourcesFile);
@@ -29,9 +29,9 @@ namespace m3d
             void EnableMapping(bool State);
             void SetCurrentWorkDir(const char* CurrentDirectory);
             const char* GetCurrentWorkDir() const;
-            virtual m3d::fs::FileStream* CreateFileStream() /* 0x04 */;
+            virtual m3d::fs::FileStream* CreateFileStream();
             int OpenFileStream(m3d::fs::FileReader* Reader, const char* filename, m3d::fs::IStream::OpenFlags flags);
-            virtual bool FileExists(const char* filename) /* 0x08 */;
+            virtual bool FileExists(const char* filename);
             void GetOpenFilesList(retruxx::vector<CStr, retruxx::allocator<CStr> >& fileList) const;
             m3d::CriticalSection& GetCriticalSecton();
 
@@ -40,23 +40,23 @@ namespace m3d
             int InternalAddPackage(const CStr& PackageName);
             int EnumDataFolderFiles(const char*);
 
-            /* 0x0004 */ bool m_Initialized = false;
-            /* 0x0005 */ bool m_EnableMapping = false;
-            /* 0x0006 */ char Padding_132[2];
-            /* 0x0008 */ m3d::CriticalSection m_cs;
+            bool m_Initialized = false;
+            bool m_EnableMapping = false;
+            char Padding_132[2];
+            m3d::CriticalSection m_cs;
 
             using PackagePrt = ref_ptr<m3d::fs::Package>;
             using PackageStorageType = retruxx::vector<ref_ptr<m3d::fs::Package>, retruxx::allocator<ref_ptr<m3d::fs::Package> > >;
 
         protected:
-            /* 0x0020 */ retruxx::vector<ref_ptr<m3d::fs::Package>, retruxx::allocator<ref_ptr<m3d::fs::Package> > > m_Packages;
+            retruxx::vector<ref_ptr<m3d::fs::Package>, retruxx::allocator<ref_ptr<m3d::fs::Package> > > m_Packages;
 
             using FilesStorageType = retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >;
             class FilesStorageIterator;
 
         protected:
-            /* 0x0030 */ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_Files;
-            /* 0x003c */ CStr m_CurrentWorkDir;
-        }; /* size: 0x0048 */
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_Files;
+            CStr m_CurrentWorkDir;
+        };
     }
 }

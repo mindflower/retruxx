@@ -18,13 +18,13 @@ namespace m3d
 
         struct TabItemInfo
         {
-            /* 0x0000 */ CStr m_caption;
-            /* 0x000c */ CStr m_diz;
-            /* 0x0018 */ rend::TexHandle m_image;
-            /* 0x001c */ rend::TexHandle m_imageDisabled;
-            /* 0x0020 */ int m_data;
-            /* 0x0024 */ bool m_bCenterX;
-            /* 0x0025 */ bool m_bCenterY;
+            CStr m_caption;
+            CStr m_diz;
+            rend::TexHandle m_image;
+            rend::TexHandle m_imageDisabled;
+            int m_data;
+            bool m_bCenterX;
+            bool m_bCenterY;
             TabItemInfo(TabItemInfo const& rhs);
             TabItemInfo(CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled,
                         int data);
@@ -32,7 +32,7 @@ namespace m3d
             TabItemInfo& operator=(TabItemInfo const& rhs);
             void Set(CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled,
                      int data);
-        }; /* size: 0x0028 */
+        };
 
         class TabItem
         {
@@ -46,10 +46,10 @@ namespace m3d
             void SetInfo(TabItemInfo const& info);
 
         protected:
-            /* 0x0000 */ int m_idx;
-            /* 0x0004 */ ref_ptr<Wnd> m_workWnd;
-            /* 0x0008 */ TabItemInfo m_info;
-        }; /* size: 0x0030 */
+            int m_idx;
+            ref_ptr<Wnd> m_workWnd;
+            TabItemInfo m_info;
+        };
 
         struct TabButtonInfo
         {
@@ -65,17 +65,17 @@ namespace m3d
                 ALIGNMENT_RIGHT = 1,
             };
 
-            /* 0x0000 */ float m_minWidth;
-            /* 0x0004 */ float m_maxWidth;
-            /* 0x0008 */ float m_height;
-            /* 0x000c */ float m_spaceBetweenButtons;
-            /* 0x0010 */ float m_glyphSz;
-            /* 0x0014 */ m3d::ui::TabButtonInfo::DrawStyle m_drawStyle;
-            /* 0x0018 */ m3d::ui::TabButtonInfo::Alignment m_alignment;
+            float m_minWidth;
+            float m_maxWidth;
+            float m_height;
+            float m_spaceBetweenButtons;
+            float m_glyphSz;
+            m3d::ui::TabButtonInfo::DrawStyle m_drawStyle;
+            m3d::ui::TabButtonInfo::Alignment m_alignment;
             TabButtonInfo();
             void SetNormal(float minW, float maxW, float h, float space, m3d::ui::TabButtonInfo::Alignment alignment, float glyphSz);
             void SetIzvrat(float w, float h, float space, m3d::ui::TabButtonInfo::Alignment alignment);
-        }; /* size: 0x001c */
+        };
 
         class TabWnd : public Wnd
         {
@@ -89,11 +89,11 @@ namespace m3d
 
             struct AuxInfo
             {
-                /* 0x0000 */ float m_dizSpace;
-                /* 0x0004 */ float m_clientEdge;
-                /* 0x0008 */ float m_btnClientEdge;
+                float m_dizSpace;
+                float m_clientEdge;
+                float m_btnClientEdge;
                 AuxInfo();
-            }; /* size: 0x000c */
+            };
 
         public:
             static Object* CreateObject();

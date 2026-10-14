@@ -134,10 +134,10 @@ namespace m3d
 
             struct RenderInfo
             {
-                /* 0x0000 */ m3d::SgNode* m_node = nullptr;
-                /* 0x0004 */ unsigned int m_dt = 0;
-                /* 0x0008 */ unsigned int m_fps = 0;
-            }; /* size: 0x000c */
+                m3d::SgNode* m_node = nullptr;
+                unsigned int m_dt = 0;
+                unsigned int m_fps = 0;
+            };
 
             RenderInfo ri;
             ri.m_node = this;
@@ -157,10 +157,10 @@ namespace m3d
         // What the node hands to AnimatedModelsServer::RenderItem (SgAnimatedModelNode::Render::RenderInfo in the PDB).
         struct RenderInfo
         {
-            /* 0x0000 */ CMatrix* m_localXForm;
-            /* 0x0004 */ float m_alpha;
-            /* 0x0008 */ m3d::SgNode* m_node;
-        }; /* size: 0x000c */
+            CMatrix* m_localXForm;
+            float m_alpha;
+            m3d::SgNode* m_node;
+        };
     }  // namespace
 
     int SgAnimatedModelNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)

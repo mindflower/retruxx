@@ -17,10 +17,10 @@ namespace m3d
         // What the node hands to StaticModelsServer::RenderItem (SgStaticModelNode::Render::renderInfo in the PDB).
         struct renderInfo
         {
-            /* 0x0000 */ CMatrix* m_localXForm;
-            /* 0x0004 */ float m_alpha;
-            /* 0x0008 */ rend::Cull m_culling;
-        }; /* size: 0x000c */
+            CMatrix* m_localXForm;
+            float m_alpha;
+            rend::Cull m_culling;
+        };
     }  // namespace
 
     Object* SgStaticModelNode::CreateObject()

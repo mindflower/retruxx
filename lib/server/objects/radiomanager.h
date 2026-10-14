@@ -7,26 +7,26 @@ namespace ai
     class RadioManagerPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-    }; /* size: 0x0040 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class RadioManager : public ai::Obj
     {
         friend class RadioManagerPrototypeInfo;
     protected:
-        virtual  ~RadioManager() override /* 0x00 */;
+        virtual  ~RadioManager() override;
 
     private:
         RadioManager(const ai::RadioManagerPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classRadioManager;
-        virtual const ai::RadioManagerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+        virtual const ai::RadioManagerPrototypeInfo* GetPrototypeInfo() const override;
+        virtual int OnEvent(const ai::Event& evn) override;
 
     private:
         void _OnObjectDie(const ai::Event& evn);
@@ -48,10 +48,10 @@ namespace ai
 
     private:
         void ReadyMessage(ai::RadioManager::RM_ENUM type, int belong, const CStr& mes);
-        /* 0x00c0 */ bool m_bRadioEnabled;
+        bool m_bRadioEnabled;
 
     public:
         void EnableRadio();
         void DisableRadio();
-    }; /* size: 0x00c4 */
+    };
 }

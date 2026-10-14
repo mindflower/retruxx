@@ -336,10 +336,10 @@ namespace ai
         // The parameters AnimatedModelsServer::UpdateItem expects.
         struct RenderInfo
         {
-            /* 0x0000 */ m3d::SgNode* m_node = nullptr;
-            /* 0x0004 */ unsigned int m_dt = 0;
-            /* 0x0008 */ unsigned int m_fps = 0;
-        }; /* size: 0x000c */
+            m3d::SgNode* m_node = nullptr;
+            unsigned int m_dt = 0;
+            unsigned int m_fps = 0;
+        };
 
         RenderInfo ri;
         ri.m_node = node;

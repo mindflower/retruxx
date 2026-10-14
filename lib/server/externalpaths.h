@@ -21,5 +21,5 @@ namespace ai
         retruxx::map<CStr, retruxx::vector<CVector2, retruxx::allocator<CVector2> >, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, retruxx::vector<CVector2, retruxx::allocator<CVector2> > > > > m_paths;
         retruxx::vector<CVector2, retruxx::allocator<CVector2> > m_emptyPath;
         retruxx::vector<CStr, retruxx::allocator<CStr> > m_emptyNames;
-    }; /* size: 0x002c */
+    };
 }

@@ -30,9 +30,9 @@ namespace m3d
         {
             struct _AnimationType2Str
             {
-                /* 0x0000 */ ui::Wnd::AnimationInfo::AnimationType m_type;
-                /* 0x0004 */ char const* m_name;
-            }; /* size: 0x0008 */
+                ui::Wnd::AnimationInfo::AnimationType m_type;
+                char const* m_name;
+            };
 
             _AnimationType2Str l_animationType2Str[17] = {
                 {Wnd::AnimationInfo::ANIMATIONTYPE_USER, "USER"},

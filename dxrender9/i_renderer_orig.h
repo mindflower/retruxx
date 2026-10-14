@@ -62,11 +62,11 @@ namespace m3d
 #pragma pack(push, 4)
         struct SubmeshInfo
         {
-            /* 0x0000 */ int m_firstVert;
-            /* 0x0004 */ int m_numVerts;
-            /* 0x0008 */ int m_firstTri;
-            /* 0x000c */ int m_numTris;
-        }; /* size: 0x0010 */
+            int m_firstVert;
+            int m_numVerts;
+            int m_firstTri;
+            int m_numTris;
+        };
 #pragma pack(pop)
 
         static_assert(sizeof(SubmeshInfo) == 0x0010);

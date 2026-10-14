@@ -43,19 +43,19 @@ namespace ai
     {
         struct auxEventInfo
         {
-            /* 0x0000 */ ai::eGameEvent m_eventId;
-            /* 0x0004 */ CStr m_eventName;
-        }; /* size: 0x0010 */
+            ai::eGameEvent m_eventId;
+            CStr m_eventName;
+        };
 
     private:
-        /* 0x0000 */ retruxx::vector<ai::ProcessManager::auxEventInfo, retruxx::allocator<ai::ProcessManager::auxEventInfo> > m_eventInfo;
+        retruxx::vector<ai::ProcessManager::auxEventInfo, retruxx::allocator<ai::ProcessManager::auxEventInfo> > m_eventInfo;
 
         using EventList = retruxx::list<ai::Event, retruxx::allocator<ai::Event> >;
 
     private:
-        /* 0x0010 */ retruxx::list<ai::Event, retruxx::allocator<ai::Event> > m_eventQueue;
-        /* 0x001c */ int m_numProcessedEvents;
-        /* 0x0020 */ int m_eventDebugNum;
+        retruxx::list<ai::Event, retruxx::allocator<ai::Event> > m_eventQueue;
+        int m_numProcessedEvents;
+        int m_eventDebugNum;
 
     public:
         ProcessManager(const ai::ProcessManager&);
@@ -77,7 +77,7 @@ namespace ai
         void _RegisterEvents();
         void _RegisterEvent(const CStr& eventName, ai::eGameEvent eventId);
         void _EnsureAllEventsAreRegistered() const;
-    }; /* size: 0x0024 */
+    };
 
     inline ProcessManager* theProcessManager = nullptr;
 }

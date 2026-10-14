@@ -17,12 +17,12 @@ namespace ai
     class Modifier
     {
     public:
-        /* 0x0000 */ float m_timeOut;
-        /* 0x0004 */ ai::eModifierOperation m_Operation;
-        /* 0x0008 */ int m_magicPrototypeId;
-        /* 0x000c */ CStr m_PropertyName;
-        /* 0x0018 */ int m_SenderID;
-        /* 0x001c */ m3d::AIParam m_Value;
+        float m_timeOut;
+        ai::eModifierOperation m_Operation;
+        int m_magicPrototypeId;
+        CStr m_PropertyName;
+        int m_SenderID;
+        m3d::AIParam m_Value;
         Modifier(const ai::Modifier& Mod);
         Modifier();
         ai::Modifier& operator=(const ai::Modifier& rhs);
@@ -37,5 +37,5 @@ namespace ai
         void ApplyModelNum(int* Property, int base) const;
         void ApplyModelNumList(retruxx::vector<int>* MNL) const;
         void ApplyEngineID(int* Property, int base) const;
-    }; /* size: 0x0038 */
+    };
 }

@@ -11,18 +11,18 @@ namespace ai
         struct ObjectDescription
         {
             CStr prototypeName;
-            /* 0x000c */ int prototypeId;
-        }; /* size: 0x0010 */
+            int prototypeId;
+        };
 
         using ObjectDescriptionVector = retruxx::vector<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription, retruxx::allocator<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription> >;
 
     public:
         retruxx::vector<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription, retruxx::allocator<ai::RepositoryObjectsGeneratorPrototypeInfo::ObjectDescription> > m_objectDescriptions;
         RepositoryObjectsGeneratorPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x08 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
         void Generate(unsigned int count, ai::GeomRepository* repository) const;
-    }; /* size: 0x0050 */
+    };
 
 }

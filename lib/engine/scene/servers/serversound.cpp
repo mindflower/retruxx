@@ -120,10 +120,10 @@ namespace m3d
         {
             struct RenderInfo
             {
-                /* 0x0000 */ m3d::SgNode* m_node = nullptr;
-                /* 0x0004 */ int m_currentSoundNum = 0;
+                m3d::SgNode* m_node = nullptr;
+                int m_currentSoundNum = 0;
             };
-            /* size: 0x0008 */
+           
 
             auto const* renderInfo = static_cast<RenderInfo*>(params);
 

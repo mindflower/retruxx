@@ -92,18 +92,18 @@ namespace ai
     class ShellTraceLineCallback : public TraceLineCallback
     {
     private:
-        /* 0x0004 */ ai::Bullet const& m_Bullet;
+        ai::Bullet const& m_Bullet;
 
     public:
         ShellTraceLineCallback(ai::Bullet const& bullet) : m_Bullet(bullet)
         {
         }
 
-        virtual bool CollideId(int objId) const override /* 0x04 */
+        virtual bool CollideId(int objId) const override
         {
             return objId != m_Bullet.GetEmittedObjId();
         }
-        virtual bool CollidePhysicObj(ai::PhysicObj const* physicObj) const override /* 0x08 */
+        virtual bool CollidePhysicObj(ai::PhysicObj const* physicObj) const override
         {
             if (IS_KIND_OF(physicObj, Shell))
             {
@@ -112,7 +112,7 @@ namespace ai
             }
             return true;
         }
-    }; /* size: 0x0008 */
+    };
 
     int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
     {

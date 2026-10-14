@@ -21,5 +21,5 @@ namespace ai
         static float __fastcall FitAgainstObj(const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Obj* target);
         static void __fastcall ClearRoles(const ai::Team* team);
         static void __fastcall GetTargetsPositions(const ai::Team* team, retruxx::vector<CVector, retruxx::allocator<CVector> >& positions);
-    }; /* size: 0x0001 */
+    };
 }

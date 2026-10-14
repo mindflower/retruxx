@@ -46,30 +46,30 @@ namespace ai
         friend class Team;
 
     private:
-        /* 0x0000 */ unsigned int m_size;
-        /* 0x0004 */ CVector2* m_pPath;
-        /* 0x0008 */ bool m_bSearching;
-        /* 0x0009 */ char Padding_120[3];
-        /* 0x000c */ ai::eSearchResult m_SearchResult;
-        /* 0x0010 */ unsigned int v;
-        /* 0x0014 */ unsigned int w;
-        /* 0x0018 */ ai::Map* m_pMap;
+        unsigned int m_size;
+        CVector2* m_pPath;
+        bool m_bSearching;
+        char Padding_120[3];
+        ai::eSearchResult m_SearchResult;
+        unsigned int v;
+        unsigned int w;
+        ai::Map* m_pMap;
         ai::MapIndex m_startPointIndex;
         ai::MapIndex m_endPointIndex;
         ai::MapIndex m_minIndex;
         ai::MapIndex m_maxIndex;
-        /* 0x003c */ unsigned char m_blockedValue;
-        /* 0x003d */ char Padding_121[3];
-        /* 0x0040 */ int m_radius;
-        /* 0x0044 */ float m_PathLength;
-        /* 0x0048 */ ai::DHeap* pHeap;
-        /* 0x004c */ unsigned int* pDist;
-        /* 0x0050 */ unsigned int* pHInverse;
-        /* 0x0054 */ unsigned char* pFlag;
-        /* 0x0058 */ long* pParent;
-        /* 0x005c */ long* pLength;
-        /* 0x0060 */ unsigned int m_minDist;
-        /* 0x0064 */ unsigned int m_idOfClosestPoint;
+        unsigned char m_blockedValue;
+        char Padding_121[3];
+        int m_radius;
+        float m_PathLength;
+        ai::DHeap* pHeap;
+        unsigned int* pDist;
+        unsigned int* pHInverse;
+        unsigned char* pFlag;
+        long* pParent;
+        long* pLength;
+        unsigned int m_minDist;
+        unsigned int m_idOfClosestPoint;
 
     public:
         inline static int QuantAmount = 0;
@@ -108,5 +108,5 @@ namespace ai
         void IdToMapIndex(unsigned int id, ai::MapIndex& res) const;
         void StraightenPath(bool bForDijkstra);
         void FilterPath();
-    }; /* size: 0x0078 */
+    };
 }

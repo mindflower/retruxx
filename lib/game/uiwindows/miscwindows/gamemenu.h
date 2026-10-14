@@ -15,20 +15,20 @@ enum ControlType
 class MenuItem
 {
 public:
-  /* 0x0000 */ CStr m_name;
-  /* 0x000c */ unsigned int m_id;
-  /* 0x0010 */ MenuItem* m_parent;
-  /* 0x0014 */ std::vector<MenuItem *,std::allocator<MenuItem *> > m_children;
-  /* 0x0024 */ ControlType m_ctrlType;
-  /* 0x0028 */ bool m_disabled;
-  /* 0x0029 */ bool m_visible;
+  CStr m_name;
+  unsigned int m_id;
+  MenuItem* m_parent;
+  std::vector<MenuItem *,std::allocator<MenuItem *> > m_children;
+  ControlType m_ctrlType;
+  bool m_disabled;
+  bool m_visible;
   MenuItem(const MenuItem&);
   MenuItem(const CStr& name, unsigned int id, ControlType ct);
   ~MenuItem();
   void AddChild(MenuItem* child);
   const MenuItem* GetMenuItemViaName(const CStr& name) const;
   MenuItem* GetMenuItemViaName(const CStr& name);
-}; /* size: 0x002c */
+};
 
 class GameMenuWnd :  public m3d::ui::ModalWnd, public MenuItem
 {

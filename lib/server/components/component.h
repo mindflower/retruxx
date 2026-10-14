@@ -31,8 +31,8 @@ namespace ai
         using BeforeApplyModifierCallback = ai::BaseFunctionTwoArgsRef<ai::Modifier, T, bool>;
 
     public:
-        /* 0x0000 */ ai::FuncPtrOneArg<T, void> m_AfterChange;
-        /* 0x0008 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeChange;
+        ai::FuncPtrOneArg<T, void> m_AfterChange;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeChange;
 
         // NOTE: assign and _AssignUnsafe are declared in the PDB but were never
         // instantiated, so their bodies do not come from the binary. They follow
@@ -47,5 +47,5 @@ namespace ai
         void _AssignUnsafe(ThisType const&)
         {
         }
-    }; /* size: 0x0010 */
+    };
 }  // namespace ai

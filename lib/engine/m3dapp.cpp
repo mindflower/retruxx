@@ -1972,11 +1972,11 @@ namespace m3d
 
         struct RenderInfo
         {
-            /* 0x0000 */ bool m_bDoLoop;
-            /* 0x0001 */ bool m_bImmediate;
-            /* 0x0002 */ char Padding_330[2];
-            /* 0x0004 */ int m_channelId;
-        }; /* size: 0x0008 */
+            bool m_bDoLoop;
+            bool m_bImmediate;
+            char Padding_330[2];
+            int m_channelId;
+        };
 
         RenderInfo ri;
         ri.m_bDoLoop = bDoLoop;

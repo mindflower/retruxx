@@ -8,8 +8,8 @@ class CDevice;
 class StateManager : public ID3DXEffectStateManager
 {
 public:
-    /* 0x0004 */ CDevice* m_dev;
-    /* 0x0008 */ unsigned int m_nRefs;
+    CDevice* m_dev;
+    unsigned int m_nRefs;
 
     StateManager();
     void SetDevice(CDevice* dev);
@@ -41,4 +41,4 @@ public:
                                               UINT RegisterCount) override;
     HRESULT __stdcall SetPixelShaderConstantB(UINT RegisterIndex, CONST BOOL* pConstantData,
                                               UINT RegisterCount) override;
-}; /* size: 0x000c */
+};

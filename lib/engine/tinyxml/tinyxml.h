@@ -146,10 +146,10 @@ class TiXmlBase
 
 	struct Entity
 	{
-		/* 0x0000 */ const char*	str;
-		/* 0x0004 */ unsigned int	strLength;
-		/* 0x0008 */ int			chr;
-	}; /* size: 0x000c */
+		const char*	str;
+		unsigned int	strLength;
+		int			chr;
+	};
 
   private:
 	enum
@@ -160,7 +160,7 @@ class TiXmlBase
 	};
 	static Entity entity[ NUM_ENTITY ];
 	static bool condenseWhiteSpace;
-}; /* size: 0x0004 */
+};
 
 
 /** The parent class for everything in the Document Object Model.
@@ -316,14 +316,14 @@ class TiXmlNode : public TiXmlBase
 
 	void CopyToClone( TiXmlNode* target ) const	{ target->value = value; }
 
-	/* 0x0004 */ TiXmlNode*		parent;
-	/* 0x0008 */ NodeType		type;
-	/* 0x000c */ TiXmlNode*		firstChild;
-	/* 0x0010 */ TiXmlNode*		lastChild;
-	/* 0x0014 */ CStr			value;
-	/* 0x0020 */ TiXmlNode*		prev;
-	/* 0x0024 */ TiXmlNode*		next;
-}; /* size: 0x0028 */
+	TiXmlNode*		parent;
+	NodeType		type;
+	TiXmlNode*		firstChild;
+	TiXmlNode*		lastChild;
+	CStr			value;
+	TiXmlNode*		prev;
+	TiXmlNode*		next;
+};
 
 
 /** An attribute is a name-value pair. Elements have an arbitrary
@@ -380,12 +380,12 @@ class TiXmlAttribute : public TiXmlBase
 	void SetDocument( TiXmlDocument* doc )	{ document = doc; }
 
   private:
-	/* 0x0004 */ TiXmlDocument*		document;	// A pointer back to a document, for error reporting.
-	/* 0x0008 */ CStr				name;
-	/* 0x0014 */ CStr				value;
-	/* 0x0020 */ TiXmlAttribute*	prev;
-	/* 0x0024 */ TiXmlAttribute*	next;
-}; /* size: 0x0028 */
+	TiXmlDocument*		document;	// A pointer back to a document, for error reporting.
+	CStr				name;
+	CStr				value;
+	TiXmlAttribute*	prev;
+	TiXmlAttribute*	next;
+};
 
 
 /*	A class used to manage a group of attributes.
@@ -409,8 +409,8 @@ class TiXmlAttributeSet
 	TiXmlAttribute*	Find( const CStr& name ) const;
 
   private:
-	/* 0x0000 */ TiXmlAttribute sentinel;
-}; /* size: 0x0028 */
+	TiXmlAttribute sentinel;
+};
 
 
 /** The element is a container class. It has a value, the element name,
@@ -478,8 +478,8 @@ class TiXmlElement : public TiXmlNode
 	const char* ReadValue( const char* p );
 
   private:
-	/* 0x0028 */ TiXmlAttributeSet attributeSet;
-}; /* size: 0x0050 */
+	TiXmlAttributeSet attributeSet;
+};
 
 
 /**	An XML comment.
@@ -506,7 +506,7 @@ class TiXmlComment : public TiXmlNode
 						 returns: next char past '>'
 	*/
 	virtual const char* Parse( const char* p );
-}; /* size: 0x0028 */
+};
 
 
 /** XML text. Contained in an element.
@@ -532,7 +532,7 @@ class TiXmlText : public TiXmlNode
 	virtual const char* Parse( const char* p );
 	// [internal use]
 	virtual void StreamIn( m3d::fs::IStream* in, CStr* tag );
-}; /* size: 0x0028 */
+};
 
 
 /** In correct XML the declaration is the first entry in the file.
@@ -583,10 +583,10 @@ class TiXmlDeclaration : public TiXmlNode
 	virtual const char* Parse( const char* p );
 
   private:
-	/* 0x0028 */ CStr version;
-	/* 0x0034 */ CStr encoding;
-	/* 0x0040 */ CStr standalone;
-}; /* size: 0x004c */
+	CStr version;
+	CStr encoding;
+	CStr standalone;
+};
 
 
 /** Any tag that tinyXml doesn't recognize is save as an
@@ -615,7 +615,7 @@ class TiXmlUnknown : public TiXmlNode
 						 returns: next char past '>'
 	*/
 	virtual const char* Parse( const char* p );
-}; /* size: 0x0028 */
+};
 
 
 /** Always the top level node. A document binds together all the
@@ -682,9 +682,9 @@ class TiXmlDocument : public TiXmlNode
 	virtual void StreamIn( m3d::fs::IStream* in, CStr* tag );
 
   private:
-	/* 0x0028 */ bool error;
-	/* 0x002c */ int  errorId;
-	/* 0x0030 */ CStr errorDesc;
-}; /* size: 0x003c */
+	bool error;
+	int  errorId;
+	CStr errorDesc;
+};
 
 #endif

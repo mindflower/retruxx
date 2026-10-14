@@ -32,9 +32,9 @@ namespace ai
     {
     public:
         DynamicQuestPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        /* 0x0040 */ int m_minReward;
-    }; /* size: 0x0044 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        int m_minReward;
+    };
 
     class DynamicQuest : public ai::Obj
     {
@@ -44,40 +44,40 @@ namespace ai
         friend class DynamicQuestManager;
 
     protected:
-        virtual  ~DynamicQuest() override = 0 /* 0x00 */;
+        virtual  ~DynamicQuest() override = 0;
 
     protected:
         DynamicQuest(const ai::DynamicQuestPrototypeInfo& prototypeInfo);
         DynamicQuest(const ai::DynamicQuest&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classDynamicQuest;
-        virtual const ai::DynamicQuestPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+        virtual const ai::DynamicQuestPrototypeInfo* GetPrototypeInfo() const override;
+        virtual int OnEvent(const ai::Event& evn) override;
 
     protected:
         static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
+        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
+        virtual int GetPropertyId(const char* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
         static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
 
         enum QuestStatus
         {
@@ -90,15 +90,15 @@ namespace ai
         };
 
     public:
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
-        virtual void PassToAnotherMap() /* 0x110 */;
-        virtual void UpdateBeforeShowInConversation() /* 0x114 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void PassToAnotherMap();
+        virtual void UpdateBeforeShowInConversation();
         void Take();
         static void __fastcall Registration();
-        virtual ai::DynamicQuestManager::QuestType GetQuestType() const = 0 /* 0x118 */;
+        virtual ai::DynamicQuestManager::QuestType GetQuestType() const = 0;
         int GetHirerObjId() const;
         int GetTargetObjId() const;
         const CStr& GetHirerName() const;
@@ -108,27 +108,27 @@ namespace ai
         const ai::GameTime& GetTakeGameTime() const;
 
     protected:
-        virtual void _InternalPostLoad() override /* 0xfc */;
-        virtual void _OnCreate() /* 0x11c */;
-        virtual void _OnTake() /* 0x120 */;
-        virtual int _CalcReward() = 0 /* 0x124 */;
-        virtual void _OnHirerBecamesEnemyWithPlayer() /* 0x128 */;
+        virtual void _InternalPostLoad() override;
+        virtual void _OnCreate();
+        virtual void _OnTake();
+        virtual int _CalcReward() = 0;
+        virtual void _OnHirerBecamesEnemyWithPlayer();
         void _SetStatus(ai::DynamicQuest::QuestStatus newStatus);
-        /* 0x00c0 */ int m_reward;
-        /* 0x00c4 */ char Padding_43[4];
-        /* 0x00c8 */ ai::GameTime m_takeGameTime;
-        /* 0x00e0 */ ai::FadingMsgId m_fadingMsgIdOnComplete;
-        /* 0x00e4 */ bool m_bShowMessageForAddMoney;
-        /* 0x00e5 */ char Padding_44[3];
+        int m_reward;
+        char Padding_43[4];
+        ai::GameTime m_takeGameTime;
+        ai::FadingMsgId m_fadingMsgIdOnComplete;
+        bool m_bShowMessageForAddMoney;
+        char Padding_44[3];
 
     private:
-        /* 0x00e8 */ ai::DynamicQuest::QuestStatus m_questStatus;
-        /* 0x00ec */ int m_hirerObjId;
-        /* 0x00f0 */ int m_targetObjId;
-        /* 0x00f4 */ CStr m_hirerName;
-        /* 0x0100 */ CStr m_targetName;
+        ai::DynamicQuest::QuestStatus m_questStatus;
+        int m_hirerObjId;
+        int m_targetObjId;
+        CStr m_hirerName;
+        CStr m_targetName;
         void _OnObjectDie(const ai::Event& evn);
         void _OnObjectEntersLocation(const ai::Event& evn);
         void _OnRelationChanged(const ai::Event& evn);
-    }; /* size: 0x0110 */
+    };
 }

@@ -80,9 +80,9 @@ namespace ai
 
         struct _FiringType2Str
         {
-            /* 0x0000 */ FiringTypes m_type;
-            /* 0x0004 */ CStr m_name;
-        }; /* size: 0x0010 */
+            FiringTypes m_type;
+            CStr m_name;
+        };
 
         _FiringType2Str const l_firingType2Str[] = {
             {FT_MACHINE_GUN, "MachineGun"},
@@ -102,9 +102,9 @@ namespace ai
 
         struct _DamageType2Str
         {
-            /* 0x0000 */ DamageType m_type;
-            /* 0x0004 */ CStr m_name;
-        }; /* size: 0x0010 */
+            DamageType m_type;
+            CStr m_name;
+        };
 
         _DamageType2Str const l_damageType2Str[] = {
             {DAMAGE_PIERCING, "PIERCING"},

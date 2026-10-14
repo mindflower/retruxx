@@ -81,16 +81,16 @@ public:
     WeaponGroup& operator=(const WeaponGroup& rhs);
 
 public:
-    virtual ~WeaponGroup() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
+    virtual ~WeaponGroup() override;
+    virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classWeaponGroup;
     void SetGroupId(int groupId);
     static Impulse __fastcall GetImpulseByGroupId(int groupId);
     void ClearWeapons();
-    /* 0x0034 */ int m_groupId;
-    /* 0x0038 */ Impulse m_impulseId;
-    /* 0x003c */ std::set<CStr, std::less<CStr>, std::allocator<CStr>> m_gunPartNames;
-}; /* size: 0x0048 */
+    int m_groupId;
+    Impulse m_impulseId;
+    std::set<CStr, std::less<CStr>, std::allocator<CStr>> m_gunPartNames;
+};

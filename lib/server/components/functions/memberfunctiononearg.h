@@ -29,7 +29,7 @@ namespace ai
             FuncPtr::operator=(pNewFunc);
             return *this;
         }
-    }; /* size: 0x0008 */
+    };
 
     template <typename TClass, typename T1, typename RetType>
     class MemberFunctionOneArg : public ai::BaseFunctionOneArg<T1, RetType>
@@ -53,7 +53,7 @@ namespace ai
             m_func = func;
         }
 
-        virtual RetType Execute(T1 arg) override /* 0x04 */
+        virtual RetType Execute(T1 arg) override
         {
             if (m_pT)
             {
@@ -63,7 +63,7 @@ namespace ai
         }
 
     private:
-        /* 0x0004 */ TClass* m_pT = nullptr;
-        /* 0x0008 */ RetType (TClass::*m_func)(T1) = nullptr;
-    }; /* size: 0x000c */
+        TClass* m_pT = nullptr;
+        RetType (TClass::*m_func)(T1) = nullptr;
+    };
 }

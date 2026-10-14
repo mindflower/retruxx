@@ -61,44 +61,44 @@ namespace m3d
         Weather(const m3d::Weather& classe);
 
     public:
-        virtual  ~Weather() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
+        virtual  ~Weather() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classWeather;
         CStr m_Name;
-        /* 0x0040 */ CVector m_colorSets[7][4];
-        /* 0x0190 */ CVector m_currentColors[7];
-        /* 0x01e4 */ bool m_shadowVisibility[4];
-        /* 0x01e8 */ float m_shadowTransparency[4];
-        /* 0x01f8 */ float m_cloudsSpeed[4];
-        /* 0x0208 */ float m_reduceDistFactor;
-        /* 0x020c */ float m_weatherWeight;
-        /* 0x0210 */ float m_waterSpeed;
-        /* 0x0214 */ float m_waterHeightBig;
-        /* 0x0218 */ float m_waterHeightSmall;
-        /* 0x021c */ float m_waterSizeBig;
-        /* 0x0220 */ float m_waterSizeSmall;
-        /* 0x0224 */ float m_waterCourseAng;
-        /* 0x0228 */ float m_waterSpecularM;
-        /* 0x022c */ float m_waterSpecularS;
-        /* 0x0230 */ float m_weatherSkyDomeFactor;
+        CVector m_colorSets[7][4];
+        CVector m_currentColors[7];
+        bool m_shadowVisibility[4];
+        float m_shadowTransparency[4];
+        float m_cloudsSpeed[4];
+        float m_reduceDistFactor;
+        float m_weatherWeight;
+        float m_waterSpeed;
+        float m_waterHeightBig;
+        float m_waterHeightSmall;
+        float m_waterSizeBig;
+        float m_waterSizeSmall;
+        float m_waterCourseAng;
+        float m_waterSpecularM;
+        float m_waterSpecularS;
+        float m_weatherSkyDomeFactor;
         m3d::WindInfo m_wind;
-        /* 0x0270 */ CStr m_PostEffectName[4];
-        /* 0x02a0 */ CStr m_lightmapTextureName[4];
-        /* 0x02d0 */ CStr m_cloudsTextureName[4];
-        virtual void DefaultInitialize() /* 0x3c */;
-        virtual void Release() /* 0x40 */;
-        virtual int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override /* 0x08 */;
-        virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override /* 0x10 */;
-        virtual int ReadDetailFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) /* 0x44 */;
-        virtual int WriteDetailToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) /* 0x48 */;
-        virtual int Update(float amount, int curServerTime) /* 0x4c */;
-        virtual int Render() /* 0x50 */;
-        virtual int UpdateColors(m3d::ColorItems colorItem, m3d::ColorTypes curTime) /* 0x54 */;
-        virtual int TurnOffEffects() /* 0x58 */;
-        virtual void SetUp() /* 0x5c */;
+        CStr m_PostEffectName[4];
+        CStr m_lightmapTextureName[4];
+        CStr m_cloudsTextureName[4];
+        virtual void DefaultInitialize();
+        virtual void Release();
+        virtual int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override;
+        virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override;
+        virtual int ReadDetailFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
+        virtual int WriteDetailToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
+        virtual int Update(float amount, int curServerTime);
+        virtual int Render();
+        virtual int UpdateColors(m3d::ColorItems colorItem, m3d::ColorTypes curTime);
+        virtual int TurnOffEffects();
+        virtual void SetUp();
         unsigned int GetColorItemsNum() const;
         unsigned int GetColorTypesNum() const;
         const float GetSkyDomeFactor() const;
@@ -140,7 +140,7 @@ namespace m3d
         void SetLightmapTexName(unsigned int, const CStr&);
         const CStr& GetCloudsTexName(unsigned int curDayTime) const;
         void SetCloudsTexName(unsigned int, const CStr&);
-    }; /* size: 0x0300 */
+    };
 
     class WeatherClear : public Weather
     {

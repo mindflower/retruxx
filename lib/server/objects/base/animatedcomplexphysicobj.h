@@ -7,8 +7,8 @@ namespace ai
     {
     public:
         AnimatedComplexPhysicObjPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0090 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class AnimatedComplexPhysicObj : public ai::ComplexPhysicObj
     {
@@ -16,19 +16,19 @@ namespace ai
         friend class AnimatedComplexPhysicObjPrototypeInfo;
 
     protected:
-        virtual  ~AnimatedComplexPhysicObj() override /* 0x00 */;
+        virtual  ~AnimatedComplexPhysicObj() override;
 
     protected:
         AnimatedComplexPhysicObj(const ai::AnimatedComplexPhysicObjPrototypeInfo& prototypeInfo);
         AnimatedComplexPhysicObj(const ai::AnimatedComplexPhysicObj&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
     public:
         static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classAnimatedComplexPhysicObj;
-        virtual const ai::AnimatedComplexPhysicObjPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-    }; /* size: 0x014c */
+        virtual const ai::AnimatedComplexPhysicObjPrototypeInfo* GetPrototypeInfo() const override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+    };
 }
