@@ -135,7 +135,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, Var)
 
 RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, SetVar)
 {
-    auto* trigger = (ai::Trigger *)context->asObject(0, "Trigger");
+    auto* trigger = (ai::Trigger*)context->asObject(0, "Trigger");
     auto& aiParam = context->asAIParam(2);
     auto* str = context->asString(1);
     trigger->SetVar(str, aiParam);
@@ -145,22 +145,22 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Trigger, SetVar)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Trigger)
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, AddEvent, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, DelEvent, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, DelEventObj, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetTriggeredObjectAmount, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetTriggeredObjectID, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, AddTriggeredObjectID, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCount, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, IncCount, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, IsActivated, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, Activate, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, Deactivate, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCallEvent, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCallObjName, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCallObjId, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, Var, "", "", "")
-        RT_CLASS_EXPORT(Trigger, m3d::METHOD, SetVar, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, AddEvent, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, DelEvent, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, DelEventObj, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetTriggeredObjectAmount, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetTriggeredObjectID, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, AddTriggeredObjectID, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCount, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, IncCount, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, IsActivated, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, Activate, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, Deactivate, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCallEvent, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCallObjName, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, GetCallObjId, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, Var, "", "", "")
+    RT_CLASS_EXPORT(Trigger, m3d::METHOD, SetVar, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Trigger);
 
@@ -186,7 +186,7 @@ namespace ai
                 auto* obj = theObjects->GetEntityByObjName(info.m_objName);
                 if (obj)
                 {
-                    theProcessManager->PostMessageA(3, obj->GetId(), GetId(), 0.0, { info.m_eventId}, {}, 1);
+                    theProcessManager->PostMessageA(3, obj->GetId(), GetId(), 0.0, {info.m_eventId}, {}, 1);
                 }
             }
         }
@@ -396,7 +396,7 @@ namespace ai
         this->m_bCanUpdate = 0;
     }
 
-    Trigger::Trigger(const ai::Trigger&)
+    Trigger::Trigger(ai::Trigger const&)
     {
         // NOTE: the header declares this but the shipped build never emitted it - a trigger is
         // only ever created from its prototype - so its body does not come from the binary.
@@ -568,8 +568,7 @@ namespace ai
         for (auto it = m_eventInfos.begin(); it != m_eventInfos.end();)
         {
             // A time-period event has no object name to match, so it always goes.
-            if (it->m_eventId == eventId &&
-                (eventId == GE_TIME_PERIOD || strcmp(it->m_objName.c_str(), objName) == 0))
+            if (it->m_eventId == eventId && (eventId == GE_TIME_PERIOD || strcmp(it->m_objName.c_str(), objName) == 0))
             {
                 it = m_eventInfos.erase(it);
             }
@@ -582,8 +581,8 @@ namespace ai
         Obj* const obj = theObjects->GetEntityByObjName(CStr(objName));
         if (obj)
         {
-            theProcessManager->PostMessageA(GE_UNSUBSCRIBE, obj->GetId(), GetId(), 0.0f,
-                m3d::AIParam(static_cast<int>(eventId)), {}, 1);
+            theProcessManager->PostMessageA(
+                GE_UNSUBSCRIBE, obj->GetId(), GetId(), 0.0f, m3d::AIParam(static_cast<int>(eventId)), {}, 1);
         }
     }
 
@@ -628,10 +627,10 @@ namespace ai
             auto* in = argStack.newIn();
             in->SetO(this);
 
-            const auto error = scriptServer.callScriptFunc(m_triggerScriptFuncName.c_str(), argStack, 0);
+            auto const error = scriptServer.callScriptFunc(m_triggerScriptFuncName.c_str(), argStack, 0);
             if (error != m3d::SUCCESS)
             {
-                const auto desc = scriptServer.getFormatedScriptErrorDesc(error);
+                auto const desc = scriptServer.getFormatedScriptErrorDesc(error);
                 M3D_LOG_INFO("***************** TRIGGER ERROR *******************");
                 M3D_LOG_INFO(desc);
                 m_bScriptPresent = false;
@@ -836,9 +835,15 @@ namespace ai
         CStr stateName;
         switch (m_state)
         {
-            case TS_EVENTWAIT: stateName = "TS_EVENTWAIT"; break;
-            case TS_ACTION: stateName = "TS_ACTION"; break;
-            case TS_OFF: stateName = "TS_OFF"; break;
+        case TS_EVENTWAIT:
+            stateName = "TS_EVENTWAIT";
+            break;
+        case TS_ACTION:
+            stateName = "TS_ACTION";
+            break;
+        case TS_OFF:
+            stateName = "TS_OFF";
+            break;
         }
         xmlNode->SetAttribute("State", stateName.c_str());
         xmlNode->SetAttribute("Count", CStr(m_Count).c_str());
@@ -855,8 +860,7 @@ namespace ai
                 objectIds += CStr(m_ObjIDs[i]) + CStr(" ");
             }
             // The trailing separator is trimmed back off.
-            xmlNode->SetAttribute(
-                "ObjectIDs", objectIds.substr(0, objectIds.length() - 1).c_str());
+            xmlNode->SetAttribute("ObjectIDs", objectIds.substr(0, objectIds.length() - 1).c_str());
         }
 
         xmlNode->SetAttribute("CallEventId", CStr(m_callEvent.m_eventId).c_str());
@@ -929,11 +933,12 @@ namespace ai
     void Trigger::_LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         ref_ptr eventNode = xmlFile->CreateNode();
-        for (xmlNode->GetFirstChild(eventNode, "event"); !eventNode->IsEmpty(); eventNode->GetNextSibling(eventNode, "event"))
+        for (xmlNode->GetFirstChild(eventNode, "event"); !eventNode->IsEmpty();
+             eventNode->GetNextSibling(eventNode, "event"))
         {
             CStr eventName = eventNode->GetAttribute("eventid");
             auto eventId = theProcessManager->GetEventId(eventName);
-            switch(eventId)
+            switch (eventId)
             {
             case GE_TIME_PERIOD:
                 m3d::SafeFloatAttrib(m_timeOutForTimePeriod, eventNode, "timeout");
@@ -963,4 +968,4 @@ namespace ai
             }
         }
     }
-}
+}  // namespace ai

@@ -157,9 +157,9 @@ void VehicleCharacteristicsWnd::UpdateCharacteristics()
     // In the "hacked" (workshop preview) vehicle type, characteristics are
     // shown for the player's own vehicle instead of the previewed one, so the
     // diff-coloring in UpdateValue can compare a pending purchase against it.
-    ai::Vehicle* baseVehicle =
-        m_vehicleType != VehicleWnd::VEHICLE_NORMAL ? (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr)
-                                                     : const_cast<ai::Vehicle*>(vehicle);
+    ai::Vehicle* baseVehicle = m_vehicleType != VehicleWnd::VEHICLE_NORMAL ?
+        (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr) :
+        const_cast<ai::Vehicle*>(vehicle);
     if (!baseVehicle)
     {
         return;
@@ -205,8 +205,7 @@ void VehicleCharacteristicsWnd::UpdateCharacteristics()
     int const baseMaxSpeed = static_cast<int>(help::GetBasePropertyValFromVehicle(baseVehicle, 23) * 3.6f);
     int const baseTorque = static_cast<int>(help::GetBasePropertyValFromVehicle(baseVehicle, 22));
     int const baseWeight = static_cast<int>(baseVehicle->GetMass());
-    int const baseControl =
-        std::clamp(static_cast<int>(help::GetBasePropertyValFromVehicle(baseVehicle, 25)), 0, 100);
+    int const baseControl = std::clamp(static_cast<int>(help::GetBasePropertyValFromVehicle(baseVehicle, 25)), 0, 100);
 
     UpdateValue(m_wndMaxHealthVal, maxHealth, baseMaxHealth, false);
     UpdateValue(m_wndMaxFuelVal, maxFuel, baseMaxFuel, false);

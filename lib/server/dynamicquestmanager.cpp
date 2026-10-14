@@ -71,7 +71,8 @@ namespace ai
     DynamicQuest* DynamicQuestManager::CreateQuest(QuestType questType, CStr const& targetName, CStr const& hirerName)
     {
         // RVA 0x7E6E00
-        return CreateQuest(questType, theObjects->GetObjIdByObjName(targetName), theObjects->GetObjIdByObjName(hirerName));
+        return CreateQuest(
+            questType, theObjects->GetObjIdByObjName(targetName), theObjects->GetObjIdByObjName(hirerName));
     }
 
     void DynamicQuestManager::ConsiderPlayerKill(int belong)

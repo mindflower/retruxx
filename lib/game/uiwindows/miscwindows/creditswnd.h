@@ -48,7 +48,7 @@ class CreditsWnd : public m3d::ui::ModalWnd
         m3d::rend::TexHandle m_texture;
     };
 
-    using PageInfoVector = std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*> >;
+    using PageInfoVector = std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*>>;
 
 protected:
     virtual int GameDataSetup() override;
@@ -99,7 +99,7 @@ protected:
     int m_switchSoundChannelId;
     int m_ambientSoundChannelId;
     int m_musicChannelId;
-    std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*> > m_pageInfos;
+    std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*>> m_pageInfos;
     int m_curPageId;
     bool m_bInBreak;
     CreditsWnd::Pointer m_pointer;

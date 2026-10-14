@@ -145,8 +145,7 @@ namespace ai
         }
         auto const it = m_articles.find(articleProtoId);
         // NOTE: a still-missing article is asked for its price through a null pointer.
-        return it != m_articles.end() ? it->second.getBuyPrice()
-                                     : ((Article const*)nullptr)->getBuyPrice();
+        return it != m_articles.end() ? it->second.getBuyPrice() : ((Article const*)nullptr)->getBuyPrice();
     }
 
     void Workshop::ApplyAffixGeneratorToRepository(
@@ -162,8 +161,8 @@ namespace ai
             return;
         }
         // NOTE: the affix generator prototype is used without a null check.
-        auto const* generator = (AffixGeneratorPrototypeInfo const*)
-            thePrototypeManager->GetPrototypeInfo(AffixGeneratorPrototypeId);
+        auto const* generator =
+            (AffixGeneratorPrototypeInfo const*)thePrototypeManager->GetPrototypeInfo(AffixGeneratorPrototypeId);
 
         for (unsigned i = 0; i < repository->GetNumItems(); ++i)
         {
@@ -305,8 +304,8 @@ namespace ai
             return;
         }
         // NOTE: the generator prototype is used without a null check.
-        auto const* generator = (RepositoryObjectsGeneratorPrototypeInfo const*)
-            thePrototypeManager->GetPrototypeInfo(GunGeneratorId);
+        auto const* generator =
+            (RepositoryObjectsGeneratorPrototypeInfo const*)thePrototypeManager->GetPrototypeInfo(GunGeneratorId);
         generator->Generate(DesiredGunsInWorkshop, repository);
     }
 
@@ -418,8 +417,7 @@ namespace ai
             article.second.SaveToXml(xmlFile, ndArticle);
         }
 
-        xmlNode->SetAttribute(
-            "OriginalObjectsInRepository", ai::IntVectorToStr(m_originalObjectsInRepository).c_str());
+        xmlNode->SetAttribute("OriginalObjectsInRepository", ai::IntVectorToStr(m_originalObjectsInRepository).c_str());
     }
 
     void Workshop::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
@@ -429,9 +427,9 @@ namespace ai
 
         for (auto const& repositoryEntry : m_repositories)
         {
-            CStr const typeName = repositoryEntry.first < WORKSHOP_NUM_TYPES
-                ? CStr(WorkshopRepositoryTypeNames[repositoryEntry.first])
-                : CStr("");
+            CStr const typeName = repositoryEntry.first < WORKSHOP_NUM_TYPES ?
+                CStr(WorkshopRepositoryTypeNames[repositoryEntry.first]) :
+                CStr("");
             ref_ptr ndRepository = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, typeName.c_str());
             repositoryEntry.second->SaveToXML(xmlFile, ndRepository);
             xmlNode->AddChild(ndRepository);
@@ -469,14 +467,14 @@ namespace ai
         }
 
         // The player's trading is counted both overall and per level.
-        auto* const waresStat = dynamic_cast<IntStatistic*>(
-            theStatisticManager->GetStatistic(ai::STATISTIC_WARES, "IntStatistic"));
+        auto* const waresStat =
+            dynamic_cast<IntStatistic*>(theStatisticManager->GetStatistic(ai::STATISTIC_WARES, "IntStatistic"));
         waresStat->m_bGlobalFlag = true;
         waresStat->Increase(amount);
 
         CStr const levelStatName = ai::STATISTIC_WARES + ai::pServer->GetWorld()->m_level->m_levelName;
-        auto* const levelWaresStat = dynamic_cast<IntStatistic*>(
-            theStatisticManager->GetStatistic(levelStatName, "IntStatistic"));
+        auto* const levelWaresStat =
+            dynamic_cast<IntStatistic*>(theStatisticManager->GetStatistic(levelStatName, "IntStatistic"));
         levelWaresStat->m_bGlobalFlag = false;
         levelWaresStat->Increase(amount);
         return true;
@@ -491,8 +489,7 @@ namespace ai
         }
         auto const it = m_articles.find(articleProtoId);
         // NOTE: a still-missing article is asked for its price through a null pointer.
-        return it != m_articles.end() ? it->second.getSellPrice()
-                                     : ((Article const*)nullptr)->getSellPrice();
+        return it != m_articles.end() ? it->second.getSellPrice() : ((Article const*)nullptr)->getSellPrice();
     }
 
     m3d::Class* Workshop::GetClass() const
@@ -523,8 +520,7 @@ namespace ai
         {
             return WORKSHOP_GUNS_AND_GADGETS;
         }
-        if (theResourceManager->bResourceIsKindOf(
-                resId, theResourceManager->GetResourceId(CStr("VEHICLE_PART"))))
+        if (theResourceManager->bResourceIsKindOf(resId, theResourceManager->GetResourceId(CStr("VEHICLE_PART"))))
         {
             return WORKSHOP_CABINS_AND_BASKETS;
         }
@@ -688,14 +684,14 @@ namespace ai
         }
 
         // The player's trading is counted both overall and per level.
-        auto* const waresStat = dynamic_cast<IntStatistic*>(
-            theStatisticManager->GetStatistic(ai::STATISTIC_WARES, "IntStatistic"));
+        auto* const waresStat =
+            dynamic_cast<IntStatistic*>(theStatisticManager->GetStatistic(ai::STATISTIC_WARES, "IntStatistic"));
         waresStat->m_bGlobalFlag = true;
         waresStat->Increase(1);
 
         CStr const levelStatName = ai::STATISTIC_WARES + ai::pServer->GetWorld()->m_level->m_levelName;
-        auto* const levelWaresStat = dynamic_cast<IntStatistic*>(
-            theStatisticManager->GetStatistic(levelStatName, "IntStatistic"));
+        auto* const levelWaresStat =
+            dynamic_cast<IntStatistic*>(theStatisticManager->GetStatistic(levelStatName, "IntStatistic"));
         levelWaresStat->m_bGlobalFlag = false;
         levelWaresStat->Increase(1);
         return repository->GiveUpThingByObjId(obj->GetId());
@@ -738,8 +734,7 @@ namespace ai
             for (int i = 0; i < numItems; ++i)
             {
                 int const objId = repository->GetItem(i).GetObjId();
-                if (std::find(
-                        m_originalObjectsInRepository.begin(), m_originalObjectsInRepository.end(), objId) !=
+                if (std::find(m_originalObjectsInRepository.begin(), m_originalObjectsInRepository.end(), objId) !=
                     m_originalObjectsInRepository.end())
                 {
                     continue;

@@ -5,13 +5,11 @@
 
 namespace m3d
 {
-    Profiler::Profiler() :
-        m_performanceCounterFrequency(Application::g_pApp->GetMeasuredCpuFrequency())
+    Profiler::Profiler() : m_performanceCounterFrequency(Application::g_pApp->GetMeasuredCpuFrequency())
     {
     }
 
-    Profiler::Profiler(char const* name) :
-        m_name(name)
+    Profiler::Profiler(char const* name) : m_name(name)
     {
         // Inlined into ProfilerStack::AddProfiler (RVA 0x66F390): the counters start at zero
         // and the average is taken over 30 frames unless the caller says otherwise.
@@ -23,7 +21,8 @@ namespace m3d
         m_curFrame = 0;
         m_numFramesToRecalculate = 30;
         m_performanceCounterFrequency = 0.0;
-        m_totalClocks = 0;;
+        m_totalClocks = 0;
+        ;
         m_totalClocksPerFrame = 0;
         m_lastClocks = 0;
         m_totalClocksForRecalcFrames = 0;
@@ -85,22 +84,27 @@ namespace m3d
 
     void ProfilerStack::StartFrame()
     {
-        std::for_each(m_stack.begin(), m_stack.end(), [](auto* profiler)
-        {
-            profiler->StartFrame();
-        });
+        std::for_each(
+            m_stack.begin(),
+            m_stack.end(),
+            [](auto* profiler)
+            {
+                profiler->StartFrame();
+            });
     }
 
     void ProfilerStack::EndFrame()
     {
-        std::for_each(m_stack.begin(), m_stack.end(), [](auto* profiler)
-        {
-            profiler->EndFrame();
-        });
+        std::for_each(
+            m_stack.begin(),
+            m_stack.end(),
+            [](auto* profiler)
+            {
+                profiler->EndFrame();
+            });
     }
 
-    FrameProfilerPtr::FrameProfilerPtr(Profiler* pCounter) :
-        m_counter(pCounter)
+    FrameProfilerPtr::FrameProfilerPtr(Profiler* pCounter) : m_counter(pCounter)
     {
         m_counter->StartCountdown();
     }
@@ -130,10 +134,13 @@ namespace m3d
 
     void ProfilerStack::Clear()
     {
-        std::for_each(m_stack.begin(), m_stack.end(), [](auto* profiler)
-        {
-            delete profiler;
-        });
+        std::for_each(
+            m_stack.begin(),
+            m_stack.end(),
+            [](auto* profiler)
+            {
+                delete profiler;
+            });
         m_stack.clear();
     }
 
@@ -147,8 +154,7 @@ namespace m3d
         return m_numProfilers;
     }
 
-    ProfilerStack::ProfilerStack() :
-        m_numProfilers(0)
+    ProfilerStack::ProfilerStack() : m_numProfilers(0)
     {
     }
 
@@ -165,4 +171,4 @@ namespace m3d
         }
         return nullptr;
     }
-}
+}  // namespace m3d

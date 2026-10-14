@@ -23,8 +23,8 @@ namespace ai
         virtual ~CompoundGun() override;
 
     private:
-        CompoundGun(const ai::CompoundGunPrototypeInfo& prototypeInfo);
-        CompoundGun(const ai::CompoundGun&);
+        CompoundGun(ai::CompoundGunPrototypeInfo const& prototypeInfo);
+        CompoundGun(ai::CompoundGun const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -32,16 +32,19 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(CompoundGun);
-        virtual const ai::CompoundGunPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::CompoundGunPrototypeInfo const* GetPrototypeInfo() const override;
         void SetProperTargetId(int targetObjId, int lockedObjIdForRockets);
         bool Fire(bool enable);
-        void LookAtPoint(const CVector& lookAt, float elapsedTime);
-        bool isLookAtPoint(const CVector& lookAt, float eps) const;
-        bool PointIsReachable(const CVector& pos, const std::vector<int, std::allocator<int> >& exceptions) const;
+        void LookAtPoint(CVector const& lookAt, float elapsedTime);
+        bool isLookAtPoint(CVector const& lookAt, float eps) const;
+        bool PointIsReachable(CVector const& pos, std::vector<int, std::allocator<int>> const& exceptions) const;
         bool CanShotToTarget(int targetObjId) const;
-        float EstimateDamage(const CVector& pos, const std::vector<int, std::allocator<int> >& exceptions) const;
+        float EstimateDamage(CVector const& pos, std::vector<int, std::allocator<int>> const& exceptions) const;
         float EstimateDamage() const;
-        float EstimateDamageFromPosition(const CVector& position, const CVector& pos, const std::vector<int, std::allocator<int> >& exceptions) const;
+        float EstimateDamageFromPosition(
+            CVector const& position,
+            CVector const& pos,
+            std::vector<int, std::allocator<int>> const& exceptions) const;
         float GetDamage() const;
         ai::DamageType GetDamageType() const;
         float GetFiringRate() const;
@@ -60,7 +63,7 @@ namespace ai
         ai::Gun::ChargeState GetChargeState() const;
         float GetCurrentRechargingTime() const;
         void Recharge();
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override;
+        virtual unsigned int GetPrice(ai::IPriceCoeffProvider const* priceCoeffProvider) const override;
         bool IsDurabilityEnoughForFiring() const;
         virtual bool CanFire() const;
 
@@ -69,4 +72,4 @@ namespace ai
         // shipped code does not check that there is one.
         Gun* _GetFirstGun() const;
     };
-}
+}  // namespace ai

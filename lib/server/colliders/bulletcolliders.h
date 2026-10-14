@@ -3,10 +3,10 @@
 
 namespace m3d
 {
-	class Object;
+    class Object;
 }
 
 namespace ai
 {
-	int CollideShellAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+    int CollideShellAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
 }

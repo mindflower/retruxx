@@ -20,7 +20,7 @@ namespace ai
     class BossMetalArm;
     class CompositeObj;
     class JointedObj;
-}
+}  // namespace ai
 
 namespace m3d
 {
@@ -81,8 +81,8 @@ namespace m3d
 
     protected:
         SgNode();
-        SgNode(const m3d::SgNode& node);
-        virtual  ~SgNode() override;
+        SgNode(m3d::SgNode const& node);
+        virtual ~SgNode() override;
 
     public:
         virtual m3d::Object* Clone() override;
@@ -95,7 +95,9 @@ namespace m3d
         virtual int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* writeTo) override;
         virtual int SetProperty(unsigned int propId, void* prop) override;
         virtual int GetProperty(unsigned int propId, void* prop) const override;
-        virtual int GetPropertiesList(retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> >& properties) const override;
+        virtual int GetPropertiesList(
+            retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int>>& properties)
+            const override;
         int SetServerItemProperty(unsigned int propId, void* property) const;
         int GetServerItemProperty(unsigned int propId, void* property) const;
         virtual int AddChild(m3d::Object* node) override;
@@ -112,18 +114,18 @@ namespace m3d
         int GetPrevThinkTime() const;
         void SetPrevThinkTime(int t);
         bool IsXFormUpdateNeeded() const;
-        int SetOriginRel(const CVector&);
-        int SetOriginAbs(const CVector& origin);
-        int SetScale(const CVector& scale);
-        const CVector& GetScale() const;
-        int SetRotation(const Quaternion& quat);
-        const Quaternion& GetRotation() const;
-        const CVector& GetOriginWorldAbs() const;
-        const Quaternion& GetRotationWorldAbs() const;
-        const CVector& GetOriginWorldAbsForSphere() const;
-        const CVector& GetOrigin() const;
+        int SetOriginRel(CVector const&);
+        int SetOriginAbs(CVector const& origin);
+        int SetScale(CVector const& scale);
+        CVector const& GetScale() const;
+        int SetRotation(Quaternion const& quat);
+        Quaternion const& GetRotation() const;
+        CVector const& GetOriginWorldAbs() const;
+        Quaternion const& GetRotationWorldAbs() const;
+        CVector const& GetOriginWorldAbsForSphere() const;
+        CVector const& GetOrigin() const;
         bool GetRelativeFlag() const;
-        const CMatrix& GetCurrentMatrix() const;
+        CMatrix const& GetCurrentMatrix() const;
         float GetBoundingRadius() const;
         Obb GetObb() const;
         Aabb GetAabb() const;
@@ -131,7 +133,7 @@ namespace m3d
         void GetVisCellBounds(PointBase<int>& p0, PointBase<int>& p1) const;
         bool VisCellBoundsChanged() const;
         m3d::TransparencyParams& GetTransparencyParams();
-        virtual float IntersectRay(const CVector& v0, const CVector& dir, m3d::SgNode*& hitNode, m3d::Class* wantClass);
+        virtual float IntersectRay(CVector const& v0, CVector const& dir, m3d::SgNode*& hitNode, m3d::Class* wantClass);
         virtual int UpdateXForm(bool onlyVis, bool parentDirty);
         virtual int Think(int dt, int curTime);
         virtual int Render(m3d::SgNodeRenderFlags flags, void* data, int dt, int curTime);
@@ -237,4 +239,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

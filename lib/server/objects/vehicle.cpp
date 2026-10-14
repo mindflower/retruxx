@@ -1103,10 +1103,13 @@ namespace ai
         CVector const vehiclePos = GetPosition();
         CVector const wheelPos = wheel->GetPosition();
         CVector const away(wheelPos.x - vehiclePos.x, wheelPos.y - vehiclePos.y + height, wheelPos.z - vehiclePos.z);
-        float const invLen =
-            static_cast<float>(1.0 / sqrt(static_cast<double>(away.z) * away.z + static_cast<double>(away.y) * away.y +
-                                          static_cast<double>(away.x) * away.x + 0.00000011920929f));
-        CVector const flyDir = GetRandomDeviatedVector(CVector(invLen * away.x, away.y * invLen, away.z * invLen), 1.0f);
+        float const invLen = static_cast<float>(
+            1.0 /
+            sqrt(
+                static_cast<double>(away.z) * away.z + static_cast<double>(away.y) * away.y +
+                static_cast<double>(away.x) * away.x + 0.00000011920929f));
+        CVector const flyDir =
+            GetRandomDeviatedVector(CVector(invLen * away.x, away.y * invLen, away.z * invLen), 1.0f);
 
         float const lowSpeed = averageSpeed * 0.5f;
         float const highSpeed = averageSpeed * 1.5f;
@@ -1180,8 +1183,10 @@ namespace ai
         xmlNode->SetAttribute("PathNum", CStr(m_pathNum).c_str());
         xmlNode->SetAttribute("Priority", CStr(static_cast<int>(m_priority)).c_str());
         xmlNode->SetAttribute("PathIndex", CStr(m_pathIndex).c_str());
-        xmlNode->SetAttribute("IsMovingAlongExternalPath", CStr(static_cast<int>(m_bIsMovingAlongExternalPath)).c_str());
-        xmlNode->SetAttribute("CanBeDistractedFromMoving", CStr(static_cast<int>(m_bCanBeDistractedFromMoving)).c_str());
+        xmlNode->SetAttribute(
+            "IsMovingAlongExternalPath", CStr(static_cast<int>(m_bIsMovingAlongExternalPath)).c_str());
+        xmlNode->SetAttribute(
+            "CanBeDistractedFromMoving", CStr(static_cast<int>(m_bCanBeDistractedFromMoving)).c_str());
         xmlNode->SetAttribute("StoppageMode", CStr(m_stoppageMode).c_str());
         xmlNode->SetAttribute("OnOilMode", CStr(m_onOilMode).c_str());
         xmlNode->SetAttribute("InSmokeScreenMode", CStr(m_inSmokeScreenMode).c_str());
@@ -1846,7 +1851,8 @@ namespace ai
             }
             if (IS_KIND_OF(vehiclePart, CompoundVehiclePart))
             {
-                static_cast<CompoundVehiclePart*>(vehiclePart)->SetDurabilityRegeneration(protoInfo->m_durabilityRegeneration);
+                static_cast<CompoundVehiclePart*>(vehiclePart)
+                    ->SetDurabilityRegeneration(protoInfo->m_durabilityRegeneration);
             }
             else
             {
@@ -2142,7 +2148,8 @@ namespace ai
         return PhysicObj::GetPropertyId(name);
     }
 
-    float Vehicle::EstimateDamageAI(CVector const& point, retruxx::vector<int, retruxx::allocator<int>> exceptions) const
+    float Vehicle::EstimateDamageAI(CVector const& point, retruxx::vector<int, retruxx::allocator<int>> exceptions)
+        const
     {
         // RVA 0x5DFD50 - the damage all guns would deal at the point, ignoring this vehicle.
         exceptions.push_back(GetId());
@@ -2598,7 +2605,8 @@ namespace ai
         return m_stoppageMode != 0;
     }
 
-    void Vehicle::GetEnemiesInNeighborhood(float radius, retruxx::vector<int, retruxx::allocator<int>>& enemiesIds) const
+    void Vehicle::GetEnemiesInNeighborhood(float radius, retruxx::vector<int, retruxx::allocator<int>>& enemiesIds)
+        const
     {
         // RVA 0x5DFAE0 - living hostile vehicles and static guns within the radius.
         enemiesIds.resize(0);
@@ -3642,8 +3650,10 @@ namespace ai
         if (wheelInfo != m_wheels.end())
         {
             // NOTE: the geometry is assumed to be a sphere without a type check.
-            auto* wheelSphere = static_cast<ai::Sphere*>(wheelInfo->GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom());
-            hoverHeight = static_cast<float>(double(wheelSphere->GetRadius()) - wheelInfo->m_initialPos.y + double(0.1f));
+            auto* wheelSphere =
+                static_cast<ai::Sphere*>(wheelInfo->GetWheel()->GetPhysicBody()->m_pGeoms[0]->GetGeom());
+            hoverHeight =
+                static_cast<float>(double(wheelSphere->GetRadius()) - wheelInfo->m_initialPos.y + double(0.1f));
         }
         else
         {
@@ -3815,7 +3825,8 @@ namespace ai
         {
             if (part->IsKindOf(RT_CLASS_LOCAL(CompoundGun)))
             {
-                result = static_cast<CompoundGun*>(part)->EstimateDamageFromPosition(position, point, exceptions) + result;
+                result =
+                    static_cast<CompoundGun*>(part)->EstimateDamageFromPosition(position, point, exceptions) + result;
             }
             else if (part->IsKindOf(RT_CLASS_LOCAL(Gun)))
             {
@@ -4473,15 +4484,13 @@ namespace ai
             if (m_bIsControlledByPlayer)
             {
                 // What the player takes from enemy fire is scaled by difficulty.
-                if (agent->IsKindOf(&Shell::m_classShell) ||
-                    agent->IsKindOf(&Thunderbolt::m_classThunderbolt) ||
+                if (agent->IsKindOf(&Shell::m_classShell) || agent->IsKindOf(&Thunderbolt::m_classThunderbolt) ||
                     agent->IsKindOf(&BlastWave::m_classBlastWave))
                 {
                     damageCoeff = theGlobProp.GetCoeffsForCurrentDifficultyLevel().m_damageCoeffForPlayerFromEnemies;
                 }
             }
-            else if (agent->IsKindOf(&Vehicle::m_classVehicle) &&
-                     static_cast<Vehicle*>(agent)->m_bIsControlledByPlayer)
+            else if (agent->IsKindOf(&Vehicle::m_classVehicle) && static_cast<Vehicle*>(agent)->m_bIsControlledByPlayer)
             {
                 // ... and what the player deals by ramming has its own coefficient.
                 damageCoeff = M3D_ENGINE_CFG.m_ai_enemies_ramming_damage_coeff.GetF();
@@ -4605,7 +4614,8 @@ namespace ai
     {
         auto direction = GetDirection();
         auto value = 1.0f /
-            sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z + 0.00000011920929f);
+            sqrtf(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z +
+                  0.00000011920929f);
 
         CVector velocity;
         velocity.x = (direction.x * value) * velocityValue;
@@ -4701,9 +4711,9 @@ namespace ai
                     dReal const* const takePos = dGeomGetPosition(m_takingSphere->GetGeomId());
                     CVector const takeCenter(takePos[0], takePos[1], takePos[2]);
                     float const takeRadius = m_takingSphere->GetRadius();
-                    float const chestRadius = ownerObj->m_intersectionObstacle
-                        ? ownerObj->m_intersectionObstacle->GetSphere()->GetRadius()
-                        : 0.0f;
+                    float const chestRadius = ownerObj->m_intersectionObstacle ?
+                        ownerObj->m_intersectionObstacle->GetSphere()->GetRadius() :
+                        0.0f;
                     if (IntersectionManager::SpheresIntersect(
                             ownerObj->GetMassCenterPosition(), chestRadius, takeCenter, takeRadius))
                     {
@@ -5486,7 +5496,8 @@ namespace ai
             unsigned const numWheels = m_wheels.size();
             if (theGlobProp.m_energyBlowDeltaTime * 2.0f <= m_timeAfterDeath &&
                 theGlobProp.m_energyBlowDeltaTime <= m_timeAfterLastBlow &&
-                static_cast<double>(m_numBlownParts) <= static_cast<double>(static_cast<int>(numWheels + numParts)) * 0.60000002f)
+                static_cast<double>(m_numBlownParts) <=
+                    static_cast<double>(static_cast<int>(numWheels + numParts)) * 0.60000002f)
             {
                 for (auto it = m_vehicleParts.begin(); it != m_vehicleParts.end();)
                 {
@@ -5602,11 +5613,7 @@ namespace ai
 
             if (newState != oldState)
             {
-                CauseEvent(
-                    newState ? GE_CUSTOM_GUN_POINTED : GE_CUSTOM_GUN_DISPOINTED,
-                    0.0f,
-                    GetId(),
-                    gunId);
+                CauseEvent(newState ? GE_CUSTOM_GUN_POINTED : GE_CUSTOM_GUN_DISPOINTED, 0.0f, GetId(), gunId);
             }
             m_gunsPointed[gunId] = newState;
         }
@@ -5833,11 +5840,12 @@ namespace ai
         // Gaps between the intersection spheres, now and at the predicted positions.
         CVector const delta = myPos - obPos;
         float const flatDistSq = delta.z * delta.z + delta.x * delta.x;
-        float const dist = sqrt(delta.y * delta.y + flatDistSq) - (ob->GetIntersectionRadius() + GetIntersectionRadius());
+        float const dist =
+            sqrt(delta.y * delta.y + flatDistSq) - (ob->GetIntersectionRadius() + GetIntersectionRadius());
 
         CVector predictedDelta = myPredictedPos - obPredictedPos;
-        float const predictedDistSq =
-            predictedDelta.x * predictedDelta.x + predictedDelta.z * predictedDelta.z + predictedDelta.y * predictedDelta.y;
+        float const predictedDistSq = predictedDelta.x * predictedDelta.x + predictedDelta.z * predictedDelta.z +
+            predictedDelta.y * predictedDelta.y;
         float predictedDist = sqrt(predictedDistSq);
         predictedDist = predictedDist - (ob->GetIntersectionRadius() + GetIntersectionRadius());
 
@@ -5870,12 +5878,10 @@ namespace ai
                 predictedDelta.z * invPredictedLen * ai::theGlobProp.m_repulsiveCoeff);
 
             // up x (steerX, 0, steerZ)
-            CVector const up(0.0f, 1.0f, 0.0f); // INITIAL_UP_DIRECTION
-            CVector const side(
-                steerZ * up.y - up.z * 0.0f,
-                steerX * up.z - steerZ * up.x,
-                up.x * 0.0f - steerX * up.y);
-            float const invSideLen = 1.0f / sqrtf(side.z * side.z + side.y * side.y + side.x * side.x + 0.00000011920929f);
+            CVector const up(0.0f, 1.0f, 0.0f);  // INITIAL_UP_DIRECTION
+            CVector const side(steerZ * up.y - up.z * 0.0f, steerX * up.z - steerZ * up.x, up.x * 0.0f - steerX * up.y);
+            float const invSideLen =
+                1.0f / sqrtf(side.z * side.z + side.y * side.y + side.x * side.x + 0.00000011920929f);
             float const pushLen = sqrtf(push.x * push.x + push.z * push.z + push.y * push.y);
 
             repulsion.x = invSideLen * side.x * pushLen * 0.1f + push.x;
@@ -5941,11 +5947,8 @@ namespace ai
 
             float const sideScale = cannotBrake ? 0.5f : 0.1f;
             // up x (steerX, 0, steerZ)
-            CVector const up(0.0f, 1.0f, 0.0f); // INITIAL_UP_DIRECTION
-            CVector const side(
-                up.y * steerZ - up.z * 0.0f,
-                up.z * steerX - steerZ * up.x,
-                up.x * 0.0f - up.y * steerX);
+            CVector const up(0.0f, 1.0f, 0.0f);  // INITIAL_UP_DIRECTION
+            CVector const side(up.y * steerZ - up.z * 0.0f, up.z * steerX - steerZ * up.x, up.x * 0.0f - up.y * steerX);
             float const pushLen = sqrt(push.x * push.x + push.z * push.z + push.y * push.y);
             CVector const sideDir = side.getNormalized();
 
@@ -6252,8 +6255,7 @@ namespace ai
         _EnableIntersections(false);
         CVector myPos = GetPosition();
         CVector pos = ZeroVector;
-        float const radius =
-            m_intersectionObstacle ? m_intersectionObstacle->GetSphere()->GetRadius() : 0.0f;
+        float const radius = m_intersectionObstacle ? m_intersectionObstacle->GetSphere()->GetRadius() : 0.0f;
         bool const bValid = GetValidPosition(myPos, radius, m_priority, pos, false, true, retruxx::set<m3d::Class*>());
 
         CVector const INITIAL_UP_DIRECTION(0.0f, 1.0f, 0.0f);
@@ -6346,15 +6348,18 @@ namespace ai
         {
             defaultLength = theGlobProp.m_defaultLookBoxLength;
             float const inv = static_cast<float>(
-                1.0 / sqrt(double(guide.x) * guide.x + double(guide.y) * guide.y + double(guide.z) * guide.z + 0.00000011920929));
+                1.0 /
+                sqrt(
+                    double(guide.x) * guide.x + double(guide.y) * guide.y + double(guide.z) * guide.z +
+                    0.00000011920929));
             dir = CVector(guide.x * inv, guide.y * inv, guide.z * inv);
         }
         else
         {
             defaultLength = theGlobProp.m_defaultTargetBoxLength;
             // NOTE: a path point at the vehicle's own position gives a zero direction.
-            float const inv = static_cast<float>(
-                1.0 / sqrt(double(dz) * dz + double(dy) * dy + double(dx) * dx + 0.00000011920929));
+            float const inv =
+                static_cast<float>(1.0 / sqrt(double(dz) * dz + double(dy) * dy + double(dx) * dx + 0.00000011920929));
             dir = CVector(inv * dx, dy * inv, dz * inv);
         }
         float const length = distToPathPoint > defaultLength ? defaultLength : distToPathPoint;
@@ -6387,16 +6392,16 @@ namespace ai
             scale = 1.0f;
         }
 
-        float const invLen = 1.0f / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
+        float const invLen =
+            1.0f / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
         return CVector(invLen * toPoint.x * scale, toPoint.y * invLen * scale, toPoint.z * invLen * scale);
     }
 
     void Vehicle::_TakeWaterIntoAccount(float elapsedTime)
     {
         auto const pos = GetPosition();
-        auto const waterHeight =
-            m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
-                static_cast<int>(pos.x * 0.03125f), static_cast<int>(pos.z * 0.03125f));
+        auto const waterHeight = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
+            static_cast<int>(pos.x * 0.03125f), static_cast<int>(pos.z * 0.03125f));
         if (waterHeight > m_size.y + pos.y)
         {
             // Sunk: a splash unless the vehicle cannot be hurt, and the chassis drowns at a fifth of its health a second.
@@ -6727,7 +6732,8 @@ namespace ai
             box.m_box[i] = 0.0f;
         }
 
-        auto const embracePart = [&box](VehiclePart* part) {
+        auto const embracePart = [&box](VehiclePart* part)
+        {
             CVector const pos = part->GetNodeRelativePosition();
             CVector const halfSize = part->GetSize() * 0.5f;
             Aabb partBox;
@@ -6789,7 +6795,8 @@ namespace ai
         {
             return 0.0f;
         }
-        float const invLen = 1.0f / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
+        float const invLen =
+            1.0f / sqrt(toPoint.z * toPoint.z + toPoint.y * toPoint.y + toPoint.x * toPoint.x + 0.00000011920929f);
         CVector const dir(invLen * toPoint.x, toPoint.y * invLen, toPoint.z * invLen);
 
         // Bring the direction into the vehicle's local frame with the rotation matrix of the
@@ -7151,7 +7158,7 @@ namespace ai
             CMatrix mat;
             mat.rotYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
 
-            CVector const forward(0.0f, 0.0f, 1.0f); // INITIAL_OBJECTS_DIRECTION
+            CVector const forward(0.0f, 0.0f, 1.0f);  // INITIAL_OBJECTS_DIRECTION
             lookAt.x = (mat._13 * forward.z + mat._11 * forward.x + forward.y * mat._12) * 1000000.0f;
             lookAt.y = (mat._23 * forward.z + mat._22 * forward.y + mat._21 * forward.x) * 1000000.0f;
             lookAt.z = (mat._33 * forward.z + mat._32 * forward.y + mat._31 * forward.x) * 1000000.0f;
@@ -7272,7 +7279,8 @@ namespace ai
         m_timeOutToCheckStuck = m_timeOutToCheckStuck - elapsedTime;
         bool const wasStuck = m_bWasStuck;
         if (!wasStuck &&
-            0.0f > m_curSteeringForce.z * prevForce.z + m_curSteeringForce.y * prevForce.y + prevForce.x * m_curSteeringForce.x)
+            0.0f > m_curSteeringForce.z * prevForce.z + m_curSteeringForce.y * prevForce.y +
+                    prevForce.x * m_curSteeringForce.x)
         {
             m_timeOutToCheckStuck = 1.0f;
         }
@@ -7393,7 +7401,8 @@ namespace ai
         retruxx::vector<CStr> partsToPutInChest;
         for (auto const& [name, part] : m_vehicleParts)
         {
-            if (theGlobProp.m_probabilityToDropGunsFromDeadVehicles > static_cast<float>(rand()) * 0.000030518509f * 0.99000001f &&
+            if (theGlobProp.m_probabilityToDropGunsFromDeadVehicles >
+                    static_cast<float>(rand()) * 0.000030518509f * 0.99000001f &&
                 (part->IsKindOf(RT_CLASS_LOCAL(Gun)) || part->IsKindOf(RT_CLASS_LOCAL(CompoundGun))) &&
                 part->GetPrototypeInfo()->m_bVisibleInEncyclopedia)
             {
@@ -7409,7 +7418,8 @@ namespace ai
             chest->AddChild(static_cast<Obj*>(part));
             SetPartByName(partName, nullptr, false);
             float const maxDurability = part->m_durability.maxValue().get();
-            part->m_durability.value().set((static_cast<float>(rand()) * 0.000030518509f * 0.30000001f + 0.2f) * maxDurability);
+            part->m_durability.value().set(
+                (static_cast<float>(rand()) * 0.000030518509f * 0.30000001f + 0.2f) * maxDurability);
         }
 
         if (!added)
@@ -7424,11 +7434,12 @@ namespace ai
         CStr const& levelName = pServer->GetWorld()->m_level->m_levelName;
         if (m_bIsControlledByPlayer)
         {
-            auto* deaths = static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_DEATH_COUNTER, "IntStatistic"));
+            auto* deaths =
+                static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_DEATH_COUNTER, "IntStatistic"));
             deaths->SetGlobalFlag(true);
             deaths->Increase(1);
-            auto* levelDeaths =
-                static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_DEATH_COUNTER + levelName, "IntStatistic"));
+            auto* levelDeaths = static_cast<IntStatistic*>(
+                theStatisticManager->GetStatistic(STATISTIC_DEATH_COUNTER + levelName, "IntStatistic"));
             levelDeaths->SetGlobalFlag(false);
             levelDeaths->Increase(1);
         }
@@ -7438,11 +7449,12 @@ namespace ai
             if (GetLastDamageSource() == playerVehicle->GetId())
             {
                 DynamicQuestManager::ConsiderPlayerKill(GetBelong());
-                auto* kills = static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_VEHICLE_KILLED, "IntStatistic"));
+                auto* kills = static_cast<IntStatistic*>(
+                    theStatisticManager->GetStatistic(STATISTIC_VEHICLE_KILLED, "IntStatistic"));
                 kills->SetGlobalFlag(true);
                 kills->Increase(1);
-                auto* levelKills =
-                    static_cast<IntStatistic*>(theStatisticManager->GetStatistic(STATISTIC_VEHICLE_KILLED + levelName, "IntStatistic"));
+                auto* levelKills = static_cast<IntStatistic*>(
+                    theStatisticManager->GetStatistic(STATISTIC_VEHICLE_KILLED + levelName, "IntStatistic"));
                 levelKills->SetGlobalFlag(false);
                 levelKills->Increase(1);
             }
@@ -7495,7 +7507,10 @@ namespace ai
         }
 
         // One of the two death animations (8 or 9), picked at random.
-        auto const randomDeathAction = []() { return 2 * rand() / 0x8000 == 1 ? 8 : 9; };
+        auto const randomDeathAction = []()
+        {
+            return 2 * rand() / 0x8000 == 1 ? 8 : 9;
+        };
 
         if (!bIsUpdatingByODE())
         {

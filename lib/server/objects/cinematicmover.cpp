@@ -23,7 +23,7 @@ RT_CLASS_EXPORT_METHOD_DEFINE(CinematicMover, SetObjAndPath)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(CinematicMover)
-        RT_CLASS_EXPORT(CinematicMover, m3d::METHOD, SetObjAndPath, "", "", "")
+    RT_CLASS_EXPORT(CinematicMover, m3d::METHOD, SetObjAndPath, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(CinematicMover);
 
@@ -184,4 +184,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be cloned\"");
         return nullptr;
     }
-}
+}  // namespace ai

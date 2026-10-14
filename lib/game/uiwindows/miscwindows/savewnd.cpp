@@ -252,8 +252,8 @@ void SaveWnd::OnSave()
     auto const curSel = m_wndSaveList->GetCurSel();
     if (curSel != 0)
     {
-        auto const answer = M3D_APP->RunMsgBoxDlg(
-            CStr(), M3D_APP->GetStringByStringId0("SaveGameExists"), m3d::ui::MBX_YES_NO, false);
+        auto const answer =
+            M3D_APP->RunMsgBoxDlg(CStr(), M3D_APP->GetStringByStringId0("SaveGameExists"), m3d::ui::MBX_YES_NO, false);
         if (answer == m3d::ui::MBX_RET_NO)
         {
             return;

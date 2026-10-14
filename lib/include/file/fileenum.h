@@ -17,5 +17,5 @@ namespace m3d
         private:
             intptr_t m_hEnumFile = 0;
         };
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

@@ -49,11 +49,8 @@ namespace m3d
 
         bool Cursor::operator==(Cursor const& c)
         {
-            return this->m_tex == c.m_tex
-                && this->m_spot.x == c.m_spot.x
-                && this->m_spot.y == c.m_spot.y
-                && this->m_sz.x == c.m_sz.x
-                && this->m_sz.y == c.m_sz.y;
+            return this->m_tex == c.m_tex && this->m_spot.x == c.m_spot.x && this->m_spot.y == c.m_spot.y &&
+                this->m_sz.x == c.m_sz.x && this->m_sz.y == c.m_sz.y;
         }
 
         Cursor& Cursor::operator=(Cursor const& c)
@@ -81,9 +78,7 @@ namespace m3d
             }
         }
 
-        Cursor::Cursor() :
-            m_sz(0.0, 0.0),
-            m_spot(0.0, 0.0)
+        Cursor::Cursor() : m_sz(0.0, 0.0), m_spot(0.0, 0.0)
         {
         }
 
@@ -91,5 +86,5 @@ namespace m3d
         {
             operator=(c);
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

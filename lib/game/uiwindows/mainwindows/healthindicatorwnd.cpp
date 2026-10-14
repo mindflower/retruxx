@@ -246,7 +246,7 @@ void HealthIndicatorWnd::UpdateValue()
 void HealthIndicatorWnd::UpdateTooltip()
 {
     // RVA 0x1273C0
-    CStr text =
-        m_strHealth + ": " + CStr(static_cast<int>(lrintf(GetCurValue()))) + "/" + CStr(static_cast<int>(lrintf(GetMaxValue())));
+    CStr text = m_strHealth + ": " + CStr(static_cast<int>(lrintf(GetCurValue()))) + "/" +
+        CStr(static_cast<int>(lrintf(GetMaxValue())));
     SetProperty(PROP_WND_TOOLTIP, &text);
 }

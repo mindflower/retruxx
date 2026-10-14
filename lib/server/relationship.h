@@ -9,8 +9,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -74,4 +74,4 @@ namespace ai
     };
 
     inline Relationship* theRelationship = nullptr;
-}
+}  // namespace ai

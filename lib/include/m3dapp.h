@@ -33,25 +33,21 @@ namespace m3d
     class Cinematic;
     class IImpulse;
 
-    class Application :
-        public IConHandler,
-        public IEventHandler,
-        public IDeviceResetCallback,
-        public ui::WndStation
+    class Application : public IConHandler, public IEventHandler, public IDeviceResetCallback, public ui::WndStation
     {
         friend class LightsServer;
 
     public:
-        Application(const m3d::Application&);
-        Application(const char* logName);
+        Application(m3d::Application const&);
+        Application(char const* logName);
         virtual ~Application();
         void MiniDump();
-        int init(HINSTANCE__* hInstance, HICON__* icon, const CStr& configName, HWND__* forcedWnd, const CStr& cmdLine);
+        int init(HINSTANCE__* hInstance, HICON__* icon, CStr const& configName, HWND__* forcedWnd, CStr const& cmdLine);
         int run();
         void done();
         int OneFrame();
         int SwitchDisplayModes(HWND__* wnd, int dwWidth, int dwHeight, bool bFullScreen);
-        bool CheckCommandLineParam(const char* param) const;
+        bool CheckCommandLineParam(char const* param) const;
         virtual void setZoom(float zoom);
         virtual float getZoom();
 
@@ -59,56 +55,191 @@ namespace m3d
         m3d::CmdLine m_cmdLine;
 
     public:
-        int SetFont(const CStr& fontName, float height, unsigned int flags, unsigned int cp);
-        int SetFontSelfMaking(const CStr& fontName, float height);
-        int DrawTextAbs(float x, float y, unsigned int dwColor, const CStr& strText, unsigned int dwFlags, int fid);
-        int DrawTextAbsT(float sx, float sy, unsigned int dwColor, const CStr& str, unsigned int dwFlags, int fid);
-        int DrawTextRel(float x, float y, unsigned int dwColor, const CStr& strText, unsigned int dwFlags, int fid);
-        int DrawTextRelT(float x, float y, unsigned int dwColor, const CStr& strText, unsigned int dwFlags, int fid);
+        int SetFont(CStr const& fontName, float height, unsigned int flags, unsigned int cp);
+        int SetFontSelfMaking(CStr const& fontName, float height);
+        int DrawTextAbs(float x, float y, unsigned int dwColor, CStr const& strText, unsigned int dwFlags, int fid);
+        int DrawTextAbsT(float sx, float sy, unsigned int dwColor, CStr const& str, unsigned int dwFlags, int fid);
+        int DrawTextRel(float x, float y, unsigned int dwColor, CStr const& strText, unsigned int dwFlags, int fid);
+        int DrawTextRelT(float x, float y, unsigned int dwColor, CStr const& strText, unsigned int dwFlags, int fid);
 
     private:
-        int DrawStringRelClip(const m3d::ui::FormattedLine& fl, const m3d::ui::DrawInfo& di);
+        int DrawStringRelClip(m3d::ui::FormattedLine const& fl, m3d::ui::DrawInfo const& di);
 
     public:
-        int FormatText(retruxx::vector<m3d::ui::FormattedLine>& linesOfText, const PointBase<float>& at, const CStr& textIn, const m3d::ui::DrawInfo& di, m3d::TextWrapFlags wrapFlags, m3d::TextFormatFlags formatFlags);
-        int DrawTextRelClip(const PointBase<float>& at, const CStr& str, const m3d::ui::DrawInfo& di, m3d::TextWrapFlags wrapFlag, m3d::TextFormatFlags formatFlag);
-        int Render3DText0(const CVector& at, const CStr& str, unsigned int dwFlags, float scale);
-        int GetTextExtent(const CStr& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr);
-        int FindLastColorInStr(const CStr& line);
-        bool IsTextHieroglyphic(const CStr& text) const;
-        int GetTextFit(const CStr& strText, PointBase<float>& size, float maxX, m3d::TextWrapFlags flags);
-        void PutSprite2Abs(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c);
-        void PutSprite2Abs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float tu1, float tv1, float tu2, float tv2, float tu3, float tv3, float tu4, float tv4, float zval, unsigned int c);
+        int FormatText(
+            retruxx::vector<m3d::ui::FormattedLine>& linesOfText,
+            PointBase<float> const& at,
+            CStr const& textIn,
+            m3d::ui::DrawInfo const& di,
+            m3d::TextWrapFlags wrapFlags,
+            m3d::TextFormatFlags formatFlags);
+        int DrawTextRelClip(
+            PointBase<float> const& at,
+            CStr const& str,
+            m3d::ui::DrawInfo const& di,
+            m3d::TextWrapFlags wrapFlag,
+            m3d::TextFormatFlags formatFlag);
+        int Render3DText0(CVector const& at, CStr const& str, unsigned int dwFlags, float scale);
+        int GetTextExtent(
+            CStr const& str,
+            PointBase<float>& size,
+            int fid,
+            BoundsBase<float>* csz,
+            int* minc,
+            int* maxc,
+            CStr* leftInvisibleSubstr,
+            CStr* rightInvisibleSubstr);
+        int FindLastColorInStr(CStr const& line);
+        bool IsTextHieroglyphic(CStr const& text) const;
+        int GetTextFit(CStr const& strText, PointBase<float>& size, float maxX, m3d::TextWrapFlags flags);
+        void PutSprite2Abs(
+            float x1,
+            float y1,
+            float tu1,
+            float tv1,
+            float x2,
+            float y2,
+            float tu2,
+            float tv2,
+            unsigned int c);
+        void PutSprite2Abs(
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            float x4,
+            float y4,
+            float tu1,
+            float tv1,
+            float tu2,
+            float tv2,
+            float tu3,
+            float tv3,
+            float tu4,
+            float tv4,
+            float zval,
+            unsigned int c);
         void PutSpriteAbs(float x1, float y1, float x2, float y2, unsigned int c);
         void PutSpriteAbs(float x, float y, float size2, unsigned int c);
-        void PutSpriteAbs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, unsigned int c);
+        void PutSpriteAbs(
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            float x4,
+            float y4,
+            unsigned int c);
         void PutSpriteRel(float, float, float, float, float, float, float, float, unsigned int);
         void PutSpriteRel(float x1, float y1, float x2, float y2, unsigned int c);
         void PutSpriteRel(float, float, float, unsigned int);
-        void PutSprite2Rel(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c);
+        void PutSprite2Rel(
+            float x1,
+            float y1,
+            float tu1,
+            float tv1,
+            float x2,
+            float y2,
+            float tu2,
+            float tv2,
+            unsigned int c);
         void PutSpriteRelRot(float, float, float, unsigned int, float, float, float, float, float, float);
-        void PutSpriteRelRot(float cx, float cy, float sx, float sy, unsigned int c, float angleVerts, float avx, float avy, float angleImage, float aix, float aiy);
+        void PutSpriteRelRot(
+            float cx,
+            float cy,
+            float sx,
+            float sy,
+            unsigned int c,
+            float angleVerts,
+            float avx,
+            float avy,
+            float angleImage,
+            float aix,
+            float aiy);
         void PutSpriteAbsRot(float, float, float, unsigned int, float, float, float, float, float, float);
-        void PutSpriteAbsRot(float cx, float cy, float sx, float sy, unsigned int c, float angleVerts, float avx, float avy, float angleImage, float aix, float aiy);
+        void PutSpriteAbsRot(
+            float cx,
+            float cy,
+            float sx,
+            float sy,
+            unsigned int c,
+            float angleVerts,
+            float avx,
+            float avy,
+            float angleImage,
+            float aix,
+            float aiy);
         m3d::rend::IRenderer* m_renderer = nullptr;
         snd::ISound* m_sound = nullptr;
         m3d::input::IInput* m_input = nullptr;
         m3d::Log* m_log = nullptr;
         CStr m_cfgName;
         static m3d::Application* g_pApp;
-        void sysError(const CStr& whence, const CStr& assertion);
+        void sysError(CStr const& whence, CStr const& assertion);
         void panic();
         void texGenEnqueue(m3d::IGeneratedTexture* tex);
         void texGenProcess(m3d::IGeneratedTexture* tex);
-        void EnqueueMessage(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        int ImmediateMessage(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        void EnqueueMessage(
+            int msg,
+            int param0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        int ImmediateMessage(
+            int msg,
+            int param0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
         // retruxx adaptation: the shipped build packed window and object pointers into param0 and
         // param1; these carry them in Event::m_ptrEv, the int slots stay as they are.
-        void EnqueueMessage(int msg, void* ptr0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        void EnqueueMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        int ImmediateMessage(int msg, void* ptr0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        int ImmediateMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        m3d::Event MakeMessageEvent(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        void EnqueueMessage(
+            int msg,
+            void* ptr0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        void EnqueueMessage(
+            int msg,
+            void* ptr0,
+            void* ptr1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        int ImmediateMessage(
+            int msg,
+            void* ptr0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        int ImmediateMessage(
+            int msg,
+            void* ptr0,
+            void* ptr1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        m3d::Event MakeMessageEvent(
+            int msg,
+            int param0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
         void SetKeyboardFocus(m3d::IEventHandler* entity);
         int GetMouseX() const;
         int GetMouseY() const;
@@ -119,15 +250,20 @@ namespace m3d
         virtual void SetMouseYAxisFlipped(bool bFlip);
         virtual bool IsMouseXAxisFlipped() const;
         virtual void SetMouseXAxisFlipped(bool bFlip);
-        void TexSoften(m3d::rend::TexHandle dstTex, m3d::rend::TexHandle srcTex, int numJitters, float jitterDist, unsigned int clr);
-        void DrawLine(const CVector2& from, const CVector2& to, unsigned int color);
-        void DrawLine(const CVector& from, const CVector& to, unsigned int color);
-        void DrawBoundingRadius(const CVector& org, float r, unsigned int clr);
-        void DrawCross(const CVector& org, float size, unsigned int clr);
+        void TexSoften(
+            m3d::rend::TexHandle dstTex,
+            m3d::rend::TexHandle srcTex,
+            int numJitters,
+            float jitterDist,
+            unsigned int clr);
+        void DrawLine(CVector2 const& from, CVector2 const& to, unsigned int color);
+        void DrawLine(CVector const& from, CVector const& to, unsigned int color);
+        void DrawBoundingRadius(CVector const& org, float r, unsigned int clr);
+        void DrawCross(CVector const& org, float size, unsigned int clr);
         void DrawTri(CVector* tri, unsigned int clr);
         void DrawQuad(CVector* tri, unsigned int clr);
-        void DrawWireRect(const CVector2& from, const CVector2& to, unsigned int color);
-        void DrawWireRectRel(const CVector2& from, const CVector2& to, unsigned int color);
+        void DrawWireRect(CVector2 const& from, CVector2 const& to, unsigned int color);
+        void DrawWireRectRel(CVector2 const& from, CVector2 const& to, unsigned int color);
         void StartQuads(m3d::rend::VertexType vt);
         void FinishQuads();
         void RenderQuadXyzwct1(float x, float y, float sz, unsigned int clr);
@@ -136,16 +272,16 @@ namespace m3d
         void SetFlushQuadsShader(m3d::rend::IEffect* shader);
         virtual void OnAfterDeviceReset() override;
         virtual void OnBeforeDeviceReset() override;
-        virtual const char* GetCallbackName() const override;
-        const CStr& GetStartupFolder() const;
-        const CStr& GetImageName() const;
+        virtual char const* GetCallbackName() const override;
+        CStr const& GetStartupFolder() const;
+        CStr const& GetImageName() const;
         int StartExclusiveMsgLoop();
         int FinishExclusiveMsgLoop();
         int HeightmapToNormalmap(unsigned short* src, unsigned int* dst, int sx, int sy);
-        virtual bool GetPostEffectParam(const CStr& effectName, float& effParam);
-        virtual bool SetPostEffectParam(const CStr& effectName, float effParam);
-        virtual bool AddPostEffect(const CStr& effectName, float effParam);
-        virtual bool KillPostEffect(const CStr& effectName);
+        virtual bool GetPostEffectParam(CStr const& effectName, float& effParam);
+        virtual bool SetPostEffectParam(CStr const& effectName, float effParam);
+        virtual bool AddPostEffect(CStr const& effectName, float effParam);
+        virtual bool KillPostEffect(CStr const& effectName);
         virtual void ReloadPostEffects();
 
     protected:
@@ -179,9 +315,9 @@ namespace m3d
     protected:
         int m_screenShotPending = 0;
         int m_screenShotPendingAlways = 0;
-        virtual void HandleCommand(int cmdID, const m3d::CConsoleParams& params) override;
-        virtual bool HandleCVar(const m3d::CVar* cvar, const m3d::CConsoleParams& params) override;
-        virtual int HandleEvent(const m3d::Event& ev) override;
+        virtual void HandleCommand(int cmdID, m3d::CConsoleParams const& params) override;
+        virtual bool HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params) override;
+        virtual int HandleEvent(m3d::Event const& ev) override;
 
     private:
         void* m_procTexNewTextureNotifyEvent = nullptr;
@@ -198,9 +334,9 @@ namespace m3d
         float m_mouseSensitivity = 1.0;
         bool m_bMouseYAxisFlipped = false;
         bool m_bMouseXAxisFlipped = false;
-        retruxx::vector<m3d::IEventHandler*, retruxx::allocator<m3d::IEventHandler*> > m_allEventHandlers;
+        retruxx::vector<m3d::IEventHandler*, retruxx::allocator<m3d::IEventHandler*>> m_allEventHandlers;
         bool GetEvent(m3d::Event& event, bool removeFromQueue);
-        void EnqueueEvent(const m3d::Event& event);
+        void EnqueueEvent(m3d::Event const& event);
 
         struct CFontType
         {
@@ -274,9 +410,11 @@ namespace m3d
         m3d::DataServer& GetLinesServer();
         m3d::DataServer& GetProjectorsServer();
         m3d::DataServer& GetDecalsServer();
-        bool SaveUsedOnlyServers(const CStr& filename, retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& usedAnimatedHandles);
-        bool SaveServers(const CStr& filename);
-        bool LoadServers(const CStr& filename, bool bQuiet);
+        bool SaveUsedOnlyServers(
+            CStr const& filename,
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& usedAnimatedHandles);
+        bool SaveServers(CStr const& filename);
+        bool LoadServers(CStr const& filename, bool bQuiet);
         void PostLoadServers();
 
     protected:
@@ -311,7 +449,7 @@ namespace m3d
             CStr m_diz1;
             CStr m_diz2;
             m3d::rend::TexHandle m_picture;
-            LoadScreenInfo(const m3d::Application::LoadScreenInfo&);
+            LoadScreenInfo(m3d::Application::LoadScreenInfo const&);
             LoadScreenInfo();
             ~LoadScreenInfo();
         };
@@ -321,21 +459,21 @@ namespace m3d
 
     public:
         void SetFrameClearColor(unsigned int color);
-        virtual void PutSplash(int proc, const char* text);
+        virtual void PutSplash(int proc, char const* text);
         static void PutSplashCallBack(int proc, void* data);
         void DrawLogo();
         void PutSplashMainMenuLevelLoad(int proc, void* data);
         static void PutSplashCallBackQuiet(int, void*);
         int64_t GetMeasuredCpuFrequency() const;
         m3d::CameraController* m_cameraController;
-        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_cachedSoundIDs;
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>> m_cachedSoundIDs;
         bool m_stopallsounds;
         bool m_pauseAllowed;
         int m_timeFromLevelLoaded;
         m3d::CIntHash<int> m_belongToIdxHash;
         m3d::CameraController* GetCameraController();
-        float GetOnScreenSize(const CVector& o, float radius);
-        bool StartPlayingMusic(const char* musicName, bool bDoLoop, bool bImmediate);
+        float GetOnScreenSize(CVector const& o, float radius);
+        bool StartPlayingMusic(char const* musicName, bool bDoLoop, bool bImmediate);
         void StopPlayingMusic();
         virtual void Pause();
         virtual void UnPause();
@@ -354,10 +492,10 @@ namespace m3d
     public:
         m3d::ProfilerStack& GetProfilerStack();
         m3d::DbgCounterStack& GetDbgCounterStack();
-        m3d::Profiler* CreateProfiler(const char* name);
-        m3d::DbgCounter* CreateCounter(const char* name);
+        m3d::Profiler* CreateProfiler(char const* name);
+        m3d::DbgCounter* CreateCounter(char const* name);
         CStr GetClassDesc(m3d::Class* cls) const;
-        CStr GetNativeFuncDesc(const char* funcName) const;
+        CStr GetNativeFuncDesc(char const* funcName) const;
         int SaveExportDescToFile(m3d::fs::FileStream& outputFile, bool skipEmpty) const;
 
     protected:
@@ -390,7 +528,6 @@ namespace m3d
             DetailSettings();
         };
 
-
     public:
         m3d::Application::DetailSettings m_detailSettings;
         m3d::IImpulse* m_pImpulses;
@@ -398,7 +535,7 @@ namespace m3d
         virtual int GetCurDifficultyLevel() const;
         virtual bool bIsMousePointing() const;
         virtual bool GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode);
-        virtual int OnChangeMode(const m3d::AuxImpulseInfo& impInfo);
+        virtual int OnChangeMode(m3d::AuxImpulseInfo const& impInfo);
 
     protected:
         virtual int InitImpulses();
@@ -417,16 +554,15 @@ namespace m3d
 
         struct MouseInfo
         {
-            MouseInfo(const m3d::Application::MouseInfo&);
+            MouseInfo(m3d::Application::MouseInfo const&);
             MouseInfo();
-            void SetUpForCurPos(const PointBase<int>& curPos);
+            void SetUpForCurPos(PointBase<int> const& curPos);
             void ResetDelta();
-            const PointBase<int>& GetDeltaDuringGameFrame() const;
-            const PointBase<int>& GetLastPos() const;
+            PointBase<int> const& GetDeltaDuringGameFrame() const;
+            PointBase<int> const& GetLastPos() const;
             PointBase<int> m_deltaDuringGameFrame;
             PointBase<int> m_lastPos;
         };
-
 
     private:
         m3d::Application::MouseInfo m_mouseInfo;
@@ -442,16 +578,17 @@ namespace m3d
         m3d::Cinematic* m_cinematic;
         virtual int HandleCinematic(float dT);
         CCamera m_curCamera;
-        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
         virtual void ChangeLanguage();
         unsigned long GetLocale() const;
-        virtual m3d::ui::MbRetCodes RunMsgBoxDlg(const CStr& caption, const CStr& message, unsigned int flags, bool bPause);
+        virtual m3d::ui::MbRetCodes
+            RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool bPause);
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classApplication;
     };
-}
+}  // namespace m3d
 
-#define M3D_APP m3d::Application::g_pApp
+#define M3D_APP      m3d::Application::g_pApp
 #define M3D_RENDERER m3d::Application::g_pApp->m_renderer

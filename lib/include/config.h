@@ -284,6 +284,6 @@ namespace m3d
     // input and sound cvars at fixed offsets), so the layout is fixed.
     // Didnt true for x64
     // static_assert(sizeof(EngineConfig) == 0x3000);
-}
+}  // namespace m3d
 
 #define M3D_ENGINE_CFG (M3D_KERNEL->GetEngineCfg())

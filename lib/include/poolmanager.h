@@ -37,7 +37,7 @@ namespace m3d
                 Free.pop();
 
                 auto* block = Pool[top];
-                auto* res = new (&block->Data) T(); 
+                auto* res = new (&block->Data) T();
                 return res;
             }
         }
@@ -54,10 +54,9 @@ namespace m3d
         }
 
         void SetFree(T*& pData);
-        PoolManager(const PoolManager<T>&);
+        PoolManager(PoolManager<T> const&);
 
-        PoolManager(unsigned int StartSize) :
-            Pool(StartSize)
+        PoolManager(unsigned int StartSize) : Pool(StartSize)
         {
             for (size_t i = 0; i < Pool.size(); ++i)
             {
@@ -79,4 +78,4 @@ namespace m3d
             }
         }
     };
-}
+}  // namespace m3d

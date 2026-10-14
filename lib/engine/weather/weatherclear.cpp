@@ -42,4 +42,4 @@ namespace m3d
     WeatherClear::WeatherClear()
     {
     }
-}
+}  // namespace m3d

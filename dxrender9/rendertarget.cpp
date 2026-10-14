@@ -12,8 +12,11 @@ TexHandle CDevice::GetFullFrameFrameBufferTexture()
 {
     if (!m_texFrameBufer.IsValid())
     {
-        m_texFrameBufer = AddDynamicTexture("$TexFrameBufer", g_kernel->GetEngineCfg().m_r_width.GetI(),
-                                            g_kernel->GetEngineCfg().m_r_height.GetI(), TM_DTF_RENDER_TARGET);
+        m_texFrameBufer = AddDynamicTexture(
+            "$TexFrameBufer",
+            g_kernel->GetEngineCfg().m_r_width.GetI(),
+            g_kernel->GetEngineCfg().m_r_height.GetI(),
+            TM_DTF_RENDER_TARGET);
 
         SetTextureParameter(m_texFrameBufer, TM_WRAP_S, 3);
         SetTextureParameter(m_texFrameBufer, TM_WRAP_T, 3);
@@ -42,7 +45,7 @@ TexHandle CDevice::GetBufferedTargetTexture(int sz)
 }
 
 // orig 0x64f560 rendertarget.cpp:66
-TexHandle CDevice::AddRenderTargetTexture(const char* texName, int sx, int sy)
+TexHandle CDevice::AddRenderTargetTexture(char const* texName, int sx, int sy)
 {
     return AddDynamicTexture(texName, sx, sy, TM_DTF_RENDER_TARGET);
 }
@@ -99,8 +102,8 @@ int CDevice::RenderToTexStart(TexHandle const& destTex, bool wantZBuffer, TexHan
             if (it == m_rtsZSurfaces.end())
             {
                 IDirect3DSurface9* zSurf = 0;
-                m_lastResult = m_pd3dDevice->CreateDepthStencilSurface(port.m_width, port.m_height, m_depthStencilFormatRt,
-                                                                       D3DMULTISAMPLE_NONE, 0, TRUE, &zSurf, NULL);
+                m_lastResult = m_pd3dDevice->CreateDepthStencilSurface(
+                    port.m_width, port.m_height, m_depthStencilFormatRt, D3DMULTISAMPLE_NONE, 0, TRUE, &zSurf, NULL);
                 if (FAILED(m_lastResult))
                     LogMsg("d3d: ERROR! RenderToTexStart:: Cannot create zsurface");
 

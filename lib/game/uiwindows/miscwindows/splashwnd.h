@@ -9,8 +9,8 @@ namespace m3d
         class ImageWnd;
         class ProgressBarWnd;
         class ButtonWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
 class SplashWnd : public m3d::ui::Wnd
 {

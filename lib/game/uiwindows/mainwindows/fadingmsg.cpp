@@ -209,7 +209,8 @@ void FadingMsgList::GetParamsForEnumeredMsg(
         // The dynamic quest's brief description; the quest id is in m_intEv[1].
         int const dQuestId = ev ? ev->m_intEv[1] : -1;
         CStr questDiz;
-        if (QuestInfo const* qi = M3D_APP->m_pInterfaceManager->GetQuestInfoManager()->GetQuestInfoForDynamicQuest(dQuestId))
+        if (QuestInfo const* qi =
+                M3D_APP->m_pInterfaceManager->GetQuestInfoManager()->GetQuestInfoForDynamicQuest(dQuestId))
         {
             questDiz = qi->GetBriefDiz();
         }

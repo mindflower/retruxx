@@ -37,4 +37,4 @@ namespace ai
     public:
         RT_CLASS_DECLARE(TurboAccelerationPusher);
     };
-}
+}  // namespace ai

@@ -222,7 +222,6 @@ CStr MotherPanelTabButton::Mode2Str(Mode mode)
         return it->second;
     }
     return "";
-
 }
 
 MotherPanelTabButton::MotherPanelTabButton(MotherPanelTabButton const&) : MotherPanelTabButton()
@@ -243,7 +242,7 @@ MotherPanelTabButton::MotherPanelTabButton()
 void MotherPanelTabButton::UpdateTooltip()
 {
     CStr tooltip;
-    const ai::Building* building = GetBuilding(m_mode);
+    ai::Building const* building = GetBuilding(m_mode);
     if (building)
     {
         tooltip = ai::pServer->GetFullNameByObjID(building->GetId());
@@ -332,7 +331,7 @@ ai::Building const* MotherPanelTabButton::GetBuilding(Mode mode) const
     {
         return nullptr;
     }
-    const ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
+    ai::Town const* town = M3D_APP->m_pInterfaceManager->GetCurrentTown();
     if (!town)
     {
         return nullptr;

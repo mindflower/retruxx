@@ -198,4 +198,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

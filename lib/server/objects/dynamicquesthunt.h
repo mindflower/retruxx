@@ -19,22 +19,22 @@ namespace ai
         float m_huntSeasonLength;
     };
 
-    class DynamicQuestHunt :  public DynamicQuest
+    class DynamicQuestHunt : public DynamicQuest
     {
     public:
-        DynamicQuestHunt(DynamicQuestHuntPrototypeInfo const &);
+        DynamicQuestHunt(DynamicQuestHuntPrototypeInfo const&);
         void ConsiderPlayerKill(int);
-        virtual DynamicQuestManager::QuestType GetQuestType() const ;
+        virtual DynamicQuestManager::QuestType GetQuestType() const;
         virtual void UpdateBeforeShowInConversation();
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        float GetTimeBeforeHuntEnd() const ;
-        virtual m3d::Class * GetClass() const ;
-        virtual void Update(float,unsigned int);
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        float GetTimeBeforeHuntEnd() const;
+        virtual m3d::Class* GetClass() const;
+        virtual void Update(float, unsigned int);
         void ProcessHuntCompletion();
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual DynamicQuestHuntPrototypeInfo const * GetPrototypeInfo() const ;
-        float GetTimeFromHuntStart() const ;
-        static m3d::Class * GetBaseClass();
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual DynamicQuestHuntPrototypeInfo const* GetPrototypeInfo() const;
+        float GetTimeFromHuntStart() const;
+        static m3d::Class* GetBaseClass();
         virtual void PassToAnotherMap();
 
     protected:
@@ -44,8 +44,8 @@ namespace ai
         virtual void _OnCreate();
 
     private:
-        virtual m3d::Object * Clone();
-        static m3d::Object * CreateObject();
+        virtual m3d::Object* Clone();
+        static m3d::Object* CreateObject();
 
     public:
         RT_CLASS_DECLARE(DynamicQuestHunt);
@@ -54,4 +54,4 @@ namespace ai
         int m_fragsAtStart;
         float m_timePassed;
     };
-}
+}  // namespace ai

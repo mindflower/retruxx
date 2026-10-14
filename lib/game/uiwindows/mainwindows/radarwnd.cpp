@@ -1620,8 +1620,7 @@ CVector RadarWnd::GetWorldsideCoords(Worldside side) const
     }
 
     CVector const playerPos = vehicle->GetPosition();
-    return CVector{
-        worldDirs[side].x + playerPos.x, worldDirs[side].y + playerPos.y, worldDirs[side].z + playerPos.z};
+    return CVector{worldDirs[side].x + playerPos.x, worldDirs[side].y + playerPos.y, worldDirs[side].z + playerPos.z};
 }
 
 // ===========================================================================
@@ -1710,17 +1709,7 @@ void RadarWnd::DrawCameraSight(m3d::ui::DrawInfo const& di) const
     }
 
     M3D_APP->PutSpriteRelRot(
-        coord.x + xEdge,
-        (coord.y + yEdge) - halfH,
-        halfW,
-        halfH,
-        0xFFFFFFFF,
-        cameraAngle,
-        0.0,
-        halfH,
-        0.0,
-        0.0,
-        0.0);
+        coord.x + xEdge, (coord.y + yEdge) - halfH, halfW, halfH, 0xFFFFFFFF, cameraAngle, 0.0, halfH, 0.0, 0.0, 0.0);
 }
 
 void RadarWnd::OnPaintOverChildren(m3d::ui::DrawInfo const& di)

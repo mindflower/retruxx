@@ -112,8 +112,8 @@ namespace ai
 
         if (bSameMassForm)
         {
-            dMassSetBoxTotal(&m_mass, massValue, size.x * massSizeCoeff, size.y * massSizeCoeff,
-                size.z * massSizeCoeff);
+            dMassSetBoxTotal(
+                &m_mass, massValue, size.x * massSizeCoeff, size.y * massSizeCoeff, size.z * massSizeCoeff);
         }
         else
         {

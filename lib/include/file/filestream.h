@@ -14,7 +14,7 @@ namespace m3d
             unsigned int m_FileSize = 0;
 
         public:
-            FileStream(){};
+            FileStream() {};
             virtual ~FileStream() = default;
             virtual IStream* Clone() = 0;
             virtual int Open(char const*, OpenFlags) = 0;
@@ -39,5 +39,5 @@ namespace m3d
             virtual long FTell() = 0;
             virtual int Close() = 0;
         };
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

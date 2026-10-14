@@ -8,25 +8,25 @@ namespace m3d
 
 namespace ai
 {
-    class IntIntRatioStatistic :  public Statistic
+    class IntIntRatioStatistic : public Statistic
     {
     public:
-        static m3d::Class * GetBaseClass();
-        static m3d::Object * CreateObject();
+        static m3d::Class* GetBaseClass();
+        static m3d::Object* CreateObject();
         void IncreaseDenominator(int);
         virtual ~IntIntRatioStatistic();
-        virtual m3d::Object * Clone();
-        virtual CStr GetValue() const ;
+        virtual m3d::Object* Clone();
+        virtual CStr GetValue() const;
         void IncreaseNumerator(int);
-        virtual m3d::Class * GetClass() const ;
-        virtual void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+        virtual m3d::Class* GetClass() const;
+        virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         virtual void Zero();
-        virtual m3d::AIParam GetValueAsAIParam() const ;
-        virtual void LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
+        virtual m3d::AIParam GetValueAsAIParam() const;
+        virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
     protected:
         IntIntRatioStatistic();
-        IntIntRatioStatistic(IntIntRatioStatistic const &);
+        IntIntRatioStatistic(IntIntRatioStatistic const&);
 
     public:
         RT_CLASS_DECLARE(IntIntRatioStatistic);
@@ -35,4 +35,4 @@ namespace ai
         int m_numerator;
         int m_denominator;
     };
-}
+}  // namespace ai

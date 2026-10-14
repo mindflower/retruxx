@@ -203,7 +203,7 @@ namespace ai
 
     void Wheel::CreateSuspensionNode()
     {
-        const auto* protoInfo = GetPrototypeInfo();
+        auto const* protoInfo = GetPrototypeInfo();
         if (!protoInfo->m_suspensionModelName.empty())
         {
             CVector scale;
@@ -435,4 +435,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be cloned\"");
         return nullptr;
     }
-}
+}  // namespace ai

@@ -81,7 +81,7 @@ namespace
 
     // FMOD Core's virtual voice limit; the driver's channels are the table below, so this only has
     // to be larger than any channel count the driver asks for.
-    const int kVirtualVoices = 4095;
+    int const kVirtualVoices = 4095;
 
     // The driver's channels: what each one plays, the reuse count that makes the handle, and what
     // the stealing rule needs.
@@ -131,7 +131,7 @@ namespace
     int g_lastError = F3_ERR_NONE;
     FILE* g_log = 0;
 
-    void LogLine(const char* what, FMOD_SOUND* sound, int slot, const char* extra = "")
+    void LogLine(char const* what, FMOD_SOUND* sound, int slot, char const* extra = "")
     {
         if (!g_log)
         {
@@ -300,7 +300,7 @@ namespace
         return ToFsoundPriority(priority);
     }
 
-    FMOD_SOUND* CreateSound(const char* name, unsigned int mode, int offset, int length, FMOD_MODE kind)
+    FMOD_SOUND* CreateSound(char const* name, unsigned int mode, int offset, int length, FMOD_MODE kind)
     {
         if (!Initialised())
         {
@@ -313,8 +313,12 @@ namespace
         exinfo.length = (unsigned int)length;
         bool const stream = (kind & FMOD_CREATESTREAM) != 0;
         FMOD_SOUND* sound = 0;
-        if (!Check(FMOD_System_CreateSound(g_system, name, kind | ToCoreMode(mode) | (stream ? FMOD_NONBLOCKING : 0),
-                                           (offset || length) ? &exinfo : 0, &sound)))
+        if (!Check(FMOD_System_CreateSound(
+                g_system,
+                name,
+                kind | ToCoreMode(mode) | (stream ? FMOD_NONBLOCKING : 0),
+                (offset || length) ? &exinfo : 0,
+                &sound)))
         {
             return 0;
         }
@@ -390,7 +394,7 @@ namespace
         return slot ? slot->chan : 0;
     }
 
-    bool Busy(const Channel& c)
+    bool Busy(Channel const& c)
     {
         FMOD_BOOL playing = 0;
         return c.chan && FMOD_Channel_IsPlaying(c.chan, &playing) == FMOD_OK && playing;
@@ -420,8 +424,12 @@ namespace
         return 0;
     }
 
-    FMOD_RESULT F_CALL ChannelCallback(FMOD_CHANNELCONTROL* channelcontrol, FMOD_CHANNELCONTROL_TYPE controltype,
-                                       FMOD_CHANNELCONTROL_CALLBACK_TYPE callbacktype, void*, void*)
+    FMOD_RESULT F_CALL ChannelCallback(
+        FMOD_CHANNELCONTROL* channelcontrol,
+        FMOD_CHANNELCONTROL_TYPE controltype,
+        FMOD_CHANNELCONTROL_CALLBACK_TYPE callbacktype,
+        void*,
+        void*)
     {
         if (controltype != FMOD_CHANNELCONTROL_CHANNEL || callbacktype != FMOD_CHANNELCONTROL_CALLBACK_END)
         {
@@ -549,7 +557,7 @@ namespace
         {
             for (int i = 0; i < n; ++i)
             {
-                const Channel& c = channels[i];
+                Channel const& c = channels[i];
                 if (c.priority >= priority)
                 {
                     continue;
@@ -611,7 +619,7 @@ namespace
 
     // --- the file callbacks of FMOD 3, forwarded to FMOD Core ------------------------------
 
-    FMOD_RESULT F_CALL FileOpen(const char* name, unsigned int* filesize, void** handle, void*)
+    FMOD_RESULT F_CALL FileOpen(char const* name, unsigned int* filesize, void** handle, void*)
     {
         void* h = g_open ? g_open(name) : 0;
         if (!h)
@@ -678,7 +686,7 @@ namespace
             FMOD_System_SetFileSystem(g_system, FileOpen, FileClose, FileRead, FileSeek, 0, 0, -1);
         }
         g_state = new State;
-        Channel empty = { 0, 0, 0, 0, 0 };
+        Channel empty = {0, 0, 0, 0, 0};
         g_state->channels.assign((size_t)maxsoftwarechannels, empty);
         g_numChannels = maxsoftwarechannels;
         return 1;
@@ -727,9 +735,12 @@ namespace
         }
     }
 
-    void F_API File_SetCallbacks(FSOUND_OPENCALLBACK useropen, FSOUND_CLOSECALLBACK userclose,
-                                 FSOUND_READCALLBACK userread, FSOUND_SEEKCALLBACK userseek,
-                                 FSOUND_TELLCALLBACK usertell)
+    void F_API File_SetCallbacks(
+        FSOUND_OPENCALLBACK useropen,
+        FSOUND_CLOSECALLBACK userclose,
+        FSOUND_READCALLBACK userread,
+        FSOUND_SEEKCALLBACK userseek,
+        FSOUND_TELLCALLBACK usertell)
     {
         g_open = useropen;
         g_close = userclose;
@@ -778,7 +789,7 @@ namespace
         }
     }
 
-    FSOUND_SAMPLE* F_API Sample_Load(int, const char* name_or_data, unsigned int mode, int offset, int length)
+    FSOUND_SAMPLE* F_API Sample_Load(int, char const* name_or_data, unsigned int mode, int offset, int length)
     {
         return (FSOUND_SAMPLE*)CreateSound(name_or_data, mode, offset, length, FMOD_CREATESAMPLE);
     }
@@ -968,12 +979,11 @@ namespace
         return chan && Check(FMOD_Channel_SetMode(chan, LoopBits(loopmode))) ? 1 : 0;
     }
 
-    signed char F_API Set3DAttributes(int channel, const float* pos, const float* vel)
+    signed char F_API Set3DAttributes(int channel, float const* pos, float const* vel)
     {
         FMOD_CHANNEL* chan = Resolve(channel);
-        return chan && Check(FMOD_Channel_Set3DAttributes(chan, (const FMOD_VECTOR*)pos, (const FMOD_VECTOR*)vel))
-                   ? 1
-                   : 0;
+        return chan && Check(FMOD_Channel_Set3DAttributes(chan, (const FMOD_VECTOR*)pos, (const FMOD_VECTOR*)vel)) ? 1 :
+                                                                                                                     0;
     }
 
     signed char F_API IsPlaying(int channel)
@@ -997,20 +1007,27 @@ namespace
         return chan && Check(FMOD_Channel_GetVolume(chan, &volume)) ? (int)(volume * 255.0f + 0.5f) : 0;
     }
 
-    void F_API Listener_SetAttributes(const float* pos, const float* vel, float fx, float fy, float fz, float tx,
-                                      float ty, float tz)
+    void F_API Listener_SetAttributes(
+        float const* pos,
+        float const* vel,
+        float fx,
+        float fy,
+        float fz,
+        float tx,
+        float ty,
+        float tz)
     {
         if (!Initialised())
         {
             return;
         }
-        FMOD_VECTOR forward = { fx, fy, fz };
-        FMOD_VECTOR up = { tx, ty, tz };
-        Check(FMOD_System_Set3DListenerAttributes(g_system, 0, (const FMOD_VECTOR*)pos, (const FMOD_VECTOR*)vel,
-                                                  &forward, &up));
+        FMOD_VECTOR forward = {fx, fy, fz};
+        FMOD_VECTOR up = {tx, ty, tz};
+        Check(FMOD_System_Set3DListenerAttributes(
+            g_system, 0, (const FMOD_VECTOR*)pos, (const FMOD_VECTOR*)vel, &forward, &up));
     }
 
-    FSOUND_STREAM* F_API Stream_Open(const char* name_or_data, unsigned int mode, int offset, int length)
+    FSOUND_STREAM* F_API Stream_Open(char const* name_or_data, unsigned int mode, int offset, int length)
     {
         return (FSOUND_STREAM*)CreateSound(name_or_data, mode, offset, length, FMOD_CREATESTREAM);
     }
@@ -1053,16 +1070,15 @@ namespace
         {
             return position == 0 ? 1 : 0;
         }
-        return Check(FMOD_Channel_SetPosition(g_state->channels[slot].chan, position, FMOD_TIMEUNIT_PCMBYTES)) ? 1
-                                                                                                                : 0;
+        return Check(FMOD_Channel_SetPosition(g_state->channels[slot].chan, position, FMOD_TIMEUNIT_PCMBYTES)) ? 1 : 0;
     }
 
     int F_API Stream_GetLengthMs(FSOUND_STREAM* stream)
     {
         unsigned int length = 0;
-        return Initialised() && stream && Check(FMOD_Sound_GetLength((FMOD_SOUND*)stream, &length, FMOD_TIMEUNIT_MS))
-                   ? (int)length
-                   : 0;
+        return Initialised() && stream && Check(FMOD_Sound_GetLength((FMOD_SOUND*)stream, &length, FMOD_TIMEUNIT_MS)) ?
+            (int)length :
+            0;
     }
 
     signed char F_API Stream_SetMode(FSOUND_STREAM* stream, unsigned int mode)
@@ -1086,11 +1102,11 @@ namespace
         {
             return 0;
         }
-        EndCallback entry = { callback, userdata };
+        EndCallback entry = {callback, userdata};
         g_state->endCallbacks[(FMOD_SOUND*)stream] = entry;
         return 1;
     }
-}
+}  // namespace
 
 FMOD_INSTANCE* FMOD_CreateInstance(char*)
 {

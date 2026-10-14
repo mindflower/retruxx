@@ -52,4 +52,4 @@ namespace m3d
     {
         return &m_InArgs[m_numInArgs++];
     }
-}
+}  // namespace m3d

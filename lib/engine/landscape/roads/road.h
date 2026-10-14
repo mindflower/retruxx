@@ -13,10 +13,10 @@ namespace m3d
     {
     protected:
         RoadNode();
-        RoadNode(const m3d::RoadNode& r);
+        RoadNode(m3d::RoadNode const& r);
 
     public:
-        virtual  ~RoadNode() override;
+        virtual ~RoadNode() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* CreateObject();
         static m3d::Class* GetBaseClass();
@@ -40,7 +40,7 @@ namespace m3d
         m3d::RoadNode* m_friend;
         m3d::RoadManager* m_owner;
         CVector* m_cachedVertices;
-        std::vector<unsigned int, std::allocator<unsigned int> > m_cellsCovered;
+        std::vector<unsigned int, std::allocator<unsigned int>> m_cellsCovered;
         m3d::rend::VbPoolField m_VbPoolField;
         m3d::rend::IbPoolField m_IbPoolField;
         m3d::GeomObjectRoad* m_geomObject;
@@ -63,4 +63,4 @@ namespace m3d
         CVector GetPoint4();
         int GetSoilType();
     };
-}
+}  // namespace m3d

@@ -43,5 +43,5 @@ namespace m3d
         protected:
             LineWndDirection m_direction = LINEWND_HORIZONTAL;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

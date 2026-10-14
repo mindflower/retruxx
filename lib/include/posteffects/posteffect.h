@@ -7,9 +7,15 @@ class PostEffectModel;
 class PostEffect
 {
 public:
-    PostEffect(PostEffectModel* model, float effParam, PostEffectManager* parent, int nSeq, const CStr& seqName, bool isBeKilling);
+    PostEffect(
+        PostEffectModel* model,
+        float effParam,
+        PostEffectManager* parent,
+        int nSeq,
+        CStr const& seqName,
+        bool isBeKilling);
     void DoFrame();
-    bool FindByName(const CStr name);
+    bool FindByName(CStr const name);
 
 private:
     void ApplyDynamic();

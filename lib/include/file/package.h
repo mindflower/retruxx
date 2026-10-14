@@ -26,7 +26,14 @@ namespace m3d
             int32_t Stat3;
             uint32_t ExternalData;
             PackageFileRecordHeader();
-            PackageFileRecordHeader(unsigned int, unsigned long, unsigned long, bool, unsigned int, unsigned int, unsigned int);
+            PackageFileRecordHeader(
+                unsigned int,
+                unsigned long,
+                unsigned long,
+                bool,
+                unsigned int,
+                unsigned int,
+                unsigned int);
         };
 #pragma pack(pop)
 
@@ -38,18 +45,18 @@ namespace m3d
             void IncRef();
             void DecRef();
             int GetRefCount();
-            unsigned int OpenFile(const char* FileName, void** Buffer, unsigned int* Size);
+            unsigned int OpenFile(char const* FileName, void** Buffer, unsigned int* Size);
             void CloseFile(unsigned int FileID);
-            void GetFilesList(retruxx::vector<CStr, retruxx::allocator<CStr> >& List);
-            void GetOpenFilesList(retruxx::vector<CStr, retruxx::allocator<CStr> >& fileList) const;
-            bool HaveFile(const char* FileName);
+            void GetFilesList(retruxx::vector<CStr, retruxx::allocator<CStr>>& List);
+            void GetOpenFilesList(retruxx::vector<CStr, retruxx::allocator<CStr>>& fileList) const;
+            bool HaveFile(char const* FileName);
 
             enum ZipCloseFunction;
 
         public:
-            Package(const m3d::fs::Package&);
+            Package(m3d::fs::Package const&);
             Package(bool UseMapping);
-            int Open(const char* PackageName);
+            int Open(char const* PackageName);
             void Close();
             void EnableEraseZipBuffers(bool);
             void EraseZipBuffers();
@@ -64,36 +71,54 @@ namespace m3d
             bool m_EraseZipBuffers;
             unsigned char* m_Data;
             unsigned int m_FileSize;
-            int OpenPackageFile(const char* PackageName);
+            int OpenPackageFile(char const* PackageName);
             void ClosePackageFile();
             void CloseView(unsigned int ViewID);
             void LoadFileRecords(unsigned char* buffFAT, int FAT_RecordCount);
             unsigned int MakeView(unsigned int Position, unsigned int Size, unsigned int* ReadedSize, void** Data);
 
-            using FilesMapType = retruxx::map<CStr, m3d::fs::PackageFileRecordHeader, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, m3d::fs::PackageFileRecordHeader> > >;
+            using FilesMapType = retruxx::map<
+                CStr,
+                m3d::fs::PackageFileRecordHeader,
+                retruxx::less<CStr>,
+                retruxx::allocator<retruxx::pair<CStr const, m3d::fs::PackageFileRecordHeader>>>;
             class FilesMapIterator;
 
         protected:
-            retruxx::map<CStr, m3d::fs::PackageFileRecordHeader, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, m3d::fs::PackageFileRecordHeader> > > m_FilesMap;
+            retruxx::map<
+                CStr,
+                m3d::fs::PackageFileRecordHeader,
+                retruxx::less<CStr>,
+                retruxx::allocator<retruxx::pair<CStr const, m3d::fs::PackageFileRecordHeader>>>
+                m_FilesMap;
 
             struct DetailedSegment
             {
                 void* Address;
                 unsigned int Size;
                 unsigned int Position;
-                DetailedSegment(const m3d::fs::Package::DetailedSegment& dseg);
+                DetailedSegment(m3d::fs::Package::DetailedSegment const& dseg);
                 DetailedSegment(void* pAddress, unsigned int uiSize);
                 DetailedSegment();
             };
 
-            using OpenViewsType = retruxx::map<unsigned int, m3d::fs::Package::DetailedSegment, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, m3d::fs::Package::DetailedSegment> > >;
+            using OpenViewsType = retruxx::map<
+                unsigned int,
+                m3d::fs::Package::DetailedSegment,
+                retruxx::less<unsigned int>,
+                retruxx::allocator<retruxx::pair<unsigned int const, m3d::fs::Package::DetailedSegment>>>;
             class OpenViewsIterator;
 
         protected:
-            retruxx::map<unsigned int, m3d::fs::Package::DetailedSegment, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, m3d::fs::Package::DetailedSegment> > > m_OpenViewsMap;
+            retruxx::map<
+                unsigned int,
+                m3d::fs::Package::DetailedSegment,
+                retruxx::less<unsigned int>,
+                retruxx::allocator<retruxx::pair<unsigned int const, m3d::fs::Package::DetailedSegment>>>
+                m_OpenViewsMap;
 
         private:
             int m_refCount;
         };
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

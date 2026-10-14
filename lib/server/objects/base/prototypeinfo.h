@@ -7,10 +7,10 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
 
     struct Class;
-}
+}  // namespace m3d
 
 namespace ai
 {
@@ -20,7 +20,7 @@ namespace ai
     {
     protected:
         PrototypeInfo();
-        PrototypeInfo(const ai::PrototypeInfo&);
+        PrototypeInfo(ai::PrototypeInfo const&);
 
     public:
         CStr m_className;
@@ -31,24 +31,24 @@ namespace ai
         bool m_bVisibleInEncyclopedia;
         bool m_bApplyAffixes;
         unsigned int m_price;
-        virtual  ~PrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual ~PrototypeInfo();
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void PostLoad();
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual ai::Obj* CreateTargetObject() const = 0;
         bool bIsAbstract() const;
-        const CStr& GetParentPrototypeName() const;
+        CStr const& GetParentPrototypeName() const;
         virtual unsigned int GetBasePrice() const;
-        void CopyFrom(const ai::PrototypeInfo& rhs);
+        void CopyFrom(ai::PrototypeInfo const& rhs);
         CStr GetDebugDescription() const;
-        bool IsPrototypeOf(const m3d::Class* cl) const;
+        bool IsPrototypeOf(m3d::Class const* cl) const;
 
     protected:
-        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs);
+        virtual void _InternalCopyFrom(ai::PrototypeInfo const& rhs);
         bool m_bIsAbstract;
         CStr m_parentPrototypeName;
 
     private:
         m3d::Class* m_protoClassObject;
     };
-}
+}  // namespace ai

@@ -9,8 +9,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Static2DPath, Push)
 {
     // RVA 0x7F9F60
     auto path = (ai::Static2DPath*)context->asObject(0, "Static2DPath");
-    const float y = context->asFloat(2);
-    const float x = context->asFloat(1);
+    float const y = context->asFloat(2);
+    float const x = context->asFloat(1);
     path->Push(x, y);
     return 1;
 }
@@ -50,11 +50,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(Static2DPath, GetCount)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(Static2DPath)
-        RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, Push, "", "", "")
-        RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, Remove, "", "", "")
-        RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, GetX, "", "", "")
-        RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, GetY, "", "", "")
-        RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, GetCount, "", "", "")
+    RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, Push, "", "", "")
+    RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, Remove, "", "", "")
+    RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, GetX, "", "", "")
+    RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, GetY, "", "", "")
+    RT_CLASS_EXPORT(Static2DPath, m3d::METHOD, GetCount, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Static2DPath);
 
@@ -146,7 +146,7 @@ namespace ai
         std::vector<CVector> result;
         for (int i = 0; i < GetCount(); ++i)
         {
-            const CVector2 pos(m_Points[i].x, m_Points[i].y);
+            CVector2 const pos(m_Points[i].x, m_Points[i].y);
             result.push_back(GetGroundPos(pos, true));
         }
         return result;
@@ -163,4 +163,4 @@ namespace ai
         // NOTE: the original always asserts; paths cannot be cloned, so Clone never returns.
         SYS_ERROR("0");
     }
-}
+}  // namespace ai

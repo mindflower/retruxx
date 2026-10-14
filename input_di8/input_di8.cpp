@@ -41,13 +41,13 @@ namespace
     {
         g_kernel->SysError(CStr(file) + CStr(":") + CStr(line), CStr(assertion));
     }
-}
+}  // namespace
 
 // The original M3D_ASSERT with the file name and line number the original binary carries.
-#define INPUT_ASSERT(cond, line)                                    \
-    if (!(cond))                                                    \
-    {                                                               \
-        inputAssertFailed(#cond, ".\\input_di8.cpp", (line));       \
+#define INPUT_ASSERT(cond, line)                              \
+    if (!(cond))                                              \
+    {                                                         \
+        inputAssertFailed(#cond, ".\\input_di8.cpp", (line)); \
     }
 
 // orig input_di8.cpp:44
@@ -91,7 +91,7 @@ public:
     // 61: IBase
     int IncRef() override;
     int DecRef() override;
-    void* QueryIface(const char* ifaceName) override;
+    void* QueryIface(char const* ifaceName) override;
 
     CInput_di8();
     ~CInput_di8() override;
@@ -101,8 +101,8 @@ public:
     void NewFrame() override;
     void SetAutorepeatTime(int msecs) override;
     void ClearBuffer() override;
-    bool GetLastKbdEvent(unsigned short& key, unsigned char& scanCode, bool& down, double& time,
-                         bool removeFromQueue) override;
+    bool GetLastKbdEvent(unsigned short& key, unsigned char& scanCode, bool& down, double& time, bool removeFromQueue)
+        override;
     int GetMouseX() override;
     int GetMouseY() override;
     int GetMouseZ() override;
@@ -203,7 +203,7 @@ int CInput_di8::DecRef()
 }
 
 // orig 0x56e810 input_di8.cpp:61
-void* CInput_di8::QueryIface(const char* ifaceName)
+void* CInput_di8::QueryIface(char const* ifaceName)
 {
     if (m_parent)
     {
@@ -435,7 +435,7 @@ int CInput_di8::Init(m3d::Kernel* kernel, void(__fastcall* logFunc)(CStr const&)
     SetLogFunc(logFunc);
 
     // 542
-    INPUT_ASSERT(IsWindow( g_Kernel->GetEngineCfg().m_mainWnd ), 542);
+    INPUT_ASSERT(IsWindow(g_Kernel->GetEngineCfg().m_mainWnd), 542);
 
     // 544
     m_forWnd = g_kernel->GetEngineCfg().m_mainWnd;
@@ -460,9 +460,8 @@ int CInput_di8::Init(m3d::Kernel* kernel, void(__fastcall* logFunc)(CStr const&)
     // 557
     InitKeyboardLayots();
     // 558
-    m_language = g_kernel->GetEngineCfg().m_input_defaultInputLanguageBase.GetB()
-                     ? m3d::input::LANGUAGE_BASE
-                     : m3d::input::LANGUAGE_ADDITIONAL;
+    m_language = g_kernel->GetEngineCfg().m_input_defaultInputLanguageBase.GetB() ? m3d::input::LANGUAGE_BASE :
+                                                                                    m3d::input::LANGUAGE_ADDITIONAL;
 
     // 560
     return 1;
@@ -505,15 +504,12 @@ void CInput_di8::addKbdEvent(unsigned int scanCode, double time, int state)
     CKbdEvent ev;
 
     // 615
-    ev.m_key = (uint16_t)(scanCode
-                          | (IsKeyDown(DIK_LCONTROL) ? m3d::KBD_LCTRL : 0)
-                          | (IsKeyDown(DIK_RCONTROL) ? m3d::KBD_RCTRL : 0)
-                          | (IsKeyDown(DIK_LSHIFT) ? m3d::KBD_LSHIFT : 0)
-                          | (IsKeyDown(DIK_RSHIFT) ? m3d::KBD_RSHIFT : 0)
-                          | (IsKeyDown(DIK_LMENU) ? m3d::KBD_LALT : 0)
-                          | (IsKeyDown(DIK_RMENU) ? m3d::KBD_RALT : 0)
-                          | (IsKeyDown(DIK_LWIN) ? m3d::KBD_LWIN : 0)
-                          | (IsKeyDown(DIK_RWIN) ? m3d::KBD_RWIN : 0));
+    ev.m_key =
+        (uint16_t)(scanCode | (IsKeyDown(DIK_LCONTROL) ? m3d::KBD_LCTRL : 0) |
+                   (IsKeyDown(DIK_RCONTROL) ? m3d::KBD_RCTRL : 0) | (IsKeyDown(DIK_LSHIFT) ? m3d::KBD_LSHIFT : 0) |
+                   (IsKeyDown(DIK_RSHIFT) ? m3d::KBD_RSHIFT : 0) | (IsKeyDown(DIK_LMENU) ? m3d::KBD_LALT : 0) |
+                   (IsKeyDown(DIK_RMENU) ? m3d::KBD_RALT : 0) | (IsKeyDown(DIK_LWIN) ? m3d::KBD_LWIN : 0) |
+                   (IsKeyDown(DIK_RWIN) ? m3d::KBD_RWIN : 0));
     // 627
     ev.m_time = time;
     ev.m_state = state;
@@ -575,8 +571,12 @@ void CInput_di8::enqueueKbdEvent(CKbdEvent* ev)
 }
 
 // orig 0x56f420 input_di8.cpp:681
-bool CInput_di8::GetLastKbdEvent(unsigned short& key, unsigned char& scanCode, bool& down, double& time,
-                                 bool removeFromQueue)
+bool CInput_di8::GetLastKbdEvent(
+    unsigned short& key,
+    unsigned char& scanCode,
+    bool& down,
+    double& time,
+    bool removeFromQueue)
 {
     // 686
     static uint8_t kbState[256];
@@ -627,7 +627,7 @@ bool CInput_di8::GetLastKbdEvent(unsigned short& key, unsigned char& scanCode, b
             if (virtualKey != 0)
             {
                 // 746
-                uint16_t chars[2] = { 0, 0 };
+                uint16_t chars[2] = {0, 0};
                 if (key & (m3d::KBD_LSHIFT | m3d::KBD_RSHIFT))
                 {
                     // 747
@@ -638,8 +638,9 @@ bool CInput_di8::GetLastKbdEvent(unsigned short& key, unsigned char& scanCode, b
                 if (ToAsciiEx(virtualKey, (uint8_t)key, kbState, chars, 0, layout) == 0)
                 {
                     // 766: M3D_LOG_INFO in the original
-                    LogMsg(CStr("CInput_di8::GetLastKbdEvent() error - cannot translate key wit virtual key code ") +
-                           CStr(virtualKey));
+                    LogMsg(
+                        CStr("CInput_di8::GetLastKbdEvent() error - cannot translate key wit virtual key code ") +
+                        CStr(virtualKey));
                 }
 
                 // 769
@@ -649,8 +650,8 @@ bool CInput_di8::GetLastKbdEvent(unsigned short& key, unsigned char& scanCode, b
             else
             {
                 // 776: M3D_LOG_INFO in the original
-                LogMsg(CStr("CInput_di8::GetLastKbdEvent() error - cannot translate key wit scan code ") +
-                       CStr((int)key));
+                LogMsg(
+                    CStr("CInput_di8::GetLastKbdEvent() error - cannot translate key wit scan code ") + CStr((int)key));
             }
         }
 
@@ -867,8 +868,8 @@ DWORD WINAPI CInput_di8::diThread(void* param)
     }
 
     // 983
-    if (!DuplicateHandle(GetCurrentProcess(), eventShutdown, GetCurrentProcess(), &events[1], 0, FALSE,
-                         DUPLICATE_SAME_ACCESS))
+    if (!DuplicateHandle(
+            GetCurrentProcess(), eventShutdown, GetCurrentProcess(), &events[1], 0, FALSE, DUPLICATE_SAME_ACCESS))
     {
         // 985
         INPUT_ASSERT(!"Cant duplicate handle 1", 985);
@@ -877,8 +878,14 @@ DWORD WINAPI CInput_di8::diThread(void* param)
     }
 
     // 992
-    if (!DuplicateHandle(GetCurrentProcess(), eventActiveStateChanged, GetCurrentProcess(), &events[3], 0, FALSE,
-                         DUPLICATE_SAME_ACCESS))
+    if (!DuplicateHandle(
+            GetCurrentProcess(),
+            eventActiveStateChanged,
+            GetCurrentProcess(),
+            &events[3],
+            0,
+            FALSE,
+            DUPLICATE_SAME_ACCESS))
     {
         // 994
         INPUT_ASSERT(!"Cant duplicate handle 2", 994);
@@ -1593,8 +1600,8 @@ void CInput_di8::ChangeLanguage()
     // 1637
     AutoLockMutex lock(m_mutex1);
     // 1638
-    m_language = (m_language == m3d::input::LANGUAGE_BASE) ? m3d::input::LANGUAGE_ADDITIONAL
-                                                             : m3d::input::LANGUAGE_BASE;
+    m_language =
+        (m_language == m3d::input::LANGUAGE_BASE) ? m3d::input::LANGUAGE_ADDITIONAL : m3d::input::LANGUAGE_BASE;
     // 1639
 }
 
@@ -1662,7 +1669,7 @@ namespace
         // 1711
         return name;
     }
-}
+}  // namespace
 
 // orig 0x570590 input_di8.cpp:1719
 int CInput_di8::InitKeyboardLayots()
@@ -1690,8 +1697,9 @@ int CInput_di8::InitKeyboardLayots()
     if (m_hBaseLocalKeyboardLayot == 0)
     {
         // 1739: M3D_LOG_INFO in the original
-        LogMsg(CStr("CInput_di8::InitKeyboardLayots error: cannot load keyboard layot ") + baseKbLayotId +
-               CStr(" for base language. Usse user default"));
+        LogMsg(
+            CStr("CInput_di8::InitKeyboardLayots error: cannot load keyboard layot ") + baseKbLayotId +
+            CStr(" for base language. Usse user default"));
 
         // 1741
         m_hBaseLocalKeyboardLayot = LoadKeyboardLayoutA("00000400", KLF_SUBSTITUTE_OK | KLF_REPLACELANG);
@@ -1702,8 +1710,9 @@ int CInput_di8::InitKeyboardLayots()
             // 1745
             DWORD err = GetLastError();
             // 1746: M3D_LOG_ERR in the original
-            LogMsg(CStr("CInput_di8::InitKeyboardLayots error: cannot load default keyboard layout, GetLastError = ") +
-                   CStr((unsigned long)err));
+            LogMsg(
+                CStr("CInput_di8::InitKeyboardLayots error: cannot load default keyboard layout, GetLastError = ") +
+                CStr((unsigned long)err));
         }
 
         // 1750
@@ -1713,8 +1722,7 @@ int CInput_di8::InitKeyboardLayots()
     }
 
     // 1757
-    CStr additionalKbLayotId =
-        KbLayotName2Id(CStr(g_kernel->GetEngineCfg().m_input_additionalKeyboardLayot.GetS()));
+    CStr additionalKbLayotId = KbLayotName2Id(CStr(g_kernel->GetEngineCfg().m_input_additionalKeyboardLayot.GetS()));
     // 1758
     if (!additionalKbLayotId.empty() && additionalKbLayotId != baseKbLayotId)
     {
@@ -1725,8 +1733,9 @@ int CInput_di8::InitKeyboardLayots()
         if (m_hAdditionalLocalKeyboardLayot == 0)
         {
             // 1763: M3D_LOG_INFO in the original
-            LogMsg(CStr("CInput_di8::InitKeyboardLayots error: cannot load keyboard layot ") + additionalKbLayotId +
-                   CStr(" for additional language."));
+            LogMsg(
+                CStr("CInput_di8::InitKeyboardLayots error: cannot load keyboard layot ") + additionalKbLayotId +
+                CStr(" for additional language."));
             // 1764
             res = 0;
         }
@@ -1808,4 +1817,4 @@ namespace m3d
         // 1830
         return new CInput_di8;
     }
-}
+}  // namespace m3d

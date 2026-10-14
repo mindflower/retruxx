@@ -306,7 +306,8 @@ namespace ai
         {
             SYS_ERROR("protoId != INVALID_ID");
         }
-        auto const* proto = static_cast<WanderersGeneratorPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(protoId));
+        auto const* proto =
+            static_cast<WanderersGeneratorPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(protoId));
         if (!proto)
         {
             SYS_ERROR("proto");
@@ -319,7 +320,8 @@ namespace ai
         // RVA 0x831140 - whether any guard is still travelling with the caravan.
         for (Vehicle* vehicle : GetVehicles())
         {
-            if (std::find(m_guardVehiclesIds.begin(), m_guardVehiclesIds.end(), vehicle->GetId()) != m_guardVehiclesIds.end())
+            if (std::find(m_guardVehiclesIds.begin(), m_guardVehiclesIds.end(), vehicle->GetId()) !=
+                m_guardVehiclesIds.end())
             {
                 return true;
             }
@@ -336,7 +338,8 @@ namespace ai
         }
 
         // NOTE: a stale guard team id is dereferenced as a null team.
-        if (m_guardTeamId == -1 || static_cast<Team*>(theObjects->GetEntityByObjId(m_guardTeamId))->GetVehicles().empty())
+        if (m_guardTeamId == -1 ||
+            static_cast<Team*>(theObjects->GetEntityByObjId(m_guardTeamId))->GetVehicles().empty())
         {
             Remove();
         }
@@ -355,7 +358,8 @@ namespace ai
                 return;
             }
 
-            M3D_LOG_ERR(CStr("Error: GE_ENEMY_DESTROYED passed from unknown object: objId = ") + CStr(evn.m_senderObjId));
+            M3D_LOG_ERR(
+                CStr("Error: GE_ENEMY_DESTROYED passed from unknown object: objId = ") + CStr(evn.m_senderObjId));
             Obj* sender = theObjects->GetEntityByObjId(evn.m_senderObjId);
             if (sender)
             {
@@ -396,12 +400,24 @@ namespace ai
         bool const bCreated = m_guardTeamId == -1;
         if (bCreated)
         {
-            m_guardTeamId = theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("guardTeam")), "", -1, -1);
+            m_guardTeamId =
+                theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("guardTeam")), "", -1, -1);
             theProcessManager->PostMessageA(
-                GE_SUBSCRIBE, m_guardTeamId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_ENEMY_DESTROYED)), m3d::AIParam(),
+                GE_SUBSCRIBE,
+                m_guardTeamId,
+                GetId(),
+                0.0f,
+                m3d::AIParam(static_cast<int>(GE_ENEMY_DESTROYED)),
+                m3d::AIParam(),
                 1);
             theProcessManager->PostMessageA(
-                GE_SUBSCRIBE, m_guardTeamId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_ENEMY_LOST)), m3d::AIParam(), 1);
+                GE_SUBSCRIBE,
+                m_guardTeamId,
+                GetId(),
+                0.0f,
+                m3d::AIParam(static_cast<int>(GE_ENEMY_LOST)),
+                m3d::AIParam(),
+                1);
         }
 
         // NOTE: the guard team is used without a type or null check.

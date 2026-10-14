@@ -175,7 +175,8 @@ namespace ai
         return Gun::GetPropertyId(propName);
     }
 
-    void BulletLauncher::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void BulletLauncher::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // RVA 0x746580
         for (auto const& property : m_propertiesMap)

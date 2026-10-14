@@ -42,7 +42,7 @@ namespace m3d
         m3d::rend::BlendMode m_blendMode;
         m3d::Particle* m_next;
         void Step(float dt);
-        Particle(const m3d::Particle&);
+        Particle(m3d::Particle const&);
         Particle();
         ~Particle();
     };
@@ -50,13 +50,20 @@ namespace m3d
     class ParticlesList
     {
     public:
-        ParticlesList(const m3d::ParticlesList&);
+        ParticlesList(m3d::ParticlesList const&);
         ParticlesList();
         ~ParticlesList();
-        void SetMeshEmitterPoints(CMatrix** mat, int numMeshes, void** verts, int* numVerts, retruxx::vector<m3d::rend::VertexType>& VertexTypes, retruxx::vector<unsigned int>& VertexTypeSizes, int numSkinMesh);
+        void SetMeshEmitterPoints(
+            CMatrix** mat,
+            int numMeshes,
+            void** verts,
+            int* numVerts,
+            retruxx::vector<m3d::rend::VertexType>& VertexTypes,
+            retruxx::vector<unsigned int>& VertexTypeSizes,
+            int numSkinMesh);
         void SetMeshEmitterInds(int** inds, int* numinds);
         void SetAutoMeshEmitterPoints(int mode, int numVerts, float radius, CVector point1, CVector point2);
-        void SetCurrentXForm(const CMatrix&);
+        void SetCurrentXForm(CMatrix const&);
         void Step(float dt);
         unsigned int m_maxParticles;
         unsigned int m_numParticles;
@@ -69,8 +76,8 @@ namespace m3d
         bool m_updateCalled;
         CMatrix** m_local;
         void** m_meshEmitterVerts;
-        retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> > m_VertexTypes;
-        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_VertexTypeSizes;
+        retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType>> m_VertexTypes;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int>> m_VertexTypeSizes;
         int** m_meshEmitterInds;
         int* m_numMeshEmitterVerts;
         int* m_numMeshEmitterInds;
@@ -126,36 +133,47 @@ namespace m3d
         Force m_x0[3];
         CoordinatesSystemType m_x0Cst;
         Force m_pos[3];
-        retruxx::vector<m3d::Attr*, retruxx::allocator<m3d::Attr*> > m_Attractors;
+        retruxx::vector<m3d::Attr*, retruxx::allocator<m3d::Attr*>> m_Attractors;
         float m_parentDependency;
         Aabb m_bBox;
         int m_numvert;
         bool m_backflag;
-        static m3d::ParticleSystem* __fastcall New(const CStr& ClassName);
-        static m3d::ParticleSystem* __fastcall Factory(const PSProps& psprops, const retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos);
-        static m3d::ParticleSystem* __fastcall Factory(const char* fileName);
+        static m3d::ParticleSystem* __fastcall New(CStr const& ClassName);
+        static m3d::ParticleSystem* __fastcall Factory(
+            PSProps const& psprops,
+            retruxx::vector<AttrProps, retruxx::allocator<AttrProps>> const& AttrProtos);
+        static m3d::ParticleSystem* __fastcall Factory(char const* fileName);
         static m3d::ParticleSystem* __fastcall CreateCopy(m3d::ParticleSystem& CopyPS);
         static void __fastcall SetInterpolateColorsOnLoad(bool c);
-        ParticleSystem(const m3d::ParticleSystem&);
+        ParticleSystem(m3d::ParticleSystem const&);
         ParticleSystem();
-        virtual  ~ParticleSystem();
+        virtual ~ParticleSystem();
         virtual int Update(m3d::ParticlesList* parts, float lastFrameSecs, float fader);
-        virtual int Render(const CMatrix* local, m3d::ParticlesList* parts);
+        virtual int Render(CMatrix const* local, m3d::ParticlesList* parts);
         virtual void Reset(m3d::ParticlesList* parts);
 
-        using CVectorVector = retruxx::vector<CVector, retruxx::allocator<CVector> >;
+        using CVectorVector = retruxx::vector<CVector, retruxx::allocator<CVector>>;
 
     public:
-        void AddParticle(m3d::ParticlesList* parts, const CVector* pos);
-        void AddParticles(m3d::ParticlesList* parts, const retruxx::vector<CVector, retruxx::allocator<CVector> >* newPoses);
-        void MoveParticles(m3d::ParticlesList* parts, const retruxx::vector<CVector, retruxx::allocator<CVector> >* newPoses);
-        virtual m3d::cmn::XmlNode* Write(m3d::fs::FileStream& out, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* root, CStr name);
+        void AddParticle(m3d::ParticlesList* parts, CVector const* pos);
+        void AddParticles(
+            m3d::ParticlesList* parts,
+            retruxx::vector<CVector, retruxx::allocator<CVector>> const* newPoses);
+        void MoveParticles(
+            m3d::ParticlesList* parts,
+            retruxx::vector<CVector, retruxx::allocator<CVector>> const* newPoses);
+        virtual m3d::cmn::XmlNode*
+            Write(m3d::fs::FileStream& out, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* root, CStr name);
         virtual int Read(m3d::fs::FileStream& in, m3d::cmn::XmlFile* m_file, m3d::cmn::XmlNode* psroot);
         int ReadVolumeParams(ref_ptr<m3d::cmn::XmlNode>& force);
         int ReadRenderParams(ref_ptr<m3d::cmn::XmlNode>& vis);
         int ReadMeshParams(ref_ptr<m3d::cmn::XmlNode>& mesh);
-        virtual void ReadFromProtos(const PSProps& psprops, const retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos);
-        virtual void WriteToProtos(PSProps& psprops, retruxx::vector<AttrProps, retruxx::allocator<AttrProps> >& AttrProtos);
+        virtual void ReadFromProtos(
+            PSProps const& psprops,
+            retruxx::vector<AttrProps, retruxx::allocator<AttrProps>> const& AttrProtos);
+        virtual void WriteToProtos(
+            PSProps& psprops,
+            retruxx::vector<AttrProps, retruxx::allocator<AttrProps>>& AttrProtos);
         void InterpolateColors();
         void SetParticleColor(m3d::Particle* pParticle, float fader);
         void setParticleSize(m3d::Particle* p);
@@ -169,7 +187,7 @@ namespace m3d
         void SetPsSize(float time, float value);
         void SetPsColor(float time, unsigned int value);
         void SetPsMesh(float radius, int points);
-        void SetTextureName(const CStr& name);
+        void SetTextureName(CStr const& name);
         // Not in the original: the shader lookup is shared by ReadFromProtos and
         // ReadRenderParams, which both inline the same switch in the shipped build.
         void CreateShaderForType(PsShaderType type);
@@ -184,7 +202,7 @@ namespace m3d
         float GetPsSize(float) const;
         int GetTimeDiscretion() const;
         void GetPsMesh(float&, int&) const;
-        const CStr& GetTextureName() const;
+        CStr const& GetTextureName() const;
         virtual float GetBoundRadius() const;
         virtual bool IsLocal();
     };
@@ -192,7 +210,7 @@ namespace m3d
     class StripOnePS : public ParticleSystem
     {
     public:
-        virtual int Render(CMatrix const *,ParticlesList *);
+        virtual int Render(CMatrix const*, ParticlesList*);
         StripOnePS();
         static void ReleaseIb();
         virtual bool IsLocal();
@@ -338,4 +356,4 @@ namespace m3d
     private:
         static rend::IbPoolField m_IbPoolField;
     };
-}
+}  // namespace m3d

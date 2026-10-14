@@ -56,4 +56,4 @@ namespace m3d
         virtual std::vector<std::vector<int>> GetKeysForImpulse(int, int) = 0;
         virtual int GetImpulseForKeys(std::vector<int>, int) = 0;
     };
-}
+}  // namespace m3d

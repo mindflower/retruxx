@@ -244,7 +244,11 @@ namespace m3d
 
         protected:
             int CallParentNotify(unsigned int msg, m3d::AIParam const& data, bool urgent);
-            int ReflectChildNotifyToParent(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data);
+            int ReflectChildNotifyToParent(
+                m3d::ui::Wnd* from,
+                unsigned int id,
+                unsigned int msg,
+                m3d::AIParam const& data);
             void DrawNonClient(m3d::ui::DrawInfo const& di, unsigned int clr);
             virtual void OnNcPaint(m3d::ui::DrawInfo const& di, unsigned int clr);
             virtual void DrawWndText(m3d::ui::DrawInfo const& di);
@@ -264,7 +268,8 @@ namespace m3d
             virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state);
             virtual int OnLoosingFocus();
             virtual int OnObtainingFocus();
-            virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data);
+            virtual int
+                OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data);
             virtual int OnActivate(bool on);
             m3d::ui::Wnd* GetNextActivatableChild(m3d::ui::Wnd* first, int back);
 
@@ -309,7 +314,8 @@ namespace m3d
             int m_defFont = 0;
 
         public:
-            virtual void SetDefaultFont(CStr const& name, float height, m3d::ui::FontType type, m3d::ui::FontParams params);
+            virtual void
+                SetDefaultFont(CStr const& name, float height, m3d::ui::FontType type, m3d::ui::FontParams params);
             virtual void SetDefaultFont(int uiFont);
             int GetDefaultFont() const;
             unsigned int GetTextColor() const;

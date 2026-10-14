@@ -50,20 +50,20 @@ namespace ai
         int m_blastWavePrototypeId;
         ai::FiringTypes m_firingType;
 
-        using TMatrixVector = retruxx::vector<CMatrix, retruxx::allocator<CMatrix> >;
+        using TMatrixVector = retruxx::vector<CMatrix, retruxx::allocator<CMatrix>>;
 
     public:
-        retruxx::vector<CMatrix, retruxx::allocator<CMatrix> > m_fireLpMatrices;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        retruxx::vector<CMatrix, retruxx::allocator<CMatrix>> m_fireLpMatrices;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        void CreateBlastWave(const CVector& pos, int gunId) const;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        void CreateBlastWave(CVector const& pos, int gunId) const;
         short GetExplosionType() const;
         int GetDecalId() const;
         virtual float GetDamageForOneShell() const;
-        static ai::FiringTypes __fastcall Str2FiringType(const CStr& firingTypeStr);
+        static ai::FiringTypes __fastcall Str2FiringType(CStr const& firingTypeStr);
         static CStr __fastcall FiringType2Str(ai::FiringTypes firingType);
-        static ai::DamageType __fastcall Str2DamageType(const CStr& damageTypeStr);
+        static ai::DamageType __fastcall Str2DamageType(CStr const& damageTypeStr);
         static CStr __fastcall DamageType2Str(ai::DamageType damageType);
 
     private:
@@ -76,11 +76,11 @@ namespace ai
     class Gun : public ai::VehiclePart
     {
     protected:
-        virtual  ~Gun() override = 0;
+        virtual ~Gun() override = 0;
 
     protected:
-        Gun(const ai::GunPrototypeInfo& prototypeInfo);
-        Gun(const ai::Gun&);
+        Gun(ai::GunPrototypeInfo const& prototypeInfo);
+        Gun(ai::Gun const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -88,23 +88,32 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGun;
-        virtual const ai::GunPrototypeInfo* GetPrototypeInfo() const override;
-        virtual int OnEvent(const ai::Event& evn) override;
+        virtual ai::GunPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
@@ -121,8 +130,8 @@ namespace ai
         };
 
     public:
-        virtual void LookAtPoint(const CVector& lookAt, float elapsedTime);
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const;
+        virtual void LookAtPoint(CVector const& lookAt, float elapsedTime);
+        virtual bool isLookAtPoint(CVector const& lookAt, float eps) const;
         bool CanShotToTarget(int targetId) const;
         void SetTargetId(int targetObjId);
         virtual bool Fire(bool enable);
@@ -144,13 +153,22 @@ namespace ai
         float GetRechargingTime() const;
         float GetCurrentRechargingTime() const;
         CMatrix GetMatrixForShot(unsigned int barrelIndex) const;
-        virtual float EstimateDamage(const CVector& pos, const retruxx::vector<int, retruxx::allocator<int> >& exceptions) const;
+        virtual float EstimateDamage(
+            CVector const& pos,
+            retruxx::vector<int, retruxx::allocator<int>> const& exceptions) const;
         virtual float EstimateDamage() const;
-        virtual bool PointIsReachable(const CVector& pos, retruxx::vector<int, retruxx::allocator<int> > exceptions) const;
-        virtual bool PointIsReachableFromPosition(const CVector& newPosition, const CVector& target, retruxx::vector<int, retruxx::allocator<int> > exceptions) const;
-        virtual float EstimateDamageFromPosition(const CVector& position, const CVector& pos, const retruxx::vector<int, retruxx::allocator<int> >& exceptions);
+        virtual bool PointIsReachable(CVector const& pos, retruxx::vector<int, retruxx::allocator<int>> exceptions)
+            const;
+        virtual bool PointIsReachableFromPosition(
+            CVector const& newPosition,
+            CVector const& target,
+            retruxx::vector<int, retruxx::allocator<int>> exceptions) const;
+        virtual float EstimateDamageFromPosition(
+            CVector const& position,
+            CVector const& pos,
+            retruxx::vector<int, retruxx::allocator<int>> const& exceptions);
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SetInvisible() override;
         int GetShellPrototypeId() const;
@@ -162,7 +180,7 @@ namespace ai
         float GetFiringRange() const;
         float GetInitialHorizAngle() const;
         void SetInitialHorizAngle(float angle);
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override;
+        virtual unsigned int GetPrice(ai::IPriceCoeffProvider const* priceCoeffProvider) const override;
         void Recharge();
         virtual bool CanLookAtTarget() const;
         bool bIs360DegreesHoriz() const;
@@ -180,7 +198,7 @@ namespace ai
         CVector _CalcPosForNextShot() const;
         CVector _CalcRoughPosForNextShot() const;
         CVector _CalcDirForNextShot() const;
-        bool _IsDirVerticallyReachable(const CVector& dir) const;
+        bool _IsDirVerticallyReachable(CVector const& dir) const;
         virtual void DoRecoil();
         virtual void _InternalPostLoad() override;
         virtual void _InternalCreateVisualPart() override;
@@ -210,12 +228,12 @@ namespace ai
         float m_initialHorizAngle;
         CMatrix _CalcMatrixForNextShot() const;
         void _GetCurrentOffsetAngles(float& alpha, float& beta) const;
-        void _GetOffsetAngles(const CVector& lookAt, float elapsedTime, float& alpha, float& beta);
+        void _GetOffsetAngles(CVector const& lookAt, float elapsedTime, float& alpha, float& beta);
         unsigned int getShellsForRecharge() const;
         bool _bIsRapidFiring() const;
         void _UpdateNodeFiringAction();
         void BeginReCharge();
         void _CreateBarrelNode();
-        void _OnCinematic(const ai::Event& evn);
+        void _OnCinematic(ai::Event const& evn);
     };
-}
+}  // namespace ai

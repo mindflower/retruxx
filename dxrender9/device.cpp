@@ -29,175 +29,174 @@ namespace
     {
         g_kernel->SysError(CStr(file) + CStr(":") + CStr(line), CStr(assertion));
     }
-}
-
+}  // namespace
 
 // The m3d -> Direct3D state tables of the original device.cpp (file statics, emitted in this
 // order in the original binary; they precede the stack functions that index them).
 
 // orig 0x8522a0 device.cpp (file static)
-static D3DCULL m3dCullToD3dCull[3] = { D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW };
+static D3DCULL m3dCullToD3dCull[3] = {D3DCULL_NONE, D3DCULL_CW, D3DCULL_CCW};
 
 // orig 0x8522ac device.cpp (file static)
 static D3DCMPFUNC m3dCmpToD3dCmp[8] = {
-    D3DCMP_NEVER,        // M3DCMP_NEVER
-    D3DCMP_LESS,         // M3DCMP_LESS
-    D3DCMP_EQUAL,        // M3DCMP_EQUAL
-    D3DCMP_LESSEQUAL,    // M3DCMP_LESSEQUAL
-    D3DCMP_GREATER,      // M3DCMP_GREATER
-    D3DCMP_NOTEQUAL,     // M3DCMP_NOTEQUAL
-    D3DCMP_GREATEREQUAL, // M3DCMP_GREATEREQUAL
-    D3DCMP_ALWAYS,       // M3DCMP_ALWAYS
+    D3DCMP_NEVER,         // M3DCMP_NEVER
+    D3DCMP_LESS,          // M3DCMP_LESS
+    D3DCMP_EQUAL,         // M3DCMP_EQUAL
+    D3DCMP_LESSEQUAL,     // M3DCMP_LESSEQUAL
+    D3DCMP_GREATER,       // M3DCMP_GREATER
+    D3DCMP_NOTEQUAL,      // M3DCMP_NOTEQUAL
+    D3DCMP_GREATEREQUAL,  // M3DCMP_GREATEREQUAL
+    D3DCMP_ALWAYS,        // M3DCMP_ALWAYS
 };
 
 // orig 0x8522cc device.cpp (file static)
-static D3DFILLMODE m3dFmToD3dFm[3] = { D3DFILL_POINT, D3DFILL_WIREFRAME, D3DFILL_SOLID };
+static D3DFILLMODE m3dFmToD3dFm[3] = {D3DFILL_POINT, D3DFILL_WIREFRAME, D3DFILL_SOLID};
 
 // orig 0x8522d8 device.cpp (file static)
-static D3DFOGMODE m3dFogMToD3dFogM[4] = { D3DFOG_NONE, D3DFOG_EXP, D3DFOG_EXP2, D3DFOG_LINEAR };
+static D3DFOGMODE m3dFogMToD3dFogM[4] = {D3DFOG_NONE, D3DFOG_EXP, D3DFOG_EXP2, D3DFOG_LINEAR};
 
 // orig 0x8522e8 device.cpp (file static)
-static D3DSHADEMODE m3dSmToD3dSm[2] = { D3DSHADE_FLAT, D3DSHADE_GOURAUD };
+static D3DSHADEMODE m3dSmToD3dSm[2] = {D3DSHADE_FLAT, D3DSHADE_GOURAUD};
 
 // orig 0x8522f0 device.cpp (file static) -- {src, dst} per BlendMode (the PDB prints the dims
 // inner-first as _D3DBLEND[2][124]; SetBlend reads srcDst[c][0] / srcDst[c][1])
 static D3DBLEND srcDst[124][2] = {
-    { D3DBLEND_ZERO, D3DBLEND_ZERO },  // BM_NONE = 0
-    { D3DBLEND_ONE, D3DBLEND_ONE },  // BM_COLOR = 1
-    { D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA },  // BM_ALPHA = 2
-    { D3DBLEND_ZERO, D3DBLEND_ZERO },  // BM_0_0 = 3
-    { D3DBLEND_ZERO, D3DBLEND_ONE },  // BM_0_1 = 4
-    { D3DBLEND_ZERO, D3DBLEND_SRCCOLOR },  // BM_0_SCOLOR = 5
-    { D3DBLEND_ZERO, D3DBLEND_INVSRCCOLOR },  // BM_0_ISCOLOR = 6
-    { D3DBLEND_ZERO, D3DBLEND_SRCALPHA },  // BM_0_SALPHA = 7
-    { D3DBLEND_ZERO, D3DBLEND_INVSRCALPHA },  // BM_0_ISALPHA = 8
-    { D3DBLEND_ZERO, D3DBLEND_DESTALPHA },  // BM_0_DALPHA = 9
-    { D3DBLEND_ZERO, D3DBLEND_INVDESTALPHA },  // BM_0_IDALPHA = 10
-    { D3DBLEND_ZERO, D3DBLEND_DESTCOLOR },  // BM_0_DCOLOR = 11
-    { D3DBLEND_ZERO, D3DBLEND_INVDESTCOLOR },  // BM_0_IDCOLOR = 12
-    { D3DBLEND_ZERO, D3DBLEND_SRCALPHASAT },  // BM_0_SALPHASAT = 13
-    { D3DBLEND_ONE, D3DBLEND_ZERO },  // BM_1_0 = 14
-    { D3DBLEND_ONE, D3DBLEND_ONE },  // BM_1_1 = 15
-    { D3DBLEND_ONE, D3DBLEND_SRCCOLOR },  // BM_1_SCOLOR = 16
-    { D3DBLEND_ONE, D3DBLEND_INVSRCCOLOR },  // BM_1_ISCOLOR = 17
-    { D3DBLEND_ONE, D3DBLEND_SRCALPHA },  // BM_1_SALPHA = 18
-    { D3DBLEND_ONE, D3DBLEND_INVSRCALPHA },  // BM_1_ISALPHA = 19
-    { D3DBLEND_ONE, D3DBLEND_DESTALPHA },  // BM_1_DALPHA = 20
-    { D3DBLEND_ONE, D3DBLEND_INVDESTALPHA },  // BM_1_IDALPHA = 21
-    { D3DBLEND_ONE, D3DBLEND_DESTCOLOR },  // BM_1_DCOLOR = 22
-    { D3DBLEND_ONE, D3DBLEND_INVDESTCOLOR },  // BM_1_IDCOLOR = 23
-    { D3DBLEND_ONE, D3DBLEND_SRCALPHASAT },  // BM_1_SALPHASAT = 24
-    { D3DBLEND_SRCCOLOR, D3DBLEND_ZERO },  // BM_SCOLOR_0 = 25
-    { D3DBLEND_SRCCOLOR, D3DBLEND_ONE },  // BM_SCOLOR_1 = 26
-    { D3DBLEND_SRCCOLOR, D3DBLEND_SRCCOLOR },  // BM_SCOLOR_SCOLOR = 27
-    { D3DBLEND_SRCCOLOR, D3DBLEND_INVSRCCOLOR },  // BM_SCOLOR_ISCOLOR = 28
-    { D3DBLEND_SRCCOLOR, D3DBLEND_SRCALPHA },  // BM_SCOLOR_SALPHA = 29
-    { D3DBLEND_SRCCOLOR, D3DBLEND_INVSRCALPHA },  // BM_SCOLOR_ISALPHA = 30
-    { D3DBLEND_SRCCOLOR, D3DBLEND_DESTALPHA },  // BM_SCOLOR_DALPHA = 31
-    { D3DBLEND_SRCCOLOR, D3DBLEND_INVDESTALPHA },  // BM_SCOLOR_IDALPHA = 32
-    { D3DBLEND_SRCCOLOR, D3DBLEND_DESTCOLOR },  // BM_SCOLOR_DCOLOR = 33
-    { D3DBLEND_SRCCOLOR, D3DBLEND_INVDESTCOLOR },  // BM_SCOLOR_IDCOLOR = 34
-    { D3DBLEND_SRCCOLOR, D3DBLEND_SRCALPHASAT },  // BM_SCOLOR_SALPHASAT = 35
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_ZERO },  // BM_ISCOLOR_0 = 36
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_ONE },  // BM_ISCOLOR_1 = 37
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_SRCCOLOR },  // BM_ISCOLOR_SCOLOR = 38
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_INVSRCCOLOR },  // BM_ISCOLOR_ISCOLOR = 39
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_SRCALPHA },  // BM_ISCOLOR_SALPHA = 40
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_INVSRCALPHA },  // BM_ISCOLOR_ISALPHA = 41
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_DESTALPHA },  // BM_ISCOLOR_DALPHA = 42
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_INVDESTALPHA },  // BM_ISCOLOR_IDALPHA = 43
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_DESTCOLOR },  // BM_ISCOLOR_DCOLOR = 44
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_INVDESTCOLOR },  // BM_ISCOLOR_IDCOLOR = 45
-    { D3DBLEND_INVSRCCOLOR, D3DBLEND_SRCALPHASAT },  // BM_ISCOLOR_SALPHASAT = 46
-    { D3DBLEND_SRCALPHA, D3DBLEND_ZERO },  // BM_SALPHA_0 = 47
-    { D3DBLEND_SRCALPHA, D3DBLEND_ONE },  // BM_SALPHA_1 = 48
-    { D3DBLEND_SRCALPHA, D3DBLEND_SRCCOLOR },  // BM_SALPHA_SCOLOR = 49
-    { D3DBLEND_SRCALPHA, D3DBLEND_INVSRCCOLOR },  // BM_SALPHA_ISCOLOR = 50
-    { D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHA },  // BM_SALPHA_SALPHA = 51
-    { D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA },  // BM_SALPHA_ISALPHA = 52
-    { D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA },  // BM_SALPHA_DALPHA = 53
-    { D3DBLEND_SRCALPHA, D3DBLEND_INVDESTALPHA },  // BM_SALPHA_IDALPHA = 54
-    { D3DBLEND_SRCALPHA, D3DBLEND_DESTCOLOR },  // BM_SALPHA_DCOLOR = 55
-    { D3DBLEND_SRCALPHA, D3DBLEND_INVDESTCOLOR },  // BM_SALPHA_IDCOLOR = 56
-    { D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHASAT },  // BM_SALPHA_SALPHASAT = 57
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_ZERO },  // BM_ISALPHA_0 = 58
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_ONE },  // BM_ISALPHA_1 = 59
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_SRCCOLOR },  // BM_ISALPHA_SCOLOR = 60
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR },  // BM_ISALPHA_ISCOLOR = 61
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_SRCALPHA },  // BM_ISALPHA_SALPHA = 62
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCALPHA },  // BM_ISALPHA_ISALPHA = 63
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_DESTALPHA },  // BM_ISALPHA_DALPHA = 64
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_INVDESTALPHA },  // BM_ISALPHA_IDALPHA = 65
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_DESTCOLOR },  // BM_ISALPHA_DCOLOR = 66
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_INVDESTCOLOR },  // BM_ISALPHA_IDCOLOR = 67
-    { D3DBLEND_INVSRCALPHA, D3DBLEND_SRCALPHASAT },  // BM_ISALPHA_SALPHASAT = 68
-    { D3DBLEND_DESTALPHA, D3DBLEND_ZERO },  // BM_DALPHA_0 = 69
-    { D3DBLEND_DESTALPHA, D3DBLEND_ONE },  // BM_DALPHA_1 = 70
-    { D3DBLEND_DESTALPHA, D3DBLEND_SRCCOLOR },  // BM_DALPHA_SCOLOR = 71
-    { D3DBLEND_DESTALPHA, D3DBLEND_INVSRCCOLOR },  // BM_DALPHA_ISCOLOR = 72
-    { D3DBLEND_DESTALPHA, D3DBLEND_SRCALPHA },  // BM_DALPHA_SALPHA = 73
-    { D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA },  // BM_DALPHA_ISALPHA = 74
-    { D3DBLEND_DESTALPHA, D3DBLEND_DESTALPHA },  // BM_DALPHA_DALPHA = 75
-    { D3DBLEND_DESTALPHA, D3DBLEND_INVDESTALPHA },  // BM_DALPHA_IDALPHA = 76
-    { D3DBLEND_DESTALPHA, D3DBLEND_DESTCOLOR },  // BM_DALPHA_DCOLOR = 77
-    { D3DBLEND_DESTALPHA, D3DBLEND_INVDESTCOLOR },  // BM_DALPHA_IDCOLOR = 78
-    { D3DBLEND_DESTALPHA, D3DBLEND_SRCALPHASAT },  // BM_DALPHA_SALPHASAT = 79
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_ZERO },  // BM_IDALPHA_0 = 80
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_ONE },  // BM_IDALPHA_1 = 81
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_SRCCOLOR },  // BM_IDALPHA_SCOLOR = 82
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_INVSRCCOLOR },  // BM_IDALPHA_ISCOLOR = 83
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_SRCALPHA },  // BM_IDALPHA_SALPHA = 84
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_INVSRCALPHA },  // BM_IDALPHA_ISALPHA = 85
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_DESTALPHA },  // BM_IDALPHA_DALPHA = 86
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_INVDESTALPHA },  // BM_IDALPHA_IDALPHA = 87
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_DESTCOLOR },  // BM_IDALPHA_DCOLOR = 88
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_INVDESTCOLOR },  // BM_IDALPHA_IDCOLOR = 89
-    { D3DBLEND_INVDESTALPHA, D3DBLEND_SRCALPHASAT },  // BM_IDALPHA_SALPHASAT = 90
-    { D3DBLEND_DESTCOLOR, D3DBLEND_ZERO },  // BM_DCOLOR_0 = 91
-    { D3DBLEND_DESTCOLOR, D3DBLEND_ONE },  // BM_DCOLOR_1 = 92
-    { D3DBLEND_DESTCOLOR, D3DBLEND_SRCCOLOR },  // BM_DCOLOR_SCOLOR = 93
-    { D3DBLEND_DESTCOLOR, D3DBLEND_INVSRCCOLOR },  // BM_DCOLOR_ISCOLOR = 94
-    { D3DBLEND_DESTCOLOR, D3DBLEND_SRCALPHA },  // BM_DCOLOR_SALPHA = 95
-    { D3DBLEND_DESTCOLOR, D3DBLEND_INVSRCALPHA },  // BM_DCOLOR_ISALPHA = 96
-    { D3DBLEND_DESTCOLOR, D3DBLEND_DESTALPHA },  // BM_DCOLOR_DALPHA = 97
-    { D3DBLEND_DESTCOLOR, D3DBLEND_INVDESTALPHA },  // BM_DCOLOR_IDALPHA = 98
-    { D3DBLEND_DESTCOLOR, D3DBLEND_DESTCOLOR },  // BM_DCOLOR_DCOLOR = 99
-    { D3DBLEND_DESTCOLOR, D3DBLEND_INVDESTCOLOR },  // BM_DCOLOR_IDCOLOR = 100
-    { D3DBLEND_DESTCOLOR, D3DBLEND_SRCALPHASAT },  // BM_DCOLOR_SALPHASAT = 101
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_ZERO },  // BM_IDCOLOR_0 = 102
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_ONE },  // BM_IDCOLOR_1 = 103
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_SRCCOLOR },  // BM_IDCOLOR_SCOLOR = 104
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_INVSRCCOLOR },  // BM_IDCOLOR_ISCOLOR = 105
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_SRCALPHA },  // BM_IDCOLOR_SALPHA = 106
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_INVSRCALPHA },  // BM_IDCOLOR_ISALPHA = 107
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_DESTALPHA },  // BM_IDCOLOR_DALPHA = 108
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_INVDESTALPHA },  // BM_IDCOLOR_IDALPHA = 109
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_DESTCOLOR },  // BM_IDCOLOR_DCOLOR = 110
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_INVDESTCOLOR },  // BM_IDCOLOR_IDCOLOR = 111
-    { D3DBLEND_INVDESTCOLOR, D3DBLEND_SRCALPHASAT },  // BM_IDCOLOR_SALPHASAT = 112
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_ZERO },  // BM_SALPHASAT_0 = 113
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_ONE },  // BM_SALPHASAT_1 = 114
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_SRCCOLOR },  // BM_SALPHASAT_SCOLOR = 115
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_INVSRCCOLOR },  // BM_SALPHASAT_ISCOLOR = 116
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_SRCALPHA },  // BM_SALPHASAT_SALPHA = 117
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_INVSRCALPHA },  // BM_SALPHASAT_ISALPHA = 118
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_DESTALPHA },  // BM_SALPHASAT_DALPHA = 119
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_INVDESTALPHA },  // BM_SALPHASAT_IDALPHA = 120
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_DESTCOLOR },  // BM_SALPHASAT_DCOLOR = 121
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_INVDESTCOLOR },  // BM_SALPHASAT_IDCOLOR = 122
-    { D3DBLEND_SRCALPHASAT, D3DBLEND_SRCALPHASAT },  // BM_SALPHASAT_SALPHASAT = 123
+    {D3DBLEND_ZERO, D3DBLEND_ZERO},                  // BM_NONE = 0
+    {D3DBLEND_ONE, D3DBLEND_ONE},                    // BM_COLOR = 1
+    {D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA},       // BM_ALPHA = 2
+    {D3DBLEND_ZERO, D3DBLEND_ZERO},                  // BM_0_0 = 3
+    {D3DBLEND_ZERO, D3DBLEND_ONE},                   // BM_0_1 = 4
+    {D3DBLEND_ZERO, D3DBLEND_SRCCOLOR},              // BM_0_SCOLOR = 5
+    {D3DBLEND_ZERO, D3DBLEND_INVSRCCOLOR},           // BM_0_ISCOLOR = 6
+    {D3DBLEND_ZERO, D3DBLEND_SRCALPHA},              // BM_0_SALPHA = 7
+    {D3DBLEND_ZERO, D3DBLEND_INVSRCALPHA},           // BM_0_ISALPHA = 8
+    {D3DBLEND_ZERO, D3DBLEND_DESTALPHA},             // BM_0_DALPHA = 9
+    {D3DBLEND_ZERO, D3DBLEND_INVDESTALPHA},          // BM_0_IDALPHA = 10
+    {D3DBLEND_ZERO, D3DBLEND_DESTCOLOR},             // BM_0_DCOLOR = 11
+    {D3DBLEND_ZERO, D3DBLEND_INVDESTCOLOR},          // BM_0_IDCOLOR = 12
+    {D3DBLEND_ZERO, D3DBLEND_SRCALPHASAT},           // BM_0_SALPHASAT = 13
+    {D3DBLEND_ONE, D3DBLEND_ZERO},                   // BM_1_0 = 14
+    {D3DBLEND_ONE, D3DBLEND_ONE},                    // BM_1_1 = 15
+    {D3DBLEND_ONE, D3DBLEND_SRCCOLOR},               // BM_1_SCOLOR = 16
+    {D3DBLEND_ONE, D3DBLEND_INVSRCCOLOR},            // BM_1_ISCOLOR = 17
+    {D3DBLEND_ONE, D3DBLEND_SRCALPHA},               // BM_1_SALPHA = 18
+    {D3DBLEND_ONE, D3DBLEND_INVSRCALPHA},            // BM_1_ISALPHA = 19
+    {D3DBLEND_ONE, D3DBLEND_DESTALPHA},              // BM_1_DALPHA = 20
+    {D3DBLEND_ONE, D3DBLEND_INVDESTALPHA},           // BM_1_IDALPHA = 21
+    {D3DBLEND_ONE, D3DBLEND_DESTCOLOR},              // BM_1_DCOLOR = 22
+    {D3DBLEND_ONE, D3DBLEND_INVDESTCOLOR},           // BM_1_IDCOLOR = 23
+    {D3DBLEND_ONE, D3DBLEND_SRCALPHASAT},            // BM_1_SALPHASAT = 24
+    {D3DBLEND_SRCCOLOR, D3DBLEND_ZERO},              // BM_SCOLOR_0 = 25
+    {D3DBLEND_SRCCOLOR, D3DBLEND_ONE},               // BM_SCOLOR_1 = 26
+    {D3DBLEND_SRCCOLOR, D3DBLEND_SRCCOLOR},          // BM_SCOLOR_SCOLOR = 27
+    {D3DBLEND_SRCCOLOR, D3DBLEND_INVSRCCOLOR},       // BM_SCOLOR_ISCOLOR = 28
+    {D3DBLEND_SRCCOLOR, D3DBLEND_SRCALPHA},          // BM_SCOLOR_SALPHA = 29
+    {D3DBLEND_SRCCOLOR, D3DBLEND_INVSRCALPHA},       // BM_SCOLOR_ISALPHA = 30
+    {D3DBLEND_SRCCOLOR, D3DBLEND_DESTALPHA},         // BM_SCOLOR_DALPHA = 31
+    {D3DBLEND_SRCCOLOR, D3DBLEND_INVDESTALPHA},      // BM_SCOLOR_IDALPHA = 32
+    {D3DBLEND_SRCCOLOR, D3DBLEND_DESTCOLOR},         // BM_SCOLOR_DCOLOR = 33
+    {D3DBLEND_SRCCOLOR, D3DBLEND_INVDESTCOLOR},      // BM_SCOLOR_IDCOLOR = 34
+    {D3DBLEND_SRCCOLOR, D3DBLEND_SRCALPHASAT},       // BM_SCOLOR_SALPHASAT = 35
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_ZERO},           // BM_ISCOLOR_0 = 36
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_ONE},            // BM_ISCOLOR_1 = 37
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_SRCCOLOR},       // BM_ISCOLOR_SCOLOR = 38
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_INVSRCCOLOR},    // BM_ISCOLOR_ISCOLOR = 39
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_SRCALPHA},       // BM_ISCOLOR_SALPHA = 40
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_INVSRCALPHA},    // BM_ISCOLOR_ISALPHA = 41
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_DESTALPHA},      // BM_ISCOLOR_DALPHA = 42
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_INVDESTALPHA},   // BM_ISCOLOR_IDALPHA = 43
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_DESTCOLOR},      // BM_ISCOLOR_DCOLOR = 44
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_INVDESTCOLOR},   // BM_ISCOLOR_IDCOLOR = 45
+    {D3DBLEND_INVSRCCOLOR, D3DBLEND_SRCALPHASAT},    // BM_ISCOLOR_SALPHASAT = 46
+    {D3DBLEND_SRCALPHA, D3DBLEND_ZERO},              // BM_SALPHA_0 = 47
+    {D3DBLEND_SRCALPHA, D3DBLEND_ONE},               // BM_SALPHA_1 = 48
+    {D3DBLEND_SRCALPHA, D3DBLEND_SRCCOLOR},          // BM_SALPHA_SCOLOR = 49
+    {D3DBLEND_SRCALPHA, D3DBLEND_INVSRCCOLOR},       // BM_SALPHA_ISCOLOR = 50
+    {D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHA},          // BM_SALPHA_SALPHA = 51
+    {D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA},       // BM_SALPHA_ISALPHA = 52
+    {D3DBLEND_SRCALPHA, D3DBLEND_DESTALPHA},         // BM_SALPHA_DALPHA = 53
+    {D3DBLEND_SRCALPHA, D3DBLEND_INVDESTALPHA},      // BM_SALPHA_IDALPHA = 54
+    {D3DBLEND_SRCALPHA, D3DBLEND_DESTCOLOR},         // BM_SALPHA_DCOLOR = 55
+    {D3DBLEND_SRCALPHA, D3DBLEND_INVDESTCOLOR},      // BM_SALPHA_IDCOLOR = 56
+    {D3DBLEND_SRCALPHA, D3DBLEND_SRCALPHASAT},       // BM_SALPHA_SALPHASAT = 57
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_ZERO},           // BM_ISALPHA_0 = 58
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_ONE},            // BM_ISALPHA_1 = 59
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_SRCCOLOR},       // BM_ISALPHA_SCOLOR = 60
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCCOLOR},    // BM_ISALPHA_ISCOLOR = 61
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_SRCALPHA},       // BM_ISALPHA_SALPHA = 62
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_INVSRCALPHA},    // BM_ISALPHA_ISALPHA = 63
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_DESTALPHA},      // BM_ISALPHA_DALPHA = 64
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_INVDESTALPHA},   // BM_ISALPHA_IDALPHA = 65
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_DESTCOLOR},      // BM_ISALPHA_DCOLOR = 66
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_INVDESTCOLOR},   // BM_ISALPHA_IDCOLOR = 67
+    {D3DBLEND_INVSRCALPHA, D3DBLEND_SRCALPHASAT},    // BM_ISALPHA_SALPHASAT = 68
+    {D3DBLEND_DESTALPHA, D3DBLEND_ZERO},             // BM_DALPHA_0 = 69
+    {D3DBLEND_DESTALPHA, D3DBLEND_ONE},              // BM_DALPHA_1 = 70
+    {D3DBLEND_DESTALPHA, D3DBLEND_SRCCOLOR},         // BM_DALPHA_SCOLOR = 71
+    {D3DBLEND_DESTALPHA, D3DBLEND_INVSRCCOLOR},      // BM_DALPHA_ISCOLOR = 72
+    {D3DBLEND_DESTALPHA, D3DBLEND_SRCALPHA},         // BM_DALPHA_SALPHA = 73
+    {D3DBLEND_DESTALPHA, D3DBLEND_INVSRCALPHA},      // BM_DALPHA_ISALPHA = 74
+    {D3DBLEND_DESTALPHA, D3DBLEND_DESTALPHA},        // BM_DALPHA_DALPHA = 75
+    {D3DBLEND_DESTALPHA, D3DBLEND_INVDESTALPHA},     // BM_DALPHA_IDALPHA = 76
+    {D3DBLEND_DESTALPHA, D3DBLEND_DESTCOLOR},        // BM_DALPHA_DCOLOR = 77
+    {D3DBLEND_DESTALPHA, D3DBLEND_INVDESTCOLOR},     // BM_DALPHA_IDCOLOR = 78
+    {D3DBLEND_DESTALPHA, D3DBLEND_SRCALPHASAT},      // BM_DALPHA_SALPHASAT = 79
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_ZERO},          // BM_IDALPHA_0 = 80
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_ONE},           // BM_IDALPHA_1 = 81
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_SRCCOLOR},      // BM_IDALPHA_SCOLOR = 82
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_INVSRCCOLOR},   // BM_IDALPHA_ISCOLOR = 83
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_SRCALPHA},      // BM_IDALPHA_SALPHA = 84
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_INVSRCALPHA},   // BM_IDALPHA_ISALPHA = 85
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_DESTALPHA},     // BM_IDALPHA_DALPHA = 86
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_INVDESTALPHA},  // BM_IDALPHA_IDALPHA = 87
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_DESTCOLOR},     // BM_IDALPHA_DCOLOR = 88
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_INVDESTCOLOR},  // BM_IDALPHA_IDCOLOR = 89
+    {D3DBLEND_INVDESTALPHA, D3DBLEND_SRCALPHASAT},   // BM_IDALPHA_SALPHASAT = 90
+    {D3DBLEND_DESTCOLOR, D3DBLEND_ZERO},             // BM_DCOLOR_0 = 91
+    {D3DBLEND_DESTCOLOR, D3DBLEND_ONE},              // BM_DCOLOR_1 = 92
+    {D3DBLEND_DESTCOLOR, D3DBLEND_SRCCOLOR},         // BM_DCOLOR_SCOLOR = 93
+    {D3DBLEND_DESTCOLOR, D3DBLEND_INVSRCCOLOR},      // BM_DCOLOR_ISCOLOR = 94
+    {D3DBLEND_DESTCOLOR, D3DBLEND_SRCALPHA},         // BM_DCOLOR_SALPHA = 95
+    {D3DBLEND_DESTCOLOR, D3DBLEND_INVSRCALPHA},      // BM_DCOLOR_ISALPHA = 96
+    {D3DBLEND_DESTCOLOR, D3DBLEND_DESTALPHA},        // BM_DCOLOR_DALPHA = 97
+    {D3DBLEND_DESTCOLOR, D3DBLEND_INVDESTALPHA},     // BM_DCOLOR_IDALPHA = 98
+    {D3DBLEND_DESTCOLOR, D3DBLEND_DESTCOLOR},        // BM_DCOLOR_DCOLOR = 99
+    {D3DBLEND_DESTCOLOR, D3DBLEND_INVDESTCOLOR},     // BM_DCOLOR_IDCOLOR = 100
+    {D3DBLEND_DESTCOLOR, D3DBLEND_SRCALPHASAT},      // BM_DCOLOR_SALPHASAT = 101
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_ZERO},          // BM_IDCOLOR_0 = 102
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_ONE},           // BM_IDCOLOR_1 = 103
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_SRCCOLOR},      // BM_IDCOLOR_SCOLOR = 104
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_INVSRCCOLOR},   // BM_IDCOLOR_ISCOLOR = 105
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_SRCALPHA},      // BM_IDCOLOR_SALPHA = 106
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_INVSRCALPHA},   // BM_IDCOLOR_ISALPHA = 107
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_DESTALPHA},     // BM_IDCOLOR_DALPHA = 108
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_INVDESTALPHA},  // BM_IDCOLOR_IDALPHA = 109
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_DESTCOLOR},     // BM_IDCOLOR_DCOLOR = 110
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_INVDESTCOLOR},  // BM_IDCOLOR_IDCOLOR = 111
+    {D3DBLEND_INVDESTCOLOR, D3DBLEND_SRCALPHASAT},   // BM_IDCOLOR_SALPHASAT = 112
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_ZERO},           // BM_SALPHASAT_0 = 113
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_ONE},            // BM_SALPHASAT_1 = 114
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_SRCCOLOR},       // BM_SALPHASAT_SCOLOR = 115
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_INVSRCCOLOR},    // BM_SALPHASAT_ISCOLOR = 116
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_SRCALPHA},       // BM_SALPHASAT_SALPHA = 117
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_INVSRCALPHA},    // BM_SALPHASAT_ISALPHA = 118
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_DESTALPHA},      // BM_SALPHASAT_DALPHA = 119
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_INVDESTALPHA},   // BM_SALPHASAT_IDALPHA = 120
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_DESTCOLOR},      // BM_SALPHASAT_DCOLOR = 121
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_INVDESTCOLOR},   // BM_SALPHASAT_IDCOLOR = 122
+    {D3DBLEND_SRCALPHASAT, D3DBLEND_SRCALPHASAT},    // BM_SALPHASAT_SALPHASAT = 123
 };
 
 // orig 0x8526d0 device.cpp (file static)
 static D3DSTENCILOP m3dStencilOpD3dStencilOp[8] = {
-    D3DSTENCILOP_KEEP,    // OP_KEEP
-    D3DSTENCILOP_ZERO,    // OP_ZERO
-    D3DSTENCILOP_REPLACE, // OP_REPLACE
-    D3DSTENCILOP_INCRSAT, // OP_INCRSAT
-    D3DSTENCILOP_DECRSAT, // OP_DECRSAT
-    D3DSTENCILOP_INVERT,  // OP_INVERT
-    D3DSTENCILOP_INCR,    // OP_INCR
-    D3DSTENCILOP_DECR,    // OP_DECR
+    D3DSTENCILOP_KEEP,     // OP_KEEP
+    D3DSTENCILOP_ZERO,     // OP_ZERO
+    D3DSTENCILOP_REPLACE,  // OP_REPLACE
+    D3DSTENCILOP_INCRSAT,  // OP_INCRSAT
+    D3DSTENCILOP_DECRSAT,  // OP_DECRSAT
+    D3DSTENCILOP_INVERT,   // OP_INVERT
+    D3DSTENCILOP_INCR,     // OP_INCR
+    D3DSTENCILOP_DECR,     // OP_DECR
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -205,8 +204,6 @@ static D3DSTENCILOP m3dStencilOpD3dStencilOp[8] = {
 // and PushX(c); all four of a state come from one macro line in the original source. The
 // SetX bodies call setRenderState (inlined in the binary): nothing is sent to Direct3D when the
 // cached value is unchanged, and `force` is not read by any of them.
-
-
 
 // orig 0x60cc10 device.cpp:287
 int CDevice::IncRef()
@@ -234,7 +231,7 @@ int CDevice::DecRef()
 }
 
 // orig 0x60cc60 device.cpp:287
-void* CDevice::QueryIface(const char* ifaceName)
+void* CDevice::QueryIface(char const* ifaceName)
 {
     if (m_parent)
     {
@@ -244,9 +241,7 @@ void* CDevice::QueryIface(const char* ifaceName)
 }
 
 // orig 0x61dbc0 device.cpp:294
-CDevice::CDevice() :
-    m_VbPoolSize(0x10000),
-    m_IbPoolSize(0x10000)
+CDevice::CDevice() : m_VbPoolSize(0x10000), m_IbPoolSize(0x10000)
 {
     // 304
     m_refCount = 0;
@@ -515,8 +510,8 @@ int CDevice::Create(void(__fastcall* logFunc)(CStr const&), m3d::Kernel* kernel)
     if ((m_d3dCaps.PixelShaderVersion & 0xffff) < 0x0101)
     {
         // 540
-        g_kernel->MessageBoxA(0, "Cannot initialize 3d: this application requires Pixel Shader 1.1 or greater", "error",
-                              0);
+        g_kernel->MessageBoxA(
+            0, "Cannot initialize 3d: this application requires Pixel Shader 1.1 or greater", "error", 0);
         // 541
         LogMsg("Could not initialize 3d: no PS11 support found");
         // 542
@@ -548,17 +543,27 @@ int CDevice::Create(void(__fastcall* logFunc)(CStr const&), m3d::Kernel* kernel)
 }
 
 // orig 0x60cc80 device.cpp:569
-int CDevice::FindDepthFormat(D3DFORMAT& depthFormat, D3DFORMAT TargetFormat, D3DFORMAT const* fmtDepthArray,
-                             int const* fmtDepthArrayBits, int numDepthFmts, int bpp)
+int CDevice::FindDepthFormat(
+    D3DFORMAT& depthFormat,
+    D3DFORMAT TargetFormat,
+    D3DFORMAT const* fmtDepthArray,
+    int const* fmtDepthArrayBits,
+    int numDepthFmts,
+    int bpp)
 {
     for (int iFmt = 0; iFmt < numDepthFmts; iFmt++)
     {
-        m_lastResult = m_pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat,
-                                                 D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, fmtDepthArray[iFmt]);
+        m_lastResult = m_pD3D->CheckDeviceFormat(
+            D3DADAPTER_DEFAULT,
+            D3DDEVTYPE_HAL,
+            TargetFormat,
+            D3DUSAGE_DEPTHSTENCIL,
+            D3DRTYPE_SURFACE,
+            fmtDepthArray[iFmt]);
         if (SUCCEEDED(m_lastResult) && fmtDepthArrayBits[iFmt] == bpp)
         {
-            m_lastResult = m_pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat,
-                                                          TargetFormat, fmtDepthArray[iFmt]);
+            m_lastResult = m_pD3D->CheckDepthStencilMatch(
+                D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat, TargetFormat, fmtDepthArray[iFmt]);
             if (SUCCEEDED(m_lastResult))
             {
                 depthFormat = fmtDepthArray[iFmt];
@@ -569,12 +574,17 @@ int CDevice::FindDepthFormat(D3DFORMAT& depthFormat, D3DFORMAT TargetFormat, D3D
 
     for (int iFmt = 0; iFmt < numDepthFmts; iFmt++)
     {
-        m_lastResult = m_pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat,
-                                                 D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, fmtDepthArray[iFmt]);
+        m_lastResult = m_pD3D->CheckDeviceFormat(
+            D3DADAPTER_DEFAULT,
+            D3DDEVTYPE_HAL,
+            TargetFormat,
+            D3DUSAGE_DEPTHSTENCIL,
+            D3DRTYPE_SURFACE,
+            fmtDepthArray[iFmt]);
         if (SUCCEEDED(m_lastResult))
         {
-            m_lastResult = m_pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat,
-                                                          TargetFormat, fmtDepthArray[iFmt]);
+            m_lastResult = m_pD3D->CheckDepthStencilMatch(
+                D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat, TargetFormat, fmtDepthArray[iFmt]);
             if (SUCCEEDED(m_lastResult))
             {
                 depthFormat = fmtDepthArray[iFmt];
@@ -590,7 +600,12 @@ int CDevice::FindDepthFormat(D3DFORMAT& depthFormat, D3DFORMAT TargetFormat, D3D
 int CDevice::FindDepthFormat(D3DFORMAT TargetFormat, D3DFORMAT* pDepthStencilFormat, int bpp)
 {
     static D3DFORMAT const fmtDepthArray[6] = {
-        D3DFMT_D24S8, D3DFMT_D15S1, D3DFMT_D24X4S4, D3DFMT_D24X8, D3DFMT_D16, D3DFMT_D32,
+        D3DFMT_D24S8,
+        D3DFMT_D15S1,
+        D3DFMT_D24X4S4,
+        D3DFMT_D24X8,
+        D3DFMT_D16,
+        D3DFMT_D32,
     };
     static int const fmtDepthArrayBits[6] = {32, 16, 32, 32, 16, 32};
 
@@ -610,15 +625,21 @@ int CDevice::FindDepthFormat(D3DFORMAT TargetFormat, D3DFORMAT* pDepthStencilFor
 int CDevice::FindSurfaceFormat(D3DFORMAT* pSurfaceFormat, int bpp)
 {
     static D3DFORMAT const fmtFullscreenArray[8] = {
-        D3DFMT_R5G6B5, D3DFMT_X1R5G5B5, D3DFMT_A1R5G5B5, D3DFMT_X4R4G4B4,
-        D3DFMT_A4R4G4B4, D3DFMT_R8G8B8, D3DFMT_A8R8G8B8, D3DFMT_X8R8G8B8,
+        D3DFMT_R5G6B5,
+        D3DFMT_X1R5G5B5,
+        D3DFMT_A1R5G5B5,
+        D3DFMT_X4R4G4B4,
+        D3DFMT_A4R4G4B4,
+        D3DFMT_R8G8B8,
+        D3DFMT_A8R8G8B8,
+        D3DFMT_X8R8G8B8,
     };
     static int const bits[8] = {16, 16, 16, 16, 16, 32, 32, 32};
 
     for (int iFmt = 0; iFmt < 8; iFmt++)
     {
-        m_lastResult = m_pD3D->CheckDeviceType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, fmtFullscreenArray[iFmt],
-                                               fmtFullscreenArray[iFmt], FALSE);
+        m_lastResult = m_pD3D->CheckDeviceType(
+            D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, fmtFullscreenArray[iFmt], fmtFullscreenArray[iFmt], FALSE);
         if (SUCCEEDED(m_lastResult) && bits[iFmt] == bpp)
         {
             *pSurfaceFormat = fmtFullscreenArray[iFmt];
@@ -628,8 +649,8 @@ int CDevice::FindSurfaceFormat(D3DFORMAT* pSurfaceFormat, int bpp)
 
     for (int iFmt = 0; iFmt < 8; iFmt++)
     {
-        m_lastResult = m_pD3D->CheckDeviceType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, fmtFullscreenArray[iFmt],
-                                               fmtFullscreenArray[iFmt], FALSE);
+        m_lastResult = m_pD3D->CheckDeviceType(
+            D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, fmtFullscreenArray[iFmt], fmtFullscreenArray[iFmt], FALSE);
         if (SUCCEEDED(m_lastResult))
         {
             *pSurfaceFormat = fmtFullscreenArray[iFmt];
@@ -641,13 +662,19 @@ int CDevice::FindSurfaceFormat(D3DFORMAT* pSurfaceFormat, int bpp)
 }
 
 // orig 0x60ceb0 device.cpp:688
-int CDevice::FindTexFormat(D3DFORMAT& texFormat, D3DFORMAT TargetFormat, D3DFORMAT const* fmtTextureArray,
-                           int const* bits, int numTextureFmts, int bpp, int usage)
+int CDevice::FindTexFormat(
+    D3DFORMAT& texFormat,
+    D3DFORMAT TargetFormat,
+    D3DFORMAT const* fmtTextureArray,
+    int const* bits,
+    int numTextureFmts,
+    int bpp,
+    int usage)
 {
     for (int iFmt = 0; iFmt < numTextureFmts; iFmt++)
     {
-        m_lastResult = m_pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat, usage,
-                                                 D3DRTYPE_TEXTURE, fmtTextureArray[iFmt]);
+        m_lastResult = m_pD3D->CheckDeviceFormat(
+            D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat, usage, D3DRTYPE_TEXTURE, fmtTextureArray[iFmt]);
         if (SUCCEEDED(m_lastResult) && bits[iFmt] == bpp)
         {
             texFormat = fmtTextureArray[iFmt];
@@ -662,7 +689,12 @@ int CDevice::FindTexFormat(D3DFORMAT& texFormat, D3DFORMAT TargetFormat, D3DFORM
 int CDevice::FindTextureFormat(D3DFORMAT TargetFormat, int bpp)
 {
     static D3DFORMAT const tfRgbaFormats[6] = {
-        D3DFMT_A1R5G5B5, D3DFMT_A4R4G4B4, D3DFMT_A8R8G8B8, D3DFMT_DXT5, D3DFMT_DXT3, D3DFMT_DXT1,
+        D3DFMT_A1R5G5B5,
+        D3DFMT_A4R4G4B4,
+        D3DFMT_A8R8G8B8,
+        D3DFMT_DXT5,
+        D3DFMT_DXT3,
+        D3DFMT_DXT1,
     };
     static int const tfRgbaBits[6] = {16, 16, 32, 0, 0, 0};
 
@@ -670,13 +702,23 @@ int CDevice::FindTextureFormat(D3DFORMAT TargetFormat, int bpp)
     static int const tfRgbBits[3] = {24, 16, 0};
 
     static D3DFORMAT const tfRgbaFormatsRts[7] = {
-        D3DFMT_R5G6B5, D3DFMT_A1R5G5B5, D3DFMT_A4R4G4B4, D3DFMT_A8R8G8B8,
-        D3DFMT_X1R5G5B5, D3DFMT_X4R4G4B4, D3DFMT_X8R8G8B8,
+        D3DFMT_R5G6B5,
+        D3DFMT_A1R5G5B5,
+        D3DFMT_A4R4G4B4,
+        D3DFMT_A8R8G8B8,
+        D3DFMT_X1R5G5B5,
+        D3DFMT_X4R4G4B4,
+        D3DFMT_X8R8G8B8,
     };
     static int const tfRgbaBitsRts[7] = {16, 16, 16, 32, 16, 16, 32};
 
     static D3DFORMAT const tfDepthFormats[6] = {
-        D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D24X8, D3DFMT_D32, D3DFMT_D16, D3DFMT_D15S1,
+        D3DFMT_D24S8,
+        D3DFMT_D24X4S4,
+        D3DFMT_D24X8,
+        D3DFMT_D32,
+        D3DFMT_D16,
+        D3DFMT_D15S1,
     };
     static int const tfDepthBits[6] = {32, 32, 32, 32, 16, 16};
 
@@ -748,23 +790,36 @@ int CDevice::FindTextureFormat(D3DFORMAT TargetFormat, int bpp)
 // orig 0x60d160 device.cpp:886
 bool CDevice::IsMultiSamplingSupported(D3DFORMAT format, D3DMULTISAMPLE_TYPE multiSampleType, DWORD* qualityLevels)
 {
-    return SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, format, FALSE,
-                                                        multiSampleType, qualityLevels));
+    return SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(
+        D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, format, FALSE, multiSampleType, qualityLevels));
 }
 
 // orig 0x60d190 device.cpp:893
-int CDevice::FindMultisampleType(D3DFORMAT TargetFormat, D3DFORMAT depthStencilFormat, int multiSamplesNum,
-                                 D3DPRESENT_PARAMETERS& d3dpp)
+int CDevice::FindMultisampleType(
+    D3DFORMAT TargetFormat,
+    D3DFORMAT depthStencilFormat,
+    int multiSamplesNum,
+    D3DPRESENT_PARAMETERS& d3dpp)
 {
     DWORD qualityLevels = 0;
 
-    if (FAILED(m_pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TargetFormat, FALSE,
-                                                  (D3DMULTISAMPLE_TYPE)multiSamplesNum, &qualityLevels)))
+    if (FAILED(m_pD3D->CheckDeviceMultiSampleType(
+            D3DADAPTER_DEFAULT,
+            D3DDEVTYPE_HAL,
+            TargetFormat,
+            FALSE,
+            (D3DMULTISAMPLE_TYPE)multiSamplesNum,
+            &qualityLevels)))
     {
         return 0;
     }
-    if (FAILED(m_pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, depthStencilFormat, FALSE,
-                                                  (D3DMULTISAMPLE_TYPE)multiSamplesNum, &qualityLevels)))
+    if (FAILED(m_pD3D->CheckDeviceMultiSampleType(
+            D3DADAPTER_DEFAULT,
+            D3DDEVTYPE_HAL,
+            depthStencilFormat,
+            FALSE,
+            (D3DMULTISAMPLE_TYPE)multiSamplesNum,
+            &qualityLevels)))
     {
         return 0;
     }
@@ -914,8 +969,11 @@ namespace
     // (created by CreateDevice / internalReset in device.cpp).
 
     // orig 0x60d210 device.cpp:1053
-    void WINAPI FillNormalizingCubemap(D3DXVECTOR4* pOut, D3DXVECTOR3 const* pTexCoord, D3DXVECTOR3 const* pTexelSize,
-                                       void* pData)
+    void WINAPI FillNormalizingCubemap(
+        D3DXVECTOR4* pOut,
+        D3DXVECTOR3 const* pTexCoord,
+        D3DXVECTOR3 const* pTexelSize,
+        void* pData)
     {
         D3DXVECTOR3 texCoord = *pTexCoord;
 
@@ -925,15 +983,18 @@ namespace
     }
 
     // orig 0x60d2b0 device.cpp:1067
-    void WINAPI FillSpecularPowerTexture(D3DXVECTOR4* pOut, D3DXVECTOR2 const* pTexCoord,
-                                         D3DXVECTOR2 const* pTexelSize, void* pData)
+    void WINAPI FillSpecularPowerTexture(
+        D3DXVECTOR4* pOut,
+        D3DXVECTOR2 const* pTexCoord,
+        D3DXVECTOR2 const* pTexelSize,
+        void* pData)
     {
         D3DXVECTOR2 texCoord = *pTexCoord;
 
         // The original computes the power in double precision (pow of the promoted floats).
         *pOut = D3DXVECTOR4((float)pow((double)texCoord.x, (double)(texCoord.y * 100.0f)), 0.0f, 0.0f, 0.0f);
     }
-}
+}  // namespace
 
 // orig 0x611120 device.cpp:1079
 int CDevice::CreateDevice()
@@ -1027,8 +1088,19 @@ int CDevice::CreateDevice()
     }
 
     // 1199
-    if (FAILED(D3DXCreateFont(m_pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-                              DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "System", &m_pSysFont)))
+    if (FAILED(D3DXCreateFont(
+            m_pd3dDevice,
+            15,
+            0,
+            FW_BOLD,
+            1,
+            FALSE,
+            DEFAULT_CHARSET,
+            OUT_DEFAULT_PRECIS,
+            DEFAULT_QUALITY,
+            DEFAULT_PITCH | FF_DONTCARE,
+            "System",
+            &m_pSysFont)))
     {
         // 1202
         m_pSysFont = 0;
@@ -1067,7 +1139,8 @@ int CDevice::Reset()
 
         // 1231
         for (std::map<unsigned int, IDirect3DSurface9*>::iterator it = m_rtsZSurfaces.begin();
-             it != m_rtsZSurfaces.end(); ++it)
+             it != m_rtsZSurfaces.end();
+             ++it)
         {
             // 1232
             if (it->second)
@@ -1091,8 +1164,11 @@ int CDevice::Reset()
     }
 
     // 1247
-    if (!FindMultisampleType(m_d3dpp.BackBufferFormat, m_d3dpp.AutoDepthStencilFormat,
-                             g_kernel->GetEngineCfg().m_r_multiSamplesNum.GetI(), m_d3dpp))
+    if (!FindMultisampleType(
+            m_d3dpp.BackBufferFormat,
+            m_d3dpp.AutoDepthStencilFormat,
+            g_kernel->GetEngineCfg().m_r_multiSamplesNum.GetI(),
+            m_d3dpp))
     {
         // 1249
         m_d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -1153,8 +1229,8 @@ int CDevice::Reset()
     if (g_kernel->GetEngineCfg().m_r_dxcursor.GetB())
     {
         // 1298
-        SetupDXCursorForce(m_currentDXCursorInfo.m_texId, m_currentDXCursorInfo.m_xHotSpot,
-                           m_currentDXCursorInfo.m_yHotSpot, 0);
+        SetupDXCursorForce(
+            m_currentDXCursorInfo.m_texId, m_currentDXCursorInfo.m_xHotSpot, m_currentDXCursorInfo.m_yHotSpot, 0);
     }
 
     // 1302
@@ -1164,8 +1240,13 @@ int CDevice::Reset()
     // 1305: the ATI instancing hack
     if (m_d3dCaps.PixelShaderVersion < D3DPS_VERSION(3, 0))
     {
-        if (m_pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, 0, D3DRTYPE_SURFACE,
-                                      (D3DFORMAT)MAKEFOURCC('I', 'N', 'S', 'T')) == S_OK)
+        if (m_pD3D->CheckDeviceFormat(
+                D3DADAPTER_DEFAULT,
+                D3DDEVTYPE_HAL,
+                D3DFMT_X8R8G8B8,
+                0,
+                D3DRTYPE_SURFACE,
+                (D3DFORMAT)MAKEFOURCC('I', 'N', 'S', 'T')) == S_OK)
         {
             m_pd3dDevice->SetRenderState(D3DRS_POINTSIZE, MAKEFOURCC('I', 'N', 'S', 'T'));
         }
@@ -1386,9 +1467,11 @@ void CDevice::RegisterResetCallback(m3d::IDeviceResetCallback* callback)
     if (!(m_resetCallbacks.empty() ||
           m_resetCallbacks.end() == std::find(m_resetCallbacks.begin(), m_resetCallbacks.end(), callback)))
     {
-        deviceAssertFailed("m_resetCallbacks.empty() || m_resetCallbacks.end() == std::find( m_resetCallbacks.begin(), "
-                           "m_resetCallbacks.end(), callback )",
-                           ".\\device.cpp", 1525);
+        deviceAssertFailed(
+            "m_resetCallbacks.empty() || m_resetCallbacks.end() == std::find( m_resetCallbacks.begin(), "
+            "m_resetCallbacks.end(), callback )",
+            ".\\device.cpp",
+            1525);
     }
 
     // 1527
@@ -1494,8 +1577,9 @@ int CDevice::SwitchDisplayModes0(HWND wnd, int w, int h, int fullscreen)
         if (!FindDepthFormat(m_desktopMode.Format, &m_d3dpp.AutoDepthStencilFormat, bpp))
         {
             // 1604
-            LogMsg(CStr("CDevice::FindDepthFormat( ") + CStr((int)m_desktopMode.Format) + CStr(", FORMAT, ") + CStr(bpp) +
-                   CStr(") failed"));
+            LogMsg(
+                CStr("CDevice::FindDepthFormat( ") + CStr((int)m_desktopMode.Format) + CStr(", FORMAT, ") + CStr(bpp) +
+                CStr(") failed"));
             // 1605
             return 0;
         }
@@ -1510,8 +1594,8 @@ int CDevice::SwitchDisplayModes0(HWND wnd, int w, int h, int fullscreen)
     else
     {
         // 1619
-        if (!FindMultisampleType(m_d3dpp.BackBufferFormat, m_d3dpp.AutoDepthStencilFormat,
-                                 cfg.m_r_multiSamplesNum.GetI(), m_d3dpp))
+        if (!FindMultisampleType(
+                m_d3dpp.BackBufferFormat, m_d3dpp.AutoDepthStencilFormat, cfg.m_r_multiSamplesNum.GetI(), m_d3dpp))
         {
             // 1621
             m_d3dpp.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -1525,8 +1609,7 @@ int CDevice::SwitchDisplayModes0(HWND wnd, int w, int h, int fullscreen)
         if (FAILED(m_lastResult))
         {
             // 1629
-            LogMsg(CStr("Could not get device caps for the default device, hr = ") +
-                   CStr::format_("%x", m_lastResult));
+            LogMsg(CStr("Could not get device caps for the default device, hr = ") + CStr::format_("%x", m_lastResult));
             // 1630
             return 0;
         }
@@ -1597,8 +1680,8 @@ int CDevice::SwitchDisplayModes0(HWND wnd, int w, int h, int fullscreen)
         }
 
         // 1699
-        HRESULT hr = m_pD3D->CreateDevice(AdapterToUse, DeviceType, cfg.m_mainWnd, actualBehavior, &m_d3dpp,
-                                          &m_pd3dDevice);
+        HRESULT hr =
+            m_pD3D->CreateDevice(AdapterToUse, DeviceType, cfg.m_mainWnd, actualBehavior, &m_d3dpp, &m_pd3dDevice);
         // 1701
         m_lastResult = hr;
         if (FAILED(hr))
@@ -1640,7 +1723,7 @@ int CDevice::SwitchDisplayModes0(HWND wnd, int w, int h, int fullscreen)
 
         // 1735
         m_isNV30 = id.VendorId == 0x10de &&
-                   ((id.DeviceId >= 0x301 && id.DeviceId < 0x330) || (id.DeviceId > 0x334 && id.DeviceId < 0x400));
+            ((id.DeviceId >= 0x301 && id.DeviceId < 0x330) || (id.DeviceId > 0x334 && id.DeviceId < 0x400));
 
         // 1738
         internalReset();
@@ -1803,7 +1886,7 @@ void CDevice::SetStageState(int stage, BlendMode mode, TextureState state)
         setTextureStageState(stage, op, D3DTOP_SELECTARG1);
         break;
 
-    // original: case TS_ITEX (14) here, see above.
+        // original: case TS_ITEX (14) here, see above.
 
     case TS_IPREV_ADDSIGNED_DIFF:
         setTextureStageState(stage, arg1, D3DTA_DIFFUSE);
@@ -3068,7 +3151,8 @@ void CDevice::PushStencilPass(StencilOp c)
 void CDevice::PushStencil2SidedEnable()
 {
     ++m_stackTopStencil2SidedEnable;
-    m_stackStencil2SidedEnable[m_stackTopStencil2SidedEnable] = m_stackStencil2SidedEnable[m_stackTopStencil2SidedEnable - 1];
+    m_stackStencil2SidedEnable[m_stackTopStencil2SidedEnable] =
+        m_stackStencil2SidedEnable[m_stackTopStencil2SidedEnable - 1];
 }
 
 // orig 0x60e720 device.cpp:2339
@@ -3415,8 +3499,18 @@ void CDevice::rstStacks()
 // u0, v0, u1, v1 are never read. The matrices are built with the engine's CMatrix (the inlined
 // code zeroes each one and stores the diagonal / translation / rotation elements, then multiplies
 // them with the inlined CMatrix operator*).
-void CDevice::TgEnableSetLinearSt(int stage, float sx, float sz, float tx, float tz, float roty, bool camSpace, float u0,
-                                  float v0, float u1, float v1)
+void CDevice::TgEnableSetLinearSt(
+    int stage,
+    float sx,
+    float sz,
+    float tx,
+    float tz,
+    float roty,
+    bool camSpace,
+    float u0,
+    float v0,
+    float u1,
+    float v1)
 {
     CMatrix shift;
     shift.translation(-tx, 0.0f, -tz);
@@ -3593,8 +3687,13 @@ bool CDevice::defineInstancingSupport()
 
     // The pre-SM3 hardware instancing hack: the driver accepts the 'INST' FOURCC as a surface
     // format and enables instancing when it is set as the point size.
-    HRESULT hr = m_pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, 0, D3DRTYPE_SURFACE,
-                                           (D3DFORMAT)MAKEFOURCC('I', 'N', 'S', 'T'));
+    HRESULT hr = m_pD3D->CheckDeviceFormat(
+        D3DADAPTER_DEFAULT,
+        D3DDEVTYPE_HAL,
+        D3DFMT_X8R8G8B8,
+        0,
+        D3DRTYPE_SURFACE,
+        (D3DFORMAT)MAKEFOURCC('I', 'N', 'S', 'T'));
     if (hr == D3D_OK)
     {
         m_pd3dDevice->SetRenderState(D3DRS_POINTSIZE, MAKEFOURCC('I', 'N', 'S', 'T'));
@@ -3608,8 +3707,9 @@ bool CDevice::defineInstancingSupport()
 void CDevice::logCaps()
 {
     LogMsg(CStr("Texture max size: ") + CStr(m_d3dCaps.MaxTextureWidth) + "x" + CStr(m_d3dCaps.MaxTextureHeight));
-    LogMsg(CStr("Guard band: (") + CStr(m_d3dCaps.GuardBandLeft) + "," + CStr(m_d3dCaps.GuardBandTop) + "," +
-           CStr(m_d3dCaps.GuardBandRight) + "," + CStr(m_d3dCaps.GuardBandBottom) + ")");
+    LogMsg(
+        CStr("Guard band: (") + CStr(m_d3dCaps.GuardBandLeft) + "," + CStr(m_d3dCaps.GuardBandTop) + "," +
+        CStr(m_d3dCaps.GuardBandRight) + "," + CStr(m_d3dCaps.GuardBandBottom) + ")");
     LogMsg(CStr("MaxTextureBlendStages: ") + CStr(m_d3dCaps.MaxTextureBlendStages));
     LogMsg(CStr("MaxSimultaneousTextures: ") + CStr(m_d3dCaps.MaxSimultaneousTextures));
     LogMsg(CStr("MaxActiveLights: ") + CStr(m_d3dCaps.MaxActiveLights));
@@ -3617,8 +3717,9 @@ void CDevice::logCaps()
     LogMsg(CStr("VertexShaderVersion: 0x") + CStr::format_("%x", m_d3dCaps.VertexShaderVersion));
     LogMsg(CStr("PixelShaderVersion: 0x") + CStr::format_("%x", m_d3dCaps.PixelShaderVersion));
 
-    LogMsg(CStr("Geometry instancing: ") +
-           (m_featureSupported[FEATURE_HARDWARE_INSTANCING] ? "supported" : "not supported"));
+    LogMsg(
+        CStr("Geometry instancing: ") +
+        (m_featureSupported[FEATURE_HARDWARE_INSTANCING] ? "supported" : "not supported"));
     LogMsg(CStr("Depth textures: ") + (m_featureSupported[FEATURE_DEPTH_TEXTURES] ? "supported" : "not supported"));
     bool bDepthBiasSupported = (m_d3dCaps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0;
     LogMsg(CStr("Depth bias supported: ") + (bDepthBiasSupported ? "yes" : "no"));
@@ -3644,18 +3745,23 @@ void CDevice::logCaps()
     LogMsg(CStr("MaxVertexBlendMatrices: ") + CStr(m_d3dCaps.MaxVertexBlendMatrices));
     LogMsg(CStr("MaxVertexBlendMatrixIndex: ") + CStr(m_d3dCaps.MaxVertexBlendMatrixIndex));
     LogMsg(CStr("FullScreenGamma: ") + ((m_d3dCaps.Caps2 & D3DCAPS2_FULLSCREENGAMMA) ? "true" : "false"));
-    LogMsg(CStr("COLORWRITEENABLE: ") + ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) ? "true" : "false"));
+    LogMsg(
+        CStr("COLORWRITEENABLE: ") +
+        ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) ? "true" : "false"));
     LogMsg(CStr("MASKZ: ") + ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_MASKZ) ? "true" : "false"));
     LogMsg(CStr("BLENDOP: ") + ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) ? "true" : "false"));
-    LogMsg(CStr("CLIPPLANESCALEDPOINTS: ") +
-           ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_CLIPPLANESCALEDPOINTS) ? "true" : "false"));
+    LogMsg(
+        CStr("CLIPPLANESCALEDPOINTS: ") +
+        ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_CLIPPLANESCALEDPOINTS) ? "true" : "false"));
     LogMsg(CStr("CLIPTLVERTS: ") + ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_CLIPTLVERTS) ? "true" : "false"));
     LogMsg(CStr("TSSARGTEMP: ") + ((m_d3dCaps.PrimitiveMiscCaps & D3DPMISCCAPS_TSSARGTEMP) ? "true" : "false"));
-    LogMsg(CStr("DIRECTIONALLIGHTS: ") +
-           ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_DIRECTIONALLIGHTS) ? "true" : "false"));
+    LogMsg(
+        CStr("DIRECTIONALLIGHTS: ") +
+        ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_DIRECTIONALLIGHTS) ? "true" : "false"));
     LogMsg(CStr("LOCALVIEWER: ") + ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_LOCALVIEWER) ? "true" : "false"));
-    LogMsg(CStr("POSITIONALLIGHTS: ") +
-           ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_POSITIONALLIGHTS) ? "true" : "false"));
+    LogMsg(
+        CStr("POSITIONALLIGHTS: ") +
+        ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_POSITIONALLIGHTS) ? "true" : "false"));
     LogMsg(CStr("TEXGEN:  ") + ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_TEXGEN) ? "true" : "false"));
     LogMsg(CStr("TWEENING:  ") + ((m_d3dCaps.VertexProcessingCaps & D3DVTXPCAPS_TWEENING) ? "true" : "false"));
     LogMsg(CStr("Dp3: ") + ((m_d3dCaps.TextureOpCaps & D3DTEXOPCAPS_DOTPRODUCT3) ? "true" : "false"));
@@ -3665,19 +3771,26 @@ void CDevice::logCaps()
     LogMsg(CStr("Query EVENT support: ") + (m_featureSupported[FEATURE_QUERY_EVENT] ? "true" : "false"));
     LogMsg(CStr("Query OCCLUSION support: ") + (m_featureSupported[FEATURE_QUERY_OCCLUSION] ? "true" : "false"));
     LogMsg(CStr("Query TIMESTAMP support: ") + (m_featureSupported[FEATURE_QUERY_TIMESTAMP] ? "true" : "false"));
-    LogMsg(CStr("Query TIMESTAMPDISJOINT support: ") +
-           (m_featureSupported[FEATURE_QUERY_TIMESTAMPDISJOINT] ? "true" : "false"));
-    LogMsg(CStr("Query TIMESTAMPFREQ support: ") + (m_featureSupported[FEATURE_QUERY_TIMESTAMPFREQ] ? "true" : "false"));
-    LogMsg(CStr("Query PIPELINETIMINGS support: ") +
-           (m_featureSupported[FEATURE_QUERY_PIPELINETIMINGS] ? "true" : "false"));
-    LogMsg(CStr("Query INTERFACETIMINGS support: ") +
-           (m_featureSupported[FEATURE_QUERY_INTERFACETIMINGS] ? "true" : "false"));
-    LogMsg(CStr("Query VERTEXTIMINGS support: ") + (m_featureSupported[FEATURE_QUERY_VERTEXTIMINGS] ? "true" : "false"));
+    LogMsg(
+        CStr("Query TIMESTAMPDISJOINT support: ") +
+        (m_featureSupported[FEATURE_QUERY_TIMESTAMPDISJOINT] ? "true" : "false"));
+    LogMsg(
+        CStr("Query TIMESTAMPFREQ support: ") + (m_featureSupported[FEATURE_QUERY_TIMESTAMPFREQ] ? "true" : "false"));
+    LogMsg(
+        CStr("Query PIPELINETIMINGS support: ") +
+        (m_featureSupported[FEATURE_QUERY_PIPELINETIMINGS] ? "true" : "false"));
+    LogMsg(
+        CStr("Query INTERFACETIMINGS support: ") +
+        (m_featureSupported[FEATURE_QUERY_INTERFACETIMINGS] ? "true" : "false"));
+    LogMsg(
+        CStr("Query VERTEXTIMINGS support: ") + (m_featureSupported[FEATURE_QUERY_VERTEXTIMINGS] ? "true" : "false"));
     LogMsg(CStr("Query PIXELTIMINGS support: ") + (m_featureSupported[FEATURE_QUERY_PIXELTIMINGS] ? "true" : "false"));
-    LogMsg(CStr("Query BANDWIDTHTIMINGS support: ") +
-           (m_featureSupported[FEATURE_QUERY_BANDWIDTHTIMINGS] ? "true" : "false"));
-    LogMsg(CStr("Query CACHEUTILIZATION support: ") +
-           (m_featureSupported[FEATURE_QUERY_CACHEUTILIZATION] ? "true" : "false"));
+    LogMsg(
+        CStr("Query BANDWIDTHTIMINGS support: ") +
+        (m_featureSupported[FEATURE_QUERY_BANDWIDTHTIMINGS] ? "true" : "false"));
+    LogMsg(
+        CStr("Query CACHEUTILIZATION support: ") +
+        (m_featureSupported[FEATURE_QUERY_CACHEUTILIZATION] ? "true" : "false"));
 }
 
 // orig 0x6194d0 device.cpp:2711
@@ -3990,8 +4103,8 @@ int CDevice::CanRender()
             {
                 // 3123
                 m3d::EngineConfig& cfg = g_kernel->GetEngineCfg();
-                if (SwitchDisplayModes(cfg.m_mainWnd, cfg.m_r_width.GetI(), cfg.m_r_height.GetI(),
-                                       cfg.m_r_fullScreen.GetB()))
+                if (SwitchDisplayModes(
+                        cfg.m_mainWnd, cfg.m_r_width.GetI(), cfg.m_r_height.GetI(), cfg.m_r_fullScreen.GetB()))
                 {
                     // 3126
                     return 2;
@@ -4054,7 +4167,7 @@ unsigned int CDevice::AddTextureFromBackBuffer(TexHandle srcTex)
 }
 
 // orig 0x61c770 device.cpp:3204 - the surface level is never released (as in the original).
-int CDevice::SaveTextureToTgaFile(TexHandle tex, const char* fileName)
+int CDevice::SaveTextureToTgaFile(TexHandle tex, char const* fileName)
 {
     IDirect3DSurface9* surf = 0;
     if (FAILED(m_textures[TexId(tex)].m_maps[0]->m_pTex2d->GetSurfaceLevel(0, &surf)))
@@ -4064,7 +4177,7 @@ int CDevice::SaveTextureToTgaFile(TexHandle tex, const char* fileName)
 }
 
 // orig 0x61c7e0 device.cpp:3216 - ImageFileFormats and D3DXIMAGE_FILEFORMAT have the same values.
-int CDevice::SaveTextureToFile(TexHandle tex, const char* fileName, ImageFileFormats format)
+int CDevice::SaveTextureToFile(TexHandle tex, char const* fileName, ImageFileFormats format)
 {
     if (!IsTexValid(tex))
         return 0;
@@ -4220,15 +4333,24 @@ bool CDevice::IsFeatureSupported(DeviceFeature f)
 // orig 0x610570 device.cpp:3409
 bool CDevice::IsMultiSamplingSupported(int numSamples)
 {
-    if (FAILED(m_pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, m_d3dpp.BackBufferFormat, FALSE,
-                                                  (D3DMULTISAMPLE_TYPE)numSamples, NULL)))
+    if (FAILED(m_pD3D->CheckDeviceMultiSampleType(
+            D3DADAPTER_DEFAULT,
+            D3DDEVTYPE_HAL,
+            m_d3dpp.BackBufferFormat,
+            FALSE,
+            (D3DMULTISAMPLE_TYPE)numSamples,
+            NULL)))
     {
         return false;
     }
 
-    return SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL,
-                                                        m_d3dpp.AutoDepthStencilFormat, FALSE,
-                                                        (D3DMULTISAMPLE_TYPE)numSamples, NULL));
+    return SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(
+        D3DADAPTER_DEFAULT,
+        D3DDEVTYPE_HAL,
+        m_d3dpp.AutoDepthStencilFormat,
+        FALSE,
+        (D3DMULTISAMPLE_TYPE)numSamples,
+        NULL));
 }
 
 namespace
@@ -4262,7 +4384,7 @@ namespace
 
         return true;
     }
-}
+}  // namespace
 
 // orig 0x61cb80 device.cpp:3426 - the surface level is never released (as in the original).
 int CDevice::SetupDXCursorForce(TexHandle const& texId, int xHotSpot, int yHotSpot, int frame)
@@ -4347,8 +4469,11 @@ int CDevice::UpdateDXCursorFrame()
 
     if (frame != m_currentDXCursorInfo.m_frame)
     {
-        if (!SetupDXCursor(m_currentDXCursorInfo.m_texId, m_currentDXCursorInfo.m_xHotSpot,
-                           m_currentDXCursorInfo.m_yHotSpot, frame))
+        if (!SetupDXCursor(
+                m_currentDXCursorInfo.m_texId,
+                m_currentDXCursorInfo.m_xHotSpot,
+                m_currentDXCursorInfo.m_yHotSpot,
+                frame))
             return 0;
     }
 
@@ -4363,7 +4488,7 @@ bool CDevice::IsHardWareCursorAvailableForTexture(TexHandle const* texId)
     GetDims(*texId, w, h);
 
     return ((m_d3dCaps.CursorCaps & D3DCURSORCAPS_COLOR) && w == 32 && h == 32) ||
-           !g_kernel->GetEngineCfg().m_r_fullScreen.GetB();
+        !g_kernel->GetEngineCfg().m_r_fullScreen.GetB();
 }
 
 // orig 0x619be0 device.cpp:3629
@@ -4412,22 +4537,31 @@ int CDevice::SetupAllFeaturesSupport(CStr const& DevCompatibleFileName)
     m_featureSupported[FEATURE_PS_2_0] = (m_d3dCaps.PixelShaderVersion & 0xffff) >= 0x0200;
     m_featureSupported[FEATURE_PS_3_0] = (m_d3dCaps.PixelShaderVersion & 0xffff) >= 0x0300;
 
-    m_featureSupported[FEATURE_NON_POW2_CONDITIONAL] = (m_d3dCaps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0;
+    m_featureSupported[FEATURE_NON_POW2_CONDITIONAL] =
+        (m_d3dCaps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0;
     m_featureSupported[FEATURE_NON_POW2_RT] = false;
     m_featureSupported[FEATURE_MRT] = false;
 
-    m_featureSupported[FEATURE_QUERY_BANDWIDTHTIMINGS] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_BANDWIDTHTIMINGS, NULL));
-    m_featureSupported[FEATURE_QUERY_CACHEUTILIZATION] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_CACHEUTILIZATION, NULL));
+    m_featureSupported[FEATURE_QUERY_BANDWIDTHTIMINGS] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_BANDWIDTHTIMINGS, NULL));
+    m_featureSupported[FEATURE_QUERY_CACHEUTILIZATION] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_CACHEUTILIZATION, NULL));
     m_featureSupported[FEATURE_QUERY_EVENT] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_EVENT, NULL));
-    m_featureSupported[FEATURE_QUERY_INTERFACETIMINGS] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_INTERFACETIMINGS, NULL));
+    m_featureSupported[FEATURE_QUERY_INTERFACETIMINGS] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_INTERFACETIMINGS, NULL));
     m_featureSupported[FEATURE_QUERY_OCCLUSION] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_OCCLUSION, NULL));
-    m_featureSupported[FEATURE_QUERY_PIPELINETIMINGS] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_PIPELINETIMINGS, NULL));
-    m_featureSupported[FEATURE_QUERY_PIXELTIMINGS] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_PIXELTIMINGS, NULL));
+    m_featureSupported[FEATURE_QUERY_PIPELINETIMINGS] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_PIPELINETIMINGS, NULL));
+    m_featureSupported[FEATURE_QUERY_PIXELTIMINGS] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_PIXELTIMINGS, NULL));
     m_featureSupported[FEATURE_QUERY_TIMESTAMP] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMP, NULL));
-    m_featureSupported[FEATURE_QUERY_TIMESTAMPDISJOINT] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, NULL));
-    m_featureSupported[FEATURE_QUERY_TIMESTAMPFREQ] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, NULL));
+    m_featureSupported[FEATURE_QUERY_TIMESTAMPDISJOINT] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, NULL));
+    m_featureSupported[FEATURE_QUERY_TIMESTAMPFREQ] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, NULL));
     m_featureSupported[FEATURE_QUERY_VCACHE] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_VCACHE, NULL));
-    m_featureSupported[FEATURE_QUERY_VERTEXTIMINGS] = SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_VERTEXTIMINGS, NULL));
+    m_featureSupported[FEATURE_QUERY_VERTEXTIMINGS] =
+        SUCCEEDED(m_pd3dDevice->CreateQuery(D3DQUERYTYPE_VERTEXTIMINGS, NULL));
 
     m_featureSupported[FEATURE_HARDWARE_INSTANCING] = defineInstancingSupport();
 
@@ -4668,4 +4802,3 @@ void CDevice::EnableThreadSafeQuard(bool enable)
 // orig 0x61df40 device.cpp:3903 m3d::RendererFactory: allocates sizeof(CDevice) (0xf1ec) through the
 // kernel's AllocMem and constructs a CDevice in it, or returns 0 when the allocation fails. Not
 // defined here: createIRenderer in main.cpp is its equivalent (operator new goes through g_mar).
-

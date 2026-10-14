@@ -16,18 +16,17 @@ namespace ai
 
     private:
         float m_playerMoneyPart;
-
     };
 
-    class DynamicQuestPeace :  public DynamicQuest
+    class DynamicQuestPeace : public DynamicQuest
     {
     public:
-        DynamicQuestPeace(DynamicQuestPeacePrototypeInfo const &);
-        virtual m3d::Class * GetClass() const ;
-        virtual DynamicQuestPeacePrototypeInfo const * GetPrototypeInfo() const ;
-        virtual int OnEvent(Event const &);
-        virtual DynamicQuestManager::QuestType GetQuestType() const ;
-        static m3d::Class * GetBaseClass();
+        DynamicQuestPeace(DynamicQuestPeacePrototypeInfo const&);
+        virtual m3d::Class* GetClass() const;
+        virtual DynamicQuestPeacePrototypeInfo const* GetPrototypeInfo() const;
+        virtual int OnEvent(Event const&);
+        virtual DynamicQuestManager::QuestType GetQuestType() const;
+        static m3d::Class* GetBaseClass();
         virtual void PassToAnotherMap();
 
     protected:
@@ -38,10 +37,10 @@ namespace ai
         virtual ~DynamicQuestPeace();
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
+        static m3d::Object* CreateObject();
+        virtual m3d::Object* Clone();
 
     public:
         RT_CLASS_DECLARE(DynamicQuestPeace);
     };
-}
+}  // namespace ai

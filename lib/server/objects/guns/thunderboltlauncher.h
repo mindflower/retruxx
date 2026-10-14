@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         ThunderboltLauncherPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
         float m_ActionDist;
@@ -22,8 +22,8 @@ namespace ai
         virtual ~ThunderboltLauncher() override;
 
     private:
-        ThunderboltLauncher(const ai::ThunderboltLauncherPrototypeInfo& prototypeInfo);
-        ThunderboltLauncher(const ai::ThunderboltLauncher&);
+        ThunderboltLauncher(ai::ThunderboltLauncherPrototypeInfo const& prototypeInfo);
+        ThunderboltLauncher(ai::ThunderboltLauncher const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -31,11 +31,11 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(ThunderboltLauncher);
-        virtual const ai::ThunderboltLauncherPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::ThunderboltLauncherPrototypeInfo const* GetPrototypeInfo() const override;
         virtual bool CanFire() const override;
 
     protected:
-        std::vector<int, std::allocator<int> > m_enemies;
+        std::vector<int, std::allocator<int>> m_enemies;
         virtual void _LaunchShells() override;
     };
-}
+}  // namespace ai

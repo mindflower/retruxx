@@ -7,9 +7,7 @@ namespace
     auto const THRESHOLD_EPS = 0.0000099999997;
 }
 
-CVector2::CVector2(float xx, float yy) :
-    x(xx),
-    y(yy)
+CVector2::CVector2(float xx, float yy) : x(xx), y(yy)
 {
 }
 
@@ -17,9 +15,7 @@ CVector2::CVector2()
 {
 }
 
-CVector2::CVector2(CVector2 const& rhs) :
-    x(rhs.x),
-    y(rhs.y)
+CVector2::CVector2(CVector2 const& rhs) : x(rhs.x), y(rhs.y)
 {
 }
 
@@ -37,7 +33,7 @@ CVector2& CVector2::operator-=(CVector2 const& a)
     return *this;
 }
 
-CVector2::operator float* ()
+CVector2::operator float*()
 {
     return reinterpret_cast<float*>(this);
 }

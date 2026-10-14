@@ -240,8 +240,7 @@ namespace ai
         CVector const destination = Obj::AIGetState1Param1(pObj).GetAsVector();
 
         // NOTE: the formation is re-seated on the middle vehicle of the team, not on the first.
-        team->m_formation->SetPosition(
-            team->m_vehicles[(team->m_vehicles.size() - 1) / 2]->GetPosition());
+        team->m_formation->SetPosition(team->m_vehicles[(team->m_vehicles.size() - 1) / 2]->GetPosition());
         CVector const startPos = team->m_formation->GetPosition();
 
         if (team->m_formation)
@@ -250,8 +249,8 @@ namespace ai
         }
         delete team->m_pPath;
         team->m_pPath = new Path;
-        team->m_pPath->StartSearch(Map::theGlobalMap, CVector2(startPos.x, startPos.z),
-            CVector2(destination.x, destination.z), 10.0f, 0xFA);
+        team->m_pPath->StartSearch(
+            Map::theGlobalMap, CVector2(startPos.x, startPos.z), CVector2(destination.x, destination.z), 10.0f, 0xFA);
         return m3d::AIParam(1);
     }
 
@@ -296,8 +295,7 @@ namespace ai
         }
 
         retruxx::vector<m3d::Class*> allowedClasses;
-        int const formationId =
-            gDynamicScene->ReadNewObjectFromXml(xmlFile, formationNode, allowedClasses);
+        int const formationId = gDynamicScene->ReadNewObjectFromXml(xmlFile, formationNode, allowedClasses);
         m_formation = static_cast<Formation*>(theObjects->GetEntityByObjId(formationId));
         m_formation->LinkToParent(GetId(), HIERARCHY_COMPONENT);
     }
@@ -643,8 +641,7 @@ namespace ai
         // RVA 0x656D50 - the distance to the nearest of the team's vehicles.
         if (!obj)
         {
-            M3D_LOG_ERR(CStr("Error: NULL object passed to GetDistToPhysicObj of ") +
-                GetDebugDescription());
+            M3D_LOG_ERR(CStr("Error: NULL object passed to GetDistToPhysicObj of ") + GetDebugDescription());
             return 1.0e10f;
         }
 
@@ -703,8 +700,7 @@ namespace ai
         {
             CVector destination;
             CVector direction;
-            team->m_formation->GetPositionAndDirectionForVehicle(
-                i, team->m_vehicles.size(), destination, direction);
+            team->m_formation->GetPositionAndDirectionForVehicle(i, team->m_vehicles.size(), destination, direction);
             // NOTE: the height is flattened to zero on both sides, so the vehicles steer in the
             // horizontal plane only.
             destination.y = 0.0f;
@@ -879,8 +875,7 @@ namespace ai
             bool driven = false;
             for (auto const* vehicle : team->m_vehicles)
             {
-                if (vehicle->GetNpcMotionControllerId() != -1 ||
-                    vehicle->bIsMovingAlongExternalPath())
+                if (vehicle->GetNpcMotionControllerId() != -1 || vehicle->bIsMovingAlongExternalPath())
                 {
                     driven = true;
                     break;
@@ -1060,12 +1055,17 @@ namespace ai
         // RVA 0x6590D0
         switch (propertyId)
         {
-            case PROPERTY_REMOVE_WHEN_CHILDREN_DEAD:
-                retVal = static_cast<unsigned>(GetPrototypeInfo()->m_bRemoveWhenChildrenDead);
-                return true;
-            case PROPERTY_TEAMTACTIC_PROTOTYPE: retVal = CStr(""); return true;
-            case PROPERTY_TEAMTACTIC_SHOULD_BE_ASSIGNED: retVal = 1u; return true;
-            default: return Obj::_GetPropertyDefaultInternal(propertyId, retVal);
+        case PROPERTY_REMOVE_WHEN_CHILDREN_DEAD:
+            retVal = static_cast<unsigned>(GetPrototypeInfo()->m_bRemoveWhenChildrenDead);
+            return true;
+        case PROPERTY_TEAMTACTIC_PROTOTYPE:
+            retVal = CStr("");
+            return true;
+        case PROPERTY_TEAMTACTIC_SHOULD_BE_ASSIGNED:
+            retVal = 1u;
+            return true;
+        default:
+            return Obj::_GetPropertyDefaultInternal(propertyId, retVal);
         }
     }
 
@@ -1074,14 +1074,17 @@ namespace ai
         // RVA 0x659040
         switch (propertyId)
         {
-            case PROPERTY_REMOVE_WHEN_CHILDREN_DEAD:
-                retVal = static_cast<unsigned>(m_bRemoveWhenChildrenDead);
-                return true;
-            case PROPERTY_TEAMTACTIC_PROTOTYPE: retVal = m_TeamTacticName; return true;
-            case PROPERTY_TEAMTACTIC_SHOULD_BE_ASSIGNED:
-                retVal = static_cast<unsigned>(m_TeamTacticShouldBeAssigned);
-                return true;
-            default: return Obj::_GetPropertyInternal(propertyId, retVal);
+        case PROPERTY_REMOVE_WHEN_CHILDREN_DEAD:
+            retVal = static_cast<unsigned>(m_bRemoveWhenChildrenDead);
+            return true;
+        case PROPERTY_TEAMTACTIC_PROTOTYPE:
+            retVal = m_TeamTacticName;
+            return true;
+        case PROPERTY_TEAMTACTIC_SHOULD_BE_ASSIGNED:
+            retVal = static_cast<unsigned>(m_TeamTacticShouldBeAssigned);
+            return true;
+        default:
+            return Obj::_GetPropertyInternal(propertyId, retVal);
         }
     }
 

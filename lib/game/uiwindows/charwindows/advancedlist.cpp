@@ -34,7 +34,7 @@ namespace
     // pattern window onto another window. The shipped
     // AdvancedButton::CreateFromPattern / CreateChildren inline this block once
     // per widget.
-    void CopyWndPropsFromPattern(m3d::ui::Wnd* dst, const m3d::ui::Wnd* pat)
+    void CopyWndPropsFromPattern(m3d::ui::Wnd* dst, m3d::ui::Wnd const* pat)
     {
         dst->SetStyle(pat->GetStyle());
         dst->SetText(pat->GetText());
@@ -64,8 +64,8 @@ namespace
     // Creates one child window of the given rtti class, positioned/styled from
     // the pattern, links it at the front of parent's child list, and copies the
     // pattern's properties over. Returns nullptr (and logs) on any failure.
-    m3d::ui::Wnd* CreateChildFromPattern(m3d::ui::Wnd* parent, const char* className,
-                                        const m3d::ui::Wnd* pat, const char* ctx)
+    m3d::ui::Wnd*
+        CreateChildFromPattern(m3d::ui::Wnd* parent, char const* className, m3d::ui::Wnd const* pat, char const* ctx)
     {
         if (!pat)
         {
@@ -90,7 +90,7 @@ namespace
         return w;
     }
 
-    void CopyButtonImages(m3d::ui::ButtonWnd* dst, const m3d::ui::ButtonWnd* pat)
+    void CopyButtonImages(m3d::ui::ButtonWnd* dst, m3d::ui::ButtonWnd const* pat)
     {
         if (pat->IsImaged())
         {
@@ -170,9 +170,17 @@ AdvancedButton::Pattern::~Pattern()
 void AdvancedButton::Pattern::Clear()
 {
     m3d::ui::Wnd* widgets[] = {
-        m_wndPattern,       m_btnPatternActiveZone, m_wndPatternIco,   m_wndPatternName,
-        m_wndPatternPrice,  m_btnPatternAdvance,    m_wndPatternIdioticEmbossBtnAdvance,
-        m_wndPatternSlider, m_btnPatternLeft,       m_btnPatternRight, m_wndPatternUnits,
+        m_wndPattern,
+        m_btnPatternActiveZone,
+        m_wndPatternIco,
+        m_wndPatternName,
+        m_wndPatternPrice,
+        m_btnPatternAdvance,
+        m_wndPatternIdioticEmbossBtnAdvance,
+        m_wndPatternSlider,
+        m_btnPatternLeft,
+        m_btnPatternRight,
+        m_wndPatternUnits,
         m_wndPatternFrame,
     };
     for (auto* w : widgets)
@@ -284,13 +292,13 @@ int AdvancedButton::GetUnitsPrice(int units) const
 
 int AdvancedButton::GetMaxPossibleUnitsToBuy() const
 {
-    const int maxUnits = GetMaxUnitsToBuy();
-    const int money = ai::thePlayer ? ai::thePlayer->GetMoney() : 0;
+    int const maxUnits = GetMaxUnitsToBuy();
+    int const money = ai::thePlayer ? ai::thePlayer->GetMoney() : 0;
     if (GetUnitsPrice(maxUnits) <= money)
     {
         return maxUnits;
     }
-    const float oneUnitPrice = GetPriceForOneUnit();
+    float const oneUnitPrice = GetPriceForOneUnit();
     if (oneUnitPrice <= 0.001f)
     {
         return maxUnits;
@@ -352,7 +360,7 @@ CStr const& AdvancedButton::GetStrIdTooltipBuyFull() const
 
 void AdvancedButton::SetMode(AdvancedButton::Mode mode)
 {
-    const Mode prev = m_mode;
+    Mode const prev = m_mode;
     m_mode = mode;
     if (mode != prev)
     {
@@ -400,8 +408,8 @@ namespace
     // Pulls one named child out of the source pattern dialog, unlinks it, and
     // rebases its origin to the wndPattern anchor. Returns the widget or
     // nullptr (logged) when missing / wrong type.
-    m3d::ui::Wnd* GrabPatternChild(m3d::ui::Wnd* src, CStr const& name, const m3d::Class* kind,
-                                   const m3d::ui::Wnd* anchor)
+    m3d::ui::Wnd*
+        GrabPatternChild(m3d::ui::Wnd* src, CStr const& name, m3d::Class const* kind, m3d::ui::Wnd const* anchor)
     {
         m3d::Object* c = src->GetChildByName(name);
         if (!c || !c->IsKindOf(kind))
@@ -412,7 +420,7 @@ namespace
         auto* w = static_cast<m3d::ui::Wnd*>(c);
         src->RemoveChild(w);
         BoundsBase<float> b = w->GetBounds();
-        const BoundsBase<float> base = anchor->GetBounds();
+        BoundsBase<float> const base = anchor->GetBounds();
         b.x0 -= base.x0;
         b.y0 -= base.y0;
         w->SetBounds(b, true);
@@ -442,9 +450,10 @@ int AdvancedButton::LoadPattern(m3d::ui::Wnd* pattern)
     pattern->RemoveChild(m_pattern.m_wndPattern);
 
     int ok = 1;
-    const m3d::ui::Wnd* anchor = m_pattern.m_wndPattern;
+    m3d::ui::Wnd const* anchor = m_pattern.m_wndPattern;
 
-    if (auto* w = GrabPatternChild(pattern, m_aif.m_btnPatternActiveZoneName, &m3d::ui::ButtonWnd::m_classButtonWnd, anchor))
+    if (auto* w =
+            GrabPatternChild(pattern, m_aif.m_btnPatternActiveZoneName, &m3d::ui::ButtonWnd::m_classButtonWnd, anchor))
         m_pattern.m_btnPatternActiveZone = static_cast<m3d::ui::ButtonWnd*>(w);
     else
         ok = 0;
@@ -464,17 +473,20 @@ int AdvancedButton::LoadPattern(m3d::ui::Wnd* pattern)
     else
         ok = 0;
 
-    if (auto* w = GrabPatternChild(pattern, m_aif.m_btnPatternAdvanceName, &m3d::ui::ButtonWnd::m_classButtonWnd, anchor))
+    if (auto* w =
+            GrabPatternChild(pattern, m_aif.m_btnPatternAdvanceName, &m3d::ui::ButtonWnd::m_classButtonWnd, anchor))
         m_pattern.m_btnPatternAdvance = static_cast<m3d::ui::ButtonWnd*>(w);
     else
         ok = 0;
 
-    if (auto* w = GrabPatternChild(pattern, m_aif.m_wndPatternIdioticEmbossBtnAdvanceName, &m3d::ui::Wnd::m_classWnd, anchor))
+    if (auto* w =
+            GrabPatternChild(pattern, m_aif.m_wndPatternIdioticEmbossBtnAdvanceName, &m3d::ui::Wnd::m_classWnd, anchor))
         m_pattern.m_wndPatternIdioticEmbossBtnAdvance = w;
     else
         ok = 0;
 
-    if (auto* w = GrabPatternChild(pattern, m_aif.m_wndPatternSliderName, &m3d::ui::SliderWnd::m_classSliderWnd, anchor))
+    if (auto* w =
+            GrabPatternChild(pattern, m_aif.m_wndPatternSliderName, &m3d::ui::SliderWnd::m_classSliderWnd, anchor))
         m_pattern.m_wndPatternSlider = w;
     else
         ok = 0;
@@ -514,7 +526,7 @@ int AdvancedButton::CreateFromPattern()
         return 0;
     }
 
-    const m3d::ui::Wnd* p = m_pattern.m_wndPattern;
+    m3d::ui::Wnd const* p = m_pattern.m_wndPattern;
     if (!Create(CStr(), p->GetStyle(), p->GetBounds(), p->GetId()))
     {
         M3D_LOG_INFO(CStr("AdvancedButton::CreateFromPattern error - cannot create window"));
@@ -579,7 +591,8 @@ int AdvancedButton::CreateChildren()
     else
         res = 0;
 
-    if (auto* w = CreateChildFromPattern(this, "Wnd", m_pattern.m_wndPatternIdioticEmbossBtnAdvance, "CREATE_WND (emboss)"))
+    if (auto* w =
+            CreateChildFromPattern(this, "Wnd", m_pattern.m_wndPatternIdioticEmbossBtnAdvance, "CREATE_WND (emboss)"))
         m_wndIdioticEmbossBtnAdvance = w;
     else
         res = 0;
@@ -710,7 +723,7 @@ void AdvancedButton::RecalcLayot()
         return;
     }
 
-    const m3d::ui::Wnd* advancedControls[] = {m_btnLeft, m_btnRight, m_wndSlider, m_wndUnits, m_wndFrame};
+    m3d::ui::Wnd const* advancedControls[] = {m_btnLeft, m_btnRight, m_wndSlider, m_wndUnits, m_wndFrame};
 
     float maxBottom = 0.0f;
     for (m3d::Object* c = GetFirstChild(); c; c = c->GetNextSibling())
@@ -720,8 +733,8 @@ void AdvancedButton::RecalcLayot()
             continue;
         }
         auto* w = static_cast<m3d::ui::Wnd*>(c);
-        const BoundsBase<float> b = w->GetBounds();
-        const float bottom = b.y0 + b.height;
+        BoundsBase<float> const b = w->GetBounds();
+        float const bottom = b.y0 + b.height;
         if (bottom <= maxBottom)
         {
             continue;
@@ -733,7 +746,7 @@ void AdvancedButton::RecalcLayot()
         else if (m_mode == MODE_SIMPLE)
         {
             bool isAdvancedControl = false;
-            for (const m3d::ui::Wnd* ac : advancedControls)
+            for (m3d::ui::Wnd const* ac : advancedControls)
             {
                 if (ac == w)
                 {
@@ -823,7 +836,7 @@ void AdvancedButton::UpdateLeftRightButtonsState()
     {
         return;
     }
-    const int notch = m_wndSlider->GetNotch();
+    int const notch = m_wndSlider->GetNotch();
     m_btnLeft->EnableWindow(notch > m_wndSlider->GetMin());
     m_btnRight->EnableWindow(notch < m_wndSlider->GetMaxPossible());
 }
@@ -836,7 +849,7 @@ void AdvancedButton::UpdateAdvanceButtonState()
     }
     m_btnAdvance->SetPane(m_mode != MODE_SIMPLE ? m_aif.m_toSimplePaneName : m_aif.m_toAdvancePaneName);
 
-    const CStr& tooltipId = m_mode != MODE_SIMPLE ? m_aif.m_strIdTooltipToSimple : m_aif.m_strIdTooltipToAdvanced;
+    CStr const& tooltipId = m_mode != MODE_SIMPLE ? m_aif.m_strIdTooltipToSimple : m_aif.m_strIdTooltipToAdvanced;
     CStr tooltip = M3D_APP->GetStringByStringId0(tooltipId);
     m_btnAdvance->SetProperty(PROP_WND_TOOLTIP, &tooltip);
 }
@@ -856,7 +869,8 @@ void AdvancedButton::UpdatePriceControls(bool bForce)
     int colorSel;
     if (m_maxUnitsToBuy != 0)
     {
-        const int pct = static_cast<int>(static_cast<float>(m_unitsToBuy) / static_cast<float>(m_maxUnitsToBuy) * 100.0f);
+        int const pct =
+            static_cast<int>(static_cast<float>(m_unitsToBuy) / static_cast<float>(m_maxUnitsToBuy) * 100.0f);
         if (pct >= 50)
         {
             colorSel = (pct < 100) ? 2 : 1;
@@ -958,16 +972,16 @@ void AdvancedButton::UpdateTooltip(bool bForce)
     if (!buyStateId.empty())
     {
         tooltip += CStr("|") + M3D_APP->GetStringByStringId0(m_aif.m_strIdState) + CStr(": ") +
-                   M3D_APP->GetStringByStringId0(buyStateId);
+            M3D_APP->GetStringByStringId0(buyStateId);
     }
     if (m_mode == MODE_ADVANCED)
     {
         tooltip += CStr("||") + M3D_APP->GetStringByStringId0(m_aif.m_strIdTooltipOneUnitPrice) + CStr(": ") +
-                   help::ftoa(m_oneUnitPrice, -1);
+            help::ftoa(m_oneUnitPrice, -1);
         tooltip += CStr("|") + M3D_APP->GetStringByStringId0(m_aif.m_strIdTooltipNumUnitsToBuy) + CStr(": ") +
-                   CStr(m_unitsToBuy);
+            CStr(m_unitsToBuy);
         tooltip += CStr("|") + M3D_APP->GetStringByStringId0(m_aif.m_strIdTooltipSummaryPrice) + CStr(": ") +
-                   CStr(m_summaryPrice);
+            CStr(m_summaryPrice);
     }
 
     m_btnActiveZone->SetProperty(PROP_WND_TOOLTIP, &tooltip);
@@ -1080,7 +1094,7 @@ int AdvancedList::CreateItems()
     }
 
     int res = 1;
-    const std::vector<int> objIds = GetObjIds();
+    std::vector<int> const objIds = GetObjIds();
     for (int objId : objIds)
     {
         res &= AddItem(objId);
@@ -1118,7 +1132,7 @@ void AdvancedList::SetAdvancedModeForButton(AdvancedButton* btn)
         {
             continue;
         }
-        const AdvancedButton::Mode prev = item->m_mode;
+        AdvancedButton::Mode const prev = item->m_mode;
         item->m_mode = (item == btn) ? AdvancedButton::MODE_ADVANCED : AdvancedButton::MODE_SIMPLE;
         if (item->m_mode != prev)
         {
@@ -1133,7 +1147,7 @@ void AdvancedList::OnAdvancedModeChanged(m3d::ui::Wnd* srcWnd, m3d::AIParam cons
     {
         return;
     }
-    const int id = data.GetAsID();
+    int const id = data.GetAsID();
     if (id >= 0 && id <= 1)
     {
         SetAdvancedModeForButton(id == 1 ? static_cast<AdvancedButton*>(srcWnd) : nullptr);
@@ -1261,8 +1275,8 @@ void AdvancedList::OnVehiclePartChanged(void* data)
         return;
     }
     auto* vehicle = ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr;
-    const int playerVehicleId = vehicle ? vehicle->GetId() : -1;
-    if (static_cast<const m3d::Event*>(data)->m_intEv[0] != playerVehicleId)
+    int const playerVehicleId = vehicle ? vehicle->GetId() : -1;
+    if (static_cast<m3d::Event const*>(data)->m_intEv[0] != playerVehicleId)
     {
         return;
     }
@@ -1327,7 +1341,7 @@ void AdvancedList::RecalcLayot()
     float totalH = 0.0f;
     if (!m_items.empty() && m_items.back())
     {
-        const BoundsBase<float> lb = m_items.back()->GetBounds();
+        BoundsBase<float> const lb = m_items.back()->GetBounds();
         totalH = lb.y0 + lb.height + frameW + GetClientEdges()[m3d::ui::BOTTOM];
     }
 

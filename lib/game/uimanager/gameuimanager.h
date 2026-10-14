@@ -11,7 +11,7 @@ namespace m3d
     {
         class Wnd;
     }
-}
+}  // namespace m3d
 
 enum GuiEventType
 {
@@ -56,7 +56,7 @@ public:
 class WindowResourceInfo : public ResourceInfo
 {
 public:
-    virtual int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+    virtual int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
     virtual bool IsValid() const override;
     int m_wndGuiId = -1;
     CStr m_className;
@@ -64,10 +64,10 @@ public:
 
 protected:
     WindowResourceInfo();
-    WindowResourceInfo(const WindowResourceInfo& rhs);
+    WindowResourceInfo(WindowResourceInfo const& rhs);
 
 public:
-    virtual  ~WindowResourceInfo() override;
+    virtual ~WindowResourceInfo() override;
     virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();
@@ -75,16 +75,16 @@ public:
     static m3d::Class m_classWindowResourceInfo;
 };
 
-class IcoResourceInfo :  public ResourceInfo
+class IcoResourceInfo : public ResourceInfo
 {
 public:
-    virtual int LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-    static m3d::Object * CreateObject();
-    virtual m3d::Class* GetClass() const ;
+    virtual int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+    static m3d::Object* CreateObject();
+    virtual m3d::Class* GetClass() const;
     static m3d::Class* GetBaseClass();
     virtual ~IcoResourceInfo();
-    virtual m3d::Object * Clone();
-    virtual bool IsValid() const ;
+    virtual m3d::Object* Clone();
+    virtual bool IsValid() const;
 
 protected:
     IcoResourceInfo();
@@ -108,7 +108,10 @@ protected:
     virtual int GUI_SetEventsForWindow(int, retruxx::vector<int> const&);
     virtual int GUI_UpdateWindowsOnEvent(int, m3d::ui::Wnd*, void*);
     int GUI_LoadResourceInfosFromFile(CStr const&, retruxx::vector<ResourceInfo*>&, CStr const&);
-    void GUI_GetResourceInfosByLoadType(ResourceInfo::ResourceLoadType, retruxx::vector<ResourceInfo*> const&, retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*> >&) const;
+    void GUI_GetResourceInfosByLoadType(
+        ResourceInfo::ResourceLoadType,
+        retruxx::vector<ResourceInfo*> const&,
+        retruxx::vector<ResourceInfo*, retruxx::allocator<ResourceInfo*>>&) const;
     virtual int GUI_Save(ref_ptr<m3d::cmn::XmlFile>, ref_ptr<m3d::cmn::XmlNode>);
     int GUI_CreateWindow(int, CStr const&, bool, CStr const&);
     GameUiManager();

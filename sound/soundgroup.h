@@ -9,8 +9,8 @@ namespace m3d
     {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace snd
 {
@@ -85,4 +85,4 @@ namespace snd
         float m_maxDist;
         int m_currentVolume;
     };
-}
+}  // namespace snd

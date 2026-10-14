@@ -33,7 +33,7 @@ namespace
         DBLCLICK_PRESS = 1,
         DBLCLICK_PRESS_RELEASE = 2,
     };
-}
+}  // namespace
 
 namespace m3d
 {
@@ -157,8 +157,8 @@ namespace m3d
             // Pressing any button outside the open combo box closes it.
             bool const isButton =
                 ev.m_eventType == EV_MOUSE_LBTN || ev.m_eventType == EV_MOUSE_RBTN || ev.m_eventType == EV_MOUSE_MBTN;
-            if (isButton && state && m_wndOpenedComboBox && IsWndAlive(m_wndOpenedComboBox, -1) && IsWndAlive(wnd, -1) &&
-                wnd != m_wndOpenedComboBox && !wnd->IsChildOf(m_wndOpenedComboBox))
+            if (isButton && state && m_wndOpenedComboBox && IsWndAlive(m_wndOpenedComboBox, -1) &&
+                IsWndAlive(wnd, -1) && wnd != m_wndOpenedComboBox && !wnd->IsChildOf(m_wndOpenedComboBox))
             {
                 m_wndOpenedComboBox->Close();
             }
@@ -230,12 +230,14 @@ namespace m3d
             auto& renderer = *M3D_APP->m_renderer;
             BoundsBase<float> childBounds = clipTo;
             DrawInfo info{};
-            curWnd->OnTick(M3D_KERNEL->GetTimer().GetCurTimeUnscaled(), M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled());
+            curWnd->OnTick(
+                M3D_KERNEL->GetTimer().GetCurTimeUnscaled(), M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled());
 
             // Evaluated again after the children, as the shipped code does.
-            auto const isDrawable = [curWnd] {
+            auto const isDrawable = [curWnd]
+            {
                 return !curWnd->m_bounds.Empty() && (curWnd->m_style & WS_NODRAW) == 0 &&
-                       (curWnd->m_style & WS_IS_VISIBLE) != 0;
+                    (curWnd->m_style & WS_IS_VISIBLE) != 0;
             };
             if (isDrawable())
             {
@@ -502,8 +504,11 @@ namespace m3d
             return 1;
         }
 
-        int WndStation::CheckForMouseDblClick(Wnd* w, PointBase<float> const& pt, unsigned mouseState,
-                                              PointBase<float>& prevClickPt)
+        int WndStation::CheckForMouseDblClick(
+            Wnd* w,
+            PointBase<float> const& pt,
+            unsigned mouseState,
+            PointBase<float>& prevClickPt)
         {
             // RVA 0x593210 - press / release / press on the same window inside the
             // double-click delay makes a double click; anything else restarts the
@@ -1107,8 +1112,8 @@ namespace m3d
             {
                 if (combo->IsChildOf(this))
                 {
-                    if (m_wndOpenedComboBox && IsWndAlive(m_wndOpenedComboBox, -1) && m_wndOpenedComboBox->IsChildOf(this) &&
-                        m_wndOpenedComboBox->IsOpen())
+                    if (m_wndOpenedComboBox && IsWndAlive(m_wndOpenedComboBox, -1) &&
+                        m_wndOpenedComboBox->IsChildOf(this) && m_wndOpenedComboBox->IsOpen())
                     {
                         m_wndOpenedComboBox->Close();
                     }
@@ -1265,8 +1270,11 @@ namespace m3d
                     else
                     {
                         // The hot spot is rounded to nearest (a bare fistp), not truncated.
-                        renderer.SetupDXCursor(m_currentCursor.m_tex, static_cast<int>(lrintf(m_currentCursor.m_spot.x)),
-                                               static_cast<int>(lrintf(m_currentCursor.m_spot.y)), 0);
+                        renderer.SetupDXCursor(
+                            m_currentCursor.m_tex,
+                            static_cast<int>(lrintf(m_currentCursor.m_spot.x)),
+                            static_cast<int>(lrintf(m_currentCursor.m_spot.y)),
+                            0);
                     }
                     renderer.ShowDXCursor(true);
                 }
@@ -1283,8 +1291,8 @@ namespace m3d
                     renderer.AbsToRel(mouseX, mouseY);
                     float const left = mouseX - m_currentCursor.m_spot.x;
                     float const top = mouseY - m_currentCursor.m_spot.y;
-                    Application::g_pApp->PutSpriteRel(left, top, m_currentCursor.m_sz.x + left,
-                                                      m_currentCursor.m_sz.y + top, 0xFFFFFFFF);
+                    Application::g_pApp->PutSpriteRel(
+                        left, top, m_currentCursor.m_sz.x + left, m_currentCursor.m_sz.y + top, 0xFFFFFFFF);
                 }
             }
             else if (Application::g_pApp->IsDXCursorEnabled())

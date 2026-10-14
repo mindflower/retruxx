@@ -1169,7 +1169,8 @@ namespace help
         {
             return false;
         }
-        return ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, ai::theResourceManager->GetResourceId("BOSS"));
+        return ai::theResourceManager->bResourceIsKindOf(
+            proto->m_resourceId, ai::theResourceManager->GetResourceId("BOSS"));
     }
 
     CStr GetClanAbbreviationByName(CStr const& clanName)

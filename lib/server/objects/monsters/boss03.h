@@ -15,7 +15,7 @@ namespace ai
     class Boss03PrototypeInfo : public ai::AnimatedComplexPhysicObjPrototypeInfo
     {
     public:
-        retruxx::vector<int, retruxx::allocator<int> > m_dronePrototypeIds;
+        retruxx::vector<int, retruxx::allocator<int>> m_dronePrototypeIds;
         int m_maxDrones;
         CVector m_droneRelPosition;
         Quaternion m_droneRelRotation;
@@ -31,13 +31,13 @@ namespace ai
         float m_defaultHover;
         float m_hoverForPlacingDrones;
         Boss03PrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
 
     private:
-        retruxx::vector<CStr, retruxx::allocator<CStr> > m_dronePrototypeNames;
+        retruxx::vector<CStr, retruxx::allocator<CStr>> m_dronePrototypeNames;
     };
 
     class Boss03 : public ai::AnimatedComplexPhysicObj
@@ -49,11 +49,11 @@ namespace ai
         using BeforeApplyModifierFloatCallback = ai::MemberFunctionTwoArgsRef<ai::Boss03, ai::Modifier, float, bool>;
 
     protected:
-        virtual  ~Boss03() override;
+        virtual ~Boss03() override;
 
     private:
-        Boss03(const ai::Boss03PrototypeInfo& prototypeInfo);
-        Boss03(const ai::Boss03&);
+        Boss03(ai::Boss03PrototypeInfo const& prototypeInfo);
+        Boss03(ai::Boss03 const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -61,22 +61,31 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss03;
-        virtual const ai::Boss03PrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::Boss03PrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
+        static void __fastcall RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
@@ -116,15 +125,15 @@ namespace ai
         virtual void AddChild(ai::Obj* pObj) override;
         virtual bool RemoveChild(ai::Obj* pChild) override;
         virtual void CreateChildren() override;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        virtual bool ApplyModifier(const ai::Modifier& modifier) override;
-        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override;
+        virtual bool ApplyModifier(ai::Modifier const& modifier) override;
+        virtual void InflictDamage(ai::DamageInfo const& damageInfo) override;
         bool StartPlacingDrone();
-        void StartMoving(const CVector& destination, const CVector& finalDirection);
+        void StartMoving(CVector const& destination, CVector const& finalDirection);
         void NoticePlayer();
         float GetMaxHealth() const;
         float GetHealth() const;
@@ -138,8 +147,8 @@ namespace ai
         ai::NumericInRange<float> m_health;
         CVector m_linearVelocity;
         CVector m_relAngularVelocity;
-        retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForDrones;
-        retruxx::vector<CVector, retruxx::allocator<CVector> > m_pointsForShooting;
+        retruxx::vector<CVector, retruxx::allocator<CVector>> m_pointsForDrones;
+        retruxx::vector<CVector, retruxx::allocator<CVector>> m_pointsForShooting;
         ai::Boss03::LiveStatus m_liveStatus;
         ai::Boss03::DroneSpawningStatus m_droneSpawningStatus;
         float m_dronePlacingTimeout;
@@ -161,19 +170,19 @@ namespace ai
         void _SpawnDroneNow();
         void _SetPathTrackingStatus(ai::Boss03::PathTrackingStatus newPathTrackingStatus);
         bool _ProceedSettingVerticalAngle(float elapsedTime, float desiredAngle);
-        bool _ProceedSettingHorizontalDirection(float elapsedTime, const CVector& desiredDir);
+        bool _ProceedSettingHorizontalDirection(float elapsedTime, CVector const& desiredDir);
         void _UpdateLookAtPlayer(float elapsedTime);
-        ai::Boss03Part* _GetBossPartByName(const CStr& partName);
+        ai::Boss03Part* _GetBossPartByName(CStr const& partName);
         ai::Boss03Part* _GetDroneSpawner();
         ai::Boss03Part* _GetMainPart();
         void _SetAllPartsNotDamageable();
         void _RecalcFlyPath();
-        bool _OnHealthValueBeforeApplyModifier(const ai::Modifier& modifier, float& newHealth);
-        static const CStr& __fastcall _LiveStatusToStr(ai::Boss03::LiveStatus status);
-        static const CStr& __fastcall _DroneSpawningStatusToStr(ai::Boss03::DroneSpawningStatus status);
+        bool _OnHealthValueBeforeApplyModifier(ai::Modifier const& modifier, float& newHealth);
+        static CStr const& __fastcall _LiveStatusToStr(ai::Boss03::LiveStatus status);
+        static CStr const& __fastcall _DroneSpawningStatusToStr(ai::Boss03::DroneSpawningStatus status);
         float CalcKeyPartsMaxDurability() const;
 
     public:
         static void __fastcall Registration();
     };
-}
+}  // namespace ai

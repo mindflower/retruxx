@@ -62,5 +62,5 @@ namespace m3d
 #pragma pack(pop)
 
         static_assert(sizeof(Timer) == 0x0050);
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d

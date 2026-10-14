@@ -9,10 +9,10 @@ namespace m3d
     {
     protected:
         Level();
-        Level(const m3d::Level& rhs);
+        Level(m3d::Level const& rhs);
 
     public:
-        virtual  ~Level() override;
+        virtual ~Level() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
@@ -94,10 +94,10 @@ namespace m3d
         unsigned int m_olsDiffuse;
         float m_lsTFactor;
         int New(CCamera& Cam, int levelsize);
-        int Load(const CStr& name, CCamera& Cam, bool bQuiet);
-        int Save(const CStr& name, const CCamera& Cam);
-        CStr GetFullPathNameA(const CStr& name);
+        int Load(CStr const& name, CCamera& Cam, bool bQuiet);
+        int Save(CStr const& name, CCamera const& Cam);
+        CStr GetFullPathNameA(CStr const& name);
         int GetLandSize() const;
-        const char* GetLevelName() const;
+        char const* GetLevelName() const;
     };
-}
+}  // namespace m3d

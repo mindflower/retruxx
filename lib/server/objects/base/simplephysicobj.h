@@ -8,15 +8,15 @@ namespace ai
     {
     public:
         SimplePhysicObjPrototypeInfo();
-        virtual  ~SimplePhysicObjPrototypeInfo() override;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ~SimplePhysicObjPrototypeInfo() override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::SimplePhysicBody* CreatePhysicBody() const;
         CVector GetSize() const;
         float GetRadius() const;
-        const CStr& GetEngineModelName() const;
+        CStr const& GetEngineModelName() const;
         float GetMassValue() const;
-        retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
+        retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo>> m_collisionInfos;
 
     protected:
         bool m_bCollisionTrimeshAllowed;
@@ -33,10 +33,10 @@ namespace ai
     class SimplePhysicObj : public ai::PhysicObj
     {
     protected:
-        virtual  ~SimplePhysicObj() override;
+        virtual ~SimplePhysicObj() override;
 
     protected:
-        SimplePhysicObj(const ai::SimplePhysicObjPrototypeInfo& prototypeInfo);
+        SimplePhysicObj(ai::SimplePhysicObjPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -44,34 +44,44 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSimplePhysicObj;
-        virtual const ai::SimplePhysicObjPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::SimplePhysicObjPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
         virtual void Remove() override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SetBelong(int newBelong) override;
         ai::SimplePhysicBody* GetPhysicBody();
-        const ai::SimplePhysicBody* GetPhysicBody() const;
+        ai::SimplePhysicBody const* GetPhysicBody() const;
         virtual CVector GetGeometricCenter() const override;
-        virtual void ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& nodelist) const override;
+        virtual void ReceiveNodesToLink(
+            retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& nodelist) const override;
         virtual void TransferPhysicParamsToSceneGraphNode() override;
         virtual void RelinkSceneGraphNode() override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
@@ -103,16 +113,18 @@ namespace ai
         virtual void _InternalCreateVisualPart() override;
         virtual void _UnlinkBodyFromGeoms() override;
         virtual void _LinkBodyToGeoms() override;
-        virtual void _SetPositionToGeoms(const CVector& pos) override;
-        virtual void _SetRotationToGeoms(const Quaternion& rot) override;
-        void _UpdatePhysicBodyByCollisionInfo(const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& collisionInfos);
-        void _UpdateFullPhysicBodyByCollisionInfo(const retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> >& collisionInfos);
+        virtual void _SetPositionToGeoms(CVector const& pos) override;
+        virtual void _SetRotationToGeoms(Quaternion const& rot) override;
+        void _UpdatePhysicBodyByCollisionInfo(
+            retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo>> const& collisionInfos);
+        void _UpdateFullPhysicBodyByCollisionInfo(
+            retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo>> const& collisionInfos);
         void _UpdateCollisionInfoFromPhysicBody();
         ai::SimplePhysicBody* m_physicBody;
-        retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo> > m_collisionInfos;
+        retruxx::vector<ai::CollisionInfo, retruxx::allocator<ai::CollisionInfo>> m_collisionInfos;
         float m_scale;
         bool m_deadTimerActive;
         float m_deadTimer;
         bool m_testVisibility;
     };
-}
+}  // namespace ai

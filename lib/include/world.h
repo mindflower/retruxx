@@ -90,12 +90,12 @@ namespace m3d
         m3d::rend::TexHandle m_texMiniMap;
         m3d::rend::TexHandle m_texSunGlow;
         m3d::TexClouds* m_texClouds;
-        bool LoadWorld(const CStr& filename);
+        bool LoadWorld(CStr const& filename);
 
     public:
         void ProcessCollisionStuff();
         void ProcessCollisionStuffOnNode(m3d::SgNode* node);
-        bool SaveWorld(const CStr& filename);
+        bool SaveWorld(CStr const& filename);
         void UpdateSkyParams();
         int RenderSky(m3d::Landscape::LandRenderMode rendMode);
         unsigned int GetWeatherFogColor() const;
@@ -118,7 +118,7 @@ namespace m3d
         m3d::Level* m_level;
         static void __fastcall Register();
         void SetOwner(m3d::CClient* cl);
-        const CVector& GetSun(float azimuth) const;
+        CVector const& GetSun(float azimuth) const;
         float GetSunAscention() const;
         CVector GetScatteringSunColor() const;
         void UpdateSun();
@@ -130,7 +130,7 @@ namespace m3d
 
     public:
         void RefreshObjectsOnLandscapeRect(int, int, int, int);
-        void RefreshObjectsOnLandscapeRect(const CVector& org, float r);
+        void RefreshObjectsOnLandscapeRect(CVector const& org, float r);
         CWorld();
         ~CWorld();
         m3d::SceneGraph& GetGraph();
@@ -139,7 +139,7 @@ namespace m3d
         m3d::WheelTraceMgr& GetWheelTracesMgr();
         void Release();
         void New(CCamera& cam, int lsSize, float hgt0);
-        int Load(const CStr& levelname, CCamera& Cam, bool bQuiet);
+        int Load(CStr const& levelname, CCamera& Cam, bool bQuiet);
         void Render();
         void Update();
         int CreateGeomsRepresentingSceneNodes();
@@ -152,23 +152,24 @@ namespace m3d
         {
             bool onlyOne;
             m3d::SgNode* effect;
-            retruxx::vector<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> > effects;
+            retruxx::vector<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>> effects;
         };
 
-        using FxRemap = retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > >;
-        using FxVector = retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData> >;
+        using FxRemap =
+            retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int>>>;
+        using FxVector = retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData>>;
 
     protected:
-        retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData> > m_effectsFactory;
-        retruxx::vector<CStr, retruxx::allocator<CStr> > fxNames;
-        retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > fxRemap;
+        retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData>> m_effectsFactory;
+        retruxx::vector<CStr, retruxx::allocator<CStr>> fxNames;
+        retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int>>> fxRemap;
         m3d::SgNode* ReadPrefab(ref_ptr<m3d::cmn::XmlFile> file, ref_ptr<m3d::cmn::XmlNode> pnode);
 
     public:
-        const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetFxNames() const;
-        int GetFxId(const CStr& fxName);
+        retruxx::vector<CStr, retruxx::allocator<CStr>> const& GetFxNames() const;
+        int GetFxId(CStr const& fxName);
         m3d::SgNode* CreatePrefabsNode(int type);
-        int CreatePrefabsFromFile(const char* fileName);
+        int CreatePrefabsFromFile(char const* fileName);
         void ReleasePrefabs();
 
     private:
@@ -177,4 +178,4 @@ namespace m3d
         void LoadStaticObstacles();
         void CreatePlayerPassMapGeoms();
     };
-}
+}  // namespace m3d

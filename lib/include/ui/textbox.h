@@ -30,5 +30,5 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(TextBoxWnd);
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

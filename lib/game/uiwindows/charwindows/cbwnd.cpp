@@ -129,8 +129,7 @@ void CBWnd::ClearChildVehicleParts()
 
 void CBWnd::UpdateOnVehiclepartChanged(CStr const& partName)
 {
-    if ((m_gameDataFlags & 1) != 0 && IsChildOf(M3D_APP) &&
-        !CStr::my_strcmp(partName.c_str(), m_mainPartName.c_str()))
+    if ((m_gameDataFlags & 1) != 0 && IsChildOf(M3D_APP) && !CStr::my_strcmp(partName.c_str(), m_mainPartName.c_str()))
     {
         UpdateOnMainPartChanged();
     }
@@ -180,8 +179,8 @@ int CBWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_cbAif.m_wndHidePictureBgName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_cbAif.m_wndHidePictureBgName + " is not found or incorrect type");
             ok = false;
         }
 
@@ -198,8 +197,8 @@ int CBWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_cbAif.m_wndDisabledBgName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_cbAif.m_wndDisabledBgName + " is not found or incorrect type");
         }
     }
 
@@ -225,7 +224,7 @@ int CBWnd::GameDataUpdate(void* data, int dataType)
         // through AddThing, flushing to the reference chests unless the ground window is up.
         if (data)
         {
-            const auto* evt = static_cast<const m3d::Event*>(data);
+            auto const* evt = static_cast<m3d::Event const*>(data);
             if (evt->m_intEv[0] == m_vehicleId)
             {
                 auto const it = m_wndChildVehicleParts.find(evt->m_strEv);
@@ -247,7 +246,7 @@ int CBWnd::GameDataUpdate(void* data, int dataType)
     case 65:
         if (data)
         {
-            const auto* evt = static_cast<const m3d::Event*>(data);
+            auto const* evt = static_cast<m3d::Event const*>(data);
             if (evt->m_intEv[0] == GetVehicleId())
             {
                 UpdateOnVehiclepartChanged(evt->m_strEv);

@@ -47,4 +47,4 @@ namespace ai
         int m_chaseTargetId;
         bool m_needCreateChaseTactics;
     };
-}
+}  // namespace ai

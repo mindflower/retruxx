@@ -13,7 +13,7 @@
 #include "game/uimisc/guihelper.h"
 
 RT_CLASS_EXPORTS_BEGIN(ChangeProfileWnd)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ChangeProfileWnd);
 
 ChangeProfileWnd::AuxInfo::AuxInfo()
@@ -95,7 +95,8 @@ int ChangeProfileWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndProfileListName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndProfileListName + " is not found or incorrect type");
             res = 0;
         }
 

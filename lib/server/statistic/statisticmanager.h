@@ -8,16 +8,16 @@ namespace ai
     class Statistic : public m3d::Object
     {
     protected:
-        Statistic(const ai::Statistic&);
+        Statistic(ai::Statistic const&);
         Statistic();
 
     public:
-        virtual  ~Statistic() override;
+        virtual ~Statistic() override;
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetRtClass() const;
         static m3d::Class m_classStatistic;
         bool m_bGlobalFlag;
-        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
         virtual CStr GetValue() const = 0;
         virtual void Zero() = 0;
@@ -49,15 +49,15 @@ namespace ai
 
     // Canonical statistic names, registered by the server-side static initializers
     // ($E29_14 .. $E53_11 in the shipped build).
-    inline const CStr STATISTIC_REAL_TIME = "RealTime";
-    inline const CStr STATISTIC_GAME_TIME = "GameTime";
-    inline const CStr STATISTIC_PEOPLES_KILLED = "PeoplesKilled";
-    inline const CStr STATISTIC_PATH_ELAPSED = "PathElapsed";
-    inline const CStr STATISTIC_GDP = "GDP";
-    inline const CStr STATISTIC_DEATH_COUNTER = "DeathCounter";
-    inline const CStr STATISTIC_VEHICLE_KILLED = "VehiclesKilled";
-    inline const CStr STATISTIC_SHELLS_EMITTED = "ShellsEmitted";
-    inline const CStr STATISTIC_FAVORITE_GUN = "FavoriteGun";
-    inline const CStr STATISTIC_HIT_RATIO = "HitRatio";
-    inline const CStr STATISTIC_WARES = "Wares";
-}
+    inline CStr const STATISTIC_REAL_TIME = "RealTime";
+    inline CStr const STATISTIC_GAME_TIME = "GameTime";
+    inline CStr const STATISTIC_PEOPLES_KILLED = "PeoplesKilled";
+    inline CStr const STATISTIC_PATH_ELAPSED = "PathElapsed";
+    inline CStr const STATISTIC_GDP = "GDP";
+    inline CStr const STATISTIC_DEATH_COUNTER = "DeathCounter";
+    inline CStr const STATISTIC_VEHICLE_KILLED = "VehiclesKilled";
+    inline CStr const STATISTIC_SHELLS_EMITTED = "ShellsEmitted";
+    inline CStr const STATISTIC_FAVORITE_GUN = "FavoriteGun";
+    inline CStr const STATISTIC_HIT_RATIO = "HitRatio";
+    inline CStr const STATISTIC_WARES = "Wares";
+}  // namespace ai

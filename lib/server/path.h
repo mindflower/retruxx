@@ -7,8 +7,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -70,18 +70,30 @@ namespace ai
         unsigned int m_idOfClosestPoint;
 
     public:
-        inline static int QuantAmount = 0;
+        static inline int QuantAmount = 0;
         // The shipped build holds 5 here and never writes it (RVA 0xA039B0).
-        inline static int QuantMax = 5;
+        static inline int QuantMax = 5;
         CVector2 m_startPoint;
         CVector2 m_endPoint;
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode, ai::Map* pMap);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode, ai::Map* pMap);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
-        Path(const std::vector<CVector2, std::allocator<CVector2> >& path);
+        Path(std::vector<CVector2, std::allocator<CVector2>> const& path);
         Path();
         ~Path();
-        void StartSearch(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint, float radius, unsigned char blockedValue);
-        void StartSearchInRect(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint, const CVector2& rectPoint1, const CVector2& rectPoint2, float radius, unsigned char blockedValue);
+        void StartSearch(
+            ai::Map* pMap,
+            CVector2 const& startPoint,
+            CVector2 const& endPoint,
+            float radius,
+            unsigned char blockedValue);
+        void StartSearchInRect(
+            ai::Map* pMap,
+            CVector2 const& startPoint,
+            CVector2 const& endPoint,
+            CVector2 const& rectPoint1,
+            CVector2 const& rectPoint2,
+            float radius,
+            unsigned char blockedValue);
         void ProceedSearch1(unsigned int msInterval);
         void ProceedSearch2(unsigned int msInterval);
         void ProceedSearch3(unsigned int msInterval);
@@ -94,7 +106,12 @@ namespace ai
         ai::eSearchResult GetResult() const;
         unsigned int GetSize() const;
         void GetItem(unsigned int ItemNum, float* PathCoordx, float* PathCoordy) const;
-        bool IsStraightPathValid(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint, float radius, unsigned char blockedValue);
+        bool IsStraightPathValid(
+            ai::Map* pMap,
+            CVector2 const& startPoint,
+            CVector2 const& endPoint,
+            float radius,
+            unsigned char blockedValue);
 
     private:
         void _Init();
@@ -102,9 +119,9 @@ namespace ai
         void ClearHelpers();
         // Not in the shipped build, which repeats this inline at the end of each search.
         void _BuildPathFromParents(unsigned int endNode, bool fTarget);
-        unsigned int MapIndexToId(const ai::MapIndex& v) const;
+        unsigned int MapIndexToId(ai::MapIndex const& v) const;
         void IdToMapIndex(unsigned int id, ai::MapIndex& res) const;
         void StraightenPath(bool bForDijkstra);
         void FilterPath();
     };
-}
+}  // namespace ai

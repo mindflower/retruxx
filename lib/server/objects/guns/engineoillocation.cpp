@@ -21,7 +21,8 @@ namespace ai
     // RVA 0x846A10
     EngineOilLocation::~EngineOilLocation() = default;
 
-    EngineOilLocation::EngineOilLocation(EngineOilLocationPrototypeInfo const& prototypeInfo) : TemporaryLocation(prototypeInfo)
+    EngineOilLocation::EngineOilLocation(EngineOilLocationPrototypeInfo const& prototypeInfo) :
+        TemporaryLocation(prototypeInfo)
     {
         // RVA 0x8469F0
     }
@@ -54,7 +55,8 @@ namespace ai
     EngineOilLocationPrototypeInfo const* EngineOilLocation::GetPrototypeInfo() const
     {
         // RVA 0x846EE0 - NOTE: the prototype is cast without a type check.
-        return static_cast<EngineOilLocationPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<EngineOilLocationPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void EngineOilLocation::OnObjectIn(Obj* object)

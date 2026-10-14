@@ -8,7 +8,7 @@ namespace ai
     public:
         float m_initialVelocity;
         MortarPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
     };
@@ -22,8 +22,8 @@ namespace ai
         virtual ~Mortar() override;
 
     private:
-        Mortar(const ai::MortarPrototypeInfo& prototypeInfo);
-        Mortar(const ai::Mortar&);
+        Mortar(ai::MortarPrototypeInfo const& prototypeInfo);
+        Mortar(ai::Mortar const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -31,7 +31,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(Mortar);
-        virtual const ai::MortarPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::MortarPrototypeInfo const* GetPrototypeInfo() const override;
         struct TMortarAngles
         {
             float phi;
@@ -40,18 +40,20 @@ namespace ai
             TMortarAngles();
             CVector ToVector() const;
         };
-        virtual void LookAtPoint(const CVector& lookAt, float elapsedTime) override;
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const override;
-        static CVector __fastcall GetMortarShellPosition(const CVector& source, const CVector& velocity, float time);
+        virtual void LookAtPoint(CVector const& lookAt, float elapsedTime) override;
+        virtual bool isLookAtPoint(CVector const& lookAt, float eps) const override;
+        static CVector __fastcall GetMortarShellPosition(CVector const& source, CVector const& velocity, float time);
 
     protected:
         virtual void _LaunchShells() override;
 
     private:
-        CVector GetVelocityByDirection(const CVector& dir) const;
-        void setCurrentMortarAngles(const ai::Mortar::TMortarAngles& angles);
-        float targetFunction(const CVector& src, const CVector& dst, float phi, float initVel, float time) const;
-        float targetFunction2(const CVector& src, const CVector& dst, float phi, float initVel, float time, float theta) const;
-        CVector GetMortarDirection(const CVector& currentDir, const CVector& src, const CVector& dst, float initVel) const;
+        CVector GetVelocityByDirection(CVector const& dir) const;
+        void setCurrentMortarAngles(ai::Mortar::TMortarAngles const& angles);
+        float targetFunction(CVector const& src, CVector const& dst, float phi, float initVel, float time) const;
+        float targetFunction2(CVector const& src, CVector const& dst, float phi, float initVel, float time, float theta)
+            const;
+        CVector GetMortarDirection(CVector const& currentDir, CVector const& src, CVector const& dst, float initVel)
+            const;
     };
-}
+}  // namespace ai

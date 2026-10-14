@@ -13,7 +13,7 @@ namespace ai
         CStr m_explosionEffectName;
         float m_maxHealth;
         BossMetalArmLoadPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
 
@@ -29,11 +29,11 @@ namespace ai
         friend class BossMetalArm;
 
     protected:
-        virtual  ~BossMetalArmLoad() override;
+        virtual ~BossMetalArmLoad() override;
 
     private:
-        BossMetalArmLoad(const ai::BossMetalArmLoadPrototypeInfo& prototypeInfo);
-        BossMetalArmLoad(const ai::BossMetalArmLoad&);
+        BossMetalArmLoad(ai::BossMetalArmLoadPrototypeInfo const& prototypeInfo);
+        BossMetalArmLoad(ai::BossMetalArmLoad const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -41,7 +41,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBossMetalArmLoad;
-        virtual const ai::BossMetalArmLoadPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::BossMetalArmLoadPrototypeInfo const* GetPrototypeInfo() const override;
 
         using AfterChangeFloatCallback = ai::MemberFunctionOneArg<ai::BossMetalArmLoad, float, void>;
         enum CollisionMode
@@ -52,12 +52,17 @@ namespace ai
         };
 
     public:
-        virtual bool ApplyModifier(const ai::Modifier& modifier) override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool ApplyModifier(ai::Modifier const& modifier) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         void SetCollisionMode(ai::BossMetalArmLoad::CollisionMode collisionMode);
         void Explode();
-        static int __fastcall CollideBossMetalArmLoadWithObject(m3d::Object* obj1, m3d::Object* obj2, dContact* contacts, unsigned int& numContacts, bool reverse);
+        static int __fastcall CollideBossMetalArmLoadWithObject(
+            m3d::Object* obj1,
+            m3d::Object* obj2,
+            dContact* contacts,
+            unsigned int& numContacts,
+            bool reverse);
 
     private:
         ai::BossMetalArmLoad::CollisionMode m_collisionMode;
@@ -65,4 +70,4 @@ namespace ai
         void _CreateBlastWave();
         void _OnAfterHealthValueChange(float oldHealth);
     };
-}
+}  // namespace ai

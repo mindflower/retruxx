@@ -11,12 +11,12 @@ namespace m3d
         friend class Application;
 
     public:
-        Profiler(const m3d::Profiler&);
-        Profiler(const char* name);
+        Profiler(m3d::Profiler const&);
+        Profiler(char const* name);
         Profiler();
         virtual ~Profiler() = default;
-        void SetName(const char* name);
-        const char* GetName() const;
+        void SetName(char const* name);
+        char const* GetName() const;
         void StartFrame();
         void EndFrame();
         void StartCountdown();
@@ -47,20 +47,20 @@ namespace m3d
         friend class Application;
 
     public:
-        ProfilerStack(const m3d::ProfilerStack&);
+        ProfilerStack(m3d::ProfilerStack const&);
         ProfilerStack();
         ~ProfilerStack();
-        unsigned int AddProfiler(const char* name, unsigned int averageVal);
-        const char* GetName(unsigned int id) const;
+        unsigned int AddProfiler(char const* name, unsigned int averageVal);
+        char const* GetName(unsigned int id) const;
         m3d::Profiler* GetProfiler(unsigned int id);
-        m3d::Profiler* GetProfilerByName(const char*);
+        m3d::Profiler* GetProfilerByName(char const*);
         void StartFrame();
         void EndFrame();
         void Clear();
         unsigned int GetNumProfilers() const;
 
     private:
-        retruxx::vector<m3d::Profiler*, retruxx::allocator<m3d::Profiler*> > m_stack;
+        retruxx::vector<m3d::Profiler*, retruxx::allocator<m3d::Profiler*>> m_stack;
         unsigned int m_numProfilers;
     };
 
@@ -85,4 +85,4 @@ namespace m3d
     private:
         m3d::Profiler* m_counter;
     };
-}
+}  // namespace m3d

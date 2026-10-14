@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         TemporaryLocationPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
         float m_TTL;
         float m_TimeForActivation;
@@ -17,9 +17,9 @@ namespace ai
     class TemporaryLocation : public ai::Location
     {
     protected:
-        virtual  ~TemporaryLocation() override = 0;
+        virtual ~TemporaryLocation() override = 0;
 
-        TemporaryLocation(const ai::TemporaryLocationPrototypeInfo& prototypeInfo);
+        TemporaryLocation(ai::TemporaryLocationPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -27,7 +27,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classTemporaryLocation;
-        virtual const ai::TemporaryLocationPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::TemporaryLocationPrototypeInfo const* GetPrototypeInfo() const override;
 
         enum TemporaryLocationState
         {
@@ -38,7 +38,7 @@ namespace ai
     public:
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void Remove() override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         void CreateEffectNode();
 
@@ -47,4 +47,4 @@ namespace ai
         float m_TL;
         ai::TemporaryLocation::TemporaryLocationState m_TemporaryLocationState;
     };
-}
+}  // namespace ai

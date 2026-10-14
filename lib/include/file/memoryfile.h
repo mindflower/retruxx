@@ -50,5 +50,5 @@ namespace m3d
             void* m_Data = nullptr;
             void* m_CurrData = nullptr;
         };
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

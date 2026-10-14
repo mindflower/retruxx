@@ -172,7 +172,7 @@ void MotherPanel::ClearPanels(std::vector<ChildPanelId> const& previousPanelsToR
     {
         auto const cur = it++;
         bool const remains = std::find(previousPanelsToRemain.begin(), previousPanelsToRemain.end(), cur->first) !=
-                             previousPanelsToRemain.end();
+            previousPanelsToRemain.end();
         if (!remains && cur->second)
         {
             RemoveChildPanel(cur->second);
@@ -840,7 +840,10 @@ void MotherPanel::OnJournal()
 bool MotherPanel::CanChildPanelBeLaunchedNow(ChildPanelId panelId) const
 {
     // RVA 0x4602F0
-    auto const isShown = [this](ChildPanelId id) { return m_panels.find(id) != m_panels.end(); };
+    auto const isShown = [this](ChildPanelId id)
+    {
+        return m_panels.find(id) != m_panels.end();
+    };
 
     if (isShown(panelId))
     {
@@ -866,8 +869,8 @@ bool MotherPanel::CanChildPanelBeLaunchedNow(ChildPanelId panelId) const
     case PANEL_PALM:
     case PANEL_CONVERSATION:
         // NOTE: unlike the side panels, these are not blocked by PANEL_FULLSCREEN.
-        return !isShown(PANEL_LEFT) && !isShown(PANEL_RIGHT) && !isShown(PANEL_VIDEO) &&
-               !isShown(PANEL_TRADE_RIGHT) && !isShown(PANEL_TRADE_LEFT) && !isShown(PANEL_TRADE_COMMON);
+        return !isShown(PANEL_LEFT) && !isShown(PANEL_RIGHT) && !isShown(PANEL_VIDEO) && !isShown(PANEL_TRADE_RIGHT) &&
+            !isShown(PANEL_TRADE_LEFT) && !isShown(PANEL_TRADE_COMMON);
 
     default:
         return true;
@@ -1041,7 +1044,10 @@ int MotherPanel::RemoveChildPanel(ref_ptr<ChildPanel> childPanel)
     auto const it = std::find_if(
         m_panels.begin(),
         m_panels.end(),
-        [&childPanel](auto const& entry) { return entry.second.get() == childPanel.get(); });
+        [&childPanel](auto const& entry)
+        {
+            return entry.second.get() == childPanel.get();
+        });
     if (it == m_panels.end())
     {
         return 0;

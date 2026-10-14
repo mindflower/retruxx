@@ -18,16 +18,20 @@ static D3DPRIMITIVETYPE const m3dPtToD3dPt[6] = {
 };
 
 // orig 0x644d40 drawcalls.cpp:49
-int CDevice::DrawIndexedPrimitive(PrimType Type, unsigned int MinIndex, unsigned int NumVertices,
-                                  unsigned int StartIndex, unsigned int PrimitiveCount)
+int CDevice::DrawIndexedPrimitive(
+    PrimType Type,
+    unsigned int MinIndex,
+    unsigned int NumVertices,
+    unsigned int StartIndex,
+    unsigned int PrimitiveCount)
 {
     setVertexShader(0);
     setPixelShader(0);
     ActuateStates(true);
 
     m_curIbBaseIdx = m_latchedIbBaseIdx;
-    HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(m3dPtToD3dPt[Type], m_latchedIbBaseIdx, MinIndex, NumVertices,
-                                                    StartIndex, PrimitiveCount);
+    HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(
+        m3dPtToD3dPt[Type], m_latchedIbBaseIdx, MinIndex, NumVertices, StartIndex, PrimitiveCount);
 
     m_stats.polyCount += PrimitiveCount;
     m_stats.DIPs++;
@@ -53,9 +57,13 @@ int CDevice::DrawPrimitive(PrimType PrimitiveType, unsigned int StartVertex, uns
 }
 
 // orig 0x644f70 drawcalls.cpp:119
-int CDevice::DrawIndexedPrimitiveEffect(PrimType Type, IEffect* effect, unsigned int MinIndex,
-                                        unsigned int NumVertices, unsigned int StartIndex,
-                                        unsigned int PrimitiveCount)
+int CDevice::DrawIndexedPrimitiveEffect(
+    PrimType Type,
+    IEffect* effect,
+    unsigned int MinIndex,
+    unsigned int NumVertices,
+    unsigned int StartIndex,
+    unsigned int PrimitiveCount)
 {
     if (effect && effect->IsValid())
     {
@@ -73,8 +81,8 @@ int CDevice::DrawIndexedPrimitiveEffect(PrimType Type, IEffect* effect, unsigned
             effectImpl->BeginPass(pass);
 
             m_curIbBaseIdx = m_latchedIbBaseIdx;
-            m_pd3dDevice->DrawIndexedPrimitive(m3dPtToD3dPt[Type], m_latchedIbBaseIdx, MinIndex, NumVertices,
-                                               StartIndex, PrimitiveCount);
+            m_pd3dDevice->DrawIndexedPrimitive(
+                m3dPtToD3dPt[Type], m_latchedIbBaseIdx, MinIndex, NumVertices, StartIndex, PrimitiveCount);
 
             m_stats.polyCount += PrimitiveCount;
             effectImpl->m_numPrimitives += PrimitiveCount;
@@ -93,8 +101,11 @@ int CDevice::DrawIndexedPrimitiveEffect(PrimType Type, IEffect* effect, unsigned
 }
 
 // orig 0x645090 drawcalls.cpp:173
-int CDevice::DrawPrimitiveEffect(PrimType PrimitiveType, IEffect* effect, unsigned int StartVertex,
-                                 unsigned int PrimitiveCount)
+int CDevice::DrawPrimitiveEffect(
+    PrimType PrimitiveType,
+    IEffect* effect,
+    unsigned int StartVertex,
+    unsigned int PrimitiveCount)
 {
     if (effect && effect->IsValid())
     {
@@ -130,14 +141,18 @@ int CDevice::DrawPrimitiveEffect(PrimType PrimitiveType, IEffect* effect, unsign
 }
 
 // orig 0x644e30 drawcalls.cpp:230
-int CDevice::DrawIndexedPrimitiveShader(PrimType Type, unsigned int MinIndex, unsigned int NumVertices,
-                                        unsigned int StartIndex, unsigned int PrimitiveCount)
+int CDevice::DrawIndexedPrimitiveShader(
+    PrimType Type,
+    unsigned int MinIndex,
+    unsigned int NumVertices,
+    unsigned int StartIndex,
+    unsigned int PrimitiveCount)
 {
     ActuateStates(false);
 
     m_curIbBaseIdx = m_latchedIbBaseIdx;
-    HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(m3dPtToD3dPt[Type], m_latchedIbBaseIdx, MinIndex, NumVertices,
-                                                    StartIndex, PrimitiveCount);
+    HRESULT hr = m_pd3dDevice->DrawIndexedPrimitive(
+        m3dPtToD3dPt[Type], m_latchedIbBaseIdx, MinIndex, NumVertices, StartIndex, PrimitiveCount);
 
     m_stats.polyCount += PrimitiveCount;
     m_stats.DIPs++;

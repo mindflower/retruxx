@@ -92,7 +92,8 @@ namespace ai
         CVector const pos = GetBarrelNode() ? GetBarrelNode()->GetOriginWorldAbs() : GetNodeAbsolutePosition();
         CVector const dir = _CalcDirForNextShot();
         CVector const wishedDir = GetMortarDirection(dir, pos, lookAt, prototype->m_initialVelocity);
-        CVector const aimPoint(wishedDir.x * 1000.0f + pos.x, wishedDir.y * 1000.0f + pos.y, wishedDir.z * 1000.0f + pos.z);
+        CVector const aimPoint(
+            wishedDir.x * 1000.0f + pos.x, wishedDir.y * 1000.0f + pos.y, wishedDir.z * 1000.0f + pos.z);
         Gun::LookAtPoint(aimPoint, elapsedTime);
     }
 
@@ -118,7 +119,8 @@ namespace ai
         CVector const pos = GetBarrelNode() ? GetBarrelNode()->GetOriginWorldAbs() : GetNodeAbsolutePosition();
         CVector const dir = _CalcDirForNextShot();
         CVector const wishedDir = GetMortarDirection(dir, pos, lookAt, prototype->m_initialVelocity);
-        CVector const aimPoint(wishedDir.x * 1000.0f + pos.x, wishedDir.y * 1000.0f + pos.y, wishedDir.z * 1000.0f + pos.z);
+        CVector const aimPoint(
+            wishedDir.x * 1000.0f + pos.x, wishedDir.y * 1000.0f + pos.y, wishedDir.z * 1000.0f + pos.z);
         return Gun::isLookAtPoint(aimPoint, eps);
     }
 
@@ -188,7 +190,8 @@ namespace ai
         return nullptr;
     }
 
-    float Mortar::targetFunction2(CVector const& src, CVector const& dst, float phi, float, float time, float theta) const
+    float Mortar::targetFunction2(CVector const& src, CVector const& dst, float phi, float, float time, float theta)
+        const
     {
         // RVA 0x8495B0 - how far a shell fired at heading phi and elevation theta lands from dst
         // after time seconds. NOTE: the initVel argument is ignored; the prototype's initial
@@ -224,7 +227,8 @@ namespace ai
         return targetFunction2(src, dst, phi, initVel, theta, time);
     }
 
-    CVector Mortar::GetMortarDirection(CVector const& currentDir, CVector const& src, CVector const& dst, float initVel) const
+    CVector Mortar::GetMortarDirection(CVector const& currentDir, CVector const& src, CVector const& dst, float initVel)
+        const
     {
         // RVA 0x849680 - solves for the launch elevations that hit dst at speed initVel. There are
         // up to two (a flat and a lobbed shot); each is checked by simulating it, and the lower one

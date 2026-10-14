@@ -14,7 +14,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class WareItem : public m3d::ui::ButtonWnd
 {
@@ -160,8 +160,7 @@ public:
     using TwinkleInfoVector = std::vector<WareList::TwinkleInfo, std::allocator<WareList::TwinkleInfo>>;
 
 protected:
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     void ClearItems();
     ai::Workshop* GetWorkshop() const;
@@ -224,8 +223,7 @@ public:
 
 protected:
     virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual void OnPaintOverChildren(m3d::ui::DrawInfo const& di) override;
     virtual int GameDataUpdate(void* data, int dataType) override;
     virtual ai::GeomRepositoryItem GetItemFromOrigin(PointBase<float> const& wndPt) override;

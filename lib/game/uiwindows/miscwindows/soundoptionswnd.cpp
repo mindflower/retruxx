@@ -80,7 +80,7 @@ void SoundOptionsWnd::ApplyEffectsVolume()
     if ((m_gameDataFlags & 1) != 0)
     {
         auto const volume = m_sliderEffectsVolume->GetNotch();
-        M3D_KERNEL->GetEngineCfg().m_snd_3dVolume .SetI(volume);
+        M3D_KERNEL->GetEngineCfg().m_snd_3dVolume.SetI(volume);
         if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
         {
             M3D_APP->m_sound->SetGroupVolume(2, volume);
@@ -88,7 +88,7 @@ void SoundOptionsWnd::ApplyEffectsVolume()
     }
 }
 
-int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd *from, unsigned id, unsigned msg, m3d::AIParam const& data)
+int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
 {
     if ((m_style & 0x100000) != 0)
     {
@@ -104,21 +104,21 @@ int SoundOptionsWnd::OnWndNotify(m3d::ui::Wnd *from, unsigned id, unsigned msg, 
         return 1;
     }
     case 0x27D9u:
-	{
+    {
         if (msg != 1)
         {
             return 0;
         }
         OnBtnMusicVolumePrevClick(data);
         return 1;
-	}
+    }
     case 0x27DAu:
     {
         if (msg != 1)
         {
             return 0;
         }
-    	OnBtnMusicVolumeNextClick(data);
+        OnBtnMusicVolumeNextClick(data);
         return 1;
     }
     case 0x27DBu:
@@ -390,7 +390,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderMusicVolumeName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_sliderMusicVolumeName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -401,7 +402,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderEffectsVolumeName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_sliderEffectsVolumeName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -412,7 +414,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderSpeakVolumeName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_sliderSpeakVolumeName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -423,7 +426,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnMusicVolumePrevName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnMusicVolumePrevName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -434,7 +438,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnMusicVolumeNextName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnMusicVolumeNextName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -445,7 +450,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnEffectsVolumePrevName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnEffectsVolumePrevName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -456,7 +462,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnEffectsVolumeNextName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnEffectsVolumeNextName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -467,7 +474,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnSpeakVolumePrevName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnSpeakVolumePrevName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -483,7 +491,8 @@ int SoundOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnSpeakVolumeNextName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnSpeakVolumeNextName + " is not found or incorrect type");
             res = 0;
         }
     }
@@ -491,7 +500,6 @@ int SoundOptionsWnd::GameDataSetup()
         return 1;
     M3D_LOG_INFO("SoundOptionsWnd: error - fail to init because of a bad resource");
     return 0;
-
 }
 
 SoundOptionsWnd::SoundOptionsWnd(SoundOptionsWnd const&)

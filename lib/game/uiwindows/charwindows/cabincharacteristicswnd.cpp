@@ -161,9 +161,9 @@ void CabinCharacteristicsWnd::UpdateCharacteristics()
         return;
     }
 
-    ai::Vehicle* baseVehicle = m_vehicleType != VehicleWnd::VEHICLE_NORMAL
-                                   ? (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr)
-                                   : const_cast<ai::Vehicle*>(vehicle);
+    ai::Vehicle* baseVehicle = m_vehicleType != VehicleWnd::VEHICLE_NORMAL ?
+        (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr) :
+        const_cast<ai::Vehicle*>(vehicle);
     if (!baseVehicle)
     {
         return;

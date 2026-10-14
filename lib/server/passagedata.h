@@ -21,8 +21,8 @@ namespace ai
         CStr m_locationName;
         int m_angle;
         unsigned int m_fadingStartTime;
-        std::vector<Obj *> m_passingObjects;
+        std::vector<Obj*> m_passingObjects;
     };
 
     inline PassageData* thePassageData = nullptr;
-}
+}  // namespace ai

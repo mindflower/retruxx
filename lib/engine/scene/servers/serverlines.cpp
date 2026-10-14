@@ -53,10 +53,10 @@ namespace m3d
     int LinesServer::Init()
     {
         m_valid = true;
-        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_CIRCLE" });
-        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_SIGHT" });
-        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_FLOWER" });
-        m_models.push_back({ nullptr, nullptr, nullptr, "LSI_ARROW" });
+        m_models.push_back({nullptr, nullptr, nullptr, "LSI_CIRCLE"});
+        m_models.push_back({nullptr, nullptr, nullptr, "LSI_SIGHT"});
+        m_models.push_back({nullptr, nullptr, nullptr, "LSI_FLOWER"});
+        m_models.push_back({nullptr, nullptr, nullptr, "LSI_ARROW"});
         return 1;
     }
 
@@ -176,7 +176,8 @@ namespace m3d
                     else
                     {
                         int const quarter = static_cast<int>(i / 4);
-                        CVector const segment(curPoint.x - prevPoint.x, curPoint.y - prevPoint.y, curPoint.z - prevPoint.z);
+                        CVector const segment(
+                            curPoint.x - prevPoint.x, curPoint.y - prevPoint.y, curPoint.z - prevPoint.z);
                         float const half = segment.length() * 0.5f;
                         bool const odd = (quarter % 2) != 0;
                         float px;
@@ -261,4 +262,4 @@ namespace m3d
     {
         // RVA 0x76A280
     }
-}
+}  // namespace m3d

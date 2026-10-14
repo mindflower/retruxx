@@ -32,4 +32,4 @@ namespace m3d
     public:
         RT_CLASS_DECLARE(SgLoadpointNode);
     };
-}
+}  // namespace m3d

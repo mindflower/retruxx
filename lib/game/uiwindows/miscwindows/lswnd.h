@@ -10,7 +10,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class SaveButton : public m3d::ui::ButtonWnd
 {

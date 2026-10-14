@@ -354,8 +354,7 @@ namespace ai
         ClearSavedStatus();
         SaveToXML(xmlFile, xmlNode);
 
-        int const objId =
-            theObjects->CreateEntityForLoad(m_prototypeId, (CStr("Clone_") + m_name).c_str(), -1, -1);
+        int const objId = theObjects->CreateEntityForLoad(m_prototypeId, (CStr("Clone_") + m_name).c_str(), -1, -1);
         auto* clone = theObjects->GetEntityByObjId(objId);
         if (!clone)
         {
@@ -422,8 +421,7 @@ namespace ai
 
                 // strtok writes into the string, so it runs over the CStr's own buffer.
                 CStr buf = objects;
-                for (char* token = strtok(const_cast<char*>(buf.c_str()), " ,"); token;
-                     token = strtok(nullptr, " ,"))
+                for (char* token = strtok(const_cast<char*>(buf.c_str()), " ,"); token; token = strtok(nullptr, " ,"))
                 {
                     recipient.m_objIds.push_back(atoi(token));
                 }
@@ -778,7 +776,8 @@ namespace ai
 
             ref_ptr prefixNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Prefix");
             prefixNode->SetAttribute("name", affix->m_name.c_str());
-            prefixNode->SetAttribute("targetResource",
+            prefixNode->SetAttribute(
+                "targetResource",
                 theResourceManager->GetResourceName(affix->m_pAffixGroup->GetTargetResourceId()).c_str());
             xmlNode->AddChild(prefixNode);
         }
@@ -791,7 +790,8 @@ namespace ai
 
             ref_ptr suffixNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Suffix");
             suffixNode->SetAttribute("name", affix->m_name.c_str());
-            suffixNode->SetAttribute("targetResource",
+            suffixNode->SetAttribute(
+                "targetResource",
                 theResourceManager->GetResourceName(affix->m_pAffixGroup->GetTargetResourceId()).c_str());
             xmlNode->AddChild(suffixNode);
         }
@@ -978,8 +978,8 @@ namespace ai
         if (!affixName || !*affixName)
             return false;
 
-        int const affixId = pServer->GetAffixManager()->GetAffixIdByNameAndResource(
-            CStr(affixName), GetPrototypeInfo()->m_resourceId);
+        int const affixId =
+            pServer->GetAffixManager()->GetAffixIdByNameAndResource(CStr(affixName), GetPrototypeInfo()->m_resourceId);
         if (affixId == -1)
             return false;
 
@@ -1022,8 +1022,7 @@ namespace ai
             return;
 
         retruxx::vector<int> affixGroupIds;
-        pServer->GetAffixManager()->GetAffixGroupsByResourceId(
-            GetPrototypeInfo()->m_resourceId, affixGroupIds);
+        pServer->GetAffixManager()->GetAffixGroupsByResourceId(GetPrototypeInfo()->m_resourceId, affixGroupIds);
 
         for (int applied = 0; applied < numAffixes; ++applied)
         {

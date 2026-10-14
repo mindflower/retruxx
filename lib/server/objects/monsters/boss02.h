@@ -11,29 +11,31 @@ namespace ai
     public:
         struct StateInfo
         {
-            retruxx::vector<int, retruxx::allocator<int> > m_loadPrototypeIds;
+            retruxx::vector<int, retruxx::allocator<int>> m_loadPrototypeIds;
             CVector m_position;
-            StateInfo(const ai::Boss02PrototypeInfo::StateInfo& __that);
+            StateInfo(ai::Boss02PrototypeInfo::StateInfo const& __that);
             StateInfo();
-            void LoadFromXML(const m3d::cmn::XmlNode* xmlNode);
+            void LoadFromXML(m3d::cmn::XmlNode const* xmlNode);
             void SaveToXML(m3d::cmn::XmlNode* xmlNode) const;
             void PostLoad();
-            retruxx::vector<CStr, retruxx::allocator<CStr> > m_loadPrototypeNames;
+            retruxx::vector<CStr, retruxx::allocator<CStr>> m_loadPrototypeNames;
         };
 
-        using StateInfoVector = retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo> >;
+        using StateInfoVector =
+            retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo>>;
 
     public:
-        retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo> > m_stateInfos;
+        retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo>>
+            m_stateInfos;
         float m_speed;
         int m_containerPrototypeId;
         CVector m_relPosForContainerPickUp;
         Quaternion m_relRotForContainerPickUp;
         CVector m_relPosForContainerPutDown;
         Boss02PrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
 
     private:
@@ -48,8 +50,8 @@ namespace ai
         virtual ~Boss02() override;
 
     private:
-        Boss02(const ai::Boss02PrototypeInfo& prototypeInfo);
-        Boss02(const ai::Boss02&);
+        Boss02(ai::Boss02PrototypeInfo const& prototypeInfo);
+        Boss02(ai::Boss02 const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -57,23 +59,23 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss02;
-        virtual const ai::Boss02PrototypeInfo* GetPrototypeInfo() const override;
-        virtual int OnEvent(const ai::Event& evn) override;
+        virtual ai::Boss02PrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
         enum MoveState
         {
             MOVE_IDLE = 0,
             MOVE_MOVING = 1,
         };
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void CreateChildren() override;
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
         virtual void AddChild(ai::Obj* pObj) override;
         virtual bool RemoveChild(ai::Obj* pChild) override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        virtual void SetPositionSelf(const CVector& pos) override;
+        virtual void SetPositionSelf(CVector const& pos) override;
         void NextState();
         void Die();
         void SetJustMovedContainerToBlock();
@@ -85,19 +87,20 @@ namespace ai
         virtual void _InternalCreateVisualPart() override;
 
     private:
-        retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo> > m_stateInfos;
+        retruxx::vector<ai::Boss02PrototypeInfo::StateInfo, retruxx::allocator<ai::Boss02PrototypeInfo::StateInfo>>
+            m_stateInfos;
         int m_numState;
         ai::Boss02::MoveState m_moveState;
         CVector m_velocity;
         int m_containerId;
-        void _SetMovePosition(const CVector& movePosition);
+        void _SetMovePosition(CVector const& movePosition);
         void _SetMoveState(ai::Boss02::MoveState moveState);
-        const ai::Boss02Arm* _GetArm() const;
+        ai::Boss02Arm const* _GetArm() const;
         ai::Boss02Arm* _GetArm();
         ai::VehiclePart* _GetPlatform();
         void _PlaceContainerToInitialPosition();
         void _SetToDeadPose();
-        void _OnBossCriticalLoadsExploded(const ai::Event& evn);
-        void _OnBossArmActionFinished(const ai::Event& evn);
+        void _OnBossCriticalLoadsExploded(ai::Event const& evn);
+        void _OnBossArmActionFinished(ai::Event const& evn);
     };
-}
+}  // namespace ai

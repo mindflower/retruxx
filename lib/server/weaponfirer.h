@@ -11,4 +11,4 @@ namespace ai
         static void WeaponLookAtPoint(ComplexPhysicObj*, CVector const&, float);
         static float GetMaxFiringRange(ComplexPhysicObj const*);
     };
-}
+}  // namespace ai

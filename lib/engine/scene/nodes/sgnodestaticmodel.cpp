@@ -153,4 +153,4 @@ namespace m3d
         prop.m_destBox = &m_ownBoundingBox;
         GetServer()->GetItemProperty(m_srvId, PROP_SRV_BOUNDING_BOX, &prop);
     }
-}
+}  // namespace m3d

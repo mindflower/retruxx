@@ -7,10 +7,10 @@
 
 namespace m3d
 {
-	namespace ui
-	{
+    namespace ui
+    {
         RT_CLASS_EXPORTS_BEGIN(ScrollWnd)
-		RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(ScrollWnd);
 
         Object* ScrollWnd::CreateObject()
@@ -390,7 +390,7 @@ namespace m3d
                 }
                 return bounds;
             }
-            return { 0.0f, 0.0f };
+            return {0.0f, 0.0f};
         }
 
         BoundsBase<float> ScrollWnd::GetBodyRect() const
@@ -426,5 +426,5 @@ namespace m3d
             OnMouseMove(at, noDelta);
             return 1;
         }
-	}
-}
+    }  // namespace ui
+}  // namespace m3d

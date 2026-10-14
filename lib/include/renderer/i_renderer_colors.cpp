@@ -90,7 +90,7 @@ void m3d::rend::Colori::init(unsigned char _r, unsigned char _g, unsigned char _
     a = _a;
 }
 
-void m3d::rend::Colori::AddSat(const m3d::rend::Colori& c)
+void m3d::rend::Colori::AddSat(m3d::rend::Colori const& c)
 {
     // NOTE: not emitted in the shipped binary; adds per channel, saturating at 255.
     for (int i = 0; i < 4; ++i)

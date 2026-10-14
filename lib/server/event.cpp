@@ -6,7 +6,7 @@
 
 namespace ai
 {
-    Event::Event(const ai::Event& __that) :
+    Event::Event(ai::Event const& __that) :
         m_eventId(__that.m_eventId),
         m_recipientObjId(__that.m_recipientObjId),
         m_senderObjId(__that.m_senderObjId),
@@ -17,7 +17,6 @@ namespace ai
         m_param1(__that.m_param1),
         m_param2(__that.m_param2)
     {
-
     }
 
     Event::Event() :
@@ -29,14 +28,14 @@ namespace ai
         m_senderObjId(-1),
         m_debugNum(0)
     {
-        
     }
 
     CStr Event::Dump() const
     {
         // RVA 0x8BA4F0 - "event <n> <<name>> From:<id> ( <class> <name> )  To:<id> ( ... )  time:<t> timeout = <t>"
         // followed by the parameters that are set.
-        auto const describe = [](int objId) {
+        auto const describe = [](int objId)
+        {
             if (objId >= 0)
             {
                 if (auto* obj = theObjects->GetEntityByObjId(objId))
@@ -63,7 +62,7 @@ namespace ai
         return str;
     }
 
-    void Event::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode)
+    void Event::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode)
     {
         // RVA 0x8BA100
         CStr eventAttr = OwnNode->GetAttribute("EventID");
@@ -95,7 +94,6 @@ namespace ai
         {
             m_param2.LoadFromXML(xmlFile, node);
         }
-
     }
 
     void Event::SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const
@@ -119,6 +117,5 @@ namespace ai
             OwnNode->AddChild(node);
             m_param2.SaveToXML(xmlFile, node);
         }
-
     }
-}
+}  // namespace ai

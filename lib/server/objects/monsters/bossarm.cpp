@@ -161,7 +161,9 @@ namespace ai
         return static_cast<BossArmPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
-    BossArm::BossArm(BossArmPrototypeInfo const& prototype) : VehiclePart(prototype), m_turningSpeed(prototype.m_turningSpeed)
+    BossArm::BossArm(BossArmPrototypeInfo const& prototype) :
+        VehiclePart(prototype),
+        m_turningSpeed(prototype.m_turningSpeed)
     {
         // RVA 0x8D1850
         m_attackState = ATTACK_IDLE;
@@ -210,10 +212,17 @@ namespace ai
                         SYS_ERROR("!m_loadProrotypeIds.empty()");
                     }
                     // NOTE: carries on after the assertion, indexing the empty vector.
-                    int const loadPrototypeId = m_loadProrotypeIds[IntRandom(static_cast<unsigned>(m_loadProrotypeIds.size()))];
+                    int const loadPrototypeId =
+                        m_loadProrotypeIds[IntRandom(static_cast<unsigned>(m_loadProrotypeIds.size()))];
                     m_loadObjId = theObjects->CreateNewObject(loadPrototypeId, "", -1, GetBelong());
                     theProcessManager->PostMessageA(
-                        GE_SUBSCRIBE, m_loadObjId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+                        GE_SUBSCRIBE,
+                        m_loadObjId,
+                        GetId(),
+                        0.0f,
+                        m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+                        m3d::AIParam(),
+                        1);
                     // NOTE: the new object is used without a null or type check.
                     static_cast<PhysicObj*>(theObjects->GetEntityByObjId(m_loadObjId))->DisablePhysics();
                 }
@@ -235,7 +244,8 @@ namespace ai
                 _PlaceLoadOnLoadpoint(elapsedTime);
             }
             BossArmPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
-            if (m_loadObjId != -1 && _GetCurAnimationFrame() > prototypeInfo->m_attacks[m_curAttackAction].m_frameToReleaseLoad)
+            if (m_loadObjId != -1 &&
+                _GetCurAnimationFrame() > prototypeInfo->m_attacks[m_curAttackAction].m_frameToReleaseLoad)
             {
                 // Throw: the load leaves at 50 m/s straight at the player and explodes on contact.
                 // NOTE: assumed to be a BossMetalArmLoad without a type check.
@@ -246,12 +256,19 @@ namespace ai
                     load->SetLinearVelocity(m_curLoadVelocity);
                     CVector const loadPos = load->GetPosition();
                     CVector const target = playerVehicle->GetPosition();
-                    CVector const dir = CVector(target.x - loadPos.x, target.y - loadPos.y, target.z - loadPos.z).getNormalized();
+                    CVector const dir =
+                        CVector(target.x - loadPos.x, target.y - loadPos.y, target.z - loadPos.z).getNormalized();
                     load->SetLinearVelocity(CVector(dir.x * 50.0f, dir.y * 50.0f, dir.z * 50.0f));
                     load->m_collisionMode = BossMetalArmLoad::COLLIDE_EXPLODE;
                 }
                 theProcessManager->PostMessageA(
-                    GE_UNSUBSCRIBE, m_loadObjId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+                    GE_UNSUBSCRIBE,
+                    m_loadObjId,
+                    GetId(),
+                    0.0f,
+                    m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+                    m3d::AIParam(),
+                    1);
                 m_loadObjId = -1;
             }
             if (_GetNodeRealAnimAction() == AT_STAND2)
@@ -363,7 +380,8 @@ namespace ai
         if (elapsedTime > 0.001)
         {
             float const invDt = 1.0f / elapsedTime;
-            m_curLoadVelocity = CVector((mat._41 - oldPos.x) * invDt, (mat._42 - oldPos.y) * invDt, (mat._43 - oldPos.z) * invDt);
+            m_curLoadVelocity =
+                CVector((mat._41 - oldPos.x) * invDt, (mat._42 - oldPos.y) * invDt, (mat._43 - oldPos.z) * invDt);
         }
         load->SetPosition(newPos);
         Quaternion rot;
@@ -402,7 +420,8 @@ namespace ai
             M3D_LOG_INFO(CStr("Boss is attacking"));
             BossArmPrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
             // NOTE: with no attacks configured this indexes an empty vector.
-            m_curAttackAction = static_cast<int>((static_cast<unsigned>(prototypeInfo->m_attacks.size()) * rand()) >> 15);
+            m_curAttackAction =
+                static_cast<int>((static_cast<unsigned>(prototypeInfo->m_attacks.size()) * rand()) >> 15);
             SetNodeAction(prototypeInfo->m_attacks[m_curAttackAction].m_action, false);
         }
     }
@@ -429,7 +448,8 @@ namespace ai
         // RVA 0x8D20A0
         // Turns the arm in the horizontal plane towards desiredDir by at most
         // TurningSpeed * elapsedTime radians.
-        float invLen = static_cast<float>(1.0 / sqrt(desiredDir.z * desiredDir.z + desiredDir.x * desiredDir.x + 1.1920929e-7));
+        float invLen =
+            static_cast<float>(1.0 / sqrt(desiredDir.z * desiredDir.z + desiredDir.x * desiredDir.x + 1.1920929e-7));
         CVector const realDesiredDir(desiredDir.x * invLen, invLen * 0.0f, desiredDir.z * invLen);
         CVector dir = GetNodeAbsoluteDirection();
         invLen = static_cast<float>(1.0 / sqrt(dir.z * dir.z + dir.x * dir.x + 1.1920929e-7));
@@ -447,7 +467,8 @@ namespace ai
         float const invCross = static_cast<float>(1.0 / sqrt(crossLenSq + 1.1920929e-7));
         CVector const axis(cross.x * invCross, cross.y * invCross, cross.z * invCross);
         float const maxStep = m_turningSpeed * elapsedTime;
-        float const angle = static_cast<float>(acos(dir.z * realDesiredDir.z + dir.x * realDesiredDir.x + dir.y * realDesiredDir.y));
+        float const angle =
+            static_cast<float>(acos(dir.z * realDesiredDir.z + dir.x * realDesiredDir.x + dir.y * realDesiredDir.y));
         float const halfAngle = (angle <= maxStep ? angle : maxStep) * 0.5f;
         float const s = static_cast<float>(sin(halfAngle));
         Quaternion const q(axis.x * s, axis.y * s, axis.z * s, static_cast<float>(cos(halfAngle)));
@@ -480,7 +501,13 @@ namespace ai
         // RVA 0x8D3820
         // The carried load blew up; enough of them in a row and the boss is told.
         theProcessManager->PostMessageA(
-            GE_UNSUBSCRIBE, evn.m_senderObjId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+            GE_UNSUBSCRIBE,
+            evn.m_senderObjId,
+            GetId(),
+            0.0f,
+            m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+            m3d::AIParam(),
+            1);
         ++m_numExplodedLoads;
         m_loadObjId = -1;
         m_bCurLoadExploded = true;

@@ -279,8 +279,8 @@ namespace ai
         for (unsigned i = 0; i < m_Model->m_HierGeoms.size(); ++i)
         {
             m3d::DRAFT_HierGeom const* const hierGeom = m_Model->GetHierGeom(i);
-            summarVolume += hierGeom->geom.Sizes.BoxSizes.x * hierGeom->geom.Sizes.BoxSizes.y *
-                hierGeom->geom.Sizes.BoxSizes.z;
+            summarVolume +=
+                hierGeom->geom.Sizes.BoxSizes.x * hierGeom->geom.Sizes.BoxSizes.y * hierGeom->geom.Sizes.BoxSizes.z;
         }
 
         int const prototypeId = thePrototypeManager->GetPrototypeId(CStr("Member"));
@@ -288,9 +288,7 @@ namespace ai
         {
             m3d::DRAFT_HierGeom const* const hierGeom = m_Model->GetHierGeom(i);
             CVector const size(
-                hierGeom->geom.Sizes.BoxSizes.x,
-                hierGeom->geom.Sizes.BoxSizes.y,
-                hierGeom->geom.Sizes.BoxSizes.z);
+                hierGeom->geom.Sizes.BoxSizes.x, hierGeom->geom.Sizes.BoxSizes.y, hierGeom->geom.Sizes.BoxSizes.z);
             float const partMass = size.x * size.y * size.z / summarVolume * mass;
 
             int const objId = theObjects->CreateNewObject(prototypeId, "", -1, -1);
@@ -299,8 +297,7 @@ namespace ai
             member->SetGeom(size, partMass, 1.0f, false);
 
             // Where the bone that owns this geom currently is, in world space.
-            CMatrix const boneToWorld =
-                m_Anim->GetBoneAnim(hierGeom->parentBone).m_curMatrix * m_initialNodeTransform;
+            CMatrix const boneToWorld = m_Anim->GetBoneAnim(hierGeom->parentBone).m_curMatrix * m_initialNodeTransform;
             member->SetPosition(boneToWorld.vecMul(hierGeom->geom.Translation));
 
             CMatrix geomToWorld = hierGeom->geom.Rotation.ToMatrix() * boneToWorld;
@@ -468,8 +465,7 @@ namespace ai
         for (GeomObj* const member : m_Members)
         {
             dReal const* const geomPos = dGeomGetPosition(member->GetGeom()->GetGeomId());
-            CVector const delta(
-                geomPos[0] - causePos.x, geomPos[1] - causePos.y, geomPos[2] - causePos.z);
+            CVector const delta(geomPos[0] - causePos.x, geomPos[1] - causePos.y, geomPos[2] - causePos.z);
             float const invLen =
                 1.0 / sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z + 0.00000011920929);
 

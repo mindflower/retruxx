@@ -6,7 +6,11 @@
 class auxShaderInclude : public ID3DXInclude
 {
 public:
-    HRESULT __stdcall Open(D3DXINCLUDE_TYPE IncludeType, LPCSTR pName, LPCVOID pParentData, LPCVOID* ppData,
-                           UINT* pBytes) override;
+    HRESULT __stdcall Open(
+        D3DXINCLUDE_TYPE IncludeType,
+        LPCSTR pName,
+        LPCVOID pParentData,
+        LPCVOID* ppData,
+        UINT* pBytes) override;
     HRESULT __stdcall Close(LPCVOID pData) override;
 };

@@ -85,4 +85,4 @@ namespace snd
         void(__fastcall* m_endCallback)(int);
         CStr m_fileName;
     };
-}
+}  // namespace snd

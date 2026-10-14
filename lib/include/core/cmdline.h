@@ -7,13 +7,13 @@ namespace m3d
     class CmdLine
     {
     public:
-        unsigned int Init(const char* cmdStr);
-        bool CheckParam(const char* param) const;
+        unsigned int Init(char const* cmdStr);
+        bool CheckParam(char const* param) const;
         unsigned int GetNumParams() const;
-        const CStr& GetParam(unsigned int) const;
+        CStr const& GetParam(unsigned int) const;
 
     private:
         CStr m_cmdLine;
-        retruxx::vector<CStr, retruxx::allocator<CStr> > m_params;
+        retruxx::vector<CStr, retruxx::allocator<CStr>> m_params;
     };
-}
+}  // namespace m3d

@@ -19,8 +19,7 @@ namespace
     char const* const BUILD_STRING = DXRENDER9_BUILD_STRING;
 
     // The separator lines of the report: 75 characters of "-==- " and 98 dashes.
-    char const* const REPORT_BANNER =
-        "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-";
+    char const* const REPORT_BANNER = "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-";
     char const* const REPORT_DASHES =
         "----------"
         "----------"
@@ -59,10 +58,10 @@ namespace
             return vb1->m_desc.Size < vb2->m_desc.Size;
         }
     };
-}
+}  // namespace
 
 // orig 0x631420 vb_man_stats.cpp:55
-bool CDevice::ReportVbsInfo(const char* fileName)
+bool CDevice::ReportVbsInfo(char const* fileName)
 {
     std::map<IDirect3DVertexDeclaration9*, CStr> typeToStr;
 
@@ -99,8 +98,9 @@ bool CDevice::ReportVbsInfo(const char* fileName)
     std::vector<CVertexBuffer*> vbs;
     std::vector<CVertexBuffer*> vbPools;
 
-    for (std::vector<std::vector<VbHandle> >::iterator poolIter = m_VbPoolBuffers.begin();
-         poolIter != m_VbPoolBuffers.end(); ++poolIter)
+    for (std::vector<std::vector<VbHandle>>::iterator poolIter = m_VbPoolBuffers.begin();
+         poolIter != m_VbPoolBuffers.end();
+         ++poolIter)
     {
         for (std::vector<VbHandle>::iterator vbIter = poolIter->begin(); vbIter != poolIter->end(); ++vbIter)
         {
@@ -203,8 +203,9 @@ bool CDevice::ReportVbsInfo(const char* fileName)
     }
 
     *stream << REPORT_DASHES << "\n";
-    *stream << "Total size of dynamic native vertex buffers: " << dynamincVbSize << " (" << (float)dynamincVbSize / 1024.0f
-            << "Kb / " << (float)dynamincVbSize / (1024.0f * 1024.0f) << "Mb)" << "\n\n";
+    *stream << "Total size of dynamic native vertex buffers: " << dynamincVbSize << " ("
+            << (float)dynamincVbSize / 1024.0f << "Kb / " << (float)dynamincVbSize / (1024.0f * 1024.0f) << "Mb)"
+            << "\n\n";
 
     *stream << "** Static native vertex buffers (" << staticVbCount << " entries) **\n";
     *stream << "   VERTEX_TYPE      VertexSize   NumVerts   BufSize              Id             Description\n";
@@ -294,8 +295,9 @@ bool CDevice::ReportVbsInfo(const char* fileName)
         unsigned int poolIndex = 0;
         InternalHandle<VbHandle> vbHandle;
         vbHandle.SetId(vbPools[i] - &m_vbs[0]);
-        for (std::vector<std::vector<VbHandle> >::iterator poolIter = m_VbPoolBuffers.begin();
-             poolIter != m_VbPoolBuffers.end(); ++poolIter)
+        for (std::vector<std::vector<VbHandle>>::iterator poolIter = m_VbPoolBuffers.begin();
+             poolIter != m_VbPoolBuffers.end();
+             ++poolIter)
         {
             if (std::find(poolIter->begin(), poolIter->end(), vbHandle) != poolIter->end())
             {
@@ -307,7 +309,8 @@ bool CDevice::ReportVbsInfo(const char* fileName)
         // The vertices of the fields that live in this buffer of the pool.
         unsigned int usedVerts = 0;
         for (std::list<PoolFieldInfo>::iterator fieldIter = m_VbPoolFields[poolIndex].begin();
-             fieldIter != m_VbPoolFields[poolIndex].end(); ++fieldIter)
+             fieldIter != m_VbPoolFields[poolIndex].end();
+             ++fieldIter)
         {
             if (fieldIter->Offset / m_VbPoolSize == bufferCount)
             {
@@ -350,7 +353,7 @@ void CDevice::UpdateVBMemStats()
 {
     std::vector<CVertexBuffer*> vbPools;
 
-    for (std::vector<std::vector<VbHandle> >::iterator iter = m_VbPoolBuffers.begin(); iter != m_VbPoolBuffers.end();
+    for (std::vector<std::vector<VbHandle>>::iterator iter = m_VbPoolBuffers.begin(); iter != m_VbPoolBuffers.end();
          ++iter)
     {
         for (std::vector<VbHandle>::iterator vbIter = iter->begin(); vbIter != iter->end(); ++vbIter)

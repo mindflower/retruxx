@@ -118,7 +118,15 @@ public:
     float GetMaxTimeScale() const;
     void SetMaxTimeScale(float);
     virtual int OnObtainingFocus();
-    int LoadLevel(CStr const&, CStr const&, bool, bool, bool, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*, ai::ObjContainer::eSAVE_TYPES);
+    int LoadLevel(
+        CStr const&,
+        CStr const&,
+        bool,
+        bool,
+        bool,
+        m3d::cmn::XmlFile*,
+        m3d::cmn::XmlNode const*,
+        ai::ObjContainer::eSAVE_TYPES);
     void FullSystyemAndUserUnpause();
     virtual bool GetPostEffectParam(CStr const&, float&);
     virtual bool SetPostEffectParam(CStr const&, float);

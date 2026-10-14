@@ -16,7 +16,11 @@ namespace m3d
     namespace
     {
 
-        void FillTraceBuffer(m3d::rend::VertexXYZCT1* write, m3d::SkidQuad const& sq, unsigned int opaque, float texLength)
+        void FillTraceBuffer(
+            m3d::rend::VertexXYZCT1* write,
+            m3d::SkidQuad const& sq,
+            unsigned int opaque,
+            float texLength)
         {
             // RVA 0x697BE0 - one cross section of a strip: two vertices across the wheel.
             write->x = sq.p1.x;
@@ -59,8 +63,7 @@ namespace m3d
                 static_cast<double>(diameter.y) * diameter.y + static_cast<double>(diameter.x) * diameter.x;
             rad = static_cast<float>(sqrt(diameterSq) * 0.5);
         }
-    }
-
+    }  // namespace
 
     SkidStrip::SkidStrip()
     {
@@ -270,7 +273,13 @@ namespace m3d
         return m_ownersToIdxMap.find(owner) != m_ownersToIdxMap.end();
     }
 
-    void WheelTraceMgr::AddTrace(CVector const& org, Quaternion const& quat, float scale, void* owner, int soilType, bool smoothStart)
+    void WheelTraceMgr::AddTrace(
+        CVector const& org,
+        Quaternion const& quat,
+        float scale,
+        void* owner,
+        int soilType,
+        bool smoothStart)
     {
         // RVA 0x698CE0 - appends a cross section at the wheel's contact point. A new
         // section is only started once the wheel is skidMinDist past the one before the
@@ -354,7 +363,8 @@ namespace m3d
             double const minDist = M3D_ENGINE_CFG.m_skidMinDist.GetF();
 
             // The texture repeats once per half width of wheel travelled.
-            strip.m_texCoord = static_cast<float>(static_cast<double>((lastMid - mid).length()) / halfWidth + strip.m_texCoord);
+            strip.m_texCoord =
+                static_cast<float>(static_cast<double>((lastMid - mid).length()) / halfWidth + strip.m_texCoord);
 
             int const nextVertex = 2 * (stripIdx * 64 + strip.m_stripSize);
             if ((beforeLastMid - mid).lengthSq() <= minDist * minDist)
@@ -393,4 +403,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

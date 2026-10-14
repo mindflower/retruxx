@@ -19,25 +19,25 @@ namespace m3d
         };
 
     public:
-        void SetS(const char*);
+        void SetS(char const*);
         void SetI(int i);
         void SetF(float);
         void SetB(bool);
         void IncI();
         void DecI();
-        const char* GetS() const;
+        char const* GetS() const;
         int GetI() const;
         float GetF() const;
         bool GetB() const;
         m3d::DbgCounter::eType GetType() const;
         void Reset();
-        const char* GetName() const;
+        char const* GetName() const;
 
     private:
-        DbgCounter(const m3d::DbgCounter&);
+        DbgCounter(m3d::DbgCounter const&);
         DbgCounter();
         ~DbgCounter();
-        void SetName(const char* name);
+        void SetName(char const* name);
 
         m3d::DbgCounter::eType m_curType = DBG_COUNTER_STRING;
         union
@@ -57,24 +57,24 @@ namespace m3d
         friend class Application;
 
     public:
-        DbgCounterStack(const m3d::DbgCounterStack&);
+        DbgCounterStack(m3d::DbgCounterStack const&);
         DbgCounterStack();
         ~DbgCounterStack();
-        unsigned int AddCounter(const char* name);
-        const char* GetName(unsigned int id) const;
+        unsigned int AddCounter(char const* name);
+        char const* GetName(unsigned int id) const;
         m3d::DbgCounter* GetCounter(unsigned int id);
-        m3d::DbgCounter* GetCounterByName(const char* name);
+        m3d::DbgCounter* GetCounterByName(char const* name);
         void Clear();
         unsigned int GetNumCounters() const;
-        void DrawStringThisFrame(const char* str);
+        void DrawStringThisFrame(char const* str);
         void ClearStringStack();
         unsigned int GetNumStrings() const;
-        const char* GetString(unsigned int id) const;
+        char const* GetString(unsigned int id) const;
 
     private:
-        retruxx::vector<m3d::DbgCounter*, retruxx::allocator<m3d::DbgCounter*> > m_stack;
+        retruxx::vector<m3d::DbgCounter*, retruxx::allocator<m3d::DbgCounter*>> m_stack;
         unsigned int m_numCounters = 0;
         retruxx::vector<retruxx::string> m_stringStack;
         unsigned int m_numStrings = 0;
     };
-}
+}  // namespace m3d

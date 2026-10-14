@@ -133,8 +133,9 @@ int WorkshopVehicleWnd::GameDataSetup()
     {
         // The shared vehicle model window is registered under its own gui id so
         // that other windows can pull it in front of this one.
-        int res =
-            M3D_APP->m_pInterfaceManager->AddWindowById(m_wndVehicleModel.get(), IW_WND_WORKSHOP_VEHICLE_MODEL, true, false) & 1;
+        int res = M3D_APP->m_pInterfaceManager->AddWindowById(
+                      m_wndVehicleModel.get(), IW_WND_WORKSHOP_VEHICLE_MODEL, true, false) &
+            1;
         MoveChildToLastPosition(static_cast<m3d::ui::Wnd*>(m_wndVehicleModel.get()));
 
         m3d::Object* btnPrev = GetChildByName(m_waif.m_btnPrevName);
@@ -235,8 +236,7 @@ int WorkshopVehicleWnd::GameDataUpdate(void* data, int dataType)
     }
     else if (dataType == DATATYPE_REPOSITORY_CHANGED)
     {
-        if (data && IsChildOf(M3D_APP) &&
-            static_cast<m3d::Event*>(data)->m_ptrEv[0] == GetWorkshopRepository())
+        if (data && IsChildOf(M3D_APP) && static_cast<m3d::Event*>(data)->m_ptrEv[0] == GetWorkshopRepository())
         {
             OnRepositoryChanged();
             return 1;
@@ -579,8 +579,7 @@ void WorkshopVehicleWnd::LaunchNewVehicleInventoryWnd()
     {
         return;
     }
-    M3D_APP->EnqueueMessage(
-        UM_SHOW_INVENTORY, m_vehicleId, m_vehicleId, m_workshopId, 0, CStr(), m3d::AIParam());
+    M3D_APP->EnqueueMessage(UM_SHOW_INVENTORY, m_vehicleId, m_vehicleId, m_workshopId, 0, CStr(), m3d::AIParam());
 }
 
 void WorkshopVehicleWnd::Hide()

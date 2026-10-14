@@ -42,4 +42,4 @@ namespace m3d
         int m_currentSoundNum;
         mutable int m_framesPassed;
     };
-}
+}  // namespace m3d

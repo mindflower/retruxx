@@ -53,5 +53,5 @@ namespace m3d
         public:
             RT_CLASS_DECLARE(FormattedStringsListBoxWnd);
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

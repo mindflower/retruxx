@@ -26,8 +26,7 @@ protected:
     virtual int GameDataSetup() override;
     virtual int GameDataClear(bool beforeContinuousLevel) override;
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual int OnAfterAddToWndStation() override;
     virtual void SetVehicleId(int vehicleId) override;
@@ -49,7 +48,7 @@ protected:
     m3d::ui::ButtonWnd* m_btnPrev;
     m3d::ui::ButtonWnd* m_btnNext;
     int m_workshopId;
-    std::vector<int, std::allocator<int> > m_vehicleObjIdList;
+    std::vector<int, std::allocator<int>> m_vehicleObjIdList;
     m3d::ui::ButtonWnd* m_btnSkinNext;
     m3d::ui::ButtonWnd* m_btnSkinPrev;
     int m_curSkin;

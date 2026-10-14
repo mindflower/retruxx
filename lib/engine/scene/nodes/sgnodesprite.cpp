@@ -246,4 +246,4 @@ namespace m3d
             m_props[i] = node.m_props[i];
         }
     }
-}
+}  // namespace m3d

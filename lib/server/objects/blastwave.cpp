@@ -274,11 +274,12 @@ namespace ai
             CVector const delta = body->GetPosition() - wavePos;
             float const dist = sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
 
-            float const invDist = 1.0 / sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z + 0.00000011920929);
+            float const invDist =
+                1.0 / sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z + 0.00000011920929);
             CVector const INITIAL_UP_DIRECTION(0.0, 1.0, 0.0);
             CVector blastDir = delta * invDist + INITIAL_UP_DIRECTION * 0.1;
-            float const invLen =
-                1.0 / sqrt(blastDir.x * blastDir.x + blastDir.y * blastDir.y + blastDir.z * blastDir.z + 0.00000011920929);
+            float const invLen = 1.0 /
+                sqrt(blastDir.x * blastDir.x + blastDir.y * blastDir.y + blastDir.z * blastDir.z + 0.00000011920929);
             blastDir = blastDir * invLen;
 
             if (!body->IsKindOf(&ai::VehiclePart::m_classVehiclePart))
@@ -306,8 +307,7 @@ namespace ai
             }
 
             // The blast is shared out over all the parts of whatever was hit.
-            unsigned const numParts =
-                static_cast<unsigned>(((ComplexPhysicObj*)owner)->m_vehicleParts.size());
+            unsigned const numParts = static_cast<unsigned>(((ComplexPhysicObj*)owner)->m_vehicleParts.size());
 
             DamageInfo damageInfo;
             damageInfo.attackerId = attackerId;
@@ -344,7 +344,7 @@ namespace ai
 
         float const invDist = 1.0 / sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z + 0.00000011920929);
         CVector const INITIAL_UP_DIRECTION(0.0, 1.0, 0.0);
-            CVector blastDir = delta * invDist + INITIAL_UP_DIRECTION * 0.1;
+        CVector blastDir = delta * invDist + INITIAL_UP_DIRECTION * 0.1;
         float const invLen =
             1.0 / sqrt(blastDir.x * blastDir.x + blastDir.y * blastDir.y + blastDir.z * blastDir.z + 0.00000011920929);
         blastDir = blastDir * invLen;
@@ -369,8 +369,8 @@ namespace ai
             }
             else
             {
-                breakable->SetRemovingEffectName(gDynamicScene->GetBoShellEffectName(
-                    breakable->GetEffectType(), blastWave->m_rocketExplosionType));
+                breakable->SetRemovingEffectName(
+                    gDynamicScene->GetBoShellEffectName(breakable->GetEffectType(), blastWave->m_rocketExplosionType));
             }
             breakable->SetState(BreakableObject::REMOVED);
 

@@ -30,8 +30,8 @@ namespace m3d
                 TEXTURE_CLAMP = 0x1,
                 TEXTURE_REPEAT = 0x2,
             };
-        public:
 
+        public:
             unsigned int GetBarColor() const;
             float GetMaxValue() const;
             void SetCurValue(float);
@@ -90,5 +90,5 @@ namespace m3d
         private:
             int m_numOfSteps = 1;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

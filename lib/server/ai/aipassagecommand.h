@@ -9,7 +9,7 @@ namespace ai
     {
     public:
         int m_StateNum;
-        retruxx::vector<ai::AIParamRef, retruxx::allocator<ai::AIParamRef> > m_ParamRefList;
+        retruxx::vector<ai::AIParamRef, retruxx::allocator<ai::AIParamRef>> m_ParamRefList;
         void Dump();
     };
-}
+}  // namespace ai

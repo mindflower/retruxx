@@ -25,7 +25,7 @@ public:
         float m_ySpace0;
         float m_ySpace1;
         PointBase<float> m_navPointBtnSz;
-        AuxInfo(const QuestItem::AuxInfo&);
+        AuxInfo(QuestItem::AuxInfo const&);
         AuxInfo();
     };
 
@@ -79,7 +79,7 @@ public:
         PointBase<float> m_npTexSz;
         CStr m_strNpButton;
         unsigned int m_npTexColor;
-        AuxInfo(const QuestStatusBtn::AuxInfo&);
+        AuxInfo(QuestStatusBtn::AuxInfo const&);
         AuxInfo();
     };
 
@@ -114,8 +114,7 @@ public:
     bool IsSelected() const;
     void SetQuestStatus(help::UnifyQuestStatus questStatus);
     help::UnifyQuestStatus GetQuestStatus() const;
-    virtual int CreateQuestLabel(CStr const& caption, PointBase<float> const& origin, float maxWidth, unsigned int id)
-       ;
+    virtual int CreateQuestLabel(CStr const& caption, PointBase<float> const& origin, float maxWidth, unsigned int id);
     BoundsBase<float> GetLastStringBounds() const;
 
     struct AuxInfo
@@ -126,7 +125,7 @@ public:
         unsigned int m_unselFailColor;
         CStr m_crossTexName;
         float m_crossLineH;
-        AuxInfo(const QuestLabel::AuxInfo&);
+        AuxInfo(QuestLabel::AuxInfo const&);
         AuxInfo();
     };
 

@@ -30,4 +30,4 @@ namespace ai
     public:
         RT_CLASS_DECLARE(MinePusher);
     };
-}
+}  // namespace ai

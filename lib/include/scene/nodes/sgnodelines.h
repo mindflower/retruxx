@@ -6,8 +6,8 @@ namespace m3d
     class SgLinesNode : public SgNode
     {
     public:
-        static Class*  GetBaseClass();
-        static Object*  CreateObject();
+        static Class* GetBaseClass();
+        static Object* CreateObject();
 
     public:
         virtual int Render(SgNodeRenderFlags, void*, int, int);
@@ -30,4 +30,4 @@ namespace m3d
     private:
         unsigned int m_props[2];
     };
-}
+}  // namespace m3d

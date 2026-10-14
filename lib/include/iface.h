@@ -10,7 +10,7 @@ struct IBase
     virtual ~IBase() = default;
     virtual int DecRef() = 0;
     virtual int IncRef() = 0;
-    virtual void* QueryIface(const char*) = 0;
+    virtual void* QueryIface(char const*) = 0;
 };
 
 namespace m3d
@@ -19,8 +19,8 @@ namespace m3d
 
     struct IDeviceResetCallback
     {
-       ;
-        virtual const char* GetCallbackName() const = 0;
+        ;
+        virtual char const* GetCallbackName() const = 0;
         virtual void OnBeforeDeviceReset() = 0;
         virtual void OnAfterDeviceReset() = 0;
     };
@@ -57,7 +57,7 @@ namespace m3d
 
         struct IInput : public IBase
         {
-            virtual int Init(m3d::Kernel*, void (__fastcall*)(const CStr&)) = 0;
+            virtual int Init(m3d::Kernel*, void(__fastcall*)(CStr const&)) = 0;
             virtual void NewFrame() = 0;
             virtual void SetAutorepeatTime(int) = 0;
             virtual void ClearBuffer() = 0;
@@ -72,8 +72,8 @@ namespace m3d
             virtual void SetLanguage(m3d::input::Language) = 0;
             virtual m3d::input::Language GetLanguage() const = 0;
         };
-    }
-}
+    }  // namespace input
+}  // namespace m3d
 
 namespace snd
 {
@@ -103,7 +103,7 @@ namespace snd
 
     struct ISound : public IBase
     {
-        virtual bool Init(void (__fastcall*)(const CStr&), unsigned int, unsigned int, unsigned char, const char*) = 0;
+        virtual bool Init(void(__fastcall*)(CStr const&), unsigned int, unsigned int, unsigned char, char const*) = 0;
         virtual int Update(double) = 0;
         virtual void SetMaxVolume(int) = 0;
         virtual void SetMusicFadeTime(float) = 0;
@@ -116,19 +116,19 @@ namespace snd
         virtual bool PauseAllSounds(bool) = 0;
         virtual int PlayMusic(int, bool, bool) = 0;
         virtual int PlaySound2D(int, bool) = 0;
-        virtual int PlaySound3D(int, const CVector&, const CVector&, bool) = 0;
+        virtual int PlaySound3D(int, CVector const&, CVector const&, bool) = 0;
         virtual bool SetChannelLoopMode(int, bool) = 0;
         virtual int GetChannelFrequency(int) = 0;
         virtual bool SetChannelFrequency(int, int) = 0;
-        virtual bool SetPosition(int, const CVector&, const CVector&) = 0;
-        virtual bool SetListenerPosition(const CVector&, const CVector&, const CVector&, const CVector&) = 0;
+        virtual bool SetPosition(int, CVector const&, CVector const&) = 0;
+        virtual bool SetListenerPosition(CVector const&, CVector const&, CVector const&, CVector const&) = 0;
         virtual bool StopChannel(int) = 0;
         virtual bool StopGroup(int) = 0;
         virtual int StopAllSounds() = 0;
         virtual int MuteAllSounds() = 0;
         virtual int RestoreAllVolumes() = 0;
-        virtual int AddSound(const char*, snd::UserSoundType, int, int, snd::SoundPriority) = 0;
-        virtual int AddSound(const char*, snd::UserSoundType, const char*, int, snd::SoundPriority) = 0;
+        virtual int AddSound(char const*, snd::UserSoundType, int, int, snd::SoundPriority) = 0;
+        virtual int AddSound(char const*, snd::UserSoundType, char const*, int, snd::SoundPriority) = 0;
         virtual bool DeleteIdTableSound(int) = 0;
         virtual bool DeleteAllSounds() = 0;
         virtual bool SetSoundPriority(int, snd::SoundPriority) = 0;
@@ -140,4 +140,4 @@ namespace snd
         virtual bool GetGroupMaxDist(int, float&) = 0;
         virtual void DumpSoundInfo() = 0;
     };
-}
+}  // namespace snd

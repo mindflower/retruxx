@@ -17,7 +17,7 @@ public:
     {
         CStr m_wndCounterName;
         CStr m_strHuntTime;
-        AuxInfo(const CounterWnd::AuxInfo&);
+        AuxInfo(CounterWnd::AuxInfo const&);
         AuxInfo();
     };
 
@@ -40,14 +40,14 @@ protected:
     void UpdateCounter();
     float GetHuntTimeLeft() const;
     void GetMinAndSecFromTime(float time, int& minutes, int& secundes) const;
-    const ai::DynamicQuestHunt* GetQuestHunt() const;
+    ai::DynamicQuestHunt const* GetQuestHunt() const;
     void OnStartLevel(void* data);
     CounterWnd::AuxInfo m_aif;
     ElectronicDigitalWnd* m_wndCounter;
     CounterWnd::CounterType m_counterType;
     int m_dQuestId;
     CounterWnd();
-    CounterWnd(const CounterWnd& rhs);
+    CounterWnd(CounterWnd const& rhs);
 
 public:
     virtual ~CounterWnd() override;

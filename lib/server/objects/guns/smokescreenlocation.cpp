@@ -68,7 +68,8 @@ namespace ai
     // RVA 0x864240
     SmokeScreenLocation::~SmokeScreenLocation() = default;
 
-    SmokeScreenLocation::SmokeScreenLocation(ai::SmokeScreenLocationPrototypeInfo const& prototypeInfo) : TemporaryLocation(prototypeInfo)
+    SmokeScreenLocation::SmokeScreenLocation(ai::SmokeScreenLocationPrototypeInfo const& prototypeInfo) :
+        TemporaryLocation(prototypeInfo)
     {
         // RVA 0x864220
     }
@@ -77,6 +78,7 @@ namespace ai
     {
         // RVA 0x8646D0
         // NOTE: the prototype is cast without a type check.
-        return static_cast<SmokeScreenLocationPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<SmokeScreenLocationPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 }  // namespace ai

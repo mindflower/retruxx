@@ -342,10 +342,7 @@ int TruxxUiManager::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::W
     if (impInfo.m_state && (!M3D_APP->GetStation()->HasChildModalRunning() || forceWnd))
     {
         res = GUI_ProcessEvent(
-            GUI_EVENT_FROM_IMPULSE,
-            impInfo.m_impId,
-            const_cast<m3d::AuxImpulseInfo*>(&impInfo),
-            forceWnd);
+            GUI_EVENT_FROM_IMPULSE, impInfo.m_impId, const_cast<m3d::AuxImpulseInfo*>(&impInfo), forceWnd);
     }
 
     return GUI_IsModalEqualWndRunning() ? 1 : res;
@@ -653,9 +650,7 @@ WeaponGroupManager* TruxxUiManager::GetWeaponGroupManager() const
     return m_weaponGroupManager;
 }
 
-void TruxxUiManager::AddImportantFadingMsgByStrId(
-    CStr const& msgStrId,
-    std::vector<m3d::AIParam> const& params) const
+void TruxxUiManager::AddImportantFadingMsgByStrId(CStr const& msgStrId, std::vector<m3d::AIParam> const& params) const
 {
     auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_IMPORTANT_FADING_MSG_LIST);
     if (auto* fadingMsgList = RT_DYNCAST(wnd.get(), FadingMsgList))
@@ -838,8 +833,7 @@ void TruxxUiManager::OnLeaveTown(bool bQuick)
     m_currentTownId = -1;
 }
 
-void TruxxUiManager::AddImportantFadingMsg(CStr const& msg, std::vector<m3d::AIParam> const& params)
-    const
+void TruxxUiManager::AddImportantFadingMsg(CStr const& msg, std::vector<m3d::AIParam> const& params) const
 {
     auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(IW_WND_IMPORTANT_FADING_MSG_LIST);
     if (auto* fadingMsgList = RT_DYNCAST(wnd.get(), FadingMsgList))
@@ -931,20 +925,21 @@ int TruxxUiManager::IncRef()
 void TruxxUiManager::GUI_UnRegisterScriptGlobals()
 {
     // RVA 0x550260
-    for (auto const* name : {"g_CinemaPanel",
-                             "ConversationWnd",
-                             "RepliesManager",
-                             "TalkWithNpcDlg",
-                             "JournalWnd",
-                             "RadarWnd",
-                             "FadingMsgList",
-                             "TownDlg",
-                             "MotherPanel",
-                             "LevelInfoManager",
-                             "SavesManager",
-                             "MsgManager",
-                             "WeaponGroupManager",
-                             "HelpManager"})
+    for (auto const* name :
+         {"g_CinemaPanel",
+          "ConversationWnd",
+          "RepliesManager",
+          "TalkWithNpcDlg",
+          "JournalWnd",
+          "RadarWnd",
+          "FadingMsgList",
+          "TownDlg",
+          "MotherPanel",
+          "LevelInfoManager",
+          "SavesManager",
+          "MsgManager",
+          "WeaponGroupManager",
+          "HelpManager"})
     {
         m3d::g_Kernel->UnRegisterGlobal(name);
     }
@@ -1774,8 +1769,7 @@ int TruxxUiManager::GUI_HandleEvent(int guiEventId, m3d::ui::Wnd* forceWnd, void
         if (data)
         {
             // The destroyed-object event carries the object itself, not its id.
-            m_objectCollection.RemoveObject(
-                static_cast<ai::Obj*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]));
+            m_objectCollection.RemoveObject(static_cast<ai::Obj*>(static_cast<m3d::Event*>(data)->m_ptrEv[0]));
         }
         return 1;
 

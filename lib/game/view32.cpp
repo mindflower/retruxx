@@ -271,17 +271,15 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
         }
 
         M3D_APP->m_pInterfaceManager->StartSplashing(11);
-        int loadRes =
-            LoadLevel(
-                M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
-                {},
-                false,
-                true,
-                false,
-                nullptr,
-                nullptr,
-                ai::ObjContainer::SAVE_LEVEL) ==
-            0;
+        int loadRes = LoadLevel(
+                          M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
+                          {},
+                          false,
+                          true,
+                          false,
+                          nullptr,
+                          nullptr,
+                          ai::ObjContainer::SAVE_LEVEL) == 0;
         if (loadRes)
         {
             return 0;
@@ -1479,8 +1477,7 @@ int CMiracle3d::LoadLevel(
         // A map left earlier in this game was saved to the temporary maps folder.
         CStr const mapName = help::GetMapNameFromFileName(name);
         CStr const ext(".xml");
-        CStr const visitedMap =
-            app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps() + mapName + ext;
+        CStr const visitedMap = app->m_pInterfaceManager->GetSavesManager()->GetPathForTemporaryMaps() + mapName + ext;
         DWORD const attr = GetFileAttributesA(visitedMap.c_str());
         if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
@@ -1903,8 +1900,7 @@ bool CMiracle3d::SaveGame(CStr const& saveDir, bool bQuiet)
     ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
     ref_ptr ndGeneral = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "General");
     xmlFile->AddChild(ndGeneral);
-    ndGeneral->SetAttribute(
-        "MapName", help::GetMapNameFromFileName(CStr(M3D_ENGINE_CFG.m_levFileName.GetS())).c_str());
+    ndGeneral->SetAttribute("MapName", help::GetMapNameFromFileName(CStr(M3D_ENGINE_CFG.m_levFileName.GetS())).c_str());
     m_pInterfaceManager->Save(xmlFile, ndGeneral);
     if (!bQuiet)
     {
@@ -2140,8 +2136,7 @@ int CMiracle3d::CollideCamera(CVector& pos, float& dist, CVector const& dir, CVe
     aim.z = pos.z + dir.z * invLen * dist;
 
     // The camera is only allowed to close or open the gap so fast.
-    float const possibleMoveDist =
-        static_cast<float>(M3D_KERNEL->GetTimer().GetLastFrameTime()) * 0.001f * 20.0f;
+    float const possibleMoveDist = static_cast<float>(M3D_KERNEL->GetTimer().GetLastFrameTime()) * 0.001f * 20.0f;
     if (possibleMoveDist < fabsf(m_player.m_desiredDistance - dist))
     {
         float const sign = (dist - m_player.m_desiredDistance) >= 0.0f ? 1.0f : -1.0f;
@@ -2158,13 +2153,11 @@ int CMiracle3d::CollideCamera(CVector& pos, float& dist, CVector const& dir, CVe
         pos.z = aim.z - dir.z * invLen * m_player.m_desiredDistance;
     }
     dist = sqrtf(
-        (aim.x - pos.x) * (aim.x - pos.x) + (aim.z - pos.z) * (aim.z - pos.z) +
-        (aim.y - pos.y) * (aim.y - pos.y));
+        (aim.x - pos.x) * (aim.x - pos.x) + (aim.z - pos.z) * (aim.z - pos.z) + (aim.y - pos.y) * (aim.y - pos.y));
 
     // Never let the camera sink into the water.
     float const waterLimit = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
-                                 static_cast<int>(pos.x * 0.03125f),
-                                 static_cast<int>(pos.z * 0.03125f)) +
+                                 static_cast<int>(pos.x * 0.03125f), static_cast<int>(pos.z * 0.03125f)) +
         m_collideCameraRadius.GetF() + 0.1f;
     if (waterLimit > pos.y)
     {
@@ -2185,8 +2178,7 @@ int CMiracle3d::CollideCamera(CVector& pos, float& dist, CVector const& dir, CVe
     {
         pos = altPos;
         dist = sqrtf(
-            (aim.x - pos.x) * (aim.x - pos.x) + (aim.z - pos.z) * (aim.z - pos.z) +
-            (aim.y - pos.y) * (aim.y - pos.y));
+            (aim.x - pos.x) * (aim.x - pos.x) + (aim.z - pos.z) * (aim.z - pos.z) + (aim.y - pos.y) * (aim.y - pos.y));
 
         float const length = sqrtf(
             (aim.x - altPos.x) * (aim.x - altPos.x) + (aim.z - altPos.z) * (aim.z - altPos.z) +
@@ -2422,8 +2414,8 @@ float CMiracle3d::GetMeanHigh(float x, float y)
             if (xx >= 0.0f && yy >= 0.0f && landSize > xx && landSize > yy)
             {
                 auto& landscape = m3d::pClient->GetWorld().GetLandscape();
-                float const waterHeight = landscape.getWaterHeight(
-                    static_cast<int>(xx * 0.03125f), static_cast<int>(yy * 0.03125f));
+                float const waterHeight =
+                    landscape.getWaterHeight(static_cast<int>(xx * 0.03125f), static_cast<int>(yy * 0.03125f));
                 float const height = landscape.GetHeight(xx, yy, -1, false);
                 float const z = waterHeight > height ? waterHeight : height;
                 meanZ += z;
@@ -2447,8 +2439,8 @@ float CMiracle3d::GetMaxHigh(float x, float y)
             if (xx >= 0.0f && yy >= 0.0f && landSize > xx && landSize > yy)
             {
                 auto& landscape = m3d::pClient->GetWorld().GetLandscape();
-                float const waterHeight = landscape.getWaterHeight(
-                    static_cast<int>(xx * 0.03125f), static_cast<int>(yy * 0.03125f));
+                float const waterHeight =
+                    landscape.getWaterHeight(static_cast<int>(xx * 0.03125f), static_cast<int>(yy * 0.03125f));
                 float const height = landscape.GetHeight(xx, yy, -1, false);
                 float const z = waterHeight > height ? waterHeight : height;
                 if (z > maxZ)
@@ -2900,7 +2892,10 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
 
             CStr strText;
             strText.format(
-                "%0.4f %0.4f %0.4f", m_curCamera.m_worldOrigin.x, m_curCamera.m_worldOrigin.y, m_curCamera.m_worldOrigin.z);
+                "%0.4f %0.4f %0.4f",
+                m_curCamera.m_worldOrigin.x,
+                m_curCamera.m_worldOrigin.y,
+                m_curCamera.m_worldOrigin.z);
             DrawTextRel(1024.0f - static_cast<float>(strText.length()) * 10.0f, 12.0f, 0xFFFF0000, strText, 0, -1);
 
             if (auto* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer())
@@ -2910,7 +2905,8 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             }
 
             CStr angles;
-            angles.format("Y=%0.4f P=%0.4f R=%0.4f", m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
+            angles.format(
+                "Y=%0.4f P=%0.4f R=%0.4f", m_curCamera.m_rotYaw, m_curCamera.m_rotPitch, m_curCamera.m_rotRoll);
             DrawTextRel(1024.0f - static_cast<float>(angles.length()) * 10.0f, 37.0f, 0xFFFF0000, angles, 0, -1);
 
             M3D_RENDERER->PopZbState();
@@ -2948,12 +2944,20 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
             }
 
             M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
-            DrawTextRel(800.0f, 413.0f, 0xFFFF0000, CStr(ai::theObjects->m_GameTime.Diff()) + CStr(" game time"), 0, -1);
-            DrawTextRel(800.0f, 426.0f, 0xFFFF0000, CStr(ai::gGlobalSpace->count) + CStr(" geoms in global space"), 0, -1);
-            DrawTextRel(800.0f, 439.0f, 0xFFFF0000, CStr(numNodes) + CStr(" nodes"), 0, -1);
-            DrawTextRel(800.0f, 452.0f, 0xFFFF0000, CStr(ai::theObjects->m_allObjects.m_size) + CStr(" objects"), 0, -1);
             DrawTextRel(
-                800.0f, 465.0f, 0xFFFF0000, CStr(ai::theObjects->m_updatingObjects.m_size) + CStr(" updating objects"), 0, -1);
+                800.0f, 413.0f, 0xFFFF0000, CStr(ai::theObjects->m_GameTime.Diff()) + CStr(" game time"), 0, -1);
+            DrawTextRel(
+                800.0f, 426.0f, 0xFFFF0000, CStr(ai::gGlobalSpace->count) + CStr(" geoms in global space"), 0, -1);
+            DrawTextRel(800.0f, 439.0f, 0xFFFF0000, CStr(numNodes) + CStr(" nodes"), 0, -1);
+            DrawTextRel(
+                800.0f, 452.0f, 0xFFFF0000, CStr(ai::theObjects->m_allObjects.m_size) + CStr(" objects"), 0, -1);
+            DrawTextRel(
+                800.0f,
+                465.0f,
+                0xFFFF0000,
+                CStr(ai::theObjects->m_updatingObjects.m_size) + CStr(" updating objects"),
+                0,
+                -1);
             DrawTextRel(800.0f, 478.0f, 0xFFFF0000, CStr(numVehicles) + CStr(" vehicles"), 0, -1);
             DrawTextRel(
                 800.0f,
@@ -2962,7 +2966,8 @@ int CMiracle3d::Render(bool needToRedrawAllObjs)
                 CStr(ai::gDynamicScene->GetNumNearCallbacksLastFrame()) + CStr(" near callbacks"),
                 0,
                 -1);
-            DrawTextRel(800.0f, 504.0f, 0xFFFF0000, CStr(ai::theObjects->m_numRemovalsLastFrame) + CStr(" removals"), 0, -1);
+            DrawTextRel(
+                800.0f, 504.0f, 0xFFFF0000, CStr(ai::theObjects->m_numRemovalsLastFrame) + CStr(" removals"), 0, -1);
 
             if (auto* vehicle = m3d::pClient->GetWorld().GetVehicleControlledByPlayer())
             {
@@ -3198,7 +3203,7 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         LoadMapFromConsole(consoleParams, false);
         break;
     }
-    case 4112: // load
+    case 4112:  // load
     {
         if (consoleParams.NumOfTokens(' ') == 2)
         {
@@ -3225,7 +3230,7 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         m3d::pClient->GetWorld().GetLandscape().ReBuildShoresVb();
         break;
     }
-    case 4120: // save
+    case 4120:  // save
     {
         if (consoleParams.NumOfTokens(' ') == 2)
         {
@@ -3247,7 +3252,7 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         ReloadPostEffects();
         break;
     }
-    case 4129: // add post effect
+    case 4129:  // add post effect
     {
         if (consoleParams.NumOfTokens(' ') < 2)
         {
@@ -3256,16 +3261,16 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         }
         char buf[50];
         consoleParams.StringToken(1, buf, 50, ' ');
-        bool const added = consoleParams.NumOfTokens(' ') == 2
-            ? AddPostEffect(CStr(buf), 0.0f)
-            : AddPostEffect(CStr(buf), consoleParams.FloatToken(2, ' '));
+        bool const added = consoleParams.NumOfTokens(' ') == 2 ?
+            AddPostEffect(CStr(buf), 0.0f) :
+            AddPostEffect(CStr(buf), consoleParams.FloatToken(2, ' '));
         if (!added)
         {
             console->PrintF("there is no effect with name '" + CStr(buf) + CStr("'\n"));
         }
         break;
     }
-    case 4130: // get / set post effect param
+    case 4130:  // get / set post effect param
     {
         if (consoleParams.NumOfTokens(' ') < 2)
         {
@@ -3303,7 +3308,7 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         }
         break;
     }
-    case 4131: // kill post effect
+    case 4131:  // kill post effect
     {
         if (consoleParams.NumOfTokens(' ') < 2)
         {
@@ -3318,7 +3323,7 @@ void CMiracle3d::HandleCommand(int i, m3d::CConsoleParams const& consoleParams)
         }
         break;
     }
-    case 4132: // hardware cursor
+    case 4132:  // hardware cursor
     {
         // NOTE: the original only requires one token (the command itself), so
         // with no argument IntToken(1) reads past the parameters.

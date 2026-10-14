@@ -19,7 +19,7 @@ public:
         CStr m_paneName;
         CStr m_selectPaneName;
         unsigned int m_textColor;
-        AuxInfo(const SaveSellButton::AuxInfo&);
+        AuxInfo(SaveSellButton::AuxInfo const&);
         AuxInfo();
     };
 
@@ -67,7 +67,7 @@ public:
         CStr m_wndEmbossBtnNextName;
         CStr m_wndEmbossBtnPrevName;
         float m_space;
-        AuxInfo(const SaveSellList::AuxInfo&);
+        AuxInfo(SaveSellList::AuxInfo const&);
         AuxInfo();
     };
 

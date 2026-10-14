@@ -545,12 +545,14 @@ namespace m3d
             PointBase<float> const cur{x0, y0};
 
             // Slide in from "from" to the base origin.
-            auto const slideIn = [&](float fromX, float fromY) {
+            auto const slideIn = [&](float fromX, float fromY)
+            {
                 anim.m_startPt = interpolateWithPrevious ? cur : PointBase<float>{fromX, fromY};
                 anim.m_endPt = m_baseOrigin;
             };
             // Slide out from the base origin to "to".
-            auto const slideOut = [&](float toX, float toY) {
+            auto const slideOut = [&](float toX, float toY)
+            {
                 anim.m_startPt = interpolateWithPrevious ? cur : m_baseOrigin;
                 anim.m_endPt = PointBase<float>{toX, toY};
             };
@@ -563,23 +565,56 @@ namespace m3d
                     anim.m_startPt = cur;
                 }
                 break;
-            case AnimationInfo::ANIMATIONTYPE_TO_LEFT: slideIn(beyondRight, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT: slideOut(beyondLeft, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_RIGHT: slideIn(beyondLeft, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT: slideOut(beyondRight, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_TOP: slideIn(x0, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP: slideOut(x0, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM: slideIn(x0, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM: slideOut(x0, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP: slideIn(beyondRight, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP: slideOut(beyondLeft, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM: slideIn(beyondRight, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM: slideOut(beyondLeft, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP: slideIn(beyondLeft, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP: slideOut(beyondRight, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM: slideIn(beyondLeft, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM: slideOut(beyondRight, beyondBottom); break;
-            default: break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFT:
+                slideIn(beyondRight, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT:
+                slideOut(beyondLeft, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHT:
+                slideIn(beyondLeft, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT:
+                slideOut(beyondRight, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_TOP:
+                slideIn(x0, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP:
+                slideOut(x0, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM:
+                slideIn(x0, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM:
+                slideOut(x0, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP:
+                slideIn(beyondRight, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP:
+                slideOut(beyondLeft, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM:
+                slideIn(beyondRight, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM:
+                slideOut(beyondLeft, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP:
+                slideIn(beyondLeft, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP:
+                slideOut(beyondRight, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM:
+                slideIn(beyondLeft, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM:
+                slideOut(beyondRight, beyondBottom);
+                break;
+            default:
+                break;
             }
 
             m_bounds.x0 = anim.m_startPt.x;

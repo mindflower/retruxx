@@ -19,8 +19,7 @@ public:
 protected:
     virtual int GameDataSetup() override;
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual void SetVehicleId(int vehicleId) override;
     virtual void SetVehicleType(VehicleWnd::VehicleType type) override;
     virtual int OnAfterAddToWndStation() override;

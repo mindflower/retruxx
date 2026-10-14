@@ -15,10 +15,10 @@ namespace ai
         friend class NailLocationPrototypeInfo;
 
     protected:
-        virtual  ~NailLocation() override;
+        virtual ~NailLocation() override;
 
     private:
-        NailLocation(const ai::NailLocationPrototypeInfo& prototypeInfo);
+        NailLocation(ai::NailLocationPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -26,10 +26,10 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classNailLocation;
-        virtual const ai::NailLocationPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::NailLocationPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
         virtual void OnObjectIn(ai::Obj* object) override;
         virtual void OnObjectOut(ai::Obj* object) override;
     };
-}
+}  // namespace ai

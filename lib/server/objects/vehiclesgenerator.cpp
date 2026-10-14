@@ -30,7 +30,8 @@ namespace ai
         return m_wareInfos;
     }
 
-    bool VehiclesGeneratorInfoCache::VehiclePartInfo::operator<(ai::VehiclesGeneratorInfoCache::VehiclePartInfo const& rhs) const
+    bool VehiclesGeneratorInfoCache::VehiclePartInfo::operator<(
+        ai::VehiclesGeneratorInfoCache::VehiclePartInfo const& rhs) const
     {
         // RVA 0x85B270
         return this->price < rhs.price;
@@ -53,18 +54,24 @@ namespace ai
 
     retruxx::map<
         CStr,
-        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>>,
+        retruxx::vector<
+            VehiclesGeneratorInfoCache::VehiclePartInfo,
+            retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>>,
         retruxx::less<CStr>,
         retruxx::allocator<retruxx::pair<
             CStr const,
-            retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>>>>> const&
+            retruxx::vector<
+                VehiclesGeneratorInfoCache::VehiclePartInfo,
+                retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>>>>> const&
         VehiclesGeneratorInfoCache::GetGunInfos() const
     {
         // RVA 0x85B2B0
         return m_gunInfos;
     }
 
-    VehiclesGeneratorPrototypeInfo::VehicleDescription::VehicleDescription(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    VehiclesGeneratorPrototypeInfo::VehicleDescription::VehicleDescription(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode)
     {
         // RVA 0x860A80
         LoadFromXML(xmlFile, xmlNode);
@@ -79,7 +86,8 @@ namespace ai
             vehiclePrototypeIds[i] = thePrototypeManager->GetPrototypeId(vehiclePrototypeNames[i]);
             if (vehiclePrototypeIds[i] == -1)
             {
-                M3D_CRITICAL_ERROR("Unknown vehicle prototype name '" + vehiclePrototypeNames[i] + "' for vehicle generator");
+                M3D_CRITICAL_ERROR(
+                    "Unknown vehicle prototype name '" + vehiclePrototypeNames[i] + "' for vehicle generator");
             }
 
             auto* prototypeInfo = thePrototypeManager->GetPrototypeInfo(vehiclePrototypeIds[i]);
@@ -108,7 +116,9 @@ namespace ai
         }
     }
 
-    void VehiclesGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    void VehiclesGeneratorPrototypeInfo::VehicleDescription::LoadFromXML(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode)
     {
         // RVA 0x8606C0
         partOfSchwartz = -1.0f;
@@ -165,7 +175,9 @@ namespace ai
 
             if (m_desiredCountHigh < m_desiredCountLow)
             {
-                M3D_LOG_WARN("Warning: high desired count is less than low desired count in VehiclesGenerator '" + m_prototypeName + "'");
+                M3D_LOG_WARN(
+                    "Warning: high desired count is less than low desired count in VehiclesGenerator '" +
+                    m_prototypeName + "'");
                 m_desiredCountHigh = m_desiredCountLow;
             }
 
@@ -200,7 +212,9 @@ namespace ai
         }
     }
 
-    void VehiclesGeneratorPrototypeInfo::Generate(unsigned int restSchwarz, retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
+    void VehiclesGeneratorPrototypeInfo::Generate(
+        unsigned int restSchwarz,
+        retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const
     {
         // RVA 0x862B50
         // Builds one candidate set of vehicles per description, each vehicle a random pick from
@@ -226,7 +240,8 @@ namespace ai
             possibleIndexesOfVehicles[i].resize(sizeOfSet, 0);
             for (unsigned j = 0; j < sizeOfSet; ++j)
             {
-                unsigned const numPrototypes = static_cast<unsigned>(m_vehicleDescriptions[i].vehiclePrototypeIds.size());
+                unsigned const numPrototypes =
+                    static_cast<unsigned>(m_vehicleDescriptions[i].vehiclePrototypeIds.size());
                 possibleIndexesOfVehicles[i][j] = rand() % numPrototypes;
             }
         }
@@ -240,9 +255,11 @@ namespace ai
             for (unsigned j = 0; j < sizeOfSet; ++j)
             {
                 VehicleDescription const& description = m_vehicleDescriptions[i];
-                possibleSetsOfVehicles[i][j] =
-                    theObjects->CreateNewObject(description.vehiclePrototypeIds[possibleIndexesOfVehicles[i][j]], "", -1, -1);
-                Obj* const obj = possibleSetsOfVehicles[i][j] >= 0 ? theObjects->GetEntityByObjId(possibleSetsOfVehicles[i][j]) : nullptr;
+                possibleSetsOfVehicles[i][j] = theObjects->CreateNewObject(
+                    description.vehiclePrototypeIds[possibleIndexesOfVehicles[i][j]], "", -1, -1);
+                Obj* const obj = possibleSetsOfVehicles[i][j] >= 0 ?
+                    theObjects->GetEntityByObjId(possibleSetsOfVehicles[i][j]) :
+                    nullptr;
                 if (!obj || !obj->IsKindOf(RT_CLASS_LOCAL(Vehicle)))
                 {
                     SYS_ERROR("vehicle && IS_KIND_OF( vehicle, Vehicle )");
@@ -251,7 +268,10 @@ namespace ai
                 auto* const vehicle = static_cast<Vehicle*>(obj);
                 if (description.bTuningBySchwartz && restSchwarz)
                 {
-                    TuneVehicleBySchwarz(vehicle, static_cast<float>(static_cast<double>(restSchwarz) * description.partOfSchwartz), &description);
+                    TuneVehicleBySchwarz(
+                        vehicle,
+                        static_cast<float>(static_cast<double>(restSchwarz) * description.partOfSchwartz),
+                        &description);
                 }
                 curSetsSchwarz += vehicle->GetSchwarz();
             }
@@ -272,7 +292,9 @@ namespace ai
             }
             for (unsigned j = 0; j < sizeOfSet; ++j)
             {
-                Obj* const obj = possibleSetsOfVehicles[i][j] >= 0 ? theObjects->GetEntityByObjId(possibleSetsOfVehicles[i][j]) : nullptr;
+                Obj* const obj = possibleSetsOfVehicles[i][j] >= 0 ?
+                    theObjects->GetEntityByObjId(possibleSetsOfVehicles[i][j]) :
+                    nullptr;
                 if (!obj || !obj->IsKindOf(RT_CLASS_LOCAL(Vehicle)))
                 {
                     SYS_ERROR("vehicle && IS_KIND_OF( vehicle, Vehicle )");
@@ -294,7 +316,8 @@ namespace ai
         bool bSplit = false;
         if (generatedVehicleIds.size() > 2)
         {
-            bSplit = static_cast<double>(generatedVehicleIds.size()) * 0.25 > static_cast<double>(rand()) * 0.000030518509;
+            bSplit =
+                static_cast<double>(generatedVehicleIds.size()) * 0.25 > static_cast<double>(rand()) * 0.000030518509;
         }
         size_t const halfSize = generatedVehicleIds.size() >> 1;
         for (size_t k = 0; k < generatedVehicleIds.size(); ++k)
@@ -305,14 +328,18 @@ namespace ai
             CVector newPos;
             std::set<m3d::Class*> const noClasses;
             // NOTE: the vehicle is used without a null check.
-            float const radius =
-                vehicle->m_intersectionObstacle ? vehicle->m_intersectionObstacle->m_intersectionSphere->GetRadius() : 0.0f;
+            float const radius = vehicle->m_intersectionObstacle ?
+                vehicle->m_intersectionObstacle->m_intersectionSphere->GetRadius() :
+                0.0f;
             bool const bValid = GetValidPosition(pos, radius, 0xFF, newPos, false, false, noClasses);
             vehicle->SetGamePositionOnGround(bValid ? newPos : pos, true, false);
         }
     }
 
-    void VehiclesGeneratorPrototypeInfo::TuneVehicleBySchwarz(Vehicle* v, float desiredSchwarz, VehicleDescription const* vd) const
+    void VehiclesGeneratorPrototypeInfo::TuneVehicleBySchwarz(
+        Vehicle* v,
+        float desiredSchwarz,
+        VehicleDescription const* vd) const
     {
         // RVA 0x861CD0
         // Spends desiredSchwarz on the vehicle: shares of it (each varied by +-20%) buy the best
@@ -326,15 +353,20 @@ namespace ai
         CStr groupName;
         while (!protoName.empty())
         {
-            PrototypeInfo const* const proto = thePrototypeManager->GetPrototypeInfo(thePrototypeManager->GetPrototypeId(protoName));
+            PrototypeInfo const* const proto =
+                thePrototypeManager->GetPrototypeInfo(thePrototypeManager->GetPrototypeId(protoName));
             groupName = proto->m_prototypeName;
             protoName = proto->GetParentPrototypeName();
         }
 
-        float const moneyForCabin = ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForCabin;
-        float const moneyForBasket = ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForBasket;
-        float const partForGuns = ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForGuns;
-        float const partForWares = ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForWares;
+        float const moneyForCabin =
+            ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForCabin;
+        float const moneyForBasket =
+            ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForBasket;
+        float const partForGuns =
+            ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForGuns;
+        float const partForWares =
+            ((static_cast<float>(rand()) * 0.000030518509f) * 0.40000004f + 0.80000001f) * m_partOfSchwartzForWares;
 
         auto const& vehicleGroupInfos = theVehiclesGeneratorInfoCache->GetVehicleGroupInfos();
         auto const& gunInfos = theVehiclesGeneratorInfoCache->GetGunInfos();
@@ -344,7 +376,8 @@ namespace ai
         {
             for (auto const& wareInfo : theVehiclesGeneratorInfoCache->GetWareInfos())
             {
-                if (std::find(vd->waresPrototypesIds.begin(), vd->waresPrototypesIds.end(), wareInfo.protoId) != vd->waresPrototypesIds.end())
+                if (std::find(vd->waresPrototypesIds.begin(), vd->waresPrototypesIds.end(), wareInfo.protoId) !=
+                    vd->waresPrototypesIds.end())
                 {
                     wareInfos.push_back(wareInfo);
                 }
@@ -381,8 +414,8 @@ namespace ai
             if (gunIt == gunInfos.end())
             {
                 M3D_LOG_ERR(
-                    "Error: invalid resource name for gun: '" + gunPartName + CStr("' for ") + v->GetDebugDescription() + CStr(": '") +
-                    resourceName + CStr("'"));
+                    "Error: invalid resource name for gun: '" + gunPartName + CStr("' for ") +
+                    v->GetDebugDescription() + CStr(": '") + resourceName + CStr("'"));
                 return;
             }
             if (!gunIt->second.empty())
@@ -418,7 +451,9 @@ namespace ai
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetBestPrototypeByMoney(
-        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
+        retruxx::vector<
+            VehiclesGeneratorInfoCache::VehiclePartInfo,
+            retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
         float money)
     {
         // RVA 0x85D270
@@ -451,7 +486,9 @@ namespace ai
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetBestPrototypeByMoneyEconomy(
-        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
+        retruxx::vector<
+            VehiclesGeneratorInfoCache::VehiclePartInfo,
+            retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
         float money)
     {
         // RVA 0x85D330 - the dearest usable part cheaper than money, or none.
@@ -476,7 +513,9 @@ namespace ai
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetRandomPrototypeByMoney(
-        retruxx::vector<VehiclesGeneratorInfoCache::WareInfo, retruxx::allocator<VehiclesGeneratorInfoCache::WareInfo>> const& wareInfos,
+        retruxx::vector<
+            VehiclesGeneratorInfoCache::WareInfo,
+            retruxx::allocator<VehiclesGeneratorInfoCache::WareInfo>> const& wareInfos,
         float money)
     {
         // RVA 0x85D4A0
@@ -495,7 +534,9 @@ namespace ai
     }
 
     int VehiclesGeneratorPrototypeInfo::_GetRandomPrototypeByMoney(
-        retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
+        retruxx::vector<
+            VehiclesGeneratorInfoCache::VehiclePartInfo,
+            retruxx::allocator<VehiclesGeneratorInfoCache ::VehiclePartInfo>> const& partInfos,
         float money)
     {
         // RVA 0x85D3C0
@@ -528,7 +569,11 @@ namespace ai
         return -1;
     }
 
-    unsigned int VehiclesGeneratorPrototypeInfo::_ChangeVehiclePart(Vehicle* v, CStr const& partName, int newPartProtoId, int affixGenetatorProtoId)
+    unsigned int VehiclesGeneratorPrototypeInfo::_ChangeVehiclePart(
+        Vehicle* v,
+        CStr const& partName,
+        int newPartProtoId,
+        int affixGenetatorProtoId)
     {
         // RVA 0x85DE10 - swaps in a new part and returns its price.
         if (newPartProtoId == -1)
@@ -556,7 +601,8 @@ namespace ai
         if (affixGenetatorProtoId != -1)
         {
             // NOTE: an unknown affix generator is used without a null check.
-            static_cast<AffixGeneratorPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(affixGenetatorProtoId))
+            static_cast<AffixGeneratorPrototypeInfo const*>(
+                thePrototypeManager->GetPrototypeInfo(affixGenetatorProtoId))
                 ->GenerateAffixesForObj(newPart, 2);
         }
         // NOTE: the new object is assumed to be a VehiclePart without a type check.
@@ -574,7 +620,8 @@ namespace ai
         this->m_bInited = 0;
     }
 
-    retruxx::map<CStr, VehiclesGeneratorInfoCache::VehicleGroupInfo> const& VehiclesGeneratorInfoCache::GetVehicleGroupInfos() const
+    retruxx::map<CStr, VehiclesGeneratorInfoCache::VehicleGroupInfo> const&
+        VehiclesGeneratorInfoCache::GetVehicleGroupInfos() const
     {
         // RVA 0x85B290
         return m_vehicleGroupInfos;
@@ -592,7 +639,9 @@ namespace ai
         }
     }
 
-    void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(retruxx::vector<int> const& prototypes, retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
+    void VehiclesGeneratorInfoCache::_GetVehiclePartInfos(
+        retruxx::vector<int> const& prototypes,
+        retruxx::vector<VehiclePartInfo>& vehiclePartInfos)
     {
         // RVA 0x8602B0
         vehiclePartInfos.clear();
@@ -648,7 +697,9 @@ namespace ai
         }
     }
 
-    void VehiclesGeneratorInfoCache::_GetWareInfos(retruxx::vector<int> const& prototypes, retruxx::vector<WareInfo>& wareInfos)
+    void VehiclesGeneratorInfoCache::_GetWareInfos(
+        retruxx::vector<int> const& prototypes,
+        retruxx::vector<WareInfo>& wareInfos)
     {
         // RVA 0x860370
         wareInfos.clear();
@@ -671,7 +722,8 @@ namespace ai
     VehiclesGeneratorInfoCache::VehiclePartInfo VehiclesGeneratorInfoCache::_GetVehiclePartInfo(int id) const
     {
         // RVA 0x85DD50 - NOTE: the prototype is assumed to be a vehicle part without a check.
-        auto const* const proto = static_cast<VehiclePartPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(id));
+        auto const* const proto =
+            static_cast<VehiclePartPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(id));
         VehiclePartInfo info;
         info.price = proto->GetBasePrice();
         info.canBeUsedInAutoGenerating = proto->m_canBeUsedInAutogenerating;
@@ -679,7 +731,8 @@ namespace ai
         return info;
     }
 
-    void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds)
+    void VehiclesGeneratorInfoCache::_GetAbstractVehiclesPrototypeIds(
+        retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds)
     {
         auto id = theResourceManager->GetResourceId("VEHICLE");
 
@@ -736,7 +789,8 @@ namespace ai
             ai::VehiclePrototypeInfo const* vehicleProto = nullptr;
 
             // Get the vehicle prototype info
-            vehicleProto = dynamic_cast<ai::VehiclePrototypeInfo const*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
+            vehicleProto =
+                dynamic_cast<ai::VehiclePrototypeInfo const*>(ai::thePrototypeManager->GetPrototypeInfo(prototypeId));
 
             if (!vehicleProto)
             {
@@ -756,7 +810,9 @@ namespace ai
             _GetVehiclePartInfosForVehicle(vehicleProto, "CABIN", newGroupInfo.cabins);
 
             // Find gun parts
-            for (auto partNameIter = vehicleProto->GetAllPartNames().begin(); partNameIter != vehicleProto->GetAllPartNames().end(); ++partNameIter)
+            for (auto partNameIter = vehicleProto->GetAllPartNames().begin();
+                 partNameIter != vehicleProto->GetAllPartNames().end();
+                 ++partNameIter)
             {
                 // Get the part description
                 auto* partDesc = vehicleProto->GetPartDescriptionByName((*partNameIter));

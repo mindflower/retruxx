@@ -43,7 +43,8 @@ namespace ai
         GunPrototypeInfo::PostLoad();
     }
 
-    void RocketLauncher::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void RocketLauncher::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // RVA 0x7C3D00
         for (auto const& property : m_propertiesMap)
@@ -90,7 +91,8 @@ namespace ai
         {
             return true;
         }
-        return m_rightStopAngle + 1.5707964f > m_currentDesiredAlpha && m_currentDesiredAlpha > m_leftStopAngle - 1.5707964f;
+        return m_rightStopAngle + 1.5707964f > m_currentDesiredAlpha &&
+            m_currentDesiredAlpha > m_leftStopAngle - 1.5707964f;
     }
 
     int RocketLauncher::GetPropertyId(char const* PropertyName) const

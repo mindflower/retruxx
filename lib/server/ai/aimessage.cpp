@@ -8,7 +8,7 @@
 
 namespace ai
 {
-    AIMessage::AIMessage(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3)
+    AIMessage::AIMessage(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3)
     {
         this->m_Num = Num;
         this->m_RemoveAfterFinishing = 0;
@@ -77,10 +77,9 @@ namespace ai
 
         for (unsigned i = 0; i < m_ParamList.size(); ++i)
         {
-            ref_ptr node = xmlFile->CreateNode(
-                m3d::cmn::XML_NODE_ELEMENT, (CStr("Param_") + CStr(i)).c_str());
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, (CStr("Param_") + CStr(i)).c_str());
             OwnNode->AddChild(node);
             m_ParamList[i].SaveToXML(xmlFile, node);
         }
     }
-}
+}  // namespace ai

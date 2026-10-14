@@ -142,7 +142,9 @@ namespace ai
             }
 
             CVector const toHit(
-                src.x - closestContact.geom.pos[0], src.y - closestContact.geom.pos[1], src.z - closestContact.geom.pos[2]);
+                src.x - closestContact.geom.pos[0],
+                src.y - closestContact.geom.pos[1],
+                src.z - closestContact.geom.pos[2]);
             CVector const toDst = src - dst;
             float const hitDistSq = toHit.z * toHit.z + toHit.y * toHit.y + toHit.x * toHit.x;
             float const dstDistSq = toDst.z * toDst.z + toDst.y * toDst.y + toDst.x * toDst.x;

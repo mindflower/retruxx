@@ -10,7 +10,7 @@ struct Quaternion
     float z = 0.0;
     float w = 0.0;
 
-    Quaternion(const CMatrix& m);
+    Quaternion(CMatrix const& m);
     Quaternion(float qx, float qy, float qz, float qw);
     Quaternion() = default;
     void Identity();
@@ -18,19 +18,19 @@ struct Quaternion
     float Norm() const;
     void Normalize();
     Quaternion& operator*=(float v);
-    void operator*=(const Quaternion& b);
-    void Lerp(const Quaternion& q1, const Quaternion& q2, float k2);
+    void operator*=(Quaternion const& b);
+    void Lerp(Quaternion const& q1, Quaternion const& q2, float k2);
     void RotX(float radians);
     void RotY(float radians);
     void RotZ(float radians);
     void ToAxisAngle(CVector& axis, float& radians);
-    void FromAxisAngle(const CVector& axis, float radians);
-    void FromMatrix(const CMatrix& m);
+    void FromAxisAngle(CVector const& axis, float radians);
+    void FromMatrix(CMatrix const& m);
     CMatrix ToMatrix() const;
     Quaternion operator*(float v) const;
-    Quaternion& operator+=(const Quaternion& q);
-    Quaternion operator+(const Quaternion& q) const;
-    CVector vecRot(const CVector& v) const;
+    Quaternion& operator+=(Quaternion const& q);
+    Quaternion operator+(Quaternion const& q) const;
+    CVector vecRot(CVector const& v) const;
     Quaternion getConjugated() const;
     Quaternion getInversed() const;
     float& operator[](unsigned int i);
@@ -41,6 +41,6 @@ struct Quaternion
 static_assert(sizeof(Quaternion) == 0x0010);
 
 // The Hamilton product a*b. Same terms as Quaternion::operator*=, summed in a different order.
-Quaternion operator*(const Quaternion& a, const Quaternion& b);
+Quaternion operator*(Quaternion const& a, Quaternion const& b);
 
 inline Quaternion IdentityQuaternion(0.0, 0.0, 0.0, 1.0);

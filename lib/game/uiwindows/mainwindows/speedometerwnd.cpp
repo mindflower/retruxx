@@ -57,7 +57,8 @@ void SpeedometerWnd::ArrowPointer::Draw(m3d::ui::DrawInfo const& di)
         M3D_RENDERER->SetTexture(0, m_texture, -1.0);
     }
 
-    M3D_APP->PutSpriteRelRot(m_coords.x + xEdge, m_coords.y + yEdge, halfW, halfH, 0xFFFFFFFF, this->m_angle, 0.0, 0.0, 0.0, 0.0, 0.0);
+    M3D_APP->PutSpriteRelRot(
+        m_coords.x + xEdge, m_coords.y + yEdge, halfW, halfH, 0xFFFFFFFF, this->m_angle, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
 
 SpeedometerWnd::AuxInfo::AuxInfo()
@@ -65,15 +66,15 @@ SpeedometerWnd::AuxInfo::AuxInfo()
     m_wndSpeedNumberName = ("wndSpeedNumber");
     m_speedPointerTextureName = ("SpeedPointer");
 
-    m_speedPointerSize = { 8.0f, 64.0f };
-    m_speedPointerCenter = { 62.0f, 65.0f };
+    m_speedPointerSize = {8.0f, 64.0f};
+    m_speedPointerCenter = {62.0f, 65.0f};
     m_speedPointerMinAngle = -0.78539819f;
     m_speedPointerMaxAngle = 1.5707964f;
     m_speedPointerMaxAngleBackward = -1.5707964f;
     m_speedPointerRadius = 27.0f;
 
-    m_colorForvard = 0xFF8CD618;  // Green color
-    m_colorBackward = 0xFFFF0000; // Red color
+    m_colorForvard = 0xFF8CD618;   // Green color
+    m_colorBackward = 0xFFFF0000;  // Red color
 }
 
 m3d::Class* SpeedometerWnd::GetClass() const

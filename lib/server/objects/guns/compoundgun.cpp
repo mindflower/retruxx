@@ -19,7 +19,8 @@ namespace ai
         {
             return FT_NUM_FIRING_TYPES;
         }
-        PrototypeInfo const* partPrototype = thePrototypeManager->GetPrototypeInfo(m_PartInfo.begin()->second.prototypeId);
+        PrototypeInfo const* partPrototype =
+            thePrototypeManager->GetPrototypeInfo(m_PartInfo.begin()->second.prototypeId);
         if (!partPrototype)
         {
             return FT_NUM_FIRING_TYPES;
@@ -157,7 +158,9 @@ namespace ai
         return _GetFirstGun()->GetShellPrototypeId();
     }
 
-    float CompoundGun::EstimateDamageFromPosition(CVector const& position, CVector const& pos,
+    float CompoundGun::EstimateDamageFromPosition(
+        CVector const& position,
+        CVector const& pos,
         std::vector<int, std::allocator<int>> const& exceptions) const
     {
         // RVA 0x6E5190
@@ -187,7 +190,8 @@ namespace ai
         }
     }
 
-    bool CompoundGun::PointIsReachable(CVector const& pos, std::vector<int, std::allocator<int>> const& exceptions) const
+    bool CompoundGun::PointIsReachable(CVector const& pos, std::vector<int, std::allocator<int>> const& exceptions)
+        const
     {
         // RVA 0x6E57C0 - true if any part can reach the point.
         for (auto const& [name, part] : m_vehicleParts)
@@ -355,4 +359,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
-}
+}  // namespace ai

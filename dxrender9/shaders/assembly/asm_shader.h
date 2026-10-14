@@ -25,8 +25,8 @@ public:
     AsmShaderImpl();
     virtual ~AsmShaderImpl();
 
-    bool LoadFromFile(const char* fileName, Type type);
-    bool LoadFromString(const char* str, unsigned int length, Type type);
+    bool LoadFromFile(char const* fileName, Type type);
+    bool LoadFromString(char const* str, unsigned int length, Type type);
 
     // IRenderResource
     bool IsValid() const override;

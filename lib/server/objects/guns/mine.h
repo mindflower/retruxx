@@ -10,7 +10,7 @@ namespace ai
         float m_TimeForActivation;
         MinePrototypeInfo();
         virtual Obj* CreateTargetObject() const override;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
     };
 
     class Mine : public Rocket
@@ -19,11 +19,11 @@ namespace ai
         friend class MinePrototypeInfo;
 
     protected:
-        virtual  ~Mine() override;
+        virtual ~Mine() override;
 
     private:
-        Mine(const MinePrototypeInfo& prototypeInfo);
-        Mine(const Mine&);
+        Mine(MinePrototypeInfo const& prototypeInfo);
+        Mine(Mine const&);
         virtual Object* Clone() override;
         static Object* CreateObject();
 
@@ -31,8 +31,8 @@ namespace ai
         static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classMine;
-        virtual const MinePrototypeInfo* GetPrototypeInfo() const override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual MinePrototypeInfo const* GetPrototypeInfo() const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
 
@@ -50,4 +50,4 @@ namespace ai
         float m_yVelocity;
         MineState m_MineState;
     };
-}
+}  // namespace ai

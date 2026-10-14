@@ -87,4 +87,4 @@ namespace Graph
     std::vector<int> getMaxValuedMatching(Graph::CSquareMatrix<float> const&);
     std::vector<int> getMinValuedMatching(Graph::CSquareMatrix<float>);
     float getMatchingValue(Graph::CSquareMatrix<float> const&, std::vector<int> const&);
-}
+}  // namespace Graph

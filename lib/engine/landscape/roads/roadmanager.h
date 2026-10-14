@@ -12,7 +12,7 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
 
     class Landscape;
     class AnimatedModel;
@@ -33,19 +33,28 @@ namespace m3d
         CStr m_name;
         std::vector<m3d::AnimatedModel*, std::allocator<m3d::AnimatedModel*>> m_roadModels[4];
         std::vector<
-            std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
-            std::allocator<
-                std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
+            std::vector<
+                std::vector<unsigned int, std::allocator<unsigned int>>,
+                std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
+            std::allocator<std::vector<
+                std::vector<unsigned int, std::allocator<unsigned int>>,
+                std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
             m_boundVerts[4];
         std::vector<
-            std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
-            std::allocator<
-                std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
+            std::vector<
+                std::vector<unsigned int, std::allocator<unsigned int>>,
+                std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
+            std::allocator<std::vector<
+                std::vector<unsigned int, std::allocator<unsigned int>>,
+                std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
             m_fakeBoundVerts[4];
         std::vector<
-            std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
-            std::allocator<
-                std::vector<std::vector<unsigned int, std::allocator<unsigned int>>, std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
+            std::vector<
+                std::vector<unsigned int, std::allocator<unsigned int>>,
+                std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>,
+            std::allocator<std::vector<
+                std::vector<unsigned int, std::allocator<unsigned int>>,
+                std::allocator<std::vector<unsigned int, std::allocator<unsigned int>>>>>>
             m_cliffBorders[4];
         float m_minX[4];
         float m_minZ[4];
@@ -58,7 +67,7 @@ namespace m3d
         int m_soilType;
         void Clear();
         int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
-        RoadSet(const m3d::RoadSet&);
+        RoadSet(m3d::RoadSet const&);
         RoadSet();
         ~RoadSet();
     };
@@ -78,7 +87,6 @@ namespace m3d
     private:
         CVector org;
         float radius;
-
     };
     class RoadInRadius2dTest : public RoadTestCallBack
     {
@@ -105,31 +113,38 @@ namespace m3d
     {
     private:
         m3d::Landscape* m_owner;
-        retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*> >* m_coveredCells;
+        retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*>>* m_coveredCells;
 
     public:
-        RoadManager(const m3d::RoadManager&);
+        RoadManager(m3d::RoadManager const&);
         RoadManager();
         m3d::RoadNode* m_roadRoot;
-        retruxx::vector<m3d::RoadSet*, retruxx::allocator<m3d::RoadSet*> > m_roadSets;
+        retruxx::vector<m3d::RoadSet*, retruxx::allocator<m3d::RoadSet*>> m_roadSets;
         void ClearRoadSets();
         void RebuildStructures();
-        void RebuildSomeNodes(retruxx::set<m3d::RoadNode*, retruxx::less<m3d::RoadNode*>, retruxx::allocator<m3d::RoadNode*> > nodesToRebuild, bool bNeedToRelink);
+        void RebuildSomeNodes(
+            retruxx::set<m3d::RoadNode*, retruxx::less<m3d::RoadNode*>, retruxx::allocator<m3d::RoadNode*>>
+                nodesToRebuild,
+            bool bNeedToRelink);
         void Init();
         void Release();
         void ReleaseCollision();
         void ReleaseCollisionForRoadNode(m3d::RoadNode* rn);
         void UnlinkRoadNodeCollisionFromCells(m3d::RoadNode* rn);
-        int ReadRoadSetConfigFromXmlFile(const char* configName);
-        int ReadRoadsFromXmlFile(const char* name);
-        int WriteRoadsToXmlFile(const char* filename);
+        int ReadRoadSetConfigFromXmlFile(char const* configName);
+        int ReadRoadsFromXmlFile(char const* name);
+        int WriteRoadsToXmlFile(char const* filename);
         void SetOwner(m3d::Landscape* owner);
-        int GetRoadSetHandleByName(const CStr& name);
-        const CStr GetRoadSetNameByHandle(int handle);
+        int GetRoadSetHandleByName(CStr const& name);
+        CStr const GetRoadSetNameByHandle(int handle);
         void GetRoadMinMaxXByHandle(int handle, int roadType, float& minx, float& maxx);
         void GetRoadMinMaxZByHandle(int handle, int roadType, float& minz, float& maxz);
-        retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*> >& GetCoveredCell(unsigned int);
-        int RenderRoads(retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& visList, m3d::RenderRoadType rrt, const m3d::RoadTestCallBack* rnTest, bool bForRoadMap);
+        retruxx::vector<m3d::RoadNode*, retruxx::allocator<m3d::RoadNode*>>& GetCoveredCell(unsigned int);
+        int RenderRoads(
+            retruxx::vector<unsigned int, retruxx::allocator<unsigned int>>& visList,
+            m3d::RenderRoadType rrt,
+            m3d::RoadTestCallBack const* rnTest,
+            bool bForRoadMap);
         void UpdateVis();
 
     private:
@@ -141,4 +156,4 @@ namespace m3d
         void LinkToBorder(m3d::RoadNode* rn, unsigned int idx, int link, CVector& res);
         bool GetAdjPoint(m3d::RoadNode* rn, unsigned int idx, int link, CVector& acceptor);
     };
-}
+}  // namespace m3d

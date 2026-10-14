@@ -40,9 +40,9 @@ namespace m3d
             Colori(unsigned char, unsigned char, unsigned char, unsigned char);
             Colori();
             void init(unsigned char, unsigned char, unsigned char, unsigned char);
-            void AddSat(const m3d::rend::Colori&);
+            void AddSat(m3d::rend::Colori const&);
         };
 
         static_assert(sizeof(Colori) == 0x0004);
-    }
-}
+    }  // namespace rend
+}  // namespace m3d

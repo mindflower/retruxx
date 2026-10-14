@@ -125,8 +125,8 @@ int PlayerVehicleWnd::GameDataSetup()
             }
             else
             {
-                M3D_LOG_INFO("Get control error: control " + m_paif.m_tabButtonNames[i]
-                    + " is not found or incorrect type");
+                M3D_LOG_INFO(
+                    "Get control error: control " + m_paif.m_tabButtonNames[i] + " is not found or incorrect type");
                 res = 0;
             }
         }
@@ -447,8 +447,8 @@ int PlayerVehicleWnd::PrepareHackedVehicleForVehiclePart(int hackedVpId)
     // Only cabins and baskets are previewed this way.
     int const cabinResId = ai::theResourceManager->GetResourceId("CABIN");
     int const basketResId = ai::theResourceManager->GetResourceId("BASKET");
-    if (!ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, cabinResId)
-        && !ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, basketResId))
+    if (!ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, cabinResId) &&
+        !ai::theResourceManager->bResourceIsKindOf(proto->m_resourceId, basketResId))
     {
         return 0;
     }

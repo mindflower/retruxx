@@ -36,7 +36,8 @@ namespace ai
         return new TurboAccelerationPusher(*this);
     }
 
-    TurboAccelerationPusher::TurboAccelerationPusher(TurboAccelerationPusherPrototypeInfo const& prototype) : Gun(prototype)
+    TurboAccelerationPusher::TurboAccelerationPusher(TurboAccelerationPusherPrototypeInfo const& prototype) :
+        Gun(prototype)
     {
         // RVA 0x846420
     }
@@ -56,7 +57,8 @@ namespace ai
     {
         // RVA 0x846930
         // NOTE: the prototype is cast without a type check.
-        return static_cast<TurboAccelerationPusherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<TurboAccelerationPusherPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void TurboAccelerationPusher::_LaunchShells()

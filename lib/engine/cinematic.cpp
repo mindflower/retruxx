@@ -315,8 +315,9 @@ namespace m3d
         }
         for (int i = pointNum, step = 0; i < size - 2; ++i, ++step)
         {
-            states[i].m_flyTime =
-                static_cast<float>(static_cast<double>(step) * m_fullTime / static_cast<double>(static_cast<unsigned>(size - pointNum - 2)));
+            states[i].m_flyTime = static_cast<float>(
+                static_cast<double>(step) * m_fullTime /
+                static_cast<double>(static_cast<unsigned>(size - pointNum - 2)));
         }
         if (size >= 1)
         {
@@ -342,9 +343,8 @@ namespace m3d
         for (int i = 2; i < size - 2; ++i)
         {
             float const current = states[i].m_flyTime;
-            states[i].m_flyTime =
-                static_cast<float>((current - previous) * averageSpeed) / (states[i].m_speed + states[i - 1].m_speed) *
-                    2.0f +
+            states[i].m_flyTime = static_cast<float>((current - previous) * averageSpeed) /
+                    (states[i].m_speed + states[i - 1].m_speed) * 2.0f +
                 states[i - 1].m_flyTime;
             previous = current;
         }
@@ -447,11 +447,11 @@ namespace m3d
         Quaternion const& rotation,
         float zoom,
         float flyTime,
-        float speed)
-        : m_point(point)
-        , m_rotation(rotation)
-        , m_zoom(zoom)
-        , m_speed(speed)
+        float speed) :
+        m_point(point),
+        m_rotation(rotation),
+        m_zoom(zoom),
+        m_speed(speed)
     {
         // RVA 0x6257D0
         // NOTE: flyTime is ignored and m_flyTime is left uninitialized.
@@ -485,9 +485,9 @@ namespace m3d
         xmlNode->SetAttribute("flyTime", CStr(m_flyTime).c_str());
     }
 
-    CameraPath::CameraPath(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const& states)
-        : m_fullLength(0.0f)
-        , m_fullTime(1.0f)
+    CameraPath::CameraPath(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const& states) :
+        m_fullLength(0.0f),
+        m_fullTime(1.0f)
     {
         // Not present in the binary; built like the default constructor followed by InitByStates.
         InitByStates(states);

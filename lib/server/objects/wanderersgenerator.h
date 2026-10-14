@@ -62,8 +62,9 @@ namespace ai
             ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription m_basketSideGun;
         };
 
-        using VehicleDescriptions = retruxx::
-            vector<ai::WanderersGeneratorPrototypeInfo::VehicleDescription, retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription>>;
+        using VehicleDescriptions = retruxx::vector<
+            ai::WanderersGeneratorPrototypeInfo::VehicleDescription,
+            retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription>>;
 
     public:
         WanderersGeneratorPrototypeInfo();
@@ -75,12 +76,19 @@ namespace ai
 
     private:
         void _GenerateIndexes(retruxx::vector<int, retruxx::allocator<int>>& indexes, int count) const;
-        void _TuneVehicleParts(ai::Vehicle* vehicle, ai::WanderersGeneratorPrototypeInfo::VehicleDescription const& vehicleDescription) const;
-        void _TunePart(ai::Vehicle* vehicle, CStr const& partName, ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& partDescription) const;
+        void _TuneVehicleParts(
+            ai::Vehicle* vehicle,
+            ai::WanderersGeneratorPrototypeInfo::VehicleDescription const& vehicleDescription) const;
+        void _TunePart(
+            ai::Vehicle* vehicle,
+            CStr const& partName,
+            ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription const& partDescription) const;
         void _ChangePartByName(ai::Vehicle* vehicle, CStr const& partName, int partPrototypeId) const;
         void _RemovePartByName(ai::Vehicle* vehicle, CStr const& partName) const;
 
-        retruxx::vector<ai::WanderersGeneratorPrototypeInfo::VehicleDescription, retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription>>
+        retruxx::vector<
+            ai::WanderersGeneratorPrototypeInfo::VehicleDescription,
+            retruxx::allocator<ai::WanderersGeneratorPrototypeInfo::VehicleDescription>>
             m_vehicleDescriptions;
         int m_desiredCountLow;
         int m_desiredCountHigh;

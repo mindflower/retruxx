@@ -255,8 +255,7 @@ namespace ai
         {
             CVector const& wayPoint = (*m_curPath)[m_curWayPointNum];
             CVector const leg = wayPoint - m_prevWayPoint;
-            float const invLegLen =
-                1.0f / sqrt(leg.z * leg.z + leg.y * leg.y + leg.x * leg.x + 0.00000011920929f);
+            float const invLegLen = 1.0f / sqrt(leg.z * leg.z + leg.y * leg.y + leg.x * leg.x + 0.00000011920929f);
 
             CVector const dir = GetDirection();
 
@@ -266,7 +265,9 @@ namespace ai
             float const needZ = leg.z * invLegLen;
             float const invNeedLen = 1.0f / sqrt(needZ * needZ + needX * needX + dir.y * dir.y + 0.00000011920929f);
 
-            CVector const to(pos.x + needX * invNeedLen * 10.0f, pos.y + invNeedLen * dir.y * 10.0f,
+            CVector const to(
+                pos.x + needX * invNeedLen * 10.0f,
+                pos.y + invNeedLen * dir.y * 10.0f,
                 pos.z + needZ * invNeedLen * 10.0f);
             M3D_APP->DrawLine(pos, to, 0xFFFF0000);
 
@@ -622,14 +623,16 @@ namespace ai
             // Turn about the vertical (or whatever axis takes it there) towards the next
             // waypoint, at m_turnSpeed; once facing it, walk.
             CVector const& next = (*m_curPath)[m_curWayPointNum];
-            CVector needDir = CVector(next.x - m_prevWayPoint.x, next.y - m_prevWayPoint.y, next.z - m_prevWayPoint.z).getNormalized();
+            CVector needDir = CVector(next.x - m_prevWayPoint.x, next.y - m_prevWayPoint.y, next.z - m_prevWayPoint.z)
+                                  .getNormalized();
             CVector const dir = GetDirection();
             needDir.y = dir.y;
             needDir.normalizeInplace();
             CVector axis = CVector(
-                needDir.z * dir.y - dir.z * needDir.y,
-                dir.z * needDir.x - needDir.z * dir.x,
-                dir.x * needDir.y - needDir.x * dir.y).getNormalized();
+                               needDir.z * dir.y - dir.z * needDir.y,
+                               dir.z * needDir.x - needDir.z * dir.x,
+                               dir.x * needDir.y - needDir.x * dir.y)
+                               .getNormalized();
             if ((axis.x * axis.x + axis.z * axis.z) + axis.y * axis.y < 0.99900001f)
             {
                 axis = CVector(0.0f, 1.0f, 0.0f);

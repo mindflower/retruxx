@@ -178,19 +178,19 @@ namespace m3d
     class DataServer
     {
     public:
-        DataServer(const m3d::DataServer&);
+        DataServer(m3d::DataServer const&);
         DataServer();
-        virtual  ~DataServer();
+        virtual ~DataServer();
         int GetNumItems() const;
         CStr GetOriginalFileName(int sh);
         void* m_fnLoadCallbackData = nullptr;
         void (*m_fnLoadCallback)(int, void*) = nullptr;
         virtual int Init();
         virtual int Release();
-        virtual int AddItem(const char*, const char*) = 0;
+        virtual int AddItem(char const*, char const*) = 0;
         void GenerateItemsRemap();
-        int GetItemByName(const char* id, bool viaMap) const;
-        const CStr& GetNameByItem(int sh) const;
+        int GetItemByName(char const* id, bool viaMap) const;
+        CStr const& GetNameByItem(int sh) const;
         virtual int GetItemProperty(int id, int prop, void* dest);
         virtual int SetItemProperty(int id, int prop, void* src);
         virtual int RemoveItem(int) = 0;
@@ -204,22 +204,22 @@ namespace m3d
         virtual void UnregisterNode(m3d::SgNode* node);
         virtual void Invalidate();
         virtual void Restore();
-        const char* GetLastError();
+        char const* GetLastError();
         int WriteToXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
         virtual int WriteItemToXmlNode(int sh, m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node);
         virtual int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* root);
-        virtual int SaveAllLoadedEntities(const char*) = 0;
+        virtual int SaveAllLoadedEntities(char const*) = 0;
         virtual void PostLoad();
-        virtual bool ReportServerInfo(const char* fileName);
+        virtual bool ReportServerInfo(char const* fileName);
 
         struct Model
         {
-            Model(void* p, const char* filename, const char* originalFileName, const char* id);
+            Model(void* p, char const* filename, char const* originalFileName, char const* id);
             void* m_ptr = nullptr;
             CStr m_name;
             CStr m_fileName;
             CStr m_originalFileName;
-            unsigned int m_additionalData[16] = { 0 };
+            unsigned int m_additionalData[16] = {0};
         };
 
         struct ServerItem
@@ -230,16 +230,19 @@ namespace m3d
             bool m_fileWasRead = false;
         };
 
-        using ServerItemVector = retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >;
-        using ModelVector = retruxx::vector<m3d::DataServer::Model, retruxx::allocator<m3d::DataServer::Model> >;
+        using ServerItemVector =
+            retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>>;
+        using ModelVector = retruxx::vector<m3d::DataServer::Model, retruxx::allocator<m3d::DataServer::Model>>;
         class ModelsVecIter;
-        using ServerHandlesRemap = retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > >;
+        using ServerHandlesRemap =
+            retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int>>>;
 
     protected:
-        retruxx::vector<m3d::DataServer::Model, retruxx::allocator<m3d::DataServer::Model> > m_models;
-        retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > m_shRemap;
-        retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> > m_itemslist;
-        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >&) = 0;
+        retruxx::vector<m3d::DataServer::Model, retruxx::allocator<m3d::DataServer::Model>> m_models;
+        retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int>>> m_shRemap;
+        retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>> m_itemslist;
+        virtual void AddItemsList(
+            retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>>&) = 0;
         bool IsValid() const;
 
         enum Proto
@@ -251,10 +254,10 @@ namespace m3d
 
     protected:
         CStr m_lastError;
-        int ParseProto(const char* in, m3d::DataServer::Proto* protocol, int* paramsPos);
-        void SetError(const CStr& err);
+        int ParseProto(char const* in, m3d::DataServer::Proto* protocol, int* paramsPos);
+        void SetError(CStr const& err);
 
     protected:
         bool m_valid = false;
     };
-}
+}  // namespace m3d

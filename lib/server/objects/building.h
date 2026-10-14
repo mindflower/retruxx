@@ -21,7 +21,7 @@ namespace ai
     {
     public:
         BuildingPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
         ai::BuildingType m_buildingType;
     };
@@ -30,12 +30,13 @@ namespace ai
     {
         // BuildingPrototypeInfo::CreateTargetObject constructs a plain Building.
         friend class BuildingPrototypeInfo;
-    protected:
-        virtual  ~Building() override;
 
     protected:
-        Building(const ai::BuildingPrototypeInfo& prototypeInfo);
-        Building(const ai::Building&);
+        virtual ~Building() override;
+
+    protected:
+        Building(ai::BuildingPrototypeInfo const& prototypeInfo);
+        Building(ai::Building const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -43,9 +44,10 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBuilding;
-        virtual const ai::BuildingPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::BuildingPrototypeInfo const* GetPrototypeInfo() const override;
 
-        using BuildingTypeSet = retruxx::set<enum ai::BuildingType, retruxx::less<enum ai::BuildingType>, retruxx::allocator<enum ai::BuildingType> >;
+        using BuildingTypeSet = retruxx::
+            set<enum ai::BuildingType, retruxx::less<enum ai::BuildingType>, retruxx::allocator<enum ai::BuildingType>>;
 
     public:
         virtual void Remove() override;
@@ -53,16 +55,16 @@ namespace ai
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
         virtual bool RemoveChild(ai::Obj* pChild) override;
 
-        using NpcVector = retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> >;
+        using NpcVector = retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>>;
 
     public:
-        const retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> >& GetNpcs() const;
+        retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>> const& GetNpcs() const;
         ai::BuildingType GetBuildingType() const;
         static CStr __fastcall GetBuildingTypeName(ai::BuildingType buildingType);
-        static ai::BuildingType __fastcall GetBuildingTypeByName(const CStr& buildingTypeName);
+        static ai::BuildingType __fastcall GetBuildingTypeByName(CStr const& buildingTypeName);
 
     private:
-        static inline const CStr m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};
-        retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> > m_npcs;
+        static inline CStr const m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};
+        retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>> m_npcs;
     };
-}
+}  // namespace ai

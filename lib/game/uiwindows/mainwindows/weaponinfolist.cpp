@@ -1539,11 +1539,7 @@ int WeaponGroupChoiceDlg::GameDataUpdate(void*, int dataType)
     return 1;
 }
 
-int WeaponGroupChoiceDlg::OnWndNotify(
-    m3d::ui::Wnd* from,
-    unsigned idFrom,
-    unsigned message,
-    m3d::AIParam const& data)
+int WeaponGroupChoiceDlg::OnWndNotify(m3d::ui::Wnd* from, unsigned idFrom, unsigned message, m3d::AIParam const& data)
 {
     // RVA 0x53E8A0
     if (m3d::ui::ModalWnd::OnWndNotify(from, idFrom, message, data))

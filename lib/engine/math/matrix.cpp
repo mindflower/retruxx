@@ -124,8 +124,7 @@ void CMatrix::shadow(CVector4 const& light, CPlane const& plane)
     // plane as "n.p == m_dist", so the four component form is (n, -m_dist) and
     // the light/plane dot product picks up a minus in front of the w term.
     float const nDotL = light.x * plane.m_normal.x;
-    float const dot = (light.y * plane.m_normal.y + plane.m_normal.z * light.z + nDotL) -
-        plane.m_dist * light.w;
+    float const dot = (light.y * plane.m_normal.y + plane.m_normal.z * light.z + nDotL) - plane.m_dist * light.w;
 
     _11 = dot - nDotL;
     _21 = -(light.x * plane.m_normal.y);

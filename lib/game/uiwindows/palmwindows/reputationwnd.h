@@ -38,7 +38,7 @@ public:
         CStr m_strIdToleranceEnemy1;
         CStr m_strIdToleranceFriend2;
         CStr m_strIdToleranceEnemy2;
-        AuxInfo(const ReputationButton::AuxInfo&);
+        AuxInfo(ReputationButton::AuxInfo const&);
         AuxInfo();
     };
 
@@ -141,7 +141,7 @@ class ReputationWnd : public ScreenWnd
     struct AuxInfo
     {
         CStr m_reputationListName;
-        AuxInfo(const ReputationWnd::AuxInfo&);
+        AuxInfo(ReputationWnd::AuxInfo const&);
         AuxInfo();
     };
 

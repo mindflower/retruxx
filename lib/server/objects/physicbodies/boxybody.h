@@ -8,24 +8,27 @@ namespace ai
     class BoxyBody : public ai::SimplePhysicBody
     {
         friend class SimplePhysicObjPrototypeInfo;
+
     protected:
-        BoxyBody(const std::vector<ai::CollisionInfo, std::allocator<ai::CollisionInfo> >& collisionInfos, float massValue);
+        BoxyBody(
+            std::vector<ai::CollisionInfo, std::allocator<ai::CollisionInfo>> const& collisionInfos,
+            float massValue);
         BoxyBody();
-        BoxyBody(const ai::BoxyBody& rhs);
+        BoxyBody(ai::BoxyBody const& rhs);
 
     public:
-        virtual  ~BoxyBody() override;
+        virtual ~BoxyBody() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoxyBody;
         CVector GetSize() const;
-        void SetSize(const CVector&);
+        void SetSize(CVector const&);
         virtual void SetMass(float newMassValue) override;
 
     private:
-        const ai::Box* _Box() const;
+        ai::Box const* _Box() const;
         ai::Box* _Box();
     };
-}
+}  // namespace ai

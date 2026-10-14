@@ -13,7 +13,7 @@ ObjectsIcons::Icon::Icon()
 
 int ObjectsIcons::Icon::SetIco(int idx, CStr const& fileName)
 {
-    if (idx < 0 || idx >=2)
+    if (idx < 0 || idx >= 2)
     {
         return 0;
     }
@@ -31,7 +31,7 @@ int ObjectsIcons::Icon::SetIco(int idx, CStr const& fileName)
 
 m3d::rend::TexHandle ObjectsIcons::Icon::GetIco(int mode) const
 {
-    if (mode < 0 || mode >=2)
+    if (mode < 0 || mode >= 2)
     {
         return {};
     }
@@ -158,7 +158,8 @@ int ObjectsIcons::AddIcon(CStr const& strId, Icon* ico, bool bGlobal)
         auto it = m_globalIcons.find(strId);
         if (it != end(m_globalIcons))
         {
-            M3D_LOG_INFO("ObjectsIcons::AddIcon warning - ico with id " + strId + " already exists and wiil be replaced");
+            M3D_LOG_INFO(
+                "ObjectsIcons::AddIcon warning - ico with id " + strId + " already exists and wiil be replaced");
             delete it->second;
         }
         m_globalIcons[strId] = ico;
@@ -168,7 +169,8 @@ int ObjectsIcons::AddIcon(CStr const& strId, Icon* ico, bool bGlobal)
         auto it = m_levelIcons.find(strId);
         if (it != end(m_levelIcons))
         {
-            M3D_LOG_INFO("ObjectsIcons::AddIcon warning - ico with id " + strId + " already exists and wiil be replaced");
+            M3D_LOG_INFO(
+                "ObjectsIcons::AddIcon warning - ico with id " + strId + " already exists and wiil be replaced");
             delete it->second;
         }
         m_levelIcons[strId] = ico;

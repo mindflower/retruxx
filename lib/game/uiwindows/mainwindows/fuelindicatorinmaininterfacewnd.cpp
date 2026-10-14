@@ -311,7 +311,8 @@ void FuelIndicatorInMainInterfaceWnd::UpdateTooltip(float curFuel, float maxFuel
     {
         // The shipped build converts with fistp, i.e. rounds to nearest (ties to even), as do the other
         // conversions in this file.
-        CStr text = m_strFuel + ": " + CStr(static_cast<int>(lrintf(curFuel))) + "/" + CStr(static_cast<int>(lrintf(maxFuel)));
+        CStr text =
+            m_strFuel + ": " + CStr(static_cast<int>(lrintf(curFuel))) + "/" + CStr(static_cast<int>(lrintf(maxFuel)));
         m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
         m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
     }

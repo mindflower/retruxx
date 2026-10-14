@@ -64,7 +64,8 @@ void RequestDifficultyWnd::FillDifficultyLevelsList()
         Clear();
         for (int i = 0; i < ai::theGlobProp.m_difficultyLevelCoeffs.size(); ++i)
         {
-            auto id = m_cbDifficultyLevels->AddItem(M3D_APP->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name));
+            auto id = m_cbDifficultyLevels->AddItem(
+                M3D_APP->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name));
             if (id != -1)
             {
                 m_cbDifficultyLevels->SetItemData(id, i);
@@ -72,7 +73,7 @@ void RequestDifficultyWnd::FillDifficultyLevelsList()
         }
 
         m_cbDifficultyLevels->SetCurSel(-1);
-        const auto level = M3D_APP->GetCurDifficultyLevel();
+        auto const level = M3D_APP->GetCurDifficultyLevel();
         int const count = m_cbDifficultyLevels->GetCount();
         for (int i = 0; i < count; ++i)
         {
@@ -153,7 +154,8 @@ int RequestDifficultyWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbDifficultyLevelsName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_cbDifficultyLevelsName + " is not found or incorrect type");
         }
     }
     if ((m_gameDataFlags & 1) != 0)

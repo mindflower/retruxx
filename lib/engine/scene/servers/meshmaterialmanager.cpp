@@ -98,4 +98,4 @@ namespace m3d
         node.GetProperty(8706, &skin);
         return mh.GetMaterial(skin);
     }
-}
+}  // namespace m3d

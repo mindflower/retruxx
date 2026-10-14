@@ -76,7 +76,7 @@ protected:
 
     static m3d::ui::Wnd* m_pattern;
     static int m_ref;
-    
+
     unsigned int m_msgBoxFlags = 0;
     CStr m_msg;
     CStr m_title;

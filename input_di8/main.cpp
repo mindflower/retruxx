@@ -20,7 +20,7 @@ namespace m3d
 
     // orig 0x570b40 input_di8.cpp:1829
     input::IInput* InputFactory();
-}
+}  // namespace m3d
 
 namespace
 {

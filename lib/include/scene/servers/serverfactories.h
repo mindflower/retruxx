@@ -18,4 +18,4 @@ namespace m3d
         static DataServer* CreateSpritesServer();
         static DataServer* CreateStaticModelServer();
     };
-}
+}  // namespace m3d

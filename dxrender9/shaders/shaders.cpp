@@ -18,7 +18,7 @@
 #include "shaders/hlsl/hlsl_shader.h"
 
 // The number of r_shadersMacros cvars (m3d::EngineConfig) the user macros are kept in.
-static const unsigned int SHADERS_MACROS_NUM = 8;
+static unsigned int const SHADERS_MACROS_NUM = 8;
 
 // The original asserts through m3d::Kernel::SysError(assertion, file, line). The HTA kernel's SysError takes
 // (whence, descr); lib/include/core/kernel.h's M3D_ASSERT builds them this way, but through the
@@ -32,37 +32,37 @@ static const unsigned int SHADERS_MACROS_NUM = 8;
     } while (0)
 
 // orig 0x639f00 shaders.cpp:32
-void CDevice::SetVsFloatConst(unsigned int RegisterIndex, const float* pConstantData, unsigned int RegisterCount)
+void CDevice::SetVsFloatConst(unsigned int RegisterIndex, float const* pConstantData, unsigned int RegisterCount)
 {
     m_lastResult = m_pd3dDevice->SetVertexShaderConstantF(RegisterIndex, pConstantData, RegisterCount);
 }
 
 // orig 0x639f30 shaders.cpp:41
-void CDevice::SetVsIntConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount)
+void CDevice::SetVsIntConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount)
 {
     m_lastResult = m_pd3dDevice->SetVertexShaderConstantI(RegisterIndex, pConstantData, RegisterCount);
 }
 
 // orig 0x639f60 shaders.cpp:50
-void CDevice::SetVsBoolConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount)
+void CDevice::SetVsBoolConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount)
 {
     m_lastResult = m_pd3dDevice->SetVertexShaderConstantB(RegisterIndex, pConstantData, RegisterCount);
 }
 
 // orig 0x639f90 shaders.cpp:59
-void CDevice::SetPsFloatConst(unsigned int RegisterIndex, const float* pConstantData, unsigned int RegisterCount)
+void CDevice::SetPsFloatConst(unsigned int RegisterIndex, float const* pConstantData, unsigned int RegisterCount)
 {
     m_lastResult = m_pd3dDevice->SetPixelShaderConstantF(RegisterIndex, pConstantData, RegisterCount);
 }
 
 // orig 0x639fc0 shaders.cpp:68
-void CDevice::SetPsIntConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount)
+void CDevice::SetPsIntConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount)
 {
     m_lastResult = m_pd3dDevice->SetPixelShaderConstantI(RegisterIndex, pConstantData, RegisterCount);
 }
 
 // orig 0x639ff0 shaders.cpp:77
-void CDevice::SetPsBoolConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount)
+void CDevice::SetPsBoolConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount)
 {
     m_lastResult = m_pd3dDevice->SetPixelShaderConstantB(RegisterIndex, pConstantData, RegisterCount);
 }
@@ -111,7 +111,7 @@ bool CDevice::ReloadShaders()
 
         shader->Invalidate();
 
-        DX_ASSERT(shader->LoadFromFile( fileName.c_str(), type ));
+        DX_ASSERT(shader->LoadFromFile(fileName.c_str(), type));
     }
 
     shaderAsmTmp->LoadFromFile("no file", IAsmShader::VERTEX_SHADER);
@@ -119,8 +119,7 @@ bool CDevice::ReloadShaders()
 
     HlslShaderImpl* shaderHlslTmp = new HlslShaderImpl();
 
-    for (std::map<ShaderIdData, HlslShaderImpl*>::iterator it = m_HlslShaders.begin(); it != m_HlslShaders.end();
-         ++it)
+    for (std::map<ShaderIdData, HlslShaderImpl*>::iterator it = m_HlslShaders.begin(); it != m_HlslShaders.end(); ++it)
     {
         HlslShaderImpl* shader = it->second;
         CStr const& fileName = shader->m_fileName;
@@ -140,7 +139,7 @@ bool CDevice::ReloadShaders()
 
         shader->Invalidate();
 
-        DX_ASSERT(shader->LoadFromFile( fileName.c_str(), entryName.c_str(), profile, compileParams ));
+        DX_ASSERT(shader->LoadFromFile(fileName.c_str(), entryName.c_str(), profile, compileParams));
     }
 
     shaderHlslTmp->LoadFromFile("no file", "with this name", IHlslShader::PS_2_0, std::vector<CompileParam>());
@@ -166,7 +165,7 @@ bool CDevice::ReloadShaders()
 
             effect->Invalidate();
 
-            DX_ASSERT(effect->LoadFromFile( fileName.c_str(), compileParams ));
+            DX_ASSERT(effect->LoadFromFile(fileName.c_str(), compileParams));
         }
 
         effect->SetCurTechnique(curTech);

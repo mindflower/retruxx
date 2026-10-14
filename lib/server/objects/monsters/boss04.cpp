@@ -191,7 +191,8 @@ namespace ai
             int const lpId = mdl->GetLoadPointIdByName(lpName.c_str());
             if (lpId == -1)
             {
-                M3D_LOG_ERR(CStr("Error: LoadPoint not found! Model = '") + mainPartModelName + CStr("', lp = ") + lpName);
+                M3D_LOG_ERR(
+                    CStr("Error: LoadPoint not found! Model = '") + mainPartModelName + CStr("', lp = ") + lpName);
             }
             else
             {
@@ -471,8 +472,8 @@ namespace ai
         for (Boss04Station* const station : m_stations)
         {
             CVector const stationPos = station->GetPosition();
-            CVector const offset =
-                RotateByQuaternion(CVector(stationPos.x - pos.x, stationPos.y - pos.y, stationPos.z - pos.z), rotForStations);
+            CVector const offset = RotateByQuaternion(
+                CVector(stationPos.x - pos.x, stationPos.y - pos.y, stationPos.z - pos.z), rotForStations);
             station->SetPosition(CVector(offset.x + pos.x, pos.y + offset.y, pos.z + offset.z));
             station->SetRotation(QuatMul(rotForStations, station->GetRotation()));
         }
@@ -521,12 +522,14 @@ namespace ai
         {
             return 0.0f;
         }
-        PrototypeInfo const* const stationInfo = thePrototypeManager->GetPrototypeInfo(prototypeInfo->m_stationPrototypeId);
+        PrototypeInfo const* const stationInfo =
+            thePrototypeManager->GetPrototypeInfo(prototypeInfo->m_stationPrototypeId);
         if (!stationInfo || !stationInfo->IsPrototypeOf(RT_CLASS_LOCAL(Boss04Station)))
         {
             return 0.0f;
         }
-        auto const& partPrototypeIds = static_cast<ComplexPhysicObjPrototypeInfo const*>(stationInfo)->m_partPrototypeIds;
+        auto const& partPrototypeIds =
+            static_cast<ComplexPhysicObjPrototypeInfo const*>(stationInfo)->m_partPrototypeIds;
         auto const stationPartIt = partPrototypeIds.find(CStr("MAIN"));
         if (stationPartIt == partPrototypeIds.end())
         {
@@ -585,9 +588,9 @@ namespace ai
         float angle = 0.0f;
         for (int i = NUM_STATIONS; i != 0; --i)
         {
-            int const stationId = bWithSuspendedPostLoad
-                ? theObjects->CreateNewObjectWithSuspendedPostLoad(stationPrototypeId, "", -1, -1)
-                : theObjects->CreateNewObject(stationPrototypeId, "", -1, -1);
+            int const stationId = bWithSuspendedPostLoad ?
+                theObjects->CreateNewObjectWithSuspendedPostLoad(stationPrototypeId, "", -1, -1) :
+                theObjects->CreateNewObject(stationPrototypeId, "", -1, -1);
             PhysicObj* station = nullptr;
             if (stationId >= 0)
             {
@@ -596,7 +599,10 @@ namespace ai
             float const halfAngle = angle * 0.5f;
             float const s = static_cast<float>(sin(halfAngle));
             Quaternion const relRot(
-                s * INITIAL_UP_DIRECTION.x, s * INITIAL_UP_DIRECTION.y, s * INITIAL_UP_DIRECTION.z, static_cast<float>(cos(halfAngle)));
+                s * INITIAL_UP_DIRECTION.x,
+                s * INITIAL_UP_DIRECTION.y,
+                s * INITIAL_UP_DIRECTION.z,
+                static_cast<float>(cos(halfAngle)));
             CVector const offset = RotateByQuaternion(INITIAL_OBJECTS_DIRECTION, relRot);
             CVector const pos = GetPosition();
             // NOTE: the station is used without a null check.

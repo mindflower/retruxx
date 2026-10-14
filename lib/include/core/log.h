@@ -4,12 +4,30 @@
 #include "kernel.h"
 #include "retruxx/common.h"
 
-#define M3D_LOG_INFO(msg) M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_INFO)
-#define M3D_LOG_ERR(msg)  M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_ERR)
-#define M3D_LOG_WARN(msg) M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_WARN)
-#define M3D_LOG_DATA(msg) M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_DATA)
-#define M3D_LOG_FLOW()    M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); m3d::Kernel::auxLogFlow _(__FUNCTION__)
-#define M3D_LOG_CRIT(msg)  M3D_KERNEL->m_Log->sourceLine() = __LINE__; M3D_KERNEL->m_Log->setSourceFile(__FILE__); M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_CRIT);
+#define M3D_LOG_INFO(msg)                       \
+    M3D_KERNEL->m_Log->sourceLine() = __LINE__; \
+    M3D_KERNEL->m_Log->setSourceFile(__FILE__); \
+    M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_INFO)
+#define M3D_LOG_ERR(msg)                        \
+    M3D_KERNEL->m_Log->sourceLine() = __LINE__; \
+    M3D_KERNEL->m_Log->setSourceFile(__FILE__); \
+    M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_ERR)
+#define M3D_LOG_WARN(msg)                       \
+    M3D_KERNEL->m_Log->sourceLine() = __LINE__; \
+    M3D_KERNEL->m_Log->setSourceFile(__FILE__); \
+    M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_WARN)
+#define M3D_LOG_DATA(msg)                       \
+    M3D_KERNEL->m_Log->sourceLine() = __LINE__; \
+    M3D_KERNEL->m_Log->setSourceFile(__FILE__); \
+    M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_DATA)
+#define M3D_LOG_FLOW()                          \
+    M3D_KERNEL->m_Log->sourceLine() = __LINE__; \
+    M3D_KERNEL->m_Log->setSourceFile(__FILE__); \
+    m3d::Kernel::auxLogFlow _(__FUNCTION__)
+#define M3D_LOG_CRIT(msg)                       \
+    M3D_KERNEL->m_Log->sourceLine() = __LINE__; \
+    M3D_KERNEL->m_Log->setSourceFile(__FILE__); \
+    M3D_KERNEL->m_Log->logTex(msg, m3d::LOG_CRIT);
 
 namespace m3d
 {
@@ -32,22 +50,22 @@ namespace m3d
     public:
         Log();
         ~Log();
-        bool startLog(const char* fileName, bool flush);
+        bool startLog(char const* fileName, bool flush);
         bool endLog();
         bool logStarted() const;
         unsigned int& sourceLine();
-        const unsigned int& sourceLine() const;
-        const char* getSourceFile() const;
-        void setSourceFile(const char* value);
+        unsigned int const& sourceLine() const;
+        char const* getSourceFile() const;
+        void setSourceFile(char const* value);
         unsigned int& logMask();
-        const unsigned int& logMask() const;
+        unsigned int const& logMask() const;
         bool& lineCharsFlag();
-        const bool& lineCharsFlag() const;
-        void logTex(const CStr& s, const m3d::eLogFlags logFlags);
-        void logRaw(const char* s);
-        void logHex(const char* buffer, const unsigned int count, const m3d::eLogFlags logFlags);
-        void indent(const CStr& s, const m3d::eLogFlags logBits);
-        void undent(const CStr& s, const m3d::eLogFlags logBits);
+        bool const& lineCharsFlag() const;
+        void logTex(CStr const& s, m3d::eLogFlags const logFlags);
+        void logRaw(char const* s);
+        void logHex(char const* buffer, unsigned int const count, m3d::eLogFlags const logFlags);
+        void indent(CStr const& s, m3d::eLogFlags const logBits);
+        void undent(CStr const& s, m3d::eLogFlags const logBits);
 
     private:
         bool m_logStarted = false;
@@ -60,8 +78,8 @@ namespace m3d
         bool m_lineCharsFlag = false;
         bool m_flushImmediately = true;
 
-        const CStr& headerString(const m3d::eLogFlags logFlags) const;
+        CStr const& headerString(m3d::eLogFlags const logFlags) const;
 
         mutable m3d::CriticalSection m_cs;
     };
-}
+}  // namespace m3d

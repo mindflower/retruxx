@@ -187,7 +187,10 @@ namespace m3d
         {
         }
 
-        int Pane::ReadFromXmlNode(cmn::XmlNode* node, retruxx::vector<BackGround*> const& gfxBgs, retruxx::vector<Frame*> const& gfxFrames)
+        int Pane::ReadFromXmlNode(
+            cmn::XmlNode* node,
+            retruxx::vector<BackGround*> const& gfxBgs,
+            retruxx::vector<Frame*> const& gfxFrames)
         {
             SafeStrAttrib(m_name, node, "name");
             if (m_name.empty())
@@ -197,7 +200,7 @@ namespace m3d
             // The shipped order is backgrounds first, then frames, and the scan
             // runs to the end of the table so a duplicated name resolves to the
             // last entry that carries it.
-            const char* bgIds[4] = {"bgOut", "bgDown", "bgOver", "bgDisable"};
+            char const* bgIds[4] = {"bgOut", "bgDown", "bgOver", "bgDisable"};
             for (size_t i = 0; i < 4; ++i)
             {
                 CStr texName;
@@ -211,7 +214,7 @@ namespace m3d
                 }
             }
 
-            const char* frameIds[4] = {"frameOut", "frameDown", "frameOver", "frameDisable"};
+            char const* frameIds[4] = {"frameOut", "frameDown", "frameOver", "frameDisable"};
             for (size_t i = 0; i < 4; ++i)
             {
                 CStr texName;
@@ -231,7 +234,7 @@ namespace m3d
 
         float ScrollPane::GetWidth() const
         {
-            auto res= m_btnSize.x;
+            auto res = m_btnSize.x;
             if (m_btnSize.x <= m_thumbSize.x)
             {
                 res = m_thumbSize.x;
@@ -256,7 +259,7 @@ namespace m3d
             SafeVector2Attrib(vec, node, "scrollThumbSize");
             m_thumbSize.x = vec.x;
             m_thumbSize.y = vec.y;
-            
+
             vec.x = 0.0;
             vec.y = 0.0;
             SafeVector2Attrib(vec, node, "scrollBtnSize");
@@ -291,5 +294,5 @@ namespace m3d
         ScrollPane::ScrollPane()
         {
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

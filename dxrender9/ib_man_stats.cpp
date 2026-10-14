@@ -33,10 +33,10 @@ namespace
             return ib1->m_desc.Size < ib2->m_desc.Size;
         }
     };
-}
+}  // namespace
 
 // orig 0x62ce40 ib_man_stats.cpp:49
-bool CDevice::ReportIbsInfo(const char* fileName)
+bool CDevice::ReportIbsInfo(char const* fileName)
 {
     std::vector<CIndexBuffer*> ibPools;
     std::vector<CIndexBuffer*> ibs;
@@ -135,8 +135,8 @@ bool CDevice::ReportIbsInfo(const char* fileName)
     }
 
     *stream << "--------------------------------------------------------------------------------------------------\n";
-    *stream << "Total size of dynamic native index buffers: " << dynamincIbSize << " (" << (float)dynamincIbSize / 1024.0f
-            << "Kb / " << (float)dynamincIbSize / 1048576.0f << "Mb)" << "\n\n";
+    *stream << "Total size of dynamic native index buffers: " << dynamincIbSize << " ("
+            << (float)dynamincIbSize / 1024.0f << "Kb / " << (float)dynamincIbSize / 1048576.0f << "Mb)" << "\n\n";
 
     *stream << "** Static native index buffers (" << staticIbCount << " entries) **\n";
     *stream << "   NumVerts            BufSize             Id\n";

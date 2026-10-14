@@ -313,8 +313,7 @@ int MsgManager::ShowMsgBox(int msgId, bool pause)
     MsgInfo const* info = GetMsgInfo(msgId);
     if (!info)
     {
-        M3D_LOG_INFO(
-            "MsgManager::ShowMsgBox error - MsgInfo for msg with id " + CStr(msgId) + " not found");
+        M3D_LOG_INFO("MsgManager::ShowMsgBox error - MsgInfo for msg with id " + CStr(msgId) + " not found");
         // The shipped code returns -1; MbRetCodes has no error member, so
         // callers read any non-positive value as "no dialog shown".
         return -1;
@@ -421,8 +420,7 @@ int MsgManager::AddMsg(MsgInfo* msgInfo, bool bGlobal)
     auto it = msgs.find(id);
     if (it != msgs.end())
     {
-        M3D_LOG_INFO(
-            "MsgManager::AddMsg warning - msg with id " + CStr(id) + " already exists and wiil be replaced");
+        M3D_LOG_INFO("MsgManager::AddMsg warning - msg with id " + CStr(id) + " already exists and wiil be replaced");
         delete it->second;
         it->second = nullptr;
         msgs.erase(it);

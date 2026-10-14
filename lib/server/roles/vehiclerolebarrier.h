@@ -38,4 +38,4 @@ namespace ai
     public:
         RT_CLASS_DECLARE(VehicleRoleBarrier);
     };
-}
+}  // namespace ai

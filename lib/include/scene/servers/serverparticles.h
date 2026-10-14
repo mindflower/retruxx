@@ -26,32 +26,35 @@ namespace m3d
     {
     public:
         ParticlesServer();
-        virtual  ~ParticlesServer() override;
+        virtual ~ParticlesServer() override;
         virtual int Init() override;
         virtual int Release() override;
-        virtual int AddItem(const char* params, const char* id) override;
+        virtual int AddItem(char const* params, char const* id) override;
         virtual int RemoveItem(int id) override;
         virtual int GetItemProperty(int id, int prop, void* dest) override;
         virtual int SetItemProperty(int id, int prop, void* src) override;
         virtual void UpdateItem(int id, void* params) override;
         virtual void RegisterNode(m3d::SgNode* node) override;
         virtual void UnregisterNode(m3d::SgNode* node) override;
-        virtual int SaveAllLoadedEntities(const char* filename) override;
+        virtual int SaveAllLoadedEntities(char const* filename) override;
         void SaveAllLoadedEntitiesToBPS();
         void ResetItem(m3d::SgNode* node);
         virtual void RenderItem(int id, void* params) override;
         virtual int RenderNodeSet(m3d::SgNode** nodes, unsigned int numNodes, m3d::RenderNodeInfo rni) override;
 
-        using CVectorVector = retruxx::vector<CVector, retruxx::allocator<CVector> >;
+        using CVectorVector = retruxx::vector<CVector, retruxx::allocator<CVector>>;
 
     public:
-        void AddParticle(m3d::SgNode* node, const CVector* pos);
-        void AddParticles(m3d::SgNode* node, const retruxx::vector<CVector, retruxx::allocator<CVector> >* newPoses);
-        void MoveParticles(m3d::SgNode* node, const retruxx::vector<CVector, retruxx::allocator<CVector> >* newPoses);
+        void AddParticle(m3d::SgNode* node, CVector const* pos);
+        void AddParticles(m3d::SgNode* node, retruxx::vector<CVector, retruxx::allocator<CVector>> const* newPoses);
+        void MoveParticles(m3d::SgNode* node, retruxx::vector<CVector, retruxx::allocator<CVector>> const* newPoses);
 
     protected:
-        void AddItemsByOne(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist);
-        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override;
+        void AddItemsByOne(
+            retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>>& itemslist);
+        virtual void AddItemsList(
+            retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>>& itemslist)
+            override;
 
     private:
         m3d::Profiler* m_profiler = nullptr;
@@ -62,4 +65,4 @@ namespace m3d
     extern PoolManager<m3d::ParticlesList> PL_PoolManager;
     extern PoolManager<m3d::Particle> ParticlesPool;
     extern PoolManager<ParticleBases> TrailsPool;
-}
+}  // namespace m3d

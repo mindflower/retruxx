@@ -190,8 +190,7 @@ int RepositoryItemWnd::GiveUpItem(ai::GeomRepositoryItem const& item, m3d::ui::W
     unsigned int givenUp = 0;
     if (ai::Town* town = M3D_APP->m_pInterfaceManager->GetCurrentTown())
     {
-        int const price =
-            static_cast<int>(help::GetBuyPriceByObjId(item.GetObjId(), town->GetId()) * item.GetAmount());
+        int const price = static_cast<int>(help::GetBuyPriceByObjId(item.GetObjId(), town->GetId()) * item.GetAmount());
         if (ai::thePlayer->GetMoney() >= price)
         {
             ai::thePlayer->AddMoney(-price);

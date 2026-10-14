@@ -31,8 +31,8 @@
 namespace
 {
     // RVA 0x6454F8 - filled by the $E59_2 static initializer.
-    const CStr kThemeNames[EncyclopaediaWnd::THEME_NUM_THEMES] = {
-        "Vehicles", "VehicleParts", "Weapon", "Gadgets", "Affixes", "Goods", "Clans", "QuestItems"};
+    CStr const kThemeNames[EncyclopaediaWnd::THEME_NUM_THEMES] =
+        {"Vehicles", "VehicleParts", "Weapon", "Gadgets", "Affixes", "Goods", "Clans", "QuestItems"};
 }  // namespace
 
 // ============================================================================
@@ -169,8 +169,9 @@ int EncyclopaediaWnd::GameDataSetup()
             m_wndModel = static_cast<ContextModelWnd*>(M3D_KERNEL->New("ContextModelWnd"));
             if (!m_wndModel)
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndModelName
-                    + " - cannot find rtti class ContextModelWnd");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndModelName +
+                    " - cannot find rtti class ContextModelWnd");
                 res = 0;
                 modelOk = res;
             }
@@ -208,14 +209,14 @@ int EncyclopaediaWnd::GameDataSetup()
             }
             else
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_subjectListName
-                    + " - cannot find rtti class SubjectList");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_subjectListName +
+                    " - cannot find rtti class SubjectList");
             }
         }
         else
         {
-            M3D_LOG_INFO(
-                "Make control error: control " + m_aif.m_subjectListName + " is not found or incorrect type");
+            M3D_LOG_INFO("Make control error: control " + m_aif.m_subjectListName + " is not found or incorrect type");
         }
     }
 
@@ -493,8 +494,8 @@ EncyclopaediaWnd::Theme EncyclopaediaWnd::GetThemeByResourceId(int resourceId) c
     {
         return THEME_VEHICLES;
     }
-    if (rm->bResourceIsKindOf(resourceId, rm->GetResourceId("CABIN"))
-        || rm->bResourceIsKindOf(resourceId, rm->GetResourceId("BASKET")))
+    if (rm->bResourceIsKindOf(resourceId, rm->GetResourceId("CABIN")) ||
+        rm->bResourceIsKindOf(resourceId, rm->GetResourceId("BASKET")))
     {
         return THEME_CB;
     }
@@ -1182,7 +1183,11 @@ int SubjectButton::SetUp(CStr const& name, PointBase<float> const& origin, float
 }
 
 int SubjectButton::SetUp(
-    CStr const& name, PointBase<float> const& origin, float width, EncyclopaediaWnd::Theme theme, int id)
+    CStr const& name,
+    PointBase<float> const& origin,
+    float width,
+    EncyclopaediaWnd::Theme theme,
+    int id)
 {
     // RVA 0xD7C10
     m_id = id;

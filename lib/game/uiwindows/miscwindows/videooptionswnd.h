@@ -9,7 +9,7 @@ namespace m3d
         class ButtonWnd;
         class SliderWnd;
         class ComboBoxWnd;
-    }
+    }  // namespace ui
 }  // namespace m3d
 
 class VideoOptionsWnd : public m3d::ui::Wnd
@@ -130,8 +130,7 @@ public:
 
 protected:
     virtual int GameDataSetup() override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data)
-        override;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual int OnAfterRemoveFromWndStation() override;
     void InitControls();

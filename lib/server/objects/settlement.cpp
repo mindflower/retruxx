@@ -21,8 +21,10 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Settlement);
 
-    SettlementPrototypeInfo::auxZoneInfo::auxZoneInfo(auxZoneInfo const& other)
-        : m_action(other.m_action), m_offset(other.m_offset), m_radius(other.m_radius)
+    SettlementPrototypeInfo::auxZoneInfo::auxZoneInfo(auxZoneInfo const& other) :
+        m_action(other.m_action),
+        m_offset(other.m_offset),
+        m_radius(other.m_radius)
     {
         // RVA 0x835290
     }
@@ -62,8 +64,8 @@ namespace ai
             if (m_vehiclesPrototypeId == -1)
             {
                 M3D_LOG_ERR(
-                    "Error: invalid vehicles prototype '" + m_vehiclesPrototypeName + "' for settlement prototype '" + m_prototypeName +
-                    "'");
+                    "Error: invalid vehicles prototype '" + m_vehiclesPrototypeName + "' for settlement prototype '" +
+                    m_prototypeName + "'");
             }
         }
     }
@@ -184,8 +186,8 @@ namespace ai
     {
         if (Obj::CanChildBeAdded(pClass))
             return 1;
-        return pClass->IsKindOf(&ai::StaticAutoGun::m_classStaticAutoGun) || pClass->IsKindOf(&ai::Location::m_classLocation) ||
-            pClass->IsKindOf(&ai::Team::m_classTeam);
+        return pClass->IsKindOf(&ai::StaticAutoGun::m_classStaticAutoGun) ||
+            pClass->IsKindOf(&ai::Location::m_classLocation) || pClass->IsKindOf(&ai::Team::m_classTeam);
     }
 
     void Settlement::SetRotationSelf(Quaternion const& rot)
@@ -225,7 +227,9 @@ namespace ai
         {
             CVector const locationPos = location->GetPosition();
             location->SetPosition(CVector(
-                pos.x + (locationPos.x - oldPos.x), locationPos.y - oldPos.y + pos.y, locationPos.z - oldPos.z + pos.z));
+                pos.x + (locationPos.x - oldPos.x),
+                locationPos.y - oldPos.y + pos.y,
+                locationPos.z - oldPos.z + pos.z));
         }
     }
 
@@ -459,7 +463,8 @@ namespace ai
         auto const* const vehicleInfo =
             static_cast<VehiclePrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(vehiclesPrototypeId));
         CVector pos;
-        if (!GetValidPosition(GetDeployPos(), 5.0f, vehicleInfo->m_priority, pos, true, false, retruxx::set<m3d::Class*>()))
+        if (!GetValidPosition(
+                GetDeployPos(), 5.0f, vehicleInfo->m_priority, pos, true, false, retruxx::set<m3d::Class*>()))
         {
             return nullptr;
         }
@@ -488,7 +493,8 @@ namespace ai
         return m_population.value().get() + _GetNumSpawnedVehicles();
     }
 
-    void Settlement::CreateChildLocation(Location::LocationType locationType, CStr const& nameSuffix, CVector const& pos)
+    void
+        Settlement::CreateChildLocation(Location::LocationType locationType, CStr const& nameSuffix, CVector const& pos)
     {
         // RVA 0x83A2A0 - adds a generic 50 unit location of the given type, unless there is one already.
         if (GetLocation(locationType))

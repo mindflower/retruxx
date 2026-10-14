@@ -224,8 +224,8 @@ int BuildingButton::CreateFromPattern()
         return 0;
     }
 
-    if (!m3d::ui::Wnd::Create({}, m_aif.m_wndPattern->GetStyle(), m_aif.m_wndPattern->GetBounds(),
-                              m_aif.m_wndPattern->GetId()))
+    if (!m3d::ui::Wnd::Create(
+            {}, m_aif.m_wndPattern->GetStyle(), m_aif.m_wndPattern->GetBounds(), m_aif.m_wndPattern->GetId()))
     {
         M3D_LOG_INFO("BuildingButton::CreateFromPattern error - cannot create window");
         return 0;
@@ -292,8 +292,11 @@ int BuildingButton::CreateChildren()
     {
         return 0;
     }
-    if (!m_lblBuildingName->Create({}, m_aif.m_lblPatternName->GetStyle(), m_aif.m_lblPatternName->GetBounds(),
-                                   m_aif.m_lblPatternName->GetId()))
+    if (!m_lblBuildingName->Create(
+            {},
+            m_aif.m_lblPatternName->GetStyle(),
+            m_aif.m_lblPatternName->GetBounds(),
+            m_aif.m_lblPatternName->GetId()))
     {
         m_lblBuildingName->DecRef();
         m_lblBuildingName = nullptr;

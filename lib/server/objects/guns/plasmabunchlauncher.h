@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         PlasmaBunchLauncherPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
 
@@ -23,8 +23,8 @@ namespace ai
         virtual ~PlasmaBunchLauncher() override;
 
     private:
-        PlasmaBunchLauncher(const ai::PlasmaBunchLauncherPrototypeInfo& prototypeInfo);
-        PlasmaBunchLauncher(const ai::PlasmaBunchLauncher&);
+        PlasmaBunchLauncher(ai::PlasmaBunchLauncherPrototypeInfo const& prototypeInfo);
+        PlasmaBunchLauncher(ai::PlasmaBunchLauncher const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -32,9 +32,9 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(PlasmaBunchLauncher);
-        virtual const ai::PlasmaBunchLauncherPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::PlasmaBunchLauncherPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
         virtual void _LaunchShells() override;
     };
-}
+}  // namespace ai

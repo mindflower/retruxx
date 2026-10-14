@@ -7,8 +7,8 @@ namespace m3d
     {
         class ButtonWnd;
         class EditWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
 class NewProfileWnd : public m3d::ui::ModalWnd
 {

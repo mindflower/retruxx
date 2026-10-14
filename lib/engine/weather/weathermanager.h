@@ -19,8 +19,8 @@ namespace m3d
         friend class CWorld;
 
     private:
-        retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*> > m_weatherStorage;
-        retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*> > m_curWeatherStorage;
+        retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*>> m_weatherStorage;
+        retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*>> m_curWeatherStorage;
         m3d::Weather* m_currentWeather = nullptr;
         float m_cloudsOffset = 0.0;
         m3d::rend::TexHandle m_starsTexture;
@@ -34,10 +34,10 @@ namespace m3d
         m3d::CWorld* m_owner;
 
     public:
-        WeatherManager(const m3d::WeatherManager&);
+        WeatherManager(m3d::WeatherManager const&);
         WeatherManager();
-        int ReadFromXmlFile(const char* name);
-        int WriteToXmlFile(const char* name);
+        int ReadFromXmlFile(char const* name);
+        int WriteToXmlFile(char const* name);
         int SaveWeatherStateToXMLNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
         int LoadWeatherStateFromXMLNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
         int CreateSky();
@@ -53,22 +53,22 @@ namespace m3d
         float GetShadowTransparencyFromWeather() const;
         bool GetShadowVisibilityFromWeather() const;
         void SetActiveWeather(unsigned int Cur);
-        void SetActiveWeatherByName(const CStr& name);
-        const m3d::Weather* GetActiveWeather() const;
+        void SetActiveWeatherByName(CStr const& name);
+        m3d::Weather const* GetActiveWeather() const;
         m3d::Weather* GetWeather(unsigned int N);
-        m3d::Weather* GetWeatherByName(const CStr& name);
+        m3d::Weather* GetWeatherByName(CStr const& name);
         std::size_t GetNumWeathers() const;
         unsigned int GetGlobalTimeParamsNum() const;
-        const char* GetGlobalTimeParamName(unsigned int i) const;
+        char const* GetGlobalTimeParamName(unsigned int i) const;
         float GetGlobalTimeParam(unsigned int iParamIdx) const;
         float SetGlobalTimeParam(unsigned int iParamIdx, float fValue);
         void SetEdit(bool);
         void ChangeStarsTexture(CStr& Name);
-        const CStr& GetStarsTextureName() const;
-        void AddWeather(const CStr& Name, const CStr& ClassName);
+        CStr const& GetStarsTextureName() const;
+        void AddWeather(CStr const& Name, CStr const& ClassName);
         int DeleteWeather(unsigned int iWeatherIdx);
         void SetOwner(m3d::CWorld* owner);
         void ChangeCloudsTexture();
         void ChangeLightmapTexture();
     };
-}
+}  // namespace m3d

@@ -26,7 +26,7 @@ namespace ai
     {
     public:
         PhysicObjPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         float m_intersectionRadius;
         float m_lookRadius;
     };
@@ -58,9 +58,9 @@ namespace ai
     protected:
         virtual ~PhysicObj() override;
 
-    //private:
+        //private:
     public:
-        PhysicObj(const ai::PhysicObjPrototypeInfo& prototypeInfo);
+        PhysicObj(ai::PhysicObjPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -68,18 +68,18 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classPhysicObj;
-        virtual const ai::PhysicObjPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::PhysicObjPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
         virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override;
         virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
@@ -99,49 +99,49 @@ namespace ai
         };
 
     public:
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void Remove() override;
         virtual void SetPassedToAnotherMapStatus() override;
         dBody* GetBody();
-        const dBody* GetBody() const;
+        dBody const* GetBody() const;
         virtual float GetMass() const;
         CVector GetPosition() const;
-        virtual void SetPosition(const CVector& pos);
+        virtual void SetPosition(CVector const& pos);
         Quaternion GetRotation() const;
-        virtual void SetRotation(const Quaternion& rot);
-        void AddRelativeRotation(const Quaternion& relDeltaRot);
+        virtual void SetRotation(Quaternion const& rot);
+        void AddRelativeRotation(Quaternion const& relDeltaRot);
         virtual CVector GetDirection() const;
-        virtual void SetDirection(const CVector& direction);
-        virtual void SetDirections(const CVector& forward, const CVector& up);
+        virtual void SetDirection(CVector const& direction);
+        virtual void SetDirections(CVector const& forward, CVector const& up);
         CVector GetMassCenterPosition() const;
-        void SetMassCenterPosition(const CVector& pos);
+        void SetMassCenterPosition(CVector const& pos);
         virtual CVector GetGeometricCenter() const;
         CVector GetMassCenter() const;
         virtual void SetPostEnablePhysics();
         virtual void SetPostEnablePhysicsIfPossible();
         virtual void SetPostDisablePhysics();
         virtual void SetPostDisablePhysicsWithAutoEnable();
-        virtual void SetPostRotation(const Quaternion& rot);
-        virtual void SetPostPosition(const CVector& pos);
+        virtual void SetPostRotation(Quaternion const& rot);
+        virtual void SetPostPosition(CVector const& pos);
         Quaternion GetPostRotation() const;
         CVector GetPostPosition() const;
-        virtual void SetPositionSelf(const CVector& pos);
-        virtual void SetRotationSelf(const Quaternion& rot);
+        virtual void SetPositionSelf(CVector const& pos);
+        virtual void SetRotationSelf(Quaternion const& rot);
         virtual CVector GetLinearVelocity() const;
-        virtual void SetLinearVelocity(const CVector& linearVel);
+        virtual void SetLinearVelocity(CVector const& linearVel);
         CVector GetAngularVelocity() const;
-        void SetAngularVelocity(const CVector& angularVel);
-        void SetForce(const CVector& force);
-        void AddForce(const CVector& force);
-        void AddForceAtPos(const CVector& force, const CVector& pos);
-        void AddForceAtRelPos(const CVector& force, const CVector& relPos);
-        void AddImpulse(const CVector& impulse);
-        void AddImpulseAtPos(const CVector& impulse, const CVector& pos);
-        void AddImpulseAtRelPos(const CVector& impulse, const CVector& relPos);
-        void SetTorque(const CVector& torque);
-        void AddTorque(const CVector& torque);
-        void AddRelTorque(const CVector& relTorque);
+        void SetAngularVelocity(CVector const& angularVel);
+        void SetForce(CVector const& force);
+        void AddForce(CVector const& force);
+        void AddForceAtPos(CVector const& force, CVector const& pos);
+        void AddForceAtRelPos(CVector const& force, CVector const& relPos);
+        void AddImpulse(CVector const& impulse);
+        void AddImpulseAtPos(CVector const& impulse, CVector const& pos);
+        void AddImpulseAtRelPos(CVector const& impulse, CVector const& relPos);
+        void SetTorque(CVector const& torque);
+        void AddTorque(CVector const& torque);
+        void AddRelTorque(CVector const& relTorque);
         CVector GetPositionAtRelPoint(CVector point) const;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void PostCollide() override;
@@ -181,7 +181,7 @@ namespace ai
         bool bIsUpdatingByODE() const;
         virtual void SetUpdatingByODE(bool byODE);
         float GetIntersectionRadius() const;
-        const ai::SphereForIntersection* GetIntersectionSphere() const;
+        ai::SphereForIntersection const* GetIntersectionSphere() const;
         unsigned int GetSkin() const;
         virtual void SetSkin(int skin);
         virtual void SetVisible() override;
@@ -207,8 +207,8 @@ namespace ai
         ai::SphereForIntersection* _GetLookSphere() const;
         virtual void _UnlinkBodyFromGeoms();
         virtual void _LinkBodyToGeoms();
-        virtual void _SetPositionToGeoms(const CVector& pos);
-        virtual void _SetRotationToGeoms(const Quaternion& rot);
+        virtual void _SetPositionToGeoms(CVector const& pos);
+        virtual void _SetRotationToGeoms(Quaternion const& rot);
         void _SetStatic();
         void _SetStaticCollision();
         void _SetSimpleCollision();
@@ -217,7 +217,7 @@ namespace ai
         void _SetBoundSphereRadius(float radius);
         bool _UpdateMustBeRelinked();
         virtual void _UpdateOwnPhysics(float elapsedTime);
-        void _SetMassCenter(const CVector& massCenter);
+        void _SetMassCenter(CVector const& massCenter);
         void _AdjustMassCenter();
 
     private:
@@ -238,8 +238,7 @@ namespace ai
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
     };
 
-    
     CVector getPhysicObjOrPhysicBodyPosition(ai::Obj const*);
     CVector getPhysicObjOrPhysicBodyLinearVelocity(ai::Obj const*);
     CVector getPhysicObjOrPhysicBodyDirection(ai::Obj const*);
-}
+}  // namespace ai

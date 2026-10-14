@@ -54,8 +54,8 @@ namespace
     private:
         int FindPos(CStr const& partName) const
         {
-            int const resourceId =
-                ai::theResourceManager->GetResourceId(ai::theResourceManager->GetResourceNameByVehiclePartName(partName));
+            int const resourceId = ai::theResourceManager->GetResourceId(
+                ai::theResourceManager->GetResourceNameByVehiclePartName(partName));
             for (int i = 0; i < static_cast<int>(m_resourceOrder.size()); ++i)
             {
                 if (ai::theResourceManager->bResourceIsKindOf(resourceId, m_resourceOrder[i]))
@@ -75,8 +75,7 @@ namespace
     class PartNameLessByCBParent
     {
     public:
-        explicit PartNameLessByCBParent(ai::ComplexPhysicObjPartDescription const* cabinDesc) :
-            m_cabinDesc(cabinDesc)
+        explicit PartNameLessByCBParent(ai::ComplexPhysicObjPartDescription const* cabinDesc) : m_cabinDesc(cabinDesc)
         {
         }
 
@@ -345,8 +344,8 @@ int WeaponSlotList::AddItem(CStr const& gunPartName)
     return 1;
 }
 
-void WeaponSlotList::SortGunPartNames(
-    std::vector<CStr, std::allocator<CStr>>& gunPartNames, ai::Vehicle const* vehicle) const
+void WeaponSlotList::SortGunPartNames(std::vector<CStr, std::allocator<CStr>>& gunPartNames, ai::Vehicle const* vehicle)
+    const
 {
     // RVA 0x485A30 - two passes. The first orders the slots by weapon class in
     // the fixed order below; the second, which only ever reorders within a run
@@ -363,8 +362,7 @@ void WeaponSlotList::SortGunPartNames(
 
     std::sort(gunPartNames.begin(), gunPartNames.end(), PartNameLessByResource());
 
-    ai::ComplexPhysicObjPartDescription const* cabinDesc =
-        proto->m_partDescription->GetChildByNameDeep(CStr("CABIN"));
+    ai::ComplexPhysicObjPartDescription const* cabinDesc = proto->m_partDescription->GetChildByNameDeep(CStr("CABIN"));
     std::sort(gunPartNames.begin(), gunPartNames.end(), PartNameLessByCBParent(cabinDesc));
 }
 

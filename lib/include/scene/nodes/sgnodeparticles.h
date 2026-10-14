@@ -57,4 +57,4 @@ namespace m3d
     public:
         RT_CLASS_DECLARE(SgParticlesOpaqueNode);
     };
-}
+}  // namespace m3d

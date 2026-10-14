@@ -7,7 +7,7 @@ namespace m3d
     {
         class EditWnd;
     }
-}
+}  // namespace m3d
 
 class SaveWnd : public LSWnd
 {

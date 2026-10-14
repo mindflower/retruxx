@@ -12,7 +12,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class SaleWnd : public ChildPanel
 {
@@ -57,11 +57,9 @@ protected:
     virtual int GameDataSetup() override;
     virtual int GameDataClear(bool beforeContinuousLevel) override;
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     int LaunchTownDlg();
-    virtual void UpdateOnChangeTabSel(int newTabIdx, int oldTabIdx, m3d::ui::TabWnd::SelectionType selectionType)
-       ;
+    virtual void UpdateOnChangeTabSel(int newTabIdx, int oldTabIdx, m3d::ui::TabWnd::SelectionType selectionType);
     virtual m3d::ui::Wnd* CreateTabItem(SaleWnd::WorkshopTabType type);
     virtual int SetupTabItem(m3d::ui::Wnd* tabItem, SaleWnd::WorkshopTabType tabType);
     int SetupTabInfo(m3d::ui::Wnd* itemWnd, SaleWnd::WorkshopTabType type);

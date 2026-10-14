@@ -7,7 +7,7 @@ namespace m3d
     {
         class CheckWnd;
     }
-}
+}  // namespace m3d
 
 class HelpWnd : public m3d::ui::ModalWnd
 {

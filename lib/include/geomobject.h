@@ -15,7 +15,6 @@ namespace m3d
     struct Triangle
     {
         int index[3];
-
     };
 
     struct GeometryInfo
@@ -43,7 +42,7 @@ namespace m3d
 
     protected:
         GeomObject();
-        GeomObject(const m3d::GeomObject& rhs);
+        GeomObject(m3d::GeomObject const& rhs);
 
     public:
         virtual ~GeomObject() override;
@@ -65,9 +64,9 @@ namespace m3d
         dxGeom* GetGeom() const;
         void SetEnabled(bool enabled);
         void SetMayBeEnabled(bool bMayBeEbabled);
-        void SetBounds(const PointBase<int>& startCell, const PointBase<int>& endCell);
-        const PointBase<int>& GetStartCell();
-        const PointBase<int>& GetEndCell();
+        void SetBounds(PointBase<int> const& startCell, PointBase<int> const& endCell);
+        PointBase<int> const& GetStartCell();
+        PointBase<int> const& GetEndCell();
 
     private:
         dxGeom* m_geom;
@@ -77,18 +76,18 @@ namespace m3d
         int m_enabledCellsCount;
     };
 
-    class GeomObjectLandscape :  public GeomObject
+    class GeomObjectLandscape : public GeomObject
     {
     public:
         virtual ~GeomObjectLandscape();
-        virtual Class * GetClass() const ;
-        virtual Object * Clone();
-        static Object * CreateObject();
-        static Class * GetBaseClass();
+        virtual Class* GetClass() const;
+        virtual Object* Clone();
+        static Object* CreateObject();
+        static Class* GetBaseClass();
 
     protected:
         GeomObjectLandscape();
-        GeomObjectLandscape(GeomObjectLandscape const &);
+        GeomObjectLandscape(GeomObjectLandscape const&);
 
     public:
         RT_CLASS_DECLARE(GeomObjectLandscape);
@@ -100,7 +99,7 @@ namespace m3d
         GeomObjectStatics();
 
     public:
-        virtual  ~GeomObjectStatics() override;
+        virtual ~GeomObjectStatics() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
@@ -163,4 +162,4 @@ namespace m3d
     public:
         RT_CLASS_DECLARE(GeomObjectPassCell);
     };
-}
+}  // namespace m3d

@@ -25,8 +25,7 @@ public:
 protected:
     virtual int GameDataSetup() override;
     virtual int GameDataClear(bool beforeContinuousLevel) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual int OnAfterAddToWndStation() override;
     virtual int OnAfterRemoveFromWndStation() override;

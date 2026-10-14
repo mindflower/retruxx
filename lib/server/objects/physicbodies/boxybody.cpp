@@ -92,4 +92,4 @@ namespace ai
         // Always inlined in the shipped build; the same as the const overload.
         return const_cast<Box*>(static_cast<BoxyBody const*>(this)->_Box());
     }
-}
+}  // namespace ai

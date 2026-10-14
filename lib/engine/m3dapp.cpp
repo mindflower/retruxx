@@ -431,8 +431,14 @@ namespace m3d
         return HandleEvent(ev);
     }
 
-    int Application::ImmediateMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, CStr const& p4,
-                                      AIParam const& p5)
+    int Application::ImmediateMessage(
+        int msg,
+        void* ptr0,
+        void* ptr1,
+        int p2,
+        int p3,
+        CStr const& p4,
+        AIParam const& p5)
     {
         Event ev = MakeMessageEvent(msg, 0, 0, p2, p3, p4, p5);
         ev.m_ptrEv[0] = ptr0;
@@ -2806,7 +2812,9 @@ namespace m3d
             double const maxLineWidth = static_cast<double>(wrapWidth) + 0.01;
             // A separating space goes between words unless the line is empty or either side is a space.
             auto const separator = [&](CStr const& word)
-            { return (line.length() != 0 && !(prevWord == " ") && !(word == " ")) ? " " : ""; };
+            {
+                return (line.length() != 0 && !(prevWord == " ") && !(word == " ")) ? " " : "";
+            };
 
             while (pos < textLen)
             {
@@ -5982,8 +5990,8 @@ namespace m3d
     {
         // RVA 0x59BC30
         // 0x90080000 fullscreen, 0x90CE0000 windowed (caption, sizing border, minimise box).
-        return bFullScreen ? (WS_POPUP | WS_VISIBLE | WS_SYSMENU)
-                           : (WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX);
+        return bFullScreen ? (WS_POPUP | WS_VISIBLE | WS_SYSMENU) :
+                             (WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX);
     }
 
     DbgCounterStack& Application::GetDbgCounterStack()
@@ -6014,16 +6022,28 @@ namespace m3d
         EnqueueEvent(MakeMessageEvent(msg, param0, param1, p2, p3, param4, param5));
     }
 
-    void Application::EnqueueMessage(int msg, void* ptr0, int param1, int p2, int p3, CStr const& param4,
-                                     AIParam const& param5)
+    void Application::EnqueueMessage(
+        int msg,
+        void* ptr0,
+        int param1,
+        int p2,
+        int p3,
+        CStr const& param4,
+        AIParam const& param5)
     {
         Event ev = MakeMessageEvent(msg, 0, param1, p2, p3, param4, param5);
         ev.m_ptrEv[0] = ptr0;
         EnqueueEvent(ev);
     }
 
-    void Application::EnqueueMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, CStr const& param4,
-                                     AIParam const& param5)
+    void Application::EnqueueMessage(
+        int msg,
+        void* ptr0,
+        void* ptr1,
+        int p2,
+        int p3,
+        CStr const& param4,
+        AIParam const& param5)
     {
         Event ev = MakeMessageEvent(msg, 0, 0, p2, p3, param4, param5);
         ev.m_ptrEv[0] = ptr0;

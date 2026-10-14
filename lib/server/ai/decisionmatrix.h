@@ -11,7 +11,7 @@ namespace ai
     class DecisionMatrixElement
     {
     public:
-        std::vector<ai::AIPassageCommand, std::allocator<ai::AIPassageCommand> > m_PassageCommands;
+        std::vector<ai::AIPassageCommand, std::allocator<ai::AIPassageCommand>> m_PassageCommands;
         unsigned short m_flags;
         DecisionMatrixElement();
         void Dump();
@@ -85,4 +85,4 @@ namespace ai
         ai::AIPassageCommand m_Default;
         int m_ExitStateNum;
     };
-}
+}  // namespace ai

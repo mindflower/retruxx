@@ -23,4 +23,4 @@ namespace ai
         static DynamicQuest* __fastcall CreateQuest(QuestType, int, int);
         static void __fastcall ConsiderPlayerKill(int);
     };
-}
+}  // namespace ai

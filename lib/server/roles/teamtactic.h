@@ -38,7 +38,7 @@ namespace ai
         virtual void AssignAgainstObj(ai::Team*, ai::Obj const*) = 0;
     };
 
-   class TeamTacticWithRolesPrototypeInfo : public ai::TeamTacticPrototypeInfo
+    class TeamTacticWithRolesPrototypeInfo : public ai::TeamTacticPrototypeInfo
     {
     public:
         TeamTacticWithRolesPrototypeInfo();
@@ -62,7 +62,7 @@ namespace ai
         virtual void AssignAgainstVehicle(Team*, Vehicle const*);
         virtual void AssignAgainstTeam(Team*, Team const*);
         virtual float FitAgainstVehicle(Team const*, Vehicle const*);
-        void GetRolePrototypeIdsEx(int, std::vector<int, std::allocator<int> >&) const;
+        void GetRolePrototypeIdsEx(int, std::vector<int, std::allocator<int>>&) const;
         static m3d::Class* GetBaseClass();
         virtual float FitAgainstTeam(Team const*, Team const*);
         virtual float FitAgainstObj(Team const*, Obj const*);
@@ -72,10 +72,10 @@ namespace ai
 
     private:
         static m3d::Object* CreateObject();
-        std::vector<int, std::allocator<int> > const& GetRolePrototypeIds() const;
+        std::vector<int, std::allocator<int>> const& GetRolePrototypeIds() const;
         virtual m3d::Object* Clone();
 
     public:
         RT_CLASS_DECLARE(TeamTacticWithRoles);
     };
-}
+}  // namespace ai

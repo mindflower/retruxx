@@ -53,4 +53,4 @@ namespace ai
         CVector m_initialVelocity;
         CVector m_initialPosition;
     };
-}
+}  // namespace ai

@@ -28,8 +28,7 @@ public:
 protected:
     virtual int GameDataSetup() override;
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
     int ChoseProfile();

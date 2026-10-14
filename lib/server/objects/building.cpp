@@ -132,8 +132,7 @@ namespace ai
     BuildingPrototypeInfo const* Building::GetPrototypeInfo() const
     {
         // RVA 0x7047A0
-        return RT_DYNCAST(
-            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BuildingPrototypeInfo const);
+        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), BuildingPrototypeInfo const);
     }
 
     Building::~Building()

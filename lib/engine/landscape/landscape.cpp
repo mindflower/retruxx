@@ -235,8 +235,8 @@ namespace m3d
     namespace
     {
         // The edge of a visibility/collision cell in world units (the binary's VISCELL_EDGE_LENGTH_* copies).
-        constexpr float VISCELL_EDGE_LENGTH = 128.0f;
-    }
+        float constexpr VISCELL_EDGE_LENGTH = 128.0f;
+    }  // namespace
 
     m3d::RenderModes Landscape::m_renderMode = RM_GAME;
 
@@ -360,10 +360,13 @@ namespace m3d
 
         LinkNodeCollisionGeomsToCell(node, x0, x1, z0, z1);
         UpdateNodeCollisionGeoms(node);
-        ForEachDescendant(node, [&](SgNode* child) {
-            LinkNodeCollisionGeomsToCell(child, x0, x1, z0, z1);
-            UpdateNodeCollisionGeoms(child);
-        });
+        ForEachDescendant(
+            node,
+            [&](SgNode* child)
+            {
+                LinkNodeCollisionGeomsToCell(child, x0, x1, z0, z1);
+                UpdateNodeCollisionGeoms(child);
+            });
     }
 
     float Landscape::GetHeightWithCollisions(float x, float y, bool forVehicle) const
@@ -580,7 +583,8 @@ namespace m3d
 
         int const landSize = m_owner->m_level->land_size;
         vertsPerCell = 17 * 17;
-        m_solidVb = M3D_RENDERER->AddVb(rend::VertexType::VERTEX_YNI, vertsPerCell * landSize * landSize, "SolidLandscape", 0);
+        m_solidVb =
+            M3D_RENDERER->AddVb(rend::VertexType::VERTEX_YNI, vertsPerCell * landSize * landSize, "SolidLandscape", 0);
         float* vertex = static_cast<float*>(M3D_RENDERER->LockVb(m_solidVb, vertsPerCell * landSize * landSize, 0, 0));
         M3D_ASSERT(vertex != 0);
 
@@ -801,7 +805,7 @@ namespace m3d
             m_solidPs->Apply();
             m_solidVs->Apply();
 
-            auto projMatrixHandle =m_solidVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
             m_solidVs->SetMatrix(projMatrixHandle, du);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -814,7 +818,7 @@ namespace m3d
             m_solidPs->Apply();
             m_solidVs->Apply();
 
-            auto projMatrixHandle =m_solidVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle = m_solidVs->GetParamHandleByName("mViewProj");
             m_solidVs->SetMatrix(projMatrixHandle, du);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -830,17 +834,16 @@ namespace m3d
             m_solidBindPs->Apply();
             m_solidBindVs->Apply();
 
-            auto projMatrixHandle =m_solidBindVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle = m_solidBindVs->GetParamHandleByName("mViewProj");
             m_solidBindVs->SetMatrix(projMatrixHandle, du);
 
-            auto viewPosHandle =m_solidBindVs->GetParamHandleByName("ViewPos");
+            auto viewPosHandle = m_solidBindVs->GetParamHandleByName("ViewPos");
             // The camera position comes from the view matrix, not from the combined view-projection.
             m_solidBindVs->SetVector3(viewPosHandle, M3D_RENDERER->MatGet().getOrgInv());
 
             auto const transitionCFatror = M3D_ENGINE_CFG.m_lsTransitionCFactor.GetF();
             auto const viewDistanceDivider = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
-            float vsConst =
-                (static_cast<float>(transitionRadius) - (viewDistanceDivider * transitionCFatror)) * 128.0f;
+            float vsConst = (static_cast<float>(transitionRadius) - (viewDistanceDivider * transitionCFatror)) * 128.0f;
             M3D_RENDERER->SetVsFloatConst(7u, &vsConst, 1u);
 
             auto lightmapTexture = GetLightmapTexture();
@@ -853,15 +856,15 @@ namespace m3d
             m_solidDeepVs->Apply();
             m_solidDeepPs->Apply();
 
-            auto projMatrixHandle =m_solidDeepVs->GetParamHandleByName("mViewProj");
+            auto projMatrixHandle = m_solidDeepVs->GetParamHandleByName("mViewProj");
             m_solidDeepVs->SetMatrix(projMatrixHandle, du);
 
             CMatrix const textureMat = du * m_matScale;
-            auto mTextureHandle =m_solidDeepVs->GetParamHandleByName("mTexture");
+            auto mTextureHandle = m_solidDeepVs->GetParamHandleByName("mTexture");
             m_solidDeepVs->SetMatrix(mTextureHandle, textureMat);
 
             CVector const viewPos = M3D_RENDERER->MatGet().getOrgInv();
-            auto viewPosHandle =m_solidDeepVs->GetParamHandleByName("viewPos");
+            auto viewPosHandle = m_solidDeepVs->GetParamHandleByName("viewPos");
             m_solidDeepVs->SetVector3(viewPosHandle, viewPos);
 
             auto const* level = pClient->GetWorld().m_level;
@@ -1080,7 +1083,8 @@ namespace m3d
         M3D_RENDERER->SetFogEnd(fogEnd, false);
 
         // Adds a tile to the list of every texture it is painted with, keyed by position, angle and flags.
-        auto const addTileTextures = [this](int x, int y) {
+        auto const addTileTextures = [this](int x, int y)
+        {
             TileInfo const& tileInfo = GetTileInfo(x, y);
             for (int k = 0; k < tileInfo.m_numTexs; ++k)
             {
@@ -1203,7 +1207,8 @@ namespace m3d
                 light.m_diffuse.init(m_owner->GetWeatherDiffuseColor());
                 // The ambient is taken at half strength.
                 float const HALF_BYTE_TO_FLOAT = 0.0019607844f;
-                light.m_ambient.init(static_cast<float>((ambient >> 16) & 0xFF) * HALF_BYTE_TO_FLOAT,
+                light.m_ambient.init(
+                    static_cast<float>((ambient >> 16) & 0xFF) * HALF_BYTE_TO_FLOAT,
                     static_cast<float>((ambient >> 8) & 0xFF) * HALF_BYTE_TO_FLOAT,
                     static_cast<float>(ambient & 0xFF) * HALF_BYTE_TO_FLOAT,
                     static_cast<float>(ambient >> 24) * HALF_BYTE_TO_FLOAT);
@@ -1497,7 +1502,13 @@ namespace m3d
 
                         water->m_TriData = dGeomTriMeshDataCreate();
                         dGeomTriMeshDataBuildSingle(
-                            water->m_TriData, water->m_Vertices, sizeof(CVector), 4, water->m_Indices, 6, 3 * sizeof(int));
+                            water->m_TriData,
+                            water->m_Vertices,
+                            sizeof(CVector),
+                            4,
+                            water->m_Indices,
+                            6,
+                            3 * sizeof(int));
                         water->SetGeom(dCreateTriMesh(m_owner->GetOdeSpace(), water->m_TriData, 0, 0, 0));
                         water->m_needToDeleteInUnlink = false;
                         item->m_geomsList.insert(water);
@@ -1729,7 +1740,8 @@ namespace m3d
                         masks.push_back(M3D_RENDERER->AddTexture(m_pathTile + CStr(maskNode->GetAttribute("name")), 2));
                         M3D_RENDERER->SetTextureParameter(masks.back(), rend::TM_WRAP_S, 3);
                         M3D_RENDERER->SetTextureParameter(masks.back(), rend::TM_WRAP_T, 3);
-                        M3D_RENDERER->SetTextureParameter(masks.back(), rend::TM_MIP_LOD_BIAS, rend::FloatTexParam(-1.0f));
+                        M3D_RENDERER->SetTextureParameter(
+                            masks.back(), rend::TM_MIP_LOD_BIAS, rend::FloatTexParam(-1.0f));
                     }
                 }
                 m_AlphaSets.push_back(alphaMask);
@@ -1767,7 +1779,8 @@ namespace m3d
                     landType.m_passmask = passmaskAttr ? atoi(passmaskAttr) : 0;
 
                     int alphaSet = 0;
-                    landType.m_alphaset = m_hashAlphaToLand.get(typeNode->GetAttribute("alphaset"), alphaSet) ? alphaSet : 0;
+                    landType.m_alphaset =
+                        m_hashAlphaToLand.get(typeNode->GetAttribute("alphaset"), alphaSet) ? alphaSet : 0;
 
                     // Process tiles
                     ref_ptr tileNode(xmlFile->CreateNode());
@@ -4425,7 +4438,8 @@ namespace m3d
         // RVA 0x648110 - debug-draws a geom in its world pose; a transform geom is drawn as its inner geom placed in
         // the transform's frame. Classes 0-2 (sphere, box, capped cylinder) and 6 (transform) push a world matrix.
         // NOTE: the shipped build inlines the matrix products with its own summation order.
-        auto const geomMatrix = [](dxGeom* g) {
+        auto const geomMatrix = [](dxGeom* g)
+        {
             dReal const* pos = dGeomGetPosition(g);
             dQuaternion q;
             dGeomGetQuaternion(g, q);
@@ -4527,10 +4541,10 @@ namespace m3d
         CMatrix const resultViewMat = mat * projMat;
         CMatrix const textureMat = resultViewMat * m_matScale;
 
-        auto const viewProjHandle =m_waterVs->GetParamHandleByName("mViewProj");
+        auto const viewProjHandle = m_waterVs->GetParamHandleByName("mViewProj");
         m_waterVs->SetMatrix(viewProjHandle, resultViewMat);
 
-        auto const textureHandle =m_waterVs->GetParamHandleByName("mTexture");
+        auto const textureHandle = m_waterVs->GetParamHandleByName("mTexture");
         m_waterVs->SetMatrix(textureHandle, textureMat);
 
         rend::Colorf const reflectionTint = m_owner->m_level->m_reflectionTint;
@@ -4547,14 +4561,14 @@ namespace m3d
                 currentWeather->m_waterSpecularS * (float)colorSpec * 0.0039215689,
                 currentWeather->m_waterSpecularM);
 
-            auto const waveHeightSpecularHandle =m_waterPs->GetParamHandleByName("waveHeightSpecular");
+            auto const waveHeightSpecularHandle = m_waterPs->GetParamHandleByName("waveHeightSpecular");
             m_waterPs->SetVector4(waveHeightSpecularHandle, waveHeightSpecular);
 
             // Set view position
             CMatrix invView = mat.getInverse();
             CVector viewPos = invView.getOrg();
 
-            auto const viewPosHandle =m_waterVs->GetParamHandleByName("viewPos");
+            auto const viewPosHandle = m_waterVs->GetParamHandleByName("viewPos");
             m_waterVs->SetVector3(viewPosHandle, viewPos);
 
             // Set wave parameters
@@ -4563,7 +4577,7 @@ namespace m3d
                 currentWeather->m_waterSizeBig,
                 cos(currentWeather->m_waterCourseAng),
                 sin(currentWeather->m_waterCourseAng));
-            auto const waveSizeHandle =m_waterVs->GetParamHandleByName("waveSize");
+            auto const waveSizeHandle = m_waterVs->GetParamHandleByName("waveSize");
             m_waterVs->SetVector4(waveSizeHandle, waveSize);
 
             // Set sun direction and fog color
@@ -4596,7 +4610,7 @@ namespace m3d
             1.0f / (fogReduceFactor * fogEnd - fogReduceFactor * fogStart),
             fogReduceFactor * fogStart);
 
-        auto const gFogTermHandle =m_waterVs->GetParamHandleByName("g_FogTerm");
+        auto const gFogTermHandle = m_waterVs->GetParamHandleByName("g_FogTerm");
         m_waterVs->SetVector3(gFogTermHandle, fogTerm);
 
         // Clear water cells to draw
@@ -4901,7 +4915,8 @@ namespace m3d
         int const stride = 4 * landSize;
         int const maxIndex = stride - 1;
         int const cornerFlags[4] = {1, 2, 4, 8};
-        auto const texAt = [&](int x, int y) {
+        auto const texAt = [&](int x, int y)
+        {
             return m_tiles[std::clamp(x, 0, maxIndex) + stride * std::clamp(y, 0, maxIndex)].m_texIndex0;
         };
 
@@ -5044,7 +5059,12 @@ namespace m3d
             std::vector<int> bankSwitchingMap;
             BuildCells0(vertices, *chunk, vertexCount, m_cellsPerTex[i], RT_FIRSTPASSLIGHT, bankSwitchingMap);
             BuildCells0(
-                &vertices[chunk->iotherPassOffset], *chunk, vertexCount, m_cellsPerTex[i], RT_OTHERPASSES, bankSwitchingMap);
+                &vertices[chunk->iotherPassOffset],
+                *chunk,
+                vertexCount,
+                m_cellsPerTex[i],
+                RT_OTHERPASSES,
+                bankSwitchingMap);
             m_cellsPerTex[i].clear();
             bankSwitchingMap.push_back(vertexCount);
 
@@ -5053,7 +5073,8 @@ namespace m3d
             for (int const bankSize : bankSwitchingMap)
             {
                 rend::VbHandle vb = M3D_RENDERER->AddVb(rend::VERTEX_XYZNCT1_UV2_S1, bankSize, "Landscape", 0);
-                memcpy(M3D_RENDERER->LockVb(vb, bankSize, 0, 0), bankVertices, sizeof(rend::VertexLandscape) * bankSize);
+                memcpy(
+                    M3D_RENDERER->LockVb(vb, bankSize, 0, 0), bankVertices, sizeof(rend::VertexLandscape) * bankSize);
                 bankVertices += bankSize;
                 M3D_RENDERER->UnlockVb(vb);
                 chunk->m_vbHandle.push_back(vb);
@@ -6289,7 +6310,10 @@ namespace m3d
             return CVector(0.0f, 1.0f, 0.0f);
         }
 
-        auto const h = [&](int x, int z) { return m_heightMap[x % stride + stride * (z % stride)]; };
+        auto const h = [&](int x, int z)
+        {
+            return m_heightMap[x % stride + stride * (z % stride)];
+        };
         float fnX[8];
         float fnY[8];
         float fnZ[8];
@@ -6685,7 +6709,8 @@ namespace m3d
         {
             vertex.c = 0xFFFFFF;
         }
-        auto const setVertex = [&quad](int i, float x, float y, float z) {
+        auto const setVertex = [&quad](int i, float x, float y, float z)
+        {
             quad[i].x = x;
             quad[i].y = y;
             quad[i].z = z;
@@ -7048,7 +7073,8 @@ namespace m3d
         int const side = 4 * m_owner->m_level->land_size;
         m_tiles = new TileInfo[side * side];
 
-        auto const loadTextTileMap = [&]() -> bool {
+        auto const loadTextTileMap = [&]() -> bool
+        {
             // NOTE: here the used-textures list gets full paths, where the tagged format stores bare names.
             scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (!stream->Open(filename.c_str(), fs::IStream::OPEN_READ))
@@ -7133,13 +7159,15 @@ namespace m3d
 
             unsigned char* data = nullptr;
             file.getChunkData(0xBADF00Du, reinterpret_cast<void**>(&data));
-            auto const readUint = [&data]() {
+            auto const readUint = [&data]()
+            {
                 unsigned const value = *reinterpret_cast<unsigned const*>(data);
                 data += 4;
                 return value;
             };
             // A string is its length, then its characters and a terminating zero.
-            auto const readString = [&]() {
+            auto const readString = [&]()
+            {
                 unsigned const length = readUint();
                 CStr const value(reinterpret_cast<char const*>(data));
                 data += length + 1;
@@ -7150,8 +7178,7 @@ namespace m3d
             if (fileSide != static_cast<unsigned>(side))
             {
                 M3D_LOG_ERR(
-                    "Error: Bad tilemap file, landsize = " + CStr(side) + ", tilemap size in file = " +
-                    CStr(fileSide));
+                    "Error: Bad tilemap file, landsize = " + CStr(side) + ", tilemap size in file = " + CStr(fileSide));
                 return 0;
             }
 

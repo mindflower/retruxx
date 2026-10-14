@@ -25,7 +25,13 @@ namespace m3d
             CStr name = id;
             if (!name.empty())
             {
-                ::LCMapStringA(0x400u, 0x100u, name.c_str(), name.length() + 1, const_cast<char*>(name.c_str()), name.length() + 1);
+                ::LCMapStringA(
+                    0x400u,
+                    0x100u,
+                    name.c_str(),
+                    name.length() + 1,
+                    const_cast<char*>(name.c_str()),
+                    name.length() + 1);
             }
             auto const it = m_shRemap.find(name);
             if (it != m_shRemap.end())
@@ -34,13 +40,13 @@ namespace m3d
             }
             return -1;
         }
-	    for (int i = 0; i<m_models.size(); ++i)
-	    {
-		    if (!CStr::my_stricmp(id, m_models[i].m_name.c_str()))
-		    {
+        for (int i = 0; i < m_models.size(); ++i)
+        {
+            if (!CStr::my_stricmp(id, m_models[i].m_name.c_str()))
+            {
                 return i;
-		    }
-	    }
+            }
+        }
         return -1;
     }
 
@@ -288,4 +294,4 @@ namespace m3d
         m_lastError = "No protocol found";
         return 0;
     }
-}
+}  // namespace m3d

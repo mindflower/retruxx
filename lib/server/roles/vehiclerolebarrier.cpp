@@ -47,7 +47,8 @@ namespace ai
         return static_cast<float>(v->GetMaxSpeed() * 0.1);
     }
 
-    float VehicleRoleBarrierPrototypeInfo::FitAgainstTeam(Vehicle const* v, Team const* target, Vehicle** targetVehicle) const
+    float VehicleRoleBarrierPrototypeInfo::FitAgainstTeam(Vehicle const* v, Team const* target, Vehicle** targetVehicle)
+        const
     {
         // RVA 0x7FD9D0
         *targetVehicle = getBestOpponentFromTeam(v, target);
@@ -60,8 +61,7 @@ namespace ai
         return 0.0f;
     }
 
-    VehicleRoleBarrier::VehicleRoleBarrier(VehicleRoleBarrierPrototypeInfo const& prototype) :
-        VehicleRole(prototype)
+    VehicleRoleBarrier::VehicleRoleBarrier(VehicleRoleBarrierPrototypeInfo const& prototype) : VehicleRole(prototype)
     {
         // RVA 0x7FDA10
     }
@@ -135,7 +135,8 @@ namespace ai
         CVector const myPosition = v->GetPosition();
         float const aheadX = forwardX * 10.0f;
         float const aheadZ = forwardZ * 10.0f;
-        float const ahead = ((0.0f - targetPos.x * aheadX) - targetPos.z * aheadZ + aheadX * myPosition.x) + aheadZ * myPosition.z;
+        float const ahead =
+            ((0.0f - targetPos.x * aheadX) - targetPos.z * aheadZ + aheadX * myPosition.x) + aheadZ * myPosition.z;
         CVector result = targetPos;
         if (ahead <= 10.0f)
         {
@@ -160,7 +161,8 @@ namespace ai
     VehicleRoleBarrierPrototypeInfo const* VehicleRoleBarrier::GetPrototypeInfo() const
     {
         // RVA 0x7FE110 - NOTE: the prototype is cast without a type check.
-        return static_cast<VehicleRoleBarrierPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<VehicleRoleBarrierPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRoleBarrier::CreateObject()

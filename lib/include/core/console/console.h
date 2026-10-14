@@ -38,13 +38,11 @@ namespace m3d
     struct IConHandler
     {
         virtual ~IConHandler() = default;
-        virtual void HandleCommand(int, const m3d::CConsoleParams&) = 0;
-        virtual bool HandleCVar(const m3d::CVar*, const m3d::CConsoleParams&) = 0;
+        virtual void HandleCommand(int, m3d::CConsoleParams const&) = 0;
+        virtual bool HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&) = 0;
     };
 
-    class IConsole :
-        public Object,
-        public IEventHandler
+    class IConsole : public Object, public IEventHandler
     {
     public:
         IConsole(IConsole const&);
@@ -80,4 +78,4 @@ namespace m3d
     };
 
     IConsole* ConsoleFactory();
-}
+}  // namespace m3d

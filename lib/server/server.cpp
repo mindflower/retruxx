@@ -162,23 +162,37 @@ namespace ai
             m3d::sArg* const flagArg = scriptStack.popIn();
             switch (flagArg->m_type)
             {
-                case m3d::sArg::ARGTYPE_INT: withChildren = flagArg->GetI() != 0; break;
-                case m3d::sArg::ARGTYPE_FLOAT: withChildren = flagArg->GetF() > 0.0f; break;
-                case m3d::sArg::ARGTYPE_BOOL: withChildren = flagArg->GetB(); break;
-                default: break;
+            case m3d::sArg::ARGTYPE_INT:
+                withChildren = flagArg->GetI() != 0;
+                break;
+            case m3d::sArg::ARGTYPE_FLOAT:
+                withChildren = flagArg->GetF() > 0.0f;
+                break;
+            case m3d::sArg::ARGTYPE_BOOL:
+                withChildren = flagArg->GetB();
+                break;
+            default:
+                break;
             }
         }
 
         Obj* obj = nullptr;
         switch (objArg->m_type)
         {
-            case m3d::sArg::ARGTYPE_INT: obj = theObjects->GetEntityByObjId(objArg->GetI()); break;
-            case m3d::sArg::ARGTYPE_FLOAT:
-                obj = theObjects->GetEntityByObjId(static_cast<int>(objArg->GetF()));
-                break;
-            case m3d::sArg::ARGTYPE_STRING: obj = theObjects->GetEntityByObjName(CStr(objArg->GetS())); break;
-            case m3d::sArg::ARGTYPE_OBJECT: obj = static_cast<Obj*>(objArg->GetO()); break;
-            default: return 1;
+        case m3d::sArg::ARGTYPE_INT:
+            obj = theObjects->GetEntityByObjId(objArg->GetI());
+            break;
+        case m3d::sArg::ARGTYPE_FLOAT:
+            obj = theObjects->GetEntityByObjId(static_cast<int>(objArg->GetF()));
+            break;
+        case m3d::sArg::ARGTYPE_STRING:
+            obj = theObjects->GetEntityByObjName(CStr(objArg->GetS()));
+            break;
+        case m3d::sArg::ARGTYPE_OBJECT:
+            obj = static_cast<Obj*>(objArg->GetO());
+            break;
+        default:
+            return 1;
         }
         if (obj)
         {
@@ -283,7 +297,12 @@ namespace ai
         m_lastId = id;
     }
 
-    void CServer::Load(StartupMode mode, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, bool bContiniousMap, ObjContainer::eSAVE_TYPES saveType)
+    void CServer::Load(
+        StartupMode mode,
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode,
+        bool bContiniousMap,
+        ObjContainer::eSAVE_TYPES saveType)
     {
         M3D_LOG_INFO("AI: Loading Server...");
 
@@ -623,8 +642,7 @@ namespace ai
 
         retruxx::vector<m3d::Class*> allowedClasses;
         allowedClasses.push_back(RT_CLASS_LOCAL(Barricade));
-        m_pDynamicScene->LoadSceneFromFile(
-            m_level->GetFullPathNameA(m_level->m_dsSrvName).c_str(), allowedClasses);
+        m_pDynamicScene->LoadSceneFromFile(m_level->GetFullPathNameA(m_level->m_dsSrvName).c_str(), allowedClasses);
     }
 
     void CServer::Register()
@@ -856,7 +874,8 @@ namespace ai
             xmlFile->GetFirstChild(triggersNode, "triggers");
 
             ref_ptr triggerNode = xmlFile->CreateNode();
-            for (triggersNode->GetFirstChild(triggerNode, "trigger"); !triggerNode->IsEmpty(); triggerNode->GetNextSibling(triggerNode, "trigger"))
+            for (triggersNode->GetFirstChild(triggerNode, "trigger"); !triggerNode->IsEmpty();
+                 triggerNode->GetNextSibling(triggerNode, "trigger"))
             {
                 CStr name;
                 m3d::SafeStrAttrib(name, triggerNode, "Name");
@@ -869,7 +888,8 @@ namespace ai
                 auto* entity = ai::theObjects->GetEntityByObjName(name);
                 if (ai::theObjects->m_SaveType == ai::ObjContainer::eSAVE_TYPES::SAVE_LEVEL && entity)
                 {
-                    M3D_LOG_ERR("Attempting to load trigger " + name + ", but a trigger with this name already exists!");
+                    M3D_LOG_ERR(
+                        "Attempting to load trigger " + name + ", but a trigger with this name already exists!");
                 }
                 if (!entity)
                 {
@@ -988,8 +1008,7 @@ namespace ai
                 m_CurIndex = 0;
             }
             float& oldest = m_lastElapsedTimes[m_CurIndex];
-            m_averageElapsedTime =
-                (step - oldest) / static_cast<float>(m_MaxAverageLength) + m_averageElapsedTime;
+            m_averageElapsedTime = (step - oldest) / static_cast<float>(m_MaxAverageLength) + m_averageElapsedTime;
             oldest = step;
             ++m_CurIndex;
         }
@@ -1246,8 +1265,7 @@ namespace ai
         ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
-            M3D_LOG_ERR("Error: cannot parse " + fileName + CStr(" ( ") + CStr(xmlFile->GetError()) +
-                CStr(" ) "));
+            M3D_LOG_ERR("Error: cannot parse " + fileName + CStr(" ( ") + CStr(xmlFile->GetError()) + CStr(" ) "));
             return;
         }
         stream->Close();
@@ -1369,13 +1387,23 @@ namespace ai
 
         auto& scriptServer = M3D_KERNEL->GetScriptServer();
         scriptServer.registerGlobalFunction(
-            n_AddToCinematic, "AddToCinematic", "void", "Object, [bool WithChildren]", "adds object to update list for cinematic state.");
-        scriptServer.registerGlobalFunction(n_EndCinematic, "EndCinematic", "void", "void", "Revert Server to normal update mode");
-        scriptServer.registerGlobalFunction(n_CreateObjectByClassName, "CreateObjectByClassName", "Object*", "const char* className", "Creates Object");
+            n_AddToCinematic,
+            "AddToCinematic",
+            "void",
+            "Object, [bool WithChildren]",
+            "adds object to update list for cinematic state.");
+        scriptServer.registerGlobalFunction(
+            n_EndCinematic, "EndCinematic", "void", "void", "Revert Server to normal update mode");
+        scriptServer.registerGlobalFunction(
+            n_CreateObjectByClassName, "CreateObjectByClassName", "Object*", "const char* className", "Creates Object");
 
         pGlobalMap = new Map;
         pGlobalMap->Create(
-            m_level->m_passMapCellSize, m_level->m_passMapCellSize, pServer->m_level->land_size * 128.0f, pServer->m_level->land_size * 128.0f, nullptr);
+            m_level->m_passMapCellSize,
+            m_level->m_passMapCellSize,
+            pServer->m_level->land_size * 128.0f,
+            pServer->m_level->land_size * 128.0f,
+            nullptr);
         pGlobalMap->Clear();
         Map::SetGlobalMap(pGlobalMap);
         pGlobalMap->LoadFromRawFile(m_level->GetFullPathNameA(m_level->m_passMapName).c_str());

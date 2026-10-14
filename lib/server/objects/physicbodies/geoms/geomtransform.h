@@ -7,13 +7,13 @@ namespace ai
     {
     public:
         static ai::GeomTransform* CreateObject(dxSpace* space, void (*movedCalback)(dxGeom*));
-        virtual  ~GeomTransform() override;
+        virtual ~GeomTransform() override;
         void SetGeom(ai::Geom* pGeom);
-        const ai::Geom* GetGeom() const;
+        ai::Geom const* GetGeom() const;
         ai::Geom* GetGeom();
 
     private:
         GeomTransform(dxGeom* const geomId, void (*movedCalback)(dxGeom*));
         ai::Geom* m_innerGeom;
     };
-}
+}  // namespace ai

@@ -8,14 +8,14 @@ private:
     CVector m_end;
 
 public:
-    Segment(const Segment&);
-    Segment(const CVector& _begin, const CVector& _end);
+    Segment(Segment const&);
+    Segment(CVector const& _begin, CVector const& _end);
     Segment();
     float length() const;
     float lengthSq() const;
     CVector& begin();
-    const CVector& begin() const;
+    CVector const& begin() const;
     CVector& end();
-    const CVector& end() const;
-    const CVector getDirection() const;
+    CVector const& end() const;
+    CVector const getDirection() const;
 };

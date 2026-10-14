@@ -18,6 +18,7 @@ namespace m3d
         virtual int GetPropertiesList(retruxx::set<unsigned int>&) const;
 
         virtual Class* GetClass() const;
+
     protected:
         virtual ~SgPointLightSourceNode();
         SgPointLightSourceNode();
@@ -30,4 +31,4 @@ namespace m3d
     private:
         unsigned int m_props[3];
     };
-}
+}  // namespace m3d

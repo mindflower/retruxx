@@ -64,13 +64,13 @@ namespace snd
         {
             g_kernel->SysError(CStr(file) + CStr(":") + CStr(line), CStr(assertion));
         }
-    }
+    }  // namespace
 
 // The original M3D_ASSERT with the file name and line number the original binary carries.
-#define SOUND_ASSERT(cond, line)                                            \
-    if (!(cond))                                                            \
-    {                                                                       \
-        soundAssertFailed(#cond, ".\\CM3DSoundManager.cpp", (line));        \
+#define SOUND_ASSERT(cond, line)                                     \
+    if (!(cond))                                                     \
+    {                                                                \
+        soundAssertFailed(#cond, ".\\CM3DSoundManager.cpp", (line)); \
     }
 
     // orig 0x7d8e14 CM3DSoundManager.cpp (file static)
@@ -82,12 +82,12 @@ namespace snd
     namespace
     {
         // The file callbacks FMOD reads the sound files through (defined after the class).
-        void* F_CALLBACKAPI OpenFileCallback(const char* fileName);
+        void* F_CALLBACKAPI OpenFileCallback(char const* fileName);
         int F_CALLBACKAPI ReadFileCallback(void* buffer, int size, void* handle);
         int F_CALLBACKAPI SeekFileCallback(void* handle, int pos, signed char mode);
         int F_CALLBACKAPI TellFileCallback(void* handle);
         void F_CALLBACKAPI CloseFileCallback(void* handle);
-    }
+    }  // namespace
 
     class CM3DSoundManager : public ISound
     {
@@ -95,14 +95,18 @@ namespace snd
         // 37: IBase
         int IncRef() override;
         int DecRef() override;
-        void* QueryIface(const char* ifaceName) override;
+        void* QueryIface(char const* ifaceName) override;
 
         CM3DSoundManager();
         ~CM3DSoundManager() override;
 
         // ISound, in the order of Hard Truck Apocalypse's vtable
-        bool Init(void(__fastcall* logFunc)(const CStr&), unsigned int SampleRate, unsigned int BitsPerSample,
-                  unsigned char maxSounds, const char* groupsFileName) override;
+        bool Init(
+            void(__fastcall* logFunc)(CStr const&),
+            unsigned int SampleRate,
+            unsigned int BitsPerSample,
+            unsigned char maxSounds,
+            char const* groupsFileName) override;
         int Update(double dT) override;
         void SetMaxVolume(int volume) override;
         void SetMusicFadeTime(float fadeTime) override;
@@ -115,22 +119,29 @@ namespace snd
         bool PauseAllSounds(bool pause) override;
         int PlayMusic(int sound_id, bool loop_flag, bool immediate) override;
         int PlaySound2D(int sound_id, bool loop_flag) override;
-        int PlaySound3D(int sound_id, const CVector& position, const CVector& velocity, bool loop_flag) override;
+        int PlaySound3D(int sound_id, CVector const& position, CVector const& velocity, bool loop_flag) override;
         bool SetChannelLoopMode(int channelHandle, bool loop_flag) override;
         int GetChannelFrequency(int channelHandle) override;
         bool SetChannelFrequency(int channelHandle, int frequency) override;
-        bool SetPosition(int channelHandle, const CVector& position, const CVector& velocity) override;
-        bool SetListenerPosition(const CVector& position, const CVector& velocity, const CVector& orientFront,
-                                 const CVector& orientTop) override;
+        bool SetPosition(int channelHandle, CVector const& position, CVector const& velocity) override;
+        bool SetListenerPosition(
+            CVector const& position,
+            CVector const& velocity,
+            CVector const& orientFront,
+            CVector const& orientTop) override;
         bool StopChannel(int channelHandle) override;
         bool StopGroup(int group) override;
         int StopAllSounds() override;
         int MuteAllSounds() override;
         int RestoreAllVolumes() override;
-        int AddSound(const char* filename, UserSoundType soundType, int group, int maxSounds,
-                     SoundPriority priority) override;
-        int AddSound(const char* filename, UserSoundType soundType, const char* groupName, int maxSounds,
-                     SoundPriority priority) override;
+        int AddSound(char const* filename, UserSoundType soundType, int group, int maxSounds, SoundPriority priority)
+            override;
+        int AddSound(
+            char const* filename,
+            UserSoundType soundType,
+            char const* groupName,
+            int maxSounds,
+            SoundPriority priority) override;
         bool DeleteIdTableSound(int soundId) override;
         bool DeleteAllSounds() override;
         bool SetSoundPriority(int soundId, SoundPriority priority) override;
@@ -144,17 +155,17 @@ namespace snd
 
         // original: virtual ISound slots 0x70 and 0x74; not in HTA's interface.
         int GetSoundIdByFilename(CStr const& filename);
-        int AddCustomMusic(const char* filename);
+        int AddCustomMusic(char const* filename);
 
     private:
         void _SetSoundIdForChannel(int channelNum, int soundId);
-        bool _LoadGroupsFromXmlFile(const char* groupsFileName);
+        bool _LoadGroupsFromXmlFile(char const* groupsFileName);
         void _LoadSoundGroupFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode, SoundGroup* parent);
         bool _bIsSoundGroupKindOf(int soundGroupId, int ancestorId);
         CSoundItem* _GetSoundById(int soundId);
         void _PurgeChannels();
-        static signed char F_CALLBACKAPI _CommonMusicEndCallback(FSOUND_STREAM* stream, void* buff, int len,
-                                                                 void* userdata);
+        static signed char F_CALLBACKAPI
+            _CommonMusicEndCallback(FSOUND_STREAM* stream, void* buff, int len, void* userdata);
 
         int m_refCount;
         IBase* m_parent;
@@ -205,7 +216,7 @@ namespace snd
                 mode = (mode & ~FSOUND_LOOP_NORMAL) | FSOUND_LOOP_OFF;
             }
         }
-    }
+    }  // namespace
 
     // orig 0x5efcd0 CM3DSoundManager.cpp:37
     int CM3DSoundManager::IncRef()
@@ -233,7 +244,7 @@ namespace snd
     }
 
     // orig 0x5efd20 CM3DSoundManager.cpp:37
-    void* CM3DSoundManager::QueryIface(const char* ifaceName)
+    void* CM3DSoundManager::QueryIface(char const* ifaceName)
     {
         if (m_parent)
         {
@@ -272,8 +283,12 @@ namespace snd
     // original: bool Init(SampleRate, BitsPerSample, maxSounds, groupsFileName) on the statically
     // linked driver. Hard Truck Apocalypse's interface hands over the log callback as well; its
     // own sound.dll stores it before the original body, which is kept unchanged.
-    bool CM3DSoundManager::Init(void(__fastcall* logFunc)(const CStr&), unsigned int SampleRate,
-                                unsigned int BitsPerSample, unsigned char maxSounds, const char* groupsFileName)
+    bool CM3DSoundManager::Init(
+        void(__fastcall* logFunc)(CStr const&),
+        unsigned int SampleRate,
+        unsigned int BitsPerSample,
+        unsigned char maxSounds,
+        char const* groupsFileName)
     {
         // 127-128
         if (m_isInited)
@@ -319,8 +334,8 @@ namespace snd
         Log(CStr("Max sound channels available: ") + CStr((unsigned int)m_channels.size()));
 
         // 168
-        pFMOD_INSTANCE->FSOUND_File_SetCallbacks(OpenFileCallback, CloseFileCallback, ReadFileCallback,
-                                                 SeekFileCallback, TellFileCallback);
+        pFMOD_INSTANCE->FSOUND_File_SetCallbacks(
+            OpenFileCallback, CloseFileCallback, ReadFileCallback, SeekFileCallback, TellFileCallback);
 
         // 171
         if (!_LoadGroupsFromXmlFile(groupsFileName))
@@ -607,7 +622,7 @@ namespace snd
     }
 
     // orig 0x5f3f20 CM3DSoundManager.cpp:482
-    int CM3DSoundManager::PlaySound3D(int sound_id, const CVector& position, const CVector& velocity, bool loop_flag)
+    int CM3DSoundManager::PlaySound3D(int sound_id, CVector const& position, CVector const& velocity, bool loop_flag)
     {
         // 485-486
         if (!m_isInited)
@@ -715,7 +730,7 @@ namespace snd
         // 586
         SOUND_ASSERT(channelHandle >= 0, 586);
         // 587
-        SOUND_ASSERT(ChannelNumFromHandle( channelHandle ) < ( int )m_channels.size(), 587);
+        SOUND_ASSERT(ChannelNumFromHandle(channelHandle) < (int)m_channels.size(), 587);
 
         // 589
         return pFMOD_INSTANCE->FSOUND_SetLoopMode(channelHandle, loop_flag ? FSOUND_LOOP_NORMAL : FSOUND_LOOP_OFF) != 0;
@@ -739,7 +754,7 @@ namespace snd
         // 603
         SOUND_ASSERT(channelHandle >= 0, 603);
         // 604
-        SOUND_ASSERT(ChannelNumFromHandle( channelHandle ) < ( int )m_channels.size(), 604);
+        SOUND_ASSERT(ChannelNumFromHandle(channelHandle) < (int)m_channels.size(), 604);
 
         // 606
         return pFMOD_INSTANCE->FSOUND_GetFrequency(channelHandle);
@@ -786,7 +801,7 @@ namespace snd
     }
 
     // orig 0x5f4d10 CM3DSoundManager.cpp:644
-    int CM3DSoundManager::AddCustomMusic(const char* filename)
+    int CM3DSoundManager::AddCustomMusic(char const* filename)
     {
         // 649-651
         if (!m_isInited)
@@ -825,7 +840,7 @@ namespace snd
         pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(stream, _CommonMusicEndCallback, (void*)(intptr_t)m_nextSoundId);
 
         // 670
-        SOUND_ASSERT(m_sounds.find( m_nextSoundId ) == m_sounds.end(), 670);
+        SOUND_ASSERT(m_sounds.find(m_nextSoundId) == m_sounds.end(), 670);
         // 671
         m_sounds[m_nextSoundId] = item;
         // 672
@@ -833,8 +848,12 @@ namespace snd
     }
 
     // orig 0x5f50f0 CM3DSoundManager.cpp:690
-    int CM3DSoundManager::AddSound(const char* filename, UserSoundType soundType, int group, int maxSounds,
-                                   SoundPriority priority)
+    int CM3DSoundManager::AddSound(
+        char const* filename,
+        UserSoundType soundType,
+        int group,
+        int maxSounds,
+        SoundPriority priority)
     {
         // 700
         if (group < 0 || group >= (int)m_soundGroupVector.size())
@@ -887,7 +906,8 @@ namespace snd
             item = new CSoundItem(FST_STREAM, stream, group);
 
             // 755
-            pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(stream, _CommonMusicEndCallback, (void*)(intptr_t)m_nextSoundId);
+            pFMOD_INSTANCE->FSOUND_Stream_SetEndCallback(
+                stream, _CommonMusicEndCallback, (void*)(intptr_t)m_nextSoundId);
             // 775
             break;
         }
@@ -979,8 +999,8 @@ namespace snd
             else
             {
                 // 861
-                pFMOD_INSTANCE->FSOUND_Sample_SetMinMaxDistance(sample, m_soundGroupVector[group]->GetMinDist(),
-                                                                m_soundGroupVector[group]->GetMaxDist());
+                pFMOD_INSTANCE->FSOUND_Sample_SetMinMaxDistance(
+                    sample, m_soundGroupVector[group]->GetMinDist(), m_soundGroupVector[group]->GetMaxDist());
                 // 864
                 pFMOD_INSTANCE->FSOUND_Sample_SetDefaults(sample, -1, -1, 127, priority);
             }
@@ -992,7 +1012,7 @@ namespace snd
         }
 
         // 877
-        SOUND_ASSERT(m_sounds.find( m_nextSoundId ) == m_sounds.end(), 877);
+        SOUND_ASSERT(m_sounds.find(m_nextSoundId) == m_sounds.end(), 877);
 
         // 879
         m_sounds[m_nextSoundId] = item;
@@ -1002,8 +1022,12 @@ namespace snd
     }
 
     // orig 0x5f2b40 CM3DSoundManager.cpp:900
-    int CM3DSoundManager::AddSound(const char* filename, UserSoundType soundType, const char* groupName,
-                                   int maxSounds, SoundPriority priority)
+    int CM3DSoundManager::AddSound(
+        char const* filename,
+        UserSoundType soundType,
+        char const* groupName,
+        int maxSounds,
+        SoundPriority priority)
     {
         // 901
         std::map<CStr, SoundGroup*>::iterator it = m_soundGroupMap.find(CStr(groupName));
@@ -1585,7 +1609,7 @@ namespace snd
     }
 
     // orig 0x5efe90 CM3DSoundManager.cpp:1483
-    bool CM3DSoundManager::SetPosition(int channelHandle, const CVector& position, const CVector& velocity)
+    bool CM3DSoundManager::SetPosition(int channelHandle, CVector const& position, CVector const& velocity)
     {
         // 1485-1486
         if (!m_isInited)
@@ -1603,17 +1627,20 @@ namespace snd
         }
 
         // 1495
-        float pos[3] = { position.x, position.z, -position.y };
+        float pos[3] = {position.x, position.z, -position.y};
         // 1496
-        float vel[3] = { velocity.x, velocity.z, -velocity.y };
+        float vel[3] = {velocity.x, velocity.z, -velocity.y};
 
         // 1499
         return pFMOD_INSTANCE->FSOUND_3D_SetAttributes(channelHandle, pos, vel) != 0;
     }
 
     // orig 0x5eff50 CM3DSoundManager.cpp:1512
-    bool CM3DSoundManager::SetListenerPosition(const CVector& position, const CVector& velocity,
-                                               const CVector& orientFront, const CVector& orientTop)
+    bool CM3DSoundManager::SetListenerPosition(
+        CVector const& position,
+        CVector const& velocity,
+        CVector const& orientFront,
+        CVector const& orientTop)
     {
         // 1514-1515
         if (!m_isInited)
@@ -1622,17 +1649,17 @@ namespace snd
         }
 
         // 1519
-        float pos[3] = { position.x, position.z, -position.y };
+        float pos[3] = {position.x, position.z, -position.y};
         // 1520
-        float vel[3] = { velocity.x, velocity.z, -velocity.y };
+        float vel[3] = {velocity.x, velocity.z, -velocity.y};
         // 1521
-        float front[3] = { orientFront.x, orientFront.z, -orientFront.y };
+        float front[3] = {orientFront.x, orientFront.z, -orientFront.y};
         // 1522
-        float top[3] = { orientTop.x, orientTop.z, -orientTop.y };
+        float top[3] = {orientTop.x, orientTop.z, -orientTop.y};
 
         // 1525
-        pFMOD_INSTANCE->FSOUND_3D_Listener_SetAttributes(pos, vel, front[0], front[1], front[2], top[0], top[1],
-                                                         top[2]);
+        pFMOD_INSTANCE->FSOUND_3D_Listener_SetAttributes(
+            pos, vel, front[0], front[1], front[2], top[0], top[1], top[2]);
 
         // 1527
         return true;
@@ -1883,14 +1910,14 @@ namespace snd
     void CM3DSoundManager::_SetSoundIdForChannel(int channelNum, int soundId)
     {
         // 1737
-        SOUND_ASSERT(( uint )channelNum < m_channels.size(), 1737);
+        SOUND_ASSERT((uint)channelNum < m_channels.size(), 1737);
 
         // 1774
         m_channels[channelNum] = soundId;
     }
 
     // orig 0x5f65a0 CM3DSoundManager.cpp:1780
-    bool CM3DSoundManager::_LoadGroupsFromXmlFile(const char* groupsFileName)
+    bool CM3DSoundManager::_LoadGroupsFromXmlFile(char const* groupsFileName)
     {
         // 1783
         CStr error;
@@ -1929,19 +1956,21 @@ namespace snd
         // 1806
         SOUND_ASSERT(m_soundGroupVector.size() >= 3, 1806);
         // 1807
-        SOUND_ASSERT(m_soundGroupVector[ 0 ]->GetName() == "MUSIC", 1807);
+        SOUND_ASSERT(m_soundGroupVector[0]->GetName() == "MUSIC", 1807);
         // 1808
-        SOUND_ASSERT(m_soundGroupVector[ 1 ]->GetName() == "SOUND2D", 1808);
+        SOUND_ASSERT(m_soundGroupVector[1]->GetName() == "SOUND2D", 1808);
         // 1809
-        SOUND_ASSERT(m_soundGroupVector[ 2 ]->GetName() == "SOUND3D", 1809);
+        SOUND_ASSERT(m_soundGroupVector[2]->GetName() == "SOUND3D", 1809);
 
         // 1811
         return true;
     }
 
     // orig 0x5f6240 CM3DSoundManager.cpp:1817
-    void CM3DSoundManager::_LoadSoundGroupFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode,
-                                                  SoundGroup* parent)
+    void CM3DSoundManager::_LoadSoundGroupFromXml(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode* xmlNode,
+        SoundGroup* parent)
     {
         // 1818
         SoundGroup* soundGroup = new SoundGroup(parent);
@@ -2044,8 +2073,8 @@ namespace snd
     }
 
     // orig 0x5f3590 CM3DSoundManager.cpp:1888
-    signed char F_CALLBACKAPI CM3DSoundManager::_CommonMusicEndCallback(FSOUND_STREAM* stream, void* buff, int len,
-                                                                        void* userdata)
+    signed char F_CALLBACKAPI
+        CM3DSoundManager::_CommonMusicEndCallback(FSOUND_STREAM* stream, void* buff, int len, void* userdata)
     {
         // 1890
         m3d::AutoLock<m3d::CriticalSection> lock(m_musicEndCallbackCs);
@@ -2086,7 +2115,7 @@ namespace snd
     namespace
     {
         // orig 0x5f15b0 CM3DSoundManager.cpp:1927
-        void* F_CALLBACKAPI OpenFileCallback(const char* fileName)
+        void* F_CALLBACKAPI OpenFileCallback(char const* fileName)
         {
             // 1932
             m3d::fs::FileStream* fp = g_kernel->GetFileServer().CreateFileStream();
@@ -2149,8 +2178,8 @@ namespace snd
             // 2025
             delete (m3d::fs::FileStream*)handle;
         }
-    }
-}
+    }  // namespace
+}  // namespace snd
 
 namespace m3d
 {
@@ -2160,4 +2189,4 @@ namespace m3d
         // 2036
         return new snd::CM3DSoundManager;
     }
-}
+}  // namespace m3d

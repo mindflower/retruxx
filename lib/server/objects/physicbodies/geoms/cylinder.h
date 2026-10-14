@@ -13,4 +13,4 @@ namespace ai
     private:
         Cylinder(dxGeom* const geomId, void (*movedCalback)(dxGeom*));
     };
-}
+}  // namespace ai

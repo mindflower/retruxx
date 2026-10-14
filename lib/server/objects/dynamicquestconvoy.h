@@ -18,22 +18,21 @@ namespace ai
         float m_playerSchwarzPart;
         float m_criticalDistFromPlayer;
         float m_criticalTime;
-
     };
 
-    class DynamicQuestConvoy :  public DynamicQuest
+    class DynamicQuestConvoy : public DynamicQuest
     {
     public:
-        virtual DynamicQuestManager::QuestType GetQuestType() const ;
-        int GetCaravanId() const ;
-        DynamicQuestConvoy(DynamicQuestConvoyPrototypeInfo const &);
-        virtual m3d::Class * GetClass() const ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual DynamicQuestConvoyPrototypeInfo const * GetPrototypeInfo() const ;
-        static m3d::Class * GetBaseClass();
-        virtual void Update(float,unsigned int);
-        virtual int OnEvent(Event const &);
+        virtual DynamicQuestManager::QuestType GetQuestType() const;
+        int GetCaravanId() const;
+        DynamicQuestConvoy(DynamicQuestConvoyPrototypeInfo const&);
+        virtual m3d::Class* GetClass() const;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual DynamicQuestConvoyPrototypeInfo const* GetPrototypeInfo() const;
+        static m3d::Class* GetBaseClass();
+        virtual void Update(float, unsigned int);
+        virtual int OnEvent(Event const&);
 
     protected:
         void _Unsubscribe();
@@ -41,14 +40,14 @@ namespace ai
         virtual void _OnTake();
         virtual int _CalcReward();
         virtual void _OnCreate();
-        void _Subscribe(int,int);
+        void _Subscribe(int, int);
 
     private:
-        void _OnObjectDie(Event const &);
-        void _OnTargetReached(Event const &);
-        void _OnObjectEntersLocation(Event const &);
-        virtual m3d::Object * Clone();
-        static m3d::Object * CreateObject();
+        void _OnObjectDie(Event const&);
+        void _OnTargetReached(Event const&);
+        void _OnObjectEntersLocation(Event const&);
+        virtual m3d::Object* Clone();
+        static m3d::Object* CreateObject();
 
     public:
         RT_CLASS_DECLARE(DynamicQuestConvoy);
@@ -58,4 +57,4 @@ namespace ai
         int m_targetLocationId;
         float m_timePlayerIsTooFar;
     };
-}
+}  // namespace ai

@@ -24,7 +24,7 @@ public:
         AuxInfo();
 
     public:
-        CStr m_tabButtonNames[4] = { "tabBtnVideo" , "tabBtnSound", "tabBtnControl", "tabBtnGame"};
+        CStr m_tabButtonNames[4] = {"tabBtnVideo", "tabBtnSound", "tabBtnControl", "tabBtnGame"};
     };
 
 public:
@@ -34,7 +34,7 @@ public:
 
     static m3d::Class* GetBaseClass();
     static m3d::Object* CreateObject();
-    
+
 protected:
     virtual int OnBeforeAddToWndStation();
     OptionsWnd();
@@ -60,7 +60,7 @@ private:
     OptionsWnd::AuxInfo m_aif;
 };
 
-class OptionTabButton :  public m3d::ui::ButtonWnd
+class OptionTabButton : public m3d::ui::ButtonWnd
 {
 public:
     class AuxInfo
@@ -71,23 +71,24 @@ public:
         CStr m_paneNameSel = "PaneBtnOptionsSel";
         CStr m_paneNameUnsel = "PaneBtnOptionsUnsel";
     };
+
 public:
     static inline AuxInfo m_aif;
 
 public:
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    OptionsWnd::Tab GetTabId() const ;
-    int CreateFromPattern(m3d::ui::Wnd *,bool);
+    virtual m3d::Class* GetClass() const;
+    static m3d::Object* CreateObject();
+    OptionsWnd::Tab GetTabId() const;
+    int CreateFromPattern(m3d::ui::Wnd*, bool);
     void Select(bool);
     int SetupForTab(OptionsWnd::Tab);
-    virtual m3d::Object * Clone();
+    virtual m3d::Object* Clone();
     virtual ~OptionTabButton();
-    bool IsSelected() const ;
-    static m3d::Class * GetBaseClass();
+    bool IsSelected() const;
+    static m3d::Class* GetBaseClass();
 
 protected:
-    OptionTabButton(OptionTabButton const &);
+    OptionTabButton(OptionTabButton const&);
     OptionTabButton();
     void UpdatePane();
 

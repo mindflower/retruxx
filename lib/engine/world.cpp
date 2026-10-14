@@ -321,18 +321,18 @@ namespace m3d
         // stack in the original, hence the doubles.
         switch (m_weatherManager.GetCurrentDayTime())
         {
-            case GTP_SUNRISE_TIME:
-                m_sunAscention = m_level->m_sunRiseAscention;
-                break;
-            case GTP_DAY_TIME:
-                m_sunAscention = m_level->m_sunDayAscention;
-                break;
-            case GTP_SUNSET_TIME:
-                m_sunAscention = m_level->m_sunSetAscention;
-                break;
-            default:
-                m_sunAscention = 0.0f;
-                break;
+        case GTP_SUNRISE_TIME:
+            m_sunAscention = m_level->m_sunRiseAscention;
+            break;
+        case GTP_DAY_TIME:
+            m_sunAscention = m_level->m_sunDayAscention;
+            break;
+        case GTP_SUNSET_TIME:
+            m_sunAscention = m_level->m_sunSetAscention;
+            break;
+        default:
+            m_sunAscention = 0.0f;
+            break;
         }
 
         float const degToRad = 0.017453292f;

@@ -12,7 +12,7 @@ namespace ai
         float m_flyTime;
         int m_BlastWavePrototypeId;
         PlasmaBunchPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
 
@@ -28,8 +28,8 @@ namespace ai
         virtual ~PlasmaBunch() override;
 
     private:
-        PlasmaBunch(const ai::PlasmaBunchPrototypeInfo& prototypeInfo);
-        PlasmaBunch(const ai::PlasmaBunch&);
+        PlasmaBunch(ai::PlasmaBunchPrototypeInfo const& prototypeInfo);
+        PlasmaBunch(ai::PlasmaBunch const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -37,18 +37,18 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(PlasmaBunch);
-        virtual const ai::PlasmaBunchPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::PlasmaBunchPrototypeInfo const* GetPrototypeInfo() const override;
         float GetVelocity() const;
         void SetVelocity(float value);
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void Remove() override;
         virtual void TransferPhysicParamsToSceneGraphNode() override;
         virtual void RenderDebugInfo() const override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
 
     private:
         ai::NumericInRangeRegenerating<float> m_velocity;
         ai::NumericInRangeRegenerating<float> m_lifeTime;
     };
-}
+}  // namespace ai

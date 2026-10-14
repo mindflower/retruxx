@@ -9,7 +9,7 @@ namespace ai
     class InfoCone
     {
     public:
-        InfoCone(const ai::InfoCone&);
+        InfoCone(ai::InfoCone const&);
         InfoCone();
         ~InfoCone();
         bool SetVehicleId(int vehicleId);
@@ -27,6 +27,6 @@ namespace ai
         float m_sphereRadiusCoef;
         ai::Sphere* m_sphere;
         ai::Ray* m_ray;
-        bool TraceTo(const CVector& dst, CVector& newDst, float length) const;
+        bool TraceTo(CVector const& dst, CVector& newDst, float length) const;
     };
-}
+}  // namespace ai

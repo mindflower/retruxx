@@ -8,7 +8,7 @@ namespace ai
 {
     class Obj;
     class Vehicle;
-}
+}  // namespace ai
 
 namespace m3d
 {
@@ -17,8 +17,8 @@ namespace m3d
         class ButtonWnd;
         class ImageWnd;
         class ProgressBarWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
 class WeaponInfoList : public m3d::ui::Wnd
 {
@@ -106,7 +106,7 @@ class WeaponInfoWnd : public m3d::ui::Wnd
 
 public:
     int SetupForGun(int gunId, int groupId, WeaponInfoList::Type type);
-    const ai::Obj* GetGun() const;
+    ai::Obj const* GetGun() const;
     int GetGroupId() const;
 
     struct AuxInfo
@@ -128,7 +128,7 @@ public:
         CStr m_chargeBarTexName;
         float m_lblReloadsW;
         CStr m_weaponTypeTexNames[13];
-        AuxInfo(const WeaponInfoWnd::AuxInfo&);
+        AuxInfo(WeaponInfoWnd::AuxInfo const&);
         AuxInfo();
     };
 
@@ -155,7 +155,7 @@ protected:
     void UpdateAmmo();
     void UpdateIco();
     void UpdateCanShotBg();
-    ai::DamageType GetWeaponTypeForGun(const ai::Obj* gun) const;
+    ai::DamageType GetWeaponTypeForGun(ai::Obj const* gun) const;
     int CreateFromPattern(WeaponInfoList::Type type);
     int CreateChildren(WeaponInfoList::Type type);
     static int __fastcall LoadPattern(m3d::ui::Wnd* pattern, WeaponInfoList::Type type);
@@ -181,7 +181,7 @@ protected:
     static m3d::rend::TexHandle m_pbChargeTextureReady;
     static m3d::rend::TexHandle m_pbChargeTextureRecharging;
     WeaponInfoWnd();
-    WeaponInfoWnd(const WeaponInfoWnd& rhs);
+    WeaponInfoWnd(WeaponInfoWnd const& rhs);
 
 public:
     virtual ~WeaponInfoWnd() override;

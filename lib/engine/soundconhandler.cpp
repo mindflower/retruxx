@@ -12,9 +12,8 @@ namespace m3d
     bool SoundConHandler::HandleCVar(CVar const* var, CConsoleParams const& params)
     {
         if (var == nullptr ||
-            var != &g_Kernel->GetEngineCfg().m_mus_Volume &&
-            var != &g_Kernel->GetEngineCfg().m_snd_2dVolume &&
-            var != &g_Kernel->GetEngineCfg().m_snd_3dVolume)
+            var != &g_Kernel->GetEngineCfg().m_mus_Volume && var != &g_Kernel->GetEngineCfg().m_snd_2dVolume &&
+                var != &g_Kernel->GetEngineCfg().m_snd_3dVolume)
         {
             return true;
         }
@@ -53,4 +52,4 @@ namespace m3d
         }
         return true;
     }
-}
+}  // namespace m3d

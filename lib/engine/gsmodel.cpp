@@ -37,16 +37,17 @@ namespace m3d
                 indices[3 * i + 2] = first;
             }
         }
-    }
+    }  // namespace
 
-    int CGSModel::Load(const CStr& fname)
+    int CGSModel::Load(CStr const& fname)
     {
         // RVA 0x8F9D80 - reads a tagged "GSM" file or, failing that, an untagged "GSSM" one, then loads the texture
         // named in the header from the model's directory. Vertices are 32 bytes (position, normal, one uv set).
         fs::auxTaggedFile file;
         GsmHeader Header;
         char* formatTitle;
-        fs::auxTaggedFile::eError const openResult = file.Open(fname.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC);
+        fs::auxTaggedFile::eError const openResult =
+            file.Open(fname.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC);
         if (openResult == fs::auxTaggedFile::BAD_FORMAT)
         {
             scoped_ptr<fs::FileStream> stream(g_Kernel->GetFileServer().CreateFileStream());
@@ -58,8 +59,9 @@ namespace m3d
             stream->ReadBytes(&Header, sizeof(Header));
             if (Header.m_version != 3 && Header.m_version != 2)
             {
-                M3D_LOG_INFO(CStr("GSSM Load (") + fname + CStr("): unsupported version (") + CStr(Header.m_version)
-                             + CStr("), wants (") + CStr(3) + CStr(")"));
+                M3D_LOG_INFO(
+                    CStr("GSSM Load (") + fname + CStr("): unsupported version (") + CStr(Header.m_version) +
+                    CStr("), wants (") + CStr(3) + CStr(")"));
                 return 0;
             }
             m_header.m_numVertices = Header.m_numVertices;
@@ -136,8 +138,9 @@ namespace m3d
                 file.getChunkDataCopy(5u, &m_col_header);
                 if (m_col_header.numFaces && m_col_header.numVertices)
                 {
-                    M3D_LOG_INFO(CStr("Collision data for ") + fname + CStr(": ") + CStr(m_col_header.numFaces)
-                                 + CStr(" faces, ") + CStr(m_col_header.numVertices) + CStr(" vertices"));
+                    M3D_LOG_INFO(
+                        CStr("Collision data for ") + fname + CStr(": ") + CStr(m_col_header.numFaces) +
+                        CStr(" faces, ") + CStr(m_col_header.numVertices) + CStr(" vertices"));
                     m_col_verts = new CollidingVertex[m_col_header.numVertices];
                     file.getChunkDataCopy(6u, m_col_verts);
                     m_col_idx = new unsigned short[3 * m_col_header.numFaces];
@@ -181,8 +184,9 @@ namespace m3d
         if (!m_triIndices || !m_header.m_numFaces || !m_verts || !m_header.m_numVertices)
         {
             // NOTE: there is no separator before "numVerts=".
-            M3D_LOG_INFO(CStr("ERROR GSModel: file ") + fname + CStr(" contains sick model: numTris=")
-                         + CStr(m_header.m_numFaces) + CStr("numVerts=") + CStr(m_header.m_numVertices));
+            M3D_LOG_INFO(
+                CStr("ERROR GSModel: file ") + fname + CStr(" contains sick model: numTris=") +
+                CStr(m_header.m_numFaces) + CStr("numVerts=") + CStr(m_header.m_numVertices));
             return 0;
         }
         return 1;
@@ -255,7 +259,7 @@ namespace m3d
         }
     }
 
-    int CGSModel::Prepare2Draw(const CStr& dirToTextures, int vertOffset, int index)
+    int CGSModel::Prepare2Draw(CStr const& dirToTextures, int vertOffset, int index)
     {
         // RVA 0x8F9460 - draws straight from the loaded arrays, rebasing the indices onto the shared buffer.
         m_drawVerts = m_verts;
@@ -263,14 +267,16 @@ namespace m3d
         m_numDrawIndices = 3 * m_header.m_numFaces;
         m_drawIndices = m_triIndices;
         // NOTE: left over from a vertex optimisation step that is gone: both ratios are always 1.
-        float const vertsRatio = static_cast<float>(static_cast<double>(static_cast<int>(m_header.m_numVertices))
-                                                    / static_cast<double>(m_header.m_numVertices));
-        float const idxRatio = static_cast<float>(static_cast<double>(m_numDrawIndices)
-                                                  / static_cast<double>(static_cast<unsigned int>(m_numDrawIndices)));
+        float const vertsRatio = static_cast<float>(
+            static_cast<double>(static_cast<int>(m_header.m_numVertices)) /
+            static_cast<double>(m_header.m_numVertices));
+        float const idxRatio = static_cast<float>(
+            static_cast<double>(m_numDrawIndices) / static_cast<double>(static_cast<unsigned int>(m_numDrawIndices)));
         if (vertsRatio < 0.75f)
         {
-            M3D_LOG_INFO(CStr("BAD MODELLING? : model ") + dirToTextures + CStr(" vr = ") + CStr(vertsRatio)
-                         + CStr(" ir = ") + CStr(idxRatio));
+            M3D_LOG_INFO(
+                CStr("BAD MODELLING? : model ") + dirToTextures + CStr(" vr = ") + CStr(vertsRatio) + CStr(" ir = ") +
+                CStr(idxRatio));
         }
         for (int i = 0; i < m_numDrawIndices; ++i)
         {
@@ -293,14 +299,14 @@ namespace m3d
         return 1;
     }
 
-    int CGSModel::Render(const CMatrix& mat, float opacity)
+    int CGSModel::Render(CMatrix const& mat, float opacity)
     {
         // RVA 0x8F99F0 - opacity is not used.
         M3D_RENDERER->SetTexture(0, m_SurfaceMaterial.Textures[0].Handle, -1.0);
         M3D_RENDERER->MatPush(mat);
-        M3D_RENDERER->DrawIndexedPrimitive(rend::M3DPT_TRIANGLELIST, m_vertsOffset, m_numDrawVerts, m_idxOffset,
-                                           m_numDrawIndices / 3);
+        M3D_RENDERER->DrawIndexedPrimitive(
+            rend::M3DPT_TRIANGLELIST, m_vertsOffset, m_numDrawVerts, m_idxOffset, m_numDrawIndices / 3);
         M3D_RENDERER->MatPop(true);
         return 1;
     }
-}
+}  // namespace m3d

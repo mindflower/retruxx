@@ -16,5 +16,5 @@ namespace m3d
         };
 
         MbRetCodes __fastcall RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool pause);
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

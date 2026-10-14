@@ -215,4 +215,4 @@ namespace ai
         }
         return res;
     }
-}
+}  // namespace ai

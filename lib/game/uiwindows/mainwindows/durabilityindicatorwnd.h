@@ -5,9 +5,9 @@ namespace ai
 {
     class VehiclePart;
     class Vehicle;
-}
+}  // namespace ai
 
-class DurabilityIndicatorWnd :  public m3d::ui::Wnd
+class DurabilityIndicatorWnd : public m3d::ui::Wnd
 {
 public:
     enum Type
@@ -30,28 +30,28 @@ public:
         CStr m_strBasketDurabilityId;
     };
 
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual int CreateFromPattern(m3d::ui::Wnd *,bool);
-    virtual m3d::Object * Clone();
-    void SetType(Type,CStr const &);
-    virtual m3d::Class * GetClass() const ;
+    static m3d::Class* GetBaseClass();
+    static m3d::Object* CreateObject();
+    virtual int CreateFromPattern(m3d::ui::Wnd*, bool);
+    virtual m3d::Object* Clone();
+    void SetType(Type, CStr const&);
+    virtual m3d::Class* GetClass() const;
     void SetVehicleId(int);
     virtual ~DurabilityIndicatorWnd();
 
 protected:
-    m3d::rend::TexHandle GetImageByDurabilityRelValue(float) const ;
+    m3d::rend::TexHandle GetImageByDurabilityRelValue(float) const;
     virtual int UpdateOnNewFrame();
     DurabilityIndicatorWnd();
-    DurabilityIndicatorWnd(DurabilityIndicatorWnd const &);
-    virtual BoundsBase<float> GetRect() const ;
-    ai::Vehicle * GetVehicle() const ;
-    void SetDurTextures(CStr const &,CStr const &,CStr const &,CStr const &);
-    virtual int OnPaint(m3d::ui::DrawInfo const &);
-    virtual int GameDataUpdate(void *,int);
+    DurabilityIndicatorWnd(DurabilityIndicatorWnd const&);
+    virtual BoundsBase<float> GetRect() const;
+    ai::Vehicle* GetVehicle() const;
+    void SetDurTextures(CStr const&, CStr const&, CStr const&, CStr const&);
+    virtual int OnPaint(m3d::ui::DrawInfo const&);
+    virtual int GameDataUpdate(void*, int);
     virtual int UpdateOnVehiclePartChanged();
-    virtual void UpdateTooltip(float,float);
-    ai::VehiclePart * GetVehiclePart() const ;
+    virtual void UpdateTooltip(float, float);
+    ai::VehiclePart* GetVehiclePart() const;
     void UpdateVehiclePartImage();
     virtual void UpdateValue(bool);
 

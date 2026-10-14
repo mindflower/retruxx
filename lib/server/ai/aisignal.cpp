@@ -9,7 +9,7 @@ namespace ai
         m_FuncNum = 0xFFFF;
     }
 
-    void AISignal::Set(const CStr& Name, int FuncNum)
+    void AISignal::Set(CStr const& Name, int FuncNum)
     {
         m_name = Name;
         m_FuncNum = FuncNum;
@@ -17,7 +17,7 @@ namespace ai
     }
 
     // RVA 0x906430
-    void AISignal::Set(const CStr& Name)
+    void AISignal::Set(CStr const& Name)
     {
         m_name = Name;
         m_ParamRefList.clear();
@@ -30,8 +30,8 @@ namespace ai
         printf("%s", m_name.c_str());
     }
 
-    const CStr& AISignal::GetName() const
+    CStr const& AISignal::GetName() const
     {
         return m_name;
     }
-}
+}  // namespace ai

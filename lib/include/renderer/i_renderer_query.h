@@ -20,7 +20,6 @@ namespace m3d
             float FillRateUtilizedPercent;
         };
 
-
         struct CACHEUTILIZATION
         {
             float TextureCacheHitRate;
@@ -80,19 +79,19 @@ namespace m3d
         public:
             QueryReturnValue();
             ~QueryReturnValue();
-            bool operator==(const m3d::rend::QueryReturnValue&) const;
+            bool operator==(m3d::rend::QueryReturnValue const&) const;
             void SetType(m3d::rend::QueryReturnValue::Type);
             m3d::rend::QueryReturnValue::Type GetType() const;
             bool IsValid() const;
             bool GetBool() const;
             unsigned long GetDword() const;
             uint64_t GetUInt64() const;
-            const m3d::rend::BANDWIDTHTIMINGS& GetBandWidthTimings() const;
-            const m3d::rend::CACHEUTILIZATION& GetCacheUtilization() const;
-            const m3d::rend::INTERFACETIMINGS& GetInterfaceTimings() const;
-            const m3d::rend::PIPELINETIMINGS& GetPipelineTimings() const;
-            const m3d::rend::STAGETIMINGS& GetStageTimings() const;
-            const m3d::rend::VCACHE& GetVCash() const;
+            m3d::rend::BANDWIDTHTIMINGS const& GetBandWidthTimings() const;
+            m3d::rend::CACHEUTILIZATION const& GetCacheUtilization() const;
+            m3d::rend::INTERFACETIMINGS const& GetInterfaceTimings() const;
+            m3d::rend::PIPELINETIMINGS const& GetPipelineTimings() const;
+            m3d::rend::STAGETIMINGS const& GetStageTimings() const;
+            m3d::rend::VCACHE const& GetVCash() const;
 
         private:
             m3d::rend::QueryReturnValue::Type m_type;
@@ -118,5 +117,5 @@ namespace m3d
         static_assert(sizeof(STAGETIMINGS) == 0x0008);
         static_assert(sizeof(VCACHE) == 0x0010);
         static_assert(sizeof(QueryReturnValue) == 0x0020);
-    }
-}
+    }  // namespace rend
+}  // namespace m3d

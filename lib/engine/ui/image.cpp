@@ -153,8 +153,7 @@ namespace m3d
             m_paneFlags = 0;
         }
 
-        ImageWnd::ImageWnd(ImageWnd const& rhs)
-            : Wnd(rhs), m_textureName(rhs.m_textureName), m_texture(rhs.m_texture)
+        ImageWnd::ImageWnd(ImageWnd const& rhs) : Wnd(rhs), m_textureName(rhs.m_textureName), m_texture(rhs.m_texture)
         {
             // RVA 0x6B2540
             M3D_RENDERER->ReferenceTexture(m_texture);

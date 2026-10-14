@@ -98,7 +98,7 @@ void GroundWnd::UpdatePickupButtonState()
     }
     ai::GeomRepository* groundRepository = GetGroundRepository();
     ai::IzvratRepository* playerRepository = ai::thePlayer ? ai::thePlayer->GetRepository() : nullptr;
-    const bool hasItems = groundRepository && groundRepository->GetNumItems() != 0 && playerRepository != nullptr;
+    bool const hasItems = groundRepository && groundRepository->GetNumItems() != 0 && playerRepository != nullptr;
     m_btnPickUpAll->EnableWindow(hasItems);
 }
 
@@ -124,7 +124,7 @@ void GroundWnd::OnRepositoryChanged(void* data)
     }
     ai::GeomRepository* groundRepository = GetGroundRepository();
     if (groundRepository &&
-        groundRepository == static_cast<ai::GeomRepository*>(static_cast<const m3d::Event*>(data)->m_ptrEv[0]))
+        groundRepository == static_cast<ai::GeomRepository*>(static_cast<m3d::Event const*>(data)->m_ptrEv[0]))
     {
         UpdatePickupButtonState();
     }
@@ -217,8 +217,8 @@ int GroundWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndGroundPictureName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndGroundPictureName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -228,8 +228,9 @@ int GroundWnd::GameDataSetup()
             m_wndRepository = static_cast<RepositoryWnd*>(M3D_KERNEL->New("RepositoryWnd"));
             if (!m_wndRepository)
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndRepositoryName +
-                             " - cannot find rtti class RepositoryWnd");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndRepositoryName +
+                    " - cannot find rtti class RepositoryWnd");
                 res = 0;
             }
             else if (!m_wndRepository->CreateFromPattern(static_cast<m3d::ui::Wnd*>(repositoryPattern), true))
@@ -240,7 +241,8 @@ int GroundWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Make control error: control " + m_aif.m_wndRepositoryName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Make control error: control " + m_aif.m_wndRepositoryName + " is not found or incorrect type");
             res = 0;
         }
 

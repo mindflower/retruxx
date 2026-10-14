@@ -6,7 +6,7 @@ class SmartCursorWnd : public m3d::ui::Wnd
 public:
     struct AuxDrawInfo
     {
-        AuxDrawInfo(const SmartCursorWnd::AuxDrawInfo&);
+        AuxDrawInfo(SmartCursorWnd::AuxDrawInfo const&);
         AuxDrawInfo();
         ~AuxDrawInfo();
         void SetTexture(m3d::rend::TexHandle tex);
@@ -22,13 +22,13 @@ public:
 
 protected:
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnPaint(const m3d::ui::DrawInfo& di) override;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
     virtual void OnNewFrame();
     virtual void ClearDrawInfo();
-    virtual void DrawTexture(const m3d::ui::DrawInfo& di, const SmartCursorWnd::AuxDrawInfo* texInfo) const;
+    virtual void DrawTexture(m3d::ui::DrawInfo const& di, SmartCursorWnd::AuxDrawInfo const* texInfo) const;
     std::vector<SmartCursorWnd::AuxDrawInfo*, std::allocator<SmartCursorWnd::AuxDrawInfo*>> m_drawInfo;
     SmartCursorWnd();
-    SmartCursorWnd(const SmartCursorWnd& rhs);
+    SmartCursorWnd(SmartCursorWnd const& rhs);
 
 public:
     virtual ~SmartCursorWnd() override;

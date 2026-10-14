@@ -12,7 +12,7 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
 
     enum eAIParamType
     {
@@ -50,56 +50,56 @@ namespace m3d
         };
         m3d::eAIParamType Type = AIPARAM_UNDEFINE;
         void Detach();
-        void Copy(const m3d::AIParam& PParam);
+        void Copy(m3d::AIParam const& PParam);
         void ConvertFromString(void* retVal, m3d::eAIParamType ToType) const;
-        static int __cdecl CompareInt(const void* v1, const void* v2);
-        static int __cdecl CompareStr(const void* v1, const void* v2);
+        static int __cdecl CompareInt(void const* v1, void const* v2);
+        static int __cdecl CompareStr(void const* v1, void const* v2);
 
         struct RepEl
         {
             CStr m_prototypeName;
             int m_Amount;
-            bool operator==(const m3d::AIParam::RepEl&);
-            RepEl(const m3d::AIParam::RepEl&);
-            RepEl(const CStr&, const int&);
+            bool operator==(m3d::AIParam::RepEl const&);
+            RepEl(m3d::AIParam::RepEl const&);
+            RepEl(CStr const&, int const&);
         };
 
     protected:
-        static int __fastcall CompareRepEl(const void*, const void*);
+        static int __fastcall CompareRepEl(void const*, void const*);
 
     public:
-        CStr(*NameFromNum)(const m3d::AIParam*, int) = nullptr;
-        int (*NumFromName)(const m3d::AIParam*, CStr&) = nullptr;
-        void ReadFromString(const CStr& Str);
+        CStr (*NameFromNum)(m3d::AIParam const*, int) = nullptr;
+        int (*NumFromName)(m3d::AIParam const*, CStr&) = nullptr;
+        void ReadFromString(CStr const& Str);
         void Clear();
         ~AIParam();
-        AIParam(const float& PValue);
-        AIParam(const Quaternion&);
-        AIParam(const CVector& pos);
-        AIParam(const CVector2& range);
-        AIParam(const int& PID);
-        AIParam(const unsigned int&);
-        AIParam(const CStr& str);
+        AIParam(float const& PValue);
+        AIParam(Quaternion const&);
+        AIParam(CVector const& pos);
+        AIParam(CVector2 const& range);
+        AIParam(int const& PID);
+        AIParam(unsigned int const&);
+        AIParam(CStr const& str);
         AIParam();
-        AIParam(const m3d::AIParam& PParam);
-        AIParam(const retruxx::vector<int>& List);
-        bool operator>(const m3d::AIParam& with);
-        bool operator<(const m3d::AIParam& with);
-        bool operator>=(const m3d::AIParam&);
-        bool operator<=(const m3d::AIParam& with);
-        bool operator==(const m3d::AIParam& with);
-        bool operator!=(const m3d::AIParam& with);
+        AIParam(m3d::AIParam const& PParam);
+        AIParam(retruxx::vector<int> const& List);
+        bool operator>(m3d::AIParam const& with);
+        bool operator<(m3d::AIParam const& with);
+        bool operator>=(m3d::AIParam const&);
+        bool operator<=(m3d::AIParam const& with);
+        bool operator==(m3d::AIParam const& with);
+        bool operator!=(m3d::AIParam const& with);
         void Init();
-        m3d::AIParam& operator=(const float&);
-        m3d::AIParam& operator=(const Quaternion&);
-        m3d::AIParam& operator=(const CVector&);
-        m3d::AIParam& operator=(const CVector2&);
-        m3d::AIParam& operator=(const int&);
-        m3d::AIParam& operator=(const unsigned int& PID);
-        m3d::AIParam& operator=(const CStr&);
-        m3d::AIParam& operator=(const m3d::AIParam& pparam);
-        m3d::AIParam& operator=(const retruxx::vector<CStr>&);
-        m3d::AIParam& operator=(const retruxx::vector<int>&);
+        m3d::AIParam& operator=(float const&);
+        m3d::AIParam& operator=(Quaternion const&);
+        m3d::AIParam& operator=(CVector const&);
+        m3d::AIParam& operator=(CVector2 const&);
+        m3d::AIParam& operator=(int const&);
+        m3d::AIParam& operator=(unsigned int const& PID);
+        m3d::AIParam& operator=(CStr const&);
+        m3d::AIParam& operator=(m3d::AIParam const& pparam);
+        m3d::AIParam& operator=(retruxx::vector<CStr> const&);
+        m3d::AIParam& operator=(retruxx::vector<int> const&);
         CVector GetAsVector() const;
         Quaternion GetAsQuaternion() const;
         CVector2 GetAsRange() const;
@@ -115,7 +115,7 @@ namespace m3d
         m3d::eAIParamType GetType() const;
         CStr ToStr() const;
         CStr GetAsStr() const;
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
     };
-}
+}  // namespace m3d

@@ -8,7 +8,6 @@
 #include <server/server.h>
 #include <server/resourcemanager.h>
 
-
 namespace ai
 {
     PrototypeManager::PrototypeManager()
@@ -114,7 +113,9 @@ namespace ai
         Clear();
     }
 
-    void PrototypeManager::GetPrototypeIdsByResourceId(int resourceId,  retruxx::vector<int, retruxx::allocator<int>>& prototypeIds) const
+    void PrototypeManager::GetPrototypeIdsByResourceId(
+        int resourceId,
+        retruxx::vector<int, retruxx::allocator<int>>& prototypeIds) const
     {
         prototypeIds.clear();
 
@@ -153,7 +154,9 @@ namespace ai
         return m_prototypes.size();
     }
 
-    void PrototypeManager::_LoadGameObjectsFolderFromXML(CStr const& fileName, bool(* action)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*))
+    void PrototypeManager::_LoadGameObjectsFolderFromXML(
+        CStr const& fileName,
+        bool (*action)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*))
     {
         scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (fileStream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
@@ -188,7 +191,7 @@ namespace ai
 
     PrototypeInfo* PrototypeManager::_InternalGetPrototypeInfo(CStr const& prototypeName)
     {
-        for (const auto& proto : m_prototypes)
+        for (auto const& proto : m_prototypes)
         {
             if (proto->m_prototypeName == prototypeName)
             {
@@ -213,7 +216,11 @@ namespace ai
         return 0;
     }
 
-    void PrototypeManager::_LoadFromFolder(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* RootNode, CStr const& directory, bool(*action)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*))
+    void PrototypeManager::_LoadFromFolder(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* RootNode,
+        CStr const& directory,
+        bool (*action)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*))
     {
         ref_ptr node = xmlFile->CreateNode();
         for (RootNode->GetFirstChild(node, nullptr); !node->IsEmpty(); node->GetNextSibling(node, nullptr))
@@ -266,13 +273,16 @@ namespace ai
                 {
                     M3D_CRITICAL_ERROR("duplicate prototype in game objects: '" + prototypeInfo->m_prototypeName + "'");
                 }
-                ai::thePrototypeManager->m_prototypeNamesToIds.add(prototypeInfo->m_prototypeName, prototypeInfo->m_prototypeId);
+                ai::thePrototypeManager->m_prototypeNamesToIds.add(
+                    prototypeInfo->m_prototypeName, prototypeInfo->m_prototypeId);
                 ai::thePrototypeManager->m_prototypes.push_back(prototypeInfo);
                 return 1;
             }
             else
             {
-                M3D_LOG_ERR("Error: prototype '" + prototypeInfo->m_prototypeName + "' of class " + prototypeInfo->m_className + " was not loaded");
+                M3D_LOG_ERR(
+                    "Error: prototype '" + prototypeInfo->m_prototypeName + "' of class " + prototypeInfo->m_className +
+                    " was not loaded");
             }
         }
         else
@@ -281,4 +291,4 @@ namespace ai
         }
         return 0;
     }
-}
+}  // namespace ai

@@ -17,20 +17,20 @@ class LevelInfo
     friend class LevelInfoManager;
 
 public:
-    LevelInfo(const LevelInfo&);
+    LevelInfo(LevelInfo const&);
     LevelInfo();
     ~LevelInfo();
-    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
-    const CStr& GetName() const;
-    const CStr& GetFullName() const;
-    const CStr& GetFile() const;
-    const CStr& GetDiz0() const;
-    const CStr& GetDiz1() const;
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+    CStr const& GetName() const;
+    CStr const& GetFullName() const;
+    CStr const& GetFile() const;
+    CStr const& GetDiz0() const;
+    CStr const& GetDiz1() const;
     m3d::rend::TexHandle GetImage0() const;
     m3d::rend::TexHandle GetImage1() const;
     retruxx::vector<m3d::rend::TexHandle> GetSplashes();
     CStr GetRandomMusicBlock() const;
-    const CVector& GetNorth() const;
+    CVector const& GetNorth() const;
 
     using TexMap = retruxx::map<CStr, m3d::rend::TexHandle>;
     using TexPair = retruxx::pair<CStr, m3d::rend::TexHandle>;
@@ -63,47 +63,67 @@ public:
 public:
     int Init();
     int GameDataUpdate(void* data, int dataType);
-    LevelInfo* GetLevelInfoByName(const CStr& levelName);
-    const LevelInfo* GetLevelInfoByName(const CStr& levelName) const;
-    void GetAllLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& allLevelNames) const;
-    void GetVisitedLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& visitedLevelNames) const;
-    void GetKnownLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr> >& knownLevelNames) const;
-    bool IsLevelKnown(const CStr& levelName) const;
-    bool IsLevelVisited(const CStr& levelName) const;
-    float GetLevelSize(const CStr& levelName) const;
-    retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > >* GetObjectsForLevel(const CStr& levelName);
-    const retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > >* GetObjectsForLevel(const CStr& levelName) const;
-    ObjectInfo* GetObjectInfo(const CStr& objectName, const CStr& levelName) const;
-    VisibilityMap* GetVisibilityMapForLevel(const CStr& levelName) const;
+    LevelInfo* GetLevelInfoByName(CStr const& levelName);
+    LevelInfo const* GetLevelInfoByName(CStr const& levelName) const;
+    void GetAllLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& allLevelNames) const;
+    void GetVisitedLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& visitedLevelNames) const;
+    void GetKnownLevelNames(retruxx::vector<CStr, retruxx::allocator<CStr>>& knownLevelNames) const;
+    bool IsLevelKnown(CStr const& levelName) const;
+    bool IsLevelVisited(CStr const& levelName) const;
+    float GetLevelSize(CStr const& levelName) const;
+    retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*>>>*
+        GetObjectsForLevel(CStr const& levelName);
+    retruxx::
+        map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*>>> const*
+        GetObjectsForLevel(CStr const& levelName) const;
+    ObjectInfo* GetObjectInfo(CStr const& objectName, CStr const& levelName) const;
+    VisibilityMap* GetVisibilityMapForLevel(CStr const& levelName) const;
     int GetVisibilityRadius() const;
-    int AddKnownLevel(const CStr& levelName);
-    int AddVisibilityCircleForLevel(const CStr& levelName, const CVector& origin, float radius);
-    int AddVisibilityRectForLevel(const CStr& levelName, float x0, float y0, float w, float h);
-    void ClearVisibilityMapForLevel(const CStr& levelName);
-    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    int AddKnownLevel(CStr const& levelName);
+    int AddVisibilityCircleForLevel(CStr const& levelName, CVector const& origin, float radius);
+    int AddVisibilityRectForLevel(CStr const& levelName, float x0, float y0, float w, float h);
+    void ClearVisibilityMapForLevel(CStr const& levelName);
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
     int SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
 
 protected:
     LevelInfoManager();
-    LevelInfoManager(const LevelInfoManager& rhs);
+    LevelInfoManager(LevelInfoManager const& rhs);
 
 public:
-    virtual  ~LevelInfoManager() override;
+    virtual ~LevelInfoManager() override;
     virtual m3d::Object* Clone() override;
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classLevelInfoManager;
 
-    using LevelInfoMap = retruxx::map<int, LevelInfo*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, LevelInfo*> > >;
+    using LevelInfoMap =
+        retruxx::map<int, LevelInfo*, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, LevelInfo*>>>;
     using LevelInfoPair = retruxx::pair<int, LevelInfo*>;
-    using LevelSizeMap = retruxx::map<CStr, float, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, float> > >;
+    using LevelSizeMap =
+        retruxx::map<CStr, float, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, float>>>;
     using LevelSizePair = retruxx::pair<CStr, float>;
     class LevelSizeMapConstIterator;
-    using LevelObjectsMap = retruxx::map<CStr, retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > >, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > > > > >;
-    using LevelObjectsPair = retruxx::pair<CStr, retruxx::map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*> > > >;
+    using LevelObjectsMap = retruxx::map<
+        CStr,
+        retruxx::
+            map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*>>>,
+        retruxx::less<CStr>,
+        retruxx::allocator<retruxx::pair<
+            CStr const,
+            retruxx::map<
+                CStr,
+                ObjectInfo*,
+                retruxx::less<CStr>,
+                retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*>>>>>>;
+    using LevelObjectsPair = retruxx::pair<
+        CStr,
+        retruxx::
+            map<CStr, ObjectInfo*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ObjectInfo*>>>>;
     class LevelObjectsConstIterator;
-    using VisibilityMapMap = retruxx::map<CStr, VisibilityMap*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, VisibilityMap*> > >;
+    using VisibilityMapMap = retruxx::
+        map<CStr, VisibilityMap*, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, VisibilityMap*>>>;
     using VisibilityMapPair = retruxx::pair<CStr, VisibilityMap*>;
 
 public:
@@ -111,30 +131,30 @@ public:
     void ClearBeforeContinuousLevel();
     void ClearOnce();
     void ClearLevelObjects();
-    void ClearNonPersistantPriceInfoForLevel(const CStr& levelName);
-    void ClearObjectIds(const CStr& levelName);
+    void ClearNonPersistantPriceInfoForLevel(CStr const& levelName);
+    void ClearObjectIds(CStr const& levelName);
     void ClearKnownLevels();
     void ClearVisitedLevels();
     void ClearVisibilityMaps();
-    int LoadLevelInfoFromXml(const CStr& fileName);
+    int LoadLevelInfoFromXml(CStr const& fileName);
     int LoadLevelSizes();
-    int LoadLevelSizeFromXml(const CStr& fileName);
-    VisibilityMap* AddVisibilityMapForLevel(const CStr& levelName);
-    int AddVisitedLevel(const CStr& levelName);
+    int LoadLevelSizeFromXml(CStr const& fileName);
+    VisibilityMap* AddVisibilityMapForLevel(CStr const& levelName);
+    int AddVisitedLevel(CStr const& levelName);
     void UpdateLevelImages();
     LevelInfo* GetLevelInfoById(int id) const;
-    int GetLevelInfoId(const CStr& name) const;
+    int GetLevelInfoId(CStr const& name) const;
     CStr GetLevelInfoName(int id) const;
     void OnStartLevel();
     void OnEndLevel();
     void OnEndLevelBeforeContinuousLevel();
-    bool IsObjectCharted(const ai::Obj* o) const;
+    bool IsObjectCharted(ai::Obj const* o) const;
     void OnNewFrame();
     void UpdateVisibilityMaps();
     void UpdateObjectPositions();
     void OnLocationStateChanged(void* data);
     void OnTownRuined(void* data);
-    int SaveObjectInfoForObject(const ai::Obj* o);
+    int SaveObjectInfoForObject(ai::Obj const* o);
     void UpdateObjectInfoForCurrentLevel();
     void UpdateKnownLevels();
     int AddObjectInfo(ObjectInfo* oi);
@@ -154,33 +174,34 @@ class ObjectInfo
     friend class LevelInfoManager;
 
 public:
-    ObjectInfo(const ObjectInfo&);
+    ObjectInfo(ObjectInfo const&);
     ObjectInfo();
     ~ObjectInfo();
     int GetId() const;
-    const CStr& GetName() const;
-    const CStr& GetFullName() const;
-    const CStr& GetPrototypeName() const;
+    CStr const& GetName() const;
+    CStr const& GetFullName() const;
+    CStr const& GetPrototypeName() const;
     int GetPrototypeId() const;
-    const CVector& GetPosition() const;
-    const CStr& GetLevelName() const;
+    CVector const& GetPosition() const;
+    CStr const& GetLevelName() const;
     int GetBelong() const;
-    const CStr* GetPassageAddress() const;
-    const retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > >* GetSavedPrices() const;
+    CStr const* GetPassageAddress() const;
+    retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2>>> const*
+        GetSavedPrices() const;
     int SavePrices();
     int AddSavedPriceByPrototypeId(int prototypeId, int sellPrice, int buyPrice);
     void DeleteSavedPrices();
     void SetSavedPricesPersistant(bool bPersistant);
     bool IsSavedPricesPersistant() const;
     bool IsRuined() const;
-    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
     int SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
     bool IsTown() const;
     bool IsLocation() const;
     bool IsActive() const;
 
 private:
-    const m3d::Class* GetObjectClass() const;
+    m3d::Class const* GetObjectClass() const;
 
     CStr m_name;
     CStr m_fullName;
@@ -188,7 +209,8 @@ private:
     int m_prototypeId;
     CVector m_position;
     CStr m_levelName;
-    retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2> > > m_savedPrices;
+    retruxx::map<int, CVector2, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector2>>>
+        m_savedPrices;
     bool m_bSavedPricesPersistant;
     bool m_bRuined;
     CStr m_passageAddress;
@@ -196,4 +218,3 @@ private:
     int m_objectId;
     int m_belong;
 };
-

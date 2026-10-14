@@ -133,9 +133,9 @@ namespace m3d
             this->m_ownBoundingBox.m_box[0] = -r;
             this->m_ownBoundingBox.m_box[1] = -r;
             this->m_ownBoundingBox.m_box[2] = -r;
-            this->m_ownBoundingBox.m_box[3] =  r;
-            this->m_ownBoundingBox.m_box[4] =  r;
-            this->m_ownBoundingBox.m_box[5] =  r;
+            this->m_ownBoundingBox.m_box[3] = r;
+            this->m_ownBoundingBox.m_box[4] = r;
+            this->m_ownBoundingBox.m_box[5] = r;
         }
     }
 }  // namespace m3d

@@ -234,9 +234,9 @@ namespace m3d
         bool IsPointerNodeProperty(unsigned propId)
         {
             return propId == PROP_NODE_PHYSICBODY || propId == PROP_NODE_GEOMOBJSLIST ||
-                   propId == PROP_NODE_LASTPARENT || propId == PROP_NODE_GAMEOBJECT;
+                propId == PROP_NODE_LASTPARENT || propId == PROP_NODE_GAMEOBJECT;
         }
-    }
+    }  // namespace
 
     int SgNode::GetProperty(unsigned propId, void* prop) const
     {
@@ -833,7 +833,12 @@ namespace m3d
             child->SetOriginAbs(child->m_currentWorldOrigin);
             child->SetRotation(child->m_currentWorldRotation);
             sceneGraph->LinkNode(child);
-            ForEachDescendant(child, [](SgNode* node) { node->CanBeFree(); });
+            ForEachDescendant(
+                child,
+                [](SgNode* node)
+                {
+                    node->CanBeFree();
+                });
             sceneGraph->InsertInRemoveIfFree(child);
             if (m_isInRemoveIfFree)
             {

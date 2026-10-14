@@ -19,13 +19,13 @@ bool PostEffectModel::FindByName(CStr name)
     return m_name == name;
 }
 
-CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode const* xmlNode)
+CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
     m_allInstant = true;
     m3d::SafeStrAttrib(m_name, xmlNode, "Name");
     CStr condUnite;
     m3d::SafeStrAttrib(condUnite, xmlNode, "ExitConditionsUnite");
-    m_conditionUnite = condUnite == "And"? CU_AND : CU_OR;
+    m_conditionUnite = condUnite == "And" ? CU_AND : CU_OR;
 
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
     int unitNum = 0;
@@ -51,10 +51,8 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         tmpUnit.m_condItor = ConditionList::iterator();
         m_effectUnits.push_back(tmpUnit);
 
-        if (tmpUnit.m_params[0] != 0.0
-            || tmpUnit.m_params[1] != 0.0
-            || tmpUnit.m_params[2] != 0.0
-            || tmpUnit.m_params[3] != 0.0)
+        if (tmpUnit.m_params[0] != 0.0 || tmpUnit.m_params[1] != 0.0 || tmpUnit.m_params[2] != 0.0 ||
+            tmpUnit.m_params[3] != 0.0)
         {
             m_dynamicUnits.push_back(unitNum);
             m_allInstant = false;
@@ -112,7 +110,7 @@ CStr& PostEffectModel::LoadFromXml(m3d::cmn::XmlFile*xmlFile, m3d::cmn::XmlNode 
         m_pVarVal = nullptr;
         return m_name;
     }
-    
+
     m3d::SafeIntAttrib(unitNum, node, "UnitNumb");
     CStr paramName;
     m3d::SafeStrAttrib(paramName, node, "ParamName");

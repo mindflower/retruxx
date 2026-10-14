@@ -2,9 +2,7 @@
 #include <core/console/console.h>
 #include <script/scriptserver.h>
 
-class ConsoleImp :
-    public m3d::IConsole,
-    public m3d::IConHandler
+class ConsoleImp : public m3d::IConsole, public m3d::IConHandler
 {
 public:
     friend m3d::IConsole* m3d::ConsoleFactory();
@@ -101,14 +99,15 @@ private:
     void DrawInput();
 
 private:
-    char m_key_lines[32][256] = { 0 };
+    char m_key_lines[32][256] = {0};
     int m_key_linepos = 0;
     int m_line_len = 0;
     int m_edit_line = 0;
     int m_history_line = 0;
 
 public:
-    using CmdList = std::list<auxConsoleCmd>;;
+    using CmdList = std::list<auxConsoleCmd>;
+    ;
     using CVarList = std::list<m3d::CVar*>;
 
 private:
@@ -122,9 +121,9 @@ private:
     void RenderNotify();
     virtual void HandleCommand(int, m3d::CConsoleParams const&);
     virtual bool HandleCVar(m3d::CVar const*, m3d::CConsoleParams const&);
-    void executeCmdFile(char const *);
-    void executeScriptCommand(CStr const &);
-    CStr getFormatedScriptErrorDesc(m3d::eScriptError) const ;
+    void executeCmdFile(char const*);
+    void executeScriptCommand(CStr const&);
+    CStr getFormatedScriptErrorDesc(m3d::eScriptError) const;
 
 public:
     class CVarLoadedValue

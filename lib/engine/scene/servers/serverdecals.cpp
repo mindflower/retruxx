@@ -14,9 +14,9 @@ namespace m3d
     namespace
     {
         // Property ids the decal nodes and the server trade in.
-        int const DECALS_LIST = 0x2900;   // 10496 - fetch a node's DecalsList
-        int const ADD_DECAL = 0x2901;     // 10497 - stamp a new decal on a node
-        int const RECALC_DECALS = 0x2902; // 10498 - re-fit decals to a new mesh
+        int const DECALS_LIST = 0x2900;    // 10496 - fetch a node's DecalsList
+        int const ADD_DECAL = 0x2901;      // 10497 - stamp a new decal on a node
+        int const RECALC_DECALS = 0x2902;  // 10498 - re-fit decals to a new mesh
 
         // The void* every DataServer::Model carries is, for this server, the
         // decal's description as read from its .xml.
@@ -276,4 +276,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

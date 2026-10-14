@@ -96,7 +96,8 @@ namespace ai
         float const centerX = (box[3] + box[0]) * 0.5f;
         float const centerY = (box[4] + box[1]) * 0.5f;
         float const centerZ = (box[5] + box[2]) * 0.5f;
-        m_intersectionBox = Box::CreateObject(nullptr, CVector(box[3] - box[0], box[4] - box[1], box[5] - box[2]), nullptr);
+        m_intersectionBox =
+            Box::CreateObject(nullptr, CVector(box[3] - box[0], box[4] - box[1], box[5] - box[2]), nullptr);
 
         // The box centre, rotated into the node's orientation (the shipped code inlines Quaternion::ToMatrix).
         CMatrix const rot = m_ownerSgNode->GetRotation().ToMatrix();
@@ -159,8 +160,8 @@ namespace ai
         this->m_ownerSgNode = 0;
 
         auto const* protoInfo = physicObj->GetPrototypeInfo();
-        this->m_intersectionSphere =
-            ai::SphereForIntersection::CreateObject(protoInfo->m_intersectionRadius, SphereForIntersection::INTERSECTING, this);
+        this->m_intersectionSphere = ai::SphereForIntersection::CreateObject(
+            protoInfo->m_intersectionRadius, SphereForIntersection::INTERSECTING, this);
         dGeomSetBody(this->m_intersectionSphere->GetGeomId(), physicObj->GetBody()->id());
         this->m_ownerPhysicObjId = physicObj->GetId();
     }

@@ -22,8 +22,12 @@ namespace
 }  // namespace
 
 // orig 0x63cd30 screenshot.cpp:43
-HRESULT SaveSurfaceToTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName, IDirect3DSurface9* pSurface,
-                             int width, int height)
+HRESULT SaveSurfaceToTGAFile(
+    IDirect3DDevice9* pD3DDevice,
+    char const* szFileName,
+    IDirect3DSurface9* pSurface,
+    int width,
+    int height)
 {
     HRESULT hr;
     D3DSURFACE_DESC d3dsd;
@@ -40,8 +44,8 @@ HRESULT SaveSurfaceToTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileNam
     if (height != -1)
         d3dsd.Height = height;
 
-    hr = pD3DDevice->CreateOffscreenPlainSurface(d3dsd.Width, d3dsd.Height, d3dsd.Format, D3DPOOL_SCRATCH,
-                                                 &pSurfaceCopy, NULL);
+    hr = pD3DDevice->CreateOffscreenPlainSurface(
+        d3dsd.Width, d3dsd.Height, d3dsd.Format, D3DPOOL_SCRATCH, &pSurfaceCopy, NULL);
     if (FAILED(hr))
         return hr;
 
@@ -149,8 +153,7 @@ HRESULT SaveSurfaceToTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileNam
 }
 
 // orig 0x63d070 screenshot.cpp:218
-HRESULT SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName,
-                                      IDirect3DSurface9* pSurface)
+HRESULT SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName, IDirect3DSurface9* pSurface)
 {
     HRESULT hr = S_OK;
     D3DSURFACE_DESC d3dsd;
@@ -164,8 +167,8 @@ HRESULT SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* 
 
     if (d3dsd.Pool != D3DPOOL_SYSTEMMEM)
     {
-        hr = pD3DDevice->CreateOffscreenPlainSurface(d3dsd.Width, d3dsd.Height, d3dsd.Format, D3DPOOL_SCRATCH,
-                                                     &pSurfaceCopy, NULL);
+        hr = pD3DDevice->CreateOffscreenPlainSurface(
+            d3dsd.Width, d3dsd.Height, d3dsd.Format, D3DPOOL_SCRATCH, &pSurfaceCopy, NULL);
         if (SUCCEEDED(hr))
             hr = D3DXLoadSurfaceFromSurface(pSurfaceCopy, NULL, NULL, pSurface, NULL, NULL, D3DX_FILTER_POINT, 0);
     }
@@ -253,7 +256,7 @@ HRESULT SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* 
 }
 
 // orig 0x63d320 screenshot.cpp:371
-void CDevice::ScreenShot(const char* fileName, int width, int height)
+void CDevice::ScreenShot(char const* fileName, int width, int height)
 {
     IDirect3DSurface9* pBackBuffer;
     if (FAILED(m_pd3dDevice->GetRenderTarget(0, &pBackBuffer)))
@@ -268,24 +271,23 @@ void CDevice::ScreenShot(const char* fileName, int width, int height)
 
         switch (format)
         {
-            case M3DIFF_TGA:
-                fExt = ".tga";
-                break;
-            case M3DIFF_JPG:
-                fExt = ".jpg";
-                break;
-            default:
-                // original: assert(!"Unsupported screenshot file format"), active in the release build
-                g_kernel->SysError(CStr(__FILE__ ":") + CStr(__LINE__), "!\"Unsupported screenshot file format\"");
-                break;
+        case M3DIFF_TGA:
+            fExt = ".tga";
+            break;
+        case M3DIFF_JPG:
+            fExt = ".jpg";
+            break;
+        default:
+            // original: assert(!"Unsupported screenshot file format"), active in the release build
+            g_kernel->SysError(CStr(__FILE__ ":") + CStr(__LINE__), "!\"Unsupported screenshot file format\"");
+            break;
         }
 
         unsigned int i = 0;
         do
         {
             fName.format("screen%05u", i++);
-        }
-        while (GetFileAttributesA((fName + fExt).c_str()) != INVALID_FILE_ATTRIBUTES);
+        } while (GetFileAttributesA((fName + fExt).c_str()) != INVALID_FILE_ATTRIBUTES);
 
         fName += fExt;
     }

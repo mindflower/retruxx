@@ -8,7 +8,7 @@ namespace ai
     public:
         float m_actionDist;
         RocketVolleyLauncherPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
     };
 
@@ -22,8 +22,8 @@ namespace ai
         virtual ~RocketVolleyLauncher() override;
 
     private:
-        RocketVolleyLauncher(const ai::RocketVolleyLauncherPrototypeInfo& prototypeInfo);
-        RocketVolleyLauncher(const ai::RocketVolleyLauncher&);
+        RocketVolleyLauncher(ai::RocketVolleyLauncherPrototypeInfo const& prototypeInfo);
+        RocketVolleyLauncher(ai::RocketVolleyLauncher const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -31,8 +31,8 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(RocketVolleyLauncher);
-        virtual const ai::RocketVolleyLauncherPrototypeInfo* GetPrototypeInfo() const override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::RocketVolleyLauncherPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void SetInvisible() override;
@@ -43,8 +43,8 @@ namespace ai
         virtual bool _bIsUsingVolley() const override;
 
     private:
-        std::vector<int, std::allocator<int> > m_hadToLaunch;
+        std::vector<int, std::allocator<int>> m_hadToLaunch;
         bool m_bIsVolleyFiring;
         void _TryToLaunch();
     };
-}
+}  // namespace ai

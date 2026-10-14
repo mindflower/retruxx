@@ -9,7 +9,7 @@ namespace m3d
 {
     class Object;
     class SgNode;
-}
+}  // namespace m3d
 
 namespace ai
 {
@@ -27,24 +27,24 @@ namespace ai
     public:
         void UnlinkFromOwner();
         ~Obstacle();
-        Quaternion GetRotation() const ;
+        Quaternion GetRotation() const;
         int DecRef();
-        Obstacle(m3d::SgNode *);
-        Obstacle(Obb const &);
-        Obstacle(PhysicObj const *);
-        Aabb GetAabb() const ;
-        m3d::Object * GetOwner() const ;
+        Obstacle(m3d::SgNode*);
+        Obstacle(Obb const&);
+        Obstacle(PhysicObj const*);
+        Aabb GetAabb() const;
+        m3d::Object* GetOwner() const;
         void Disable();
-        CVector GetPosition() const ;
+        CVector GetPosition() const;
         int IncRef();
         void Enable();
-        CVector GetLinearVelocity() const ;
-        Box const * GetBox() const ;
-        SphereForIntersection const * GetSphere() const ;
-        void RenderDebugInfo() const ;
-        bool bIsEnabled() const ;
-        float GetIntersectionRadius() const ;
-        PhysicObj * GetOwnerPhysicObj() const ;
+        CVector GetLinearVelocity() const;
+        Box const* GetBox() const;
+        SphereForIntersection const* GetSphere() const;
+        void RenderDebugInfo() const;
+        bool bIsEnabled() const;
+        float GetIntersectionRadius() const;
+        PhysicObj* GetOwnerPhysicObj() const;
 
     private:
         void _Init();
@@ -52,9 +52,9 @@ namespace ai
     private:
         int m_refCount;
         bool m_bIsEnabled;
-        SphereForIntersection *m_intersectionSphere;
-        Box *m_intersectionBox;
+        SphereForIntersection* m_intersectionSphere;
+        Box* m_intersectionBox;
         int m_ownerPhysicObjId;
-        m3d::SgNode *m_ownerSgNode;
+        m3d::SgNode* m_ownerSgNode;
     };
-}
+}  // namespace ai

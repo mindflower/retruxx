@@ -10,7 +10,6 @@ namespace ai
 {
     class Obj;
 
-    
     class AIFunc
     {
     private:
@@ -28,4 +27,4 @@ namespace ai
         m3d::AIParam Action(ai::Obj* pObj);
         CStr const& GetName() const;
     };
-}
+}  // namespace ai

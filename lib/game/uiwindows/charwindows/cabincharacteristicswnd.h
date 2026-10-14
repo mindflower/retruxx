@@ -16,7 +16,7 @@ public:
         CStr m_wndMaxSpeedValName;
         CStr m_wndTorqueValName;
         CStr m_wndControlValName;
-        CabinAuxInfo(const CabinCharacteristicsWnd::CabinAuxInfo&);
+        CabinAuxInfo(CabinCharacteristicsWnd::CabinAuxInfo const&);
         CabinAuxInfo();
     };
 
@@ -25,13 +25,13 @@ protected:
     void SetupForCB(int cbId);
     virtual void UpdateCharacteristics() override;
     virtual void ClearCharacteristics() override;
-    const ai::Cabin* GetCabin() const;
+    ai::Cabin const* GetCabin() const;
     m3d::ui::Wnd* m_wndMaxSpeedVal;
     m3d::ui::Wnd* m_wndTorqueVal;
     m3d::ui::Wnd* m_wndControlVal;
     CabinCharacteristicsWnd::CabinAuxInfo m_cabinAif;
     CabinCharacteristicsWnd();
-    CabinCharacteristicsWnd(const CabinCharacteristicsWnd& rhs);
+    CabinCharacteristicsWnd(CabinCharacteristicsWnd const& rhs);
 
 public:
     virtual ~CabinCharacteristicsWnd() override;

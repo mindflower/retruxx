@@ -267,5 +267,5 @@ namespace m3d
             }
             return ERROR_OBJECT_NOT_FOUND;
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

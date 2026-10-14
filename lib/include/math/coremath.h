@@ -37,17 +37,15 @@ Quaternion getTangent(Quaternion const& prevQuat, Quaternion const& currentQuat,
 float CalculateAngle(CVector2 const&, CVector2 const&);
 
 template<class T>
-T lerp(const T& a, const T& b, float s)
+T lerp(T const& a, T const& b, float s)
 {
-    return a + ((b - a) * s) ;
+    return a + ((b - a) * s);
 }
 
 template<class T>
 T CatmullRomSubdivide(float t, T const& p1, T const& p2, T const& p3, T const& p4)
 {
-    return (p3 * ((4.0 - t * 3.0) * t + 1.0) * t
-            + p2 * (((t * t) * t) * 3.0 - (t * t) * 5.0 + 2.0)
-            + p1 * ((2.0 - t) * t * t - t)
-            + p4 * (((t * t) * t) - (t * t)))
-        * 0.5;
+    return (p3 * ((4.0 - t * 3.0) * t + 1.0) * t + p2 * (((t * t) * t) * 3.0 - (t * t) * 5.0 + 2.0) +
+            p1 * ((2.0 - t) * t * t - t) + p4 * (((t * t) * t) - (t * t))) *
+        0.5;
 }

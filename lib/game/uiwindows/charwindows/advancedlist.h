@@ -105,8 +105,7 @@ protected:
     virtual int CreateFromPattern();
     virtual int CreateChildren();
     static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual void OnChangeMode();
     virtual void RecalcLayot();
@@ -199,8 +198,7 @@ protected:
     virtual int GameDataSetup() override;
     virtual int GameDataClear(bool beforeContinuousLevel) override;
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     void ClearItems();
     virtual void RecalcLayot();

@@ -12,11 +12,11 @@ namespace m3d
     public:
         ShadowVolume();
         ~ShadowVolume();
-        void Initialize(const m3d::AnimatedModel::Mesh& mesh, unsigned short* edgesBuf);
-        unsigned int BuildShadowVolume(const CVector& lightDir, CVector* volumeVertexPool);
-        void Render(const CMatrix& objToWorld, unsigned int color) const;
+        void Initialize(m3d::AnimatedModel::Mesh const& mesh, unsigned short* edgesBuf);
+        unsigned int BuildShadowVolume(CVector const& lightDir, CVector* volumeVertexPool);
+        void Render(CMatrix const& objToWorld, unsigned int color) const;
         unsigned int GetNumVerts() const;
-        const CVector* GetVerts() const;
+        CVector const* GetVerts() const;
         void Invalidate();
 
     private:
@@ -33,4 +33,4 @@ namespace m3d
         m3d::AnimatedModel::Mesh* m_mesh;
         void InsertEdge(unsigned int& numEdges, unsigned short v0, unsigned short v1);
     };
-}
+}  // namespace m3d

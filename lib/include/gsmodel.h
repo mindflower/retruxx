@@ -51,6 +51,7 @@ namespace m3d
     class CGSModel
     {
         friend class StaticModelsServer;
+
     private:
         m3d::ModelInfo m_header;
         m3d::DSurfaceMaterial m_SurfaceMaterial;
@@ -76,37 +77,37 @@ namespace m3d
     private:
         void CalculateBBox();
         void renderMesh();
-        void renderBillboard(const CMatrix&, float);
+        void renderBillboard(CMatrix const&, float);
         unsigned short* m_triIndices;
         void* m_verts;
-        int Load(const CStr& fname);
+        int Load(CStr const& fname);
         int Load();
 
     public:
-        CGSModel(const m3d::CGSModel&);
+        CGSModel(m3d::CGSModel const&);
         CGSModel();
         ~CGSModel();
-        int Prepare2Draw(const CStr& dirToTextures, int vertOffset, int index);
+        int Prepare2Draw(CStr const& dirToTextures, int vertOffset, int index);
         int Prepare2Draw2(void* destVerts, void* destIndices);
-        int ChangeTexture(const CStr& name, unsigned int TexNum);
-        int Save(const CStr& model_name);
+        int ChangeTexture(CStr const& name, unsigned int TexNum);
+        int Save(CStr const& model_name);
         void Release();
-        int Render(const CMatrix& mat, float opacity);
-        int RenderNormals(const CMatrix& matT, float scale);
+        int Render(CMatrix const& mat, float opacity);
+        int RenderNormals(CMatrix const& matT, float scale);
         void CalculateNormals(int mode);
         void FlipFaces();
         void ChangeScale(float s);
         void RestoreDeviceObjects();
         void InvalidateDeviceObjects();
         m3d::ModelInfo& GetHeader();
-        const m3d::LPoint* GetLPoints() const;
+        m3d::LPoint const* GetLPoints() const;
         int GetNumLPoints() const;
         int getNVerts();
         int getNTriIdxs();
-        const void* GetVerts() const;
+        void const* GetVerts() const;
         int GetVertsOffset();
-        const unsigned short* GetTris() const;
-        const m3d::rend::TexHandle GetTex(unsigned int) const;
+        unsigned short const* GetTris() const;
+        m3d::rend::TexHandle const GetTex(unsigned int) const;
         unsigned int GetVertTypeSize();
     };
-}
+}  // namespace m3d

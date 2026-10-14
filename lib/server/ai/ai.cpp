@@ -20,10 +20,12 @@ namespace ai
 {
     namespace
     {
-        const CStr UNDEFINED = "Undefined";
+        CStr const UNDEFINED = "Undefined";
 
-        
-        void PushToStateStack(std::vector<ai::AIPassageState>& stateStack, ai::AIPassageCommand const& passageCommand, ai::Obj* pObj)
+        void PushToStateStack(
+            std::vector<ai::AIPassageState>& stateStack,
+            ai::AIPassageCommand const& passageCommand,
+            ai::Obj* pObj)
         {
             ai::AIPassageState ps;
             ps.m_StateNum = passageCommand.m_StateNum;
@@ -36,7 +38,7 @@ namespace ai
             stateStack.push_back(std::move(ps));
         }
 
-    }
+    }  // namespace
 
     void AI::LoadAIFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode)
     {
@@ -223,22 +225,19 @@ namespace ai
 
         for (unsigned i = 0; i < m_Commands.size(); ++i)
         {
-            ref_ptr node = xmlFile->CreateNode(
-                m3d::cmn::XML_NODE_ELEMENT, (CStr("Command_") + CStr(i)).c_str());
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, (CStr("Command_") + CStr(i)).c_str());
             OwnNode->AddChild(node);
             m_Commands[i].SaveToXML(xmlFile, node);
         }
         for (unsigned i = 0; i < m_StateStack1.size(); ++i)
         {
-            ref_ptr node = xmlFile->CreateNode(
-                m3d::cmn::XML_NODE_ELEMENT, (CStr("Stack1Element_") + CStr(i)).c_str());
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, (CStr("Stack1Element_") + CStr(i)).c_str());
             OwnNode->AddChild(node);
             m_StateStack1[i].SaveToXML(xmlFile, node);
         }
         for (unsigned i = 0; i < m_StateStack2.size(); ++i)
         {
-            ref_ptr node = xmlFile->CreateNode(
-                m3d::cmn::XML_NODE_ELEMENT, (CStr("Stack2Element_") + CStr(i)).c_str());
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, (CStr("Stack2Element_") + CStr(i)).c_str());
             OwnNode->AddChild(node);
             m_StateStack2[i].SaveToXML(xmlFile, node);
         }
@@ -277,8 +276,7 @@ namespace ai
         m_Commands.push_back(command);
     }
 
-    void AI::SetCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2,
-        m3d::AIParam const& Param3)
+    void AI::SetCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3)
     {
         // RVA 0x7F31B0 - overwrites the command currently being worked on rather than queueing
         // a new one. Undefined parameters are dropped rather than stored.
@@ -366,8 +364,9 @@ namespace ai
                     else
                     {
                         CStr const prototypeName = ai::thePrototypeManager->GetPrototypeName(pObj->GetPrototypeId());
-                        M3D_LOG_INFO(CStr("warning: unsupported command S") + CStr(command.m_Num) +
-                            CStr(" in AIAction for ") + CStr(pObj->GetName()) + CStr(" ") + prototypeName);
+                        M3D_LOG_INFO(
+                            CStr("warning: unsupported command S") + CStr(command.m_Num) + CStr(" in AIAction for ") +
+                            CStr(pObj->GetName()) + CStr(" ") + prototypeName);
                         m_CommandProcessed = false;
                     }
                 }
@@ -465,9 +464,11 @@ namespace ai
 
             // NOTE: the inner state's function runs even when that state is the exit state.
             int const childActionId =
-                ai::theAIManager->AIAction(childDM->GetState(m_StateStack1.back().m_StateNum).m_FuncNum, pObj).GetAsID();
+                ai::theAIManager->AIAction(childDM->GetState(m_StateStack1.back().m_StateNum).m_FuncNum, pObj)
+                    .GetAsID();
 
-            auto const drainMessages1 = [&]() {
+            auto const drainMessages1 = [&]()
+            {
                 while (!m_Messages1.empty())
                 {
                     AIMessage const& message = m_Messages1.back();
@@ -582,9 +583,8 @@ namespace ai
                 for (auto it = m_StateStack1.rbegin(); it != m_StateStack1.rend(); ++it)
                 {
                     // Without a sub-matrix there is no name to print, so the raw index stands in.
-                    OutStr += (childDM ? childDM->m_States[it->m_StateNum].GetName()
-                                       : CStr(it->m_StateNum)) +
-                        CStr("( ");
+                    OutStr +=
+                        (childDM ? childDM->m_States[it->m_StateNum].GetName() : CStr(it->m_StateNum)) + CStr("( ");
                     for (unsigned i = 0; i < it->m_ParamList.size(); ++i)
                     {
                         OutStr += it->m_ParamList[i].ToStr();
@@ -768,8 +768,7 @@ namespace ai
         {
             return UNDEFINED;
         }
-        DecisionMatrix const* const childDM =
-            m_pDM->m_States[m_StateStack2.back().m_StateNum].m_pChildDecisionMatrix;
+        DecisionMatrix const* const childDM = m_pDM->m_States[m_StateStack2.back().m_StateNum].m_pChildDecisionMatrix;
         if (!childDM || m_StateStack1.empty())
         {
             return UNDEFINED;
@@ -782,7 +781,7 @@ namespace ai
         return childDM->m_States[stateNum].GetName();
     }
 
-    void AI::InsCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3)
+    void AI::InsCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3)
     {
         // RVA 0x7F4A80 - the command goes in front of the current one and is removed once done;
         // it is not inserted twice in a row. With nothing current it is appended and made current.
@@ -879,4 +878,4 @@ namespace ai
         // anything on it.
         return m_StateStack2.back().m_StateNum;
     }
-}
+}  // namespace ai

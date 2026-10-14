@@ -39,10 +39,8 @@ namespace ai
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
-        virtual void GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>& Props) const override
-           ;
-        virtual void GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>& Props) const override
-           ;
+        virtual void GetPropertiesNames(std::set<CStr, std::less<CStr>, std::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(std::set<int, std::less<int>, std::allocator<int>>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
         virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
         virtual int GetPropertyId(char const* PropertyName) const override;
@@ -73,10 +71,8 @@ namespace ai
             LOCATION_PASSAGE = 6,
         };
 
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override
-           ;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override
-           ;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void Remove() override;
         virtual void AddChild(ai::Obj* pObj) override;
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;

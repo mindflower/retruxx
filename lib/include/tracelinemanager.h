@@ -6,7 +6,7 @@ namespace ai
 {
     class Ray;
     class ObjIdExceptionalTraceLineCallback;
-}
+}  // namespace ai
 
 namespace m3d
 {
@@ -31,4 +31,4 @@ namespace m3d
         ai::ObjIdExceptionalTraceLineCallback* m_exceptionIds;
         m3d::SgNode* m_presentNode;
     };
-}
+}  // namespace m3d

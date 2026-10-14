@@ -19,7 +19,8 @@ namespace ai
         return new AnimatedComplexPhysicObj(*this);
     }
 
-    AnimatedComplexPhysicObj::AnimatedComplexPhysicObj(AnimatedComplexPhysicObjPrototypeInfo const& prototypeInfo) : ComplexPhysicObj(prototypeInfo)
+    AnimatedComplexPhysicObj::AnimatedComplexPhysicObj(AnimatedComplexPhysicObjPrototypeInfo const& prototypeInfo) :
+        ComplexPhysicObj(prototypeInfo)
     {
         // RVA 0x851160 - nothing of its own; the class exists only to re-run _Construct each
         // frame so that the parts follow the model's animation.
@@ -33,8 +34,8 @@ namespace ai
     AnimatedComplexPhysicObjPrototypeInfo const* AnimatedComplexPhysicObj::GetPrototypeInfo() const
     {
         // RVA 0x8515E0
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()),
-            AnimatedComplexPhysicObjPrototypeInfo const);
+        return RT_DYNCAST(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), AnimatedComplexPhysicObjPrototypeInfo const);
     }
 
     void AnimatedComplexPhysicObj::Update(float elapsedTime, unsigned workTime)

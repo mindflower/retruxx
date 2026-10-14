@@ -80,7 +80,7 @@ namespace m3d
                     curPosH = m_scrollHWnd->GetCurPos();
                 }
 
-                const auto& item = m_items[idx];
+                auto const& item = m_items[idx];
                 BoundsBase<float> result;
                 result.x0 = item.m_origin.x - curPosH + b.x0;
                 result.width = b.width;
@@ -625,7 +625,7 @@ namespace m3d
             // size its own rows.
             virtual int MeasureItem(int, BoundsBase<float>&) const = 0;
 
-            void SetItemData(int idx,int data)
+            void SetItemData(int idx, int data)
             {
                 m_items[idx].m_data = data;
                 m_items[idx].m_rectValid = 0;
@@ -644,5 +644,5 @@ namespace m3d
             int m_curSel = -1;
             unsigned int m_drawFlags = 0;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

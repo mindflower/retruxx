@@ -590,9 +590,7 @@ namespace m3d
                 renderer->SetTexture(0, frame->m_textures[1], -1.0);
 
                 // The window's top edge, open under the selected tab.
-                float const segEnd = selButton == -1
-                    ? rect.width + rect.x0
-                    : (buttonRects[selButton].x0 + rect.x0) - d;
+                float const segEnd = selButton == -1 ? rect.width + rect.x0 : (buttonRects[selButton].x0 + rect.x0) - d;
                 float const top = btnInfo.m_height + rect.y0;
                 r.x0 = rect.x0 + cornerRoundSz;
                 r.y0 = top;
@@ -839,8 +837,7 @@ namespace m3d
                 c.y0 = b.y0;
                 c.width = bRight - c.x0;
                 c.height = (b.y0 + cornerRoundSz) - b.y0;
-                AddFlatAxialQuad(
-                    di, c, clr, static_cast<float>(flip), 0.0, static_cast<float>(!flip), 1.0);
+                AddFlatAxialQuad(di, c, clr, static_cast<float>(flip), 0.0, static_cast<float>(!flip), 1.0);
 
                 if (i == selButton)
                 {
@@ -911,9 +908,9 @@ namespace m3d
             // bar so that the bar tucks under the tabs.
             Pane* pane = nullptr;
             m_panes.get(paneName, pane);
-            float const usedBarW = (pane && pane->m_frame[PANE_FLAG_BG_OUT])
-                ? static_cast<float>(pane->m_frame[PANE_FLAG_BG_OUT]->m_barUsedWidth)
-                : 0.0f;
+            float const usedBarW = (pane && pane->m_frame[PANE_FLAG_BG_OUT]) ?
+                static_cast<float>(pane->m_frame[PANE_FLAG_BG_OUT]->m_barUsedWidth) :
+                0.0f;
             BoundsBase<float> frameB;
             frameB.x0 = rect.x0;
             frameB.y0 = (btnInfo.m_height + rect.y0) - usedBarW;
@@ -1148,7 +1145,8 @@ namespace m3d
                 codePage = Application::g_pApp->m_codePage.CodePage;
             }
             params.ttfParams.codePage = codePage;
-            int const id = m_fontManager->GetFontId(m_fontFaces[i], static_cast<float>(m_fontSizes[i]), m_fontTypes[i], params);
+            int const id =
+                m_fontManager->GetFontId(m_fontFaces[i], static_cast<float>(m_fontSizes[i]), m_fontTypes[i], params);
             if (id != i)
             {
                 m_fontManager->RearrangeFonts(id, i);
@@ -1290,8 +1288,7 @@ namespace m3d
 
         // Corners are only drawn when the pane is bigger than they are; otherwise the edges run
         // the whole way and nothing is held back for them.
-        bool const drawComplexCorners =
-            rect.width > cornerSize && rect.height > cornerSize && (drawFlags & 4) != 0;
+        bool const drawComplexCorners = rect.width > cornerSize && rect.height > cornerSize && (drawFlags & 4) != 0;
         if (!drawComplexCorners)
         {
             cornerSize = 0;
@@ -1404,22 +1401,19 @@ namespace m3d
                     bar.y0 = barY;
                     bar.width = barW;
                     bar.height = barH;
-                    AddFlatAxialQuad(
-                        di, bar, clr, 0.0, 0.0, 1.0, repeatAlong(frame->m_textures[0], barH, true));
+                    AddFlatAxialQuad(di, bar, clr, 0.0, 0.0, 1.0, repeatAlong(frame->m_textures[0], barH, true));
 
                     bar.x0 = (rect.x0 + rect.width) - barW;
                     if (!frame->m_textures[2].IsValid())
                     {
                         // No right bar of its own, so the left one - still bound - is drawn with
                         // U running backwards.
-                        AddFlatAxialQuad(
-                            di, bar, clr, 1.0, 0.0, 0.0, repeatAlong(frame->m_textures[0], barH, true));
+                        AddFlatAxialQuad(di, bar, clr, 1.0, 0.0, 0.0, repeatAlong(frame->m_textures[0], barH, true));
                     }
                     else
                     {
                         renderer->SetTexture(0, frame->m_textures[2], -1.0);
-                        AddFlatAxialQuad(
-                            di, bar, clr, 0.0, 0.0, 1.0, repeatAlong(frame->m_textures[2], barH, true));
+                        AddFlatAxialQuad(di, bar, clr, 0.0, 0.0, 1.0, repeatAlong(frame->m_textures[2], barH, true));
                     }
                 }
 
@@ -1435,8 +1429,7 @@ namespace m3d
                     bar.y0 = rect.y0;
                     bar.width = barWidth;
                     bar.height = barW;
-                    AddFlatAxialQuad(
-                        di, bar, clr, 0.0, 0.0, repeatAlong(frame->m_textures[1], barWidth, false), 1.0);
+                    AddFlatAxialQuad(di, bar, clr, 0.0, 0.0, repeatAlong(frame->m_textures[1], barWidth, false), 1.0);
 
                     bar.y0 = (rect.y0 + rect.height) - barW;
                     if (!frame->m_textures[3].IsValid())
@@ -1911,8 +1904,7 @@ namespace m3d
             v1 = tv1 + (tv0 - tv1) / rc.height * (bottom - visibleBottom);
         }
 
-        M3D_APP->PutSprite2Rel(
-            visibleX, visibleY, u0, v0, visibleRight, visibleBottom, u1, v1, _ResolveColor(clr));
+        M3D_APP->PutSprite2Rel(visibleX, visibleY, u0, v0, visibleRight, visibleBottom, u1, v1, _ResolveColor(clr));
     }
 
     void ui::GfxServer::FlushWindow(Wnd* wnd)

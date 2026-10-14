@@ -32,4 +32,4 @@ namespace m3d
     private:
         unsigned int m_props[6];
     };
-}
+}  // namespace m3d

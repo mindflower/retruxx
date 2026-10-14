@@ -115,7 +115,7 @@ protected:
     m3d::ui::Wnd* m_wndEmbossBtnNavPoint;
     m3d::ui::Wnd* m_wndEmbossBtnAddTownToSavedList;
     m3d::ui::Wnd* m_wndEmbossBtnEnableObjectNames;
-    
+
     LocalMapWnd();
     LocalMapWnd(LocalMapWnd const& rhs);
 

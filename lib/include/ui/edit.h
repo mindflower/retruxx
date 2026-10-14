@@ -19,7 +19,8 @@ namespace m3d
             virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(EditWnd);
 
-            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id) override;
+            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id)
+                override;
             void SetQuickEraseState(bool bQuickErase);
             bool IsInQuickEraseState() const;
             virtual int SetText(CStr const& caption) override;
@@ -48,5 +49,5 @@ namespace m3d
             unsigned int m_cursorColor = 0;
             CStr m_strCursorColor;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

@@ -27,7 +27,8 @@ void GraphInfo::AddValue(float val)
 void GraphInfo::AddFiltred(float val, int averCount)
 {
     // RVA 0x59BB70
-    averVal = static_cast<float>(averCount - 1) * averVal / static_cast<float>(averCount) + val / static_cast<float>(averCount);
+    averVal = static_cast<float>(averCount - 1) * averVal / static_cast<float>(averCount) +
+        val / static_cast<float>(averCount);
     AddValue(averVal);
 }
 

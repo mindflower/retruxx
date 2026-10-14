@@ -47,7 +47,7 @@ namespace ai
         PointBase<float> getPeakPositionInt(Vehicle const*, PointBase<float> const&, PointBase<float> const&, float);
         static m3d::Object* CreateObject();
         CVector getPeakPosition(Vehicle*);
-        std::vector<int, std::allocator<int> > getTargetObjs() const;
+        std::vector<int, std::allocator<int>> getTargetObjs() const;
         virtual void _LookAndFireToEnemy(Vehicle*, float);
         bool PositionIsBad(Vehicle const*, CVector const&);
 
@@ -60,4 +60,4 @@ namespace ai
         float m_DeniedHeight;
         float m_LastChange;
     };
-}
+}  // namespace ai

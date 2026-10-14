@@ -35,28 +35,31 @@ public:
     HlslShaderImpl();
     virtual ~HlslShaderImpl();
 
-    bool LoadFromFile(const char* fileName, const char* entryPoint, Profile profile,
-                      std::vector<m3d::rend::CompileParam> const& compileParams);
-    bool LoadFromString(const char* str, unsigned int length, const char* entryPoint, Profile profile);
+    bool LoadFromFile(
+        char const* fileName,
+        char const* entryPoint,
+        Profile profile,
+        std::vector<m3d::rend::CompileParam> const& compileParams);
+    bool LoadFromString(char const* str, unsigned int length, char const* entryPoint, Profile profile);
 
     // IRenderResource
     bool IsValid() const override;
 
     // IHlslShader
     unsigned int GetNumberOfParams() const override;
-    ParameterHandle GetParamHandleByName(const char* name) override;
+    ParameterHandle GetParamHandleByName(char const* name) override;
     void SetInt(ParameterHandle param, int val) override;
     void SetFloat(ParameterHandle param, float val) override;
     void SetVector4(ParameterHandle param, CVector4 const& val) override;
     void SetVector3(ParameterHandle param, CVector const& val) override;
     void SetFloat4(ParameterHandle param, nFloat4 const& val) override;
     void SetMatrix(ParameterHandle param, CMatrix const& val) override;
-    void SetIntArray(ParameterHandle param, const int* vals, int count) override;
-    void SetFloatArray(ParameterHandle param, const float* vals, int count) override;
-    void SetFloat4Array(ParameterHandle param, const nFloat4* vals, int count) override;
-    void SetVector4Array(ParameterHandle param, const CVector4* vals, int count) override;
-    void SetMatrixArray(ParameterHandle param, const CMatrix* vals, int count) override;
-    void SetMatrixPointerArray(ParameterHandle param, const CMatrix** vals, int count) override;
+    void SetIntArray(ParameterHandle param, int const* vals, int count) override;
+    void SetFloatArray(ParameterHandle param, float const* vals, int count) override;
+    void SetFloat4Array(ParameterHandle param, nFloat4 const* vals, int count) override;
+    void SetVector4Array(ParameterHandle param, CVector4 const* vals, int count) override;
+    void SetMatrixArray(ParameterHandle param, CMatrix const* vals, int count) override;
+    void SetMatrixPointerArray(ParameterHandle param, CMatrix const** vals, int count) override;
     void Apply() override;
 
     void UpdateShaderInfo();

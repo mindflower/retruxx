@@ -487,7 +487,7 @@ namespace
         {3, "Dynamic_Peace"},
         {4, "Dynamic_Hunt"},
     };
-}
+}  // namespace
 
 int QuestInfoManager::SaveModifiedQuestInfosToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
 {
@@ -730,8 +730,7 @@ QuestInfo* QuestInfoManager::CreateQuestInfoForDynamicQuest(int dQuestId) const
     {
         return nullptr;
     }
-    auto const* pattern =
-        GetQuestInfoByQuestInfoName(patternQuestInfoNames[rand() % patternQuestInfoNames.size()]);
+    auto const* pattern = GetQuestInfoByQuestInfoName(patternQuestInfoNames[rand() % patternQuestInfoNames.size()]);
     if (!pattern)
     {
         return nullptr;
@@ -823,7 +822,9 @@ void QuestInfoManager::OnDynamicQuestStateChanged(void* data)
     }
 }
 
-void QuestInfoManager::GetAllQuestInfosByNamePattern(CStr const& questInfoPatternName, std::vector<CStr>& questInfoNames) const
+void QuestInfoManager::GetAllQuestInfosByNamePattern(
+    CStr const& questInfoPatternName,
+    std::vector<CStr>& questInfoNames) const
 {
     // RVA 0x5749E0 - "<pattern>_0" .. "<pattern>_4" that exist.
     questInfoNames.clear();

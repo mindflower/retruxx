@@ -13,12 +13,10 @@ namespace
         }
         return mutex;
     }
-}
+}  // namespace
 
-int APIENTRY WinMain(_In_ HINSTANCE hInstance,
-    _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPSTR lpCmdLine,
-    _In_ int nCmdShow)
+int APIENTRY
+    WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
     // RVA 0x414C80
     UNREFERENCED_PARAMETER(hPrevInstance);
@@ -42,5 +40,4 @@ int APIENTRY WinMain(_In_ HINSTANCE hInstance,
     }
     ::MessageBox(0, TEXT("Another instance already exists!"), TEXT("Error"), MB_ICONHAND);
     return 0;
-
 }

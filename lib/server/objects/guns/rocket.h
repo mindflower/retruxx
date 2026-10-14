@@ -13,7 +13,7 @@ namespace ai
         float m_flyTime;
         int m_BlastWavePrototypeId;
         RocketPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
 
@@ -36,8 +36,8 @@ namespace ai
 
     protected:
         // NOTE: private in the PDB; protected here because Mine derives from Rocket.
-        Rocket(const ai::RocketPrototypeInfo& prototypeInfo);
-        Rocket(const ai::Rocket&);
+        Rocket(ai::RocketPrototypeInfo const& prototypeInfo);
+        Rocket(ai::Rocket const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -45,15 +45,15 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(Rocket);
-        virtual const ai::RocketPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::RocketPrototypeInfo const* GetPrototypeInfo() const override;
         int m_targetObjId;
         float GetVelocity() const;
         virtual void Remove() override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        void SetInitialDirection(const CVector& direction);
-        void SetInitialVelocity(const CVector& initVel);
+        void SetInitialDirection(CVector const& direction);
+        void SetInitialVelocity(CVector const& initVel);
         void CreateBlastWave() const;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         bool getWithAngleLimit() const;
         void setWithAngleLimit(bool value);
@@ -68,4 +68,4 @@ namespace ai
         bool m_withAngleLimit;
         int m_numCircles;
     };
-}
+}  // namespace ai

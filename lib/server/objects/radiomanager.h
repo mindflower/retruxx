@@ -13,11 +13,12 @@ namespace ai
     class RadioManager : public ai::Obj
     {
         friend class RadioManagerPrototypeInfo;
+
     protected:
-        virtual  ~RadioManager() override;
+        virtual ~RadioManager() override;
 
     private:
-        RadioManager(const ai::RadioManagerPrototypeInfo& prototypeInfo);
+        RadioManager(ai::RadioManagerPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -25,16 +26,16 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classRadioManager;
-        virtual const ai::RadioManagerPrototypeInfo* GetPrototypeInfo() const override;
-        virtual int OnEvent(const ai::Event& evn) override;
+        virtual ai::RadioManagerPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
     private:
-        void _OnObjectDie(const ai::Event& evn);
-        void _OnSomeoneAtSight(const ai::Event& evn);
-        void _OnUnderAttack(const ai::Event& evn);
-        void _OnRelationChanged(const ai::Event& evn);
-        void _OnPartBroken(const ai::Event& evn);
-        void _OnPlayerVehicleChanged(const ai::Event& evn);
+        void _OnObjectDie(ai::Event const& evn);
+        void _OnSomeoneAtSight(ai::Event const& evn);
+        void _OnUnderAttack(ai::Event const& evn);
+        void _OnRelationChanged(ai::Event const& evn);
+        void _OnPartBroken(ai::Event const& evn);
+        void _OnPlayerVehicleChanged(ai::Event const& evn);
 
         enum RM_ENUM
         {
@@ -47,11 +48,11 @@ namespace ai
         };
 
     private:
-        void ReadyMessage(ai::RadioManager::RM_ENUM type, int belong, const CStr& mes);
+        void ReadyMessage(ai::RadioManager::RM_ENUM type, int belong, CStr const& mes);
         bool m_bRadioEnabled;
 
     public:
         void EnableRadio();
         void DisableRadio();
     };
-}
+}  // namespace ai

@@ -20,14 +20,17 @@ namespace ai
     class SphericBody : public ai::SimplePhysicBody
     {
         friend class SimplePhysicObjPrototypeInfo;
+
     protected:
-        SphericBody(const ai::SphericBodyPrototypeInfo& prototypeInfo);
-        SphericBody(const std::vector<ai::CollisionInfo, std::allocator<ai::CollisionInfo> >& collisionInfos, float massValue);
+        SphericBody(ai::SphericBodyPrototypeInfo const& prototypeInfo);
+        SphericBody(
+            std::vector<ai::CollisionInfo, std::allocator<ai::CollisionInfo>> const& collisionInfos,
+            float massValue);
         SphericBody();
-        SphericBody(const ai::SphericBody& rhs);
+        SphericBody(ai::SphericBody const& rhs);
 
     public:
-        virtual  ~SphericBody() override;
+        virtual ~SphericBody() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
@@ -38,7 +41,7 @@ namespace ai
         virtual void SetMass(float newMassValue) override;
 
     private:
-        const ai::Sphere* _Sphere() const;
+        ai::Sphere const* _Sphere() const;
         ai::Sphere* _Sphere();
     };
-}
+}  // namespace ai

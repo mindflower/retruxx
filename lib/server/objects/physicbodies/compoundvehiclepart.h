@@ -13,25 +13,34 @@ namespace ai
             unsigned int index;
         };
 
-        using StrPartInfoMap = retruxx::map<CStr, ai::CompoundVehiclePartPrototypeInfo::TPartInfo, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePartPrototypeInfo::TPartInfo> > >;
+        using StrPartInfoMap = retruxx::map<
+            CStr,
+            ai::CompoundVehiclePartPrototypeInfo::TPartInfo,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePartPrototypeInfo::TPartInfo>>>;
         class StrPartInfoMapConstIterator;
         class StrPartInfoMapIterator;
 
     public:
-        retruxx::map<CStr, ai::CompoundVehiclePartPrototypeInfo::TPartInfo, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePartPrototypeInfo::TPartInfo> > > m_PartInfo;
+        retruxx::map<
+            CStr,
+            ai::CompoundVehiclePartPrototypeInfo::TPartInfo,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePartPrototypeInfo::TPartInfo>>>
+            m_PartInfo;
         CompoundVehiclePartPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
     };
 
     class CompoundVehiclePart : public ai::VehiclePart
     {
     protected:
-        virtual  ~CompoundVehiclePart() override/* 0x00 */;
+        virtual ~CompoundVehiclePart() override /* 0x00 */;
 
     protected:
-        CompoundVehiclePart(const ai::CompoundVehiclePartPrototypeInfo& prototypeInfo);
-        CompoundVehiclePart(const ai::CompoundVehiclePart&);
+        CompoundVehiclePart(ai::CompoundVehiclePartPrototypeInfo const& prototypeInfo);
+        CompoundVehiclePart(ai::CompoundVehiclePart const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -42,7 +51,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classCompoundVehiclePart;
-        virtual const ai::CompoundVehiclePartPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::CompoundVehiclePartPrototypeInfo const* GetPrototypeInfo() const override;
 
         struct TVehiclePart
         {
@@ -67,13 +76,22 @@ namespace ai
         void SetDurability(float durability);
         void RegenerateDurability(float elapsedTime);
         void SetDurabilityRegeneration(float value);
-        virtual unsigned int GetPrice(const ai::IPriceCoeffProvider* priceCoeffProvider) const override;
+        virtual unsigned int GetPrice(ai::IPriceCoeffProvider const* priceCoeffProvider) const override;
 
-        using VehiclePartsMap = retruxx::map<CStr, ai::CompoundVehiclePart::TVehiclePart, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePart::TVehiclePart> > >;
+        using VehiclePartsMap = retruxx::map<
+            CStr,
+            ai::CompoundVehiclePart::TVehiclePart,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePart::TVehiclePart>>>;
         using VehiclePartsMapValueType = retruxx::pair<CStr const, ai::CompoundVehiclePart::TVehiclePart>;
 
     protected:
-        retruxx::map<CStr, ai::CompoundVehiclePart::TVehiclePart, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePart::TVehiclePart> > > m_vehicleParts;
+        retruxx::map<
+            CStr,
+            ai::CompoundVehiclePart::TVehiclePart,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, ai::CompoundVehiclePart::TVehiclePart>>>
+            m_vehicleParts;
         virtual void _InternalCreateVisualPart() override;
         virtual void _InternalPostLoad() override;
 
@@ -85,10 +103,10 @@ namespace ai
         VehiclePartsMap::iterator begin();
         VehiclePartsMap::const_iterator end() const;
         VehiclePartsMap::iterator end();
-        VehiclePartsMap::const_iterator find(const CStr&) const;
-        VehiclePartsMap::iterator find(const CStr& s);
+        VehiclePartsMap::const_iterator find(CStr const&) const;
+        VehiclePartsMap::iterator find(CStr const& s);
 
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void AddChild(ai::Obj* pObj) override;
         virtual bool RemoveChild(ai::Obj* pObj) override;
@@ -96,4 +114,4 @@ namespace ai
         virtual void RenderDebugInfo() const override;
         virtual void ClearSavedStatus() override;
     };
-}
+}  // namespace ai

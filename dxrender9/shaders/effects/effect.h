@@ -78,8 +78,8 @@ public:
     EffectImpl(bool bApplyGlobalParams);
     virtual ~EffectImpl();
 
-    bool LoadFromFile(const char* fileName, std::vector<m3d::rend::CompileParam> const& compileParams);
-    bool LoadFromString(const char* str, unsigned int length);
+    bool LoadFromFile(char const* fileName, std::vector<m3d::rend::CompileParam> const& compileParams);
+    bool LoadFromString(char const* str, unsigned int length);
 
     // IRenderResource
     bool IsValid() const override;
@@ -88,9 +88,9 @@ public:
     unsigned int GetNumTechniques() const override;
     m3d::rend::IEffect::TechniqueDesc const& GetTechniqueDesc(unsigned int i) const override;
     void SetCurTechnique(unsigned int i) override;
-    void SetCurTechniqueByName(const char* name);
+    void SetCurTechniqueByName(char const* name);
     unsigned int GetCurTechnique() const override;
-    const char* GetCurTechniqueName() const;
+    char const* GetCurTechniqueName() const;
     void SetDefaultTechnique(bool bPS20) override;
     bool IsParameterUsed(Parameter p) override;
     void SetInt(Parameter p, int val) override;
@@ -100,12 +100,12 @@ public:
     void SetFloat4(Parameter p, nFloat4 const& val) override;
     void SetMatrix(Parameter p, CMatrix const& val) override;
     void SetTexture(Parameter p, m3d::rend::TexHandle* val) override;
-    void SetIntArray(Parameter p, const int* vals, int count) override;
-    void SetFloatArray(Parameter p, const float* vals, int count) override;
-    void SetFloat4Array(Parameter p, const nFloat4* vals, int count) override;
-    void SetVector4Array(Parameter p, const CVector4* vals, int count) override;
-    void SetMatrixArray(Parameter p, const CMatrix* vals, int count) override;
-    void SetMatrixPointerArray(Parameter p, const CMatrix** vals, int count) override;
+    void SetIntArray(Parameter p, int const* vals, int count) override;
+    void SetFloatArray(Parameter p, float const* vals, int count) override;
+    void SetFloat4Array(Parameter p, nFloat4 const* vals, int count) override;
+    void SetVector4Array(Parameter p, CVector4 const* vals, int count) override;
+    void SetMatrixArray(Parameter p, CMatrix const* vals, int count) override;
+    void SetMatrixPointerArray(Parameter p, CMatrix const** vals, int count) override;
     void SetParams(nShaderParams& params);
 
     int Begin();
@@ -119,8 +119,8 @@ public:
     void Invalidate();
     void ValidateEffect();
     void UpdateParameterHandles();
-    bool getBoolAnnotation(D3DXHANDLE techHandle, const char* annotName, bool defaultValue);
-    int getIntAnnotation(D3DXHANDLE techHandle, const char* annotName, int defaultValue);
-    CStr getStringAnnotation(D3DXHANDLE techHandle, const char* annotName, CStr const& defaultValue);
+    bool getBoolAnnotation(D3DXHANDLE techHandle, char const* annotName, bool defaultValue);
+    int getIntAnnotation(D3DXHANDLE techHandle, char const* annotName, int defaultValue);
+    CStr getStringAnnotation(D3DXHANDLE techHandle, char const* annotName, CStr const& defaultValue);
     void getUserRenderParams(CStr const& userParamsStr, std::vector<TechniqueDesc::UserParam>& userParams);
 };

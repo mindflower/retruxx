@@ -9,14 +9,14 @@ namespace m3d
     {
         class ButtonWnd;
     }
-}
+}  // namespace m3d
 
 class QuestItemsWnd;
 class QuestDizWnd;
 class QuestItemList;
 class MapComboBox;
 
-class TakSebeQuestLogWnd :  public ScreenWnd
+class TakSebeQuestLogWnd : public ScreenWnd
 {
 public:
     struct TsqlAuxInfo
@@ -41,30 +41,30 @@ public:
         CStr m_wndLstQuestsFrameName;
         CStr m_wndEmbossCbMapsName;
         CStr m_wndEmbossBtnFilterName;
-        TsqlAuxInfo(const TakSebeQuestLogWnd::TsqlAuxInfo&);
+        TsqlAuxInfo(TakSebeQuestLogWnd::TsqlAuxInfo const&);
         TsqlAuxInfo();
     };
 
 public:
     virtual ~TakSebeQuestLogWnd();
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    virtual m3d::Class * GetClass() const ;
-    bool CanQuestBeShown(help::QuestType,int) const ;
+    static m3d::Class* GetBaseClass();
+    static m3d::Object* CreateObject();
+    virtual m3d::Object* Clone();
+    virtual m3d::Class* GetClass() const;
+    bool CanQuestBeShown(help::QuestType, int) const;
 
 protected:
     virtual int GameDataSetup();
     bool IsInQuestItemMode();
     void UpdateFilterButtonTooltip();
     void UpdateFilterButtonState();
-    TakSebeQuestLogWnd(TakSebeQuestLogWnd const &);
+    TakSebeQuestLogWnd(TakSebeQuestLogWnd const&);
     TakSebeQuestLogWnd();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
     void ShowQuestItemsWnd(bool);
-    void OnCurProfileParamChanged(void *);
+    void OnCurProfileParamChanged(void*);
     void OnCurProfileChanged();
-    virtual int GameDataUpdate(void *,int);
+    virtual int GameDataUpdate(void*, int);
     void ToggleQuestItemsWnd();
     void OnCompleteFilterPartChanged();
     int OnChangeFilter();
@@ -72,20 +72,20 @@ protected:
     int ShowAll();
     int SetFilter0(long);
     int SetFilter(long);
-    short GetCompleteFilterPart(long) const ;
+    short GetCompleteFilterPart(long) const;
     int SetCompleteFilterPart(short);
-    bool IsCompleteStatusFit(help::QuestType,int,short) const ;
+    bool IsCompleteStatusFit(help::QuestType, int, short) const;
     virtual int OnBeforeAddToWndStation();
-    bool IsMapFit(help::QuestType,int,short) const ;
+    bool IsMapFit(help::QuestType, int, short) const;
     int ShowNoncompleted();
     int ChangeMap();
     // Declared in the shipped headers but fully inlined away - the binary
     // carries no standalone code for it.
     int ShowQuestInfoForMap(CStr const&);
-    int MakeFilterFromParts(short,short);
+    int MakeFilterFromParts(short, short);
     void UpdateQuestItemsButtonState();
     void UpdateQuestItemsButtonTooltip();
-    short GetMapFilterPart(long) const ;
+    short GetMapFilterPart(long) const;
     int SetMapFilterPart(short);
     int OnChangeSelectedQuest();
 

@@ -19,7 +19,7 @@ namespace m3d
     {
         class IStream;
     }
-}
+}  // namespace m3d
 
 namespace m3d
 {
@@ -48,7 +48,7 @@ namespace m3d
             virtual ~XmlAttrib() = default;
             virtual int DecRef() = 0;
             virtual int IncRef() = 0;
-            virtual void* QueryIface(const char*) = 0;
+            virtual void* QueryIface(char const*) = 0;
             virtual char const* GetName() = 0;
             virtual char const* GetValue() = 0;
             virtual bool GetNextSibling(XmlAttrib*) = 0;
@@ -73,20 +73,20 @@ namespace m3d
             virtual bool IsEmpty() const = 0;
             virtual bool HasChildOrAttribute() const = 0;
             virtual bool GetParent(m3d::cmn::XmlNode*) const = 0;
-            virtual bool GetNextSibling(m3d::cmn::XmlNode*, const char*) const = 0;
-            virtual bool GetPrevSibling(m3d::cmn::XmlNode*, const char*) const = 0;
-            virtual bool GetFirstChild(m3d::cmn::XmlNode*, const char*) const = 0;
-            virtual bool GetLastChild(m3d::cmn::XmlNode*, const char*) const = 0;
+            virtual bool GetNextSibling(m3d::cmn::XmlNode*, char const*) const = 0;
+            virtual bool GetPrevSibling(m3d::cmn::XmlNode*, char const*) const = 0;
+            virtual bool GetFirstChild(m3d::cmn::XmlNode*, char const*) const = 0;
+            virtual bool GetLastChild(m3d::cmn::XmlNode*, char const*) const = 0;
             virtual bool AddChild(m3d::cmn::XmlNode*) = 0;
-            virtual bool AddBeforeChild(const m3d::cmn::XmlNode*, m3d::cmn::XmlNode*) = 0;
-            virtual bool AddAfterChild(const m3d::cmn::XmlNode*, m3d::cmn::XmlNode*) = 0;
+            virtual bool AddBeforeChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*) = 0;
+            virtual bool AddAfterChild(m3d::cmn::XmlNode const*, m3d::cmn::XmlNode*) = 0;
             virtual bool RemoveChild(m3d::cmn::XmlNode*) = 0;
-            virtual const char* GetValue() const = 0;
-            virtual void SetValue(const char*) = 0;
-            virtual const char* GetAttribute(const char*) const = 0;
-            virtual void GetAttributeMbcsSafe(const char*, char**, int*) const = 0;
-            virtual bool SetAttribute(const char*, const char*) = 0;
-            virtual bool RemoveAttribute(const char*) = 0;
+            virtual char const* GetValue() const = 0;
+            virtual void SetValue(char const*) = 0;
+            virtual char const* GetAttribute(char const*) const = 0;
+            virtual void GetAttributeMbcsSafe(char const*, char**, int*) const = 0;
+            virtual bool SetAttribute(char const*, char const*) = 0;
+            virtual bool RemoveAttribute(char const*) = 0;
             virtual m3d::cmn::XmlAttrib* CreateAttribute() const = 0;
             virtual bool GetFirstAttribute(m3d::cmn::XmlAttrib*) const = 0;
         };
@@ -111,7 +111,7 @@ namespace m3d
             virtual void GetHeader(char**, char**, char**) = 0;
             virtual void SetHeader(char const*, char const*, char const*) = 0;
         };
-    }
+    }  // namespace cmn
 
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr);
     int WriteXmlFile(char const* filename, cmn::XmlFile* xmlFile, CStr* errorStr);
@@ -142,12 +142,10 @@ namespace m3d
     }
 
     void Tokenize(CStr const*, retruxx::vector<CStr>&, char const*);
-}
+}  // namespace m3d
 
 //IMPORTANT: fields and members order is strict
-class XmlFileImpl :
-    public TiXmlDocument,
-    public m3d::cmn::XmlFile
+class XmlFileImpl : public TiXmlDocument, public m3d::cmn::XmlFile
 {
 private:
     int m_refCount = 0;
@@ -176,7 +174,6 @@ public:
 
 private:
     TiXmlNode* GetDeclarationNode();
-
 };
 
 class IniFileImpl : public m3d::cmn::IniFile
@@ -213,39 +210,40 @@ private:
 class XmlNodeImpl : public m3d::cmn::XmlNode
 {
     friend class XmlFileImpl;
+
 private:
     int m_refCount = 0;
     IBase* m_parent = nullptr;
     virtual int DecRef() override;
     virtual int IncRef() override;
-    virtual void* QueryIface(const char* ifaceName) override;
-    XmlNodeImpl(const XmlNodeImpl&);
+    virtual void* QueryIface(char const* ifaceName) override;
+    XmlNodeImpl(XmlNodeImpl const&);
     XmlNodeImpl(TiXmlNode* fromNode);
-    XmlNodeImpl(m3d::cmn::XmlNodeType tt, const char* nodeName);
+    XmlNodeImpl(m3d::cmn::XmlNodeType tt, char const* nodeName);
     XmlNodeImpl();
     TiXmlNode* m_node = nullptr;
     bool m_nodeOwned = false;
 
 public:
-    virtual  ~XmlNodeImpl() override;
+    virtual ~XmlNodeImpl() override;
     virtual bool IsOfType(m3d::cmn::XmlNodeType castTo) const override;
     virtual bool IsEmpty() const override;
     virtual bool HasChildOrAttribute() const override;
     virtual bool GetParent(m3d::cmn::XmlNode* writeTo) const override;
-    virtual bool GetNextSibling(m3d::cmn::XmlNode* writeTo, const char* wantValue) const override;
-    virtual bool GetPrevSibling(m3d::cmn::XmlNode* writeTo, const char* wantValue) const override;
-    virtual bool GetFirstChild(m3d::cmn::XmlNode* writeTo, const char* wantValue) const override;
-    virtual bool GetLastChild(m3d::cmn::XmlNode* writeTo, const char* wantValue) const override;
+    virtual bool GetNextSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const override;
+    virtual bool GetPrevSibling(m3d::cmn::XmlNode* writeTo, char const* wantValue) const override;
+    virtual bool GetFirstChild(m3d::cmn::XmlNode* writeTo, char const* wantValue) const override;
+    virtual bool GetLastChild(m3d::cmn::XmlNode* writeTo, char const* wantValue) const override;
     virtual bool AddChild(m3d::cmn::XmlNode* child) override;
-    virtual bool AddBeforeChild(const m3d::cmn::XmlNode* addBefore, m3d::cmn::XmlNode* child) override;
-    virtual bool AddAfterChild(const m3d::cmn::XmlNode* addAfter, m3d::cmn::XmlNode* child) override;
+    virtual bool AddBeforeChild(m3d::cmn::XmlNode const* addBefore, m3d::cmn::XmlNode* child) override;
+    virtual bool AddAfterChild(m3d::cmn::XmlNode const* addAfter, m3d::cmn::XmlNode* child) override;
     virtual bool RemoveChild(m3d::cmn::XmlNode* child) override;
-    virtual const char* GetValue() const override;
-    virtual void SetValue(const char* v) override;
-    virtual const char* GetAttribute(const char* name) const override;
-    virtual void GetAttributeMbcsSafe(const char* name, char** str, int* strSz) const override;
-    virtual bool SetAttribute(const char* name, const char* value) override;
-    virtual bool RemoveAttribute(const char* name) override;
+    virtual char const* GetValue() const override;
+    virtual void SetValue(char const* v) override;
+    virtual char const* GetAttribute(char const* name) const override;
+    virtual void GetAttributeMbcsSafe(char const* name, char** str, int* strSz) const override;
+    virtual bool SetAttribute(char const* name, char const* value) override;
+    virtual bool RemoveAttribute(char const* name) override;
     virtual m3d::cmn::XmlAttrib* CreateAttribute() const override;
     virtual bool GetFirstAttribute(m3d::cmn::XmlAttrib* writeTo) const override;
 };
@@ -275,4 +273,3 @@ public:
     virtual bool GetNextSibling(m3d::cmn::XmlAttrib*);
     virtual bool IsEmpty();
 };
-

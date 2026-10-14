@@ -11,7 +11,7 @@ namespace m3d
 {
     class AnimatedModel;
     class AnimInfo;
-}
+}  // namespace m3d
 
 namespace ai
 {
@@ -24,7 +24,7 @@ namespace ai
         CVector jointPos;
         CStr lpName;
         bool connectedToStatics;
-        ExternalJointInfo(const ai::ExternalJointInfo& __that);
+        ExternalJointInfo(ai::ExternalJointInfo const& __that);
         ExternalJointInfo();
     };
 
@@ -32,7 +32,7 @@ namespace ai
     {
     public:
         JointedObjPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
     };
 
@@ -44,11 +44,11 @@ namespace ai
         friend class JointedObjPrototypeInfo;
 
     protected:
-        virtual  ~JointedObj() override;
+        virtual ~JointedObj() override;
 
     private:
-        JointedObj(const ai::JointedObjPrototypeInfo& prototypeInfo);
-        JointedObj(const ai::JointedObj&);
+        JointedObj(ai::JointedObjPrototypeInfo const& prototypeInfo);
+        JointedObj(ai::JointedObj const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -56,11 +56,17 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classJointedObj;
-        virtual const ai::JointedObjPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::JointedObjPrototypeInfo const* GetPrototypeInfo() const override;
         virtual void Remove() override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
-        void Init(const CStr& modelName, const CVector& pos, const Quaternion& rot, float mass, m3d::SgNode* toAccept, float strechZ);
+        void Init(
+            CStr const& modelName,
+            CVector const& pos,
+            Quaternion const& rot,
+            float mass,
+            m3d::SgNode* toAccept,
+            float strechZ);
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void RenderDebugInfo() const override;
         void Disable(bool disable);
@@ -81,21 +87,30 @@ namespace ai
         bool IsParent(int i, int j);
         void CheckDisablePhysics();
 
-        using GeomVector = retruxx::vector<ai::Geom*, retruxx::allocator<ai::Geom*> >;
-        using GeomObjVector = retruxx::vector<ai::GeomObj*, retruxx::allocator<ai::GeomObj*> >;
-        using UintGeomObjMap = retruxx::map<unsigned int, ai::GeomObj*, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, ai::GeomObj*> > >;
-        using BonesVector = retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >;
+        using GeomVector = retruxx::vector<ai::Geom*, retruxx::allocator<ai::Geom*>>;
+        using GeomObjVector = retruxx::vector<ai::GeomObj*, retruxx::allocator<ai::GeomObj*>>;
+        using UintGeomObjMap = retruxx::map<
+            unsigned int,
+            ai::GeomObj*,
+            retruxx::less<unsigned int>,
+            retruxx::allocator<retruxx::pair<unsigned int const, ai::GeomObj*>>>;
+        using BonesVector = retruxx::vector<unsigned int, retruxx::allocator<unsigned int>>;
 
     protected:
         dxSpace* m_MembersSpace;
-        retruxx::vector<ai::GeomObj*, retruxx::allocator<ai::GeomObj*> > m_Members;
-        retruxx::map<unsigned int, ai::GeomObj*, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, ai::GeomObj*> > > m_ExtraMembers;
-        retruxx::vector<dxJoint*, retruxx::allocator<dxJoint*> > m_Joints;
-        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_jointsIndices;
-        retruxx::vector<dxJoint*, retruxx::allocator<dxJoint*> > m_externalJoints;
-        retruxx::vector<ai::ExternalJointInfo, retruxx::allocator<ai::ExternalJointInfo> > m_externalJointsInfo;
+        retruxx::vector<ai::GeomObj*, retruxx::allocator<ai::GeomObj*>> m_Members;
+        retruxx::map<
+            unsigned int,
+            ai::GeomObj*,
+            retruxx::less<unsigned int>,
+            retruxx::allocator<retruxx::pair<unsigned int const, ai::GeomObj*>>>
+            m_ExtraMembers;
+        retruxx::vector<dxJoint*, retruxx::allocator<dxJoint*>> m_Joints;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int>> m_jointsIndices;
+        retruxx::vector<dxJoint*, retruxx::allocator<dxJoint*>> m_externalJoints;
+        retruxx::vector<ai::ExternalJointInfo, retruxx::allocator<ai::ExternalJointInfo>> m_externalJointsInfo;
         bool m_onLoad;
-        retruxx::vector<CMatrix, retruxx::allocator<CMatrix> > m_JointToGeom;
+        retruxx::vector<CMatrix, retruxx::allocator<CMatrix>> m_JointToGeom;
         CStr m_modelName;
         m3d::SgNode* m_node;
         m3d::AnimatedModel* m_Model;
@@ -109,17 +124,27 @@ namespace ai
         bool m_enabled;
         bool m_disableTimerActive;
         float m_disableTimer;
-        retruxx::vector<ai::GoDataForLoad, retruxx::allocator<ai::GoDataForLoad> > m_dataForLoad;
-        retruxx::map<unsigned int, ai::GoDataForLoad, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, ai::GoDataForLoad> > > m_edataForLoad;
+        retruxx::vector<ai::GoDataForLoad, retruxx::allocator<ai::GoDataForLoad>> m_dataForLoad;
+        retruxx::map<
+            unsigned int,
+            ai::GoDataForLoad,
+            retruxx::less<unsigned int>,
+            retruxx::allocator<retruxx::pair<unsigned int const, ai::GoDataForLoad>>>
+            m_edataForLoad;
 
         struct SplineBones
         {
-            retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > bones;
+            retruxx::vector<unsigned int, retruxx::allocator<unsigned int>> bones;
             float t;
         };
 
     protected:
         bool m_asRope;
-        retruxx::map<int, ai::JointedObj::SplineBones, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, ai::JointedObj::SplineBones> > > m_splineNeighbours;
+        retruxx::map<
+            int,
+            ai::JointedObj::SplineBones,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, ai::JointedObj::SplineBones>>>
+            m_splineNeighbours;
     };
-}
+}  // namespace ai

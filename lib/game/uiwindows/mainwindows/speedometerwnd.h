@@ -23,16 +23,16 @@ public:
         float m_speedPointerRadius;
         unsigned int m_colorForvard;
         unsigned int m_colorBackward;
-        AuxInfo(const SpeedometerWnd::AuxInfo&);
+        AuxInfo(SpeedometerWnd::AuxInfo const&);
         AuxInfo();
     };
 
     struct ArrowPointer
     {
-        ArrowPointer(const SpeedometerWnd::ArrowPointer&);
+        ArrowPointer(SpeedometerWnd::ArrowPointer const&);
         ArrowPointer();
         ~ArrowPointer();
-        void Draw(const m3d::ui::DrawInfo& di);
+        void Draw(m3d::ui::DrawInfo const& di);
         void SetTexture(m3d::rend::TexHandle tex);
         m3d::rend::TexHandle GetTexture() const;
         PointBase<float> m_coords;
@@ -52,8 +52,8 @@ protected:
     virtual int GameDataSetup() override;
     virtual int GameDataUpdate(void* data, int dataType) override;
     void OnNewFrame();
-    virtual int OnPaint(const m3d::ui::DrawInfo& di) override;
-    const ai::Vehicle* GetVehicle() const;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
+    ai::Vehicle const* GetVehicle() const;
     void GetVelocity(float& velocity, SpeedometerWnd::MotionDir& dir) const;
     void UpdateSpeedPointer(float velocity, SpeedometerWnd::MotionDir dir);
     void UpdateSpeedNumber(float velocity, SpeedometerWnd::MotionDir dir);
@@ -63,7 +63,7 @@ protected:
     ElectronicDigitalWnd* m_wndSpeedNumber;
     SpeedometerWnd::AuxInfo m_aif;
     SpeedometerWnd();
-    SpeedometerWnd(const SpeedometerWnd& rhs);
+    SpeedometerWnd(SpeedometerWnd const& rhs);
 
 public:
     virtual ~SpeedometerWnd() override;

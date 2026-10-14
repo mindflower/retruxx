@@ -1356,8 +1356,15 @@ namespace m3d
             AnimInfo* anim = nullptr;
             points->m_node->GetProperty(1, &anim);
             anim->CreateCopyMesh(
-                points->m_numMesh, points->m_verts, points->m_numVerts, points->m_indxs, points->m_numIndxs,
-                points->m_strips, points->m_localmatr, points->m_VertexTypes, points->m_VertexTypeSizes,
+                points->m_numMesh,
+                points->m_verts,
+                points->m_numVerts,
+                points->m_indxs,
+                points->m_numIndxs,
+                points->m_strips,
+                points->m_localmatr,
+                points->m_VertexTypes,
+                points->m_VertexTypeSizes,
                 &points->m_numSkinMesh);
             return 1;
         }
@@ -1365,16 +1372,18 @@ namespace m3d
         {
             auto* const actionTime = static_cast<PropSrvActionTime*>(dest);
             int const frames = animModel->GetFrames(actionTime->m_action, 1);
-            actionTime->m_delta = static_cast<float>(static_cast<float>(animModel->GetFps(actionTime->m_action) * frames) * 0.001);
+            actionTime->m_delta =
+                static_cast<float>(static_cast<float>(animModel->GetFps(actionTime->m_action) * frames) * 0.001);
             return 1;
         }
         case PROP_SRV_ATTACK_FRAMETIME:
         {
             auto* const attack = static_cast<PropSrvAttackframeTime*>(dest);
             int const frame = model->m_effects[attack->m_action].startAttackFrame;
-            attack->m_attackFrameTime = frame == -1
-                ? -1.0f
-                : static_cast<float>(static_cast<float>(animModel->GetFps(attack->m_action)) * static_cast<float>(frame) * 0.001);
+            attack->m_attackFrameTime = frame == -1 ?
+                -1.0f :
+                static_cast<float>(
+                    static_cast<float>(animModel->GetFps(attack->m_action)) * static_cast<float>(frame) * 0.001);
             return 1;
         }
         case PROP_DM_CHECK_ACTION:

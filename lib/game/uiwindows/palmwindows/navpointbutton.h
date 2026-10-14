@@ -6,8 +6,7 @@
 class NavPointButton : public m3d::ui::ButtonWnd
 {
 public:
-    virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id) override
-       ;
+    virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id) override;
     int SetupForQuest(help::QuestType questType, int questId);
     int GetNavPointId() const;
     NavPoint::NavPointType GetNavPointType() const;

@@ -14,8 +14,7 @@ class HelpInMainGameInterfaceWnd : public HelpWnd
 
 protected:
     virtual int GameDataSetup() override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     HelpManager::HelpId GetHelpIdByCtrlId(int ctrlId) const;
     void ShowHelp(HelpManager::HelpId helpId);

@@ -5,7 +5,7 @@ namespace ai
 {
     class Vehicle;
     class VehiclePart;
-}
+}  // namespace ai
 
 class WeaponGroupButton : public m3d::ui::ButtonWnd
 {
@@ -95,8 +95,7 @@ protected:
     virtual int CreateChildren();
     static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
     virtual int GameDataUpdate(void* data, int dataType) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     void OnBtnWeaponGroupClick(m3d::ui::Wnd* wndFrom, int wndFromId, m3d::AIParam const& data);
     void OnWeaponGroupChanged();
     void OnVehiclePartChanged(void* data);

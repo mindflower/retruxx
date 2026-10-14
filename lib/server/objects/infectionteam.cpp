@@ -72,7 +72,8 @@ namespace ai
         bool useTwoPoints = false;
         if (prototype->m_items.size() > 2)
         {
-            useTwoPoints = static_cast<double>(prototype->m_items.size()) * 0.25 > static_cast<double>(rand()) * 0.000030518509;
+            useTwoPoints =
+                static_cast<double>(prototype->m_items.size()) * 0.25 > static_cast<double>(rand()) * 0.000030518509;
         }
 
         unsigned int totalCount = 0;
@@ -93,9 +94,11 @@ namespace ai
                 auto* vehicle = static_cast<Vehicle*>(
                     theObjects->GetEntityByObjId(theObjects->CreateNewObject(protoId, vehicleName.c_str(), -1, -1)));
 
-                CVector pos = useTwoPoints && static_cast<unsigned int>(cnt) > totalCount / 2 ? points.back() : points.front();
+                CVector pos =
+                    useTwoPoints && static_cast<unsigned int>(cnt) > totalCount / 2 ? points.back() : points.front();
                 CVector newPos;
-                if (GetValidPosition(pos, vehicle->GetIntersectionRadius(), 0xFF, newPos, false, false, std::set<m3d::Class*>()))
+                if (GetValidPosition(
+                        pos, vehicle->GetIntersectionRadius(), 0xFF, newPos, false, false, std::set<m3d::Class*>()))
                 {
                     pos = newPos;
                 }
@@ -194,7 +197,9 @@ namespace ai
             }
             else
             {
-                M3D_CRITICAL_ERROR("Unknown VehiclesGenerator: '" + m_vehiclesGeneratorProtoName + "' for infection team '" + m_prototypeName + "'");
+                M3D_CRITICAL_ERROR(
+                    "Unknown VehiclesGenerator: '" + m_vehiclesGeneratorProtoName + "' for infection team '" +
+                    m_prototypeName + "'");
             }
         }
     }

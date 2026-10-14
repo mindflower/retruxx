@@ -11,20 +11,20 @@ namespace ai
     class TimeStatistic : public Statistic
     {
     public:
-        virtual CStr GetValue() const ;
-        virtual m3d::AIParam GetValueAsAIParam() const ;
-        static m3d::Class * GetBaseClass();
+        virtual CStr GetValue() const;
+        virtual m3d::AIParam GetValueAsAIParam() const;
+        static m3d::Class* GetBaseClass();
         virtual void Zero();
-        static m3d::Object * CreateObject();
-        virtual m3d::Class * GetClass() const ;
-        virtual void SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
+        static m3d::Object* CreateObject();
+        virtual m3d::Class* GetClass() const;
+        virtual void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
         virtual ~TimeStatistic();
-        virtual void LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        virtual m3d::Object * Clone();
+        virtual void LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        virtual m3d::Object* Clone();
         void IncreaseByMilliseconds(__int64);
 
     protected:
-        TimeStatistic(TimeStatistic const &);
+        TimeStatistic(TimeStatistic const&);
         TimeStatistic();
 
     public:
@@ -33,4 +33,4 @@ namespace ai
     private:
         __int64 m_milliseconds;
     };
-}
+}  // namespace ai

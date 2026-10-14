@@ -9,7 +9,7 @@ struct CVector4
     float z = 0.f;
     float w = 0.f;
 
-    CVector4(const CVector& v, float ww);
+    CVector4(CVector const& v, float ww);
     CVector4(float xx, float yy, float zz, float ww);
     CVector4() = default;
 };

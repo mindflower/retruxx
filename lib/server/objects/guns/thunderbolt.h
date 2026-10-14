@@ -16,7 +16,7 @@ namespace ai
         float m_AverageSegmentLength;
         CStr m_EffectName;
         ThunderboltPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
     };
@@ -28,10 +28,10 @@ namespace ai
         friend class ThunderboltPrototypeInfo;
 
     protected:
-        virtual  ~Thunderbolt() override;
+        virtual ~Thunderbolt() override;
 
     private:
-        Thunderbolt(const ai::ThunderboltPrototypeInfo& prototypeInfo);
+        Thunderbolt(ai::ThunderboltPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -39,10 +39,10 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classThunderbolt;
-        virtual const ai::ThunderboltPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::ThunderboltPrototypeInfo const* GetPrototypeInfo() const override;
 
-        using Points = retruxx::vector<CVector, retruxx::allocator<CVector> >;
-        using Segments = retruxx::vector<Segment, retruxx::allocator<Segment> >;
+        using Points = retruxx::vector<CVector, retruxx::allocator<CVector>>;
+        using Segments = retruxx::vector<Segment, retruxx::allocator<Segment>>;
 
         class ThunderboltPoint
         {
@@ -51,23 +51,28 @@ namespace ai
             int m_ObjId;
             bool m_launcher;
             bool m_dependant;
-            retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> > m_masterPoints;
+            retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>
+                m_masterPoints;
 
         public:
-            ThunderboltPoint(const ai::Thunderbolt::ThunderboltPoint& __that);
-            ThunderboltPoint(const CVector& point);
-            ThunderboltPoint(const int& objId, bool launcher);
+            ThunderboltPoint(ai::Thunderbolt::ThunderboltPoint const& __that);
+            ThunderboltPoint(CVector const& point);
+            ThunderboltPoint(int const& objId, bool launcher);
             ThunderboltPoint();
             int getObjId() const;
             void setObjid(int objId, bool launcher);
-            const CVector& getPoint() const;
-            void setPoint(const CVector& point);
-            void setDependencies(const retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> >& dependencies);
-            const CVector& getThunderboltPoint();
+            CVector const& getPoint() const;
+            void setPoint(CVector const& point);
+            void setDependencies(
+                retruxx::vector<
+                    ai::Thunderbolt::ThunderboltPoint,
+                    retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>> const& dependencies);
+            CVector const& getThunderboltPoint();
         };
 
-        using ThunderboltPoints = retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> >;
-        
+        using ThunderboltPoints =
+            retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>;
+
         class ThunderboltSegment
         {
         private:
@@ -76,43 +81,54 @@ namespace ai
             unsigned int m_nSteps;
             bool m_EffectCreated;
             m3d::SgNode* m_EffectNode;
-            const retruxx::vector<CVector, retruxx::allocator<CVector> >& SegmentFinding(const Segment& seg) const;
+            retruxx::vector<CVector, retruxx::allocator<CVector>> const& SegmentFinding(Segment const& seg) const;
 
         public:
-            ThunderboltSegment(const ai::Thunderbolt::ThunderboltSegment& __that);
-            ThunderboltSegment(const ai::ThunderboltPrototypeInfo* thunderboltPrototype, const ai::Thunderbolt::ThunderboltPoint& Start, const ai::Thunderbolt::ThunderboltPoint& Finish);
+            ThunderboltSegment(ai::Thunderbolt::ThunderboltSegment const& __that);
+            ThunderboltSegment(
+                ai::ThunderboltPrototypeInfo const* thunderboltPrototype,
+                ai::Thunderbolt::ThunderboltPoint const& Start,
+                ai::Thunderbolt::ThunderboltPoint const& Finish);
             ~ThunderboltSegment();
-            const retruxx::vector<CVector, retruxx::allocator<CVector> >& getThunderboltPoints();
-            void Render(const ai::ThunderboltPrototypeInfo* thunderboltPrototype);
-            const CVector& getStartPoint();
-            const CVector& getFinishPoint();
+            retruxx::vector<CVector, retruxx::allocator<CVector>> const& getThunderboltPoints();
+            void Render(ai::ThunderboltPrototypeInfo const* thunderboltPrototype);
+            CVector const& getStartPoint();
+            CVector const& getFinishPoint();
             int getStartObjId() const;
             int getFinishObjId() const;
         };
 
-        using ThunderboltSegments = retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment> >;
+        using ThunderboltSegments = retruxx::
+            vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>>;
 
     public:
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         virtual void Remove() override;
         virtual void RenderDebugInfo() const override;
-        void setTargets(const retruxx::vector<CVector, retruxx::allocator<CVector> >& targets);
-        void setTargets(const retruxx::vector<int, retruxx::allocator<int> >& targets);
-        retruxx::vector<int, retruxx::allocator<int> > getTargets() const;
-        void setOrigin(const CVector& Origin);
-        const CVector& getOrigin() const;
+        void setTargets(retruxx::vector<CVector, retruxx::allocator<CVector>> const& targets);
+        void setTargets(retruxx::vector<int, retruxx::allocator<int>> const& targets);
+        retruxx::vector<int, retruxx::allocator<int>> getTargets() const;
+        void setOrigin(CVector const& Origin);
+        CVector const& getOrigin() const;
         void setSourceId(int S, bool launcher);
         int getSourceId() const;
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const;
+        virtual bool isLookAtPoint(CVector const& lookAt, float eps) const;
         virtual bool CanLookAtTarget() const;
 
     private:
         ai::NumericInRangeRegenerating<float> m_lifeTime;
         ai::Thunderbolt::ThunderboltPoint m_Origin;
-        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> > m_Targets;
-        retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment> > m_Segments;
-        retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment> > getThunderboltSegmentsInt(ai::Thunderbolt::ThunderboltPoint& org, retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint> >& targets);
+        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>
+            m_Targets;
+        retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>>
+            m_Segments;
+        retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>>
+            getThunderboltSegmentsInt(
+                ai::Thunderbolt::ThunderboltPoint& org,
+                retruxx::vector<
+                    ai::Thunderbolt::ThunderboltPoint,
+                    retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>& targets);
         void calcThunderboltSegments();
         void Render();
     };
-}
+}  // namespace ai

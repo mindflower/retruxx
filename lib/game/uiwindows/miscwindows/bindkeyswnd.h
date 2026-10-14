@@ -8,7 +8,7 @@ namespace m3d
     {
         class StringsListBoxWnd;
     }
-}
+}  // namespace m3d
 
 enum Impulse
 {
@@ -172,7 +172,8 @@ public:
         virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override;
         virtual int DeleteItem(int itemIdx) override;
         virtual int CompareItem(int itemIdx0, int itemIdx1) override;
-        virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+        virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data)
+            override;
         virtual int OnBeforeAddToWndStation() override;
 
         BindKeysWnd::BindKeysList::AuxInfo m_aif;

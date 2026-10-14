@@ -12,9 +12,7 @@ namespace m3d
         // RVA 0x77BA20
     }
 
-    DRAFT_VertexComponent::DRAFT_VertexComponent(VERTEX_COMPONENT t, int s) :
-        Type(t),
-        Size(s)
+    DRAFT_VertexComponent::DRAFT_VertexComponent(VERTEX_COMPONENT t, int s) : Type(t), Size(s)
     {
         // RVA 0x77BA30
     }
@@ -81,7 +79,9 @@ unsigned int CompOff(retruxx::vector<m3d::DRAFT_VertexComponent>& VC, m3d::VERTE
 }
 
 bool DefineVertexType(
-    retruxx::vector<m3d::DRAFT_VertexComponent>& VC, m3d::rend::VertexType& VertType, unsigned int& VertTypeSize)
+    retruxx::vector<m3d::DRAFT_VertexComponent>& VC,
+    m3d::rend::VertexType& VertType,
+    unsigned int& VertTypeSize)
 {
     // RVA 0x77E7F0 - picks the vertex format for a set of components. Position, normal and a first texture set are
     // required; a tangent is only supported with a single texture set.
@@ -164,7 +164,8 @@ void BinormalToTangentW(m3d::DMesh& Mh)
     // RVA 0x782960 - folds a binormal component into the tangent's w: the tangent becomes 4 floats, w being the
     // handedness (+1 when the binormal agrees with normal x tangent, else -1), and the binormal is dropped.
     auto& headers = Mh.VertexComponentHeaders;
-    auto const find = [&headers](m3d::VERTEX_COMPONENT type) {
+    auto const find = [&headers](m3d::VERTEX_COMPONENT type)
+    {
         auto it = headers.begin();
         while (it != headers.end() && it->Type != type)
         {
@@ -216,7 +217,9 @@ void BinormalToTangentW(m3d::DMesh& Mh)
     --Mh.Header.NumberOfVertexComponents;
 }
 
-bool IsStaticTriMesh(m3d::DMesh const& TriMesh, retruxx::vector<m3d::DAnimation> const& Animations,
+bool IsStaticTriMesh(
+    m3d::DMesh const& TriMesh,
+    retruxx::vector<m3d::DAnimation> const& Animations,
     retruxx::vector<m3d::DRAFT_Bone> const& Bones)
 {
     // RVA 0x783BF0 - a rigid mesh whose bone chain holds the same transforms in every frame of every animation as

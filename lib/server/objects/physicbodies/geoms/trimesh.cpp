@@ -8,8 +8,14 @@ namespace ai
         dGeomTriMeshDataDestroy(m_trimeshDataId);
     }
 
-    ai::TriMesh* TriMesh::CreateObject(dxSpace* space, const void* trimeshVertices, int numVertices,
-        const int* trimeshIndices, int numIndices, void(* movedCallback)(dxGeom*), int vertexStride)
+    ai::TriMesh* TriMesh::CreateObject(
+        dxSpace* space,
+        void const* trimeshVertices,
+        int numVertices,
+        int const* trimeshIndices,
+        int numIndices,
+        void (*movedCallback)(dxGeom*),
+        int vertexStride)
     {
         auto trimeshData = dGeomTriMeshDataCreate();
         if (vertexStride < 0)
@@ -17,7 +23,8 @@ namespace ai
             vertexStride = 12;
         }
 
-        dGeomTriMeshDataBuildSingle(trimeshData, trimeshVertices, vertexStride, numVertices, trimeshIndices, numIndices, 12);
+        dGeomTriMeshDataBuildSingle(
+            trimeshData, trimeshVertices, vertexStride, numVertices, trimeshIndices, numIndices, 12);
 
         auto geom = dCreateTriMesh(space, trimeshData, nullptr, nullptr, nullptr);
         auto trimesh = new TriMesh(geom, movedCallback);
@@ -25,7 +32,7 @@ namespace ai
         return trimesh;
     }
 
-    TriMesh::TriMesh(dxGeom* const geomId, void(*movedCalback)(dxGeom*)) : Geom(geomId, movedCalback)
+    TriMesh::TriMesh(dxGeom* const geomId, void (*movedCalback)(dxGeom*)) : Geom(geomId, movedCalback)
     {
     }
-}
+}  // namespace ai

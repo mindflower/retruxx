@@ -9,7 +9,7 @@ namespace m3d
     {
         class TextBoxWnd;
     }
-}
+}  // namespace m3d
 
 class ContextModelWnd;
 
@@ -20,7 +20,7 @@ class QuestItemsWnd : public m3d::ui::Wnd
         CStr m_wndPictureName;
         CStr m_wndDizName;
         CStr m_wndItemsListName;
-        AuxInfo(const QuestItemsWnd::AuxInfo&);
+        AuxInfo(QuestItemsWnd::AuxInfo const&);
         AuxInfo();
     };
 

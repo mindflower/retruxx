@@ -904,7 +904,8 @@ int LevelInfoManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode 
     if (!vmapsNode->IsEmpty())
     {
         ref_ptr vmapNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        for (vmapsNode->GetFirstChild(vmapNode, "Level"); !vmapNode->IsEmpty(); vmapNode->GetNextSibling(vmapNode, "Level"))
+        for (vmapsNode->GetFirstChild(vmapNode, "Level"); !vmapNode->IsEmpty();
+             vmapNode->GetNextSibling(vmapNode, "Level"))
         {
             auto* vmap = new VisibilityMap;
             if (!vmap)
@@ -916,7 +917,8 @@ int LevelInfoManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode 
             if (!vmap->LoadFromXml(xmlFile, vmapNode))
             {
                 M3D_LOG_INFO(
-                    "LevelInfoManager::LoadFromXml error - cannot load visibility map for level " + vmap->GetLevelName());
+                    "LevelInfoManager::LoadFromXml error - cannot load visibility map for level " +
+                    vmap->GetLevelName());
                 delete vmap;
                 res = 0;
                 continue;
@@ -969,7 +971,8 @@ int LevelInfoManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode 
     if (!levelObjectsNode->IsEmpty())
     {
         ref_ptr ndLevel = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        for (levelObjectsNode->GetFirstChild(ndLevel, "Level"); !ndLevel->IsEmpty(); ndLevel->GetNextSibling(ndLevel, "Level"))
+        for (levelObjectsNode->GetFirstChild(ndLevel, "Level"); !ndLevel->IsEmpty();
+             ndLevel->GetNextSibling(ndLevel, "Level"))
         {
             // The level name attribute is read but not needed: each object
             // carries its own level name.

@@ -14,7 +14,7 @@ public:
     struct BasketAuxInfo
     {
         CStr m_wndBasketCapacityValName;
-        BasketAuxInfo(const BasketCharacteristicsWnd::BasketAuxInfo&);
+        BasketAuxInfo(BasketCharacteristicsWnd::BasketAuxInfo const&);
         BasketAuxInfo();
     };
 
@@ -23,11 +23,11 @@ protected:
     void SetupForCB(int cbId);
     virtual void UpdateCharacteristics() override;
     virtual void ClearCharacteristics() override;
-    const ai::Basket* GetBasket() const;
+    ai::Basket const* GetBasket() const;
     m3d::ui::Wnd* m_wndBasketCapacityVal;
     BasketCharacteristicsWnd::BasketAuxInfo m_basketAif;
     BasketCharacteristicsWnd();
-    BasketCharacteristicsWnd(const BasketCharacteristicsWnd& rhs);
+    BasketCharacteristicsWnd(BasketCharacteristicsWnd const& rhs);
 
 public:
     virtual ~BasketCharacteristicsWnd() override;

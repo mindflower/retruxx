@@ -15,7 +15,8 @@ namespace m3d
         virtual int SetProperty(unsigned int, void*);
         virtual DataServer* GetServer() const;
         virtual int GetProperty(unsigned int, void*) const;
-        virtual int GetPropertiesList(retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> >&) const;
+        virtual int GetPropertiesList(
+            retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int>>&) const;
         virtual Object* Clone();
 
     protected:
@@ -30,4 +31,4 @@ namespace m3d
     private:
         unsigned int m_props[2];
     };
-}
+}  // namespace m3d

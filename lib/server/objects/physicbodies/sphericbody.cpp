@@ -12,8 +12,7 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(SphericBody);
 
-    SphericBodyPrototypeInfo::SphericBodyPrototypeInfo() :
-        m_radius(1.0f)
+    SphericBodyPrototypeInfo::SphericBodyPrototypeInfo() : m_radius(1.0f)
     {
         // RVA 0x850FC0
     }
@@ -47,7 +46,9 @@ namespace ai
         dMassSetSphereTotal(&m_mass, newMassValue, _Sphere()->GetRadius());
     }
 
-    SphericBody::SphericBody(std::vector<CollisionInfo, std::allocator<CollisionInfo>> const& collisionInfos, float massValue)
+    SphericBody::SphericBody(
+        std::vector<CollisionInfo, std::allocator<CollisionInfo>> const& collisionInfos,
+        float massValue)
     {
         // RVA 0x850E90 - swaps the transform's inner geom for a sphere of the first collision
         // info's radius (SetGeom deletes the old one and relinks the ODE transform).
@@ -58,8 +59,7 @@ namespace ai
         dMassSetSphereTotal(&this->m_mass, massValue, collisionInfos.front().m_radius);
     }
 
-    SphericBody::SphericBody(SphericBodyPrototypeInfo const& prototypeInfo) :
-        SimplePhysicBody(prototypeInfo)
+    SphericBody::SphericBody(SphericBodyPrototypeInfo const& prototypeInfo) : SimplePhysicBody(prototypeInfo)
     {
         // RVA 0x850F10 - swaps the transform's inner geom for a sphere of the prototype's radius.
         // NOTE: the sphere is created without a moved callback.
@@ -111,4 +111,4 @@ namespace ai
         // RVA 0x5DC0F0
         return static_cast<Sphere const*>(static_cast<GeomTransform const*>(m_pGeoms.front())->GetGeom());
     }
-}
+}  // namespace ai

@@ -7,7 +7,7 @@ namespace m3d
     class AnimatedModel;
     class AnimInfo;
     class Configuration;
-}
+}  // namespace m3d
 
 namespace m3d
 {
@@ -24,8 +24,14 @@ namespace m3d
             int SetTargetTexture(rend::TexHandle);
             virtual Object* Clone();
             virtual int OnPaint(DrawInfo const&);
-            virtual int CreateModelArrayWnd(rend::TexHandle, unsigned int, BoundsBase<float> const&, unsigned int, rend::TexHandle);
-            virtual int CreateModelArrayWnd(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int, rend::TexHandle);
+            virtual int CreateModelArrayWnd(
+                rend::TexHandle,
+                unsigned int,
+                BoundsBase<float> const&,
+                unsigned int,
+                rend::TexHandle);
+            virtual int
+                CreateModelArrayWnd(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int, rend::TexHandle);
             void ClearModels();
             virtual ~ModelArrayWnd();
             int GetSkinNum(int) const;
@@ -56,5 +62,5 @@ namespace m3d
             CVector m_Translation;
             Quaternion m_Rotation;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

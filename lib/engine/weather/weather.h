@@ -30,7 +30,6 @@ namespace m3d
         CT_NUM_COLORTYPES = 0x4,
     };
 
-
     class WindInfo
     {
     public:
@@ -51,17 +50,16 @@ namespace m3d
         CVector m_deltaValue;
         float m_DeltaVelChanged;
         float m_DeltaDirChanged;
-
     };
 
     class Weather : public m3d::Object
     {
     protected:
         Weather();
-        Weather(const m3d::Weather& classe);
+        Weather(m3d::Weather const& classe);
 
     public:
-        virtual  ~Weather() override;
+        virtual ~Weather() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
@@ -101,21 +99,21 @@ namespace m3d
         virtual void SetUp();
         unsigned int GetColorItemsNum() const;
         unsigned int GetColorTypesNum() const;
-        const float GetSkyDomeFactor() const;
+        float const GetSkyDomeFactor() const;
         void SetSkyDomeFactor(float);
-        const char* ColorItemName(unsigned int i) const;
-        const char* ColorTypeName(unsigned int i) const;
+        char const* ColorItemName(unsigned int i) const;
+        char const* ColorTypeName(unsigned int i) const;
         CVector& Color(unsigned int, unsigned int);
         CVector& CurrentColor(unsigned int);
-        const CVector& CurrentColor(unsigned int Item) const;
-        const CStr& GetWeatherName() const;
-        void SetWeatherName(const CStr& Name);
+        CVector const& CurrentColor(unsigned int Item) const;
+        CStr const& GetWeatherName() const;
+        void SetWeatherName(CStr const& Name);
         void ChangeCloudTexture(CStr& Name);
         float CloudsSpeed(unsigned int) const;
         void SetCloudsSpeed(unsigned int, float);
-        const m3d::WindInfo& GetWindInfo() const;
-        const CStr& GetPostEffectName(unsigned int) const;
-        void SetPostEffectName(unsigned int, const CStr&);
+        m3d::WindInfo const& GetWindInfo() const;
+        CStr const& GetPostEffectName(unsigned int) const;
+        void SetPostEffectName(unsigned int, CStr const&);
         float GetShadowTransparency(unsigned int curDayTime) const;
         void SetShadowTransparency(unsigned int, float);
         bool GetShadowVisibility(unsigned int curDayTime) const;
@@ -136,10 +134,10 @@ namespace m3d
         void SetWaterSpecularM(float);
         float GetWaterSpecularM() const;
         float GetWaterSpecularS() const;
-        const CStr& GetLightmapTexName(unsigned int curDayTime) const;
-        void SetLightmapTexName(unsigned int, const CStr&);
-        const CStr& GetCloudsTexName(unsigned int curDayTime) const;
-        void SetCloudsTexName(unsigned int, const CStr&);
+        CStr const& GetLightmapTexName(unsigned int curDayTime) const;
+        void SetLightmapTexName(unsigned int, CStr const&);
+        CStr const& GetCloudsTexName(unsigned int curDayTime) const;
+        void SetCloudsTexName(unsigned int, CStr const&);
     };
 
     class WeatherClear : public Weather
@@ -248,4 +246,4 @@ namespace m3d
         int m_minThunderPeriod;
         int m_maxThunderPeriod;
     };
-}
+}  // namespace m3d

@@ -15,11 +15,11 @@ namespace ai
         // Map::Circle and friends step around the ring in 45 degree increments.
         // The shipped build uses this slightly-off value for sin(45), not
         // 0.70710678 - keep it so the rasterised rings match cell for cell.
-        constexpr float DIAG_45 = 0.70710856f;
+        float constexpr DIAG_45 = 0.70710856f;
 
         // Out-of-bounds cells read as 0xFF, so they block for every threshold
         // except 255 itself.
-        constexpr unsigned char OUT_OF_BOUNDS_VALUE = 0xFF;
+        unsigned char constexpr OUT_OF_BOUNDS_VALUE = 0xFF;
     }  // namespace
 
     GMAPOFFSET::GMAPOFFSET(int Px, int Py)
@@ -253,7 +253,7 @@ namespace ai
     // Shared Bresenham walk for the LineTo / Line8 family. `plotFirst` selects
     // whether the starting cell is written: Line8 writes it, LineTo does not
     // (it is assumed to have been covered by the previous segment).
-    template <typename Plot>
+    template<typename Plot>
     void Map::Walk8(int x1, int y1, int x2, int y2, bool plotFirst, Plot plot)
     {
         int const dx = std::abs(x2 - x1);
@@ -310,7 +310,7 @@ namespace ai
 
     // Shared 4-connected DDA for the Line4 family. Takes dx + dy steps, moving
     // along exactly one axis each time, and always writes the starting cell.
-    template <typename Plot>
+    template<typename Plot>
     void Map::Walk4(int x1, int y1, int x2, int y2, Plot plot)
     {
         int const dx = std::abs(x2 - x1);
@@ -355,7 +355,16 @@ namespace ai
         // RVA 0x7D7100. Does NOT write the starting cell, and leaves m_CurPos
         // at the destination so segments can be chained.
         MapIndex const end(static_cast<int>(point.x / m_cellSize.x), static_cast<int>(point.y / m_cellSize.y));
-        Walk8(m_CurPos.x, m_CurPos.y, end.x, end.y, false, [this, value](int x, int y) { SetValue(x, y, value); });
+        Walk8(
+            m_CurPos.x,
+            m_CurPos.y,
+            end.x,
+            end.y,
+            false,
+            [this, value](int x, int y)
+            {
+                SetValue(x, y, value);
+            });
         m_CurPos = end;
     }
 
@@ -363,7 +372,16 @@ namespace ai
     {
         // RVA 0x7D7250
         MapIndex const end(static_cast<int>(point.x / m_cellSize.x), static_cast<int>(point.y / m_cellSize.y));
-        Walk8(m_CurPos.x, m_CurPos.y, end.x, end.y, false, [this, value](int x, int y) { IncValue(x, y, value); });
+        Walk8(
+            m_CurPos.x,
+            m_CurPos.y,
+            end.x,
+            end.y,
+            false,
+            [this, value](int x, int y)
+            {
+                IncValue(x, y, value);
+            });
         m_CurPos = end;
     }
 
@@ -379,7 +397,16 @@ namespace ai
         {
             DecValue(m_CurPos.x, m_CurPos.y, value);
         }
-        Walk8(m_CurPos.x, m_CurPos.y, end.x, end.y, false, [this, value](int x, int y) { DecValue(x, y, value); });
+        Walk8(
+            m_CurPos.x,
+            m_CurPos.y,
+            end.x,
+            end.y,
+            false,
+            [this, value](int x, int y)
+            {
+                DecValue(x, y, value);
+            });
         m_CurPos = end;
     }
 
@@ -389,12 +416,16 @@ namespace ai
         // than dividing, which rounds marginally differently from GetIndex.
         float const invX = 1.0f / m_cellSize.x;
         float const invY = 1.0f / m_cellSize.y;
-        Walk8(static_cast<int>(point1.x * invX),
-              static_cast<int>(point1.y * invY),
-              static_cast<int>(point2.x * invX),
-              static_cast<int>(point2.y * invY),
-              true,
-              [this, value](int x, int y) { SetValue(x, y, value); });
+        Walk8(
+            static_cast<int>(point1.x * invX),
+            static_cast<int>(point1.y * invY),
+            static_cast<int>(point2.x * invX),
+            static_cast<int>(point2.y * invY),
+            true,
+            [this, value](int x, int y)
+            {
+                SetValue(x, y, value);
+            });
     }
 
     void Map::IncLine8(CVector2 const& point1, CVector2 const& point2, unsigned char value)
@@ -402,12 +433,16 @@ namespace ai
         // RVA 0x7D7F90
         float const invX = 1.0f / m_cellSize.x;
         float const invY = 1.0f / m_cellSize.y;
-        Walk8(static_cast<int>(point1.x * invX),
-              static_cast<int>(point1.y * invY),
-              static_cast<int>(point2.x * invX),
-              static_cast<int>(point2.y * invY),
-              true,
-              [this, value](int x, int y) { IncValue(x, y, value); });
+        Walk8(
+            static_cast<int>(point1.x * invX),
+            static_cast<int>(point1.y * invY),
+            static_cast<int>(point2.x * invX),
+            static_cast<int>(point2.y * invY),
+            true,
+            [this, value](int x, int y)
+            {
+                IncValue(x, y, value);
+            });
     }
 
     void Map::DecLine8(CVector2 const& point1, CVector2 const& point2, unsigned char value)
@@ -415,12 +450,16 @@ namespace ai
         // RVA 0x7D8100
         float const invX = 1.0f / m_cellSize.x;
         float const invY = 1.0f / m_cellSize.y;
-        Walk8(static_cast<int>(point1.x * invX),
-              static_cast<int>(point1.y * invY),
-              static_cast<int>(point2.x * invX),
-              static_cast<int>(point2.y * invY),
-              true,
-              [this, value](int x, int y) { DecValue(x, y, value); });
+        Walk8(
+            static_cast<int>(point1.x * invX),
+            static_cast<int>(point1.y * invY),
+            static_cast<int>(point2.x * invX),
+            static_cast<int>(point2.y * invY),
+            true,
+            [this, value](int x, int y)
+            {
+                DecValue(x, y, value);
+            });
     }
 
     void Map::Line4(CVector2 const& point1, CVector2 const& point2, unsigned char value)
@@ -428,11 +467,15 @@ namespace ai
         // RVA 0x7D8570
         float const invX = 1.0f / m_cellSize.x;
         float const invY = 1.0f / m_cellSize.y;
-        Walk4(static_cast<int>(point1.x * invX),
-              static_cast<int>(point1.y * invY),
-              static_cast<int>(point2.x * invX),
-              static_cast<int>(point2.y * invY),
-              [this, value](int x, int y) { SetValue(x, y, value); });
+        Walk4(
+            static_cast<int>(point1.x * invX),
+            static_cast<int>(point1.y * invY),
+            static_cast<int>(point2.x * invX),
+            static_cast<int>(point2.y * invY),
+            [this, value](int x, int y)
+            {
+                SetValue(x, y, value);
+            });
     }
 
     void Map::IncLine4(CVector2 const& point1, CVector2 const& point2, unsigned char value)
@@ -440,11 +483,15 @@ namespace ai
         // RVA 0x7D8700
         float const invX = 1.0f / m_cellSize.x;
         float const invY = 1.0f / m_cellSize.y;
-        Walk4(static_cast<int>(point1.x * invX),
-              static_cast<int>(point1.y * invY),
-              static_cast<int>(point2.x * invX),
-              static_cast<int>(point2.y * invY),
-              [this, value](int x, int y) { IncValue(x, y, value); });
+        Walk4(
+            static_cast<int>(point1.x * invX),
+            static_cast<int>(point1.y * invY),
+            static_cast<int>(point2.x * invX),
+            static_cast<int>(point2.y * invY),
+            [this, value](int x, int y)
+            {
+                IncValue(x, y, value);
+            });
     }
 
     void Map::DecLine4(CVector2 const& point1, CVector2 const& point2, unsigned char value)
@@ -452,11 +499,15 @@ namespace ai
         // RVA 0x7D88B0
         float const invX = 1.0f / m_cellSize.x;
         float const invY = 1.0f / m_cellSize.y;
-        Walk4(static_cast<int>(point1.x * invX),
-              static_cast<int>(point1.y * invY),
-              static_cast<int>(point2.x * invX),
-              static_cast<int>(point2.y * invY),
-              [this, value](int x, int y) { DecValue(x, y, value); });
+        Walk4(
+            static_cast<int>(point1.x * invX),
+            static_cast<int>(point1.y * invY),
+            static_cast<int>(point2.x * invX),
+            static_cast<int>(point2.y * invY),
+            [this, value](int x, int y)
+            {
+                DecValue(x, y, value);
+            });
     }
 
     // ------------------------------------------------------------- rectangles
@@ -512,7 +563,7 @@ namespace ai
     // ring and then chain eight LineTo segments counter-clockwise through the
     // 45 degree marks. Note the seed's y comes from point.y un-offset, which is
     // what the binary does (0x7D8CD5).
-    template <typename LineToFn>
+    template<typename LineToFn>
     void Map::WalkRing(CVector2 const& point, float radius, LineToFn lineTo)
     {
         m_CurPos.x = static_cast<int>((point.x + radius) / m_cellSize.x);
@@ -521,32 +572,66 @@ namespace ai
         float const diag = radius * DIAG_45;
         CVector2 p;
 
-        p.x = point.x + diag;  p.y = point.y + diag;   lineTo(p);
-        p.x = point.x;         p.y = point.y + radius; lineTo(p);
-        p.x = point.x - diag;  p.y = point.y + diag;   lineTo(p);
-        p.x = point.x - radius; p.y = point.y;         lineTo(p);
-        p.x = point.x - diag;  p.y = point.y - diag;   lineTo(p);
-        p.x = point.x;         p.y = point.y - radius; lineTo(p);
-        p.x = point.x + diag;  p.y = point.y - diag;   lineTo(p);
-        p.x = point.x + radius; p.y = point.y;         lineTo(p);
+        p.x = point.x + diag;
+        p.y = point.y + diag;
+        lineTo(p);
+        p.x = point.x;
+        p.y = point.y + radius;
+        lineTo(p);
+        p.x = point.x - diag;
+        p.y = point.y + diag;
+        lineTo(p);
+        p.x = point.x - radius;
+        p.y = point.y;
+        lineTo(p);
+        p.x = point.x - diag;
+        p.y = point.y - diag;
+        lineTo(p);
+        p.x = point.x;
+        p.y = point.y - radius;
+        lineTo(p);
+        p.x = point.x + diag;
+        p.y = point.y - diag;
+        lineTo(p);
+        p.x = point.x + radius;
+        p.y = point.y;
+        lineTo(p);
     }
 
     void Map::Circle(CVector2 const& point, float radius, unsigned char value)
     {
         // RVA 0x7D8CC0
-        WalkRing(point, radius, [this, value](CVector2 const& p) { LineTo(p, value); });
+        WalkRing(
+            point,
+            radius,
+            [this, value](CVector2 const& p)
+            {
+                LineTo(p, value);
+            });
     }
 
     void Map::IncCircle(CVector2 const& point, float radius, unsigned char value)
     {
         // RVA 0x7D8E50
-        WalkRing(point, radius, [this, value](CVector2 const& p) { IncLineTo(p, value); });
+        WalkRing(
+            point,
+            radius,
+            [this, value](CVector2 const& p)
+            {
+                IncLineTo(p, value);
+            });
     }
 
     void Map::DecCircle(CVector2 const& point, float radius, unsigned char value)
     {
         // RVA 0x7D8FD0
-        WalkRing(point, radius, [this, value](CVector2 const& p) { DecLineTo(p, value); });
+        WalkRing(
+            point,
+            radius,
+            [this, value](CVector2 const& p)
+            {
+                DecLineTo(p, value);
+            });
     }
 
     // ---------------------------------------------------------------- queries
@@ -555,10 +640,17 @@ namespace ai
     {
         // RVA 0x7D7A90 - the 8-connected walk, including the starting cell.
         bool blocked = false;
-        Walk8(xIndex1, yIndex1, xIndex2, yIndex2, true, [&](int x, int y) {
-            if (!blocked && CellValue(x, y) > BV)
-                blocked = true;
-        });
+        Walk8(
+            xIndex1,
+            yIndex1,
+            xIndex2,
+            yIndex2,
+            true,
+            [&](int x, int y)
+            {
+                if (!blocked && CellValue(x, y) > BV)
+                    blocked = true;
+            });
         return blocked;
     }
 
@@ -566,10 +658,16 @@ namespace ai
     {
         // RVA 0x7D7C70 - the 4-connected walk, including the starting cell.
         bool blocked = false;
-        Walk4(xIndex1, yIndex1, xIndex2, yIndex2, [&](int x, int y) {
-            if (!blocked && CellValue(x, y) > BV)
-                blocked = true;
-        });
+        Walk4(
+            xIndex1,
+            yIndex1,
+            xIndex2,
+            yIndex2,
+            [&](int x, int y)
+            {
+                if (!blocked && CellValue(x, y) > BV)
+                    blocked = true;
+            });
         return blocked;
     }
 

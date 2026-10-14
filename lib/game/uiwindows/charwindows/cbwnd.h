@@ -10,7 +10,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class VehiclePartWnd;
 
@@ -26,12 +26,16 @@ public:
         CStr m_vehiclePartPaneName;
         CStr m_wndHidePictureBgName;
         CStr m_wndDisabledBgName;
-        CBAuxInfo(const CBWnd::CBAuxInfo&);
+        CBAuxInfo(CBWnd::CBAuxInfo const&);
         CBAuxInfo();
     };
 
-    using VehiclePartMap = std::map<CStr, ref_ptr<VehiclePartWnd>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<VehiclePartWnd> > > >;
-    using VehiclePartPair = std::pair<CStr, ref_ptr<VehiclePartWnd> >;
+    using VehiclePartMap = std::map<
+        CStr,
+        ref_ptr<VehiclePartWnd>,
+        std::less<CStr>,
+        std::allocator<std::pair<CStr const, ref_ptr<VehiclePartWnd>>>>;
+    using VehiclePartPair = std::pair<CStr, ref_ptr<VehiclePartWnd>>;
 
 protected:
     virtual int GameDataSetup() override;
@@ -40,26 +44,31 @@ protected:
     virtual int OnBeforeAddToWndStation() override;
     virtual int OnAfterRemoveFromWndStation() override;
     virtual void FullUpdate();
-    void UpdateOnVehiclepartChanged(const CStr& partName);
+    void UpdateOnVehiclepartChanged(CStr const& partName);
     virtual void UpdateOnMainPartChanged();
     virtual void SetupChildVehicleParts();
     virtual void ClearChildVehicleParts();
-    virtual int CreateChildVehiclePartWindow(const CStr& partName, const PointBase<float>& origin);
+    virtual int CreateChildVehiclePartWindow(CStr const& partName, PointBase<float> const& origin);
     virtual InventoryWnd::VehicleType GetVehicleTypeByGuiId(int guiId) const = 0;
     virtual void OnFinishTrade();
     void SetDisabledLook(bool bDisabled);
     CBWnd::CBAuxInfo m_cbAif;
     CStr m_mainPartName;
-    std::map<CStr, ref_ptr<VehiclePartWnd>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<VehiclePartWnd> > > > m_wndChildVehicleParts;
+    std::map<
+        CStr,
+        ref_ptr<VehiclePartWnd>,
+        std::less<CStr>,
+        std::allocator<std::pair<CStr const, ref_ptr<VehiclePartWnd>>>>
+        m_wndChildVehicleParts;
     InventoryWnd::VehicleType m_vehicleType;
     int m_mainPartId;
     m3d::ui::ImageWnd* m_wndHidePictureBg;
     m3d::ui::ImageWnd* m_wndDisabledBg;
-    CBWnd(const CBWnd&);
+    CBWnd(CBWnd const&);
     CBWnd();
 
 public:
-    virtual  ~CBWnd() override;
+    virtual ~CBWnd() override;
     static m3d::Class* __fastcall GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     static m3d::Class m_classCBWnd;

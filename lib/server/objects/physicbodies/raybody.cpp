@@ -8,8 +8,7 @@ namespace ai
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(RayBody);
 
-    RayBody::RayBody(const ai::RayBodyPrototypeInfo& prototypeInfo) :
-        SimplePhysicBody(prototypeInfo)
+    RayBody::RayBody(ai::RayBodyPrototypeInfo const& prototypeInfo) : SimplePhysicBody(prototypeInfo)
     {
         // RVA 0x904960
         // Swaps the transform's inner geom for a ray; the mass is a fixed unit sphere.
@@ -32,7 +31,7 @@ namespace ai
         assert(0);
     }
 
-    RayBody::RayBody(const ai::RayBody& rhs)
+    RayBody::RayBody(ai::RayBody const& rhs)
     {
         // RVA 0x904740 - ray bodies cannot be copied.
         assert(0);
@@ -82,7 +81,7 @@ namespace ai
         return _Ray()->GetDirection();
     }
 
-    void RayBody::SetDirection(const CVector& direction)
+    void RayBody::SetDirection(CVector const& direction)
     {
         // Declared in the PDB but never emitted in the shipped build (always inlined).
         _Ray()->SetDirection(direction);
@@ -95,7 +94,7 @@ namespace ai
         assert(0);
     }
 
-    const ai::Ray* RayBody::_Ray() const
+    ai::Ray const* RayBody::_Ray() const
     {
         // Declared in the PDB but never emitted in the shipped build (always inlined).
         return static_cast<Ray const*>(static_cast<GeomTransform const*>(m_pGeoms.front())->GetGeom());
@@ -106,4 +105,4 @@ namespace ai
         // Declared in the PDB but never emitted in the shipped build (always inlined).
         return static_cast<Ray*>(m_pGeoms.front()->GetGeom());
     }
-}
+}  // namespace ai

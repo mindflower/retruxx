@@ -61,4 +61,4 @@ namespace m3d
     {
         return new StaticModelsServer;
     }
-}
+}  // namespace m3d

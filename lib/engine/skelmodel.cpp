@@ -121,7 +121,9 @@ namespace m3d
             float const nx = e1z * e2y - e1y * e2z;
             // The length is summed on the x87 stack; FLT_EPSILON keeps a degenerate face from dividing by zero.
             float const inv = static_cast<float>(
-                1.0 / sqrt(static_cast<double>(nz) * nz + static_cast<double>(ny) * ny + static_cast<double>(nx) * nx +
+                1.0 /
+                sqrt(
+                    static_cast<double>(nz) * nz + static_cast<double>(ny) * ny + static_cast<double>(nx) * nx +
                     1.1920929e-7f));
             m_faceNormals[i].x = inv * nx;
             m_faceNormals[i].y = inv * ny;
@@ -712,7 +714,8 @@ namespace m3d
         // Per mesh, per vertex: the bone influences (an influence component points at its mesh's list).
         retruxx::vector<retruxx::vector<retruxx::vector<DInfluence>>> Infls(header.NumberOfMeshes);
         // The vertex data read so far; freed once Convert has copied it. Influence lists are owned by Infls.
-        auto const freeComponents = [&Meshes]() {
+        auto const freeComponents = [&Meshes]()
+        {
             for (DMesh& mesh : Meshes)
             {
                 for (unsigned int c = 0; c < mesh.VerticesComponents.size(); ++c)
@@ -733,7 +736,9 @@ namespace m3d
             memcpy(&mesh.Header, Data, sizeof(DRAFT_GeometryHeader));
             Data += sizeof(DRAFT_GeometryHeader);
             mesh.VertexComponentHeaders.resize(mesh.Header.NumberOfVertexComponents);
-            memcpy(mesh.VertexComponentHeaders.data(), Data,
+            memcpy(
+                mesh.VertexComponentHeaders.data(),
+                Data,
                 sizeof(DRAFT_VertexComponent) * mesh.Header.NumberOfVertexComponents);
             Data += sizeof(DRAFT_VertexComponent) * mesh.Header.NumberOfVertexComponents;
             if (!DefineVertexType(mesh.VertexComponentHeaders, mesh.VertType, mesh.VertTypeSize))
@@ -824,7 +829,8 @@ namespace m3d
                 if (anim.Info.NumberOfChanges)
                 {
                     anim.HierarchyChanges.resize(anim.Info.NumberOfChanges, DRAFT_HierarchyChange());
-                    memcpy(anim.HierarchyChanges.data(), Data, sizeof(DRAFT_HierarchyChange) * anim.Info.NumberOfChanges);
+                    memcpy(
+                        anim.HierarchyChanges.data(), Data, sizeof(DRAFT_HierarchyChange) * anim.Info.NumberOfChanges);
                     Data += sizeof(DRAFT_HierarchyChange) * anim.Info.NumberOfChanges;
                 }
                 anim.AnimationKeys.resize(anim.Info.FramesNumber);
@@ -1303,11 +1309,13 @@ namespace m3d
     namespace
     {
         // The VertexType names, as the shaders' techniques list them.
-        char const* const vertexTypesNames[] = {"VERTEX_XYZ", "VERTEX_XYZT1", "VERTEX_XYZC", "VERTEX_XYZWC",
-            "VERTEX_XYZWCT1", "VERTEX_XYZNC", "VERTEX_XYZCT1", "VERTEX_XYZNT1", "VERTEX_XYZNCT1", "VERTEX_XYZNCT2",
-            "VERTEX_XYZNT2", "VERTEX_XYZNT3", "VERTEX_XYZCT1_UVW", "VERTEX_XYZCT2_UVW", "VERTEX_XYZCT2",
-            "VERTEX_XYZNT1T", "VERTEX_XYZNCT1T", "VERTEX_XYZNCT1_UV2_S1", "VERTEX_STREAM_UV_S1", "VERTEX_WATERTEST",
-            "VERTEX_GRASSTEST", "VERTEX_IMPOSTORTEST", "VERTEX_YNI", "VERTEX_XYZT1I"};
+        char const* const vertexTypesNames[] = {
+            "VERTEX_XYZ",        "VERTEX_XYZT1",          "VERTEX_XYZC",         "VERTEX_XYZWC",
+            "VERTEX_XYZWCT1",    "VERTEX_XYZNC",          "VERTEX_XYZCT1",       "VERTEX_XYZNT1",
+            "VERTEX_XYZNCT1",    "VERTEX_XYZNCT2",        "VERTEX_XYZNT2",       "VERTEX_XYZNT3",
+            "VERTEX_XYZCT1_UVW", "VERTEX_XYZCT2_UVW",     "VERTEX_XYZCT2",       "VERTEX_XYZNT1T",
+            "VERTEX_XYZNCT1T",   "VERTEX_XYZNCT1_UV2_S1", "VERTEX_STREAM_UV_S1", "VERTEX_WATERTEST",
+            "VERTEX_GRASSTEST",  "VERTEX_IMPOSTORTEST",   "VERTEX_YNI",          "VERTEX_XYZT1I"};
 
         // Moves the part of `from` starting at the first of the characters '1', '2' or '3' into `suffix` (only
         // the first one found, trying them in that order).
@@ -1493,7 +1501,9 @@ namespace m3d
         CVector RotateByQuaternion(Quaternion const& q, CVector const& v)
         {
             CMatrix const m = q.ToMatrix();
-            return CVector(v.x * m._11 + v.y * m._21 + v.z * m._31, v.x * m._12 + v.y * m._22 + v.z * m._32,
+            return CVector(
+                v.x * m._11 + v.y * m._21 + v.z * m._31,
+                v.x * m._12 + v.y * m._22 + v.z * m._32,
                 v.x * m._13 + v.y * m._23 + v.z * m._33);
         }
 
@@ -1511,7 +1521,10 @@ namespace m3d
             Quaternion rotation = geom.Rotation;
             if (geom.Type == CYLINDER)
             {
-                Quaternion const turn(static_cast<float>(sin(static_cast<double>(GEOM_PI_4))), 0.0f, 0.0f,
+                Quaternion const turn(
+                    static_cast<float>(sin(static_cast<double>(GEOM_PI_4))),
+                    0.0f,
+                    0.0f,
                     static_cast<float>(cos(static_cast<double>(GEOM_PI_4))));
                 rotation = geom.Rotation * turn;
             }
@@ -1797,7 +1810,11 @@ namespace m3d
     }
 
     void AnimatedModel::AddTexture(
-        unsigned SkinNumber, unsigned MatNum, CStr const& Name, DRAFT_TextureType TexType, unsigned UVSet)
+        unsigned SkinNumber,
+        unsigned MatNum,
+        CStr const& Name,
+        DRAFT_TextureType TexType,
+        unsigned UVSet)
     {
         // RVA 0x7171D0 - the texture is loaded from the name as given; only its file name is stored.
         retruxx::vector<DTextureInfo>& textures = m_Skins[SkinNumber][MatNum].Textures;
@@ -2711,7 +2728,8 @@ namespace m3d
                     pTexInfoBuf[k].uUVSet = mat.Textures[k].UV_Set;
                     strcpy(pTexInfoBuf[k].cFileName, mat.Textures[k].FileName.data());
                 }
-                File.addChunkDataCopy(15u, sizeof(tGamTextureInfo) * GamMaterial.uTextureLayersNumber, pTexInfoBuf.data());
+                File.addChunkDataCopy(
+                    15u, sizeof(tGamTextureInfo) * GamMaterial.uTextureLayersNumber, pTexInfoBuf.data());
             }
         }
 
@@ -2863,7 +2881,8 @@ namespace m3d
     int AnimatedModel::sortBonesFunc(void const* a, void const* b)
     {
         // RVA 0x70A340 - influences by weight, strongest first.
-        float const d = static_cast<Influences::Infl const*>(a)->m_boneWeight - static_cast<Influences::Infl const*>(b)->m_boneWeight;
+        float const d = static_cast<Influences::Infl const*>(a)->m_boneWeight -
+            static_cast<Influences::Infl const*>(b)->m_boneWeight;
         if (d < 0.0f)
         {
             return 1;
@@ -3010,8 +3029,10 @@ namespace m3d
                         DRAFT_VertexComponent const& comp = vchs[c];
                         if (comp.Size > 0)
                         {
-                            memcpy(dst + CompOff(vchs, comp.Type),
-                                static_cast<unsigned char const*>(src.VerticesComponents[c]) + v * comp.Size, comp.Size);
+                            memcpy(
+                                dst + CompOff(vchs, comp.Type),
+                                static_cast<unsigned char const*>(src.VerticesComponents[c]) + v * comp.Size,
+                                comp.Size);
                             continue;
                         }
                         if (comp.Type != INFLUENCES)
@@ -3060,16 +3081,18 @@ namespace m3d
                             M3D_LOG_ERR(CStr("Unknown  component of vertex "));
                             return false;
                         }
-                        memcpy(dst + CompOff(vchs, comp.Type),
-                            static_cast<unsigned char const*>(src.VerticesComponents[c]) + v * comp.Size, comp.Size);
+                        memcpy(
+                            dst + CompOff(vchs, comp.Type),
+                            static_cast<unsigned char const*>(src.VerticesComponents[c]) + v * comp.Size,
+                            comp.Size);
                     }
                 }
             }
 
             for (int v = 0; v < mesh.m_numVertices; ++v)
             {
-                float const* const pos =
-                    reinterpret_cast<float const*>(static_cast<unsigned char const*>(mesh.m_verts) + v * mesh.m_VertexTypeSize);
+                float const* const pos = reinterpret_cast<float const*>(
+                    static_cast<unsigned char const*>(mesh.m_verts) + v * mesh.m_VertexTypeSize);
                 for (int k = 0; k < 3; ++k)
                 {
                     if (m_box.m_box[k] > pos[k])
@@ -3093,7 +3116,9 @@ namespace m3d
             if (!m_bVerification)
             {
                 mesh.m_IbPoolField = M3D_RENDERER->AddIbPoolField(mesh.m_numDrawIndices);
-                memcpy(M3D_RENDERER->LockIbPoolField(mesh.m_IbPoolField), mesh.m_drawIndices,
+                memcpy(
+                    M3D_RENDERER->LockIbPoolField(mesh.m_IbPoolField),
+                    mesh.m_drawIndices,
                     sizeof(unsigned short) * mesh.m_numDrawIndices);
                 M3D_RENDERER->UnlockIbPoolField(mesh.m_IbPoolField);
             }
@@ -3191,7 +3216,8 @@ namespace m3d
                         inf.m_influences[k].m_offsetNormal.y = inv._12 * nx + nz * inv._32 + ny * inv._22;
                         inf.m_influences[k].m_offsetNormal.z = nz * inv._33 + ny * inv._23 + nx * inv._13;
                     }
-                    src = reinterpret_cast<float const*>(reinterpret_cast<unsigned char const*>(src) + mesh.m_VertexTypeSize);
+                    src = reinterpret_cast<float const*>(
+                        reinterpret_cast<unsigned char const*>(src) + mesh.m_VertexTypeSize);
                 }
             }
             else if (mesh.m_meshType == STATIC_MESH)
@@ -3199,7 +3225,9 @@ namespace m3d
                 if (!m_bVerification)
                 {
                     mesh.m_VbPoolField = M3D_RENDERER->AddVbPoolField(mesh.m_VertexType, mesh.m_numDrawVerts);
-                    memcpy(M3D_RENDERER->LockVbPoolField(mesh.m_VbPoolField), mesh.m_drawVerts,
+                    memcpy(
+                        M3D_RENDERER->LockVbPoolField(mesh.m_VbPoolField),
+                        mesh.m_drawVerts,
                         mesh.m_numDrawVerts * mesh.m_VertexTypeSize);
                     M3D_RENDERER->UnlockVbPoolField(mesh.m_VbPoolField);
                 }
@@ -3214,7 +3242,8 @@ namespace m3d
                 retruxx::vector<DRAFT_VertexComponent>& vchs = mesh.m_VCHs;
                 unsigned char const* srcVert = static_cast<unsigned char const*>(mesh.m_drawVerts);
                 unsigned char* dstVert = buffer;
-                auto const rotate = [&inv](float const* v, float* out) {
+                auto const rotate = [&inv](float const* v, float* out)
+                {
                     float const x = v[0];
                     float const y = v[1];
                     float const z = v[2];
@@ -3222,7 +3251,8 @@ namespace m3d
                     out[1] = x * inv._12 + z * inv._32 + y * inv._22;
                     out[2] = inv._23 * y + x * inv._13 + z * inv._33;
                 };
-                for (int v = 0; v < mesh.m_numDrawVerts; ++v, srcVert += mesh.m_VertexTypeSize, dstVert += mesh.m_VertexTypeSize)
+                for (int v = 0; v < mesh.m_numDrawVerts;
+                     ++v, srcVert += mesh.m_VertexTypeSize, dstVert += mesh.m_VertexTypeSize)
                 {
                     float const* const s = reinterpret_cast<float const*>(srcVert);
                     float* const d = reinterpret_cast<float*>(dstVert);
@@ -3241,9 +3271,9 @@ namespace m3d
                     }
                     if (VertCompPresent(vchs, TANGENT))
                     {
-                        VERTEX_COMPONENT const lastTex = VertCompPresent(vchs, TEXTURE3) ? TEXTURE3
-                            : VertCompPresent(vchs, TEXTURE2)                            ? TEXTURE2
-                                                                                         : TEXTURE1;
+                        VERTEX_COMPONENT const lastTex = VertCompPresent(vchs, TEXTURE3) ? TEXTURE3 :
+                            VertCompPresent(vchs, TEXTURE2)                              ? TEXTURE2 :
+                                                                                           TEXTURE1;
                         unsigned int const off = CompOff(vchs, lastTex) + 8;
                         rotate(reinterpret_cast<float const*>(srcVert + off), reinterpret_cast<float*>(dstVert + off));
                     }
@@ -3751,7 +3781,10 @@ namespace m3d
         }
 
         // NOTE: a NaN factor (0 / 0 on a zero fps) clamps to 0.
-        auto const clamp01 = [](float v) { return v >= 0.0f ? (v > 1.0f ? 1.0f : v) : 0.0f; };
+        auto const clamp01 = [](float v)
+        {
+            return v >= 0.0f ? (v > 1.0f ? 1.0f : v) : 0.0f;
+        };
         AnimatedModel::AnimationTransform const* cur = &anim->m_nodesPositions[m_curAnimFrame * anim->m_numNodes];
         AnimatedModel::AnimationTransform const* next = cur;
         float t = 0.0f;

@@ -15,14 +15,14 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
     class Attr
     {
     public:
-        Attr(const m3d::Attr&);
+        Attr(m3d::Attr const&);
         Attr();
-        virtual  ~Attr();
-        static m3d::Attr* __fastcall New(const CStr& ClassName);
+        virtual ~Attr();
+        static m3d::Attr* __fastcall New(CStr const& ClassName);
         static m3d::Attr* __fastcall Factory(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& attr);
         void SetName(CStr name);
         CStr GetName();
@@ -32,7 +32,7 @@ namespace m3d
         void SetState(float Time);
         virtual void ReadFromXmlNode(m3d::cmn::XmlFile*, ref_ptr<m3d::cmn::XmlNode>&) = 0;
         virtual void WriteToXmlNode(m3d::cmn::XmlFile*, ref_ptr<m3d::cmn::XmlNode>&) = 0;
-        virtual void ReadFromProto(const AttrProps& props);
+        virtual void ReadFromProto(AttrProps const& props);
         virtual void WriteToProto(AttrProps& props);
         virtual void InitParticle(m3d::Particle*, float, CMatrix&, bool, float) = 0;
         virtual void InitParticlesList(m3d::ParticlesList*, CMatrix&, bool, float) = 0;
@@ -57,12 +57,16 @@ namespace m3d
     public:
         virtual void ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& pattr) override;
         virtual void WriteToXmlNode(m3d::cmn::XmlFile* xmlFile, ref_ptr<m3d::cmn::XmlNode>& psroot) override;
-        virtual void ReadFromProto(const AttrProps& props) override;
+        virtual void ReadFromProto(AttrProps const& props) override;
         virtual void WriteToProto(AttrProps& props) override;
-        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
+        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
 
     private:
         void SetEmitter(TimeMode mode, float emitSt, float emitFin, float emitRpt);
@@ -96,10 +100,14 @@ namespace m3d
     public:
         virtual void ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& prattr) override;
         virtual void WriteToXmlNode(m3d::cmn::XmlFile* xmlFile, ref_ptr<m3d::cmn::XmlNode>& psroot) override;
-        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
+        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
 
     private:
         void SetEmitter(TimeMode mode, float emitSt, float emitFin, float emitRpt);
@@ -117,10 +125,14 @@ namespace m3d
     public:
         virtual void ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& gattr) override;
         virtual void WriteToXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& psroot) override;
-        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
+        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
     };
 
     class SAttractor : public m3d::Attr
@@ -128,10 +140,14 @@ namespace m3d
     public:
         virtual void ReadFromXmlNode(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& sattr) override;
         virtual void WriteToXmlNode(m3d::cmn::XmlFile* xmlFile, ref_ptr<m3d::cmn::XmlNode>& psroot) override;
-        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff) override;
-        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff) override;
+        virtual void InitParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void InitParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticle(m3d::Particle* pParticle, float Time, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
+        virtual void AffectParticlesList(m3d::ParticlesList* parts, CMatrix& Local, bool Orient, float ForceCoeff)
+            override;
 
     private:
         void SetEmitter(TimeMode mode, float emitSt, float emitFin, float emitRpt);
@@ -142,7 +158,6 @@ namespace m3d
         void GetForce(ForceMode& mode, CoordinatesSystemType& system) const;
     };
 
-
     unsigned int rndGet();
     float rnd(float, float);
 
@@ -150,5 +165,4 @@ namespace m3d
     void CalcForcesPolar(CVector&, Force const (&)[3], float);
     void CalcForcesPolarOrg(CVector&, Force const (&)[3], CVector const&, float);
     CVector CalcForces(CoordinatesSystemType, Force const (&)[3], float, CVector const&);
-}
-
+}  // namespace m3d

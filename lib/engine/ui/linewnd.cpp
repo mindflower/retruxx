@@ -8,7 +8,7 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(LineWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(LineWnd);
 
@@ -163,8 +163,7 @@ namespace m3d
             return 1;
         }
 
-        LineWnd::LineWnd(LineWnd const& lw)
-            : Wnd(lw)
+        LineWnd::LineWnd(LineWnd const& lw) : Wnd(lw)
         {
             // RVA 0x72A280 - the shipped copy constructor builds the Wnd base from
             // rhs and, unlike the default one, leaves m_direction uninitialised and
@@ -181,5 +180,5 @@ namespace m3d
                 m_bounds.height = pane->m_frame[0]->m_barTexWidth;
             }
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

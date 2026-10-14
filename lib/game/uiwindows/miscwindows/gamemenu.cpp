@@ -180,7 +180,7 @@ void GameMenuWnd::RecalcLayout()
         logoRc.y0 = 8.0f;
         logoRc.width = 256.0f;
         logoRc.height = 64.0f;
-        const m3d::rend::TexHandle ico = M3D_APP->m_pInterfaceManager->GetIcoByName("ExMachinaLogo", 0);
+        m3d::rend::TexHandle const ico = M3D_APP->m_pInterfaceManager->GetIcoByName("ExMachinaLogo", 0);
         logoOk = logo->CreateImageWnd(logoRc, ico) != 0;
     }
     if (logoOk)
@@ -198,12 +198,12 @@ void GameMenuWnd::RecalcLayout()
         }
     }
 
-    const float baseX0 = frameW + 18.0f;
-    const float baseWidth = GetBounds().width - baseX0 * 2.0f;
+    float const baseX0 = frameW + 18.0f;
+    float const baseWidth = GetBounds().width - baseX0 * 2.0f;
     float y = 88.0f;  // running vertical cursor
 
     // --- One widget per visible child MenuItem -----------------------------
-    const auto& items = m_curItem->m_children;
+    auto const& items = m_curItem->m_children;
     for (size_t j = 0; j < items.size(); ++j)
     {
         MenuItem* item = items[j];
@@ -241,9 +241,8 @@ void GameMenuWnd::RecalcLayout()
         {
             // Shipped style masks: 0xE02 (WS_DISABLE|WS_IS_VISIBLE|WS_TEXT_CENTERED)
             // for disabled items, WS_EMPTY otherwise.
-            unsigned flags = item->m_disabled
-                                 ? (m3d::ui::WS_DISABLE | m3d::ui::WS_IS_VISIBLE | m3d::ui::WS_TEXT_CENTERED)
-                                 : 0u;
+            unsigned flags =
+                item->m_disabled ? (m3d::ui::WS_DISABLE | m3d::ui::WS_IS_VISIBLE | m3d::ui::WS_TEXT_CENTERED) : 0u;
 
             switch (item->m_ctrlType)
             {
@@ -254,9 +253,9 @@ void GameMenuWnd::RecalcLayout()
             case CT_CENTERED_LABEL:
             {
                 flags |= m3d::ui::WS_NOFRAME | m3d::ui::WS_TRANSPARENT | m3d::ui::WS_IS_VISIBLE |
-                         m3d::ui::WS_TEXT_CENTERED;  // |= 0xF40
-                const CStr label = M3D_APP->GetStringByStringId0(item->m_name);
-                const PointBase<float> sz = GetGfxServer()->MeasureText(label, 0, m3d::TW_NOWRAP, 0.0f);
+                    m3d::ui::WS_TEXT_CENTERED;  // |= 0xF40
+                CStr const label = M3D_APP->GetStringByStringId0(item->m_name);
+                PointBase<float> const sz = GetGfxServer()->MeasureText(label, 0, m3d::TW_NOWRAP, 0.0f);
                 width = sz.x + 2.0f;
                 x0 = (baseWidth - sz.x) * 0.5f + baseX0;
                 height = sz.y;
@@ -290,7 +289,7 @@ void GameMenuWnd::RecalcLayout()
             }
             else if (item->m_ctrlType == CT_LINE)
             {
-                const CStr linePaneName = "PaneLineMenu";
+                CStr const linePaneName = "PaneLineMenu";
                 if (auto* linePane = GetGfxServer()->GetPane(linePaneName))
                 {
                     w->SetPane(linePaneName);
@@ -328,7 +327,7 @@ void GameMenuWnd::RecalcLayout()
     // --- "Back" button (skip at the death level and at the root level) -------
     if (CStr::my_strcmp(m_curItem->m_name.c_str(), DEATH_LEVEL_NAME.c_str()) && m_curItem != m_minItem)
     {
-        const CStr backLabel = M3D_APP->GetStringByStringId0("Back");
+        CStr const backLabel = M3D_APP->GetStringByStringId0("Back");
         if (!m_curItem->m_children.empty())
         {
             y += 32.0f;
@@ -353,7 +352,7 @@ void GameMenuWnd::RecalcLayout()
     {
         if (child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
         {
-            const BoundsBase<float> cb = static_cast<m3d::ui::Wnd*>(child)->GetBounds();
+            BoundsBase<float> const cb = static_cast<m3d::ui::Wnd*>(child)->GetBounds();
             if (cb.y0 + cb.height > contentBottom)
             {
                 contentBottom = cb.y0 + cb.height;

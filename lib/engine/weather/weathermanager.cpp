@@ -22,12 +22,12 @@ namespace m3d
 {
     namespace
     {
-        const char* m_globalTimeParamsNames[4] = { "sunriseTime", "dayTime", "sunsetTime", "nightTime" };
+        char const* m_globalTimeParamsNames[4] = {"sunriseTime", "dayTime", "sunsetTime", "nightTime"};
 
         // The sky dome is a square grid of this many vertices per side (CreateSky, SetupSkyParams,
         // RenderWeather).
         int const SKY_GRID = 20;
-    }
+    }  // namespace
 
     int WeatherManager::DeleteWeather(unsigned iWeatherIdx)
     {
@@ -197,8 +197,8 @@ namespace m3d
             }
         }
 
-        m_cloudsOffset += static_cast<float>(M3D_KERNEL->GetTimer().GetLastFrameTime()) * 0.001f
-            * m_currentWeather->m_cloudsSpeed[m_curDayTime];
+        m_cloudsOffset += static_cast<float>(M3D_KERNEL->GetTimer().GetLastFrameTime()) * 0.001f *
+            m_currentWeather->m_cloudsSpeed[m_curDayTime];
 
         memcpy(M3D_RENDERER->LockVb(m_vbSky, 0, 0, 0), tmp, sizeof(tmp));
         M3D_RENDERER->UnlockVb(m_vbSky);
@@ -227,7 +227,10 @@ namespace m3d
         // 0xFFFFFF00 seed: (x|0xFFFFFF00)<<8 leaves 0xFFFFxx00, then |y and
         // <<8 gives 0xFFxxyy00, then |z. The channels are OR-ed, not masked,
         // so a component outside 0..255 bleeds into the neighbouring byte.
-        return (int)this->m_currentWeather->m_currentColors[ci].z | (((int)this->m_currentWeather->m_currentColors[ci].y | (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8)) << 8);
+        return (int)this->m_currentWeather->m_currentColors[ci].z |
+            (((int)this->m_currentWeather->m_currentColors[ci].y |
+              (((int)this->m_currentWeather->m_currentColors[ci].x | 0xFFFFFF00) << 8))
+             << 8);
     }
 
     void WeatherManager::ChangeLightmapTexture()
@@ -321,7 +324,6 @@ namespace m3d
         }
         if (!this->m_bEdit)
         {
-        
             M3D_APP->ReloadPostEffects();
             M3D_APP->AddPostEffect(this->m_currentWeather->m_PostEffectName[this->m_curDayTime], 0.0);
         }
@@ -454,7 +456,8 @@ namespace m3d
             rootXmlFile = g_Kernel->CreateXmlFile();
             if (!rootXmlFile->Read(*fileStream))
             {
-                M3D_LOG_INFO("WeatherManager: error in parsing: " + CStr(name) + " (" + CStr(rootXmlFile->GetError()) + ")");
+                M3D_LOG_INFO(
+                    "WeatherManager: error in parsing: " + CStr(name) + " (" + CStr(rootXmlFile->GetError()) + ")");
                 return 0;
             }
             fileStream->Close();
@@ -483,12 +486,12 @@ namespace m3d
             }
 
             m3d::SafeStrAttrib(m_StarsTextureName, weatherCommonSetsNode, "starsTexture");
-            m_starsTexture = M3D_RENDERER->AddTexture(M3D_KERNEL->GetEngineCfg().m_weather_PathToTextures.GetS() + m_StarsTextureName, 0);
+            m_starsTexture = M3D_RENDERER->AddTexture(
+                M3D_KERNEL->GetEngineCfg().m_weather_PathToTextures.GetS() + m_StarsTextureName, 0);
         }
 
         {
-
-            const auto weatherDetailName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_weatherDetailName);
+            auto const weatherDetailName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_weatherDetailName);
             scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
             if (!fileStream->Open(weatherDetailName.c_str(), fs::IStream::OPEN_READ))
             {
@@ -499,7 +502,8 @@ namespace m3d
             ref_ptr xmlFile = g_Kernel->CreateXmlFile();
             if (!xmlFile->Read(*fileStream))
             {
-                M3D_LOG_INFO("WeatherManager: error in parsing: " + weatherDetailName + " (" + CStr(xmlFile->GetError()) + ")");
+                M3D_LOG_INFO(
+                    "WeatherManager: error in parsing: " + weatherDetailName + " (" + CStr(xmlFile->GetError()) + ")");
                 return 0;
             }
             fileStream->Close();
@@ -514,14 +518,15 @@ namespace m3d
 
             retruxx::set<CStr> weatherNames;
             auto weatherDetItemNode = xmlFile->CreateNode();
-            for (weatherDetNode->GetFirstChild(weatherDetItemNode, "WeatherItem"); !weatherDetItemNode->IsEmpty(); weatherDetItemNode->GetNextSibling(weatherDetItemNode, "WeatherItem"))
+            for (weatherDetNode->GetFirstChild(weatherDetItemNode, "WeatherItem"); !weatherDetItemNode->IsEmpty();
+                 weatherDetItemNode->GetNextSibling(weatherDetItemNode, "WeatherItem"))
             {
                 weatherNames.insert(weatherDetItemNode->GetAttribute("name"));
             }
 
-
             auto itemNode = rootXmlFile->CreateNode();
-            for (rootNode->GetFirstChild(itemNode, "WeatherItem"); !itemNode->IsEmpty(); itemNode->GetNextSibling(itemNode, "WeatherItem"))
+            for (rootNode->GetFirstChild(itemNode, "WeatherItem"); !itemNode->IsEmpty();
+                 itemNode->GetNextSibling(itemNode, "WeatherItem"))
             {
                 CStr name;
                 m3d::SafeStrAttrib(name, itemNode, "name");
@@ -536,7 +541,9 @@ namespace m3d
                     if (weatherNames.find(name) != weatherNames.end())
                     {
                         m_weatherStorage.push_back(weather);
-                        for (weatherDetNode->GetFirstChild(weatherDetItemNode, "WeatherItem"); !weatherDetItemNode->IsEmpty(); weatherDetItemNode->GetNextSibling(weatherDetItemNode, "WeatherItem"))
+                        for (weatherDetNode->GetFirstChild(weatherDetItemNode, "WeatherItem");
+                             !weatherDetItemNode->IsEmpty();
+                             weatherDetItemNode->GetNextSibling(weatherDetItemNode, "WeatherItem"))
                         {
                             if (weather->m_Name == weatherDetItemNode->GetAttribute("name"))
                             {
@@ -696,4 +703,4 @@ namespace m3d
         M3D_LOG_INFO("Weather with name '" + name + CStr("' doesn't exists!!!"));
         return nullptr;
     }
-}
+}  // namespace m3d

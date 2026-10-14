@@ -6,7 +6,8 @@
 #include <vector>
 #include <math/bounds2d.h>
 
-namespace m3d {
+namespace m3d
+{
     class AIParam;
 }
 
@@ -26,12 +27,20 @@ namespace m3d
             bool m_bCenterX;
             bool m_bCenterY;
             TabItemInfo(TabItemInfo const& rhs);
-            TabItemInfo(CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled,
-                        int data);
+            TabItemInfo(
+                CStr const& caption,
+                CStr const& diz,
+                rend::TexHandle image,
+                rend::TexHandle imageDisabled,
+                int data);
             TabItemInfo();
             TabItemInfo& operator=(TabItemInfo const& rhs);
-            void Set(CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled,
-                     int data);
+            void Set(
+                CStr const& caption,
+                CStr const& diz,
+                rend::TexHandle image,
+                rend::TexHandle imageDisabled,
+                int data);
         };
 
         class TabItem
@@ -73,7 +82,13 @@ namespace m3d
             m3d::ui::TabButtonInfo::DrawStyle m_drawStyle;
             m3d::ui::TabButtonInfo::Alignment m_alignment;
             TabButtonInfo();
-            void SetNormal(float minW, float maxW, float h, float space, m3d::ui::TabButtonInfo::Alignment alignment, float glyphSz);
+            void SetNormal(
+                float minW,
+                float maxW,
+                float h,
+                float space,
+                m3d::ui::TabButtonInfo::Alignment alignment,
+                float glyphSz);
             void SetIzvrat(float w, float h, float space, m3d::ui::TabButtonInfo::Alignment alignment);
         };
 
@@ -107,17 +122,18 @@ namespace m3d
             TabButtonInfo const& GetTabButtonInfo() const;
             void RemoveAllItems();
             static Class* GetBaseClass();
-            virtual void SetClientEdges(std::vector<float, std::allocator<float> > const&);
+            virtual void SetClientEdges(std::vector<float, std::allocator<float>> const&);
             virtual void SetClientEdges(float, float, float, float);
             void SetTabButtonInfo(TabButtonInfo const&);
             virtual Object* Clone();
             int GetItemsCount() const;
             virtual void AdjustWorkWindowRect(Wnd*, TabItemInfo const&) const;
+
         protected:
             int _SetCurSel(int, enum SelectionType);
             PointBase<float> RecalcButtonSize(int);
             virtual void DrawWndText(DrawInfo const&);
-            std::vector<float, std::allocator<float> > _GetClientEdges() const;
+            std::vector<float, std::allocator<float>> _GetClientEdges() const;
             virtual void OnNcPaint(DrawInfo const&, unsigned int);
             virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
             void OnAfterChangeCurSel(int, enum SelectionType);
@@ -140,5 +156,5 @@ namespace m3d
             TabButtonInfo m_buttonInfo;
             AuxInfo m_aif;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

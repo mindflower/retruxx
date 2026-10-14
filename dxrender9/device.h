@@ -39,17 +39,20 @@ class AsmShaderImpl;
 // writers) that other compilands call.
 CStr getD3dFmtStr(D3DFORMAT fmt);
 CStr getD3dErrorStr(HRESULT hr);
-HRESULT SaveSurfaceToTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName, IDirect3DSurface9* pSurface,
-                             int width, int height);
-HRESULT SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName,
-                                      IDirect3DSurface9* pSurface);
+HRESULT SaveSurfaceToTGAFile(
+    IDirect3DDevice9* pD3DDevice,
+    char const* szFileName,
+    IDirect3DSurface9* pSurface,
+    int width,
+    int height);
+HRESULT
+    SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName, IDirect3DSurface9* pSurface);
 
 // The build stamp the resource reports (vb_man_stats, ib_man_stats, texture_man_stats) write. In
 // the original binary each report carries its own compile time, so the original assembled it from
 // __DATE__ and __TIME__. The text follows the stamp of Hard Truck Apocalypse's own dxrender9.dll
 // without its version number.
-#define DXRENDER9_BUILD_STRING \
-    "ExMachina - release version release build (" __DATE__ " " __TIME__ ")"
+#define DXRENDER9_BUILD_STRING "ExMachina - release version release build (" __DATE__ " " __TIME__ ")"
 
 enum TexType
 {
@@ -70,7 +73,9 @@ template<class T>
 class InternalHandle : public T
 {
 public:
-    InternalHandle() {}
+    InternalHandle()
+    {
+    }
 
     int Id() const
     {
@@ -560,7 +565,7 @@ public:
     // IBase
     int DecRef() override;
     int IncRef() override;
-    void* QueryIface(const char* ifaceName) override;
+    void* QueryIface(char const* ifaceName) override;
 
     // ---------------------------------------------------------------- device.cpp
     int Create(void(__fastcall* logFunc)(CStr const&), m3d::Kernel* kernel) override;
@@ -584,14 +589,28 @@ public:
     void ActuateMatrices();
 
     int FindDepthFormat(D3DFORMAT TargetFormat, D3DFORMAT* pDepthStencilFormat, int bpp);
-    int FindDepthFormat(D3DFORMAT& depthFormat, D3DFORMAT TargetFormat, D3DFORMAT const* fmtDepthArray,
-                        int const* fmtDepthArrayBits, int numDepthFmts, int bpp);
-    int FindTexFormat(D3DFORMAT& texFormat, D3DFORMAT TargetFormat, D3DFORMAT const* fmtTextureArray, int const* bits,
-                      int numTextureFmts, int bpp, int usage);
+    int FindDepthFormat(
+        D3DFORMAT& depthFormat,
+        D3DFORMAT TargetFormat,
+        D3DFORMAT const* fmtDepthArray,
+        int const* fmtDepthArrayBits,
+        int numDepthFmts,
+        int bpp);
+    int FindTexFormat(
+        D3DFORMAT& texFormat,
+        D3DFORMAT TargetFormat,
+        D3DFORMAT const* fmtTextureArray,
+        int const* bits,
+        int numTextureFmts,
+        int bpp,
+        int usage);
     int FindSurfaceFormat(D3DFORMAT* pSurfaceFormat, int bpp);
     int FindTextureFormat(D3DFORMAT TargetFormat, int bpp);
-    int FindMultisampleType(D3DFORMAT TargetFormat, D3DFORMAT depthStencilFormat, int multiSamplesNum,
-                            D3DPRESENT_PARAMETERS& d3dpp);
+    int FindMultisampleType(
+        D3DFORMAT TargetFormat,
+        D3DFORMAT depthStencilFormat,
+        int multiSamplesNum,
+        D3DPRESENT_PARAMETERS& d3dpp);
     bool IsMultiSamplingSupported(D3DFORMAT format, D3DMULTISAMPLE_TYPE multiSampleType, DWORD* qualityLevels);
     bool IsMultiSamplingSupported(int numSamples) override;
 
@@ -657,8 +676,18 @@ public:
     void SetStreamFrequency(int stage, StreamDataType streamType, unsigned int frequency);
 
     // Texture coordinate generation
-    void TgEnableSetLinearSt(int stage, float sx, float sz, float tx, float tz, float roty, bool camSpace, float u0,
-                             float v0, float u1, float v1) override;
+    void TgEnableSetLinearSt(
+        int stage,
+        float sx,
+        float sz,
+        float tx,
+        float tz,
+        float roty,
+        bool camSpace,
+        float u0,
+        float v0,
+        float u1,
+        float v1) override;
     void TgEnableSetMatrixSt(int stage, CMatrix const* m, bool camSpace) override;
     void TgEnableSetMatrixStr(int stage, CMatrix const* m, bool camSpace) override;
     void TgEnableSetMatrixStrReflection(int stage, CMatrix const& m, bool camSpace);
@@ -920,9 +949,9 @@ public:
     // ---------------------------------------------------------------- screenshot.cpp
     unsigned int AddTextureFromBackBuffer(TexHandle srcTex) override;
     TexHandle AddTextureFromBackBuffer(int width, int height) override;
-    void ScreenShot(const char* fileName, int width, int height) override;
-    int SaveTextureToTgaFile(TexHandle tex, const char* fileName) override;
-    int SaveTextureToFile(TexHandle tex, const char* fileName, ImageFileFormats format);
+    void ScreenShot(char const* fileName, int width, int height) override;
+    int SaveTextureToTgaFile(TexHandle tex, char const* fileName) override;
+    int SaveTextureToFile(TexHandle tex, char const* fileName, ImageFileFormats format);
 
     // ---------------------------------------------------------------- query.cpp
     IQuery* NewQuery(IQuery::Type type) override;
@@ -932,18 +961,43 @@ public:
     void rstQueryRestoreAfter();
 
     // ---------------------------------------------------------------- mesh.cpp
-    MeshHandle AddMesh(VertexType type, void* verts, int numVerts, unsigned short* tris, int numTris, SubmeshInfo* subs,
-                       int numSubs, int* remap);
+    MeshHandle AddMesh(
+        VertexType type,
+        void* verts,
+        int numVerts,
+        unsigned short* tris,
+        int numTris,
+        SubmeshInfo* subs,
+        int numSubs,
+        int* remap);
     int ReleaseMesh(MeshHandle& id);
     void RenderMesh(MeshHandle const& id, float lod);
     void StartRenderMeshes();
     void FinishRenderMeshes();
-    int OptimizeGeometryToSingleStrip(VertexType vt, void* vertsIn, int numVertsIn, unsigned short* indicesIn,
-                                      int numTrisIn, int zeroBaseIndex, void** vertsOut, int* numVertsOut, int** remap,
-                                      unsigned short** singleStripOut, int* numSingleStripOutIndices) override;
-    int OptimizeGeometryToTriList(VertexType vt, void* vertsIn, int numVertsIn, unsigned short* indicesIn, int numTrisIn,
-                                  int zeroBaseIndex, void** vertsOut, int* numVertsOut, int** remap,
-                                  unsigned short** trisIndices, int* numTrisIndices) override;
+    int OptimizeGeometryToSingleStrip(
+        VertexType vt,
+        void* vertsIn,
+        int numVertsIn,
+        unsigned short* indicesIn,
+        int numTrisIn,
+        int zeroBaseIndex,
+        void** vertsOut,
+        int* numVertsOut,
+        int** remap,
+        unsigned short** singleStripOut,
+        int* numSingleStripOutIndices) override;
+    int OptimizeGeometryToTriList(
+        VertexType vt,
+        void* vertsIn,
+        int numVertsIn,
+        unsigned short* indicesIn,
+        int numTrisIn,
+        int zeroBaseIndex,
+        void** vertsOut,
+        int* numVertsOut,
+        int** remap,
+        unsigned short** trisIndices,
+        int* numTrisIndices) override;
 
     // ---------------------------------------------------------------- fsrt.cpp
     void CreateFsRt();
@@ -960,25 +1014,41 @@ public:
     int RenderToTexStart(TexHandle const& destTex, bool wantZBuffer) override;
     void RenderToTexFinish() override;
     void CopyRenderTargetToTexture(TexHandle const& destTex) override;
-    TexHandle AddRenderTargetTexture(const char* texName, int sx, int sy) override;
+    TexHandle AddRenderTargetTexture(char const* texName, int sx, int sy) override;
     TexHandle GetBufferedTargetTexture(int sz) override;
     TexHandle GetFullFrameFrameBufferTexture() override;
 
     // ---------------------------------------------------------------- drawcalls.cpp
-    int DrawIndexedPrimitive(PrimType Type, unsigned int MinIndex, unsigned int NumVertices, unsigned int StartIndex,
-                             unsigned int PrimitiveCount) override;
+    int DrawIndexedPrimitive(
+        PrimType Type,
+        unsigned int MinIndex,
+        unsigned int NumVertices,
+        unsigned int StartIndex,
+        unsigned int PrimitiveCount) override;
     int DrawPrimitive(PrimType PrimitiveType, unsigned int StartVertex, unsigned int PrimitiveCount) override;
-    int DrawIndexedPrimitiveShader(PrimType Type, unsigned int MinIndex, unsigned int NumVertices,
-                                   unsigned int StartIndex, unsigned int PrimitiveCount) override;
+    int DrawIndexedPrimitiveShader(
+        PrimType Type,
+        unsigned int MinIndex,
+        unsigned int NumVertices,
+        unsigned int StartIndex,
+        unsigned int PrimitiveCount) override;
     int DrawPrimitiveShader(PrimType PrimitiveType, unsigned int StartVertex, unsigned int PrimitiveCount) override;
-    int DrawIndexedPrimitiveEffect(PrimType Type, IEffect* effect, unsigned int MinIndex, unsigned int NumVertices,
-                                   unsigned int StartIndex, unsigned int PrimitiveCount) override;
-    int DrawPrimitiveEffect(PrimType PrimitiveType, IEffect* effect, unsigned int StartVertex,
-                            unsigned int PrimitiveCount) override;
+    int DrawIndexedPrimitiveEffect(
+        PrimType Type,
+        IEffect* effect,
+        unsigned int MinIndex,
+        unsigned int NumVertices,
+        unsigned int StartIndex,
+        unsigned int PrimitiveCount) override;
+    int DrawPrimitiveEffect(
+        PrimType PrimitiveType,
+        IEffect* effect,
+        unsigned int StartVertex,
+        unsigned int PrimitiveCount) override;
 
     // ---------------------------------------------------------------- texture_man.cpp
     TexHandle AddTexture(CStr const& filename, unsigned int flags) override;
-    TexHandle AddDynamicTexture(const char* texName, int sx, int sy, unsigned int format) override;
+    TexHandle AddDynamicTexture(char const* texName, int sx, int sy, unsigned int format) override;
     int ReloadTextures() override;
     int SetTexture(int stage, TexHandle const& id, long double tsc) override;  // original: float tsc
     void SetWhiteTexture(int stage) override;
@@ -990,8 +1060,13 @@ public:
     int ReleaseTexture(TexHandle& id) override;
     void SetTextureParameter(TexHandle const& id, TexParam param, unsigned int value) override;
     int GetTextureName(TexHandle const& id, CStr& name) override;
-    int UploadTexImage(TexHandle const& id, unsigned int sx, unsigned int sy, unsigned char* bits,
-                       TexDynFormat incomingFormat, int mipLevel) override;
+    int UploadTexImage(
+        TexHandle const& id,
+        unsigned int sx,
+        unsigned int sy,
+        unsigned char* bits,
+        TexDynFormat incomingFormat,
+        int mipLevel) override;
     void* LockTexture(TexHandle const& id, TexDynFormat incomingFormat, int& pitch, int mipLevel) override;
     void UnlockTexture(TexHandle const& id) override;
     int DownloadTexImageRgba8888(unsigned int* dstBits, TexHandle const& tex) override;
@@ -1014,7 +1089,7 @@ public:
 
     // ---------------------------------------------------------------- texture_man_stats.cpp
     void UpdateTexMemStats();
-    bool ReportTexturesInfo(const char* fileName) override;
+    bool ReportTexturesInfo(char const* fileName) override;
 
     // ---------------------------------------------------------------- vb_man.cpp
     VbHandle AddVb(VertexType tvert, int vertcount, CStr const& vbName, unsigned int flags) override;
@@ -1039,7 +1114,7 @@ public:
 
     // ---------------------------------------------------------------- vb_man_stats.cpp
     void UpdateVBMemStats();
-    bool ReportVbsInfo(const char* fileName) override;
+    bool ReportVbsInfo(char const* fileName) override;
 
     // ---------------------------------------------------------------- ib_man.cpp
     IbHandle AddIb(int indexcount, bool dyn) override;
@@ -1060,21 +1135,24 @@ public:
 
     // ---------------------------------------------------------------- ib_man_stats.cpp
     void UpdateIBMemStats();
-    bool ReportIbsInfo(const char* fileName) override;
+    bool ReportIbsInfo(char const* fileName) override;
 
     // ---------------------------------------------------------------- shaders/shaders.cpp
-    void SetVsFloatConst(unsigned int RegisterIndex, const float* pConstantData, unsigned int RegisterCount) override;
-    void SetVsIntConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount) override;
-    void SetVsBoolConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount) override;
-    void SetPsFloatConst(unsigned int RegisterIndex, const float* pConstantData, unsigned int RegisterCount) override;
-    void SetPsIntConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount) override;
-    void SetPsBoolConst(unsigned int RegisterIndex, const int* pConstantData, unsigned int RegisterCount) override;
-    IAsmShader* NewAsmShader(const char* fileName, IAsmShader::Type type) override;
-    IHlslShader* NewHlslShader(const char* fileName, const char* entryFunc, IHlslShader::Profile profile,
-                               std::vector<CompileParam> const& compileParams);
-    IHlslShader* NewHlslShader(const char* fileName, const char* entryFunc, IHlslShader::Profile profile) override;
-    IEffect* NewEffect(const char* fileName, bool bApplyGlobalParams, std::vector<CompileParam> const& compileParams);
-    IEffect* NewEffect(const char* fileName, bool bApplyGlobalParams) override;
+    void SetVsFloatConst(unsigned int RegisterIndex, float const* pConstantData, unsigned int RegisterCount) override;
+    void SetVsIntConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount) override;
+    void SetVsBoolConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount) override;
+    void SetPsFloatConst(unsigned int RegisterIndex, float const* pConstantData, unsigned int RegisterCount) override;
+    void SetPsIntConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount) override;
+    void SetPsBoolConst(unsigned int RegisterIndex, int const* pConstantData, unsigned int RegisterCount) override;
+    IAsmShader* NewAsmShader(char const* fileName, IAsmShader::Type type) override;
+    IHlslShader* NewHlslShader(
+        char const* fileName,
+        char const* entryFunc,
+        IHlslShader::Profile profile,
+        std::vector<CompileParam> const& compileParams);
+    IHlslShader* NewHlslShader(char const* fileName, char const* entryFunc, IHlslShader::Profile profile) override;
+    IEffect* NewEffect(char const* fileName, bool bApplyGlobalParams, std::vector<CompileParam> const& compileParams);
+    IEffect* NewEffect(char const* fileName, bool bApplyGlobalParams) override;
     bool ReloadShaders() override;
     void AddChangeShaderMacro(ShaderMacro const* macro) override;
     void DeleteShaderMacro(CStr const* macroName) override;
@@ -1092,10 +1170,10 @@ public:
     void saveShadersMacros();
 
     // ---------------------------------------------------------------- shaders/effects/effect_strings.cpp
-    const char* EffectParameterToString(IEffect::Parameter p) override;
-    IEffect::Parameter StringToEffectParameter(const char* str) override;
-    const char* CompileParamToString(CompileParam p);
-    CompileParam StringToCompileParam(const char* str);
+    char const* EffectParameterToString(IEffect::Parameter p) override;
+    IEffect::Parameter StringToEffectParameter(char const* str) override;
+    char const* CompileParamToString(CompileParam p);
+    CompileParam StringToCompileParam(char const* str);
 };
 
 // ------------------------------------------------------------------------------------------------
@@ -1126,7 +1204,9 @@ inline CDevice::CTexMap::CTexMap()
     m_refs = 0;
 }
 
-inline CDevice::CTexMap::~CTexMap() {}
+inline CDevice::CTexMap::~CTexMap()
+{
+}
 
 // orig 0x60cbd0 device.h:242
 inline void CDevice::CTexMap::freeTex()
@@ -1160,7 +1240,9 @@ inline CDevice::CTexture::CTexture()
 
 inline CDevice::CTexture::CTexture(CTexture const& that) = default;
 
-inline CDevice::CTexture::~CTexture() {}
+inline CDevice::CTexture::~CTexture()
+{
+}
 
 // orig 0x641e80 device.h:303 - a reference on the texture is a reference on each of its maps.
 inline int CDevice::CTexture::addRef()
@@ -1192,8 +1274,7 @@ inline CDevice::ShaderIdData::ShaderIdData(CStr const& fname, std::vector<Compil
 }
 
 // orig 0x63a540 device.h:1150
-inline CDevice::MacroData::MacroData() :
-    userDefined(false)
+inline CDevice::MacroData::MacroData() : userDefined(false)
 {
 }
 

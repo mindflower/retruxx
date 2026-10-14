@@ -64,4 +64,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be cloned\"");
         return nullptr;
     }
-}
+}  // namespace ai

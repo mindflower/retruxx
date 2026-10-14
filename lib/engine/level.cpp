@@ -31,16 +31,16 @@ namespace
     // "b2 b1 b0" of a colour's low three bytes, as the level file stores it.
     CStr ColorToString(unsigned int color)
     {
-        return CStr(static_cast<int>((color >> 16) & 0xFF)) + CStr(" ") + CStr(static_cast<int>((color >> 8) & 0xFF))
-            + CStr(" ") + CStr(static_cast<int>(color & 0xFF));
+        return CStr(static_cast<int>((color >> 16) & 0xFF)) + CStr(" ") + CStr(static_cast<int>((color >> 8) & 0xFF)) +
+            CStr(" ") + CStr(static_cast<int>(color & 0xFF));
     }
-}
+}  // namespace
 
 namespace m3d
 {
     RT_CLASS_EXPORTS_BEGIN(Level)
-        RT_CLASS_EXPORT(Level, m3d::METHOD, GetLandSize, "", "", "")
-        RT_CLASS_EXPORT(Level, m3d::METHOD, GetLevelName, "", "", "")
+    RT_CLASS_EXPORT(Level, m3d::METHOD, GetLandSize, "", "", "")
+    RT_CLASS_EXPORT(Level, m3d::METHOD, GetLevelName, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(Level);
 
@@ -519,8 +519,7 @@ namespace m3d
         return 0;
     }
 
-    Level::Level(Level const& rhs)
-        : Object()
+    Level::Level(Level const& rhs) : Object()
     {
         // RVA 0x78B680
         // NOTE: nothing is copied: the strings start empty and the numbers uninitialized, so Clone gives a blank
@@ -546,4 +545,4 @@ namespace m3d
         this->waterlevel = 0.0;
         this->m_baseWaterLevel = 0.0;
     }
-}
+}  // namespace m3d

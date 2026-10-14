@@ -191,7 +191,14 @@ namespace ai
         }
     }
 
-    void ProcessManager::PostMessageA(int eventId, int recipientObjId, int senderObjId, float timeOut, m3d::AIParam param1, m3d::AIParam param2, int framesToPass)
+    void ProcessManager::PostMessageA(
+        int eventId,
+        int recipientObjId,
+        int senderObjId,
+        float timeOut,
+        m3d::AIParam param1,
+        m3d::AIParam param2,
+        int framesToPass)
     {
         if (recipientObjId == -1)
         {
@@ -306,4 +313,4 @@ namespace ai
             M3D_ASSERT(GetEventName((eGameEvent)eventId) != STR_UNKNOWN);
         }
     }
-}
+}  // namespace ai

@@ -47,11 +47,7 @@ namespace m3d
         }
     }
 
-    AIParam::AIParam(CVector const& pos) :
-        Type(AIPARAM_VECTOR),
-        x(pos.x),
-        y(pos.y),
-        z(pos.z)
+    AIParam::AIParam(CVector const& pos) : Type(AIPARAM_VECTOR), x(pos.x), y(pos.y), z(pos.z)
     {
     }
     AIParam::AIParam(CVector2 const& range)
@@ -64,38 +60,26 @@ namespace m3d
         z = range.y;
     }
 
-    AIParam::AIParam(retruxx::vector<int> const& list) :
-        Type(AIPARAM_ID_LIST)
+    AIParam::AIParam(retruxx::vector<int> const& list) : Type(AIPARAM_ID_LIST)
     {
         m_NumList = new retruxx::vector<int>(list);
     }
 
-    AIParam::AIParam(CStr const& str) :
-        Type(AIPARAM_STRING)
+    AIParam::AIParam(CStr const& str) : Type(AIPARAM_STRING)
     {
         m_Str = new CStr(str);
     }
 
-    AIParam::AIParam(int const& pid) :
-        Type(AIPARAM_ID),
-        id(pid)
+    AIParam::AIParam(int const& pid) : Type(AIPARAM_ID), id(pid)
     {
     }
 
-    AIParam::AIParam(float const& value) :
-        Type(AIPARAM_FLOAT),
-        Value(value)
+    AIParam::AIParam(float const& value) : Type(AIPARAM_FLOAT), Value(value)
     {
     }
 
-    AIParam::AIParam(Quaternion const& pos) :
-        Type(AIPARAM_QUATERNION),
-        x(pos.x),
-        y(pos.y),
-        z(pos.z),
-        w(pos.w)
+    AIParam::AIParam(Quaternion const& pos) : Type(AIPARAM_QUATERNION), x(pos.x), y(pos.y), z(pos.z), w(pos.w)
     {
-
     }
 
     AIParam::AIParam()
@@ -174,12 +158,12 @@ namespace m3d
 
     CStr AIParam::GetAsStr() const
     {
-        switch(Type)
+        switch (Type)
         {
         case AIPARAM_UNDEFINE:
         {
             return {};
-	    }
+        }
         case AIPARAM_VECTOR:
         {
             CStr res;
@@ -238,7 +222,7 @@ namespace m3d
             return res;
         }
         default:
-        	return {};
+            return {};
         }
     }
 
@@ -282,15 +266,32 @@ namespace m3d
         char const* typeName = "AIPARAM_UNDEFINE";
         switch (Type)
         {
-        case AIPARAM_VECTOR: typeName = "AIPARAM_VECTOR"; break;
-        case AIPARAM_QUATERNION: typeName = "AIPARAM_QUATERNION"; break;
-        case AIPARAM_ID: typeName = "AIPARAM_ID"; break;
-        case AIPARAM_FLOAT: typeName = "AIPARAM_FLOAT"; break;
-        case AIPARAM_STRING: typeName = "AIPARAM_STRING"; break;
-        case AIPARAM_ID_LIST: typeName = "AIPARAM_ID_LIST"; break;
-        case AIPARAM_STRING_LIST: typeName = "AIPARAM_STRING_LIST"; break;
-        case AIPARAM_RANGE: typeName = "AIPARAM_RANGE"; break;
-        default: break;
+        case AIPARAM_VECTOR:
+            typeName = "AIPARAM_VECTOR";
+            break;
+        case AIPARAM_QUATERNION:
+            typeName = "AIPARAM_QUATERNION";
+            break;
+        case AIPARAM_ID:
+            typeName = "AIPARAM_ID";
+            break;
+        case AIPARAM_FLOAT:
+            typeName = "AIPARAM_FLOAT";
+            break;
+        case AIPARAM_STRING:
+            typeName = "AIPARAM_STRING";
+            break;
+        case AIPARAM_ID_LIST:
+            typeName = "AIPARAM_ID_LIST";
+            break;
+        case AIPARAM_STRING_LIST:
+            typeName = "AIPARAM_STRING_LIST";
+            break;
+        case AIPARAM_RANGE:
+            typeName = "AIPARAM_RANGE";
+            break;
+        default:
+            break;
         }
 
         OwnNode->SetAttribute("GAIParam_Type", typeName);
@@ -367,8 +368,8 @@ namespace m3d
         case 2:
             if (isNumeric(tokens[0]) && isNumeric(tokens[1]))
             {
-                *this = CVector2(
-                    static_cast<float>(atof(tokens[0].c_str())), static_cast<float>(atof(tokens[1].c_str())));
+                *this =
+                    CVector2(static_cast<float>(atof(tokens[0].c_str())), static_cast<float>(atof(tokens[1].c_str())));
                 return;
             }
             break;
@@ -376,8 +377,10 @@ namespace m3d
         case 3:
             if (isNumeric(tokens[0]) && isNumeric(tokens[1]) && isNumeric(tokens[2]))
             {
-                *this = CVector(static_cast<float>(atof(tokens[0].c_str())),
-                    static_cast<float>(atof(tokens[1].c_str())), static_cast<float>(atof(tokens[2].c_str())));
+                *this = CVector(
+                    static_cast<float>(atof(tokens[0].c_str())),
+                    static_cast<float>(atof(tokens[1].c_str())),
+                    static_cast<float>(atof(tokens[2].c_str())));
                 return;
             }
             break;
@@ -414,12 +417,11 @@ namespace m3d
                 return true;
 
             case AIPARAM_VECTOR:
-                return fabs(with.x - x) < epsilon && fabs(with.y - y) < epsilon
-                    && fabs(with.z - z) < epsilon;
+                return fabs(with.x - x) < epsilon && fabs(with.y - y) < epsilon && fabs(with.z - z) < epsilon;
 
             case AIPARAM_QUATERNION:
-                return fabs(with.x - x) < epsilon && fabs(with.y - y) < epsilon
-                    && fabs(with.z - z) < epsilon && fabs(with.w - w) < epsilon;
+                return fabs(with.x - x) < epsilon && fabs(with.y - y) < epsilon && fabs(with.z - z) < epsilon &&
+                    fabs(with.w - w) < epsilon;
 
             case AIPARAM_RANGE:
                 // A range keeps its second value in z, so y is skipped.
@@ -957,7 +959,7 @@ namespace m3d
         {
             std::vector<CStr> tokens;
             m3d::Tokenize(m_Str, tokens, "(), ;\t");
-            const auto size = tokens.size();
+            auto const size = tokens.size();
             auto vec = (CVector*)retVal;
             // Components with no token keep these, so "1 2" comes back as (1, 2, 0).
             vec->x = 0.0f;
@@ -982,7 +984,7 @@ namespace m3d
         {
             std::vector<CStr> tokens;
             m3d::Tokenize(m_Str, tokens, "(), ;\t");
-            const auto size = tokens.size();
+            auto const size = tokens.size();
             auto vec = (Quaternion*)retVal;
             vec->x = 0.0f;
             vec->y = 0.0f;
@@ -1012,7 +1014,7 @@ namespace m3d
         {
             std::vector<CStr> tokens;
             m3d::Tokenize(m_Str, tokens, "(), ;\t");
-            const auto size = tokens.size();
+            auto const size = tokens.size();
             auto range = (CVector2*)retVal;
             range->x = 0.0f;
             range->y = 0.0f;
@@ -1167,4 +1169,4 @@ namespace m3d
         Init();
         Type = AIPARAM_UNDEFINE;
     }
-}
+}  // namespace m3d

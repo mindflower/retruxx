@@ -13,8 +13,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 class PostEffect;
 
@@ -22,23 +22,23 @@ class PostEffectManager : public m3d::IDeviceResetCallback
 {
 public:
     PostEffectManager();
-    virtual  ~PostEffectManager();
+    virtual ~PostEffectManager();
     bool Reload();
     void Destroy();
     bool Initialize();
-    bool GetParam(const CStr& effectName, float& effParam);
-    bool SetParam(const CStr& effectName, float effParam);
-    bool AddEffect(const CStr& effName, float effParam, unsigned int seqenceNumber);
-    bool KillEffect(const CStr& effName);
+    bool GetParam(CStr const& effectName, float& effParam);
+    bool SetParam(CStr const& effectName, float effParam);
+    bool AddEffect(CStr const& effName, float effParam, unsigned int seqenceNumber);
+    bool KillEffect(CStr const& effName);
     virtual void OnBeforeDeviceReset() override;
-    virtual const char* GetCallbackName() const override;
+    virtual char const* GetCallbackName() const override;
     virtual void OnAfterDeviceReset() override;
     void Render(bool isBackgroundTextureUsing);
     void UnregisterEffect(PostEffect* pEffect);
 
 private:
     void InitShaders();
-    void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
     m3d::rend::TexHandle g_texRtCopy;
     m3d::rend::TexHandle g_tex1;
     m3d::rend::TexHandle g_tex2;
@@ -83,31 +83,40 @@ private:
     float m_FilmSpeed[3];
     float m_FilmShift[3];
 
-    using VarList = std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*> > >;
+    using VarList = std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*>>>;
 
 private:
-    std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*> > > m_varList;
+    std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*>>> m_varList;
 
-    using EffectsList = std::list<PostEffect*, std::allocator<PostEffect*> >;
-
-private:
-    std::list<PostEffect*, std::allocator<PostEffect*> > m_unregList;
-    std::list<PostEffect*, std::allocator<PostEffect*> > m_effectList;
-
-    using ModelsList = std::vector<PostEffectModel*, std::allocator<PostEffectModel*> >;
+    using EffectsList = std::list<PostEffect*, std::allocator<PostEffect*>>;
 
 private:
-    std::vector<PostEffectModel*, std::allocator<PostEffectModel*> > m_models;
+    std::list<PostEffect*, std::allocator<PostEffect*>> m_unregList;
+    std::list<PostEffect*, std::allocator<PostEffect*>> m_effectList;
+
+    using ModelsList = std::vector<PostEffectModel*, std::allocator<PostEffectModel*>>;
+
+private:
+    std::vector<PostEffectModel*, std::allocator<PostEffectModel*>> m_models;
 
     struct Sequence
     {
-        std::vector<PostEffectModel*, std::allocator<PostEffectModel*> > m_list;
+        std::vector<PostEffectModel*, std::allocator<PostEffectModel*>> m_list;
         bool m_loop;
         bool m_inUse;
     };
 
-    using SequenceMap = std::map<CStr, PostEffectManager::Sequence, std::less<CStr>, std::allocator<std::pair<CStr const, PostEffectManager::Sequence> > >;
+    using SequenceMap = std::map<
+        CStr,
+        PostEffectManager::Sequence,
+        std::less<CStr>,
+        std::allocator<std::pair<CStr const, PostEffectManager::Sequence>>>;
 
 private:
-    std::map<CStr, PostEffectManager::Sequence, std::less<CStr>, std::allocator<std::pair<CStr const, PostEffectManager::Sequence> > > m_sequence;
+    std::map<
+        CStr,
+        PostEffectManager::Sequence,
+        std::less<CStr>,
+        std::allocator<std::pair<CStr const, PostEffectManager::Sequence>>>
+        m_sequence;
 };

@@ -3,9 +3,9 @@
 
 namespace m3d
 {
-	struct Class;
-	class Object;
-}
+    struct Class;
+    class Object;
+}  // namespace m3d
 
 namespace ai
 {
@@ -23,6 +23,9 @@ namespace ai
         static void Release();
         static int CollideObjs(m3d::Object*, m3d::Object*, dContact*, unsigned int&);
         static bool MustCheckForCollision(m3d::Object*, m3d::Object*);
-        static void RegisterCollider(m3d::Class*, m3d::Class*, int(*)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool));
+        static void RegisterCollider(
+            m3d::Class*,
+            m3d::Class*,
+            int (*)(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool));
     };
-}
+}  // namespace ai

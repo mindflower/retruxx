@@ -77,8 +77,7 @@ namespace m3d
         virtual void SetClipboardData(char const* str) const;
         bool OpenLog(char const* logFileName);
         virtual void KernelLog(char const* str, ...);
-        virtual int
-            MessageBoxA(HWND__* hWnd, char const* pszText, char const* pszCaption, unsigned int uType);
+        virtual int MessageBoxA(HWND__* hWnd, char const* pszText, char const* pszCaption, unsigned int uType);
 
         m3d::Log* m_Log = nullptr;
 

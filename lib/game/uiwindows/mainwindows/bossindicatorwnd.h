@@ -12,23 +12,22 @@ namespace m3d
     {
         class ProgressBarWnd;
         class ImageWnd;
-    }
-}
-
+    }  // namespace ui
+}  // namespace m3d
 
 class BossIndicatorWnd : public m3d::ui::Wnd
 {
 public:
     int SetupForBoss(int bossId);
     int GetBossId() const;
-    const ai::Obj* GetBoss() const;
+    ai::Obj const* GetBoss() const;
 
     struct AuxInfo
     {
         CStr m_wndBossImageName;
         CStr m_wndBossNameName;
         CStr m_pbBossHealthName;
-        AuxInfo(const BossIndicatorWnd::AuxInfo&);
+        AuxInfo(BossIndicatorWnd::AuxInfo const&);
         AuxInfo();
     };
 
@@ -42,14 +41,14 @@ protected:
     void UpdateImage();
     void UpdateName();
     void UpdateHealth(bool bForce);
-    void GetBossHealth(const ai::Obj* boss, float& maxHealth, float& curHealth) const;
+    void GetBossHealth(ai::Obj const* boss, float& maxHealth, float& curHealth) const;
     int m_bossId;
     m3d::ui::ImageWnd* m_wndBossImage;
     m3d::ui::Wnd* m_wndBossName;
     m3d::ui::ProgressBarWnd* m_pbBossHealth;
     BossIndicatorWnd::AuxInfo m_aif;
     BossIndicatorWnd();
-    BossIndicatorWnd(const BossIndicatorWnd& rhs);
+    BossIndicatorWnd(BossIndicatorWnd const& rhs);
 
 public:
     virtual ~BossIndicatorWnd() override;

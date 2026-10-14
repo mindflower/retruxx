@@ -29,8 +29,22 @@ namespace m3d
             };
 
             virtual int CreateGlyphButton(BoundsBase<float> const& rc, GlyphButtonType type);
-            virtual int CreateGlyphButton(unsigned int style, BoundsBase<float> const& rc, GlyphButtonType type, CStr const& caption, unsigned int id, rend::TexHandle glyph, rend::TexHandle glyphDisabled);
-            virtual int CreateGlyphButton(unsigned int style, BoundsBase<float> const& rc, GlyphButtonType type, CStr const& caption, unsigned int id, CStr glyphFile, CStr glyphFileDisabled);
+            virtual int CreateGlyphButton(
+                unsigned int style,
+                BoundsBase<float> const& rc,
+                GlyphButtonType type,
+                CStr const& caption,
+                unsigned int id,
+                rend::TexHandle glyph,
+                rend::TexHandle glyphDisabled);
+            virtual int CreateGlyphButton(
+                unsigned int style,
+                BoundsBase<float> const& rc,
+                GlyphButtonType type,
+                CStr const& caption,
+                unsigned int id,
+                CStr glyphFile,
+                CStr glyphFileDisabled);
             float GetGlyphHeight();
             void SetGlyphHeight(float height);
             void SetGlyphTexture(rend::TexHandle tex, rend::TexHandle texDisabled);
@@ -47,5 +61,5 @@ namespace m3d
             float m_glyphHeight = 0.0f;
             float m_space = 0.0f;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

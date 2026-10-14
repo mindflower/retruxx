@@ -14,7 +14,7 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
 
     namespace ui
     {
@@ -65,7 +65,6 @@ namespace m3d
             } ttfParams;
             //$7A16E786D20B30359EF3D15CD24517DA ttfParams;
         };
-
 
         class Font
         {
@@ -171,5 +170,5 @@ namespace m3d
             static inline TCharDictionary m_tCharDictionary;
             std::vector<Font*> m_fonts;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

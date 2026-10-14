@@ -149,4 +149,4 @@ namespace m3d
         m_ownBoundingBox.m_box[4] = r;
         m_ownBoundingBox.m_box[5] = 1.0f;
     }
-}
+}  // namespace m3d

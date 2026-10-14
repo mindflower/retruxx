@@ -33,12 +33,12 @@ CDevice* EffectImpl::m_dev;
 static CVector4 _v;
 
 // orig 0x64a010 effect.cpp:45
-EffectImpl::EffectImpl(bool bApplyGlobalParams)
-    : m_bApplyGlobalParams(bApplyGlobalParams),
-      m_effect(0),
-      m_hasBeenValidated(false),
-      m_didNotValidate(false),
-      m_curTechnique(-1)
+EffectImpl::EffectImpl(bool bApplyGlobalParams) :
+    m_bApplyGlobalParams(bApplyGlobalParams),
+    m_effect(0),
+    m_hasBeenValidated(false),
+    m_didNotValidate(false),
+    m_curTechnique(-1)
 {
     memset(m_parameterHandles, 0, sizeof(m_parameterHandles));
 }
@@ -51,7 +51,7 @@ EffectImpl::~EffectImpl()
 }
 
 // orig 0x64a9d0 effect.cpp:62
-bool EffectImpl::LoadFromFile(const char* fileName, std::vector<CompileParam> const& compileParams)
+bool EffectImpl::LoadFromFile(char const* fileName, std::vector<CompileParam> const& compileParams)
 {
     m_fileName = fileName;
     m_compileParams = compileParams;
@@ -89,19 +89,30 @@ bool EffectImpl::LoadFromFile(const char* fileName, std::vector<CompileParam> co
     // D3DXSHADER_USE_LEGACY_D3DX9_31_DLL, which keeps the ps_1_x techniques and their semantics;
     // without that DLL the fallback is the backwards-compatibility mode (ps_1_x as ps_2_0). See
     // shaders/shader_compat.h.
-    DWORD const compileFlags = D3DXSHADER_NO_PRESHADER | (hlsl_compat::LegacyCompilerAvailable()
-                                                              ? D3DXSHADER_USE_LEGACY_D3DX9_31_DLL
-                                                              : D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY);
-    HRESULT hr = D3DXCreateEffect(m_dev->GetDevice(), buffer, fileSize, macros, &includeHandler, compileFlags,
-                                  m_dev->m_globalFxPool, &m_effect, &errorBuffer);
+    DWORD const compileFlags = D3DXSHADER_NO_PRESHADER |
+        (hlsl_compat::LegacyCompilerAvailable() ? D3DXSHADER_USE_LEGACY_D3DX9_31_DLL :
+                                                  D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY);
+    HRESULT hr = D3DXCreateEffect(
+        m_dev->GetDevice(),
+        buffer,
+        fileSize,
+        macros,
+        &includeHandler,
+        compileFlags,
+        m_dev->m_globalFxPool,
+        &m_effect,
+        &errorBuffer);
 
     if (buffer)
         g_kernel->g_mar.FreeMem(buffer, 0, 0);
 
     if (FAILED(hr))
     {
-        LogMsg(CStr::format_("EffectImpl: failed to load fx file '%s' with: %s", fileName,
-                             errorBuffer ? (const char*)errorBuffer->GetBufferPointer() : "No D3DX error message."));
+        LogMsg(
+            CStr::format_(
+                "EffectImpl: failed to load fx file '%s' with: %s",
+                fileName,
+                errorBuffer ? (char const*)errorBuffer->GetBufferPointer() : "No D3DX error message."));
 
         if (errorBuffer)
         {
@@ -122,7 +133,7 @@ bool EffectImpl::LoadFromFile(const char* fileName, std::vector<CompileParam> co
 }
 
 // orig 0x6456e0 effect.cpp:159
-bool EffectImpl::LoadFromString(const char* shaderBuf, unsigned int dataLen)
+bool EffectImpl::LoadFromString(char const* shaderBuf, unsigned int dataLen)
 {
     return false;
 }
@@ -141,7 +152,7 @@ void EffectImpl::SetInt(Parameter p, int val)
 }
 
 // orig 0x645740 effect.cpp:187
-void EffectImpl::SetIntArray(Parameter p, const int* array, int count)
+void EffectImpl::SetIntArray(Parameter p, int const* array, int count)
 {
     m_effect->SetIntArray(m_parameterHandles[p].d3dxHandle, array, count);
 }
@@ -154,7 +165,7 @@ void EffectImpl::SetFloat(Parameter p, float val)
 }
 
 // orig 0x6457c0 effect.cpp:211
-void EffectImpl::SetFloatArray(Parameter p, const float* array, int count)
+void EffectImpl::SetFloatArray(Parameter p, float const* array, int count)
 {
     m_effect->SetFloatArray(m_parameterHandles[p].d3dxHandle, array, count);
 }
@@ -183,13 +194,13 @@ void EffectImpl::SetFloat4(Parameter p, nFloat4 const& val)
 }
 
 // orig 0x6458f0 effect.cpp:261
-void EffectImpl::SetFloat4Array(Parameter p, const nFloat4* array, int count)
+void EffectImpl::SetFloat4Array(Parameter p, nFloat4 const* array, int count)
 {
     m_effect->SetVectorArray(m_parameterHandles[p].d3dxHandle, reinterpret_cast<D3DXVECTOR4 const*>(array), count);
 }
 
 // orig 0x645920 effect.cpp:271
-void EffectImpl::SetVector4Array(Parameter p, const CVector4* array, int count)
+void EffectImpl::SetVector4Array(Parameter p, CVector4 const* array, int count)
 {
     m_effect->SetVectorArray(m_parameterHandles[p].d3dxHandle, reinterpret_cast<D3DXVECTOR4 const*>(array), count);
 }
@@ -201,16 +212,16 @@ void EffectImpl::SetMatrix(Parameter p, CMatrix const& val)
 }
 
 // orig 0x645980 effect.cpp:292
-void EffectImpl::SetMatrixArray(Parameter p, const CMatrix* array, int count)
+void EffectImpl::SetMatrixArray(Parameter p, CMatrix const* array, int count)
 {
     m_effect->SetMatrixArray(m_parameterHandles[p].d3dxHandle, reinterpret_cast<D3DXMATRIX const*>(array), count);
 }
 
 // orig 0x6459b0 effect.cpp:302
-void EffectImpl::SetMatrixPointerArray(Parameter p, const CMatrix** array, int count)
+void EffectImpl::SetMatrixPointerArray(Parameter p, CMatrix const** array, int count)
 {
-    m_effect->SetMatrixPointerArray(m_parameterHandles[p].d3dxHandle, reinterpret_cast<D3DXMATRIX const**>(array),
-                                    count);
+    m_effect->SetMatrixPointerArray(
+        m_parameterHandles[p].d3dxHandle, reinterpret_cast<D3DXMATRIX const**>(array), count);
 }
 
 // orig 0x647510 effect.cpp:312
@@ -287,7 +298,7 @@ void EffectImpl::UpdateParameterHandles()
 
     for (int param = 0; param < NumParameters; param++)
     {
-        const char* paramName = m_dev->EffectParameterToString((Parameter)param);
+        char const* paramName = m_dev->EffectParameterToString((Parameter)param);
 
         // the parameters are bound by semantic, not by name
         m_parameterHandles[param].d3dxHandle = m_effect->GetParameterBySemantic(NULL, paramName);
@@ -320,16 +331,18 @@ void EffectImpl::UpdateParameterHandles()
             }
             else
             {
-                LogMsg(CStr::format_(
-                    "EffectImpl() error: Could not get param description for: shader = '%s', param = '%s'",
-                    m_fileName.c_str(), paramName));
+                LogMsg(
+                    CStr::format_(
+                        "EffectImpl() error: Could not get param description for: shader = '%s', param = '%s'",
+                        m_fileName.c_str(),
+                        paramName));
             }
         }
     }
 }
 
 // orig 0x6459e0 effect.cpp:490
-bool EffectImpl::getBoolAnnotation(D3DXHANDLE techHandle, const char* annotName, bool defaultValue)
+bool EffectImpl::getBoolAnnotation(D3DXHANDLE techHandle, char const* annotName, bool defaultValue)
 {
     D3DXHANDLE annot = m_effect->GetAnnotationByName(techHandle, annotName);
     if (annot)
@@ -349,7 +362,7 @@ bool EffectImpl::getBoolAnnotation(D3DXHANDLE techHandle, const char* annotName,
 }
 
 // orig 0x645a50 effect.cpp:513
-int EffectImpl::getIntAnnotation(D3DXHANDLE techHandle, const char* annotName, int defaultValue)
+int EffectImpl::getIntAnnotation(D3DXHANDLE techHandle, char const* annotName, int defaultValue)
 {
     D3DXHANDLE annot = m_effect->GetAnnotationByName(techHandle, annotName);
     if (annot)
@@ -369,7 +382,7 @@ int EffectImpl::getIntAnnotation(D3DXHANDLE techHandle, const char* annotName, i
 }
 
 // orig 0x646270 effect.cpp:536
-CStr EffectImpl::getStringAnnotation(D3DXHANDLE techHandle, const char* annotName, CStr const& defaultValue)
+CStr EffectImpl::getStringAnnotation(D3DXHANDLE techHandle, char const* annotName, CStr const& defaultValue)
 {
     CStr returnValue(defaultValue);
 
@@ -381,7 +394,7 @@ CStr EffectImpl::getStringAnnotation(D3DXHANDLE techHandle, const char* annotNam
 
         if (annotDesc.Type == D3DXPT_STRING)
         {
-            const char* s;
+            char const* s;
             m_effect->GetString(annot, &s);
             returnValue = s;
         }
@@ -438,8 +451,11 @@ void EffectImpl::ValidateEffect()
 
         if (m_effect->ValidateTechnique(techHandle) != D3D_OK)
         {
-            LogMsg(CStr::format_("EffectImpl() error: effect = '%s', could not validate technique '%s', skipping it...",
-                                 m_fileName.c_str(), techDesc.Name));
+            LogMsg(
+                CStr::format_(
+                    "EffectImpl() error: effect = '%s', could not validate technique '%s', skipping it...",
+                    m_fileName.c_str(),
+                    techDesc.Name));
             m_numTechniques--;
             continue;
         }
@@ -457,9 +473,9 @@ void EffectImpl::ValidateEffect()
 
         if (desc.isPS20)
         {
-            if (!g_kernel->GetEngineCfg().m_r_allowPS20.GetB()
-                || (m_dev->m_isNV30 && !g_kernel->GetEngineCfg().m_r_allowPS20ForNV30.GetB())
-                || !m_dev->IsFeatureSupported(FEATURE_PS_2_0))
+            if (!g_kernel->GetEngineCfg().m_r_allowPS20.GetB() ||
+                (m_dev->m_isNV30 && !g_kernel->GetEngineCfg().m_r_allowPS20ForNV30.GetB()) ||
+                !m_dev->IsFeatureSupported(FEATURE_PS_2_0))
             {
                 m_numTechniques--;
                 continue;
@@ -500,9 +516,13 @@ void EffectImpl::ValidateEffect()
             desc.vertexFormat = VERTEX_XYZ;
         else
         {
-            LogMsg(CStr::format_(
-                "EffectImpl() error: effect = '%s', unsupported vertex format '%s' in technique '%s', skipping it...",
-                m_fileName.c_str(), desc.vertexFormatStr.c_str(), techDesc.Name));
+            LogMsg(
+                CStr::format_(
+                    "EffectImpl() error: effect = '%s', unsupported vertex format '%s' in technique '%s', skipping "
+                    "it...",
+                    m_fileName.c_str(),
+                    desc.vertexFormatStr.c_str(),
+                    techDesc.Name));
             m_numTechniques--;
             continue;
         }
@@ -529,9 +549,11 @@ void EffectImpl::ValidateEffect()
 
     if (m_defaultTechnique == -1)
     {
-        LogMsg(CStr::format_(
-            "EffectImpl() warning: effect = '%s', no technique found as default, setting first one ('%s')...",
-            m_fileName.c_str(), m_techDescs[0].publicDesc.name.c_str()));
+        LogMsg(
+            CStr::format_(
+                "EffectImpl() warning: effect = '%s', no technique found as default, setting first one ('%s')...",
+                m_fileName.c_str(),
+                m_techDescs[0].publicDesc.name.c_str()));
         m_defaultTechnique = 0;
     }
 
@@ -563,7 +585,7 @@ void EffectImpl::SetCurTechnique(unsigned int techId)
 }
 
 // orig 0x647740 effect.cpp:831
-void EffectImpl::SetCurTechniqueByName(const char* techName)
+void EffectImpl::SetCurTechniqueByName(char const* techName)
 {
     for (unsigned int i = 0; i < m_numTechniques; i++)
     {
@@ -590,7 +612,7 @@ unsigned int EffectImpl::GetCurTechnique() const
 }
 
 // orig 0x647790 effect.cpp:866
-const char* EffectImpl::GetCurTechniqueName() const
+char const* EffectImpl::GetCurTechniqueName() const
 {
     if (m_curTechnique >= 0 && m_curTechnique < (int)m_numTechniques)
     {
@@ -611,15 +633,15 @@ void EffectImpl::ApplyGlobalFxParams()
 {
     if (m_parameterHandles[World].d3dxHandle)
     {
-        m_effect->SetMatrix(m_parameterHandles[World].d3dxHandle,
-                            reinterpret_cast<D3DXMATRIX const*>(&m_dev->GetModelMatrix()));
+        m_effect->SetMatrix(
+            m_parameterHandles[World].d3dxHandle, reinterpret_cast<D3DXMATRIX const*>(&m_dev->GetModelMatrix()));
     }
 
     if (m_parameterHandles[IEffect::InvWorld].d3dxHandle)
     {
         CMatrix InvWorld = m_dev->GetModelMatrix().getInverseSimple();
-        m_effect->SetMatrix(m_parameterHandles[IEffect::InvWorld].d3dxHandle,
-                            reinterpret_cast<D3DXMATRIX const*>(&InvWorld));
+        m_effect->SetMatrix(
+            m_parameterHandles[IEffect::InvWorld].d3dxHandle, reinterpret_cast<D3DXMATRIX const*>(&InvWorld));
     }
 
     if (m_parameterHandles[View].d3dxHandle)
@@ -635,20 +657,21 @@ void EffectImpl::ApplyGlobalFxParams()
 
     if (m_parameterHandles[Projection].d3dxHandle)
     {
-        m_effect->SetMatrix(m_parameterHandles[Projection].d3dxHandle,
-                            reinterpret_cast<D3DXMATRIX const*>(&m_dev->MatGetProj()));
+        m_effect->SetMatrix(
+            m_parameterHandles[Projection].d3dxHandle, reinterpret_cast<D3DXMATRIX const*>(&m_dev->MatGetProj()));
     }
 
     if (m_parameterHandles[ModelViewProjection].d3dxHandle)
     {
-        m_effect->SetMatrix(m_parameterHandles[ModelViewProjection].d3dxHandle,
-                            reinterpret_cast<D3DXMATRIX const*>(m_dev->GetModelViewProjMatrix()));
+        m_effect->SetMatrix(
+            m_parameterHandles[ModelViewProjection].d3dxHandle,
+            reinterpret_cast<D3DXMATRIX const*>(m_dev->GetModelViewProjMatrix()));
     }
 
     if (m_parameterHandles[TmpLight0Dir].d3dxHandle)
     {
-        CVector normLightDir(m_dev->m_lights[0].Direction.x, m_dev->m_lights[0].Direction.y,
-                             m_dev->m_lights[0].Direction.z);
+        CVector normLightDir(
+            m_dev->m_lights[0].Direction.x, m_dev->m_lights[0].Direction.y, m_dev->m_lights[0].Direction.z);
 
         if (m_parameterHandles[TmpLight0Dir].space == 1)
         {
@@ -741,7 +764,10 @@ void EffectImpl::Invalidate()
         m_effect->Release();
         m_effect = 0;
     }
-    m_hasBeenValidated = false; m_didNotValidate = false; m_curTechnique = -1; m_techDescs.clear();
+    m_hasBeenValidated = false;
+    m_didNotValidate = false;
+    m_curTechnique = -1;
+    m_techDescs.clear();
     m_curParams.Reset();
 }
 
@@ -760,14 +786,15 @@ void EffectImpl::OnDeviceRestore()
 }
 
 // orig 0x64a7c0 effect.cpp:1108
-IEffect* CDevice::NewEffect(const char* fileName, bool bApplyGlobalParams, std::vector<CompileParam> const& compileParams)
+IEffect*
+    CDevice::NewEffect(char const* fileName, bool bApplyGlobalParams, std::vector<CompileParam> const& compileParams)
 {
     ShaderIdData fxId(fileName, compileParams);
     UnifyFileName(fxId.filename);
 
     std::sort(fxId.compileParams.begin(), fxId.compileParams.end());
-    fxId.compileParams.erase(std::unique(fxId.compileParams.begin(), fxId.compileParams.end()),
-                             fxId.compileParams.end());
+    fxId.compileParams.erase(
+        std::unique(fxId.compileParams.begin(), fxId.compileParams.end()), fxId.compileParams.end());
 
     std::map<ShaderIdData, EffectImpl*>::iterator it = m_effects.find(fxId);
     if (it != m_effects.end())
@@ -790,7 +817,7 @@ IEffect* CDevice::NewEffect(const char* fileName, bool bApplyGlobalParams, std::
 }
 
 // HTA-only wrapper, no original body
-IEffect* CDevice::NewEffect(const char* fileName, bool bApplyGlobalParams)
+IEffect* CDevice::NewEffect(char const* fileName, bool bApplyGlobalParams)
 {
     return NewEffect(fileName, bApplyGlobalParams, std::vector<CompileParam>());
 }
@@ -810,8 +837,9 @@ void CDevice::ReleaseEffects()
     {
         EffectImpl* fx = it->second;
 
-        LogMsg(CStr::format_("Warning: fx shader '%s' is not released (refs = %d)", fx->m_fileName.c_str(),
-                             fx->GetRefCount()));
+        LogMsg(
+            CStr::format_(
+                "Warning: fx shader '%s' is not released (refs = %d)", fx->m_fileName.c_str(), fx->GetRefCount()));
     }
 }
 

@@ -19,9 +19,9 @@ namespace m3d
         float m_zoom;
         float m_speed;
         float m_flyTime;
-        CameraPathState(const CVector& point, const Quaternion& rotation, float zoom, float flyTime, float speed);
+        CameraPathState(CVector const& point, Quaternion const& rotation, float zoom, float flyTime, float speed);
         CameraPathState();
-        void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
     };
 
@@ -29,34 +29,35 @@ namespace m3d
     {
         // Cinematic's point editing re-fixes the path around its own changes.
         friend class Cinematic;
+
     public:
-        static const m3d::CameraPath m_emptyPath;
-        CameraPath(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >&);
+        static m3d::CameraPath const m_emptyPath;
+        CameraPath(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const&);
         CameraPath();
-        void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void LoadFromXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void SaveToXmlRuntime(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
-        void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void CalcFlyTimes(unsigned int pointNum, bool recalcFullLength);
         void CalcFullLength(unsigned int pointNum);
         void GetCameraForTime(float curTime, CVector& pos, Quaternion& rot, float& zoom) const;
-        void InitByStates(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& states);
-        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& GetCameraPathStates();
-        const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& GetCameraPathStates() const;
+        void InitByStates(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const& states);
+        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>>& GetCameraPathStates();
+        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const& GetCameraPathStates() const;
         void clear();
         bool empty() const;
         std::size_t size() const;
-        void push_back(const m3d::CameraPathState& state);
-        void insert(int pointNum, const m3d::CameraPathState& state);
-        const m3d::CameraPathState& operator[](unsigned int index) const;
+        void push_back(m3d::CameraPathState const& state);
+        void insert(int pointNum, m3d::CameraPathState const& state);
+        m3d::CameraPathState const& operator[](unsigned int index) const;
         m3d::CameraPathState& operator[](unsigned int index);
-        void MovePoint(int pointNum, const m3d::CameraPathState& state);
+        void MovePoint(int pointNum, m3d::CameraPathState const& state);
         void RemovePoint(int pointNum);
         float GetFullTime() const;
         void SetFullTime(float fullTime);
         float GetFullLength() const;
 
     private:
-        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> > m_cameraPathStates;
+        std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> m_cameraPathStates;
         float m_fullLength;
         float m_fullTime;
         void _Fix();
@@ -109,10 +110,10 @@ namespace m3d
     {
     protected:
         Cinematic();
-        Cinematic(const m3d::Cinematic& cinematic);
+        Cinematic(m3d::Cinematic const& cinematic);
 
     public:
-        virtual  ~Cinematic() override;
+        virtual ~Cinematic() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
         static m3d::Class* __fastcall GetBaseClass();
@@ -125,67 +126,75 @@ namespace m3d
         bool m_bWasSkippedInEnterFadeOut;
         m3d::CVar m_fadePeriod;
 
-        using CinematicItems = std::list<m3d::CinematicItem, std::allocator<m3d::CinematicItem> >;
+        using CinematicItems = std::list<m3d::CinematicItem, std::allocator<m3d::CinematicItem>>;
 
     public:
-        std::list<m3d::CinematicItem, std::allocator<m3d::CinematicItem> > m_cinematicItems;
+        std::list<m3d::CinematicItem, std::allocator<m3d::CinematicItem>> m_cinematicItems;
         m3d::CinematicItem m_curItem;
-        bool Load(const char* FileName);
+        bool Load(char const* FileName);
         bool InPlay() const;
         void LoadDefaults();
         void StartCinematic();
         bool SkipCinematic();
         void Play(float playTime);
         void PlayFromPoint(float playTime, int pointNum);
-        void FlyAround(float phi, float theta, float radius, float playTime, const CVector& curPos, const char* flyPathName);
+        void FlyAround(
+            float phi,
+            float theta,
+            float radius,
+            float playTime,
+            CVector const& curPos,
+            char const* flyPathName);
         CStr GetNextFlyPathName() const;
         void Stop();
         void Update(CCamera& cam, float dT);
         void UpdateCameraRotation(CCamera& cam);
         void SetAimToID(int objId);
-        void SetAim(const CVector& lookAt);
+        void SetAim(CVector const& lookAt);
         void SetRelativePoints(bool value);
         void SetRelativeRotations(bool value);
         void SetLookTo(bool value);
         void SetBaseToId(int objId);
         int GetFlags() const;
         void SetFlags(int flags);
-        void SetFromPos(const CVector& pos, const Quaternion& rotation);
-        bool SetPath(const char* pathName);
-        void SetPathFromPos(const CVector& pos, const Quaternion& rotation, const char* pathName);
+        void SetFromPos(CVector const& pos, Quaternion const& rotation);
+        bool SetPath(char const* pathName);
+        void SetPathFromPos(CVector const& pos, Quaternion const& rotation, char const* pathName);
         m3d::CinematicType GetPlayType() const;
         bool bWaitWhenStop() const;
         void SetWaitWhenStop(bool wait);
         void SetLerpFromPreviousItem(bool bLerp);
-        const char* GetFolder() const;
-        void SetFolder(const char* Folder);
+        char const* GetFolder() const;
+        void SetFolder(char const* Folder);
         float GetTimeToTheEnd() const;
         float GetFadePeriodForState(m3d::CinematicState state) const;
         bool bCanUpdate() const;
         bool bMustBeNextCinematic() const;
-        void SetCameraStates(const std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState> >& states);
-        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void SetCameraStates(std::vector<m3d::CameraPathState, std::allocator<m3d::CameraPathState>> const& states);
+        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
-        void DumpCurrentPath(const CStr& filename);
+        void DumpCurrentPath(CStr const& filename);
         bool GetDebugMode() const;
         void SetDebugMode(bool bDebug);
-        void AddPointToCurrentPath(const CVector& point, const Quaternion& rot, float zoom, float speed);
-        void InsertPointToCurrentPath(const CVector& point, const Quaternion& rot, float zoom, float speed);
+        void AddPointToCurrentPath(CVector const& point, Quaternion const& rot, float zoom, float speed);
+        void InsertPointToCurrentPath(CVector const& point, Quaternion const& rot, float zoom, float speed);
         void SetCurrentDebugPointNum(int pointNum);
-        void MoveCurrentDebugPoint(const CVector& point, const Quaternion& rot, float zoom);
+        void MoveCurrentDebugPoint(CVector const& point, Quaternion const& rot, float zoom);
         void RemoveCurrentDebugPoint();
-        const m3d::CameraPath& GetPathByName(const CStr& pathName) const;
+        m3d::CameraPath const& GetPathByName(CStr const& pathName) const;
         bool RenderDebugInfo() const;
-        const m3d::CinematicItem& GetCurItem() const;
+        m3d::CinematicItem const& GetCurItem() const;
 
     private:
         CStr m_folder;
         float m_curTime;
 
-        using PathMap = std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath> > >;
+        using PathMap =
+            std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath>>>;
 
     private:
-        std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath> > > m_paths;
+        std::map<CStr, m3d::CameraPath, std::less<CStr>, std::allocator<std::pair<CStr const, m3d::CameraPath>>>
+            m_paths;
         bool m_bDebugMode;
         int m_curDebugPointNum;
         unsigned int m_numConsecutiveItemPlayingNow;
@@ -197,4 +206,4 @@ namespace m3d
         void _PushCinematicItem();
         bool _bIsFirstItemPlayingNow() const;
     };
-}
+}  // namespace m3d

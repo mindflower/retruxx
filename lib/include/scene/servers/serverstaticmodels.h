@@ -20,26 +20,28 @@ namespace m3d
         bool m_preparedToRender = true;
         bool m_alreadyCached = false;
         int PrepareToRender();
-        retruxx::vector<unsigned char*, retruxx::allocator<unsigned char*> > m_shots;
+        retruxx::vector<unsigned char*, retruxx::allocator<unsigned char*>> m_shots;
         bool m_tessellate = true;
 
     public:
         StaticModelsServer();
-        virtual  ~StaticModelsServer() override;
+        virtual ~StaticModelsServer() override;
         virtual int Init() override;
         virtual int Release() override;
-        virtual int AddItem(const char* params, const char* id) override;
+        virtual int AddItem(char const* params, char const* id) override;
         virtual int RemoveItem(int id) override;
         virtual void RenderItem(int id, void* params) override;
         virtual int GetItemProperty(int id, int prop, void* dest) override;
         virtual int SetItemProperty(int id, int prop, void* src) override;
         void ReleaseBuffers();
-        virtual int SaveAllLoadedEntities(const char* fileName) override;
+        virtual int SaveAllLoadedEntities(char const* fileName) override;
 
     protected:
-        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override;
+        virtual void AddItemsList(
+            retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>>& itemslist)
+            override;
 
     private:
         m3d::Profiler* m_profiler = nullptr;
     };
-}
+}  // namespace m3d

@@ -61,4 +61,4 @@ namespace m3d
     WeatherFoggy::WeatherFoggy()
     {
     }
-}
+}  // namespace m3d

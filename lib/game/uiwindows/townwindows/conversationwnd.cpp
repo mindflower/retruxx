@@ -39,10 +39,10 @@ namespace
     // hosting TalkWithNpcDlg.
     enum
     {
-        CN_END_CONVERSATION = 0xC364,      // 50020
-        CN_BEGIN_CONVERSATION = 0xC365,    // 50021
-        CN_LEAVE_TOWN = 0xC366,            // 50022
-        CN_SELECT_PLAYER_REPLY = 0xC367,   // 50023
+        CN_END_CONVERSATION = 0xC364,     // 50020
+        CN_BEGIN_CONVERSATION = 0xC365,   // 50021
+        CN_LEAVE_TOWN = 0xC366,           // 50022
+        CN_SELECT_PLAYER_REPLY = 0xC367,  // 50023
     };
 
     // Copies every layout / text / style / pane / animation property from a
@@ -102,9 +102,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(ConversationWnd, ShowDynamicQuestsMenu)
 }
 
 RT_CLASS_EXPORTS_BEGIN(ConversationWnd)
-	RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, EndConversation, "", "", "")
-	RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, GetCurrentDynamicQuest, "", "", "")
-	RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, ShowDynamicQuestsMenu, "", "", "")
+RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, EndConversation, "", "", "")
+RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, GetCurrentDynamicQuest, "", "", "")
+RT_CLASS_EXPORT(ConversationWnd, m3d::METHOD, ShowDynamicQuestsMenu, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ConversationWnd);
 
@@ -521,8 +521,8 @@ int ConversationWnd::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
     }
     auto* patternPlayerReplies = static_cast<m3d::ui::Wnd*>(childReplies);
 
-    if (!m_lstPlayerReplies->Create(patternPlayerReplies->GetBounds(), patternPlayerReplies->GetStyle(),
-                                    patternPlayerReplies->GetId()))
+    if (!m_lstPlayerReplies->Create(
+            patternPlayerReplies->GetBounds(), patternPlayerReplies->GetStyle(), patternPlayerReplies->GetId()))
     {
         M3D_LOG_INFO("ConversationWnd::CreateFromPattern error - cannot create m_lstPlayerReplies");
         return 0;
@@ -651,8 +651,7 @@ void ConversationWnd::PlayerReplyButton::SetUpForReply(Reply const* reply, ai::D
 void ConversationWnd::PlayerReplyButton::RecalcHeight()
 {
     // RVA 0x991B0
-    m_bounds.height =
-        GetGfxServer()->MeasureText(GetText(), GetDefaultFont(), GetWrapMode(), m_bounds.width).y;
+    m_bounds.height = GetGfxServer()->MeasureText(GetText(), GetDefaultFont(), GetWrapMode(), m_bounds.width).y;
 }
 
 int ConversationWnd::PlayerReplyButton::OnMouseIn()
@@ -695,8 +694,8 @@ ConversationWnd::PlayerRepliesListBoxWnd::PlayerRepliesListBoxWnd()
     m_aif.m_space = 7.0f;
 }
 
-ConversationWnd::PlayerRepliesListBoxWnd::PlayerRepliesListBoxWnd(ConversationWnd::PlayerRepliesListBoxWnd const& rhs)
-    : ListBoxWnd<ConversationWnd::PlayerReplyButton*>(rhs)
+ConversationWnd::PlayerRepliesListBoxWnd::PlayerRepliesListBoxWnd(ConversationWnd::PlayerRepliesListBoxWnd const& rhs) :
+    ListBoxWnd<ConversationWnd::PlayerReplyButton*>(rhs)
 {
     // RVA 0x99240 twin: fresh, empty list.
     m_drawFlags = 0;
@@ -725,7 +724,10 @@ int ConversationWnd::PlayerRepliesListBoxWnd::MeasureItem(int itemIdx, BoundsBas
     return 1;
 }
 
-int ConversationWnd::PlayerRepliesListBoxWnd::RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di)
+int ConversationWnd::PlayerRepliesListBoxWnd::RenderItem(
+    int itemIdx,
+    PointBase<float> const& org,
+    m3d::ui::DrawInfo const& di)
 {
     // RVA 0x993F0
     PlayerReplyButton* btn = m_items[itemIdx].m_item;
@@ -806,7 +808,10 @@ int ConversationWnd::PlayerRepliesListBoxWnd::OnKey(unsigned short key, unsigned
     return 1;
 }
 
-int ConversationWnd::PlayerRepliesListBoxWnd::SetUpForNpcReply(Reply const* npcReply, ai::Npc* npc, bool bDeletePrevItems)
+int ConversationWnd::PlayerRepliesListBoxWnd::SetUpForNpcReply(
+    Reply const* npcReply,
+    ai::Npc* npc,
+    bool bDeletePrevItems)
 {
     // RVA 0x99540
     if (bDeletePrevItems)
@@ -835,8 +840,7 @@ int ConversationWnd::PlayerRepliesListBoxWnd::SetUpForNpcReply(Reply const* npcR
         {
             continue;
         }
-        auto* btn = new PlayerReplyButton(
-            PointBase<float>{clientB.x0, clientB.y0}, clientB.width, baseIdx + i, this);
+        auto* btn = new PlayerReplyButton(PointBase<float>{clientB.x0, clientB.y0}, clientB.width, baseIdx + i, this);
         btn->SetUpForReply(reply, nullptr);
         AddItem(btn);
         AddChild(btn);
@@ -887,8 +891,7 @@ int ConversationWnd::PlayerRepliesListBoxWnd::SetUpForDynamicQuestThemes(ai::Npc
         }
         dQuest->UpdateBeforeShowInConversation();
 
-        auto* btn = new PlayerReplyButton(
-            PointBase<float>{clientB.x0, clientB.y0}, clientB.width, idx, this);
+        auto* btn = new PlayerReplyButton(PointBase<float>{clientB.x0, clientB.y0}, clientB.width, idx, this);
 
         RepliesManager* replies = M3D_APP->m_pInterfaceManager->GetRepliesManager();
         Reply const* request = replies->GetPlayerRequestForDynamicQuest(npc, dQuest);

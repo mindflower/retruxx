@@ -6,7 +6,7 @@ namespace ai
 {
     class CombatMastermind
     {
-        using SteeringForceMap = retruxx::map<int, CVector >;
+        using SteeringForceMap = retruxx::map<int, CVector>;
 
     public:
         CombatMastermind(int teamId);
@@ -15,4 +15,4 @@ namespace ai
     private:
         int m_teamId;
     };
-}
+}  // namespace ai

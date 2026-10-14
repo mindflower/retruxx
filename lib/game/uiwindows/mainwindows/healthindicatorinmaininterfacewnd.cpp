@@ -244,7 +244,8 @@ void HealthIndicatorInMainInterfaceWnd::UpdateTooltip(float curHp, float maxHp)
     {
         // The shipped build converts with fistp, i.e. rounds to nearest (ties to even), as do the other
         // conversions in this file.
-        CStr text = m_strHealth + ": " + CStr(static_cast<int>(lrintf(curHp))) + "/" + CStr(static_cast<int>(lrintf(maxHp)));
+        CStr text =
+            m_strHealth + ": " + CStr(static_cast<int>(lrintf(curHp))) + "/" + CStr(static_cast<int>(lrintf(maxHp)));
         m_wndProgressBar->SetProperty(PROP_WND_TOOLTIP, &text);
         m_wndValue->SetProperty(PROP_WND_TOOLTIP, &text);
     }

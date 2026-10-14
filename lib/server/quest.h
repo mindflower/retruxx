@@ -10,8 +10,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -49,27 +49,27 @@ namespace ai
         };
 
     public:
-        Quest(const Quest&);
+        Quest(Quest const&);
         Quest();
-        virtual  ~Quest();
-        virtual bool LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual ~Quest();
+        virtual bool LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void PostLoad();
         int GetId() const;
         int GetParentId() const;
-        const CStr& GetName() const;
+        CStr const& GetName() const;
         bool bSubscribeAutomatic() const;
-        const ConditionToGive& GetConditionToGive() const;
+        ConditionToGive const& GetConditionToGive() const;
         SubQuestCondition GetSubQuestCondition() const;
         bool bCheckAllSubQuests() const;
-        const retruxx::vector<int>& GetSubQuestIds() const;
-        const retruxx::vector<int>& GetSubsequentQuestIds() const;
-        const retruxx::vector<int>& GetPrecedingQuestIds() const;
-        const CStr& GetFuncOnComplete() const;
-        const CStr& GetFuncOnFail() const;
-        const CStr& GetFuncOnTake() const;
-        const CStr& GetFuncOnCanBeGiven() const;
+        retruxx::vector<int> const& GetSubQuestIds() const;
+        retruxx::vector<int> const& GetSubsequentQuestIds() const;
+        retruxx::vector<int> const& GetPrecedingQuestIds() const;
+        CStr const& GetFuncOnComplete() const;
+        CStr const& GetFuncOnFail() const;
+        CStr const& GetFuncOnTake() const;
+        CStr const& GetFuncOnCanBeGiven() const;
         int64_t getTimeForComplete() const;
-        const retruxx::vector<CStr>& getActionLevels() const;
+        retruxx::vector<CStr> const& getActionLevels() const;
 
     protected:
         int m_questId;
@@ -97,8 +97,8 @@ namespace ai
     {
     public:
         QuestItemPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        const CStr& GetModelName() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        CStr const& GetModelName() const;
         virtual Obj* CreateTargetObject() const override;
 
     private:
@@ -108,17 +108,17 @@ namespace ai
     class QuestManager
     {
     public:
-        QuestManager(const QuestManager&);
+        QuestManager(QuestManager const&);
         QuestManager();
-        virtual  ~QuestManager();
-        virtual bool LoadFromXmlFile(const char* fileName);
+        virtual ~QuestManager();
+        virtual bool LoadFromXmlFile(char const* fileName);
         virtual int AddQuest(Quest* quest);
-        int GetQuestIdByName(const CStr& questName) const;
+        int GetQuestIdByName(CStr const& questName) const;
         virtual Quest* GetQuestById(int questId) const;
         unsigned int GetNumQuests() const;
-        const retruxx::set<int>* GetMutexByQuestId(int questId) const;
-        void StrToQuestIdVector(const CStr& str, retruxx::vector<int>& questIds);
-        CStr QuestIdVectorToStr(const retruxx::vector<int>& questIds);
+        retruxx::set<int> const* GetMutexByQuestId(int questId) const;
+        void StrToQuestIdVector(CStr const& str, retruxx::vector<int>& questIds);
+        CStr QuestIdVectorToStr(retruxx::vector<int> const& questIds);
 
     protected:
         void _Clear();
@@ -127,4 +127,4 @@ namespace ai
     };
 
     inline QuestManager* theQuestManager = nullptr;
-}
+}  // namespace ai

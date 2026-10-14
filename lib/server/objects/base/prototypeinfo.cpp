@@ -11,17 +11,17 @@
 
 namespace ai
 {
-	void PrototypeInfo::PostLoad()
-	{
-	}
+    void PrototypeInfo::PostLoad()
+    {
+    }
 
-	unsigned PrototypeInfo::GetBasePrice() const
-	{
+    unsigned PrototypeInfo::GetBasePrice() const
+    {
         return m_price;
-	}
+    }
 
-	PrototypeInfo::PrototypeInfo()
-	{
+    PrototypeInfo::PrototypeInfo()
+    {
         this->m_prototypeId = -1;
         this->m_resourceId = -1;
         this->m_bIsUpdating = 1;
@@ -30,15 +30,15 @@ namespace ai
         this->m_price = 0;
         this->m_bIsAbstract = 0;
         this->m_protoClassObject = 0;
-	}
+    }
 
-	bool PrototypeInfo::bIsAbstract() const
-	{
+    bool PrototypeInfo::bIsAbstract() const
+    {
         return m_bIsAbstract;
-	}
+    }
 
-	bool PrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
-	{
+    bool PrototypeInfo::LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const* xmlNode)
+    {
         m3d::SafeStrAttrib(m_prototypeName, xmlNode, "Name");
         m3d::SafeStrAttrib(m_className, xmlNode, "Class");
 
@@ -65,43 +65,43 @@ namespace ai
         m3d::SafeStrAttrib(m_parentPrototypeName, xmlNode, "ParentPrototype");
 
         return true;
-	}
+    }
 
-	void PrototypeInfo::CopyFrom(PrototypeInfo const& rhs)
-	{
+    void PrototypeInfo::CopyFrom(PrototypeInfo const& rhs)
+    {
         M3D_ASSERT(m_className == rhs.m_className);
         _InternalCopyFrom(rhs);
-	}
+    }
 
-	void PrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
-	{
-	}
+    void PrototypeInfo::RefreshFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*)
+    {
+    }
 
-	CStr PrototypeInfo::GetDebugDescription() const
-	{
-		// RVA 0x729DB0 - the class name leads, so this reads as e.g.
-		// "WheelPrototypeInfo name = 'wheelBig'".
-		return m_className + CStr("PrototypeInfo name = '") + m_prototypeName + CStr("'");
-	}
+    CStr PrototypeInfo::GetDebugDescription() const
+    {
+        // RVA 0x729DB0 - the class name leads, so this reads as e.g.
+        // "WheelPrototypeInfo name = 'wheelBig'".
+        return m_className + CStr("PrototypeInfo name = '") + m_prototypeName + CStr("'");
+    }
 
-	PrototypeInfo::~PrototypeInfo()
-	{
-	}
+    PrototypeInfo::~PrototypeInfo()
+    {
+    }
 
-	bool PrototypeInfo::IsPrototypeOf(m3d::Class const* cl) const
-	{
+    bool PrototypeInfo::IsPrototypeOf(m3d::Class const* cl) const
+    {
         return m_protoClassObject && m_protoClassObject->IsKindOf(cl);
-	}
+    }
 
-	CStr const& PrototypeInfo::GetParentPrototypeName() const
-	{
-		return m_parentPrototypeName;
-	}
+    CStr const& PrototypeInfo::GetParentPrototypeName() const
+    {
+        return m_parentPrototypeName;
+    }
 
-	void PrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
-	{
-		// RVA 0x729F40 - copying is opt-in: a prototype class that wants to inherit from
-		// another overrides this, so reaching the base means one that does not was asked to.
-		M3D_CRITICAL_ERROR(CStr("copying for ") + m_className + CStr("PrototypeInfo is not implemented."));
-	}
-}
+    void PrototypeInfo::_InternalCopyFrom(PrototypeInfo const&)
+    {
+        // RVA 0x729F40 - copying is opt-in: a prototype class that wants to inherit from
+        // another overrides this, so reaching the base means one that does not was asked to.
+        M3D_CRITICAL_ERROR(CStr("copying for ") + m_className + CStr("PrototypeInfo is not implemented."));
+    }
+}  // namespace ai

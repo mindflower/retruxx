@@ -11,7 +11,7 @@ public:
     {
         CStr m_redColor;
         CStr m_greenColor;
-        CAuxInfo(const CharacteristicsWnd::CAuxInfo&);
+        CAuxInfo(CharacteristicsWnd::CAuxInfo const&);
         CAuxInfo();
     };
 
@@ -21,7 +21,7 @@ protected:
     virtual void OnNewFrame();
     virtual void UpdateCharacteristics() = 0;
     virtual void ClearCharacteristics() = 0;
-    const ai::Vehicle* GetVehicle() const;
+    ai::Vehicle const* GetVehicle() const;
     CStr GetColorByVal(int val, int baseVal, bool bInverted) const;
     CStr GetDiffValPrefix(int diff, bool bColorInverted) const;
     void UpdateValue(m3d::ui::Wnd* ctrl, int val, int baseVal, bool bColorInverted);
@@ -30,7 +30,7 @@ protected:
     CharacteristicsWnd::CAuxInfo m_caif;
     VehicleWnd::VehicleType m_vehicleType;
     int m_vehicleId;
-    CharacteristicsWnd(const CharacteristicsWnd&);
+    CharacteristicsWnd(CharacteristicsWnd const&);
     CharacteristicsWnd();
 
 public:

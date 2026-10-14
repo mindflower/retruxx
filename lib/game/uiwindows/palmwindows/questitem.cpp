@@ -135,8 +135,7 @@ int QuestItem::CreateQuestItem(PointBase<float> origin, float maxWidth, help::Qu
         b.y0 = m_aif.m_ySpace0;
         b.width = m_aif.m_navPointBtnSz.x;
         b.height = m_aif.m_navPointBtnSz.y;
-        if (m_btnNavPoint->Create({}, 262688u, b, 7u) == 0 ||
-            !m_btnNavPoint->SetupForQuest(m_questType, m_questId))
+        if (m_btnNavPoint->Create({}, 262688u, b, 7u) == 0 || !m_btnNavPoint->SetupForQuest(m_questType, m_questId))
         {
             delete m_btnNavPoint;
             m_btnNavPoint = nullptr;

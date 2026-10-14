@@ -12,8 +12,7 @@ namespace ai
     class CompositeObj;
     class JointedObj;
     class SubmarinePrototypeInfo;
-}
-
+}  // namespace ai
 
 enum ActionType : int32_t
 {
@@ -60,7 +59,7 @@ namespace m3d
     struct LoadSkins
     {
         bool loadAllSkins = true;
-        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > loadSkins;
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>> loadSkins;
     };
 
     struct BoneAnim
@@ -75,11 +74,14 @@ namespace m3d
     struct MeshesGroup
     {
         retruxx::string Name;
-        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > MeshesId;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int>> MeshesId;
         int VisibleAtOnceMax;
         int VisibleAtOnceMin;
-        retruxx::vector<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >, retruxx::allocator<retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > > > m_variants;
-        void GetNextVariant(retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& variant);
+        retruxx::vector<
+            retruxx::vector<unsigned int, retruxx::allocator<unsigned int>>,
+            retruxx::allocator<retruxx::vector<unsigned int, retruxx::allocator<unsigned int>>>>
+            m_variants;
+        void GetNextVariant(retruxx::vector<unsigned int, retruxx::allocator<unsigned int>>& variant);
     };
 
     struct AnimAction
@@ -102,6 +104,7 @@ namespace m3d
         // SubmarinePrototypeInfo::RefreshFromXml retunes the platform animation.
         friend class ai::SubmarinePrototypeInfo;
         friend class AnimInfo;
+
     public:
         struct HierarchyChange
         {
@@ -148,7 +151,7 @@ namespace m3d
 
         struct Mesh
         {
-            Mesh(const m3d::AnimatedModel::Mesh&);
+            Mesh(m3d::AnimatedModel::Mesh const&);
             Mesh();
             ~Mesh();
             char m_meshName[40];
@@ -157,8 +160,11 @@ namespace m3d
             unsigned int meshId;
             unsigned int groupId;
             int m_MaterialNumber;
-            retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > >* m_pModelSkins;
-            retruxx::vector<m3d::DRAFT_VertexComponent, retruxx::allocator<m3d::DRAFT_VertexComponent> > m_VCHs;
+            retruxx::vector<
+                retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>,
+                retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>>>*
+                m_pModelSkins;
+            retruxx::vector<m3d::DRAFT_VertexComponent, retruxx::allocator<m3d::DRAFT_VertexComponent>> m_VCHs;
             unsigned int m_VertexTypeSize;
             m3d::rend::VertexType m_VertexType;
             int m_numVertices;
@@ -185,7 +191,7 @@ namespace m3d
 
         struct Bone
         {
-            Bone(const m3d::AnimatedModel::Bone& __that);
+            Bone(m3d::AnimatedModel::Bone const& __that);
             Bone();
             char m_boneName[40];
             int m_ownIdx;
@@ -196,7 +202,7 @@ namespace m3d
 
     private:
         CMatrix* m_initialBoneInvMatrices;
-        static int __cdecl sortBonesFunc(const void* a, const void* b);
+        static int __cdecl sortBonesFunc(void const* a, void const* b);
 
     public:
         struct Animation
@@ -215,7 +221,8 @@ namespace m3d
         };
 
     protected:
-        static inline retruxx::map<CStr, CStr, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, CStr> > > m_textureFiles;
+        static inline retruxx::map<CStr, CStr, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, CStr>>>
+            m_textureFiles;
         static inline CStr m_cubemapTexName;
         static inline CStr m_cubemapTexPath;
         m3d::AnimatedModel::ModelInfo m_header;
@@ -231,49 +238,66 @@ namespace m3d
         m3d::AnimatedModel::Animation* m_animations;
         short m_animRemap[32];
         m3d::DCollisionData m_Collision;
-        retruxx::vector<m3d::DRAFT_Geom, retruxx::allocator<m3d::DRAFT_Geom> > m_Geoms;
-        retruxx::vector<m3d::DRAFT_HierGeom, retruxx::allocator<m3d::DRAFT_HierGeom> > m_HierGeoms;
-        retruxx::map<unsigned int, m3d::DRAFT_BoneBounds, retruxx::less<unsigned int>, retruxx::allocator<retruxx::pair<unsigned int const, m3d::DRAFT_BoneBounds> > > m_BonesBounds;
-        retruxx::vector<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >, retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> > > > m_Skins;
+        retruxx::vector<m3d::DRAFT_Geom, retruxx::allocator<m3d::DRAFT_Geom>> m_Geoms;
+        retruxx::vector<m3d::DRAFT_HierGeom, retruxx::allocator<m3d::DRAFT_HierGeom>> m_HierGeoms;
+        retruxx::map<
+            unsigned int,
+            m3d::DRAFT_BoneBounds,
+            retruxx::less<unsigned int>,
+            retruxx::allocator<retruxx::pair<unsigned int const, m3d::DRAFT_BoneBounds>>>
+            m_BonesBounds;
+        retruxx::vector<
+            retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>,
+            retruxx::allocator<retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>>>
+            m_Skins;
         m3d::LoadSkins m_loadSkins;
         bool m_hasCubemap;
-        retruxx::vector<m3d::MeshesGroup, retruxx::allocator<m3d::MeshesGroup> > m_MhGroups;
+        retruxx::vector<m3d::MeshesGroup, retruxx::allocator<m3d::MeshesGroup>> m_MhGroups;
         unsigned int m_cfgSize;
-        CStr DefinePathToTexture(const CStr& fileName);
-        void SetTexture(const CStr& path, m3d::DRAFT_TextureType type, m3d::rend::TexHandle& texHandle);
-        void NewEffect(const retruxx::string& name, m3d::rend::IEffect*& shader);
+        CStr DefinePathToTexture(CStr const& fileName);
+        void SetTexture(CStr const& path, m3d::DRAFT_TextureType type, m3d::rend::TexHandle& texHandle);
+        void NewEffect(retruxx::string const& name, m3d::rend::IEffect*& shader);
         void ReadMaterial(m3d::DSurfaceMaterial& SurfaceMaterial, unsigned char*& Data, bool load);
         void MatrixForBone(m3d::AnimInfo* ai, int curFrame, int bIdx);
         void DrawBones(m3d::AnimInfo* ai);
         void VertsForSkinmesh(m3d::AnimInfo* ai, m3d::AnimatedModel::Mesh& mh, void* dstVerts, bool OnlyXYZN);
-        bool Convert(const CStr& fname, const bool forcenextanimation, const retruxx::vector<m3d::DRAFT_Bone, retruxx::allocator<m3d::DRAFT_Bone> >& Bones, const retruxx::vector<m3d::DMesh, retruxx::allocator<m3d::DMesh> >& Meshes, const retruxx::vector<m3d::DAnimation, retruxx::allocator<m3d::DAnimation> >& Animations);
+        bool Convert(
+            CStr const& fname,
+            bool const forcenextanimation,
+            retruxx::vector<m3d::DRAFT_Bone, retruxx::allocator<m3d::DRAFT_Bone>> const& Bones,
+            retruxx::vector<m3d::DMesh, retruxx::allocator<m3d::DMesh>> const& Meshes,
+            retruxx::vector<m3d::DAnimation, retruxx::allocator<m3d::DAnimation>> const& Animations);
         void CreateVariants();
         void CalculateCfgSize();
         void CheckConfigurations();
 
     public:
-        AnimatedModel(const m3d::AnimatedModel&);
+        AnimatedModel(m3d::AnimatedModel const&);
         AnimatedModel();
         ~AnimatedModel();
         static void __fastcall CreateTexFileMapping();
-        static void __fastcall SetCubeMapTexName(const CStr& texName);
+        static void __fastcall SetCubeMapTexName(CStr const& texName);
         static void __fastcall UpdateTexturesFilter();
         void SetVerification(bool);
-        bool Load(const CStr& FileName, const bool bForceNextAnimation);
-        bool LoadSAM(const CStr& FileName, const bool ForceNextAnimation);
-        bool LoadGAM(const CStr& FileName, const bool bForceNextAnimation);
-        bool Save(const CStr& FileName);
-        bool SaveGAM(const CStr& FileName);
+        bool Load(CStr const& FileName, bool const bForceNextAnimation);
+        bool LoadSAM(CStr const& FileName, bool const ForceNextAnimation);
+        bool LoadGAM(CStr const& FileName, bool const bForceNextAnimation);
+        bool Save(CStr const& FileName);
+        bool SaveGAM(CStr const& FileName);
         int Update(m3d::AnimInfo* ai, bool NotFirstTime, m3d::Configuration* cfg);
         void UpdateVertices(m3d::AnimInfo* ai, bool NotFirstTime, m3d::Configuration* cfg);
-        int Render(const CMatrix& matT, m3d::AnimInfo* ai, const m3d::Configuration& cfg, unsigned int SkinNum);
-        int Render(const CMatrix& matT, m3d::AnimInfo* ai, const m3d::Configuration& cfg, const retruxx::vector<m3d::DSurfaceMaterial*, retruxx::allocator<m3d::DSurfaceMaterial*> >& MeshMaterials);
-        int Render(const CMatrix& matT, m3d::AnimInfo* ai, unsigned int SkinNum, bool setShaderParams);
+        int Render(CMatrix const& matT, m3d::AnimInfo* ai, m3d::Configuration const& cfg, unsigned int SkinNum);
+        int Render(
+            CMatrix const& matT,
+            m3d::AnimInfo* ai,
+            m3d::Configuration const& cfg,
+            retruxx::vector<m3d::DSurfaceMaterial*, retruxx::allocator<m3d::DSurfaceMaterial*>> const& MeshMaterials);
+        int Render(CMatrix const& matT, m3d::AnimInfo* ai, unsigned int SkinNum, bool setShaderParams);
         void RenderMesh(unsigned int cc, m3d::AnimInfo* ai, m3d::rend::IEffect* Shader);
-        void RenderNormals(const CMatrix& matT, m3d::AnimInfo* ai);
-        void RenderCollisions(const CMatrix& matT, unsigned int clr);
-        void RenderLoadPoints(const CMatrix& matT, m3d::AnimInfo* ai, const m3d::Configuration& cfg);
-        void RenderHierGeoms(const CMatrix& matT, m3d::AnimInfo* ai, unsigned int clr);
+        void RenderNormals(CMatrix const& matT, m3d::AnimInfo* ai);
+        void RenderCollisions(CMatrix const& matT, unsigned int clr);
+        void RenderLoadPoints(CMatrix const& matT, m3d::AnimInfo* ai, m3d::Configuration const& cfg);
+        void RenderHierGeoms(CMatrix const& matT, m3d::AnimInfo* ai, unsigned int clr);
         m3d::rend::IEffect* ApplyMaterial(unsigned int meshnumber);
         m3d::rend::IEffect* ApplyMaterial(m3d::DSurfaceMaterial& SurfaceMaterial);
         void SetNextForAnimation(ActionType Action, int NextAction);
@@ -281,51 +305,56 @@ namespace m3d
         int GetFps(int anim) const;
         void SetFps(int anim, short fps);
         int GetFrames(int anim, int pol) const;
-        const char* GetName() const;
-        const char* GetPath() const;
+        char const* GetName() const;
+        char const* GetPath() const;
         bool IsComposite() const;
         void SetComposite(bool);
         unsigned int GetNumSkins() const;
-        retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial> >& GetSkin(unsigned int);
+        retruxx::vector<m3d::DSurfaceMaterial, retruxx::allocator<m3d::DSurfaceMaterial>>& GetSkin(unsigned int);
         unsigned int GetNumMaterials() const;
         m3d::DSurfaceMaterial& GetMaterial(unsigned int SkinNumber, unsigned int MatNum);
         m3d::rend::TexHandle GetTexHandle(unsigned int SkinNumber, unsigned int MatNum, unsigned int TexNum) const;
         Aabb& GetAabb();
-        void SetSkinsToLoad(const m3d::LoadSkins& skinsToLoad);
-        void ReloadSkins(const m3d::LoadSkins& skinsToLoad);
-        const m3d::LoadSkins& GetLoadedSkins();
+        void SetSkinsToLoad(m3d::LoadSkins const& skinsToLoad);
+        void ReloadSkins(m3d::LoadSkins const& skinsToLoad);
+        m3d::LoadSkins const& GetLoadedSkins();
         void UnloadSkin(unsigned int j);
         void LoadSkin(unsigned int j);
         unsigned int GetNumGeoms() const;
         unsigned int GetNumHierGeoms() const;
-        const m3d::DRAFT_HierGeom* GetHierGeom(unsigned int num) const;
-        const m3d::DRAFT_Geom* GetGeom(unsigned int num) const;
-        const m3d::DCollisionData& GetCollisionTrimesh() const;
+        m3d::DRAFT_HierGeom const* GetHierGeom(unsigned int num) const;
+        m3d::DRAFT_Geom const* GetGeom(unsigned int num) const;
+        m3d::DCollisionData const& GetCollisionTrimesh() const;
         void AddSkin(unsigned int CopyFrom);
         void DeleteSkin(unsigned int SkinNumber);
-        void SetMaterial(unsigned int, unsigned int, const m3d::DSurfaceMaterial&);
-        int ChangeShader(const CStr& Name, unsigned int SkinNumber, unsigned int i);
-        int ChangeTexture(const CStr& name, unsigned int SkinNumber, unsigned int MatNum, unsigned int TexNum);
-        void AddTexture(unsigned int SkinNumber, unsigned int MatNum, const CStr& Name, m3d::DRAFT_TextureType TexType, unsigned int UVSet);
+        void SetMaterial(unsigned int, unsigned int, m3d::DSurfaceMaterial const&);
+        int ChangeShader(CStr const& Name, unsigned int SkinNumber, unsigned int i);
+        int ChangeTexture(CStr const& name, unsigned int SkinNumber, unsigned int MatNum, unsigned int TexNum);
+        void AddTexture(
+            unsigned int SkinNumber,
+            unsigned int MatNum,
+            CStr const& Name,
+            m3d::DRAFT_TextureType TexType,
+            unsigned int UVSet);
         void UpdateCubemap();
-        const m3d::AnimatedModel::Mesh& GetMesh(unsigned int MeshNum) const;
+        m3d::AnimatedModel::Mesh const& GetMesh(unsigned int MeshNum) const;
         m3d::AnimatedModel::Mesh& GetMesh(unsigned int MeshNum);
         m3d::DSurfaceMaterial& GetMeshMaterial(unsigned int MeshNum, unsigned int SkinNumber);
         unsigned int GetNumMeshes() const;
-        int GetLoadPointIdByName(const char* lpName) const;
-        int GetBoneMatrixByName(const CStr& boneName, CMatrix& res, bool theLastOneOnly) const;
+        int GetLoadPointIdByName(char const* lpName) const;
+        int GetBoneMatrixByName(CStr const& boneName, CMatrix& res, bool theLastOneOnly) const;
         CMatrix GetBoneMatrix(int i) const;
         unsigned int GetNumBones() const;
         m3d::AnimatedModel::Bone& GetBone(unsigned int N) const;
-        const m3d::DRAFT_BoneBounds& GetBoneBounds(unsigned int N);
+        m3d::DRAFT_BoneBounds const& GetBoneBounds(unsigned int N);
         unsigned int GetCfgSize() const;
         unsigned int GetGroupsNum() const;
-        const m3d::MeshesGroup& GetGroup(unsigned int Num) const;
+        m3d::MeshesGroup const& GetGroup(unsigned int Num) const;
         void FromCfgNum(m3d::Configuration& cfg) const;
         void FromGroupVariants(m3d::Configuration& cfg) const;
         void CalculateMeshes(m3d::Configuration& cfg) const;
         unsigned int GetNumAnimations() const;
-        const m3d::AnimatedModel::Animation& GetAnimation(unsigned int) const;
+        m3d::AnimatedModel::Animation const& GetAnimation(unsigned int) const;
         bool bIsPassable() const;
         Aabb m_box;
     };
@@ -333,8 +362,8 @@ namespace m3d
     struct Configuration
     {
         unsigned int m_num = 0;
-        retruxx::vector<m3d::AnimatedModel::Mesh*, retruxx::allocator<m3d::AnimatedModel::Mesh*> > m_meshes;
-        retruxx::vector<unsigned char, retruxx::allocator<unsigned char> > m_groupVariants;
+        retruxx::vector<m3d::AnimatedModel::Mesh*, retruxx::allocator<m3d::AnimatedModel::Mesh*>> m_meshes;
+        retruxx::vector<unsigned char, retruxx::allocator<unsigned char>> m_groupVariants;
     };
 
     class AnimInfo
@@ -344,7 +373,7 @@ namespace m3d
         friend class ::ai::JointedObj;
 
     public:
-        AnimInfo(const m3d::AnimInfo&);
+        AnimInfo(m3d::AnimInfo const&);
         AnimInfo();
         ~AnimInfo();
         void Release();
@@ -359,15 +388,25 @@ namespace m3d
         bool IsAnimation(ActionType action);
         void MoveFrame(unsigned int dti);
         void InterpolateBones(int curUpdateFrame);
-        void CreateCopyMesh(int& numMesh, void**& verts, int*& numVerts, unsigned short**& indxs, int*& numIndxs, bool*& strips, CMatrix**& mat, retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> >& VertexTypes, retruxx::vector<unsigned int, retruxx::allocator<unsigned int> >& VertexTypeSizes, int* numSkinMesh);
+        void CreateCopyMesh(
+            int& numMesh,
+            void**& verts,
+            int*& numVerts,
+            unsigned short**& indxs,
+            int*& numIndxs,
+            bool*& strips,
+            CMatrix**& mat,
+            retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType>>& VertexTypes,
+            retruxx::vector<unsigned int, retruxx::allocator<unsigned int>>& VertexTypeSizes,
+            int* numSkinMesh);
         void RemoveCopyMesh(void**& verts, int*& numVerts, unsigned short**& indxs, int*& numIndxs, CMatrix**& mat);
-        const CMatrix& GetCurrentLoadpointMatrix(int lpId) const;
+        CMatrix const& GetCurrentLoadpointMatrix(int lpId) const;
         m3d::BoneAnim& GetBoneAnim(unsigned int j);
-        void SetBoneCurMatrix(unsigned int j, const CMatrix& m);
+        void SetBoneCurMatrix(unsigned int j, CMatrix const& m);
         Aabb m_curBox;
-        const m3d::AnimatedModel::Animation* GetCurAnimation() const;
+        m3d::AnimatedModel::Animation const* GetCurAnimation() const;
         int GetStickToLastFrame() const;
-        const m3d::AnimatedModel::Mesh& GetMesh(unsigned int MeshNum) const;
+        m3d::AnimatedModel::Mesh const& GetMesh(unsigned int MeshNum) const;
 
     protected:
         bool m_Empty;
@@ -376,9 +415,9 @@ namespace m3d
         m3d::AnimatedModel::Animation* m_curAnimation;
         int m_curAnimFrame;
         int m_timeOutToNextFrame;
-        retruxx::vector<void*, retruxx::allocator<void*> > m_meshesVerts;
-        retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType> > m_VertTypes;
-        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_VertTypesSize;
+        retruxx::vector<void*, retruxx::allocator<void*>> m_meshesVerts;
+        retruxx::vector<enum m3d::rend::VertexType, retruxx::allocator<enum m3d::rend::VertexType>> m_VertTypes;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int>> m_VertTypesSize;
         int m_lastInterpolationUpdate;
         int m_stickToLastFrame;
         int m_blendFramesNum;
@@ -391,5 +430,5 @@ namespace m3d
         int m_stickToLastFramePrev;
     };
 
-    ActionType GetActionByName(char const *);
-}
+    ActionType GetActionByName(char const*);
+}  // namespace m3d

@@ -6,20 +6,22 @@ namespace m3d
     class MusicServer : public m3d::DataServer
     {
     public:
-        virtual  ~MusicServer() override;
+        virtual ~MusicServer() override;
         virtual int Release() override;
-        virtual int AddItem(const char* params, const char* id) override;
+        virtual int AddItem(char const* params, char const* id) override;
         virtual int RemoveItem(int id) override;
         virtual void RenderItem(int id, void* params) override;
         virtual void PostLoad() override;
         virtual int GetItemProperty(int id, int prop, void* dest) override;
         virtual int SetItemProperty(int id, int prop, void* src) override;
-        virtual int SaveAllLoadedEntities(const char* filename) override;
+        virtual int SaveAllLoadedEntities(char const* filename) override;
 
     protected:
-        virtual void AddItemsList(retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem> >& itemslist) override;
+        virtual void AddItemsList(
+            retruxx::vector<m3d::DataServer::ServerItem, retruxx::allocator<m3d::DataServer::ServerItem>>& itemslist)
+            override;
 
     private:
         int _GetSoundIdByServerHandle(int sh) const;
     };
-}
+}  // namespace m3d

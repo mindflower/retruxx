@@ -8,8 +8,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -111,4 +111,4 @@ namespace ai
         std::vector<int> m_affixIds;
         AffixType m_affixType;
     };
-}
+}  // namespace ai

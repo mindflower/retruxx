@@ -40,7 +40,8 @@ namespace m3d
         if (!m_ambientWorkshopSounds.empty())
         {
             auto const numSounds = static_cast<unsigned>(m_ambientWorkshopSounds.size());
-            m_curAmbientChannelId = M3D_APP->m_sound->PlaySound2D(m_ambientWorkshopSounds[static_cast<unsigned>(rand()) % numSounds], true);
+            m_curAmbientChannelId =
+                M3D_APP->m_sound->PlaySound2D(m_ambientWorkshopSounds[static_cast<unsigned>(rand()) % numSounds], true);
         }
         return m_curAmbientChannelId;
     }
@@ -106,7 +107,8 @@ namespace m3d
         if (!m_ambientShopSounds.empty())
         {
             auto const numSounds = static_cast<unsigned>(m_ambientShopSounds.size());
-            m_curAmbientChannelId = M3D_APP->m_sound->PlaySound2D(m_ambientShopSounds[static_cast<unsigned>(rand()) % numSounds], true);
+            m_curAmbientChannelId =
+                M3D_APP->m_sound->PlaySound2D(m_ambientShopSounds[static_cast<unsigned>(rand()) % numSounds], true);
         }
         return m_curAmbientChannelId;
     }

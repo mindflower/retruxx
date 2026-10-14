@@ -60,7 +60,7 @@ namespace
 
     // Lifts one pattern child out of the slot pattern and re-bases its origin
     // onto the slot, so the whole row can be cloned as a unit.
-    template <class T>
+    template<class T>
     T* TakePatternChild(m3d::ui::Wnd* pattern, m3d::ui::Wnd* owner, CStr const& name, m3d::Class const* cls, int& res)
     {
         m3d::Object* child = pattern->GetChildByName(name);
@@ -246,15 +246,17 @@ int WeaponSlotWnd::CreateFromPattern()
     {
         return 0;
     }
-    if (!m_pattern.m_wndPattern || !M3D_APP->IsWndAlive(m_pattern.m_wndPattern, -1) ||
-        !m_pattern.m_wndPattern->Valid())
+    if (!m_pattern.m_wndPattern || !M3D_APP->IsWndAlive(m_pattern.m_wndPattern, -1) || !m_pattern.m_wndPattern->Valid())
     {
         M3D_LOG_INFO("WeaponSlotWnd::CreateFromPattern error - null pattern");
         return 0;
     }
 
-    if (!Create(CStr(), m_pattern.m_wndPattern->GetStyle(), m_pattern.m_wndPattern->GetBounds(),
-                m_pattern.m_wndPattern->GetId()))
+    if (!Create(
+            CStr(),
+            m_pattern.m_wndPattern->GetStyle(),
+            m_pattern.m_wndPattern->GetBounds(),
+            m_pattern.m_wndPattern->GetId()))
     {
         M3D_LOG_INFO("WeaponSlotWnd::CreateFromPattern error - cannot create window");
         return 0;

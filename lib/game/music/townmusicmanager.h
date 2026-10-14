@@ -17,4 +17,4 @@ namespace m3d
         std::vector<int> m_ambientWorkshopSounds;
         int m_curAmbientChannelId = -1;
     };
-}
+}  // namespace m3d

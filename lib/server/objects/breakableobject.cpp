@@ -270,8 +270,8 @@ namespace ai
             {
                 auto* const light = static_cast<SgNodeObj*>(child.second);
                 CVector const lightPos = light->GetPosition();
-                light->SetPosition(
-                    CVector(pos.x + (lightPos.x - oldPos.x), pos.y + (lightPos.y - oldPos.y), pos.z + (lightPos.z - oldPos.z)));
+                light->SetPosition(CVector(
+                    pos.x + (lightPos.x - oldPos.x), pos.y + (lightPos.y - oldPos.y), pos.z + (lightPos.z - oldPos.z)));
             }
         }
     }
@@ -284,12 +284,16 @@ namespace ai
             return;
         }
         CVector const linearVelocity = GetLinearVelocity();
-        if (linearVelocity.x * linearVelocity.x + linearVelocity.y * linearVelocity.y + linearVelocity.z * linearVelocity.z >= 0.0099999998f)
+        if (linearVelocity.x * linearVelocity.x + linearVelocity.y * linearVelocity.y +
+                linearVelocity.z * linearVelocity.z >=
+            0.0099999998f)
         {
             return;
         }
         CVector const angularVelocity = GetAngularVelocity();
-        if (angularVelocity.x * angularVelocity.x + angularVelocity.y * angularVelocity.y + angularVelocity.z * angularVelocity.z >= 0.2f)
+        if (angularVelocity.x * angularVelocity.x + angularVelocity.y * angularVelocity.y +
+                angularVelocity.z * angularVelocity.z >=
+            0.2f)
         {
             return;
         }
@@ -462,7 +466,8 @@ namespace ai
             }
             if (!GetPrototypeInfo()->m_breakEffect.empty())
             {
-                PhysicBody::CreateEffectNode(GetPrototypeInfo()->m_breakEffect, GetGeometricCenter(), GetRotation(), true, 1.0f);
+                PhysicBody::CreateEffectNode(
+                    GetPrototypeInfo()->m_breakEffect, GetGeometricCenter(), GetRotation(), true, 1.0f);
             }
             _BreakOffConnectedRopes(true);
             _StifleChildLights();
@@ -472,14 +477,16 @@ namespace ai
             Remove();
             if (m_destroyable)
             {
-                CompositeObj* const brokenObj = CreateBrokenObj(this, GetPrototypeInfo()->m_destroyedModelName, nullptr);
+                CompositeObj* const brokenObj =
+                    CreateBrokenObj(this, GetPrototypeInfo()->m_destroyedModelName, nullptr);
                 if (m_initVelocities)
                 {
                     brokenObj->InitImpulses(m_causePos, m_causeForce);
                 }
                 if (!GetPrototypeInfo()->m_breakEffect.empty())
                 {
-                    PhysicBody::CreateEffectNode(GetPrototypeInfo()->m_breakEffect, GetGeometricCenter(), GetRotation(), true, 1.0f);
+                    PhysicBody::CreateEffectNode(
+                        GetPrototypeInfo()->m_breakEffect, GetGeometricCenter(), GetRotation(), true, 1.0f);
                 }
                 CreateBlastWave();
             }

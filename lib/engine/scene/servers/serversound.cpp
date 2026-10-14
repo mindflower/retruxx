@@ -123,7 +123,6 @@ namespace m3d
                 m3d::SgNode* m_node = nullptr;
                 int m_currentSoundNum = 0;
             };
-           
 
             auto const* renderInfo = static_cast<RenderInfo*>(params);
 

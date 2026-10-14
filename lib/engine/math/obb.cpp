@@ -4,7 +4,7 @@
 #include <utility>
 #include <cstring>
 
-void Obb::Create(const CVector& min, const CVector& max, const CMatrix& mat, bool noScale)
+void Obb::Create(CVector const& min, CVector const& max, CMatrix const& mat, bool noScale)
 {
     // RVA 0x5C7A20 - the box min..max in the space of mat. With noScale the basis is just
     // normalised; otherwise each axis' scale is moved from the basis into the extents.

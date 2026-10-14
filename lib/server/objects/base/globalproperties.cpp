@@ -90,10 +90,13 @@ namespace ai
         xmlNode->GetFirstChild(node, "DynamicQuest");
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
-            m3d::SafeFloatAttrib(m_probabilityToGenerateDynamicQuestInTown, node, "ProbabilityToGenerateDynamicQuestInTown");
+            m3d::SafeFloatAttrib(
+                m_probabilityToGenerateDynamicQuestInTown, node, "ProbabilityToGenerateDynamicQuestInTown");
             if (m_probabilityToGenerateDynamicQuestInTown < 0.0 || m_probabilityToGenerateDynamicQuestInTown > 1.0)
             {
-                M3D_CRITICAL_ERROR("invalid ProbabilityToGenerateDynamicQuestInTown in GlobalProperties: " + CStr(m_probabilityToGenerateDynamicQuestInTown));
+                M3D_CRITICAL_ERROR(
+                    "invalid ProbabilityToGenerateDynamicQuestInTown in GlobalProperties: " +
+                    CStr(m_probabilityToGenerateDynamicQuestInTown));
             }
         }
 
@@ -194,8 +197,10 @@ namespace ai
         if (!node->IsEmpty() && node->IsOfType(m3d::cmn::XML_NODE_ELEMENT))
         {
             m3d::SafeFloatAttrib(m_defaultArticleRegenerationTime, node, "DefaultRegenerationTime");
-            m3d::SafeFloatAttrib(m_probabilityToDropArticlesFromDeadVehicles, node, "ProbabilityToDropArticlesFromDeadVehicles");
-            m3d::SafeFloatAttrib(m_probabilityToDropGunsFromDeadVehicles, node, "ProbabilityToDropGunsFromDeadVehicles");
+            m3d::SafeFloatAttrib(
+                m_probabilityToDropArticlesFromDeadVehicles, node, "ProbabilityToDropArticlesFromDeadVehicles");
+            m3d::SafeFloatAttrib(
+                m_probabilityToDropGunsFromDeadVehicles, node, "ProbabilityToDropGunsFromDeadVehicles");
         }
 
         xmlNode->GetFirstChild(node, "InfectionZones");
@@ -245,11 +250,14 @@ namespace ai
                 m3d::SafeFloatAttrib(coeff.m_enemiesShootingDelay, temp, "EnemyShootingDelay");
                 if (coeff.m_damageCoeffForPlayerFromEnemies < 0.0)
                 {
-                    M3D_CRITICAL_ERROR("invalid EnemyWeaponCoeff in GlobalProperties: " + CStr(coeff.m_damageCoeffForPlayerFromEnemies));
+                    M3D_CRITICAL_ERROR(
+                        "invalid EnemyWeaponCoeff in GlobalProperties: " +
+                        CStr(coeff.m_damageCoeffForPlayerFromEnemies));
                 }
                 if (coeff.m_enemiesShootingDelay < 0.0 || coeff.m_enemiesShootingDelay > 3.0)
                 {
-                    M3D_CRITICAL_ERROR("invalid EnemyShootingDelay in GlobalProperties: " + CStr(coeff.m_enemiesShootingDelay));
+                    M3D_CRITICAL_ERROR(
+                        "invalid EnemyShootingDelay in GlobalProperties: " + CStr(coeff.m_enemiesShootingDelay));
                 }
                 m_difficultyLevelCoeffs.push_back(coeff);
             }
@@ -266,4 +274,4 @@ namespace ai
             M3D_CRITICAL_ERROR("no difficulty levels in GlobalProperties");
         }
     }
-}
+}  // namespace ai

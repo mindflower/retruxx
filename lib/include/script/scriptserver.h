@@ -39,6 +39,7 @@ namespace m3d
     class Scriptlet
     {
         friend class ScriptServer;
+
     public:
         static inline ScriptServer* g_scriptServer = nullptr;
 
@@ -112,7 +113,12 @@ namespace m3d
         eScriptError executeScriptFile(char const*);
         eScriptError init();
         virtual Object* Clone();
-        eScriptError registerGlobalFunction(int(*)(sArgStack&), char const* = "", char const* = "", char const* = "", char const* = "");
+        eScriptError registerGlobalFunction(
+            int (*)(sArgStack&),
+            char const* = "",
+            char const* = "",
+            char const* = "",
+            char const* = "");
 
     protected:
         ScriptServer() = default;
@@ -123,4 +129,4 @@ namespace m3d
         CStr m_lastScriptExecuted;
         bool m_bInitialized = false;
     };
-}
+}  // namespace m3d

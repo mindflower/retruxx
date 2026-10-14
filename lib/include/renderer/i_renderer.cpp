@@ -4,9 +4,7 @@ namespace m3d
 {
     namespace rend
     {
-        ShaderMacro::ShaderMacro(const char* n, const char* d) :
-            name(n),
-            definition(d)
+        ShaderMacro::ShaderMacro(char const* n, char const* d) : name(n), definition(d)
         {
             // RVA 0x70B550
         }

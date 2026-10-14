@@ -21,21 +21,22 @@ namespace ai
         int m_BlastWavePrototypeId;
         CStr m_BlastWavePrototypeName;
         BreakableObjectPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
     };
 
     class BreakableObject : public ai::SimplePhysicObj
     {
         friend class BreakableObjectPrototypeInfo;
+
     protected:
-        virtual  ~BreakableObject() override;
+        virtual ~BreakableObject() override;
 
     private:
-        BreakableObject(const ai::BreakableObjectPrototypeInfo& prototypeInfo);
-        BreakableObject(const ai::BreakableObject&);
+        BreakableObject(ai::BreakableObjectPrototypeInfo const& prototypeInfo);
+        BreakableObject(ai::BreakableObject const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -43,7 +44,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBreakableObject;
-        virtual const ai::BreakableObjectPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::BreakableObjectPrototypeInfo const* GetPrototypeInfo() const override;
 
         enum STATES
         {
@@ -64,14 +65,14 @@ namespace ai
         float m_causeForce;
         bool m_initVelocities;
         bool m_bPositioningOnGround;
-        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > m_connectedRopes;
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>> m_connectedRopes;
 
     public:
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
-        virtual void SetPosition(const CVector& pos) override;
-        virtual void SetRotation(const Quaternion& rot) override;
-        virtual void SetPositionSelf(const CVector& pos) override;
+        virtual void SetPosition(CVector const& pos) override;
+        virtual void SetRotation(Quaternion const& rot) override;
+        virtual void SetPositionSelf(CVector const& pos) override;
         virtual void RenderDebugInfo() const override;
         virtual CVector GetGeometricCenter() const override;
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
@@ -81,25 +82,25 @@ namespace ai
         void SetState(ai::BreakableObject::STATES state);
         void SetEnabled();
         void SetDestroyed();
-        void SetJointAnchor(const CVector& vec);
+        void SetJointAnchor(CVector const& vec);
         ai::BlastWave* CreateBlastWave() const;
         int IsDestroyable();
         float GetCriticalHitEnergy();
         unsigned short GetEffectType();
         unsigned short GetDestroyEffectType();
         ai::BreakableObject::STATES GetState();
-        const ai::BoxyBody* _BoxyBody() const;
+        ai::BoxyBody const* _BoxyBody() const;
         ai::BoxyBody* _BoxyBody();
         CVector GetBounds();
         void SetPositioningOnGround(bool);
-        const CStr& GetBrokenModelName() const;
-        const CStr& GetDestroyedModelName() const;
+        CStr const& GetBrokenModelName() const;
+        CStr const& GetDestroyedModelName() const;
         bool IsExplosive() const;
         void ConnectWithRope(int ropeId);
         bool DisconnectFromRope(int ropeId);
-        const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& GetConnectedRopes();
-        void SetRemovingEffectName(const CStr& name);
-        void SetCausePos(const CVector& pos);
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>> const& GetConnectedRopes();
+        void SetRemovingEffectName(CStr const& name);
+        void SetCausePos(CVector const& pos);
         void SetCauseForce(float force);
         void SetInitVelocities(bool initVelocities);
 
@@ -108,4 +109,4 @@ namespace ai
         void _BreakOffConnectedRopes(bool createJoint);
         void _StifleChildLights();
     };
-}
+}  // namespace ai

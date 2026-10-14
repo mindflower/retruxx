@@ -64,7 +64,8 @@ namespace ai
             return;
         }
         int const hirerBelong = hirer->GetBelong();
-        if (theRelationship->CheckTolerance(victimBelong, thePlayer->GetBelong()) <= RS_ENEMY && victimBelong != hirerBelong)
+        if (theRelationship->CheckTolerance(victimBelong, thePlayer->GetBelong()) <= RS_ENEMY &&
+            victimBelong != hirerBelong)
         {
             ++m_fragsAtStart;
         }
@@ -247,4 +248,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
-}
+}  // namespace ai

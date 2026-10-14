@@ -22,4 +22,4 @@ namespace m3d
     {
         ::LeaveCriticalSection(&m_cs);
     }
-}
+}  // namespace m3d

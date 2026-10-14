@@ -175,7 +175,6 @@ namespace m3d
             BM_COLOR_ADDSMOOTH = 0x11,
         };
 
-
         enum ZbState : int32_t
         {
             ZB_DISABLE = 0x0,
@@ -402,7 +401,7 @@ namespace m3d
             m3d::rend::Colorf m_emissive;
             float m_specularPower;
 
-            void init(const m3d::rend::Colorf& diff)
+            void init(m3d::rend::Colorf const& diff)
             {
                 memset(this, 0, sizeof(m3d::rend::Material));
                 this->m_diffuse = diff;
@@ -417,7 +416,6 @@ namespace m3d
         // Handles are plain 32-bit ids passed to and returned by the renderer DLL.
         class TexHandle : public Handle<TexHandle>
         {
-            
         };
 
         class IbHandle : public Handle<IbHandle>
@@ -487,7 +485,7 @@ namespace m3d
             float m_attenuation2;
             float m_theta;
             float m_phi;
-            void init(m3d::rend::LightType type, const CVector& pos);
+            void init(m3d::rend::LightType type, CVector const& pos);
         };
 #pragma pack(pop)
 
@@ -542,8 +540,8 @@ namespace m3d
         {
             CStr name;
             CStr definition;
-            ShaderMacro(const m3d::rend::ShaderMacro&);
-            ShaderMacro(const char* n, const char* d);
+            ShaderMacro(m3d::rend::ShaderMacro const&);
+            ShaderMacro(char const* n, char const* d);
             ShaderMacro();
         };
 #pragma pack(pop)
@@ -554,15 +552,15 @@ namespace m3d
 #pragma pack(push, 4)
         struct IRenderResource
         {
-           ;
-            IRenderResource(const m3d::rend::IRenderResource&);
+            ;
+            IRenderResource(m3d::rend::IRenderResource const&);
             IRenderResource();
             virtual int AddRef();
             virtual int Release();
             virtual int GetRefCount();
             virtual bool IsValid() const = 0;
             int32_t m_refCount;
-            virtual  ~IRenderResource();
+            virtual ~IRenderResource();
         };
 #pragma pack(pop)
 
@@ -600,10 +598,10 @@ namespace m3d
             virtual void Begin() = 0;
             virtual void End() = 0;
             virtual m3d::rend::IQuery::State GetState() = 0;
-            virtual const m3d::rend::QueryReturnValue& GetData() = 0;
+            virtual m3d::rend::QueryReturnValue const& GetData() = 0;
 
         protected:
-            virtual  ~IQuery() override;
+            virtual ~IQuery() override;
         };
 
         struct IHlslShader : public m3d::rend::IRenderResource
@@ -625,23 +623,23 @@ namespace m3d
             // the shipped interface used unsigned int, which only holds it on a 32-bit build.
             using ParameterHandle = std::uintptr_t;
 
-            static const ParameterHandle INVALID_PARAM;
+            static ParameterHandle const INVALID_PARAM;
             virtual unsigned int GetNumberOfParams() const = 0;
-            virtual ParameterHandle GetParamHandleByName(const char*) = 0;
+            virtual ParameterHandle GetParamHandleByName(char const*) = 0;
             virtual void SetInt(ParameterHandle, int) = 0;
             virtual void SetFloat(ParameterHandle, float) = 0;
-            virtual void SetVector4(ParameterHandle, const CVector4&) = 0;
-            virtual void SetVector3(ParameterHandle, const CVector&) = 0;
-            virtual void SetFloat4(ParameterHandle, const nFloat4&) = 0;
-            virtual void SetMatrix(ParameterHandle, const CMatrix&) = 0;
-            virtual void SetIntArray(ParameterHandle, const int*, int) = 0;
-            virtual void SetFloatArray(ParameterHandle, const float*, int) = 0;
-            virtual void SetFloat4Array(ParameterHandle, const nFloat4*, int) = 0;
-            virtual void SetVector4Array(ParameterHandle, const CVector4*, int) = 0;
-            virtual void SetMatrixArray(ParameterHandle, const CMatrix*, int) = 0;
-            virtual void SetMatrixPointerArray(ParameterHandle, const CMatrix**, int) = 0;
+            virtual void SetVector4(ParameterHandle, CVector4 const&) = 0;
+            virtual void SetVector3(ParameterHandle, CVector const&) = 0;
+            virtual void SetFloat4(ParameterHandle, nFloat4 const&) = 0;
+            virtual void SetMatrix(ParameterHandle, CMatrix const&) = 0;
+            virtual void SetIntArray(ParameterHandle, int const*, int) = 0;
+            virtual void SetFloatArray(ParameterHandle, float const*, int) = 0;
+            virtual void SetFloat4Array(ParameterHandle, nFloat4 const*, int) = 0;
+            virtual void SetVector4Array(ParameterHandle, CVector4 const*, int) = 0;
+            virtual void SetMatrixArray(ParameterHandle, CMatrix const*, int) = 0;
+            virtual void SetMatrixPointerArray(ParameterHandle, CMatrix const**, int) = 0;
             virtual void Apply() = 0;
-            virtual  ~IHlslShader() override;
+            virtual ~IHlslShader() override;
         };
 
         struct IAsmShader : public m3d::rend::IRenderResource
@@ -653,7 +651,7 @@ namespace m3d
             };
 
             virtual void Apply() = 0;
-            virtual  ~IAsmShader() override;
+            virtual ~IAsmShader() override;
         };
 
         struct IEffect : public m3d::rend::IRenderResource
@@ -713,25 +711,25 @@ namespace m3d
             // static_assert(sizeof(TechniqueDesc) == 0x0030);
 
             virtual unsigned int GetNumTechniques() const = 0;
-            virtual const m3d::rend::IEffect::TechniqueDesc& GetTechniqueDesc(unsigned int) const = 0;
+            virtual m3d::rend::IEffect::TechniqueDesc const& GetTechniqueDesc(unsigned int) const = 0;
             virtual void SetCurTechnique(unsigned int) = 0;
             virtual unsigned int GetCurTechnique() const = 0;
             virtual void SetDefaultTechnique(bool) = 0;
             virtual bool IsParameterUsed(m3d::rend::IEffect::Parameter) = 0;
             virtual void SetInt(m3d::rend::IEffect::Parameter, int) = 0;
             virtual void SetFloat(m3d::rend::IEffect::Parameter, float) = 0;
-            virtual void SetVector4(m3d::rend::IEffect::Parameter, const CVector4&) = 0;
-            virtual void SetVector3(m3d::rend::IEffect::Parameter, const CVector&) = 0;
-            virtual void SetFloat4(m3d::rend::IEffect::Parameter, const nFloat4&) = 0;
-            virtual void SetMatrix(m3d::rend::IEffect::Parameter, const CMatrix&) = 0;
+            virtual void SetVector4(m3d::rend::IEffect::Parameter, CVector4 const&) = 0;
+            virtual void SetVector3(m3d::rend::IEffect::Parameter, CVector const&) = 0;
+            virtual void SetFloat4(m3d::rend::IEffect::Parameter, nFloat4 const&) = 0;
+            virtual void SetMatrix(m3d::rend::IEffect::Parameter, CMatrix const&) = 0;
             virtual void SetTexture(m3d::rend::IEffect::Parameter, m3d::rend::TexHandle*) = 0;
-            virtual void SetIntArray(m3d::rend::IEffect::Parameter, const int*, int) = 0;
-            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, const float*, int) = 0;
-            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, const nFloat4*, int) = 0;
-            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, const CVector4*, int) = 0;
-            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, const CMatrix*, int) = 0;
-            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, const CMatrix**, int) = 0;
-            virtual  ~IEffect() override;
+            virtual void SetIntArray(m3d::rend::IEffect::Parameter, int const*, int) = 0;
+            virtual void SetFloatArray(m3d::rend::IEffect::Parameter, float const*, int) = 0;
+            virtual void SetFloat4Array(m3d::rend::IEffect::Parameter, nFloat4 const*, int) = 0;
+            virtual void SetVector4Array(m3d::rend::IEffect::Parameter, CVector4 const*, int) = 0;
+            virtual void SetMatrixArray(m3d::rend::IEffect::Parameter, CMatrix const*, int) = 0;
+            virtual void SetMatrixPointerArray(m3d::rend::IEffect::Parameter, CMatrix const**, int) = 0;
+            virtual ~IEffect() override;
         };
 
         //IMPORTANT: fields and member order is strict!
@@ -913,43 +911,44 @@ namespace m3d
             virtual void PushMultiSampleMask() = 0;
             virtual void PopMultiSampleMask() = 0;
             virtual void SetMultiSampleMask(unsigned int, bool) = 0;
-            virtual void SetViewMatrix(const CMatrix&) = 0;
-            virtual const CMatrix& GetViewMatrix() = 0;
-            virtual const CVector& GetViewOrigin() = 0;
+            virtual void SetViewMatrix(CMatrix const&) = 0;
+            virtual CMatrix const& GetViewMatrix() = 0;
+            virtual CVector const& GetViewOrigin() = 0;
             virtual void MatPush() = 0;
-            virtual void MatPush(const CMatrix&) = 0;
+            virtual void MatPush(CMatrix const&) = 0;
             virtual void MatPop(bool) = 0;
-            virtual void MatMul(const CMatrix&) = 0;
-            virtual void MatMulR(const CMatrix*) = 0;
-            virtual const CMatrix& MatGet() = 0;
-            virtual const CMatrix& MatGetInv() = 0;
-            virtual void MatSet(const CMatrix&) = 0;
+            virtual void MatMul(CMatrix const&) = 0;
+            virtual void MatMulR(CMatrix const*) = 0;
+            virtual CMatrix const& MatGet() = 0;
+            virtual CMatrix const& MatGetInv() = 0;
+            virtual void MatSet(CMatrix const&) = 0;
             virtual void MatGetBasis(CVector&, CVector&, CVector&) const = 0;
             virtual CVector MatGetOrgInv() = 0;
             virtual CVector MatGetOrg() = 0;
-            virtual void MatSetWorld(const CMatrix&) = 0;
-            virtual const CMatrix& MatGetWorld() = 0;
+            virtual void MatSetWorld(CMatrix const&) = 0;
+            virtual CMatrix const& MatGetWorld() = 0;
             virtual void MatPushWorld() = 0;
             virtual void MatPopWorld() = 0;
-            virtual void MatSetProj(const CMatrix&) = 0;
-            virtual const CMatrix& MatGetProj() = 0;
+            virtual void MatSetProj(CMatrix const&) = 0;
+            virtual CMatrix const& MatGetProj() = 0;
             virtual void MatPushProj() = 0;
             virtual void MatPopProj() = 0;
-            virtual const CMatrix* GetModelViewProjMatrix() = 0;
-            virtual CVector Unproject(const CVector2&) = 0;
-            virtual CVector Project(const CVector&) = 0;
-            virtual CVector* ProjectWorldAbs(CVector* result, const CVector*) = 0;
-            virtual void TgEnableSetLinearSt(int, float, float, float, float, float, bool, float, float, float, float) = 0;
-            virtual void TgEnableSetMatrixSt(int, const CMatrix*, bool) = 0;
-            virtual void TgEnableSetMatrixStr(int, const CMatrix*, bool) = 0;
+            virtual CMatrix const* GetModelViewProjMatrix() = 0;
+            virtual CVector Unproject(CVector2 const&) = 0;
+            virtual CVector Project(CVector const&) = 0;
+            virtual CVector* ProjectWorldAbs(CVector* result, CVector const*) = 0;
+            virtual void
+                TgEnableSetLinearSt(int, float, float, float, float, float, bool, float, float, float, float) = 0;
+            virtual void TgEnableSetMatrixSt(int, CMatrix const*, bool) = 0;
+            virtual void TgEnableSetMatrixStr(int, CMatrix const*, bool) = 0;
             virtual void TgSetTransformMode(int, m3d::rend::TgMode) = 0;
             virtual void TgSetTcSource(int, m3d::rend::TcSource, int) = 0;
             virtual void TgDisable(int) = 0;
-            virtual void SetTextureMatrix(int, const CMatrix*) = 0;
+            virtual void SetTextureMatrix(int, CMatrix const*) = 0;
             virtual void Set2x2BumpMatrix(int, float, float, float, float) = 0;
-            virtual int RenderToTexStart(const m3d::rend::TexHandle&, bool) = 0;
+            virtual int RenderToTexStart(m3d::rend::TexHandle const&, bool) = 0;
             virtual void RenderToTexFinish() = 0;
-            virtual void CopyRenderTargetToTexture(const m3d::rend::TexHandle&) = 0;
+            virtual void CopyRenderTargetToTexture(m3d::rend::TexHandle const&) = 0;
             virtual int CanRender() = 0;
             virtual int SetActiveState(int) = 0;
             virtual int BeginScene() = 0;
@@ -958,7 +957,7 @@ namespace m3d
             virtual int PresentScene() = 0;
             virtual void ClearViewport(m3d::rend::ClearFlags, unsigned int) = 0;
             virtual rend::Viewport GetViewport() = 0;
-            virtual int SetViewport(const m3d::rend::Viewport&) = 0;
+            virtual int SetViewport(m3d::rend::Viewport const&) = 0;
             virtual void RegisterResetCallback(m3d::IDeviceResetCallback*) = 0;
             virtual void UnregisterResetCallback(m3d::IDeviceResetCallback*) = 0;
             virtual void SetGamma(float, float, float) = 0;
@@ -970,13 +969,13 @@ namespace m3d
             virtual float GetMaxNPatchTessellationLevel() = 0;
             virtual int GetMaxVertexShaderConst() = 0;
             virtual TexHandle AddTexture(CStr const&, unsigned int) = 0;
-            virtual TexHandle AddDynamicTexture(const char*, int, int, unsigned int) = 0;
-            virtual TexHandle AddRenderTargetTexture(const char*, int, int) = 0;
+            virtual TexHandle AddDynamicTexture(char const*, int, int, unsigned int) = 0;
+            virtual TexHandle AddRenderTargetTexture(char const*, int, int) = 0;
             virtual TexHandle GetBufferedTargetTexture(int) = 0;
             virtual TexHandle GetFullFrameFrameBufferTexture() = 0;
             virtual int ReloadTextures() = 0;
-            virtual bool ReportTexturesInfo(const char*) = 0;
-            virtual int SetTexture(int, const m3d::rend::TexHandle&, long double) = 0;
+            virtual bool ReportTexturesInfo(char const*) = 0;
+            virtual int SetTexture(int, m3d::rend::TexHandle const&, long double) = 0;
             virtual void SetWhiteTexture(int) = 0;
             virtual void SetBlackTexture(int) = 0;
             virtual void SetErrorTexture(int) = 0;
@@ -984,104 +983,149 @@ namespace m3d
             virtual int ReferenceTexture(m3d::rend::TexHandle const&) = 0;
             virtual int ReleaseTexture(m3d::rend::TexHandle&) = 0;
             virtual void SetTextureParameter(m3d::rend::TexHandle const&, m3d::rend::TexParam, unsigned int) = 0;
-            virtual int GetTextureName(const m3d::rend::TexHandle&, CStr&) = 0;
-            virtual int UploadTexImage(const m3d::rend::TexHandle&, unsigned int, unsigned int, unsigned __int8*, m3d::rend::TexDynFormat, int) = 0;
-            virtual void* LockTexture(const m3d::rend::TexHandle&, m3d::rend::TexDynFormat, int&, int) = 0;
-            virtual void UnlockTexture(const m3d::rend::TexHandle&) = 0;
-            virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle*, int, int) = 0;
-            virtual int DownloadTexImageRgba8888(unsigned int*, const m3d::rend::TexHandle&) = 0;
+            virtual int GetTextureName(m3d::rend::TexHandle const&, CStr&) = 0;
+            virtual int UploadTexImage(
+                m3d::rend::TexHandle const&,
+                unsigned int,
+                unsigned int,
+                unsigned __int8*,
+                m3d::rend::TexDynFormat,
+                int) = 0;
+            virtual void* LockTexture(m3d::rend::TexHandle const&, m3d::rend::TexDynFormat, int&, int) = 0;
+            virtual void UnlockTexture(m3d::rend::TexHandle const&) = 0;
+            virtual int DownloadTexImageRgba8888(unsigned int*, m3d::rend::TexHandle const*, int, int) = 0;
+            virtual int DownloadTexImageRgba8888(unsigned int*, m3d::rend::TexHandle const&) = 0;
             virtual void GetDims(m3d::rend::TexHandle const&, int&, int&) = 0;
-            virtual void TexCopy(const m3d::rend::TexHandle&, const m3d::rend::TexHandle&) = 0;
+            virtual void TexCopy(m3d::rend::TexHandle const&, m3d::rend::TexHandle const&) = 0;
             virtual void RepaintAllTexturesMips() = 0;
             virtual void DrawFullScreenQuad() = 0;
             virtual void DrawFullScreenQuad(m3d::rend::IEffect*) = 0;
             virtual m3d::rend::IbHandle AddIb(int, bool) = 0;
-            virtual void SetIndices(const m3d::rend::IbHandle&, int) = 0;
-            virtual void SetIndices(const m3d::rend::IbPoolField&, int) = 0;
-            virtual void* LockIb(const m3d::rend::IbHandle&, int, int, unsigned int) = 0;
-            virtual void* LockIbStreaming(const m3d::rend::IbHandle*, int, int*, int*) = 0;
-            virtual void UnlockIb(const m3d::rend::IbHandle&) = 0;
+            virtual void SetIndices(m3d::rend::IbHandle const&, int) = 0;
+            virtual void SetIndices(m3d::rend::IbPoolField const&, int) = 0;
+            virtual void* LockIb(m3d::rend::IbHandle const&, int, int, unsigned int) = 0;
+            virtual void* LockIbStreaming(m3d::rend::IbHandle const*, int, int*, int*) = 0;
+            virtual void UnlockIb(m3d::rend::IbHandle const&) = 0;
             virtual int ReleaseIb(m3d::rend::IbHandle&) = 0;
-            virtual int ReferenceIb(const m3d::rend::IbHandle*) = 0;
+            virtual int ReferenceIb(m3d::rend::IbHandle const*) = 0;
             virtual m3d::rend::IbPoolField AddIbPoolField(unsigned int) = 0;
             virtual void ReleaseIbPoolField(m3d::rend::IbPoolField&) = 0;
             virtual void* LockIbPoolField(m3d::rend::IbPoolField const&) = 0;
             virtual void UnlockIbPoolField(m3d::rend::IbPoolField const&) = 0;
-            virtual bool ReportIbsInfo(const char*) = 0;
+            virtual bool ReportIbsInfo(char const*) = 0;
             virtual m3d::rend::VbHandle AddVb(m3d::rend::VertexType, int, CStr const&, unsigned int) = 0;
-            virtual void SetToStream0(const m3d::rend::VbHandle&) = 0;
-            virtual void SetToStream0(const m3d::rend::VbPoolField&) = 0;
-            virtual void SetToStream(int, const m3d::rend::VbHandle&) = 0;
-            virtual void SetToStream(int, const m3d::rend::VbPoolField&) = 0;
-            virtual void* LockVb(const m3d::rend::VbHandle&, int, int, unsigned int) = 0;
-            virtual void* LockVbStreaming(const m3d::rend::VbHandle&, int, int&, int*) = 0;
-            virtual void UnlockVb(const m3d::rend::VbHandle&) = 0;
-            virtual int ReferenceVb(const m3d::rend::VbHandle*) = 0;
+            virtual void SetToStream0(m3d::rend::VbHandle const&) = 0;
+            virtual void SetToStream0(m3d::rend::VbPoolField const&) = 0;
+            virtual void SetToStream(int, m3d::rend::VbHandle const&) = 0;
+            virtual void SetToStream(int, m3d::rend::VbPoolField const&) = 0;
+            virtual void* LockVb(m3d::rend::VbHandle const&, int, int, unsigned int) = 0;
+            virtual void* LockVbStreaming(m3d::rend::VbHandle const&, int, int&, int*) = 0;
+            virtual void UnlockVb(m3d::rend::VbHandle const&) = 0;
+            virtual int ReferenceVb(m3d::rend::VbHandle const*) = 0;
             virtual int ReleaseVb(m3d::rend::VbHandle&) = 0;
-            virtual bool ReportVbsInfo(const char*) = 0;
+            virtual bool ReportVbsInfo(char const*) = 0;
             virtual m3d::rend::VbPoolField AddVbPoolField(m3d::rend::VertexType, unsigned int) = 0;
             virtual void ReleaseVbPoolField(m3d::rend::VbPoolField&) = 0;
-            virtual void* LockVbPoolField(const m3d::rend::VbPoolField&) = 0;
-            virtual void UnlockVbPoolField(const m3d::rend::VbPoolField&) = 0;
+            virtual void* LockVbPoolField(m3d::rend::VbPoolField const&) = 0;
+            virtual void UnlockVbPoolField(m3d::rend::VbPoolField const&) = 0;
             virtual m3d::rend::VbHandle GetVbStreaming(m3d::rend::VertexType) = 0;
-            virtual int DrawIndexedPrimitive(m3d::rend::PrimType, unsigned int, unsigned int, unsigned int, unsigned int) = 0;
+            virtual int
+                DrawIndexedPrimitive(m3d::rend::PrimType, unsigned int, unsigned int, unsigned int, unsigned int) = 0;
             virtual int DrawPrimitive(m3d::rend::PrimType, unsigned int, unsigned int) = 0;
             virtual int GetMaxLights() = 0;
             virtual void LightEnable(int, int) = 0;
-            virtual void LightSet(int, const m3d::rend::LightSource&) = 0;
-            virtual void MaterialSet(const m3d::rend::Material&) = 0;
+            virtual void LightSet(int, m3d::rend::LightSource const&) = 0;
+            virtual void MaterialSet(m3d::rend::Material const&) = 0;
             virtual void RelToAbs(float&, float&) = 0;
             virtual void AbsToRel(float&, float&) = 0;
             virtual m3d::rend::TexHandle AddTextureFromBackBuffer(int, int) = 0;
             virtual unsigned int AddTextureFromBackBuffer(m3d::rend::TexHandle result) = 0;
-            virtual void ScreenShot(const char*, int, int) = 0;
-            virtual int SaveTextureToTgaFile(m3d::rend::TexHandle, const char*) = 0;
+            virtual void ScreenShot(char const*, int, int) = 0;
+            virtual int SaveTextureToTgaFile(m3d::rend::TexHandle, char const*) = 0;
             virtual char* GetCurBppStr(int*) = 0;
             virtual char* GetLastErrorStr() = 0;
             virtual unsigned int GetMaxClipPlanes() = 0;
-            virtual void SetClipPlane(int, const CPlane*) = 0;
+            virtual void SetClipPlane(int, CPlane const*) = 0;
             virtual void EnableClipPlane(int, bool) = 0;
             virtual int GetMaxAnisotropy() = 0;
             virtual void ResetStats() = 0;
             virtual void GetStats(m3d::rend::RenderStats&) = 0;
             virtual void GetDeviceMemStats(m3d::rend::DeviceMemStats&) = 0;
             virtual void ShowStats() = 0;
-            virtual int OptimizeGeometryToSingleStrip(m3d::rend::VertexType, void*, int, unsigned __int16*, int, int, void**, int*, int**, unsigned __int16**, int*) = 0;
-            virtual int OptimizeGeometryToTriList(m3d::rend::VertexType, void*, int, unsigned __int16*, int, int, void**, int*, int**, unsigned __int16**, int*) = 0;
+            virtual int OptimizeGeometryToSingleStrip(
+                m3d::rend::VertexType,
+                void*,
+                int,
+                unsigned __int16*,
+                int,
+                int,
+                void**,
+                int*,
+                int**,
+                unsigned __int16**,
+                int*) = 0;
+            virtual int OptimizeGeometryToTriList(
+                m3d::rend::VertexType,
+                void*,
+                int,
+                unsigned __int16*,
+                int,
+                int,
+                void**,
+                int*,
+                int**,
+                unsigned __int16**,
+                int*) = 0;
             virtual void* GetInternalData() = 0;
-            virtual void SetVsFloatConst(unsigned int, const float*, unsigned int) = 0;
-            virtual void SetVsIntConst(unsigned int, const int*, unsigned int) = 0;
-            virtual void SetVsBoolConst(unsigned int, const int*, unsigned int) = 0;
-            virtual void SetPsFloatConst(unsigned int, const float*, unsigned int) = 0;
-            virtual void SetPsIntConst(unsigned int, const int*, unsigned int) = 0;
-            virtual void SetPsBoolConst(unsigned int, const int*, unsigned int) = 0;
-            virtual m3d::rend::IAsmShader* NewAsmShader(const char*, m3d::rend::IAsmShader::Type) = 0;
-            virtual m3d::rend::IHlslShader* NewHlslShader(const char*, const char*, m3d::rend::IHlslShader::Profile) = 0;
-            virtual m3d::rend::IEffect* NewEffect(const char*, bool) = 0;
-            virtual const char* EffectParameterToString(m3d::rend::IEffect::Parameter) = 0;
-            virtual m3d::rend::IEffect::Parameter StringToEffectParameter(const char*) = 0;
+            virtual void SetVsFloatConst(unsigned int, float const*, unsigned int) = 0;
+            virtual void SetVsIntConst(unsigned int, int const*, unsigned int) = 0;
+            virtual void SetVsBoolConst(unsigned int, int const*, unsigned int) = 0;
+            virtual void SetPsFloatConst(unsigned int, float const*, unsigned int) = 0;
+            virtual void SetPsIntConst(unsigned int, int const*, unsigned int) = 0;
+            virtual void SetPsBoolConst(unsigned int, int const*, unsigned int) = 0;
+            virtual m3d::rend::IAsmShader* NewAsmShader(char const*, m3d::rend::IAsmShader::Type) = 0;
+            virtual m3d::rend::IHlslShader*
+                NewHlslShader(char const*, char const*, m3d::rend::IHlslShader::Profile) = 0;
+            virtual m3d::rend::IEffect* NewEffect(char const*, bool) = 0;
+            virtual char const* EffectParameterToString(m3d::rend::IEffect::Parameter) = 0;
+            virtual m3d::rend::IEffect::Parameter StringToEffectParameter(char const*) = 0;
             virtual bool ReloadShaders() = 0;
             virtual m3d::rend::IQuery* NewQuery(m3d::rend::IQuery::Type) = 0;
-            virtual void AddChangeShaderMacro(const m3d::rend::ShaderMacro*) = 0;
-            virtual void DeleteShaderMacro(const CStr*) = 0;
-            virtual int DrawIndexedPrimitiveEffect(m3d::rend::PrimType, m3d::rend::IEffect*, unsigned int, unsigned int, unsigned int, unsigned int) = 0;
+            virtual void AddChangeShaderMacro(m3d::rend::ShaderMacro const*) = 0;
+            virtual void DeleteShaderMacro(CStr const*) = 0;
+            virtual int DrawIndexedPrimitiveEffect(
+                m3d::rend::PrimType,
+                m3d::rend::IEffect*,
+                unsigned int,
+                unsigned int,
+                unsigned int,
+                unsigned int) = 0;
             virtual int DrawPrimitiveEffect(m3d::rend::PrimType, m3d::rend::IEffect*, unsigned int, unsigned int) = 0;
-            virtual int DrawIndexedPrimitiveShader(m3d::rend::PrimType, unsigned int, unsigned int, unsigned int, unsigned int) = 0;
+            virtual int DrawIndexedPrimitiveShader(
+                m3d::rend::PrimType,
+                unsigned int,
+                unsigned int,
+                unsigned int,
+                unsigned int) = 0;
             virtual int DrawPrimitiveShader(m3d::rend::PrimType, unsigned int, unsigned int) = 0;
             virtual int SetupDXCursor(m3d::rend::TexHandle const&, int, int, int) = 0;
             virtual void MoveDXCursor(int, int) = 0;
             virtual void ShowDXCursor(bool) = 0;
             virtual int UpdateDXCursorFrame() = 0;
-            virtual bool IsHardWareCursorAvailableForTexture(const m3d::rend::TexHandle*) = 0;
+            virtual bool IsHardWareCursorAvailableForTexture(m3d::rend::TexHandle const*) = 0;
             virtual bool IsNV3x() = 0;
             virtual void ResetTextureStates() = 0;
             virtual void SingleLayerStencilStart() = 0;
             virtual void SingleLayerStencilContinue() = 0;
             virtual void SingleLayerStencilFinish() = 0;
-            IRenderer(IRenderer const&) {}
-            IRenderer() {}
+            IRenderer(IRenderer const&)
+            {
+            }
+            IRenderer()
+            {
+            }
         };
-    }
+    }  // namespace rend
 
     // RVA 0x75ED50 - the render state every "overlay" pass (decals, projectors,
     // sprites, lights and the landscape/grass shadow passes) pushes before it
@@ -1091,4 +1135,4 @@ namespace m3d
 
     // RVA 0x75EDB0 - undoes overlayStart.
     void overlayStop();
-}
+}  // namespace m3d

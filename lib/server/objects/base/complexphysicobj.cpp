@@ -291,8 +291,8 @@ namespace ai
                         float const last = static_cast<float>(static_cast<double>(candidatePrototypes.size()) - 1.0);
                         float const lo = last >= 0.0f ? zero : last;
                         float const hi = last <= 0.0f ? zero : last;
-                        int const index = static_cast<int>(
-                            static_cast<double>(rand()) * (hi - lo) * 0.000030518509f + lo + 0.5);
+                        int const index =
+                            static_cast<int>(static_cast<double>(rand()) * (hi - lo) * 0.000030518509f + lo + 0.5);
                         PrototypeInfo const* const partInfo = candidatePrototypes[index];
                         int const partId = theObjects->CreateNewObject(partInfo->m_prototypeId, "", -1, -1);
                         // NOTE: a part that could not be created is type checked through a null pointer.
@@ -303,7 +303,8 @@ namespace ai
                         }
                         else
                         {
-                            M3D_LOG_ERR("Error: prototype '" + partInfo->m_prototypeName + "' is not prototype of VehiclePart");
+                            M3D_LOG_ERR(
+                                "Error: prototype '" + partInfo->m_prototypeName + "' is not prototype of VehiclePart");
                         }
                     }
                 }
@@ -638,9 +639,9 @@ namespace ai
             if (!vehiclePart)
             {
                 auto const* partPrototype = thePrototypeManager->GetPrototypeInfo(protoId);
-                CStr const prototypeNameSuffix = partPrototype
-                    ? ", part prototype name = '" + partPrototype->m_prototypeName + "'"
-                    : CStr(", part prototype is NULL");
+                CStr const prototypeNameSuffix = partPrototype ?
+                    ", part prototype name = '" + partPrototype->m_prototypeName + "'" :
+                    CStr(", part prototype is NULL");
                 M3D_LOG_ERR(
                     "Error: couldn't create part for " + GetDebugDescription() + " part name = " + name +
                     ", part prototype id = " + CStr(protoId) + prototypeNameSuffix);
@@ -1206,7 +1207,10 @@ namespace ai
     unsigned ComplexPhysicObj::GetRepairPrice() const
     {
         // RVA 0x6BFAB0 - the shipped build only asserts.
-        _assert("!\"not implemented\"", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\Base\\ComplexPhysicObj.cpp", 1217);
+        _assert(
+            "!\"not implemented\"",
+            "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\Base\\ComplexPhysicObj.cpp",
+            1217);
         return 0;
     }
 
@@ -1277,11 +1281,13 @@ namespace ai
             double const relativeSpeed = sqrt((targetVel - sourceVel).lengthSq());
             double const distance = sqrt((targetPos - sourcePos).lengthSq());
             // The shipped code computes the exponential with x87 f2xm1/fscale as 2^(x * log2(e)).
-            float const spread = static_cast<float>(1.0 - exp(-sqrt(relativeSpeed * 0.1 + distance * 0.033333335)) + 0.2);
+            float const spread =
+                static_cast<float>(1.0 - exp(-sqrt(relativeSpeed * 0.1 + distance * 0.033333335)) + 0.2);
 
             // Each axis is offset by (sum of 5 uniform [0, 1] samples) * 0.4 - 1, i.e. roughly -1..1 peaking at 0,
             // times the spread and the vehicle's size along that axis (the longer of x/z for both x and z).
-            auto const randomOffset = []() {
+            auto const randomOffset = []()
+            {
                 float sum = 0.0f;
                 for (int i = 0; i < 5; ++i)
                 {
@@ -1517,8 +1523,8 @@ namespace ai
                     {
                         parentPart->m_Node->GetProperty(1, &anim);
                     }
-                    parentMat = anim && !anim->IsEmpty() ? anim->GetCurrentLoadpointMatrix(loadPointId)
-                                                         : mdl->GetBoneMatrix(loadPointId);
+                    parentMat = anim && !anim->IsEmpty() ? anim->GetCurrentLoadpointMatrix(loadPointId) :
+                                                           mdl->GetBoneMatrix(loadPointId);
                 }
                 else
                 {
@@ -1708,7 +1714,10 @@ namespace ai
         }
         double const invLen = 1.0 / sqrt(static_cast<double>(away.y) * away.y + horizontalSq + 0.00000011920929f);
         CVector const flyDir = GetRandomDeviatedVector(
-            CVector(static_cast<float>(away.x * invLen), static_cast<float>(away.y * invLen), static_cast<float>(invLen * away.z)),
+            CVector(
+                static_cast<float>(away.x * invLen),
+                static_cast<float>(away.y * invLen),
+                static_cast<float>(invLen * away.z)),
             1.0f);
 
         float const lowSpeed = averageSpeed * 0.5f;
@@ -1727,8 +1736,10 @@ namespace ai
         float const spinY = hx * flyDir.z - hz * flyDir.x;
         float const spinZ = hy * flyDir.x - hx * flyDir.y;
         float const invSpinLen = static_cast<float>(
-            1.0 / sqrt(static_cast<double>(spinZ) * spinZ + static_cast<double>(spinY) * spinY + static_cast<double>(spinX) * spinX +
-                       0.00000011920929f));
+            1.0 /
+            sqrt(
+                static_cast<double>(spinZ) * spinZ + static_cast<double>(spinY) * spinY +
+                static_cast<double>(spinX) * spinX + 0.00000011920929f));
         float const spinSpeed = static_cast<float>(rand()) * 0.00012207404f + 2.0f;
         splinter->SetAngularVelocity(
             CVector(invSpinLen * spinX * spinSpeed, invSpinLen * spinY * spinSpeed, invSpinLen * spinZ * spinSpeed));

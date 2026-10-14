@@ -9,7 +9,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class BossIndicatorWnd;
 class SpeedometerWnd;
@@ -35,13 +35,13 @@ public:
     void CheckAndShowMainCursorWnd();
     int SetupForBoss(int bossId);
     int GetBossId() const;
-    const ai::Obj* GetBoss() const;
+    ai::Obj const* GetBoss() const;
 
     struct AuxInfo
     {
         CStr m_wndNearbyChestsIcoName;
         CStr m_wndNearbyTownIcoName;
-        AuxInfo(const MainGameInterfaceWnd::AuxInfo&);
+        AuxInfo(MainGameInterfaceWnd::AuxInfo const&);
         AuxInfo();
     };
 
@@ -98,7 +98,7 @@ protected:
     bool m_bNearbyChests;
     int m_bossId;
     MainGameInterfaceWnd();
-    MainGameInterfaceWnd(const MainGameInterfaceWnd& rhs);
+    MainGameInterfaceWnd(MainGameInterfaceWnd const& rhs);
 
 public:
     virtual ~MainGameInterfaceWnd() override;

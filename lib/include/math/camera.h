@@ -7,8 +7,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 struct CMatrix;
 
@@ -19,12 +19,12 @@ public:
     float m_rotYaw;
     float m_rotPitch;
     float m_rotRoll;
-    CAffineXForm(const CAffineXForm&);
+    CAffineXForm(CAffineXForm const&);
     CAffineXForm();
     void createViewMatrix(CMatrix& viewMatrix) const;
     void createRotationMatrix(CMatrix& matRot) const;
-    void MoveAlong(const CVector&);
-    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    void MoveAlong(CVector const&);
+    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
     virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
 };
 
@@ -43,13 +43,12 @@ class CCamera : public CAffineXForm
 public:
     float m_fovX;
     float m_fovY;
-    CCamera(const CCamera&);
+    CCamera(CCamera const&);
     CCamera();
-    void lookAt(const CVector& Aim, const CVector& Up);
-    void lookAt(const CVector& Aim);
+    void lookAt(CVector const& Aim, CVector const& Up);
+    void lookAt(CVector const& Aim);
     void setFov(float fov, float w, float h);
     void createProjectionMatrix(CMatrix& matProj, float nearOverride) const;
-    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
     virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
 };
-

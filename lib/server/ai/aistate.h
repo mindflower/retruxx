@@ -13,15 +13,15 @@ namespace ai
         CStr m_name;
 
     public:
-        retruxx::vector<ai::AIParamRef, retruxx::allocator<ai::AIParamRef> > m_ParamRefList;
+        retruxx::vector<ai::AIParamRef, retruxx::allocator<ai::AIParamRef>> m_ParamRefList;
         ai::DecisionMatrix* m_pChildDecisionMatrix;
         int m_FuncNum;
         unsigned int m_SignalIDs[16];
 
         AIState();
-        void Set(const CStr& Name, int FuncNum);
+        void Set(CStr const& Name, int FuncNum);
         void SetRetValueInterpretation(int S, unsigned int SignalID);
-        const CStr& GetName() const;
+        CStr const& GetName() const;
         void Dump() const;
     };
-}
+}  // namespace ai

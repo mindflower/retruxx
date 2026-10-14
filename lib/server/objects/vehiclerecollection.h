@@ -18,6 +18,7 @@ namespace ai
     class VehicleRecollection : public Obj
     {
         friend class VehicleRecollectionPrototypeInfo;
+
     public:
         class ReollectionItem
         {
@@ -61,4 +62,4 @@ namespace ai
         std::vector<ReollectionItem> m_recollectionItems;
         int m_vehicleId;
     };
-}
+}  // namespace ai

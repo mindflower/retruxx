@@ -95,8 +95,7 @@ int DevideDlg::GameDataSetup()
     }
     else
     {
-        M3D_LOG_INFO(
-            "Get control error: control " + m_aif.m_lblOriginalAmountName + " is not found or incorrect type");
+        M3D_LOG_INFO("Get control error: control " + m_aif.m_lblOriginalAmountName + " is not found or incorrect type");
         res = 0;
     }
 

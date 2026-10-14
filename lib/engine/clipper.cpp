@@ -123,15 +123,17 @@ int CClipper::clipPolyInPlace(CVector* verts, int nverts)
     return result;
 }
 
-int CClipper::testBBox(tbEnum test, float* minmaxs, const CVector& ofs) const
+int CClipper::testBBox(tbEnum test, float* minmaxs, CVector const& ofs) const
 {
     // RVA 0x8A0740 - 0 when the box (min/max corners, moved by ofs) lies in front of an enabled plane; otherwise,
     // for a full test, 2 when it is wholly behind every enabled plane (inside), else 1.
     // NOTE: the outside test allows the box's nearest corner to be up to 50 units in front of a plane, as shipped.
-    auto const corner = [&](unsigned int const* idx) {
+    auto const corner = [&](unsigned int const* idx)
+    {
         return CVector(minmaxs[idx[0]] + ofs.x, minmaxs[idx[1]] + ofs.y, minmaxs[idx[2]] + ofs.z);
     };
-    auto const distance = [](float const* plane, CVector const& p) {
+    auto const distance = [](float const* plane, CVector const& p)
+    {
         return p.z * plane[2] + p.x * plane[0] + p.y * plane[1] - plane[3];
     };
     for (unsigned int i = 0; i < m_nfrustums; ++i)
@@ -226,15 +228,15 @@ int CClipper::enableSetFromBox(float* minmaxs, CVector const& ofs)
         }
         float const* const plane = m_planes[i];
         unsigned int const* const idx = &m_indices[6 * i];
-        if ((minmaxs[idx[3]] + ofs.x) * plane[0] + (minmaxs[idx[5]] + ofs.z) * plane[2]
-                + (minmaxs[idx[4]] + ofs.y) * plane[1] - plane[3]
-            > 0.0f)
+        if ((minmaxs[idx[3]] + ofs.x) * plane[0] + (minmaxs[idx[5]] + ofs.z) * plane[2] +
+                (minmaxs[idx[4]] + ofs.y) * plane[1] - plane[3] >
+            0.0f)
         {
             return 0;
         }
-        if ((minmaxs[idx[1]] + ofs.y) * plane[1] + (minmaxs[idx[0]] + ofs.x) * plane[0]
-                + (minmaxs[idx[2]] + ofs.z) * plane[2] - plane[3]
-            <= 0.0f)
+        if ((minmaxs[idx[1]] + ofs.y) * plane[1] + (minmaxs[idx[0]] + ofs.x) * plane[0] +
+                (minmaxs[idx[2]] + ofs.z) * plane[2] - plane[3] <=
+            0.0f)
         {
             m_enabled &= ~(1 << i);
         }
@@ -275,7 +277,12 @@ int CClipper::clipPolyInPlaceZ(CVector* verts, int nverts)
 }
 
 void CClipper::createScreenFrustums(
-    CVector const& origin, CMatrix const& rotMat, float fovx, float fovy, float znear, float zfar)
+    CVector const& origin,
+    CMatrix const& rotMat,
+    float fovx,
+    float fovy,
+    float znear,
+    float zfar)
 {
     // RVA 0x8A1040 - the view frustum: top, bottom, left and right planes through the eye and the near plane's
     // edges, then the far and near planes.
@@ -319,7 +326,8 @@ void CClipper::CreateScreenFrustums(float farz, float lessen, float nearz, float
         x = aspect * fov;
         y = fov;
     }
-    createScreenFrustums(M3D_APP->m_renderer->MatGetOrgInv(), M3D_APP->m_renderer->MatGet(), x * lessen, y * lessen, nearz, farz);
+    createScreenFrustums(
+        M3D_APP->m_renderer->MatGetOrgInv(), M3D_APP->m_renderer->MatGet(), x * lessen, y * lessen, nearz, farz);
 }
 
 void CClipper::translate(CVector const& add)
@@ -339,7 +347,7 @@ void CClipper::enableAll()
     m_enabled = 0xFFFFFFFF;
 }
 
-void CClipper::enableUpdateFromBox(float* minmaxs, const CVector& ofs)
+void CClipper::enableUpdateFromBox(float* minmaxs, CVector const& ofs)
 {
     // RVA 0x8A09D0 - disables the planes the box (min/max corners, moved by ofs) lies wholly behind.
     for (unsigned int i = 0; i < m_nfrustums; ++i)

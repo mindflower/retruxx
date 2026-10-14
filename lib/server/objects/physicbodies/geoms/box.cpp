@@ -4,7 +4,7 @@
 
 namespace ai
 {
-    ai::Box* Box::CreateObject(dxSpace* space, const CVector& size, void(*movedCalback)(dxGeom*))
+    ai::Box* Box::CreateObject(dxSpace* space, CVector const& size, void (*movedCalback)(dxGeom*))
     {
         auto realSize = size;
         if (realSize.x < 0.1)
@@ -13,8 +13,8 @@ namespace ai
             realSize.y = 0.1;
         if (realSize.z < 0.1)
             realSize.z = 0.1;
-         auto box = dCreateBox(space, realSize.x, realSize.y, realSize.z);
-         return new Box(box, movedCalback);
+        auto box = dCreateBox(space, realSize.x, realSize.y, realSize.z);
+        return new Box(box, movedCalback);
     }
 
     CVector Box::GetSize() const
@@ -26,7 +26,7 @@ namespace ai
         return result;
     }
 
-    void Box::SetSize(const CVector& size)
+    void Box::SetSize(CVector const& size)
     {
         auto realSize = size;
         if (realSize.x < 0.1)
@@ -38,8 +38,7 @@ namespace ai
         dGeomBoxSetLengths(this->m_geomId, realSize.x, realSize.y, realSize.z);
     }
 
-    Box::Box(dxGeom* const geomId, void(* movedCallback)(dxGeom*)) :
-        Geom(geomId, movedCallback)
+    Box::Box(dxGeom* const geomId, void (*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)
     {
     }
-}
+}  // namespace ai

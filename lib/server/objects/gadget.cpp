@@ -106,7 +106,9 @@ namespace ai
         return true;
     }
 
-    GadgetPrototypeInfo::ModificationInfo::ModificationInfo(CStr const& str, ai::GadgetPrototypeInfo const* gadgetPrototype)
+    GadgetPrototypeInfo::ModificationInfo::ModificationInfo(
+        CStr const& str,
+        ai::GadgetPrototypeInfo const* gadgetPrototype)
     {
         // RVA 0x6DBCA0
         static CStr const PLUS("+=");
@@ -182,8 +184,7 @@ namespace ai
         {
             if (modification.m_applierInfo.applierType == GA_OBJECT_BY_RESOURCE)
             {
-                if (theResourceManager->bResourceIsKindOf(
-                        vpResourceId, modification.m_applierInfo.targetResourceId) &&
+                if (theResourceManager->bResourceIsKindOf(vpResourceId, modification.m_applierInfo.targetResourceId) &&
                     !modification.ApplyToObj(vp, enable))
                 {
                     M3D_LOG_ERR(
@@ -304,7 +305,8 @@ namespace ai
         return result;
     }
 
-    retruxx::vector<GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<GadgetPrototypeInfo::ModificationInfo>> const&
+    retruxx::
+        vector<GadgetPrototypeInfo::ModificationInfo, retruxx::allocator<GadgetPrototypeInfo::ModificationInfo>> const&
         GadgetPrototypeInfo::GetModifications() const
     {
         // RVA 0x6DB130

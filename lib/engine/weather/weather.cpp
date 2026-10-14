@@ -11,9 +11,9 @@
 CVector fullColor(255.0, 255.0, 255.0);
 CVector halfColor(128.0, 128.0, 128.0);
 CVector quarterColor(64.0, 64.0, 64.0);
-const CVector m_colorItemsInit[4] = { halfColor, fullColor, halfColor, quarterColor };
-const char* m_colorTypesNames[4] = { "sunrise" , "day" , "sunset", "night" };
-const char* m_colorItemsNames[7] = {
+CVector const m_colorItemsInit[4] = {halfColor, fullColor, halfColor, quarterColor};
+char const* m_colorTypesNames[4] = {"sunrise", "day", "sunset", "night"};
+char const* m_colorItemsNames[7] = {
     "Sky",
     "Fog",
     "Ambient",
@@ -194,7 +194,8 @@ namespace m3d
 
         for (int i = 0; i < CI_NUM_COLORITEMS; ++i)
         {
-            ref_ptr<cmn::XmlNode> itemNode = file->CreateNode(cmn::XML_NODE_ELEMENT, CStr(m_colorItemsNames[i]).c_str());
+            ref_ptr<cmn::XmlNode> itemNode =
+                file->CreateNode(cmn::XML_NODE_ELEMENT, CStr(m_colorItemsNames[i]).c_str());
             for (int j = 0; j < CT_NUM_COLORTYPES; ++j)
             {
                 CStr const typeName = CStr(m_colorTypesNames[j]) + CStr("Color");
@@ -213,7 +214,8 @@ namespace m3d
         ref_ptr<cmn::XmlNode> shadowVisibilityNode = file->CreateNode(cmn::XML_NODE_ELEMENT, "ShadowVisibility");
         for (unsigned i = 0; i < CT_NUM_COLORTYPES; ++i)
         {
-            shadowVisibilityNode->SetAttribute(m_colorTypesNames[i], CStr(static_cast<int>(m_shadowVisibility[i])).c_str());
+            shadowVisibilityNode->SetAttribute(
+                m_colorTypesNames[i], CStr(static_cast<int>(m_shadowVisibility[i])).c_str());
         }
         node->AddChild(shadowVisibilityNode);
 
@@ -385,7 +387,8 @@ namespace m3d
     int Weather::ReadDetailFromXmlNode(cmn::XmlFile* file, cmn::XmlNode* node)
     {
         ref_ptr colorTypeNode = file->CreateNode();
-        for (node->GetFirstChild(colorTypeNode, "ColorType"); !colorTypeNode->IsEmpty(); colorTypeNode->GetNextSibling(colorTypeNode, "ColorType"))
+        for (node->GetFirstChild(colorTypeNode, "ColorType"); !colorTypeNode->IsEmpty();
+             colorTypeNode->GetNextSibling(colorTypeNode, "ColorType"))
         {
             CStr name = colorTypeNode->GetAttribute("name");
             for (int i = 0; i < 4; ++i)
@@ -522,4 +525,4 @@ namespace m3d
     Weather::Weather()
     {
     }
-}
+}  // namespace m3d

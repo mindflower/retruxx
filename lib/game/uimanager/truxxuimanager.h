@@ -16,7 +16,7 @@ namespace ai
     class Vehicle;
     class Town;
     class Workshop;
-}
+}  // namespace ai
 
 class MsgManager;
 class RepliesManager;
@@ -32,7 +32,7 @@ namespace m3d
     {
         class XmlFile;
         struct XmlNode;
-    }
+    }  // namespace cmn
 
     namespace ui
     {
@@ -47,7 +47,7 @@ namespace m3d
     struct AuxImpulseInfo;
     class AIParam;
     struct Event;
-}
+}  // namespace m3d
 
 enum GameState
 {
@@ -89,22 +89,25 @@ public:
     virtual int CreateAndAddWindow(int) = 0;
     virtual StringParser const& GetStringParser() const = 0;
     virtual ai::Workshop* GetCurrentShop() const = 0;
-    virtual void AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const = 0;
+    virtual void AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&)
+        const = 0;
     virtual NavPointManager* GetNavPointManager() const = 0;
     virtual ai::Workshop* GetCurrentWorkshop() const = 0;
-    virtual void AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const = 0;
+    virtual void AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const = 0;
     virtual bool IsGameModeValidForSmartCursor(GameState) const = 0;
     virtual int Str2WndGuiId(CStr const&) const = 0;
     virtual ai::Vehicle* GetVehicleSellingInWorkshop() const = 0;
-    virtual std::vector<int, std::allocator<int> > const& GetTakenQuestIds() const = 0;
+    virtual std::vector<int, std::allocator<int>> const& GetTakenQuestIds() const = 0;
     virtual RepliesManager* GetRepliesManager() const = 0;
     virtual int Reset(bool) = 0;
     virtual WeaponGroupManager* GetWeaponGroupManager() const = 0;
-    virtual void AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const = 0;
+    virtual void AddImportantFadingMsgByStrId(
+        CStr const&,
+        std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const = 0;
     virtual m3d::ui::MbRetCodes RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool) = 0;
     virtual bool IsInSaleMode() const = 0;
     virtual bool IsWindowVisible(int) const = 0;
-    virtual int SetEventsForWindow(int, std::vector<int, std::allocator<int> > const&) = 0;
+    virtual int SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&) = 0;
     virtual CStr GetPathToSplashes() const = 0;
     virtual int Update() = 0;
     virtual int LaunchEvent(int, GuiEventType, void*) = 0;
@@ -114,7 +117,8 @@ public:
     virtual void StartSplashing(int) const = 0;
     virtual int HandleAppEvent(m3d::Event const&) = 0;
     virtual void OnLeaveTown(bool) = 0;
-    virtual void AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const = 0;
+    virtual void AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&)
+        const = 0;
     virtual HelpManager* GetHelpManager() const = 0;
     virtual int RemoveWindow(int) = 0;
 };
@@ -150,22 +154,24 @@ public:
     virtual int CreateAndAddWindow(int);
     virtual StringParser const& GetStringParser() const;
     virtual ai::Workshop* GetCurrentShop() const;
-    virtual void AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const;
+    virtual void AddFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const;
     virtual NavPointManager* GetNavPointManager() const;
     virtual ai::Workshop* GetCurrentWorkshop() const;
-    virtual void AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const;
+    virtual void AddFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const;
     virtual bool IsGameModeValidForSmartCursor(GameState) const;
     virtual int Str2WndGuiId(CStr const&) const;
     virtual ai::Vehicle* GetVehicleSellingInWorkshop() const;
-    virtual std::vector<int, std::allocator<int> > const& GetTakenQuestIds() const;
+    virtual std::vector<int, std::allocator<int>> const& GetTakenQuestIds() const;
     virtual RepliesManager* GetRepliesManager() const;
     virtual int Reset(bool);
     virtual WeaponGroupManager* GetWeaponGroupManager() const;
-    virtual void AddImportantFadingMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const;
+    virtual void AddImportantFadingMsgByStrId(
+        CStr const&,
+        std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&) const;
     virtual m3d::ui::MbRetCodes RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
     virtual bool IsInSaleMode() const;
     virtual bool IsWindowVisible(int) const;
-    virtual int SetEventsForWindow(int, std::vector<int, std::allocator<int> > const&);
+    virtual int SetEventsForWindow(int, std::vector<int, std::allocator<int>> const&);
     virtual ~TruxxUiManager();
     virtual CStr GetPathToSplashes() const;
     virtual int Update();
@@ -176,7 +182,8 @@ public:
     virtual void StartSplashing(int) const;
     virtual int HandleAppEvent(m3d::Event const&);
     virtual void OnLeaveTown(bool);
-    virtual void AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&) const;
+    virtual void AddImportantFadingMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&)
+        const;
     virtual HelpManager* GetHelpManager() const;
     virtual int RemoveWindow(int);
 

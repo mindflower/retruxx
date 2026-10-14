@@ -128,7 +128,7 @@ namespace
     // The shipped MemoryManager::Malloc puts the block size and 0xDEADBEEF in front of every allocation and
     // 0xFEEBDAED behind it, and CheckNodeValidity reads those words around a node. This build allocates nodes with
     // the C runtime instead, so the words are not there and the check is switched off.
-    constexpr bool NODES_HAVE_GUARD_WORDS = false;
+    bool constexpr NODES_HAVE_GUARD_WORDS = false;
 
     // Read by RenderDebugForNode but never assigned, so every label says 0.
     int g_nodeNum = 0;
@@ -1018,7 +1018,11 @@ namespace m3d
     }
 
     SgNode* SceneGraph::TraceLine(
-        CVector& hit, CVector const& start, CVector const& finish, retruxx::set<Class*> const& cl0, unsigned traceMode)
+        CVector& hit,
+        CVector const& start,
+        CVector const& finish,
+        retruxx::set<Class*> const& cl0,
+        unsigned traceMode)
     {
         // RVA 0x88DE90 (traceline.cpp) - walks the visibility cells under the segment and returns the nearest node
         // of the wanted classes it crosses (the landscape counts as a node). A set holding nullptr means the
@@ -1066,8 +1070,9 @@ namespace m3d
         {
             // NOTE: the "dst" part of the message prints the start point again, and "ssz = " follows the z0 value
             // without a space.
-            M3D_LOG_INFO(CStr("TRACELINE ERROR: x0 = ") + CStr(x0) + CStr(" z0 = ") + CStr(z0) + CStr("ssz = ") +
-                CStr(ssz) + CStr(" src = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z) +
+            M3D_LOG_INFO(
+                CStr("TRACELINE ERROR: x0 = ") + CStr(x0) + CStr(" z0 = ") + CStr(z0) + CStr("ssz = ") + CStr(ssz) +
+                CStr(" src = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z) +
                 CStr(" dst = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z));
             return nullptr;
         }
@@ -1250,7 +1255,8 @@ namespace m3d
         // RVA 0x634B90 - labels the node with its class above its origin. NOTE: the label is lifted along Y by half
         // the box's Z extent.
         auto* const renderer = M3D_RENDERER;
-        CVector const org(n->m_currentWorldOrigin.x,
+        CVector const org(
+            n->m_currentWorldOrigin.x,
             n->m_currentWorldOrigin.y + (n->m_boundingBox.m_box[5] - n->m_boundingBox.m_box[2]) * 0.5f,
             n->m_currentWorldOrigin.z);
         CVector const screen = renderer->Project(org - renderer->MatGetOrgInv());
@@ -3213,15 +3219,19 @@ namespace m3d
             retruxx::vector<SgNode*> shadowNodes(nodes.begin(), nodes.end());
             CVector const cameraPos = M3D_RENDERER->MatGetOrgInv();
             // ShadowNodesSortPred: nearest to the camera first.
-            std::sort(shadowNodes.begin(), shadowNodes.end(), [&cameraPos](SgNode const* node1, SgNode const* node2) {
-                float const d1z = node1->m_currentWorldOrigin.z - cameraPos.z;
-                float const d1y = node1->m_currentWorldOrigin.y - cameraPos.y;
-                float const d1x = node1->m_currentWorldOrigin.x - cameraPos.x;
-                float const d2y = node2->m_currentWorldOrigin.y - cameraPos.y;
-                float const d2z = node2->m_currentWorldOrigin.z - cameraPos.z;
-                float const d2x = node2->m_currentWorldOrigin.x - cameraPos.x;
-                return d2z * d2z + d2y * d2y + d2x * d2x > d1z * d1z + d1y * d1y + d1x * d1x;
-            });
+            std::sort(
+                shadowNodes.begin(),
+                shadowNodes.end(),
+                [&cameraPos](SgNode const* node1, SgNode const* node2)
+                {
+                    float const d1z = node1->m_currentWorldOrigin.z - cameraPos.z;
+                    float const d1y = node1->m_currentWorldOrigin.y - cameraPos.y;
+                    float const d1x = node1->m_currentWorldOrigin.x - cameraPos.x;
+                    float const d2y = node2->m_currentWorldOrigin.y - cameraPos.y;
+                    float const d2z = node2->m_currentWorldOrigin.z - cameraPos.z;
+                    float const d2x = node2->m_currentWorldOrigin.x - cameraPos.x;
+                    return d2z * d2z + d2y * d2y + d2x * d2x > d1z * d1z + d1y * d1y + d1x * d1x;
+                });
             if (numNodes > 100)
             {
                 numNodes = 100;

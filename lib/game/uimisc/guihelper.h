@@ -21,7 +21,7 @@ namespace ai
     class Building;
     class Vehicle;
     class GeomRepository;
-}
+}  // namespace ai
 namespace m3d
 {
     namespace ui
@@ -135,7 +135,10 @@ namespace help
     // a follow-up animation after it. nextActionType picks the set to draw from;
     // _AT_NUMTYPES means "whichever set the current animation came from".
     // (RVA 0x5561E0.)
-    void RandomizeCurAnimationOnFinish(m3d::AnimatedModel* model, m3d::AnimInfo* animInfo, help::_ActionType nextActionType);
+    void RandomizeCurAnimationOnFinish(
+        m3d::AnimatedModel* model,
+        m3d::AnimInfo* animInfo,
+        help::_ActionType nextActionType);
     // Re-resolves a font id at a different point size: looks up the pattern font,
     // then asks the GfxServer for a font with the same name/type/style scaled to
     // wantedFontSz. Returns -1 when the pattern font id is unknown.

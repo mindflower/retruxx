@@ -20,25 +20,25 @@ namespace ai
         ai::GeomRepositoryItem::GeomRepositoryItemType m_repositoryItemType;
         ai::GeomRepository* m_parentRepository;
         PointBase<int> m_origin;
-        GeomRepositoryItem(const ai::GeomRepositoryItem& rhs);
+        GeomRepositoryItem(ai::GeomRepositoryItem const& rhs);
         GeomRepositoryItem(int resourceId, unsigned int amount);
         GeomRepositoryItem(int objId);
         GeomRepositoryItem();
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
         PointBase<int> GetGeomSize() const;
         BoundsBase<int> GetBounds() const;
         unsigned int GetMaxAmount() const;
         unsigned int GiveUpAmount(unsigned int amount);
         bool IsComplete() const;
-        void AddToRepository(ai::GeomRepository* parent, const PointBase<int>& origin);
+        void AddToRepository(ai::GeomRepository* parent, PointBase<int> const& origin);
         bool IsValid() const;
         void Invalidate();
         CStr GetIcoName() const;
         CStr GetDebugDescription() const;
         bool bIsResourceItem() const;
-        unsigned int GetAcceptedNum(const ai::GeomRepositoryItem& item) const;
-        unsigned int AcceptItem(const ai::GeomRepositoryItem& item);
+        unsigned int GetAcceptedNum(ai::GeomRepositoryItem const& item) const;
+        unsigned int AcceptItem(ai::GeomRepositoryItem const& item);
         unsigned int GetAmount() const;
         ai::Obj* GetObj() const;
         int GetObjId() const;
@@ -55,5 +55,5 @@ namespace ai
     // Two items are equal when they share type, parent repository and origin, and
     // then - for object items - the same objId, or - for resource items - the same
     // resourceId and amount. (ExMachina 1.02 NoCD RVA 0x445110.)
-    bool operator==(const ai::GeomRepositoryItem& lhs, const ai::GeomRepositoryItem& rhs);
-}
+    bool operator==(ai::GeomRepositoryItem const& lhs, ai::GeomRepositoryItem const& rhs);
+}  // namespace ai

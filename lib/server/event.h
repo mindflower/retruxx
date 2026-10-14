@@ -125,10 +125,10 @@ namespace ai
         int m_debugNum;
         m3d::AIParam m_param1;
         m3d::AIParam m_param2;
-        Event(const ai::Event& __that);
+        Event(ai::Event const& __that);
         Event();
         CStr Dump() const;
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
     };
-}
+}  // namespace ai

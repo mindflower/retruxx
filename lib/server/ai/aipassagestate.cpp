@@ -32,10 +32,9 @@ namespace ai
 
         for (unsigned i = 0; i < m_ParamList.size(); ++i)
         {
-            ref_ptr node = xmlFile->CreateNode(
-                m3d::cmn::XML_NODE_ELEMENT, (CStr("Param_") + CStr(i)).c_str());
+            ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, (CStr("Param_") + CStr(i)).c_str());
             OwnNode->AddChild(node);
             m_ParamList[i].SaveToXML(xmlFile, node);
         }
     }
-}
+}  // namespace ai

@@ -656,14 +656,24 @@ int ConsoleImp::Load(CStr const& fname)
         val.m_stringValue = attrib->GetValue();
 
         auto const itLoaded = std::find_if(
-            m_loadedValues.begin(), m_loadedValues.end(), [&val](auto const& elem) { return elem.m_name == val.m_name; });
+            m_loadedValues.begin(),
+            m_loadedValues.end(),
+            [&val](auto const& elem)
+            {
+                return elem.m_name == val.m_name;
+            });
         if (itLoaded == m_loadedValues.end())
         {
             m_loadedValues.push_back(val);
         }
 
         auto const itVars = std::find_if(
-            m_lCVars.begin(), m_lCVars.end(), [&val](auto const* elem) { return val.m_name == elem->GetName(); });
+            m_lCVars.begin(),
+            m_lCVars.end(),
+            [&val](auto const* elem)
+            {
+                return val.m_name == elem->GetName();
+            });
         if (itVars != m_lCVars.end())
         {
             (*itVars)->Set(val.m_stringValue.c_str(), true);

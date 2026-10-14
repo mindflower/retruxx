@@ -40,8 +40,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(TalkWithNpcDlg, Hide)
 }
 
 RT_CLASS_EXPORTS_BEGIN(TalkWithNpcDlg)
-	RT_CLASS_EXPORT(TalkWithNpcDlg, m3d::METHOD, Show, "", "", "")
-	RT_CLASS_EXPORT(TalkWithNpcDlg, m3d::METHOD, Hide, "", "", "")
+RT_CLASS_EXPORT(TalkWithNpcDlg, m3d::METHOD, Show, "", "", "")
+RT_CLASS_EXPORT(TalkWithNpcDlg, m3d::METHOD, Hide, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TalkWithNpcDlg);
 
@@ -472,8 +472,7 @@ int TalkWithNpcDlg::SetupForNpc(int npcId)
         return 1;
     }
 
-    M3D_LOG_INFO(
-        CStr("TalkWithNpcDlg::SetupForNpc error - NPC with id ") + CStr(npcId) + " does not exist");
+    M3D_LOG_INFO(CStr("TalkWithNpcDlg::SetupForNpc error - NPC with id ") + CStr(npcId) + " does not exist");
     return 0;
 }
 

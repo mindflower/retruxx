@@ -105,8 +105,9 @@ namespace m3d
         {
             PropSrvAttackframeTime info;
             info.m_action = actionId;
-            if (M3D_APP->GetAnimatedModelsServer().GetItemProperty(modelId - 0x200000, PROP_SRV_ATTACK_FRAMETIME, &info)
-                && info.m_attackFrameTime >= 0.0f)
+            if (M3D_APP->GetAnimatedModelsServer().GetItemProperty(
+                    modelId - 0x200000, PROP_SRV_ATTACK_FRAMETIME, &info) &&
+                info.m_attackFrameTime >= 0.0f)
             {
                 return info.m_attackFrameTime;
             }
@@ -176,9 +177,11 @@ namespace m3d
         m_console->RegisterCVar(&m_ai_ragdoll_mass_size_coeff, 0);
         m_ai_bo_mass_size_coeff.Init("ai_bo_mass_size_coeff", "1.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_bo_mass_size_coeff, 0);
-        m_ai_enemies_ramming_damage_coeff.Init("ai_enemies_ramming_damage_coeff", "1.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
+        m_ai_enemies_ramming_damage_coeff.Init(
+            "ai_enemies_ramming_damage_coeff", "1.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_enemies_ramming_damage_coeff, 0);
-        m_ai_player_weapons_damage_coeff.Init("ai_player_weapons_damage_coeff", "1.0", CVar::CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ai_player_weapons_damage_coeff.Init(
+            "ai_player_weapons_damage_coeff", "1.0", CVar::CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_player_weapons_damage_coeff, 0);
         m_ai_physicstep.Init("ai_physicstep", "0", CVar::CVAR_INT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_physicstep, 0);
@@ -194,9 +197,11 @@ namespace m3d
         m_console->RegisterCVar(&m_ai_physicstep_surfacelayer, 0);
         m_ai_physicstep_lineardamping.Init("ai_physicstep_lineardamping", "0.1", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_physicstep_lineardamping, 0);
-        m_ai_physicstep_angulardamping.Init("ai_physicstep_angulardamping","0.3",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ai_physicstep_angulardamping.Init(
+            "ai_physicstep_angulardamping", "0.3", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_physicstep_angulardamping, 0);
-        m_ai_physicstep_max_correcting_vel.Init("ai_physicstep_max_correcting_vel","10",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ai_physicstep_max_correcting_vel.Init(
+            "ai_physicstep_max_correcting_vel", "10", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_physicstep_max_correcting_vel, 0);
         m_ai_geomobjcollider_mu.Init("ai_geomobjcollider_mu", "0.3", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_geomobjcollider_mu, 0);
@@ -214,7 +219,8 @@ namespace m3d
         m_console->RegisterCVar(&m_ai_wheelcollider_erp, 0);
         m_ai_wheelcollider_cfm.Init("ai_wheelcollider_cfm", "1", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ai_wheelcollider_cfm, 0);
-        m_ai_static_obstacles_enabled.Init("ai_static_obstacles_enabled","false",CVar::CVAR_BOOL,CVar::CVAR_READONLY);
+        m_ai_static_obstacles_enabled.Init(
+            "ai_static_obstacles_enabled", "false", CVar::CVAR_BOOL, CVar::CVAR_READONLY);
         m_console->RegisterCVar(&m_ai_static_obstacles_enabled, 0);
         m_debugMode.Init("debugMode", "no", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_debugMode, 0);
@@ -224,7 +230,8 @@ namespace m3d
         m_console->RegisterCVar(&m_loadFromGAM, 0);
         m_weather_ConfigFile.Init("weather_ConfigFile", "data\\Weather.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_weather_ConfigFile, 0);
-        m_weather_PathToTextures.Init("weather_PathToTextures","data\\weatherTexs\\",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_weather_PathToTextures.Init(
+            "weather_PathToTextures", "data\\weatherTexs\\", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_weather_PathToTextures, 0);
         m_weather_AtmoRadius.Init("weather_AtmoRadius", "20000.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_weather_AtmoRadius, 0);
@@ -298,17 +305,21 @@ namespace m3d
         m_console->RegisterCVar(&m_g_showReflRefrMaps, 0);
         m_g_drawWater.Init("g_drawWater", "yes", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_drawWater, 0);
-        m_g_ps11_water_reflection_amount.Init("g_ps11_water_reflection_amount","0.012",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_g_ps11_water_reflection_amount.Init(
+            "g_ps11_water_reflection_amount", "0.012", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_ps11_water_reflection_amount, 0);
-        m_g_ps11_water_refraction_amount.Init("g_ps11_water_refraction_amount","0.014",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_g_ps11_water_refraction_amount.Init(
+            "g_ps11_water_refraction_amount", "0.014", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_ps11_water_refraction_amount, 0);
         m_g_grassDrawDist.Init("g_grassDrawDist", "150.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_grassDrawDist, 0);
         m_g_grassAlphatest.Init("g_grassAlphatest", "70", CVar::CVAR_INT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_grassAlphatest, 0);
-        m_g_reflectionDrawDistModifier.Init("g_reflectionDrawDistModifier","3.0",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_g_reflectionDrawDistModifier.Init(
+            "g_reflectionDrawDistModifier", "3.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_reflectionDrawDistModifier, 0);
-        m_g_refractionDrawDistModifier.Init("g_refractionDrawDistModifier","1.0",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_g_refractionDrawDistModifier.Init(
+            "g_refractionDrawDistModifier", "1.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_refractionDrawDistModifier, 0);
         m_g_drawReflectedTerrain.Init("g_drawReflectedTerrain", "yes", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_drawReflectedTerrain, 0);
@@ -362,7 +373,8 @@ namespace m3d
         m_console->RegisterCVar(&m_testShadowRenderToGrass, 0);
         m_testShadowRenderToTexture.Init("testShadowRenderToTexture", "yes", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_testShadowRenderToTexture, 0);
-        m_testShadowActualRenderToTexture.Init("testShadowActualRenderToTexture","yes",CVar::CVAR_BOOL,CVar::CVAR_ARCHIVE);
+        m_testShadowActualRenderToTexture.Init(
+            "testShadowActualRenderToTexture", "yes", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_testShadowActualRenderToTexture, 0);
         m_g_shoresDeep.Init("g_shoresDeep", "3.0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_g_shoresDeep, 0);
@@ -480,21 +492,28 @@ namespace m3d
         m_video[3].Init("video03", "", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_intro.Init("intro", "", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_intro, 0);
-        m_ui_pathToResource.Init("ui_pathToResource","data\\if\\strings\\uiEditStrings.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToResource.Init(
+            "ui_pathToResource", "data\\if\\strings\\uiEditStrings.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToResource, 0);
-        m_ui_pathToSchema.Init("ui_pathToSchema","data\\if\\frames\\uiSchema2.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToSchema.Init(
+            "ui_pathToSchema", "data\\if\\frames\\uiSchema2.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToSchema, 0);
-        m_ui_pathToFrames.Init("ui_pathToFrames","data\\if\\frames\\frames.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToFrames.Init(
+            "ui_pathToFrames", "data\\if\\frames\\frames.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToFrames, 0);
         m_ui_pathToFonts.Init("ui_pathToFonts", "data\\if\\fonts\\fonts.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToFonts, 0);
-        m_ui_pathToLanguageTable.Init("ui_pathToLanguageTable","data\\if\\fonts\\LanguageTable.txt",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToLanguageTable.Init(
+            "ui_pathToLanguageTable", "data\\if\\fonts\\LanguageTable.txt", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToLanguageTable, 0);
-        m_ui_pathToGameWindows.Init("ui_pathToGameWindows","data\\if\\dialogs\\GameWindows.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToGameWindows.Init(
+            "ui_pathToGameWindows", "data\\if\\dialogs\\GameWindows.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToGameWindows, 0);
-        m_ui_pathToCharDictionary.Init("ui_pathToCharDictionary","data\\if\\fonts\\charDictionary.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToCharDictionary.Init(
+            "ui_pathToCharDictionary", "data\\if\\fonts\\charDictionary.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToCharDictionary, 0);
-        m_ui_pathToStrings.Init("ui_pathToStrings","data\\if\\diz\\strings.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_pathToStrings.Init(
+            "ui_pathToStrings", "data\\if\\diz\\strings.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_pathToStrings, 0);
         m_ui_codePageName.Init("ui_codePageName", "windows-1251", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_codePageName, 0);
@@ -502,23 +521,31 @@ namespace m3d
         m_console->RegisterCVar(&m_ui_dblClickDelay, 0);
         m_ui_forceHieroglyphicFont.Init("ui_forceHieroglyphicFont", "yes", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_forceHieroglyphicFont, 0);
-        m_ui_defaultWndAnimationShowType.Init("ui_defaultWndAnimationShowType","TO_LEFT",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_defaultWndAnimationShowType.Init(
+            "ui_defaultWndAnimationShowType", "TO_LEFT", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_defaultWndAnimationShowType, 0);
-        m_ui_defaultWndAnimationHideType.Init("ui_defaultWndAnimationHideType","TO_RIGHT",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_ui_defaultWndAnimationHideType.Init(
+            "ui_defaultWndAnimationHideType", "TO_RIGHT", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_defaultWndAnimationHideType, 0);
-        m_ui_defaultWndAnimationShowSpeed.Init("ui_defaultWndAnimationShowSpeed","500",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ui_defaultWndAnimationShowSpeed.Init(
+            "ui_defaultWndAnimationShowSpeed", "500", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_defaultWndAnimationShowSpeed, 0);
-        m_ui_defaultWndAnimationHideSpeed.Init("ui_defaultWndAnimationHideSpeed","500",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ui_defaultWndAnimationHideSpeed.Init(
+            "ui_defaultWndAnimationHideSpeed", "500", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_defaultWndAnimationHideSpeed, 0);
-        m_ui_defaultWndAnimationShowAccel.Init("ui_defaultWndAnimationShowAccel","0",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ui_defaultWndAnimationShowAccel.Init(
+            "ui_defaultWndAnimationShowAccel", "0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_defaultWndAnimationShowAccel, 0);
-        m_ui_defaultWndAnimationHideAccel.Init("ui_defaultWndAnimationHideAccel","0",CVar::CVAR_FLOAT,CVar::CVAR_ARCHIVE);
+        m_ui_defaultWndAnimationHideAccel.Init(
+            "ui_defaultWndAnimationHideAccel", "0", CVar::CVAR_FLOAT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_ui_defaultWndAnimationHideAccel, 0);
-        m_input_defaultInputLanguageBase.Init("input_defaultInputLanguageBase","true",CVar::CVAR_BOOL,CVar::CVAR_ARCHIVE);
+        m_input_defaultInputLanguageBase.Init(
+            "input_defaultInputLanguageBase", "true", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_input_defaultInputLanguageBase, 0);
         m_input_baseKeyboardLayot.Init("input_baseKeyboardLayot", "00000409", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_input_baseKeyboardLayot, 0);
-        m_input_additionalKeyboardLayot.Init("input_additionalKeyboardLayot","00000419",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_input_additionalKeyboardLayot.Init(
+            "input_additionalKeyboardLayot", "00000419", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_input_additionalKeyboardLayot, 0);
         m_demoPlaybackSpeed.Init("demoPlaybackSpeed", "200", CVar::CVAR_INT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_demoPlaybackSpeed, 0);
@@ -560,9 +587,11 @@ namespace m3d
         m_console->RegisterCVar(&m_net_Quality, 0);
         m_net_Debug.Init("net_Debug", "0", CVar::CVAR_INT, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_net_Debug, 0);
-        m_pathToDefaultKeyBindings.Init("pathToDefaultKeyBindings","data\\scripts\\DefaultKeyBindings.lua",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_pathToDefaultKeyBindings.Init(
+            "pathToDefaultKeyBindings", "data\\scripts\\DefaultKeyBindings.lua", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_pathToDefaultKeyBindings, 0);
-        m_pathToGlobProps.Init("pathToGlobProps","data\\gamedata\\GlobalProperties.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_pathToGlobProps.Init(
+            "pathToGlobProps", "data\\gamedata\\GlobalProperties.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_pathToGlobProps, 0);
         m_pathToSoilProps.Init("pathToSoilProps", "data\\tiles\\TilesProps.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_pathToSoilProps, 0);
@@ -570,17 +599,23 @@ namespace m3d
         m_console->RegisterCVar(&m_snd_pathToMusic, 0);
         m_snd_pathToSounds.Init("snd_pathToSounds", "data\\sounds\\sounds.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_snd_pathToSounds, 0);
-        m_snd_pathToMusicBlocks.Init("snd_pathToMusicBlocks","data\\music\\blocks\\MusicBlocks.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_snd_pathToMusicBlocks.Init(
+            "snd_pathToMusicBlocks", "data\\music\\blocks\\MusicBlocks.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_snd_pathToMusicBlocks, 0);
-        m_snd_pathToTownAmbient.Init("snd_pathToTownAmbient","data\\sounds\\ambience\\TownAmbience.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_snd_pathToTownAmbient.Init(
+            "snd_pathToTownAmbient", "data\\sounds\\ambience\\TownAmbience.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_snd_pathToTownAmbient, 0);
-        m_snd_pathToRadioSounds.Init("snd_pathToRadioSounds","data\\sounds\\radio\\RadioSounds.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_snd_pathToRadioSounds.Init(
+            "snd_pathToRadioSounds", "data\\sounds\\radio\\RadioSounds.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_snd_pathToRadioSounds, 0);
-        m_snd_pathToRadioSamples.Init("snd_pathToRadioSamples","data\\sounds\\radio\\RadioSamples.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_snd_pathToRadioSamples.Init(
+            "snd_pathToRadioSamples", "data\\sounds\\radio\\RadioSamples.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_snd_pathToRadioSamples, 0);
-        m_snd_pathToSoundGroups.Init("snd_pathToSoundGroups","data\\sounds\\SoundGroups.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_snd_pathToSoundGroups.Init(
+            "snd_pathToSoundGroups", "data\\sounds\\SoundGroups.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_snd_pathToSoundGroups, 0);
-        m_pathToBelongsToLogos.Init("pathToBelongsToLogos","data\\models\\BelongsToLogos.xml",CVar::CVAR_STRING,CVar::CVAR_ARCHIVE);
+        m_pathToBelongsToLogos.Init(
+            "pathToBelongsToLogos", "data\\models\\BelongsToLogos.xml", CVar::CVAR_STRING, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_pathToBelongsToLogos, 0);
         m_timer_fixedtimestep.Init("timer_fixedtimestep", "no", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_timer_fixedtimestep, 0);
@@ -590,7 +625,8 @@ namespace m3d
         m_console->RegisterCVar(&m_cinematic_spring_coeff, 0);
         m_DoNotLoadMainmenuLevel.Init("DoNotLoadMainmenuLevel", "false", CVar::CVAR_BOOL, CVar::CVAR_READONLY);
         m_console->RegisterCVar(&m_DoNotLoadMainmenuLevel, 0);
-        m_mainMenuLevelName.Init("mainMenuLevelName","data\\maps\\MainMenu.ssl",CVar::CVAR_STRING,CVar::CVAR_READONLY);
+        m_mainMenuLevelName.Init(
+            "mainMenuLevelName", "data\\maps\\MainMenu.ssl", CVar::CVAR_STRING, CVar::CVAR_READONLY);
         m_console->RegisterCVar(&m_mainMenuLevelName, 0);
         m_firstLevel.Init("firstLevel", "r1m1", CVar::CVAR_STRING, CVar::CVAR_READONLY);
         m_console->RegisterCVar(&m_firstLevel, 0);
@@ -631,9 +667,23 @@ namespace m3d
 
         // The marker colours, as "r g b a" of 0x00RRGGBB values. All are initialised before any is registered,
         // and they are registered after the video cvars.
-        unsigned int const markerColors[16] = {0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080,
-                                               0x808000, 0x808080, 0x808080, 0x0000FF, 0x00FF00, 0x00FFFF,
-                                               0xFF0000, 0xFF00FF, 0xFFFF00, 0xFFFFFF};
+        unsigned int const markerColors[16] = {
+            0x000000,
+            0x000080,
+            0x008000,
+            0x008080,
+            0x800000,
+            0x800080,
+            0x808000,
+            0x808080,
+            0x808080,
+            0x0000FF,
+            0x00FF00,
+            0x00FFFF,
+            0xFF0000,
+            0xFF00FF,
+            0xFFFF00,
+            0xFFFFFF};
         for (int i = 0; i < 16; ++i)
         {
             unsigned int const color = markerColors[i];
@@ -680,4 +730,4 @@ namespace m3d
     {
         return m_console->Load(fname);
     }
-}
+}  // namespace m3d

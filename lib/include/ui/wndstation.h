@@ -6,7 +6,7 @@
 
 namespace ai
 {
-	struct Event;
+    struct Event;
 }
 
 namespace m3d
@@ -18,7 +18,7 @@ namespace m3d
 
     class AIParam;
     struct Event;
-}
+}  // namespace m3d
 
 namespace m3d
 {
@@ -31,12 +31,13 @@ namespace m3d
         class WndStation : public Wnd
         {
             friend class Wnd;
+
         protected:
-            WndStation(const m3d::ui::WndStation&);
+            WndStation(m3d::ui::WndStation const&);
             WndStation();
 
         public:
-            virtual  ~WndStation() override;
+            virtual ~WndStation() override;
             static m3d::Class* GetBaseClass();
             virtual m3d::Class* GetRtClass() const;
             static m3d::Class m_classWndStation;
@@ -52,13 +53,13 @@ namespace m3d
             m3d::ui::Cursor* m_curDefault = nullptr;
             m3d::ui::Cursor m_currentCursor;
             bool m_bAnimationEnabled = false;
-            int DispatchMouse(const m3d::Event& event);
+            int DispatchMouse(m3d::Event const& event);
             m3d::ui::Wnd* GetWndMouseOver();
-            int DispatchPaint(m3d::ui::Wnd* curWnd, const BoundsBase<float>& clipTo);
+            int DispatchPaint(m3d::ui::Wnd* curWnd, BoundsBase<float> const& clipTo);
 
         private:
-            int DispatchKey(const m3d::Event& event);
-            int DispatchJoystick(const m3d::Event& event);
+            int DispatchKey(m3d::Event const& event);
+            int DispatchJoystick(m3d::Event const& event);
             void UpdateOnMouseInOut(m3d::ui::Wnd* newWnd);
             m3d::ui::Wnd* ModalOverride(m3d::ui::Wnd* w);
             void RemoveCurrentTooltip();
@@ -67,37 +68,47 @@ namespace m3d
             void OnCloseComboBox(m3d::ui::ComboBoxWnd* combo);
 
         public:
-            m3d::ui::Wnd* GetWndForMousePoint(m3d::ui::Wnd* curWnd, const PointBase<float>& pt, bool affectAll);
-            int CheckForMouseDblClick(m3d::ui::Wnd* w, const PointBase<float>& pt, unsigned int mouseState, PointBase<float>& prevClickPt);
-            int CheckForMouseClick(m3d::ui::Wnd* w, bool set, const PointBase<float>* pt);
+            m3d::ui::Wnd* GetWndForMousePoint(m3d::ui::Wnd* curWnd, PointBase<float> const& pt, bool affectAll);
+            int CheckForMouseDblClick(
+                m3d::ui::Wnd* w,
+                PointBase<float> const& pt,
+                unsigned int mouseState,
+                PointBase<float>& prevClickPt);
+            int CheckForMouseClick(m3d::ui::Wnd* w, bool set, PointBase<float> const* pt);
 
         protected:
             PointBase<float> m_prevMouseCoord;
 
         private:
-            void ForEachChild(m3d::ui::Wnd* curWnd, void (m3d::ui::Wnd::* fn)());
+            void ForEachChild(m3d::ui::Wnd* curWnd, void (m3d::ui::Wnd::*fn)());
             m3d::CStrHash<CStr> m_strings;
             void CreateDefaultStrings();
 
         public:
-            int LoadStrings(const CStr& stringsName);
-            int GetStringByStringId(CStr& dest, const CStr& id);
-            CStr GetStringByStringId0(const CStr& id);
-            CStr InitializeStringUsingIds(const CStr& src);
-            int ProcessEvent(const m3d::Event& event);
-            virtual int OnEvent(const m3d::Event&) = 0;
+            int LoadStrings(CStr const& stringsName);
+            int GetStringByStringId(CStr& dest, CStr const& id);
+            CStr GetStringByStringId0(CStr const& id);
+            CStr InitializeStringUsingIds(CStr const& src);
+            int ProcessEvent(m3d::Event const& event);
+            virtual int OnEvent(m3d::Event const&) = 0;
             int OnRemoveWnd(m3d::ui::Wnd* parent, m3d::ui::Wnd* wnd);
             int OnAddWnd(m3d::ui::Wnd* parent, m3d::ui::Wnd* wnd);
-            int AddNotifyForWnd(m3d::ui::Wnd* from, m3d::ui::Wnd* to, unsigned int msg, const m3d::AIParam& data, bool urgent);
+            int AddNotifyForWnd(
+                m3d::ui::Wnd* from,
+                m3d::ui::Wnd* to,
+                unsigned int msg,
+                m3d::AIParam const& data,
+                bool urgent);
             int Activate(m3d::ui::Wnd* wnd);
             m3d::ui::Wnd* GetActive() const;
 
             // Not virtual, although the PDB class dump lists it as an override: the mangled
             // name (?Create@WndStation@ui@m3d@@QAEHABVCStr@@0@Z, RVA 0x58DC50) is a plain
             // public member.
-            int Create(const CStr& stringsName, const CStr& schemaName);
+            int Create(CStr const& stringsName, CStr const& schemaName);
 
-            virtual int Create(const CStr& caption, unsigned int style, const BoundsBase<float>& rc, unsigned int id) override;
+            virtual int Create(CStr const& caption, unsigned int style, BoundsBase<float> const& rc, unsigned int id)
+                override;
             int Done();
             int Repaint();
             virtual m3d::ui::Wnd* CaptureMouse(m3d::ui::Wnd* wnd);
@@ -113,7 +124,7 @@ namespace m3d
             void EndModal(m3d::ui::ModalWnd* wnd, unsigned int toRet);
             int PulseKeyForWindow(m3d::ui::Wnd* w, unsigned short key, unsigned char scanCode);
             virtual int GetDefaultCursor(m3d::ui::Cursor& cur);
-            const m3d::ui::Cursor& GetCurrentCursor() const;
+            m3d::ui::Cursor const& GetCurrentCursor() const;
             bool IsAnimationEnabled() const;
             void EnableAnimation(bool bEnable);
             void StopAllAnimations();
@@ -129,8 +140,8 @@ namespace m3d
             int m_nextUniqueId = 0;
 
         public:
-            bool IsWndAlive(const m3d::ui::Wnd* w, int uniqueId) const;
+            bool IsWndAlive(m3d::ui::Wnd const* w, int uniqueId) const;
             m3d::ui::Wnd* GetWndByUniqueId(int uniqueId) const;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

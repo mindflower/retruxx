@@ -19,8 +19,8 @@ namespace ai
         virtual ~LocationPusher() override;
 
     private:
-        LocationPusher(const ai::LocationPusherPrototypeInfo& prototypeInfo);
-        LocationPusher(const ai::LocationPusher&);
+        LocationPusher(ai::LocationPusherPrototypeInfo const& prototypeInfo);
+        LocationPusher(ai::LocationPusher const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -28,12 +28,12 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(LocationPusher);
-        virtual const ai::LocationPusherPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::LocationPusherPrototypeInfo const* GetPrototypeInfo() const override;
 
     private:
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const override;
+        virtual bool isLookAtPoint(CVector const& lookAt, float eps) const override;
 
     protected:
         virtual void _LaunchShells() override;
     };
-}
+}  // namespace ai

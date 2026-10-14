@@ -38,7 +38,7 @@ namespace
     };
 
     float const VISCELL_EDGE_LENGTH_16 = 128.0f;
-}
+}  // namespace
 
 struct ProjectorStats
 {
@@ -342,8 +342,10 @@ namespace m3d
                 int const landSize = ls.m_owner->m_level->land_size;
                 float const cellRadius = VISCELL_EDGE_LENGTH_16 * 0.70700002f;
                 Landscape::CellParams const& cell = ls.m_cellParams[x + z * landSize];
-                CVector const cellOrg((static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH_16,
-                    (cell.m_h1 + cell.m_h0) * 0.5f, (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH_16);
+                CVector const cellOrg(
+                    (static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH_16,
+                    (cell.m_h1 + cell.m_h0) * 0.5f,
+                    (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH_16);
                 if (projectorFrusta.testSphere(cellOrg, cellRadius))
                 {
                     ls.drawCellOverlayedShader(x, z, lsShader);
@@ -366,7 +368,8 @@ namespace m3d
                 rni.isCullInverted = false;
                 rni.isPrimaryRender = false;
                 rni.isUseImpostors = true;
-                float const invLen = 1.0f / std::sqrt(dir.x * dir.x + dir.z * dir.z + dir.y * dir.y + 0.00000011920929f);
+                float const invLen =
+                    1.0f / std::sqrt(dir.x * dir.x + dir.z * dir.z + dir.y * dir.y + 0.00000011920929f);
                 rni.projDir = CVector(0.0f - invLen * dir.x, 0.0f - dir.y * invLen, 0.0f - dir.z * invLen);
                 rni.projOrg = org;
                 rni.projTansform = projWorldMat;
@@ -422,4 +425,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

@@ -19,7 +19,6 @@ namespace ai
         virtual Obj* CreateTargetObject() const;
     };
 
-
     class CinematicMover : public Obj
     {
     public:
@@ -49,4 +48,4 @@ namespace ai
         float m_currentFlyTime;
         int m_controlledObjId;
     };
-}
+}  // namespace ai

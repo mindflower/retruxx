@@ -39,8 +39,8 @@ namespace m3d
                     {
                         delete m_exceptionIds;
                         m_exceptionIds = nullptr;
-                        m_exceptionIds = new ai::ObjIdExceptionalTraceLineCallback(
-                            std::vector<int>(1, body->GetOwner()->GetId()));
+                        m_exceptionIds =
+                            new ai::ObjIdExceptionalTraceLineCallback(std::vector<int>(1, body->GetOwner()->GetId()));
                         break;
                     }
                 }
@@ -53,7 +53,8 @@ namespace m3d
             dGeomSetPosition(m_traceLineRay->GetGeomId(), v1.x, v1.y, v1.z);
             m_traceLineRay->SetDirection(dir);
             m_traceLineRay->SetLength(sqrt(dir.z * dir.z + dir.x * dir.x + dir.y * dir.y));
-            m_LastVerdict = ai::TraceLine(*m_traceLineRay, contact, false, false, false, true, m_exceptionIds, false, false);
+            m_LastVerdict =
+                ai::TraceLine(*m_traceLineRay, contact, false, false, false, true, m_exceptionIds, false, false);
         }
         return m_LastVerdict;
     }
@@ -85,4 +86,4 @@ namespace m3d
             m_traceLineRay = nullptr;
         }
     }
-}
+}  // namespace m3d

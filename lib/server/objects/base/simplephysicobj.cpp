@@ -348,7 +348,8 @@ namespace ai
             this->m_physicBody->Remove();
     }
 
-    void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& nodelist) const
+    void SimplePhysicObj::ReceiveNodesToLink(
+        retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& nodelist) const
     {
         // RVA 0x7F57A0
         if (m_physicBody)
@@ -419,7 +420,8 @@ namespace ai
     SimplePhysicObjPrototypeInfo const* SimplePhysicObj::GetPrototypeInfo() const
     {
         // RVA 0x7F6540
-        return static_cast<SimplePhysicObjPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<SimplePhysicObjPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     CVector SimplePhysicObj::GetGeometricCenter() const
@@ -466,7 +468,8 @@ namespace ai
         }
     }
 
-    void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void SimplePhysicObj::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // RVA 0x5EF690
         for (auto const& prop : m_propertiesMap)

@@ -22,7 +22,12 @@ namespace m3d
             virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(MsgBoxDlg);
 
-            int CreateMsgBoxDlg(CStr const& caption, CStr const& msg, BoundsBase<float> const& rc, unsigned int flags, float maxWidth);
+            int CreateMsgBoxDlg(
+                CStr const& caption,
+                CStr const& msg,
+                BoundsBase<float> const& rc,
+                unsigned int flags,
+                float maxWidth);
 
         protected:
             virtual int OnInitModal() override;
@@ -55,7 +60,14 @@ namespace m3d
             virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(ArtDlg);
 
-            int CreateArtDlg(CStr const& caption, CStr const& msg, CStr const& imageFile, CStr const& soundFile, BoundsBase<float> const& rc, unsigned int flags, float maxWidth);
+            int CreateArtDlg(
+                CStr const& caption,
+                CStr const& msg,
+                CStr const& imageFile,
+                CStr const& soundFile,
+                BoundsBase<float> const& rc,
+                unsigned int flags,
+                float maxWidth);
             virtual int OnInitModal() override;
 
         protected:
@@ -65,5 +77,5 @@ namespace m3d
             int m_soundTableId = -1;
             int m_soundChannelId = -1;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

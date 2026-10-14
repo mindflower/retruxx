@@ -6,7 +6,7 @@ namespace ai
     class VehicleUpdater
     {
     public:
-        VehicleUpdater(const ai::VehicleUpdater&);
+        VehicleUpdater(ai::VehicleUpdater const&);
         VehicleUpdater(ai::Vehicle* vehicle);
         ~VehicleUpdater();
         void Update(float elapsedTime);
@@ -22,4 +22,4 @@ namespace ai
         float _CalcWheelAVel() const;
         void _UpdateForceAndVelocity(float elapsedTime);
     };
-}
+}  // namespace ai

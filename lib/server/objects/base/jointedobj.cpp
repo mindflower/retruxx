@@ -96,8 +96,7 @@ namespace ai
         }
 
         std::sort(notSplineBones.begin(), notSplineBones.end());
-        notSplineBones.erase(
-            std::unique(notSplineBones.begin(), notSplineBones.end()), notSplineBones.end());
+        notSplineBones.erase(std::unique(notSplineBones.begin(), notSplineBones.end()), notSplineBones.end());
 
         m_splineNeighbours.clear();
         for (unsigned bone = 0; bone < numBones; ++bone)
@@ -120,7 +119,8 @@ namespace ai
 
             // Nearest first, so that [0] is the neighbour on each side.
             CVector const bonePos = bonesPoses[bone];
-            auto const byDistance = [&bonesPoses, &bonePos](unsigned a, unsigned b) {
+            auto const byDistance = [&bonesPoses, &bonePos](unsigned a, unsigned b)
+            {
                 return (bonesPoses[a] - bonePos).length() < (bonesPoses[b] - bonePos).length();
             };
             std::sort(parents.begin(), parents.end(), byDistance);
@@ -148,8 +148,13 @@ namespace ai
         }
     }
 
-    void JointedObj::Init(CStr const& modelName, CVector const& pos, Quaternion const& rot, float mass,
-        m3d::SgNode* toAccept, float strechZ)
+    void JointedObj::Init(
+        CStr const& modelName,
+        CVector const& pos,
+        Quaternion const& rot,
+        float mass,
+        m3d::SgNode* toAccept,
+        float strechZ)
     {
         // RVA 0x822490 - builds the ragdoll: one physical box per hierarchy geom of the model,
         // a universal joint wherever two of those sit on bones that are related, and an extra
@@ -300,7 +305,8 @@ namespace ai
 
             // The anchor is the bone's own origin, in world space.
             CMatrix const& boneMat = m_Anim->GetBoneAnim(hierGeom->parentBone).m_curMatrix;
-            dJointSetUniversalAnchor(joint,
+            dJointSetUniversalAnchor(
+                joint,
                 boneMat._41 * matWorld._11 + boneMat._42 * matWorld._21 + boneMat._43 * matWorld._31 +
                     boneMat._44 * matWorld._41,
                 boneMat._41 * matWorld._12 + boneMat._42 * matWorld._22 + boneMat._43 * matWorld._32 +
@@ -321,8 +327,7 @@ namespace ai
                 restMat.rotTranslate(restBone.m_quaternion0, restBone.m_translation0);
 
                 // The bone's rest pose in the world, and the member placed in it the same way as above.
-                CMatrix const jointMat =
-                    restMat * m_Anim->GetBoneAnim(boneParent).m_curMatrix * matWorld;
+                CMatrix const jointMat = restMat * m_Anim->GetBoneAnim(boneParent).m_curMatrix * matWorld;
 
                 CVector const& translation = hierGeom->geom.Translation;
                 m_Members[i]->SetPosition(CVector(
@@ -351,8 +356,10 @@ namespace ai
                 float hiStop1 = maxBounds.MaxRot.y;
                 float hiStop2 = maxBounds.MaxRot.z;
 
-                loStop1 = loStop1 < -3.14159265f ? -3.14159265f : (loStop1 > -0.00999999978f ? -0.00999999978f : loStop1);
-                loStop2 = loStop2 < -3.14159265f ? -3.14159265f : (loStop2 > -0.00999999978f ? -0.00999999978f : loStop2);
+                loStop1 =
+                    loStop1 < -3.14159265f ? -3.14159265f : (loStop1 > -0.00999999978f ? -0.00999999978f : loStop1);
+                loStop2 =
+                    loStop2 < -3.14159265f ? -3.14159265f : (loStop2 > -0.00999999978f ? -0.00999999978f : loStop2);
                 hiStop1 = hiStop1 < 0.00999999978f ? 0.00999999978f : (hiStop1 > 3.14159265f ? 3.14159265f : hiStop1);
                 hiStop2 = hiStop2 < 0.00999999978f ? 0.00999999978f : (hiStop2 > 3.14159265f ? 3.14159265f : hiStop2);
 
@@ -686,8 +693,7 @@ namespace ai
         // RVA 0x81B570 - blows every member away from the cause, along the line from the cause
         // to the object's centre.
         CVector const away = m_Position - causePos;
-        float const invLen =
-            1.0f / sqrt(away.z * away.z + away.y * away.y + away.x * away.x + 0.00000011920929f);
+        float const invLen = 1.0f / sqrt(away.z * away.z + away.y * away.y + away.x * away.x + 0.00000011920929f);
 
         float const dirX = invLen * away.x;
         float dirY = away.y * invLen;
@@ -738,8 +744,8 @@ namespace ai
 
         for (auto* member : m_Members)
         {
-            dSpaceCollide2(reinterpret_cast<dxGeom*>(gGlobalSpace), member->GetGeom()->GetGeomId(), nullptr,
-                ai::NearCallback);
+            dSpaceCollide2(
+                reinterpret_cast<dxGeom*>(gGlobalSpace), member->GetGeom()->GetGeomId(), nullptr, ai::NearCallback);
         }
 
         PutToNewSpace(gGlobalSpace);
@@ -1014,8 +1020,7 @@ namespace ai
         if (j < 0)
             return false;
 
-        for (int parent = m_Model->GetBone(j).m_parentIdx; parent >= 0;
-             parent = m_Model->GetBone(parent).m_parentIdx)
+        for (int parent = m_Model->GetBone(j).m_parentIdx; parent >= 0; parent = m_Model->GetBone(parent).m_parentIdx)
         {
             if (parent == i)
                 return true;

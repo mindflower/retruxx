@@ -7,7 +7,7 @@ namespace m3d
     // Deletes every element of a container of owning raw pointers and then
     // releases the container's own storage - not just clear(), the buffer goes
     // too. Elements are destroyed back to front, as in the original.
-    template <class T>
+    template<class T>
     void emptyPtrContainer(T& c)
     {
         while (!c.empty())
@@ -35,7 +35,7 @@ namespace m3d
         {
             m_hash[key] = value;
         }
-        
+
         bool get(CStr const& key, T& v) const
         {
             auto it = m_hash.find(key);
@@ -47,7 +47,7 @@ namespace m3d
             return false;
         }
 
-        void remove(const CStr& key)
+        void remove(CStr const& key)
         {
             // NOTE: not emitted in the shipped binary; drops the key if present.
             m_hash.erase(key);
@@ -63,7 +63,7 @@ namespace m3d
 
     // K is the key type: unsigned int as in the original, or a pointer-sized integer where the
     // original keyed by an address (the window station's registry of live windows).
-    template <class T, class K = unsigned int>
+    template<class T, class K = unsigned int>
     class CIntHash
     {
     public:
@@ -106,4 +106,4 @@ namespace m3d
     private:
         tHash m_hash;
     };
-}
+}  // namespace m3d

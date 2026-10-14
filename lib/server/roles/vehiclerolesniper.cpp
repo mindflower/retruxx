@@ -243,8 +243,10 @@ namespace ai
             center.z = p.z + center.z;
         }
         double const inv = 1.0 / double(targets.size());
-        PointBase<float> leftBottom(static_cast<float>(inv * center.x) - seekRadius, static_cast<float>(inv * center.z) - seekRadius);
-        PointBase<float> topRight(static_cast<float>(inv * center.x) + seekRadius, static_cast<float>(inv * center.z) + seekRadius);
+        PointBase<float> leftBottom(
+            static_cast<float>(inv * center.x) - seekRadius, static_cast<float>(inv * center.z) - seekRadius);
+        PointBase<float> topRight(
+            static_cast<float>(inv * center.x) + seekRadius, static_cast<float>(inv * center.z) + seekRadius);
         leftBottom = clampIntoLandscape(leftBottom);
         topRight = clampIntoLandscape(topRight);
         PointBase<float> const best = getPeakPositionInt(v, leftBottom, topRight, seekRadius * 0.2f);
@@ -252,7 +254,11 @@ namespace ai
         return CVector(best.x, height, best.y);
     }
 
-    PointBase<float> VehicleRoleSniper::getPeakPositionInt(Vehicle const* v, PointBase<float> const& leftbottom, PointBase<float> const& righttop, float step)
+    PointBase<float> VehicleRoleSniper::getPeakPositionInt(
+        Vehicle const* v,
+        PointBase<float> const& leftbottom,
+        PointBase<float> const& righttop,
+        float step)
     {
         // RVA 0x7FFAD0 - a coarse-to-fine search: sample the rectangle every step units for the
         // highest acceptable point below m_DeniedHeight, then search again round it at half the
@@ -290,7 +296,8 @@ namespace ai
                 x = x + step;
             } while (!(righttop.x < x));
         }
-        return getPeakPositionInt(v, PointBase<float>(bestX - step, bestY - step), PointBase<float>(bestX + step, bestY + step), step * 0.5f);
+        return getPeakPositionInt(
+            v, PointBase<float>(bestX - step, bestY - step), PointBase<float>(bestX + step, bestY + step), step * 0.5f);
     }
 
     std::vector<int, std::allocator<int>> VehicleRoleSniper::getTargetObjs() const
@@ -355,7 +362,8 @@ namespace ai
     VehicleRoleSniperPrototypeInfo const* VehicleRoleSniper::GetPrototypeInfo() const
     {
         // RVA 0x7FF1C0 - NOTE: the prototype is cast without a type check.
-        return static_cast<VehicleRoleSniperPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<VehicleRoleSniperPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRoleSniper::CreateObject()

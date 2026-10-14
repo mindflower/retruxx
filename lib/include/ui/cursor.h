@@ -22,5 +22,5 @@ namespace m3d
             PointBase<float> m_sz;
             PointBase<float> m_spot;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

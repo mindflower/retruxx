@@ -15,7 +15,7 @@ namespace m3d
     struct Index3
     {
         uint16_t I[3];
-        const uint16_t& operator[](unsigned int i) const;
+        uint16_t const& operator[](unsigned int i) const;
         uint16_t& operator[](unsigned int i);
     };
 
@@ -23,8 +23,8 @@ namespace m3d
 
     struct DCollisionData
     {
-        retruxx::vector<CVector, retruxx::allocator<CVector> > Points;
-        retruxx::vector<m3d::Index3, retruxx::allocator<m3d::Index3> > Triangles;
+        retruxx::vector<CVector, retruxx::allocator<CVector>> Points;
+        retruxx::vector<m3d::Index3, retruxx::allocator<m3d::Index3>> Triangles;
     };
 
     enum DRAFT_GeomType : int32_t
@@ -231,7 +231,7 @@ namespace m3d
     {
         short BoneIndex;
         float Weight;
-        bool operator==(const DInfluence&) const;
+        bool operator==(DInfluence const&) const;
     };
 
     struct DShader
@@ -273,16 +273,16 @@ namespace m3d
     {
         m3d::DRAFT_TextureType Type;
         unsigned int UV_Set;
-        std::basic_string<char, std::char_traits<char>, std::allocator<char> > FileName;
+        std::basic_string<char, std::char_traits<char>, std::allocator<char>> FileName;
         m3d::rend::TexHandle Handle;
-        bool operator<(const m3d::DTextureInfo& A);
+        bool operator<(m3d::DTextureInfo const& A);
     };
 
     struct DSurfaceMaterial
     {
         m3d::rend::Material material;
         m3d::DShader Shader;
-        retruxx::vector<m3d::DTextureInfo, retruxx::allocator<m3d::DTextureInfo> > Textures;
+        retruxx::vector<m3d::DTextureInfo, retruxx::allocator<m3d::DTextureInfo>> Textures;
     };
 
     struct DMesh
@@ -301,14 +301,18 @@ namespace m3d
         retruxx::vector<m3d::DRAFT_HierarchyChange> HierarchyChanges;
         retruxx::vector<retruxx::vector<m3d::DRAFT_Transform>> AnimationKeys;
     };
-}
+}  // namespace m3d
 
 // The SAM (draft model) helpers, in the global namespace as in the shipped build.
 bool operator==(m3d::DRAFT_Transform const& A, m3d::DRAFT_Transform const& B);
 bool VertCompPresent(retruxx::vector<m3d::DRAFT_VertexComponent>& VC, m3d::VERTEX_COMPONENT c);
 unsigned int CompOff(retruxx::vector<m3d::DRAFT_VertexComponent>& VC, m3d::VERTEX_COMPONENT Cmp);
 bool DefineVertexType(
-    retruxx::vector<m3d::DRAFT_VertexComponent>& VC, m3d::rend::VertexType& VertType, unsigned int& VertTypeSize);
+    retruxx::vector<m3d::DRAFT_VertexComponent>& VC,
+    m3d::rend::VertexType& VertType,
+    unsigned int& VertTypeSize);
 void BinormalToTangentW(m3d::DMesh& Mh);
-bool IsStaticTriMesh(m3d::DMesh const& TriMesh, retruxx::vector<m3d::DAnimation> const& Animations,
+bool IsStaticTriMesh(
+    m3d::DMesh const& TriMesh,
+    retruxx::vector<m3d::DAnimation> const& Animations,
     retruxx::vector<m3d::DRAFT_Bone> const& Bones);

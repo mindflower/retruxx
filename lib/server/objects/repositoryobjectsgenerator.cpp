@@ -11,7 +11,9 @@ namespace ai
 {
     RepositoryObjectsGeneratorPrototypeInfo::RepositoryObjectsGeneratorPrototypeInfo() = default;
 
-    bool RepositoryObjectsGeneratorPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
+    bool RepositoryObjectsGeneratorPrototypeInfo::LoadFromXML(
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode)
     {
         // RVA 0x875730 - one <Object> child per kind of thing this generator may put on a shelf.
         bool const result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
@@ -26,8 +28,8 @@ namespace ai
                 if (prototypeName.empty())
                 {
                     M3D_LOG_ERR(
-                        "Error: empty prototype name for object in RepositoryObjectsGenerator '" +
-                        m_prototypeName + CStr("'"));
+                        "Error: empty prototype name for object in RepositoryObjectsGenerator '" + m_prototypeName +
+                        CStr("'"));
                     continue;
                 }
 
@@ -48,8 +50,7 @@ namespace ai
             description.prototypeId = thePrototypeManager->GetPrototypeId(description.prototypeName);
             if (description.prototypeId == -1)
             {
-                M3D_LOG_ERR(
-                    "Error: Unknown Object prototype: '" + description.prototypeName + CStr("'"));
+                M3D_LOG_ERR("Error: Unknown Object prototype: '" + description.prototypeName + CStr("'"));
             }
         }
     }

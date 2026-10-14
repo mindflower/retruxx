@@ -11,8 +11,12 @@
 #include "log.h"
 
 // orig 0x650b80 shader_include.cpp:29
-HRESULT __stdcall auxShaderInclude::Open(D3DXINCLUDE_TYPE IncludeType, LPCSTR pName, LPCVOID pParentData,
-                                         LPCVOID* ppData, UINT* pBytes)
+HRESULT __stdcall auxShaderInclude::Open(
+    D3DXINCLUDE_TYPE IncludeType,
+    LPCSTR pName,
+    LPCVOID pParentData,
+    LPCVOID* ppData,
+    UINT* pBytes)
 {
     CStr fileName(pName);
 

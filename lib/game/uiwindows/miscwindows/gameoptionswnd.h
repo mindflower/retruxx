@@ -9,10 +9,10 @@ namespace m3d
         class SliderWnd;
         class ButtonWnd;
         class CheckWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
-class GameOptionsWnd :  public m3d::ui::Wnd
+class GameOptionsWnd : public m3d::ui::Wnd
 {
 public:
     class AuxInfo
@@ -30,27 +30,27 @@ public:
 
 public:
     virtual ~GameOptionsWnd();
-    static m3d::Class * GetBaseClass();
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    virtual m3d::Class * GetClass() const ;
+    static m3d::Class* GetBaseClass();
+    static m3d::Object* CreateObject();
+    virtual m3d::Object* Clone();
+    virtual m3d::Class* GetClass() const;
 
 protected:
     void InitNumRepliesControls();
     void ApplyNumReplies();
     void UpdateControls();
     GameOptionsWnd();
-    GameOptionsWnd(GameOptionsWnd const &);
+    GameOptionsWnd(GameOptionsWnd const&);
     void InitAutoHelpControls();
-    void OnSliderNumRepliesChange(m3d::AIParam const &);
-    void OnCheckAutoHelpClick(m3d::AIParam const &);
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int, m3d::AIParam const &);
+    void OnSliderNumRepliesChange(m3d::AIParam const&);
+    void OnCheckAutoHelpClick(m3d::AIParam const&);
+    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
     void UpdateNumRepliesControls();
     void ApplyGameDifficulty();
     void UpdateNumRepliesPrevNextButtonsState();
-    void OnBtnNumRepliesNextClick(m3d::AIParam const &);
-    void OnCbGameDifficultyChange(m3d::AIParam const &);
-    void OnBtnNumRepliesPrevClick(m3d::AIParam const &);
+    void OnBtnNumRepliesNextClick(m3d::AIParam const&);
+    void OnCbGameDifficultyChange(m3d::AIParam const&);
+    void OnBtnNumRepliesPrevClick(m3d::AIParam const&);
     void InitGameDifficultyControls();
     virtual int GameDataSetup();
     void UpdateAutoHelpControls();
@@ -63,11 +63,11 @@ public:
     RT_CLASS_DECLARE(GameOptionsWnd);
 
 private:
-    m3d::ui::CheckWnd *m_checkAutoHelp = nullptr;
-    m3d::ui::SliderWnd *m_sliderNumReplies = nullptr;
-    m3d::ui::ButtonWnd *m_btnNumRepliesPrev = nullptr;
-    m3d::ui::ButtonWnd *m_btnNumRepliesNext = nullptr;
-    m3d::ui::ComboBoxWnd *m_cbGameDifficulty = nullptr;
+    m3d::ui::CheckWnd* m_checkAutoHelp = nullptr;
+    m3d::ui::SliderWnd* m_sliderNumReplies = nullptr;
+    m3d::ui::ButtonWnd* m_btnNumRepliesPrev = nullptr;
+    m3d::ui::ButtonWnd* m_btnNumRepliesNext = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbGameDifficulty = nullptr;
     int m_sliderNumRepliesBlocked = 0;
     int m_cbGameDifficultyBlocked = 0;
     GameOptionsWnd::AuxInfo m_aif;

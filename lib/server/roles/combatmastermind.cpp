@@ -144,9 +144,9 @@ namespace ai
             }
             CVector const pos = vehicle->GetPosition();
             CVector const targetPos = target->GetPosition();
-            float const radius = vehicle->m_intersectionObstacle
-                ? static_cast<float>(vehicle->m_intersectionObstacle->GetSphere()->GetRadius())
-                : 0.0f;
+            float const radius = vehicle->m_intersectionObstacle ?
+                static_cast<float>(vehicle->m_intersectionObstacle->GetSphere()->GetRadius()) :
+                0.0f;
             AimInfo aim;
             aim.m_targetPos = CVector2(targetPos.x, targetPos.z);
             aim.m_vehicleCircle.m_center = CVector2(pos.x, pos.z);

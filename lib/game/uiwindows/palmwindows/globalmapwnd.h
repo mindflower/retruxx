@@ -37,9 +37,8 @@ public:
 protected:
     virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
     void DrawConnections(m3d::ui::DrawInfo const& di);
-    std::
-        vector<LevelConnectionsWnd::ConnectionDrawInfo, std::allocator<LevelConnectionsWnd::ConnectionDrawInfo>>
-            m_connectionDrawInfo;
+    std::vector<LevelConnectionsWnd::ConnectionDrawInfo, std::allocator<LevelConnectionsWnd::ConnectionDrawInfo>>
+        m_connectionDrawInfo;
     LevelConnectionsWnd::AuxInfo m_aif;
     m3d::rend::TexHandle m_connectionTex;
     LevelConnectionsWnd();
@@ -92,9 +91,8 @@ protected:
     int InitLevelIcons();
     void LaunchLocalMap();
     int CreateConnectionsWnd();
-    std::
-        map<CStr, ref_ptr<LevelIco>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<LevelIco>>>>
-            m_levelIcons;
+    std::map<CStr, ref_ptr<LevelIco>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<LevelIco>>>>
+        m_levelIcons;
     std::vector<GlobalMapWnd::Connection, std::allocator<GlobalMapWnd::Connection>> m_connections;
     GlobalMapWnd::AuxInfo m_aif;
     LevelConnectionsWnd* m_wndConnections;

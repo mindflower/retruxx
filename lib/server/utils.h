@@ -23,8 +23,8 @@ namespace ai
         CVector m_Org;
 
     public:
-        cmpByDistToOrg(const CVector& Org);
-        bool operator()(const int& objId1, const int& objId2) const;
+        cmpByDistToOrg(CVector const& Org);
+        bool operator()(int const& objId1, int const& objId2) const;
     };
 
     void sortPhysicObjsByDistance(retruxx::vector<int>& vct, CVector const& org);
@@ -57,4 +57,4 @@ namespace ai
     CVector GetGroundPos(CVector2 const&, bool);
     PointBase<float> clampIntoLandscape(PointBase<float> const&);
     CompositeObj* CreateBrokenObj(PhysicObj* obj, CStr const& destroyedModelName, m3d::SgNode* toAccept);
-}
+}  // namespace ai

@@ -42,7 +42,7 @@ bool AsmShaderImpl::IsVertexShader() const
 }
 
 // orig 0x64c820 asm_shader.cpp:65
-bool AsmShaderImpl::LoadFromFile(const char* fileName, Type type)
+bool AsmShaderImpl::LoadFromFile(char const* fileName, Type type)
 {
     m_fileName = fileName;
     m_type = type;
@@ -71,8 +71,11 @@ bool AsmShaderImpl::LoadFromFile(const char* fileName, Type type)
 
     if (FAILED(hr))
     {
-        LogMsg(CStr::format_("AsmShaderImpl: failed to compile shader file '%s' with: %s", fileName,
-                             errorBuffer ? (const char*)errorBuffer->GetBufferPointer() : "No D3DX error message."));
+        LogMsg(
+            CStr::format_(
+                "AsmShaderImpl: failed to compile shader file '%s' with: %s",
+                fileName,
+                errorBuffer ? (char const*)errorBuffer->GetBufferPointer() : "No D3DX error message."));
 
         if (errorBuffer)
         {
@@ -96,7 +99,7 @@ bool AsmShaderImpl::LoadFromFile(const char* fileName, Type type)
 }
 
 // orig 0x64c560 asm_shader.cpp:143
-bool AsmShaderImpl::LoadFromString(const char* shaderBuf, unsigned int dataLen, Type type)
+bool AsmShaderImpl::LoadFromString(char const* shaderBuf, unsigned int dataLen, Type type)
 {
     return false;
 }
@@ -141,7 +144,7 @@ void AsmShaderImpl::Apply()
 }
 
 // orig 0x64d1e0 asm_shader.cpp:348
-IAsmShader* CDevice::NewAsmShader(const char* fileName, IAsmShader::Type type)
+IAsmShader* CDevice::NewAsmShader(char const* fileName, IAsmShader::Type type)
 {
     CStr fName(fileName);
     UnifyFileName(fName);
@@ -181,7 +184,10 @@ void CDevice::ReleaseAsmShaders()
     {
         AsmShaderImpl* shader = it->second;
 
-        LogMsg(CStr::format_("Warning: Asm shader '%s' is not released (refs = %d)", shader->m_fileName.c_str(),
-                             shader->GetRefCount()));
+        LogMsg(
+            CStr::format_(
+                "Warning: Asm shader '%s' is not released (refs = %d)",
+                shader->m_fileName.c_str(),
+                shader->GetRefCount()));
     }
 }

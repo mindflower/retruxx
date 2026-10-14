@@ -52,5 +52,5 @@ namespace m3d
             ButtonWnd* m_btn0 = nullptr;
             ButtonWnd* m_btn1 = nullptr;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

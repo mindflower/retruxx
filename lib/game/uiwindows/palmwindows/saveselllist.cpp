@@ -224,9 +224,13 @@ namespace
     // Shared body of the four inlined "GetControlFromPattern" blocks in
     // SaveSellList::CreateFromPattern (RVA 0x103AC0). Moves a named child from the
     // pattern's parent into `owner`, keeping it at the same screen position.
-    template <typename T>
+    template<typename T>
     bool GrabControlFromPattern(
-        m3d::ui::Wnd* owner, m3d::Object* oldParent, CStr const& childName, char const* rttiClass, T*& out)
+        m3d::ui::Wnd* owner,
+        m3d::Object* oldParent,
+        CStr const& childName,
+        char const* rttiClass,
+        T*& out)
     {
         out = nullptr;
         m3d::Class const* cls = M3D_KERNEL->FindClass(rttiClass);
@@ -239,8 +243,7 @@ namespace
         m3d::Object* child = oldParent->GetChildByName(childName);
         if (!child || !child->IsKindOf(cls))
         {
-            M3D_LOG_INFO(
-                CStr("GetControlFromPattern error - no child or invalid class; control name - ") + childName);
+            M3D_LOG_INFO(CStr("GetControlFromPattern error - no child or invalid class; control name - ") + childName);
             return false;
         }
 
@@ -775,8 +778,8 @@ int SaveSellList::GameDataLoad(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* gu
         else
         {
             M3D_LOG_INFO(
-                "SaveSellList::GameDataLoad error - ObjectInfo for objName " + objName + " and levelName " +
-                levelName + " not found");
+                "SaveSellList::GameDataLoad error - ObjectInfo for objName " + objName + " and levelName " + levelName +
+                " not found");
             res = 0;
         }
         btnNode->GetNextSibling(btnNode, "SaveButton");

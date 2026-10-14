@@ -16,19 +16,18 @@ namespace ai
 
     private:
         float m_playerSchwarzPart;
-
     };
 
     class DynamicQuestReach : public DynamicQuest
     {
     public:
-        virtual m3d::Class * GetClass() const ;
-        virtual DynamicQuestReachPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual int OnEvent(Event const &);
-        virtual DynamicQuestManager::QuestType GetQuestType() const ;
-        virtual void Update(float,unsigned int);
-        static m3d::Class * GetBaseClass();
-        DynamicQuestReach(DynamicQuestReachPrototypeInfo const &);
+        virtual m3d::Class* GetClass() const;
+        virtual DynamicQuestReachPrototypeInfo const* GetPrototypeInfo() const;
+        virtual int OnEvent(Event const&);
+        virtual DynamicQuestManager::QuestType GetQuestType() const;
+        virtual void Update(float, unsigned int);
+        static m3d::Class* GetBaseClass();
+        DynamicQuestReach(DynamicQuestReachPrototypeInfo const&);
 
     protected:
         virtual void _OnCreate();
@@ -36,11 +35,11 @@ namespace ai
         virtual ~DynamicQuestReach();
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
-        void _OnObjectEntersLocation(Event const &);
+        static m3d::Object* CreateObject();
+        virtual m3d::Object* Clone();
+        void _OnObjectEntersLocation(Event const&);
 
     public:
         RT_CLASS_DECLARE(DynamicQuestReach);
     };
-}
+}  // namespace ai

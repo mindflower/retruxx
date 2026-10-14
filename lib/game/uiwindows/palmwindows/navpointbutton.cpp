@@ -171,8 +171,8 @@ NavPoint::NavPointType NavPointButton::GetNavPointTypeByQuest(help::QuestType qu
     // RVA 0x4F5AB0
     if (questType != help::QUESTTYPE_STATIC)
     {
-        return questType == help::QUESTTYPE_DYNAMIC ? NavPoint::NAVPOINT_TYPE_USER_QUEST
-                                                    : NavPoint::NAVPOINT_TYPE_NUM_NAVPOINT_TYPES;
+        return questType == help::QUESTTYPE_DYNAMIC ? NavPoint::NAVPOINT_TYPE_USER_QUEST :
+                                                      NavPoint::NAVPOINT_TYPE_NUM_NAVPOINT_TYPES;
     }
 
     // A static quest is a main-story one or a side one depending on what the

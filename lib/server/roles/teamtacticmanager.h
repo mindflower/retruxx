@@ -23,4 +23,4 @@ namespace ai
         void AssignTacticAgainstTeam(ai::Team* team, ai::Team const* target, CStr const& tacticName);
         void AssignTacticAgainstObj(ai::Team* team, ai::Obj const* target, CStr const& tacticName);
     };
-}
+}  // namespace ai

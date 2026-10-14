@@ -194,4 +194,4 @@ namespace m3d
     WeatherInclement::WeatherInclement()
     {
     }
-}
+}  // namespace m3d

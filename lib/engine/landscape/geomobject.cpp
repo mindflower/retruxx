@@ -201,8 +201,7 @@ namespace m3d
     {
     }
 
-    GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&) :
-        GeomObject()
+    GeomObjectLandscape::GeomObjectLandscape(GeomObjectLandscape const&) : GeomObject()
     {
         // RVA 0x61E3A0 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
@@ -269,9 +268,7 @@ namespace m3d
         return new GeomObjectRoad(*this);
     }
 
-    GeomObjectRoad::GeomObjectRoad(GeomObjectRoad const&) :
-        GeomObject(),
-        m_roadNode(nullptr)
+    GeomObjectRoad::GeomObjectRoad(GeomObjectRoad const&) : GeomObject(), m_roadNode(nullptr)
     {
         // RVA 0x61E520 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
@@ -309,8 +306,7 @@ namespace m3d
     {
     }
 
-    GeomObjectWater::GeomObjectWater(GeomObjectWater const&) :
-        GeomObject()
+    GeomObjectWater::GeomObjectWater(GeomObjectWater const&) : GeomObject()
     {
         // RVA 0x61E2E0 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
@@ -345,14 +341,12 @@ namespace m3d
         // RVA 0x61E620 - nothing of its own; the geom is released through Release().
     }
 
-    GeomObjectPassCell::GeomObjectPassCell(GeomObjectPassCell const&) :
-        GeomObject()
+    GeomObjectPassCell::GeomObjectPassCell(GeomObjectPassCell const&) : GeomObject()
     {
         // RVA 0x61E5E0 - NOTE: default initialises like the plain constructor; nothing is copied.
     }
 
-    GeomObjectPassCell::GeomObjectPassCell() :
-        GeomObject()
+    GeomObjectPassCell::GeomObjectPassCell() : GeomObject()
     {
         // RVA 0x61E5A0
     }

@@ -36,4 +36,4 @@ namespace m3d
         int m_numInputs;
         int m_numOutputs;
     };
-}
+}  // namespace m3d

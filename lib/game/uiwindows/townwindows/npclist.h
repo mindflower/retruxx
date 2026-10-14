@@ -54,8 +54,7 @@ public:
     };
 
 protected:
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     CStr GetNameForNpc(ai::Npc const* npc) const;
     int CreateFromPattern();
     int CreateChildren();

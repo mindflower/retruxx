@@ -20,8 +20,8 @@ namespace m3d
     {
     private:
         m3d::CWorld* m_world = nullptr;
-        virtual void HandleCommand(int __formal, const m3d::CConsoleParams& __formal1) override;
-        virtual bool HandleCVar(const m3d::CVar* __formal, const m3d::CConsoleParams& __formal1) override;
+        virtual void HandleCommand(int __formal, m3d::CConsoleParams const& __formal1) override;
+        virtual bool HandleCVar(m3d::CVar const* __formal, m3d::CConsoleParams const& __formal1) override;
 
         struct PredictInfo
         {
@@ -39,29 +39,29 @@ namespace m3d
         };
 
     private:
-        retruxx::vector<m3d::CClient::PredictInfo, retruxx::allocator<m3d::CClient::PredictInfo> > m_predictData;
-        retruxx::vector<int, retruxx::allocator<int> > m_predictLastEmptySlots;
+        retruxx::vector<m3d::CClient::PredictInfo, retruxx::allocator<m3d::CClient::PredictInfo>> m_predictData;
+        retruxx::vector<int, retruxx::allocator<int>> m_predictLastEmptySlots;
         void PredictInit();
         void PredictDone();
         void PredictUpdate(int curTime, unsigned int dt);
         void PredictAddNode(m3d::SgNode* n);
         void PredictRemoveNode(m3d::SgNode* n);
-        void PredictUpdateNode(m3d::SgNode* n, const Quaternion& direction, int curTime);
+        void PredictUpdateNode(m3d::SgNode* n, Quaternion const& direction, int curTime);
 
     public:
-        CClient(const m3d::CClient&);
+        CClient(m3d::CClient const&);
         CClient();
-        virtual  ~CClient();
+        virtual ~CClient();
         int Init();
-        int RecieveData(const CSimpleNetPacket* pack, ai::CServer* server);
-        m3d::SgNode* CreateServerControlledNode(const int numModel);
+        int RecieveData(CSimpleNetPacket const* pack, ai::CServer* server);
+        m3d::SgNode* CreateServerControlledNode(int const numModel);
         int Update(int curTime, unsigned int dt);
         m3d::CWorld& GetWorld();
         virtual void OnBeforeDeviceReset() override;
         virtual void OnAfterDeviceReset() override;
         void Reset();
-        virtual const char* GetCallbackName() const override;
+        virtual char const* GetCallbackName() const override;
     };
 
     inline CClient* pClient = nullptr;
-}
+}  // namespace m3d

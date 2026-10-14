@@ -7,7 +7,7 @@ namespace m3d
     {
         class ButtonWnd;
         class SliderWnd;
-    }
+    }  // namespace ui
 }  // namespace m3d
 
 class DevideDlg : public m3d::ui::ModalWnd

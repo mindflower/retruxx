@@ -20,8 +20,7 @@ namespace m3d
     class AutoLock
     {
     public:
-        AutoLock(T& lockObject) :
-            m_lockObject(&lockObject)
+        AutoLock(T& lockObject) : m_lockObject(&lockObject)
         {
             if (m_lockObject)
             {
@@ -40,4 +39,4 @@ namespace m3d
     private:
         T* m_lockObject;
     };
-}
+}  // namespace m3d

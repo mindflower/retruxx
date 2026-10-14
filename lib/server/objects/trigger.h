@@ -15,12 +15,13 @@ namespace ai
     class Trigger : public ai::Obj
     {
         friend class TriggerPrototypeInfo;
+
     protected:
         virtual ~Trigger() override;
 
     private:
-        Trigger(const ai::TriggerPrototypeInfo& prototypeInfo);
-        Trigger(const ai::Trigger&);
+        Trigger(ai::TriggerPrototypeInfo const& prototypeInfo);
+        Trigger(ai::Trigger const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -29,19 +30,19 @@ namespace ai
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classTrigger;
 
-        virtual const ai::TriggerPrototypeInfo* GetPrototypeInfo() const override;
-        virtual int OnEvent(const ai::Event& evn) override;
+        virtual ai::TriggerPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
         virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const override;
         virtual void GetPropertiesIDs(retruxx::set<int>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
         static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr> m_propertiesMap;
@@ -60,11 +61,11 @@ namespace ai
     public:
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
         virtual bool NeedCinematicUpdate() override;
-        void SetVar(const char* VarName, m3d::AIParam& rValue);
-        m3d::AIParam Var(const char* varName);
-        void AddEvent(const char* eventName, const char* param);
-        void DelEvent(const char* eventName);
-        void DelEventObj(const char* eventName, const char* objName);
+        void SetVar(char const* VarName, m3d::AIParam& rValue);
+        m3d::AIParam Var(char const* varName);
+        void AddEvent(char const* eventName, char const* param);
+        void DelEvent(char const* eventName);
+        void DelEventObj(char const* eventName, char const* objName);
         int GetTriggeredObjectAmount() const;
         int GetTriggeredObjectID(int num) const;
         void AddTriggeredObjectID(int objId);
@@ -74,13 +75,13 @@ namespace ai
         void Activate();
         void Deactivate();
         void ActivateIfNeeded();
-        const char* GetCallEvent() const;
-        const char* GetCallObjName() const;
+        char const* GetCallEvent() const;
+        char const* GetCallObjName() const;
         int GetCallObjId() const;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        void LoadFromMapXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        void LoadFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         static void __fastcall Registration();
@@ -104,13 +105,12 @@ namespace ai
             CStr m_objName;
             //auxEventInfo(const ai::Trigger::auxEventInfo& __that);
             //auxEventInfo();
-
         };
 
         struct CallEventInfo : public auxEventInfo
         {
             int m_callObjId;
-           CallEventInfo();
+            CallEventInfo();
         };
 
         using auxEventInfoVector = retruxx::vector<ai::Trigger::auxEventInfo>;
@@ -120,18 +120,18 @@ namespace ai
         ai::Trigger::CallEventInfo m_callEvent;
         bool m_bCanUpdate;
 
-        static CStr __fastcall _EmbedTriggerBody(const CStr& scriptCode, const CStr& triggerName);
-        void _LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
-        void _LoadScriptFromMapXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
-        void _LoadTriggerRuntimesFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        static CStr __fastcall _EmbedTriggerBody(CStr const& scriptCode, CStr const& triggerName);
+        void _LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+        void _LoadScriptFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+        void _LoadTriggerRuntimesFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void _SaveTriggerRuntimesToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
-        void _StoreCallEvent(const ai::Event& evn);
-        void _OnTargetReachedOrObjectDie(const ai::Event& evn);
-        void _OnObjectChangesLocation(const ai::Event& evn);
-        void _OnTimePeriod(const ai::Event& evn);
-        void _OnFramesPassed(const ai::Event& evn);
-        void _OnCinematicFly(const ai::Event& evn);
-        void _OnCinemaMessage(const ai::Event& evn);
-        void _OnDefaultEvent(const ai::Event& evn);
+        void _StoreCallEvent(ai::Event const& evn);
+        void _OnTargetReachedOrObjectDie(ai::Event const& evn);
+        void _OnObjectChangesLocation(ai::Event const& evn);
+        void _OnTimePeriod(ai::Event const& evn);
+        void _OnFramesPassed(ai::Event const& evn);
+        void _OnCinematicFly(ai::Event const& evn);
+        void _OnCinemaMessage(ai::Event const& evn);
+        void _OnDefaultEvent(ai::Event const& evn);
     };
-}
+}  // namespace ai

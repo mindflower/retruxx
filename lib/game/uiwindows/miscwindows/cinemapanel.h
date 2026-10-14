@@ -11,7 +11,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class ItemModelWnd;
 
@@ -40,10 +40,10 @@ public:
         CStr m_wndScrollImageUpOverlayName;
         CStr m_wndScrollImageDownOverlayName;
         CStr m_wndScrollTextName;
-        AuxInfo(const CinemaPanel::AuxInfo&);
+        AuxInfo(CinemaPanel::AuxInfo const&);
         AuxInfo();
     };
-    
+
     struct MessageTimeInfo
     {
         int m_msgId;
@@ -52,7 +52,7 @@ public:
     };
 
 protected:
-    std::deque<CinemaPanel::MessageTimeInfo, std::allocator<CinemaPanel::MessageTimeInfo> > m_msgInfos;
+    std::deque<CinemaPanel::MessageTimeInfo, std::allocator<CinemaPanel::MessageTimeInfo>> m_msgInfos;
 
     enum PanelType
     {
@@ -62,7 +62,7 @@ protected:
     };
 
 protected:
-    virtual int OnPaint(const m3d::ui::DrawInfo& di) override;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
     virtual int GameDataSetup() override;
     virtual int GameDataClear(bool beforeContinuousLevel) override;
     int _SetMsg(int msgId);
@@ -71,25 +71,28 @@ protected:
     void SetPanelType(CinemaPanel::PanelType panelType);
     void SetPanelTypeForMsg(int msgId);
     void ShowControlsForPanelType(CinemaPanel::PanelType panelType);
-    void InitControlsForMsgBase(const MsgInfo* msgInfo);
-    void InitControlsForMsgNormal(const MsgInfo* msgInfo);
-    void InitControlsForMsgScroll(const MsgInfo* msgInfo);
-    void GetControlsByPanelType(CinemaPanel::PanelType panelType, std::vector<m3d::ui::Wnd*, std::allocator<m3d::ui::Wnd*> >& controls, bool bAdd) const;
-    void GetAllControls(std::vector<m3d::ui::Wnd*, std::allocator<m3d::ui::Wnd*> >& controls) const;
+    void InitControlsForMsgBase(MsgInfo const* msgInfo);
+    void InitControlsForMsgNormal(MsgInfo const* msgInfo);
+    void InitControlsForMsgScroll(MsgInfo const* msgInfo);
+    void GetControlsByPanelType(
+        CinemaPanel::PanelType panelType,
+        std::vector<m3d::ui::Wnd*, std::allocator<m3d::ui::Wnd*>>& controls,
+        bool bAdd) const;
+    void GetAllControls(std::vector<m3d::ui::Wnd*, std::allocator<m3d::ui::Wnd*>>& controls) const;
     void HideAllControls();
     void DeleteAllControls();
     CinemaPanel::PanelType GetPanelTypeByMsgType(MsgInfo::MsgType msgType) const;
-    void SetupSound(const MsgInfo* msgInfo);
-    void SetupTime(const MsgInfo* msgInfo);
-    void SetupPortrait(const MsgInfo* msgInfo);
-    void SetupTextNormal(const MsgInfo* msgInfo);
-    void SetupTextScroll(const MsgInfo* msgInfo);
-    void SetupImagesScroll(const MsgInfo* msgInfo);
+    void SetupSound(MsgInfo const* msgInfo);
+    void SetupTime(MsgInfo const* msgInfo);
+    void SetupPortrait(MsgInfo const* msgInfo);
+    void SetupTextNormal(MsgInfo const* msgInfo);
+    void SetupTextScroll(MsgInfo const* msgInfo);
+    void SetupImagesScroll(MsgInfo const* msgInfo);
     void ClearBase();
     void ClearNormal();
     void ClearScroll();
-    static const int NUM_PORTRAIT_SLOTS;
-    static const int CINEMA_MSG_DEFAULT_TIME;
+    static int const NUM_PORTRAIT_SLOTS;
+    static int const CINEMA_MSG_DEFAULT_TIME;
     CinemaPanel::AuxInfo m_aif;
     int m_soundTableId;
     int m_soundChannelId;
@@ -109,10 +112,10 @@ protected:
     m3d::ui::ImageWnd* m_wndScrollImageDownOverlay;
     AutoScrollTextWnd* m_wndScrollText;
     CinemaPanel();
-    CinemaPanel(const CinemaPanel& rhs);
+    CinemaPanel(CinemaPanel const& rhs);
 
 public:
-    virtual  ~CinemaPanel() override;
+    virtual ~CinemaPanel() override;
     virtual m3d::Object* Clone() override;
     static m3d::Object* __fastcall CreateObject();
     static m3d::Class* __fastcall GetBaseClass();

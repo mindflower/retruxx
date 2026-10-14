@@ -31,9 +31,9 @@ RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, LoadMatrix)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(AIManager)
-		RT_CLASS_EXPORT(AIManager, m3d::METHOD, CreateNewDecisionMatrix, "", "", "")
-        RT_CLASS_EXPORT(AIManager, m3d::METHOD, LoadMatrix, "", "", "")
-	RT_CLASS_EXPORTS_END;
+    RT_CLASS_EXPORT(AIManager, m3d::METHOD, CreateNewDecisionMatrix, "", "", "")
+    RT_CLASS_EXPORT(AIManager, m3d::METHOD, LoadMatrix, "", "", "")
+    RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(AIManager);
 
     DecisionMatrix* AIManager::LoadMatrix(char const* fileName)
@@ -104,7 +104,7 @@ namespace ai
         return RT_CLASS_LOCAL(Object);
     }
 
-    int AIManager::RegisterFunc(const CStr& name, m3d::AIParam(*funcAction)(ai::Obj*))
+    int AIManager::RegisterFunc(CStr const& name, m3d::AIParam (*funcAction)(ai::Obj*))
     {
         auto const num = GetFuncNum(name);
         if (num == 0xFFFF)
@@ -259,4 +259,4 @@ namespace ai
     {
         theAIManager = pAIManager;
     }
-}
+}  // namespace ai

@@ -12,7 +12,8 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
         virtual float FitAgainstVehicle(ai::Vehicle const* v, ai::Vehicle const* target) const override;
-        virtual float FitAgainstTeam(ai::Vehicle const* v, ai::Team const* target, ai::Vehicle** targetVehicle) const override;
+        virtual float FitAgainstTeam(ai::Vehicle const* v, ai::Team const* target, ai::Vehicle** targetVehicle)
+            const override;
         virtual float FitAgainstObj(ai::Vehicle const* v, ai::Obj const* obj) const override;
         CVector2 m_oppressionShift;
         float m_A;
@@ -48,4 +49,4 @@ namespace ai
         CVector2 m_Direction;
         float m_angle;
     };
-}
+}  // namespace ai

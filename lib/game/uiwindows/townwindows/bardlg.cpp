@@ -126,8 +126,9 @@ int BarDlg::GameDataSetup()
             }
             else
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_lstNPCsPatternName +
-                             " - cannot find rtti class NpcList");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_lstNPCsPatternName +
+                    " - cannot find rtti class NpcList");
             }
         }
         else
@@ -182,7 +183,7 @@ int BarDlg::OnAfterAddToWndStation()
 
 int BarDlg::OnBeforeAddToWndStation()
 {
-    M3D_APP->m_pInterfaceManager->LaunchEvent(IE_CUST_ENTER_BAR, GUI_EVENT_CUSTOM,
-                                              reinterpret_cast<void*>(static_cast<intptr_t>(m_barId)));
+    M3D_APP->m_pInterfaceManager->LaunchEvent(
+        IE_CUST_ENTER_BAR, GUI_EVENT_CUSTOM, reinterpret_cast<void*>(static_cast<intptr_t>(m_barId)));
     return Wnd::OnBeforeAddToWndStation();
 }

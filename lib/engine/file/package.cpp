@@ -253,8 +253,8 @@ namespace m3d
         {
             // RVA 0x8AE480 - NOTE: a failed mapping is tested against INVALID_HANDLE_VALUE, but CreateFileMapping
             // returns NULL on failure, so the fallback to plain reads only triggers when the view fails.
-            m_hFile = ::CreateFileA(PackageName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-                FILE_ATTRIBUTE_NORMAL, nullptr);
+            m_hFile = ::CreateFileA(
+                PackageName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
             if (m_hFile == INVALID_HANDLE_VALUE)
             {
                 return OPEN_NOT_FOUND;
@@ -297,5 +297,5 @@ namespace m3d
             // RVA 0x8AF620 - NOTE: only empties the list.
             fileList.clear();
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

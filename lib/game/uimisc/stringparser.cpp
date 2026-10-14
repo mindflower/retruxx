@@ -32,33 +32,22 @@ int FormatParam::GetAsNum() const
     return m_type == FP_NUMERIC ? m_num : -1;
 }
 
-FormatParam::FormatParam(FormatParam const& rhs) :
-    m_type(rhs.m_type),
-    m_num(rhs.m_num),
-    m_str(rhs.m_str)
+FormatParam::FormatParam(FormatParam const& rhs) : m_type(rhs.m_type), m_num(rhs.m_num), m_str(rhs.m_str)
 {
     // Inlined in the binary: a plain member-wise copy.
 }
 
-FormatParam::FormatParam(CStr const& str) :
-    m_type(FP_STRING),
-    m_num(0),
-    m_str(str)
+FormatParam::FormatParam(CStr const& str) : m_type(FP_STRING), m_num(0), m_str(str)
 {
     // Inlined in the binary (see StringParser::FormatStringForDynamicQuest).
 }
 
-FormatParam::FormatParam(int num) :
-    m_type(FP_NUMERIC),
-    m_num(num)
+FormatParam::FormatParam(int num) : m_type(FP_NUMERIC), m_num(num)
 {
     // Inlined in the binary (see StringParser::FormatStringForDynamicQuest).
 }
 
-FormatParam::FormatParam(StrW const& str) :
-    m_type(FP_STRING),
-    m_num(0),
-    m_str(str.ToStr(0))
+FormatParam::FormatParam(StrW const& str) : m_type(FP_STRING), m_num(0), m_str(str.ToStr(0))
 {
     // Never emitted in the binary; the wide string is stored converted.
 }
@@ -107,15 +96,15 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
         CStr toInsert = outStr.substr(pos, 3);
 
         auto const& param = params[i];
-        auto const mismatch = [&param]() {
-            return param.GetType() == FormatParam::FP_NUMERIC
-                ? CStr("PARAM_MISMATCH_") + CStr(param.GetAsNum())
-                : CStr("PARAM_MISMATCH_") + param.GetAsTString();
+        auto const mismatch = [&param]()
+        {
+            return param.GetType() == FormatParam::FP_NUMERIC ? CStr("PARAM_MISMATCH_") + CStr(param.GetAsNum()) :
+                                                                CStr("PARAM_MISMATCH_") + param.GetAsTString();
         };
 
         switch (type)
         {
-        case 'b': // string id, looked up
+        case 'b':  // string id, looked up
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = mismatch();
@@ -129,7 +118,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 }
             }
             break;
-        case 'd': // number
+        case 'd':  // number
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = CStr(param.GetAsNum());
@@ -139,7 +128,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 toInsert = mismatch();
             }
             break;
-        case 'i': // prototype id -> full name
+        case 'i':  // prototype id -> full name
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 CStr const name = ai::pServer->GetPrototypeFullName(param.GetAsNum());
@@ -152,7 +141,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 toInsert = mismatch();
             }
             break;
-        case 'l': // string id, looked up, no fallback
+        case 'l':  // string id, looked up, no fallback
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = mismatch();
@@ -162,7 +151,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 toInsert = M3D_APP->GetStringByStringId0(param.GetAsString());
             }
             break;
-        case 'm': // impulse name -> bound keys
+        case 'm':  // impulse name -> bound keys
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = mismatch();
@@ -176,7 +165,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 toInsert = keys.empty() ? CStr("VALUE_NOT_FOUND_" + param.GetAsNum()) : keys;
             }
             break;
-        case 'n': // object name -> full name
+        case 'n':  // object name -> full name
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = mismatch();
@@ -190,7 +179,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 }
             }
             break;
-        case 'o': // object id -> full name
+        case 'o':  // object id -> full name
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 auto* obj = ai::theObjects->GetEntityByObjId(param.GetAsNum());
@@ -214,7 +203,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 toInsert = mismatch();
             }
             break;
-        case 'p': // prototype name -> full name
+        case 'p':  // prototype name -> full name
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = mismatch();
@@ -225,7 +214,7 @@ void StringParser::FormatString(CStr& outStr, std::vector<FormatParam> const& pa
                 toInsert = fullname.empty() ? CStr("VALUE_NOT_FOUND_") + param.GetAsTString() : fullname;
             }
             break;
-        case 's': // plain string
+        case 's':  // plain string
             if (param.GetType() == FormatParam::FP_NUMERIC)
             {
                 toInsert = mismatch();

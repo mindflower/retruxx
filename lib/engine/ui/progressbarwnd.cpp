@@ -9,7 +9,7 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(ProgressBarWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(ProgressBarWnd);
 
         unsigned ProgressBarWnd::GetBarColor() const
@@ -256,7 +256,8 @@ namespace m3d
             }
             // RVA 0x724EC0 - a value just above the minimum still shows one step. The step count rounds to nearest
             // (a bare fistp), not down.
-            float const fSteps = (m_curValue - m_minValue) / ((m_maxValue - m_minValue) / static_cast<float>(m_numOfSteps));
+            float const fSteps =
+                (m_curValue - m_minValue) / ((m_maxValue - m_minValue) / static_cast<float>(m_numOfSteps));
             if (fSteps <= 0.001f)
             {
                 return 0;
@@ -357,8 +358,8 @@ namespace m3d
 
             if (m_textureStyle == TEXTURE_CLAMP)
             {
-                end = maxNumOfSteps > 1 ? static_cast<float>(curNumOfSteps) / static_cast<float>(maxNumOfSteps)
-                                        : (m_curValue - m_minValue) / (m_maxValue - m_minValue);
+                end = maxNumOfSteps > 1 ? static_cast<float>(curNumOfSteps) / static_cast<float>(maxNumOfSteps) :
+                                          (m_curValue - m_minValue) / (m_maxValue - m_minValue);
             }
             else if (m_textureStyle == TEXTURE_REPEAT)
             {
@@ -422,5 +423,5 @@ namespace m3d
         {
             return GetClientBounds();
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

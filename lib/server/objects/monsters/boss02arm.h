@@ -14,9 +14,9 @@ namespace ai
         ActionType m_actionForDie;
         int m_blockingContainerPrototypeId;
         Boss02ArmPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
 
     private:
@@ -31,8 +31,8 @@ namespace ai
         virtual ~Boss02Arm() override;
 
     private:
-        Boss02Arm(const ai::Boss02ArmPrototypeInfo& prototypeInfo);
-        Boss02Arm(const ai::Boss02Arm&);
+        Boss02Arm(ai::Boss02ArmPrototypeInfo const& prototypeInfo);
+        Boss02Arm(ai::Boss02Arm const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -40,7 +40,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss02Arm;
-        virtual const ai::Boss02ArmPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::Boss02ArmPrototypeInfo const* GetPrototypeInfo() const override;
         enum CustomState
         {
             CUSTOM_NONE = 0,
@@ -48,14 +48,14 @@ namespace ai
             CUSTOM_MOVING_CONTAINER_TO_BLOCK = 2,
             CUSTOM_DYING = 3,
         };
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        void SetRelativePositionsForContainer(const CVector& relPosForPickUp, const CVector& relPosForPutDown);
+        void SetRelativePositionsForContainer(CVector const& relPosForPickUp, CVector const& relPosForPutDown);
         void BeginMovingContainerToBlock(int containerId);
-        void BeginAttack(const retruxx::vector<int, retruxx::allocator<int> >& loadPrototypeIds);
+        void BeginAttack(retruxx::vector<int, retruxx::allocator<int>> const& loadPrototypeIds);
         void StopAttack();
         void BeginMove();
         void BeginDie();
@@ -74,4 +74,4 @@ namespace ai
         void _SetCustomNodeAction(int action, bool forceRestartAction);
         void _SetEffectsDisabled();
     };
-}
+}  // namespace ai

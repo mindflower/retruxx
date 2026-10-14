@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         RopeObjPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
         CStr m_brokenModel;
     };
@@ -15,11 +15,12 @@ namespace ai
     class RopeObj : public ai::SimplePhysicObj
     {
         friend class RopeObjPrototypeInfo;
+
     protected:
-        virtual  ~RopeObj() override;
+        virtual ~RopeObj() override;
 
     private:
-        RopeObj(const ai::RopeObjPrototypeInfo& prototypeInfo);
+        RopeObj(ai::RopeObjPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -27,12 +28,12 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classRopeObj;
-        virtual const ai::RopeObjPrototypeInfo* GetPrototypeInfo() const override;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::RopeObjPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual CVector GetGeometricCenter() const override;
         void SetPosFromTies();
-        m3d::SgNode* GetTiedSgNodeNearPos(const CVector& tiePos, bool simpleSearch) const;
+        m3d::SgNode* GetTiedSgNodeNearPos(CVector const& tiePos, bool simpleSearch) const;
         void HangToPosts();
         void BreakOff(int breakObj, bool createJointForBreakObj);
 
@@ -46,28 +47,28 @@ namespace ai
         struct Post
         {
             CStr m_serverObjName;
-            retruxx::vector<CStr, retruxx::allocator<CStr> > m_nodesNamesHierarchy;
+            retruxx::vector<CStr, retruxx::allocator<CStr>> m_nodesNamesHierarchy;
             m3d::SgNode* m_postNode;
             ai::Obj* m_postObj;
             CStr m_lpName;
             CVector m_postTiePos;
-            Post(const ai::RopeObj::Post& __that);
+            Post(ai::RopeObj::Post const& __that);
             Post();
         };
 
     public:
-        const ai::RopeObj::Post& GetPost(ai::RopeObj::HangPoints);
-        void SetPost(ai::RopeObj::HangPoints hp, const ai::RopeObj::Post& post);
+        ai::RopeObj::Post const& GetPost(ai::RopeObj::HangPoints);
+        void SetPost(ai::RopeObj::HangPoints hp, ai::RopeObj::Post const& post);
 
     protected:
         virtual void _InternalCreateVisualPart() override;
 
     private:
         ai::RopeObj::Post m_dummyPost;
-        retruxx::vector<ai::RopeObj::Post, retruxx::allocator<ai::RopeObj::Post> > m_posts;
+        retruxx::vector<ai::RopeObj::Post, retruxx::allocator<ai::RopeObj::Post>> m_posts;
         float m_strech;
-        retruxx::vector<CVector, retruxx::allocator<CVector> > m_tiePoses;
-        retruxx::vector<CVector, retruxx::allocator<CVector> > m_tiedObjPoses;
-        retruxx::vector<int, retruxx::allocator<int> > m_tieObjects;
+        retruxx::vector<CVector, retruxx::allocator<CVector>> m_tiePoses;
+        retruxx::vector<CVector, retruxx::allocator<CVector>> m_tiedObjPoses;
+        retruxx::vector<int, retruxx::allocator<int>> m_tieObjects;
     };
-}
+}  // namespace ai

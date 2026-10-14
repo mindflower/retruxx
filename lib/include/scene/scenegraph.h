@@ -11,8 +11,7 @@ namespace ai
     class CompositeObj;
     class JointedObj;
     class PhysicBody;
-}
-
+}  // namespace ai
 
 class CClipper;
 
@@ -46,9 +45,9 @@ namespace m3d
     public:
         void AddObject(m3d::Object* obj);
         void RemoveObject(m3d::Object* obj);
-        retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*> >* GetObjectsByClass(m3d::Class* cl);
-        const retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*> >* GetObjects() const;
-        retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*> >* GetObjects();
+        retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* GetObjectsByClass(m3d::Class* cl);
+        retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>> const* GetObjects() const;
+        retruxx::list<m3d::Object*, retruxx::allocator<m3d::Object*>>* GetObjects();
         bool empty() const;
     };
 
@@ -56,7 +55,7 @@ namespace m3d
     {
         PointBase<int> m_cellsCoveredPoint0;
         PointBase<int> m_cellsCoveredPoint1;
-        retruxx::vector<unsigned int, retruxx::allocator<unsigned int> > m_cellsShadowCovered;
+        retruxx::vector<unsigned int, retruxx::allocator<unsigned int>> m_cellsShadowCovered;
 
         bool bSomeCellsCovered() const;
         void ClearCellsCovered();
@@ -75,7 +74,7 @@ namespace m3d
         friend class ProjectorsServer;
 
     public:
-        SceneGraph(const m3d::SceneGraph&);
+        SceneGraph(m3d::SceneGraph const&);
         SceneGraph();
         ~SceneGraph();
         void InsertInTtlList(m3d::SgNode* toInsert, int frameToDie);
@@ -100,50 +99,69 @@ namespace m3d
         void UpdateThinkNodes();
         void UpdateAllXForms();
         void Update();
-        void UpdateVis(bool newFrame, const CClipper& frusta, bool primary);
+        void UpdateVis(bool newFrame, CClipper const& frusta, bool primary);
         void SortNodesForRender(int);
         void Render(m3d::SgRenderFlags flags);
         void RenderDebugForNode(m3d::SgNode* n);
-        void RenderNode(m3d::SgNode* n, const CMatrix& curMatr, bool fullInv);
+        void RenderNode(m3d::SgNode* n, CMatrix const& curMatr, bool fullInv);
         void RenderContouredNodes();
         void SetOwner(m3d::CWorld* w);
         m3d::CWorld* GetOwner();
-        m3d::SgNode* TraceLine(CVector& hit, const CVector& start, const CVector& finish, const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> >& cl0, unsigned int traceMode);
-        int TraceRect(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> >& dest, const CVector2& v0, const CVector2& v1, const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*> >& affectClasses);
+        m3d::SgNode* TraceLine(
+            CVector& hit,
+            CVector const& start,
+            CVector const& finish,
+            retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const& cl0,
+            unsigned int traceMode);
+        int TraceRect(
+            retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& dest,
+            CVector2 const& v0,
+            CVector2 const& v1,
+            retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const&
+                affectClasses);
         void SetModelForceNoCull(bool t);
         void LightSwitchOffAllLights();
         void LightSetupLightsForNode(m3d::SgNode* node);
         void LightSetupSunForWorld();
-        const m3d::SgNode* GetRootNode() const;
+        m3d::SgNode const* GetRootNode() const;
         m3d::SgNode* GetRootNode();
-        m3d::SgNode* GetNodeByNamesHierarchy(const retruxx::vector<CStr, retruxx::allocator<CStr> >& hierarchy);
-        void GetNodeNamesHierarchy(m3d::SgNode* node, retruxx::vector<CStr, retruxx::allocator<CStr> >& hierarchy);
+        m3d::SgNode* GetNodeByNamesHierarchy(retruxx::vector<CStr, retruxx::allocator<CStr>> const& hierarchy);
+        void GetNodeNamesHierarchy(m3d::SgNode* node, retruxx::vector<CStr, retruxx::allocator<CStr>>& hierarchy);
         int IsCellEnabled(int x, int y);
         void SortedCellsPrepare();
         bool SortedCellsStartFetching(int radius0, int radius1);
         int SortedCellsFetch(int& cellX, int& cellY, int& vis, int& radius);
         int SortedCellsFetch(int& cellX, int& cellY, int& vis);
-        void EnableVisibleCells(CClipper& frusta, unsigned int or );
+        void EnableVisibleCells(CClipper& frusta, unsigned int or);
         void SetVisMask(unsigned char vis);
         void RefreshObjectsInRect(int cx0, int cy0, int cx1, int cy1);
         float GetAlphaForNode(m3d::SgNode* n);
         void SetTransparencyTest(m3d::IsNodeTransparent* t);
-        void DumpToFile(const CStr& filename) const;
-        m3d::SgNode* GetNodeByName(const CStr& name);
-        const m3d::ObjectsContainer& GetCellObjs(int x, int z) const;
+        void DumpToFile(CStr const& filename) const;
+        m3d::SgNode* GetNodeByName(CStr const& name);
+        m3d::ObjectsContainer const& GetCellObjs(int x, int z) const;
         bool IsCellVisible(int x, int z) const;
         m3d::rend::IEffect* GetRoadProjectorShader();
         m3d::rend::IEffect* GetLsProjectorShader();
         m3d::rend::IEffect* GetObjProjectorShader(m3d::rend::IEffect* objShader);
         m3d::rend::IEffect* GetObjProjectorShader();
         m3d::rend::IEffect* GetTreeProjectorShader();
-        void CollectNodesProjector(retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> >& nodes, unsigned int x, unsigned int z, const CClipper& projectorFrusta);
+        void CollectNodesProjector(
+            retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>>& nodes,
+            unsigned int x,
+            unsigned int z,
+            CClipper const& projectorFrusta);
         m3d::rend::IEffect* GetLsLightShader();
         m3d::rend::IEffect* GetRoadLightShader();
         m3d::rend::IEffect* GetObjectLightShader(m3d::rend::IEffect* objShader);
         m3d::rend::IEffect* GetObjectLightShader();
         m3d::rend::IEffect* GetTreeLightShader();
-        void CollectNodesLight(retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> >& nodes, unsigned int x, unsigned int z, const CVector& lightPos, float lightRadius);
+        void CollectNodesLight(
+            retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>>& nodes,
+            unsigned int x,
+            unsigned int z,
+            CVector const& lightPos,
+            float lightRadius);
         m3d::rend::IEffect* GetRoadSpriteShader();
         void UpdateTexShadowSizes();
         m3d::rend::IEffect* GetShadowShader();
@@ -162,13 +180,15 @@ namespace m3d
         };
 
     public:
-        void GetCellsStatistic(retruxx::vector<m3d::SceneGraph::CellInfo, retruxx::allocator<m3d::SceneGraph::CellInfo> >* cellStats);
-        void DumpRenderingNodesInfoForClass(const m3d::Class* nodeClass);
+        void GetCellsStatistic(
+            retruxx::vector<m3d::SceneGraph::CellInfo, retruxx::allocator<m3d::SceneGraph::CellInfo>>* cellStats);
+        void DumpRenderingNodesInfoForClass(m3d::Class const* nodeClass);
 
         struct CellItems
         {
             m3d::ObjectsContainer m_nodesLinkedDirect;
-            retruxx::set<m3d::Object*, retruxx::less<m3d::Object*>, retruxx::allocator<m3d::Object*> > m_nodesShadowingDirect;
+            retruxx::set<m3d::Object*, retruxx::less<m3d::Object*>, retruxx::allocator<m3d::Object*>>
+                m_nodesShadowingDirect;
             bool m_bVisibleInCurrentFrame = false;
         };
 
@@ -179,18 +199,18 @@ namespace m3d
         int* m_visNumSlotsUnderwater;
         m3d::SgNode** m_transparentNodes;
         int m_numTransparentNodes;
-        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> > m_thinkList;
-        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> > m_ttledList;
-        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> > m_RemoveIfFreeList;
-        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> > m_contourList;
-        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> > m_updateXFormList;
+        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>> m_thinkList;
+        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>> m_ttledList;
+        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>> m_RemoveIfFreeList;
+        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>> m_contourList;
+        retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>> m_updateXFormList;
         m3d::SceneGraph::CellItems& GetCellItems(int x, int z);
-        const m3d::SceneGraph::CellItems& GetCellItems(int x, int z) const;
-        int AddOneNodeToRender(m3d::SgNode* n, const CClipper& frusta, int curFrame);
-        int AddNodeAndItsChildrenToRender(m3d::SgNode* n, const CClipper& frusta, int curFrame);
+        m3d::SceneGraph::CellItems const& GetCellItems(int x, int z) const;
+        int AddOneNodeToRender(m3d::SgNode* n, CClipper const& frusta, int curFrame);
+        int AddNodeAndItsChildrenToRender(m3d::SgNode* n, CClipper const& frusta, int curFrame);
         void RemoveNodeExceptRemoveIfFree(m3d::SgNode*& toRemove);
 
-        static const int NUM_CELL_ITEMS;
+        static int const NUM_CELL_ITEMS;
         m3d::SceneGraph::CellItems m_cellItems[4096];
         bool m_easyRelink;
         bool m_cellsPrepared;
@@ -220,21 +240,61 @@ namespace m3d
         m3d::rend::IHlslShader* m_grassShadowPs;
 
         void DrawShadows();
-        void DrawDetailedShadows(const CVector& pos, float radius, m3d::rend::TexHandle tex, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& classesToRender);
-        void DrawShadowsToTexture(int* cis, int cnt, int size, m3d::rend::TexHandle tex, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >& classesToRender, CVector& pos, float radius);
-        void PutShadowTextureToLandscapeAndRoad(int* cis, int cnt, float fade0, float fade1, int size, m3d::rend::TexHandle tex);
+        void DrawDetailedShadows(
+            CVector const& pos,
+            float radius,
+            m3d::rend::TexHandle tex,
+            retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*>> const& classesToRender);
+        void DrawShadowsToTexture(
+            int* cis,
+            int cnt,
+            int size,
+            m3d::rend::TexHandle tex,
+            retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*>> const& classesToRender,
+            CVector& pos,
+            float radius);
+        void PutShadowTextureToLandscapeAndRoad(
+            int* cis,
+            int cnt,
+            float fade0,
+            float fade1,
+            int size,
+            m3d::rend::TexHandle tex);
         void PutShadowTextureToGrass(int* cis, int cnt, float fade0, float fade1, int size, m3d::rend::TexHandle tex);
-        void CollectShadowingNodes(retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> >& nodes, m3d::Class* clazz, int x, int z, int size, unsigned int ls, int curFrame);
-        bool IsThereSomethingToShadow(m3d::SceneGraph::CellItems&, const retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*> >&);
+        void CollectShadowingNodes(
+            retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>>& nodes,
+            m3d::Class* clazz,
+            int x,
+            int z,
+            int size,
+            unsigned int ls,
+            int curFrame);
+        bool IsThereSomethingToShadow(
+            m3d::SceneGraph::CellItems&,
+            retruxx::vector<m3d::Class*, retruxx::allocator<m3d::Class*>> const&);
         bool IsTransparent(m3d::SgNode* n);
         void DrawStencilShadows();
-        void CollectShadowingNodesStencil(retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> >& nodes, m3d::Class* clazz, int x, int z, unsigned int ls, int curFrame);
+        void CollectShadowingNodesStencil(
+            retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>>& nodes,
+            m3d::Class* clazz,
+            int x,
+            int z,
+            unsigned int ls,
+            int curFrame);
         m3d::rend::IEffect* m_contourShader;
         bool m_noModelCull;
         bool m_bIsInUnlinkAndDeleteAll;
         bool m_bIsPurgingRemoveIfFree;
         m3d::IsNodeTransparent* m_transparencyTest;
-        m3d::SgNode* TraceLineThruCellNodesForClass(float& tt, int cx, int cz, const CVector& v0, const CVector& dir, m3d::Class* wantClazz, retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*> >& dontCheckTwice, unsigned int traceMode);
+        m3d::SgNode* TraceLineThruCellNodesForClass(
+            float& tt,
+            int cx,
+            int cz,
+            CVector const& v0,
+            CVector const& dir,
+            m3d::Class* wantClazz,
+            retruxx::set<m3d::SgNode*, retruxx::less<m3d::SgNode*>, retruxx::allocator<m3d::SgNode*>>& dontCheckTwice,
+            unsigned int traceMode);
         unsigned char m_enableMap[65536];
         unsigned char m_enableVisSpaceMask;
         char m_sortedCellsX[240000];
@@ -242,11 +302,11 @@ namespace m3d
         int m_sortedCellsCurRadius;
         int m_sortedCellsEndRadius;
         int m_sortedCellsCurCell;
-        void enableVisibleCells_r(CClipper& frusta, float* box, unsigned int or );
+        void enableVisibleCells_r(CClipper& frusta, float* box, unsigned int or);
         void enableCellsSetRect(float* rc, unsigned int v0, unsigned int v1);
-        void enableCellsSetRect(int* rc, unsigned int or , unsigned int and);
-        void enableVisibleCellsFilterOutBackfaces(const CMatrix&, m3d::rend::Cull, unsigned int);
+        void enableCellsSetRect(int* rc, unsigned int or, unsigned int and);
+        void enableVisibleCellsFilterOutBackfaces(CMatrix const&, m3d::rend::Cull, unsigned int);
         int getYOfs(int y);
         void EnsureEverythingIsUnlinked() const;
     };
-}
+}  // namespace m3d

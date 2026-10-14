@@ -176,7 +176,8 @@ namespace ai
             SYS_ERROR("toPartPrototypeId != m_partPrototypeIds.end()");
         }
         // NOTE: carries on with the end iterator after the assertion.
-        auto const* const platformInfo = static_cast<PhysicBodyPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(it->second));
+        auto const* const platformInfo =
+            static_cast<PhysicBodyPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(it->second));
         CStr const& modelName = platformInfo->m_engineModelName;
         m3d::DataServer* server = &M3D_APP->GetAnimatedModelsServer();
         int const itemId = server->GetItemByName(modelName.c_str(), true);
@@ -263,7 +264,9 @@ namespace ai
         return RT_CLASS_LOCAL(Boss02);
     }
 
-    Boss02::Boss02(Boss02PrototypeInfo const& prototype) : ComplexPhysicObj(prototype), m_stateInfos(prototype.m_stateInfos)
+    Boss02::Boss02(Boss02PrototypeInfo const& prototype) :
+        ComplexPhysicObj(prototype),
+        m_stateInfos(prototype.m_stateInfos)
     {
         // RVA 0x7378D0
         m_numState = -2;
@@ -332,7 +335,8 @@ namespace ai
         Boss02Arm* const arm = _GetArm();
         if (m_numState == -1)
         {
-            if (GetNodeCurAnimationFrame(arm->m_Node) >= arm->GetPrototypeInfo()->m_frameToReleaseContainerForBlock - 100)
+            if (GetNodeCurAnimationFrame(arm->m_Node) >=
+                arm->GetPrototypeInfo()->m_frameToReleaseContainerForBlock - 100)
             {
                 return;
             }
@@ -445,7 +449,8 @@ namespace ai
         {
             return 0.0f;
         }
-        return GetMaxHealth() - static_cast<float>(arm->GetNumExploadedLoads() + armInfo->m_cruticalNumExplodedLoads * m_numState);
+        return GetMaxHealth() -
+            static_cast<float>(arm->GetNumExploadedLoads() + armInfo->m_cruticalNumExplodedLoads * m_numState);
     }
 
     void Boss02::AddChild(Obj* pObj)
@@ -505,8 +510,8 @@ namespace ai
         }
         if (m_containerId == -1 && IsAlive())
         {
-            int const containerId =
-                theObjects->CreateNewObjectWithSuspendedPostLoad(GetPrototypeInfo()->m_containerPrototypeId, "", -1, -1);
+            int const containerId = theObjects->CreateNewObjectWithSuspendedPostLoad(
+                GetPrototypeInfo()->m_containerPrototypeId, "", -1, -1);
             if (containerId >= 0)
             {
                 if (Obj* const container = theObjects->GetEntityByObjId(containerId))
@@ -542,7 +547,8 @@ namespace ai
         {
             return 0.0f;
         }
-        return static_cast<float>(static_cast<int>(prototypeInfo->m_stateInfos.size()) * armInfo->m_cruticalNumExplodedLoads);
+        return static_cast<float>(
+            static_cast<int>(prototypeInfo->m_stateInfos.size()) * armInfo->m_cruticalNumExplodedLoads);
     }
 
     void Boss02::Die()
@@ -561,7 +567,8 @@ namespace ai
             _PlaceContainerToInitialPosition();
         }
         Boss02PrototypeInfo const* const prototypeInfo = GetPrototypeInfo();
-        _GetArm()->SetRelativePositionsForContainer(prototypeInfo->m_relPosForContainerPickUp, prototypeInfo->m_relPosForContainerPutDown);
+        _GetArm()->SetRelativePositionsForContainer(
+            prototypeInfo->m_relPosForContainerPickUp, prototypeInfo->m_relPosForContainerPutDown);
     }
 
     void Boss02::_InternalCreateVisualPart()
@@ -673,7 +680,8 @@ namespace ai
         CVector const pos = GetPosition();
         float const dx = movePosition.x - pos.x;
         float const dz = movePosition.z - pos.z;
-        if ((pos.z - movePosition.z) * (pos.z - movePosition.z) + (pos.x - movePosition.x) * (pos.x - movePosition.x) <= 0.1)
+        if ((pos.z - movePosition.z) * (pos.z - movePosition.z) + (pos.x - movePosition.x) * (pos.x - movePosition.x) <=
+            0.1)
         {
             return;
         }

@@ -9,9 +9,9 @@ namespace m3d
     {
         class IStream;
     }
-}
+}  // namespace m3d
 
-constexpr auto CStr_npos{ -1 };
+auto constexpr CStr_npos{-1};
 //string class with restricted fields for dlls
 class CStr
 {
@@ -24,6 +24,7 @@ class CStr
         ZeroCharHolder();
         operator char*();
     };
+
 private:
     char* m_charPtr = nullptr;
     int32_t m_allocSz = 0;
@@ -32,11 +33,11 @@ private:
     void realloc(int sz);
 
 public:
-    static int __fastcall my_strcmp(const char* lhs, const char* rhs);
-    static int __fastcall my_stricmp(const char* lhs, const char* rhs);
-    explicit CStr(const Quaternion& q);
-    explicit CStr(const CVector2& v);
-    explicit CStr(const CVector& v);
+    static int __fastcall my_strcmp(char const* lhs, char const* rhs);
+    static int __fastcall my_stricmp(char const* lhs, char const* rhs);
+    explicit CStr(Quaternion const& q);
+    explicit CStr(CVector2 const& v);
+    explicit CStr(CVector const& v);
     explicit CStr(double);
     explicit CStr(float v);
     explicit CStr(uint64_t);
@@ -44,33 +45,33 @@ public:
     explicit CStr(unsigned long v);
     explicit CStr(unsigned int v);
     explicit CStr(int v);
-    explicit CStr(const char* str, int num);
+    explicit CStr(char const* str, int num);
     explicit CStr(char c, int repeat);
     explicit CStr(char v);
-    CStr(const char* str);
-    CStr(const CStr& s);
+    CStr(char const* str);
+    CStr(CStr const& s);
     CStr();
     ~CStr();
     int length() const;
     bool empty() const;
     void erase();
     char& operator[](int i);
-    const char& operator[](int i) const;
-    const char* c_str() const;
-    CStr& operator+=(const CStr& a);
+    char const& operator[](int i) const;
+    char const* c_str() const;
+    CStr& operator+=(CStr const& a);
     unsigned int getHashCode();
     void toLower(unsigned long locale = -1);
     void toUpper(unsigned long);
     void FirstCharToLower(unsigned long locale);
     void FirstCharToUpper(unsigned long locale);
-    int findOneOf(const char* str, int startIdx = 0) const;
+    int findOneOf(char const* str, int startIdx = 0) const;
     int find(char c, int startIdx = 0) const;
     int rfind(char c) const;
     CStr substr(int pos, int npos = CStr_npos) const;
-    int findsubstr(const char* substr, int nStart = 0) const;
+    int findsubstr(char const* substr, int nStart = 0) const;
     int del(int idx, int count);
-    int format(const char* fmt, ...);
-    static CStr format_(const char* fmt, ...);
+    int format(char const* fmt, ...);
+    static CStr format_(char const* fmt, ...);
     int Write(m3d::fs::IStream&);
     int Read(m3d::fs::IStream&);
     CStr& CStr::operator=(CStr const& rhs);

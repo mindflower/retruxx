@@ -35,5 +35,5 @@ namespace m3d
             delete dlg;
             return static_cast<MbRetCodes>(res);
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

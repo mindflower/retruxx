@@ -42,4 +42,4 @@ namespace m3d
         int m_curChannelId = -1;
         CStr m_curTextToShow;
     };
-}
+}  // namespace m3d

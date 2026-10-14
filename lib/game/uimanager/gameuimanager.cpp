@@ -138,8 +138,7 @@ m3d::Object* WindowResourceInfo::Clone()
 
 WindowResourceInfo::WindowResourceInfo() = default;
 
-WindowResourceInfo::WindowResourceInfo(WindowResourceInfo const&) :
-    ResourceInfo()
+WindowResourceInfo::WindowResourceInfo(WindowResourceInfo const&) : ResourceInfo()
 {
     // Inlined into Clone (RVA 0x53FF90): nothing is copied, the clone starts as
     // a default resource info. The original leaves m_wndGuiId and
@@ -801,7 +800,7 @@ int GameUiManager::GUI_ShowInterface(bool needShow, bool enableAnimation)
         m_isHidden = true;
         for (auto it = m_onScreenWindows.begin(); it != m_onScreenWindows.end();)
         {
-            auto const wndId= *it;
+            auto const wndId = *it;
             ++it;
             if (GUI_HideWindow(wndId, true, nullptr, true) == -1)
             {

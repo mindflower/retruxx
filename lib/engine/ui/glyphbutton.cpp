@@ -185,9 +185,14 @@ namespace m3d
             return ButtonWnd::Create(caption, 0, rc, id);
         }
 
-        int GlyphButton::CreateGlyphButton(unsigned style, BoundsBase<float> const& rc, GlyphButtonType type,
-                                           CStr const& caption, unsigned id, rend::TexHandle glyph,
-                                           rend::TexHandle glyphDisabled)
+        int GlyphButton::CreateGlyphButton(
+            unsigned style,
+            BoundsBase<float> const& rc,
+            GlyphButtonType type,
+            CStr const& caption,
+            unsigned id,
+            rend::TexHandle glyph,
+            rend::TexHandle glyphDisabled)
         {
             // RVA 0x79D280 - a request that carries no id, no caption and a glyph
             // of its own for a stock type is treated as "just build the stock
@@ -222,8 +227,14 @@ namespace m3d
             return 1;
         }
 
-        int GlyphButton::CreateGlyphButton(unsigned style, BoundsBase<float> const& rc, GlyphButtonType type,
-                                           CStr const& caption, unsigned id, CStr glyphFile, CStr glyphFileDisabled)
+        int GlyphButton::CreateGlyphButton(
+            unsigned style,
+            BoundsBase<float> const& rc,
+            GlyphButtonType type,
+            CStr const& caption,
+            unsigned id,
+            CStr glyphFile,
+            CStr glyphFileDisabled)
         {
             // RVA 0x79C850
             auto const glyph = Application::g_pApp->m_renderer->AddTexture(glyphFile, 4);

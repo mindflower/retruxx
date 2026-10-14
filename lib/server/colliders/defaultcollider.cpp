@@ -34,7 +34,12 @@ namespace ai
         return 1;
     }
 
-    int CollideBreakableObjectAndGeomObject(m3d::Object* obj1, m3d::Object*, dContact* contact, unsigned& numContacts, bool)
+    int CollideBreakableObjectAndGeomObject(
+        m3d::Object* obj1,
+        m3d::Object*,
+        dContact* contact,
+        unsigned& numContacts,
+        bool)
     {
         // RVA 0x88D580 - wakes the breakable object and gives it a slightly springy, bouncy contact.
         static_cast<BreakableObject*>(obj1)->DoTouch();

@@ -170,4 +170,4 @@ namespace m3d
         *(float*)&this->m_props[1] = 10.0;
         RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
-}
+}  // namespace m3d

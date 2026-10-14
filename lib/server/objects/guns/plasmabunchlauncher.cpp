@@ -47,7 +47,8 @@ namespace ai
     PlasmaBunchLauncherPrototypeInfo const* PlasmaBunchLauncher::GetPrototypeInfo() const
     {
         // RVA 0x84B5C0 - NOTE: the prototype is cast without a type check.
-        return static_cast<PlasmaBunchLauncherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<PlasmaBunchLauncherPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     PlasmaBunchLauncher::PlasmaBunchLauncher(PlasmaBunchLauncherPrototypeInfo const& prototype) : Gun(prototype)
@@ -77,8 +78,9 @@ namespace ai
         }
 
         CVector const ownerVel = owner->GetLinearVelocity();
-        bunch->SetVelocity(static_cast<float>(
-            std::sqrt(double(ownerVel.x) * ownerVel.x + double(ownerVel.y) * ownerVel.y + double(ownerVel.z) * ownerVel.z)));
+        bunch->SetVelocity(
+            static_cast<float>(std::sqrt(
+                double(ownerVel.x) * ownerVel.x + double(ownerVel.y) * ownerVel.y + double(ownerVel.z) * ownerVel.z)));
         bunch->SetPosition(_CalcPosForNextShot());
         bunch->SetDirection(_CalcDirForNextShot());
         bunch->SetDeadTimer(100000, false);

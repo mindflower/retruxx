@@ -89,8 +89,8 @@ void CounterWnd::OnStartLevel(void* data)
     {
         return;
     }
-    std::set<int> const* hunts =
-        M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(&ai::DynamicQuestHunt::m_classDynamicQuestHunt);
+    std::set<int> const* hunts = M3D_APP->m_pInterfaceManager->GetObjectCollection().GetObjectsByClass(
+        &ai::DynamicQuestHunt::m_classDynamicQuestHunt);
     if (!hunts)
     {
         return;
@@ -259,7 +259,9 @@ void CounterWnd::OnDynamicQuestStateChanged(void* data)
     {
         SetupForHuntQuest(dQuestId);
     }
-    else if (status > ai::DynamicQuest::STATUS_PROCESSING && status <= ai::DynamicQuest::STATUS_FORGOTTEN && m_counterType == COUNTERTYPE_QUEST_HUNT && m_dQuestId == dQuestId)
+    else if (
+        status > ai::DynamicQuest::STATUS_PROCESSING && status <= ai::DynamicQuest::STATUS_FORGOTTEN &&
+        m_counterType == COUNTERTYPE_QUEST_HUNT && m_dQuestId == dQuestId)
     {
         GameDataClear(false);
     }

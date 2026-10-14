@@ -26,6 +26,7 @@ namespace ai
     class CaravanTeam : public ai::Team
     {
         friend class CaravanTeamPrototypeInfo;
+
     protected:
         virtual ~CaravanTeam() override;
 

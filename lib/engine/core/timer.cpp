@@ -11,7 +11,7 @@ namespace m3d
     namespace cmn
     {
         // Frame length assumed for the first frame after the timer is (re)activated, in ms.
-        static constexpr uint32_t kActivationFrameTime = 10;
+        static uint32_t constexpr kActivationFrameTime = 10;
 
         Timer::Timer()
         {
@@ -200,5 +200,5 @@ namespace m3d
         {
             return m_curTimeUnscaled;
         }
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d

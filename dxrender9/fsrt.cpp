@@ -40,7 +40,7 @@ namespace
             tv = v;
         }
     };
-}
+}  // namespace
 
 // orig 0x6340b0 fsrt.cpp:50
 void CDevice::CreateFsRt()

@@ -414,8 +414,8 @@ namespace
                 lua_rawgeti(
                     L,
                     LUA_REGISTRYINDEX,
-                    exp->type == m3d::METHOD ? m3d::ScriptServer::m_metatable_ClassMethod
-                                             : m3d::ScriptServer::m_metatable_ClassNativeMethod);
+                    exp->type == m3d::METHOD ? m3d::ScriptServer::m_metatable_ClassMethod :
+                                               m3d::ScriptServer::m_metatable_ClassNativeMethod);
                 lua_setmetatable(L, -2);
             }
             lua_settable(L, -3);

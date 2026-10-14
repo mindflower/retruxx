@@ -38,5 +38,5 @@ namespace m3d
             rend::TexHandle m_texture;
             bool m_bDrawPane = false;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

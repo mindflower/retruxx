@@ -6,11 +6,11 @@ namespace ai
     class BarPrototypeInfo : public ai::BuildingPrototypeInfo
     {
     protected:
-        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override;
+        virtual void _InternalCopyFrom(ai::PrototypeInfo const& rhs) override;
 
     public:
         BarPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
         bool m_bWithBarman;
     };
@@ -18,12 +18,13 @@ namespace ai
     class Bar : public ai::Building
     {
         friend class BarPrototypeInfo;
+
     protected:
-        virtual  ~Bar() override;
+        virtual ~Bar() override;
 
     private:
-        Bar(const ai::BarPrototypeInfo& prototypeInfo);
-        Bar(const ai::Bar&);
+        Bar(ai::BarPrototypeInfo const& prototypeInfo);
+        Bar(ai::Bar const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -31,7 +32,7 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBar;
-        virtual const ai::BarPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::BarPrototypeInfo const* GetPrototypeInfo() const override;
         bool bWithBarman() const;
         virtual void CreateChildren() override;
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
@@ -45,4 +46,4 @@ namespace ai
     private:
         void CreateBarman();
     };
-}
+}  // namespace ai

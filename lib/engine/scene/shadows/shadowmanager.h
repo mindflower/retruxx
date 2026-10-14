@@ -15,7 +15,7 @@ namespace m3d
     class ShadowManager
     {
     public:
-        ShadowManager(const m3d::ShadowManager&);
+        ShadowManager(m3d::ShadowManager const&);
         ShadowManager();
         ~ShadowManager();
         void EnableShadows(bool bEnable);
@@ -23,8 +23,8 @@ namespace m3d
         void SetShadowColor(unsigned int color);
         unsigned int GetShadowColor() const;
         void BeginScene();
-        void AddDirectionalLight(const CVector& lightDir);
-        void AddShadowCaster(const CMatrix& objToWorldMat, const m3d::AnimatedModel::Mesh& caster);
+        void AddDirectionalLight(CVector const& lightDir);
+        void AddShadowCaster(CMatrix const& objToWorldMat, m3d::AnimatedModel::Mesh const& caster);
         void EndScene();
         void OnChangeScreenResolution();
 
@@ -44,4 +44,4 @@ namespace m3d
         m3d::Profiler* m_profiler1;
         m3d::Profiler* m_profiler2;
     };
-}
+}  // namespace m3d

@@ -179,7 +179,8 @@ namespace m3d
         }
 
         if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
-            m3d::Application::g_pApp->m_sound->SetChannelFrequency(this->m_props[1], (int)(float)((float)(int)this->m_props[3] * *(float*)property));
+            m3d::Application::g_pApp->m_sound->SetChannelFrequency(
+                this->m_props[1], (int)(float)((float)(int)this->m_props[3] * *(float*)property));
         return 1;
     }
 
@@ -277,4 +278,4 @@ namespace m3d
         IsFree();
         return 1;
     }
-}
+}  // namespace m3d

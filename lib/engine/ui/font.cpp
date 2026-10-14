@@ -1115,8 +1115,8 @@ namespace m3d
         unsigned FontManager::GetCodePageByCharset(unsigned charset)
         {
             CHARSETINFO charsetInfo{};
-            if (::TranslateCharsetInfo(reinterpret_cast<DWORD*>(static_cast<std::uintptr_t>(charset)), &charsetInfo,
-                                       TCI_SRCCHARSET))
+            if (::TranslateCharsetInfo(
+                    reinterpret_cast<DWORD*>(static_cast<std::uintptr_t>(charset)), &charsetInfo, TCI_SRCCHARSET))
             {
                 return charsetInfo.ciACP;
             }

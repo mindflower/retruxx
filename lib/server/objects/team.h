@@ -22,7 +22,7 @@ namespace ai
         bool m_bRemoveWhenChildrenDead;
         int m_formationPrototypeId;
         TeamPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
         float GetFormationDistBetweenVehicles() const;
@@ -39,12 +39,13 @@ namespace ai
     class Team : public ai::Obj
     {
         friend class TeamPrototypeInfo;
-    protected:
-        virtual  ~Team() override;
 
     protected:
-        Team(const ai::TeamPrototypeInfo& prototypeInfo);
-        Team(const ai::Team&);
+        virtual ~Team() override;
+
+    protected:
+        Team(ai::TeamPrototypeInfo const& prototypeInfo);
+        Team(ai::Team const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -52,31 +53,40 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classTeam;
-        virtual const ai::TeamPrototypeInfo* GetPrototypeInfo() const override;
-        virtual int OnEvent(const ai::Event& evn) override;
+        virtual ai::TeamPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
-        using VehicleVector = retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*> >;
+        using VehicleVector = retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*>>;
 
     public:
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual bool bIsEqualToPrototype() const override;
@@ -89,11 +99,12 @@ namespace ai
         virtual void RenderDebugInfo() const override;
         unsigned int GetNumVehicles() const;
         ai::Vehicle* GetVehicle(unsigned int index) const;
-        const retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*> >& GetVehicles() const;
-        void SetDestination(const CVector& destination);
+        retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*>> const& GetVehicles() const;
+        void SetDestination(CVector const& destination);
         void Stop();
         ai::Formation* GetFormation() const;
-        const retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector> > >& GetSteeringForceMap() const;
+        retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector>>> const&
+            GetSteeringForceMap() const;
         void AttackNow(int id);
         void HoldFire(int msc);
         virtual void SetPassedToAnotherMapStatus() override;
@@ -103,7 +114,7 @@ namespace ai
         ai::TeamTactic* GetTeamTactic() const;
         void SetTeamTactic(ai::TeamTactic* tactic);
         void _AdjustBehaviour();
-        float GetDistToPhysicObj(const ai::PhysicObj* obj) const;
+        float GetDistToPhysicObj(ai::PhysicObj const* obj) const;
 
     protected:
         bool m_bRemoveWhenChildrenDead;
@@ -118,12 +129,13 @@ namespace ai
 
     private:
         ai::AI m_AI;
-        retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*> > m_vehicles;
+        retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*>> m_vehicles;
         float m_maxTeamSpeed;
         ai::Formation* m_formation;
         ai::CombatMastermind* m_combatMastermind;
         ai::Path* m_pPath;
-        retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector> > > m_steeringForceMap;
+        retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector>>>
+            m_steeringForceMap;
         bool m_needAdjustBehaviour;
         bool m_bFrozen;
         CStr m_TeamTacticName;
@@ -132,17 +144,17 @@ namespace ai
         bool m_bMustMoveToTarget;
         float _GetTeamVelocity() const;
         void _AdjustRoles(int targetId);
-        void _GetTargetsPositions(retruxx::vector<CVector, retruxx::allocator<CVector> >& positions) const;
+        void _GetTargetsPositions(retruxx::vector<CVector, retruxx::allocator<CVector>>& positions) const;
         void _AddVehicleToFormation(ai::Vehicle* pVehicle);
         void _CreateFormation();
         void _TuneFormation();
         CVector _GetAggregatedPos() const;
         CVector _GetAggregatedTargetsPos() const;
         bool _IsTooFarFromTargets() const;
-        void _OnObjectDie(const ai::Event& evn);
-        void _OnNoticeEnemy(const ai::Event& evn);
-        void _OnPlayerVehicleChanged(const ai::Event& evn);
-        void _OnUnderAttack(const ai::Event& evn);
+        void _OnObjectDie(ai::Event const& evn);
+        void _OnNoticeEnemy(ai::Event const& evn);
+        void _OnPlayerVehicleChanged(ai::Event const& evn);
+        void _OnUnderAttack(ai::Event const& evn);
 
     public:
         static void __fastcall Registration();
@@ -164,4 +176,4 @@ namespace ai
         static m3d::AIParam __fastcall TeamAIOnTargetUnreachable(ai::Obj* pObj);
         static m3d::AIParam __fastcall TeamAIOnMoveFinished(ai::Obj* pObj);
     };
-}
+}  // namespace ai

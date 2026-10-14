@@ -2,7 +2,7 @@
 #include "motherpanel.h"
 #include <ui/button.h>
 
-class MotherPanelTabButton :  public m3d::ui::ButtonWnd
+class MotherPanelTabButton : public m3d::ui::ButtonWnd
 {
 public:
     enum Mode
@@ -26,30 +26,30 @@ public:
     };
 
 public:
-    virtual m3d::Class * GetClass() const ;
-    MotherPanel::Tab GetTabId() const ;
+    virtual m3d::Class* GetClass() const;
+    MotherPanel::Tab GetTabId() const;
     void Select(bool);
-    bool IsSelected() const ;
-    virtual m3d::Object * Clone();
-    Mode GetMode() const ;
-    static m3d::Class * GetBaseClass();
+    bool IsSelected() const;
+    virtual m3d::Object* Clone();
+    Mode GetMode() const;
+    static m3d::Class* GetBaseClass();
     virtual ~MotherPanelTabButton();
-    int CreateFromPattern(m3d::ui::Wnd *,bool);
+    int CreateFromPattern(m3d::ui::Wnd*, bool);
     int SetupForTab(MotherPanel::Tab);
     void SetMode(Mode);
-    static m3d::Object * CreateObject();
+    static m3d::Object* CreateObject();
 
 protected:
     void UpdateTex();
     void ClearInfo();
     static CStr __fastcall Mode2Str(Mode);
-    MotherPanelTabButton(MotherPanelTabButton const &);
+    MotherPanelTabButton(MotherPanelTabButton const&);
     MotherPanelTabButton();
     void UpdateTooltip();
-    bool CanApplyMode(Mode) const ;
-    bool HasMode(Mode) const ;
+    bool CanApplyMode(Mode) const;
+    bool HasMode(Mode) const;
     void InitInfo();
-    ai::Building const * GetBuilding(Mode) const ;
+    ai::Building const* GetBuilding(Mode) const;
 
 public:
     RT_CLASS_DECLARE(MotherPanelTabButton);
@@ -58,5 +58,5 @@ private:
     bool m_bSelected;
     MotherPanel::Tab m_tabId;
     MotherPanelTabButton::Mode m_mode;
-    MotherPanelTabButton::PerModeInfo *m_info[2];
+    MotherPanelTabButton::PerModeInfo* m_info[2];
 };

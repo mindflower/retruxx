@@ -172,7 +172,7 @@ namespace ai
                 v.x * m._12 + v.y * m._22 + v.z * m._32,
                 v.x * m._13 + v.y * m._23 + v.z * m._33);
         }
-    }
+    }  // namespace
 
     extern AIManager* theAIManager;
 
@@ -331,7 +331,8 @@ namespace ai
     bool PhysicObj::CanPhysicsBeEnabled() const
     {
         // RVA 0x5FAB10
-        return dBodyIsEnabled(m_body->id()) || (dBodyGetAutoDisableFlag(m_body->id()) && (m_physicBehaviorFlags & 1) == 0);
+        return dBodyIsEnabled(m_body->id()) ||
+            (dBodyGetAutoDisableFlag(m_body->id()) && (m_physicBehaviorFlags & 1) == 0);
     }
 
     float PhysicObj::GetMass() const
@@ -423,8 +424,8 @@ namespace ai
         m_propertiesMap["Rot"] = 5;
         m_propertiesMap["Skin"] = 45;
 
-        m_countRelinksToCollisionCells =
-            M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("relinks to collision cells"));
+        m_countRelinksToCollisionCells = M3D_APP->GetDbgCounterStack().GetCounter(
+            M3D_APP->GetDbgCounterStack().AddCounter("relinks to collision cells"));
         m_countRelinksToCollisionCells->SetI(0);
     }
 
@@ -435,7 +436,13 @@ namespace ai
         {
             float const invTime = 1.0 / theAIManager->m_elapsedTime;
             dBodyAddForceAtRelPos(
-                m_body->id(), impulse.x * invTime, impulse.y * invTime, impulse.z * invTime, relPos.x, relPos.y, relPos.z);
+                m_body->id(),
+                impulse.x * invTime,
+                impulse.y * invTime,
+                impulse.z * invTime,
+                relPos.x,
+                relPos.y,
+                relPos.z);
         }
     }
 
@@ -523,13 +530,16 @@ namespace ai
         CVector const linearVelocity = GetLinearVelocity();
         bodyNode->SetAttribute(
             "LinearVelocityLengthSq",
-            CStr(linearVelocity.x * linearVelocity.x + linearVelocity.y * linearVelocity.y + linearVelocity.z * linearVelocity.z)
+            CStr(
+                linearVelocity.x * linearVelocity.x + linearVelocity.y * linearVelocity.y +
+                linearVelocity.z * linearVelocity.z)
                 .c_str());
         dReal const* const angularVelocity = dBodyGetAngularVel(m_body->id());
         bodyNode->SetAttribute(
             "AngularVelocityLengthSq",
-            CStr(angularVelocity[0] * angularVelocity[0] + angularVelocity[2] * angularVelocity[2] +
-                 angularVelocity[1] * angularVelocity[1])
+            CStr(
+                angularVelocity[0] * angularVelocity[0] + angularVelocity[2] * angularVelocity[2] +
+                angularVelocity[1] * angularVelocity[1])
                 .c_str());
         dxBody const* const body = m_body->id();
         bodyNode->SetAttribute("Flags", CStr(body->flags).c_str());
@@ -603,7 +613,9 @@ namespace ai
         // RVA 0x5FBD70
         Obj::SetPassedToAnotherMapStatus();
         UnlinkGeomsFromCollisionCells();
-        M3D_LOG_INFO(CStr(GetClassNameA()) + CStr(" '") + CStr(m_name) + CStr("' id=") + CStr(GetId()) + CStr(" passes to another map"));
+        M3D_LOG_INFO(
+            CStr(GetClassNameA()) + CStr(" '") + CStr(m_name) + CStr("' id=") + CStr(GetId()) +
+            CStr(" passes to another map"));
     }
 
     void PhysicObj::SetCollisionEffectCreated()
@@ -721,13 +733,15 @@ namespace ai
         // RVA 0x5FBAF0 - velocities are written only when they are not negligible.
         Obj::SaveRuntimeValues(xmlFile, xmlNode);
         CVector const linearVelocity = GetLinearVelocity();
-        if (linearVelocity.z * linearVelocity.z + linearVelocity.y * linearVelocity.y + linearVelocity.x * linearVelocity.x >
+        if (linearVelocity.z * linearVelocity.z + linearVelocity.y * linearVelocity.y +
+                linearVelocity.x * linearVelocity.x >
             0.0099999998f)
         {
             xmlNode->SetAttribute("LinearVelocity", CStr(linearVelocity).c_str());
         }
         CVector const angularVelocity = GetAngularVelocity();
-        if (angularVelocity.z * angularVelocity.z + angularVelocity.y * angularVelocity.y + angularVelocity.x * angularVelocity.x >
+        if (angularVelocity.z * angularVelocity.z + angularVelocity.y * angularVelocity.y +
+                angularVelocity.x * angularVelocity.x >
             0.0099999998f)
         {
             xmlNode->SetAttribute("AngularVelocity", CStr(angularVelocity).c_str());
@@ -735,8 +749,10 @@ namespace ai
         if (dBodyGetAutoDisableFlag(m_body->id()) != 0)
         {
             xmlNode->SetAttribute("IsAutoDisabling", CStr(1).c_str());
-            xmlNode->SetAttribute("AutoDisableLinearThreshold", CStr(dBodyGetAutoDisableLinearThreshold(m_body->id())).c_str());
-            xmlNode->SetAttribute("AutoDisableAngularThreshold", CStr(dBodyGetAutoDisableAngularThreshold(m_body->id())).c_str());
+            xmlNode->SetAttribute(
+                "AutoDisableLinearThreshold", CStr(dBodyGetAutoDisableLinearThreshold(m_body->id())).c_str());
+            xmlNode->SetAttribute(
+                "AutoDisableAngularThreshold", CStr(dBodyGetAutoDisableAngularThreshold(m_body->id())).c_str());
             xmlNode->SetAttribute("AutoDisableSteps", CStr(dBodyGetAutoDisableSteps(m_body->id())).c_str());
         }
         if (m_skinNumber)
@@ -933,7 +949,8 @@ namespace ai
         if (theAIManager->m_elapsedTime > 0.001)
         {
             float const invTime = 1.0 / theAIManager->m_elapsedTime;
-            dBodyAddForceAtPos(m_body->id(), impulse.x * invTime, impulse.y * invTime, impulse.z * invTime, pos.x, pos.y, pos.z);
+            dBodyAddForceAtPos(
+                m_body->id(), impulse.x * invTime, impulse.y * invTime, impulse.z * invTime, pos.x, pos.y, pos.z);
         }
     }
 
@@ -999,7 +1016,8 @@ namespace ai
         m_bIsSpaceOwner = 1;
         if (prototypeInfo.m_lookRadius > 0.0099999998)
         {
-            m_lookSphere = SphereForIntersection::CreateObject(prototypeInfo.m_lookRadius, SphereForIntersection::LOOKING, nullptr);
+            m_lookSphere = SphereForIntersection::CreateObject(
+                prototypeInfo.m_lookRadius, SphereForIntersection::LOOKING, nullptr);
             dGeomSetBody(m_lookSphere->GetGeomId(), m_body->id());
             m_lookSphere->SetTargetClasses(standardTargetClasses);
         }
@@ -1247,7 +1265,8 @@ namespace ai
                 if (geom)
                 {
                     auto position = dGeomGetPosition(geom);
-                    dGeomSetPosition(geom, position[0] - m_massCenter.x, position[1] - m_massCenter.y, position[2] - m_massCenter.z);
+                    dGeomSetPosition(
+                        geom, position[0] - m_massCenter.x, position[1] - m_massCenter.y, position[2] - m_massCenter.z);
                 }
             }
         }

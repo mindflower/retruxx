@@ -19,4 +19,4 @@ namespace ai
         }
         printf(" ) ");
     }
-}
+}  // namespace ai

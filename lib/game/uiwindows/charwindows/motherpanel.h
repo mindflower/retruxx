@@ -183,8 +183,7 @@ protected:
         std::allocator<std::pair<enum MotherPanel::ChildPanelId const, ref_ptr<ChildPanel>>>>
         m_panels;
     MotherPanel::AuxSuspendedShow m_suspendedShow;
-    std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>>
-        m_secondPanelLevel;
+    std::vector<enum MotherPanel::ChildPanelId, std::allocator<enum MotherPanel::ChildPanelId>> m_secondPanelLevel;
     int m_hackedWorkshopVehicleId;
     std::vector<MotherPanelTabButton*, std::allocator<MotherPanelTabButton*>> m_tabButtons;
     MotherPanel::Tab m_curTabId;

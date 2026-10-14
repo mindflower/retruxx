@@ -42,5 +42,5 @@ namespace m3d
             virtual int FSeek(long, int);
             virtual long FTell();
         };
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

@@ -31,7 +31,12 @@ namespace ai
         // the effect itself is removed from the graph once it is free.
         void ReleaseSplashEffect(m3d::SgNode*& splashEffect)
         {
-            m3d::ForEachDescendant(splashEffect, [](m3d::SgNode* node) { node->CanBeFree(); });
+            m3d::ForEachDescendant(
+                splashEffect,
+                [](m3d::SgNode* node)
+                {
+                    node->CanBeFree();
+                });
             splashEffect->GetGraph()->InsertInRemoveIfFree(splashEffect);
             splashEffect = nullptr;
         }
@@ -618,8 +623,7 @@ namespace ai
             if (modelPart.jadedEffect)
             {
                 CStr const jadedEffectName = CStr("JadedEffect") + CStr(i);
-                ref_ptr ndJadedEffect =
-                    xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, jadedEffectName.c_str());
+                ref_ptr ndJadedEffect = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, jadedEffectName.c_str());
                 xmlNode->AddChild(ndJadedEffect);
                 ndJadedEffect->SetAttribute("Name", modelPart.jadedEffect->GetName());
                 ndJadedEffect->SetAttribute("Pos", CStr(modelPart.jadedEffect->GetOrigin()).c_str());
@@ -881,8 +885,8 @@ namespace ai
         }
 
         unsigned const numVariants = group.m_variants.size();
-        int const healthSteps = static_cast<int>(
-            static_cast<double>(numVariants - 1) / part.maxHealth * part.health + 1.0 - 0.001);
+        int const healthSteps =
+            static_cast<int>(static_cast<double>(numVariants - 1) / part.maxHealth * part.health + 1.0 - 0.001);
         unsigned newVar = numVariants - healthSteps - 1;
         if (newVar >= numVariants)
         {
@@ -920,9 +924,7 @@ namespace ai
             // The effect faces back along the incoming shot.
             CMatrix rot;
             rot.lookAtLH(
-                CVector(0.0f, 0.0f, 0.0f),
-                CVector(-worldDir.x, -worldDir.y, -worldDir.z),
-                CVector(0.0f, 1.0f, 0.0f));
+                CVector(0.0f, 0.0f, 0.0f), CVector(-worldDir.x, -worldDir.y, -worldDir.z), CVector(0.0f, 1.0f, 0.0f));
             Quaternion q;
             q.FromMatrix(rot);
             PhysicBody::CreateEffectNode(CStr("ET_PS_VEH_PART_BROKEN"), breakPos, q, true, 1.0f);
@@ -1097,8 +1099,7 @@ namespace ai
             // so the index tracks damage taken rather than health left.
             unsigned const numVariants = group.m_variants.size();
             unsigned newVar = static_cast<unsigned>(
-                static_cast<double>(part.maxHealth - part.health) / part.maxHealth *
-                static_cast<double>(numVariants));
+                static_cast<double>(part.maxHealth - part.health) / part.maxHealth * static_cast<double>(numVariants));
 
             // NOTE: an empty variant list underflows here exactly as it does in
             // the shipped build, leaving newVar at 0xFFFFFFFF.
@@ -1191,8 +1192,7 @@ namespace ai
                             meshId >= proto->m_verts.size() || meshId >= proto->m_vertsStride.size() ||
                             meshId >= proto->m_modelMeshes.size())
                         {
-                            M3D_LOG_INFO(
-                                "Saved decal has a wrong mesh number for model " + proto->m_engineModelName);
+                            M3D_LOG_INFO("Saved decal has a wrong mesh number for model " + proto->m_engineModelName);
                             continue;
                         }
 
@@ -1339,12 +1339,9 @@ namespace ai
                     continue;
                 }
                 int const meshNum = static_cast<int>(mesh - modelMeshes.begin());
-                ndDecals->SetAttribute(
-                    (CStr("Center") + CStr(i)).c_str(), CStr(decalInfo.source.center).c_str());
-                ndDecals->SetAttribute(
-                    (CStr("Normal") + CStr(i)).c_str(), CStr(decalInfo.source.normal).c_str());
-                ndDecals->SetAttribute(
-                    (CStr("Tangent") + CStr(i)).c_str(), CStr(decalInfo.source.tangent).c_str());
+                ndDecals->SetAttribute((CStr("Center") + CStr(i)).c_str(), CStr(decalInfo.source.center).c_str());
+                ndDecals->SetAttribute((CStr("Normal") + CStr(i)).c_str(), CStr(decalInfo.source.normal).c_str());
+                ndDecals->SetAttribute((CStr("Tangent") + CStr(i)).c_str(), CStr(decalInfo.source.tangent).c_str());
                 ndDecals->SetAttribute((CStr("Mesh") + CStr(i)).c_str(), CStr(meshNum).c_str());
             }
         }
@@ -1492,9 +1489,8 @@ namespace ai
             }
 
             CVector hitPos(meshContacts[0].pos[0], meshContacts[0].pos[1], meshContacts[0].pos[2]);
-            CVector hitNormal =
-                CVector(meshContacts[0].normal[0], meshContacts[0].normal[1], meshContacts[0].normal[2])
-                    .getNormalized();
+            CVector hitNormal = CVector(meshContacts[0].normal[0], meshContacts[0].normal[1], meshContacts[0].normal[2])
+                                    .getNormalized();
 
             for (int i = 1; i < numContacts; ++i)
             {
@@ -1504,15 +1500,13 @@ namespace ai
                     (hitPos.z - causePos.z) * (hitPos.z - causePos.z) +
                     (hitPos.y - causePos.y) * (hitPos.y - causePos.y));
                 float const otherDist = sqrt(
-                    (other.x - causePos.x) * (other.x - causePos.x) +
-                    (other.y - causePos.y) * (other.y - causePos.y) +
+                    (other.x - causePos.x) * (other.x - causePos.x) + (other.y - causePos.y) * (other.y - causePos.y) +
                     (other.z - causePos.z) * (other.z - causePos.z));
                 if (bestDist > otherDist)
                 {
                     hitPos = other;
-                    hitNormal =
-                        CVector(meshContacts[i].normal[0], meshContacts[i].normal[1], meshContacts[i].normal[2])
-                            .getNormalized();
+                    hitNormal = CVector(meshContacts[i].normal[0], meshContacts[i].normal[1], meshContacts[i].normal[2])
+                                    .getNormalized();
                 }
             }
 
@@ -1749,8 +1743,7 @@ namespace ai
                     mesh >= prototypeInfo->m_verts.size() || mesh >= prototypeInfo->m_vertsStride.size() ||
                     mesh >= prototypeInfo->m_modelMeshes.size())
                 {
-                    M3D_LOG_INFO(
-                        "Saved decal has a wrong mesh number for model " + prototypeInfo->m_engineModelName);
+                    M3D_LOG_INFO("Saved decal has a wrong mesh number for model " + prototypeInfo->m_engineModelName);
                     continue;
                 }
 

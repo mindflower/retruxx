@@ -36,8 +36,7 @@ protected:
         std::map<int, int, std::less<int>, std::allocator<std::pair<int const, int>>> const& perimeterCells,
         std::vector<IzvratRepositoryWnd::FrameSegment, std::allocator<IzvratRepositoryWnd::FrameSegment>>&
             frameSegments);
-    std::vector<IzvratRepositoryWnd::FrameSegment, std::allocator<IzvratRepositoryWnd::FrameSegment>>
-        m_frameSegments;
+    std::vector<IzvratRepositoryWnd::FrameSegment, std::allocator<IzvratRepositoryWnd::FrameSegment>> m_frameSegments;
     IzvratRepositoryWnd();
     IzvratRepositoryWnd(IzvratRepositoryWnd const& rhs);
 

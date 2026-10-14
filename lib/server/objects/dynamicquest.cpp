@@ -29,8 +29,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(DynamicQuest, GetReward)
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(DynamicQuest)
-        RT_CLASS_EXPORT(DynamicQuest, m3d::METHOD, Take, "", "", "")
-        RT_CLASS_EXPORT(DynamicQuest, m3d::METHOD, GetReward, "", "", "")
+    RT_CLASS_EXPORT(DynamicQuest, m3d::METHOD, Take, "", "", "")
+    RT_CLASS_EXPORT(DynamicQuest, m3d::METHOD, GetReward, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(DynamicQuest);
 
@@ -244,20 +244,20 @@ namespace ai
         // RVA 0x706650
         switch (propertyId)
         {
-            case 57:
-                m_targetName = newValue.GetAsStr();
-                return true;
-            case 58:
-                m_hirerName = newValue.GetAsStr();
-                return true;
-            case 59:
-                m_questStatus = Str2QuestStatus(newValue.GetAsStr());
-                return true;
-            case 60:
-                m_reward = newValue.GetAsID();
-                return true;
-            default:
-                return Obj::SetPropertyById(propertyId, newValue);
+        case 57:
+            m_targetName = newValue.GetAsStr();
+            return true;
+        case 58:
+            m_hirerName = newValue.GetAsStr();
+            return true;
+        case 59:
+            m_questStatus = Str2QuestStatus(newValue.GetAsStr());
+            return true;
+        case 60:
+            m_reward = newValue.GetAsID();
+            return true;
+        default:
+            return Obj::SetPropertyById(propertyId, newValue);
         }
     }
 
@@ -319,7 +319,8 @@ namespace ai
         return m_targetObjId;
     }
 
-    void DynamicQuest::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void DynamicQuest::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // RVA 0x706C20
         for (auto const& property : m_propertiesMap)
@@ -357,8 +358,7 @@ namespace ai
         // RVA 0x707C30 - a quest in progress is failed when the person who set it turns hostile.
         if (m_questStatus == STATUS_PROCESSING)
         {
-            M3D_APP->EnqueueMessage(
-                66564, FM_DYNAMIC_QUEST_FAILED_BECAUSE_HIRER_BECAMES_ENEMY, GetId(), 0, 0, {}, {});
+            M3D_APP->EnqueueMessage(66564, FM_DYNAMIC_QUEST_FAILED_BECAUSE_HIRER_BECAMES_ENEMY, GetId(), 0, 0, {}, {});
             _SetStatus(STATUS_FAILED);
         }
     }
@@ -368,20 +368,20 @@ namespace ai
         // RVA 0x707A40
         switch (propertyId)
         {
-            case 57:
-                retVal = m_targetName;
-                return true;
-            case 58:
-                retVal = m_hirerName;
-                return true;
-            case 59:
-                retVal = QuestStatus2Str(m_questStatus);
-                return true;
-            case 60:
-                retVal = m_reward;
-                return true;
-            default:
-                return Obj::_GetPropertyInternal(propertyId, retVal);
+        case 57:
+            retVal = m_targetName;
+            return true;
+        case 58:
+            retVal = m_hirerName;
+            return true;
+        case 59:
+            retVal = QuestStatus2Str(m_questStatus);
+            return true;
+        case 60:
+            retVal = m_reward;
+            return true;
+        default:
+            return Obj::_GetPropertyInternal(propertyId, retVal);
         }
     }
 
@@ -399,80 +399,74 @@ namespace ai
 
         switch (m_questStatus)
         {
-            case STATUS_PROCESSING:
-                _OnTake();
-                if (thePlayer)
-                {
-                    theProcessManager->PostMessageA(
-                        GE_DYNAMIC_QUEST_TAKEN, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
-                }
-                break;
-
-            case STATUS_COMPLETE:
+        case STATUS_PROCESSING:
+            _OnTake();
+            if (thePlayer)
             {
-                if (!thePlayer)
+                theProcessManager->PostMessageA(GE_DYNAMIC_QUEST_TAKEN, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
+            }
+            break;
+
+        case STATUS_COMPLETE:
+        {
+            if (!thePlayer)
+            {
+                break;
+            }
+            thePlayer->AddMoney(m_reward);
+            m3d::AIParam param(static_cast<int>(GE_RELATION_CHANGED));
+            theProcessManager->PostMessageA(GE_UNSUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
+            theProcessManager->PostMessageA(GE_DYNAMIC_QUEST_COMPLETE, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
+
+            if (m_bShowMessageForAddMoney)
+            {
+                if (m_reward > 0)
                 {
-                    break;
+                    M3D_APP->ImmediateMessage(66563, FM_PLAYER_ADD_MONEY, m_reward, 0, 0, {}, {});
                 }
-                thePlayer->AddMoney(m_reward);
+                else if (m_reward < 0)
+                {
+                    M3D_APP->ImmediateMessage(66563, FM_PLAYER_GIVE_MONEY, -m_reward, 0, 0, {}, {});
+                }
+            }
+            M3D_APP->ImmediateMessage(66564, m_fadingMsgIdOnComplete, GetId(), 0, 0, {}, {});
+            break;
+        }
+
+        case STATUS_FAILED:
+        {
+            if (!thePlayer)
+            {
+                break;
+            }
+            m3d::AIParam param(static_cast<int>(GE_RELATION_CHANGED));
+            theProcessManager->PostMessageA(GE_UNSUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
+            if (oldStatus == STATUS_PROCESSING)
+            {
+                theProcessManager->PostMessageA(GE_DYNAMIC_QUEST_FAILED, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
+            }
+            break;
+        }
+
+        case STATUS_FORGOTTEN:
+        {
+            if (thePlayer)
+            {
                 m3d::AIParam param(static_cast<int>(GE_RELATION_CHANGED));
-                theProcessManager->PostMessageA(
-                    GE_UNSUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
-                theProcessManager->PostMessageA(
-                    GE_DYNAMIC_QUEST_COMPLETE, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
-
-                if (m_bShowMessageForAddMoney)
-                {
-                    if (m_reward > 0)
-                    {
-                        M3D_APP->ImmediateMessage(66563, FM_PLAYER_ADD_MONEY, m_reward, 0, 0, {}, {});
-                    }
-                    else if (m_reward < 0)
-                    {
-                        M3D_APP->ImmediateMessage(66563, FM_PLAYER_GIVE_MONEY, -m_reward, 0, 0, {}, {});
-                    }
-                }
-                M3D_APP->ImmediateMessage(66564, m_fadingMsgIdOnComplete, GetId(), 0, 0, {}, {});
-                break;
+                theProcessManager->PostMessageA(GE_UNSUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
             }
-
-            case STATUS_FAILED:
+            Remove();
+            if (thePlayer && oldStatus == STATUS_PROCESSING)
             {
-                if (!thePlayer)
-                {
-                    break;
-                }
-                m3d::AIParam param(static_cast<int>(GE_RELATION_CHANGED));
                 theProcessManager->PostMessageA(
-                    GE_UNSUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
-                if (oldStatus == STATUS_PROCESSING)
-                {
-                    theProcessManager->PostMessageA(
-                        GE_DYNAMIC_QUEST_FAILED, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
-                }
-                break;
+                    GE_DYNAMIC_QUEST_FORGOTTEN, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
             }
+            M3D_LOG_INFO("Dynamic quest id " + CStr(GetId()) + " removed");
+            break;
+        }
 
-            case STATUS_FORGOTTEN:
-            {
-                if (thePlayer)
-                {
-                    m3d::AIParam param(static_cast<int>(GE_RELATION_CHANGED));
-                    theProcessManager->PostMessageA(
-                        GE_UNSUBSCRIBE, thePlayer->GetId(), GetId(), 0.0, param, {}, 1);
-                }
-                Remove();
-                if (thePlayer && oldStatus == STATUS_PROCESSING)
-                {
-                    theProcessManager->PostMessageA(
-                        GE_DYNAMIC_QUEST_FORGOTTEN, thePlayer->GetId(), GetId(), 0.0, {}, {}, 0);
-                }
-                M3D_LOG_INFO("Dynamic quest id " + CStr(GetId()) + " removed");
-                break;
-            }
-
-            default:
-                break;
+        default:
+            break;
         }
 
         // Whatever happened, the town that set the quest may want to put up a new one.
@@ -524,21 +518,21 @@ namespace ai
         // RVA 0x707B00
         switch (propertyId)
         {
-            case 57:
-                retVal = CStr("");
-                return true;
-            case 58:
-                retVal = CStr("");
-                return true;
-            case 59:
-                retVal = QuestStatus2Str(STATUS_NOT_TAKEN);
-                return true;
-            case 60:
-                retVal = 0;
-                return true;
-            default:
-                // NOTE: the fallback goes to _GetPropertyInternal, not to the base class' default.
-                return Obj::_GetPropertyInternal(propertyId, retVal);
+        case 57:
+            retVal = CStr("");
+            return true;
+        case 58:
+            retVal = CStr("");
+            return true;
+        case 59:
+            retVal = QuestStatus2Str(STATUS_NOT_TAKEN);
+            return true;
+        case 60:
+            retVal = 0;
+            return true;
+        default:
+            // NOTE: the fallback goes to _GetPropertyInternal, not to the base class' default.
+            return Obj::_GetPropertyInternal(propertyId, retVal);
         }
     }
 
@@ -577,4 +571,4 @@ namespace ai
             _OnHirerBecamesEnemyWithPlayer();
         }
     }
-}
+}  // namespace ai

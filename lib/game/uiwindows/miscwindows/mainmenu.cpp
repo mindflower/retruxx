@@ -8,7 +8,7 @@
 #include "game/uimisc/guihelper.h"
 
 RT_CLASS_EXPORTS_BEGIN(MainMenuUI)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(MainMenuUI);
 
 MainMenuUI::AuxInfo::AuxInfo()
@@ -72,15 +72,9 @@ MainMenuUI::MainMenuUI(MainMenuUI const&)
 
 void MainMenuUI::OnNewGame()
 {
-    M3D_APP->m_pInterfaceManager->ShowWindow(
-        172,
-        true,
-        true,
-        true,
-        true,
-        nullptr);
+    M3D_APP->m_pInterfaceManager->ShowWindow(172, true, true, true, true, nullptr);
 
-    const auto cmd = "/map " + CStr(M3D_ENGINE_CFG.m_firstLevel.GetS());
+    auto const cmd = "/map " + CStr(M3D_ENGINE_CFG.m_firstLevel.GetS());
     M3D_ENGINE_CFG.m_console->executeCommand(cmd);
 }
 
@@ -156,7 +150,6 @@ void MainMenuUI::QuitToWindows()
         M3D_APP->m_pInterfaceManager->ShowWindow(167, true, true, true, true, nullptr);
         M3D_APP->EnqueueMessage(1, 0, 0, 0, 0, {}, {});
     }
-
 }
 
 int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::AIParam const& data)
@@ -165,7 +158,7 @@ int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
         ReflectChildNotifyToParent(from, id, msg, data);
     if (msg != 1)
         return 0;
-    switch(id)
+    switch (id)
     {
     case 0x92824u:
     {

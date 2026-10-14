@@ -22,11 +22,11 @@ namespace ai
         Quaternion m_relRotation;
         CVector m_size;
         float m_radius;
-        ref_ptr<ref_count_helper<retruxx::vector<CVector, retruxx::allocator<CVector> > > > m_trimeshVertices;
+        ref_ptr<ref_count_helper<retruxx::vector<CVector, retruxx::allocator<CVector>>>> m_trimeshVertices;
         unsigned int m_numTrimeshVertices;
-        ref_ptr<ref_count_helper<retruxx::vector<int, retruxx::allocator<int> > > > m_trimeshIndices;
+        ref_ptr<ref_count_helper<retruxx::vector<int, retruxx::allocator<int>>>> m_trimeshIndices;
         unsigned int m_numTrimeshIndices;
-        CollisionInfo(const ai::CollisionInfo& info);
+        CollisionInfo(ai::CollisionInfo const& info);
         CollisionInfo();
         void Init();
     };
@@ -43,15 +43,27 @@ namespace ai
     int TraceLine(ai::Ray const&, retruxx::vector<ai::Geom*> const&, dContact*);
     int TraceSegment(Segment const& segment, retruxx::vector<ai::Geom*> const& Geoms, dContact* closestContact);
     bool TraceLine(ai::Ray const&, dContact&, bool, bool, bool, bool, ai::TraceLineCallback*, bool, bool);
-    bool CollideGeom(ai::Geom const& testGeom, bool dontCollideWithLittle, bool dontCollideWithPlayer,
-                     bool dontCollideWithWater, bool dontCollideWithShells);
-    bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class* > const&);
+    bool CollideGeom(
+        ai::Geom const& testGeom,
+        bool dontCollideWithLittle,
+        bool dontCollideWithPlayer,
+        bool dontCollideWithWater,
+        bool dontCollideWithShells);
+    bool GetValidPosition(CVector const&, float, unsigned char, CVector&, bool, bool, std::set<m3d::Class*> const&);
     m3d::AnimInfo* GetNodeAnimInfo(m3d::SgNode const*);
     int GetNodeElapsedAnimationTimeInMs(m3d::SgNode const* node);
-    bool GetSmoothAcceleratedValue(float elapsedTime, float destination, float position, float velocity, float acceleration, float maxVelocity, float& newPosition, float& newVelocity);
+    bool GetSmoothAcceleratedValue(
+        float elapsedTime,
+        float destination,
+        float position,
+        float velocity,
+        float acceleration,
+        float maxVelocity,
+        float& newPosition,
+        float& newVelocity);
     CVector GetRandomDeviatedVector(CVector const&, float);
 
-    template <class T>
+    template<class T>
     void SetDirectionToObject(T& obj, CVector const& direction)
     {
         // RVA 0x5CFB00 (ai::Geom), 0x5FB340 (ai::PhysicObj) - turns the object to face along
@@ -73,4 +85,4 @@ namespace ai
         rotation.w = ew * hw - ex * 0.0f - hy * 0.0f;
         obj.SetRotation(rotation);
     }
-}
+}  // namespace ai

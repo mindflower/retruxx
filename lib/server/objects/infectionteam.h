@@ -10,16 +10,18 @@ namespace ai
         {
             CStr m_protoName;
             unsigned int m_count;
-            Item(const CStr& protoName, int count);
+            Item(CStr const& protoName, int count);
         };
 
-        using ItemVector = retruxx::vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item> >;
+        using ItemVector = retruxx::
+            vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item>>;
 
     public:
-        retruxx::vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item> > m_items;
+        retruxx::vector<ai::InfectionTeamPrototypeInfo::Item, retruxx::allocator<ai::InfectionTeamPrototypeInfo::Item>>
+            m_items;
         int m_vehiclesGeneratorProtoId;
         InfectionTeamPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
         virtual ai::Obj* CreateTargetObject() const override;
 
@@ -30,11 +32,12 @@ namespace ai
     class InfectionTeam : public ai::Team
     {
         friend class InfectionTeamPrototypeInfo;
+
     protected:
-        virtual  ~InfectionTeam() override;
+        virtual ~InfectionTeam() override;
 
     private:
-        InfectionTeam(const ai::InfectionTeamPrototypeInfo& prototypeInfo);
+        InfectionTeam(ai::InfectionTeamPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -42,10 +45,10 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classInfectionTeam;
-        virtual const ai::InfectionTeamPrototypeInfo* GetPrototypeInfo() const override;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual ai::InfectionTeamPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
-        void Generate(const retruxx::vector<CVector, retruxx::allocator<CVector> >& points, unsigned int restSchwarz);
+        void Generate(retruxx::vector<CVector, retruxx::allocator<CVector>> const& points, unsigned int restSchwarz);
         void SetCriticalDistAndTime(float criticalDist, float criticalTime);
         void SetBlindDistAndTime(float blindDist, float blindTime);
 
@@ -62,4 +65,4 @@ namespace ai
         float m_blindTeamTime;
         float m_timeBeyondBlindDist;
     };
-}
+}  // namespace ai

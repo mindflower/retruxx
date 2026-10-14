@@ -80,13 +80,19 @@ namespace ai
         return -1;
     }
 
-    bool GetCollisionInfoByModelName(CStr const& id, retruxx::vector<ai::CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
+    bool GetCollisionInfoByModelName(
+        CStr const& id,
+        retruxx::vector<ai::CollisionInfo>& collisionInfos,
+        bool bTrimeshAllowed)
     {
         int const itemByName = M3D_APP->GetAnimatedModelsServer().GetItemByName(id.c_str(), true);
         return GetCollisionInfoByServerHandle(itemByName, collisionInfos, bTrimeshAllowed);
     }
 
-    bool GetCollisionInfoByServerHandle(int serverHandle, retruxx::vector<CollisionInfo>& collisionInfos, bool bTrimeshAllowed)
+    bool GetCollisionInfoByServerHandle(
+        int serverHandle,
+        retruxx::vector<CollisionInfo>& collisionInfos,
+        bool bTrimeshAllowed)
     {
         // RVA 0x7D3DB0 - collision primitives for a model: its collision trimesh (when allowed) and its geoms, or
         // a box around the model when it has neither. Degenerate sizes are replaced with defaults.
@@ -134,7 +140,8 @@ namespace ai
                 {
                     for (unsigned int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
                     {
-                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] = collisionTrimesh.Triangles[triIndex].I[vertexIndex];
+                        collisionInfo.m_trimeshIndices->GetObjectA()[indexOffset++] =
+                            collisionTrimesh.Triangles[triIndex].I[vertexIndex];
                     }
                 }
 
@@ -181,10 +188,14 @@ namespace ai
                     float cos45 = cos(0.7853981852531433f);       // cos(45�)
 
                     Quaternion adjustedRotation;
-                    adjustedRotation.x = (cos45 * collisionInfo.m_relRotation.x) + (collisionInfo.m_relRotation.w * rotationAdjust.y);
-                    adjustedRotation.y = (collisionInfo.m_relRotation.y * cos45) + (collisionInfo.m_relRotation.z * rotationAdjust.y);
-                    adjustedRotation.z = (collisionInfo.m_relRotation.z * cos45) - (collisionInfo.m_relRotation.y * rotationAdjust.y);
-                    adjustedRotation.w = (collisionInfo.m_relRotation.w * cos45) - (collisionInfo.m_relRotation.x * rotationAdjust.y);
+                    adjustedRotation.x =
+                        (cos45 * collisionInfo.m_relRotation.x) + (collisionInfo.m_relRotation.w * rotationAdjust.y);
+                    adjustedRotation.y =
+                        (collisionInfo.m_relRotation.y * cos45) + (collisionInfo.m_relRotation.z * rotationAdjust.y);
+                    adjustedRotation.z =
+                        (collisionInfo.m_relRotation.z * cos45) - (collisionInfo.m_relRotation.y * rotationAdjust.y);
+                    adjustedRotation.w =
+                        (collisionInfo.m_relRotation.w * cos45) - (collisionInfo.m_relRotation.x * rotationAdjust.y);
 
                     collisionInfo.m_relRotation = adjustedRotation;
                     break;
@@ -228,8 +239,8 @@ namespace ai
             {
             case GEOM_TYPE_BOX:
             {
-                float boxSizeSq =
-                    collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
+                float boxSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y +
+                    collInfo.m_size.z * collInfo.m_size.z;
 
                 if (boxSizeSq < 0.0001f)
                 {
@@ -255,8 +266,8 @@ namespace ai
 
             case GEOM_TYPE_CYLINDER:
             {
-                float cylinderSizeSq =
-                    collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y + collInfo.m_size.z * collInfo.m_size.z;
+                float cylinderSizeSq = collInfo.m_size.x * collInfo.m_size.x + collInfo.m_size.y * collInfo.m_size.y +
+                    collInfo.m_size.z * collInfo.m_size.z;
 
                 if (collInfo.m_radius < 0.0001f || cylinderSizeSq < 0.0001f)
                 {
@@ -477,8 +488,7 @@ namespace ai
         auto* cellItem = landscape.GetCollisionCellItem(cellX, cellZ);
         if (!cellItem)
         {
-            M3D_LOG_INFO(
-                "Warning: null collision cell item, cellX = " + CStr(cellX) + ", cellZ = " + CStr(cellZ));
+            M3D_LOG_INFO("Warning: null collision cell item, cellX = " + CStr(cellX) + ", cellZ = " + CStr(cellZ));
             return false;
         }
 
@@ -541,8 +551,7 @@ namespace ai
                     continue;
                 }
                 if (dontCollideWithPlayer &&
-                    static_cast<ai::Vehicle*>(obj->GetParent()) ==
-                        ai::gDynamicScene->GetVehicleControlledByPlayer())
+                    static_cast<ai::Vehicle*>(obj->GetParent()) == ai::gDynamicScene->GetVehicleControlledByPlayer())
                 {
                     continue;
                 }
@@ -680,13 +689,15 @@ namespace ai
                 prevCellZ = collisionCellZ;
 
                 // Get collision cell from landscape
-                m3d::Landscape::CollisionCellItem* cellItem = landscape->GetCollisionCellItem(collisionCellX, collisionCellZ);
+                m3d::Landscape::CollisionCellItem* cellItem =
+                    landscape->GetCollisionCellItem(collisionCellX, collisionCellZ);
 
                 if (!cellItem)
                 {
                     // Log warning about missing collision cell
                     M3D_LOG_INFO(
-                        "Warning: null collision cell item, cellX = " + CStr(collisionCellX) + ", cellZ = " + CStr(collisionCellZ));
+                        "Warning: null collision cell item, cellX = " + CStr(collisionCellX) +
+                        ", cellZ = " + CStr(collisionCellZ));
                     continue;
                 }
 
@@ -711,7 +722,8 @@ namespace ai
                     }
 
                     // Perform collision detection
-                    int contactCount = dCollide(ray.GetGeomId(), geomObject->GetGeom(), 8, &contacts[0].geom, sizeof(dContact));
+                    int contactCount =
+                        dCollide(ray.GetGeomId(), geomObject->GetGeom(), 8, &contacts[0].geom, sizeof(dContact));
 
                     // Process contacts
                     for (int i = 0; i < contactCount; i++)
@@ -753,8 +765,8 @@ namespace ai
                     {
                         // Log error about invalid object reference
                         M3D_LOG_ERR(
-                            "Error: NULL object is linked to collision cell x = " + CStr(collisionCellX) + ", y = " + CStr(collisionCellZ) +
-                            ", id = " + CStr(objId));
+                            "Error: NULL object is linked to collision cell x = " + CStr(collisionCellX) +
+                            ", y = " + CStr(collisionCellZ) + ", id = " + CStr(objId));
                         continue;
                     }
 
@@ -799,11 +811,13 @@ namespace ai
                     // vehicles), so the ray passes through the layers a vehicle drives over.
                     if (smartCollideWithTowns && object->IsKindOf(&ai::Town::m_classTown))
                     {
-                        unsigned const numLayers = static_cast<Town*>(object)->GetPrototypeInfo()->m_numCollisionLayersBelowVehicle;
+                        unsigned const numLayers =
+                            static_cast<Town*>(object)->GetPrototypeInfo()->m_numCollisionLayersBelowVehicle;
                         if (numLayers > 0)
                         {
                             std::vector<CVector> contactPoints;
-                            for (dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id()); geom; geom = dGeomGetBodyNext(geom))
+                            for (dxGeom* geom = dBodyGetFirstGeom(object->GetBody()->id()); geom;
+                                 geom = dGeomGetBodyNext(geom))
                             {
                                 if (dontCollideWithLittle && IsLittle(geom))
                                 {
@@ -812,10 +826,12 @@ namespace ai
                                 dxSpace* space = dGeomGetSpace(geom);
                                 if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
                                 {
-                                    int const contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
+                                    int const contactCount =
+                                        dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
                                     for (int i = 0; i < contactCount; i++)
                                     {
-                                        contactPoints.emplace_back(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
+                                        contactPoints.emplace_back(
+                                            contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
                                     }
                                 }
                             }
@@ -830,7 +846,8 @@ namespace ai
                                     {
                                         return (b - start).lengthSq() > (a - start).lengthSq();
                                     });
-                                size_t const pick = contactPoints.size() > numLayers ? contactPoints.size() - numLayers : 0;
+                                size_t const pick =
+                                    contactPoints.size() > numLayers ? contactPoints.size() - numLayers : 0;
                                 CVector const& point = contactPoints[pick];
                                 float const distanceSq = (start - point).lengthSq();
                                 if (distanceSq < minDistanceSq)
@@ -858,11 +875,13 @@ namespace ai
                                 dxSpace* space = dGeomGetSpace(geom);
                                 if (space && space != ai::gIntersectionSpace && space != dGeomGetSpace(ray.GetGeomId()))
                                 {
-                                    int contactCount = dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
+                                    int contactCount =
+                                        dCollide(ray.GetGeomId(), geom, 8, &contacts[0].geom, sizeof(dContact));
 
                                     for (int i = 0; i < contactCount; i++)
                                     {
-                                        CVector contactPos(contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
+                                        CVector contactPos(
+                                            contacts[i].geom.pos[0], contacts[i].geom.pos[1], contacts[i].geom.pos[2]);
                                         CVector delta = start - contactPos;
                                         float distanceSq = delta.lengthSq();
 
@@ -894,7 +913,8 @@ namespace ai
         m3d::GeomObject* terrainGeom = landscape->GetTerrainGeomObject();
         if (terrainGeom)
         {
-            int contactCount = dCollide(ray.GetGeomId(), terrainGeom->GetGeom(), 8, &contacts[0].geom, sizeof(dContact));
+            int contactCount =
+                dCollide(ray.GetGeomId(), terrainGeom->GetGeom(), 8, &contacts[0].geom, sizeof(dContact));
 
             for (int i = 0; i < contactCount; i++)
             {
@@ -938,11 +958,11 @@ namespace ai
 
         scoped_ptr<ai::SphereForIntersection> sphere =
             ai::SphereForIntersection::CreateObject(radius, ai::SphereForIntersection::SpherePurpose::LOOKING, 0);
-        auto const isFree = [&](CVector const& pos) {
+        auto const isFree = [&](CVector const& pos)
+        {
             dGeomSetPosition(sphere->GetGeomId(), pos.x, pos.y, pos.z);
             return ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
-                (!bCheckPassMap ||
-                 !Map::theGlobalMap->IsCircleBlocked(CVector2{pos.x, pos.z}, radius, blockingValue));
+                (!bCheckPassMap || !Map::theGlobalMap->IsCircleBlocked(CVector2{pos.x, pos.z}, radius, blockingValue));
         };
 
         if (isFree(position))
@@ -962,7 +982,8 @@ namespace ai
                 CVector const candidate(
                     position.x + offset.x * dist, position.y + offset.y * dist, position.z + dist * offset.z);
                 dGeomSetPosition(sphere->GetGeomId(), candidate.x, candidate.y, candidate.z);
-                if (minDist > dist && ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
+                if (minDist > dist &&
+                    ai::IntersectionManager::IsSphereValid(sphere, targetClasses, bForPlayerVehicle) &&
                     (!bCheckPassMap ||
                      !Map::theGlobalMap->IsCircleBlocked(CVector2{candidate.x, candidate.z}, radius, blockingValue)))
                 {
@@ -1206,12 +1227,12 @@ namespace ai
         CVector deviatedDir;
 
         CVector INITIAL_OBJECTS_DIRECTION_36(0.0, 0.0, 1.0);
-        deviatedDir.x = (tempMatrix._11 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._21 * INITIAL_OBJECTS_DIRECTION_36.y) +
-            (tempMatrix._31 * INITIAL_OBJECTS_DIRECTION_36.z);
-        deviatedDir.y = (tempMatrix._12 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._22 * INITIAL_OBJECTS_DIRECTION_36.y) +
-            (tempMatrix._32 * INITIAL_OBJECTS_DIRECTION_36.z);
-        deviatedDir.z = (tempMatrix._13 * INITIAL_OBJECTS_DIRECTION_36.x) + (tempMatrix._23 * INITIAL_OBJECTS_DIRECTION_36.y) +
-            (tempMatrix._33 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.x = (tempMatrix._11 * INITIAL_OBJECTS_DIRECTION_36.x) +
+            (tempMatrix._21 * INITIAL_OBJECTS_DIRECTION_36.y) + (tempMatrix._31 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.y = (tempMatrix._12 * INITIAL_OBJECTS_DIRECTION_36.x) +
+            (tempMatrix._22 * INITIAL_OBJECTS_DIRECTION_36.y) + (tempMatrix._32 * INITIAL_OBJECTS_DIRECTION_36.z);
+        deviatedDir.z = (tempMatrix._13 * INITIAL_OBJECTS_DIRECTION_36.x) +
+            (tempMatrix._23 * INITIAL_OBJECTS_DIRECTION_36.y) + (tempMatrix._33 * INITIAL_OBJECTS_DIRECTION_36.z);
 
         // Calculate axis correction if needed
         float crossX = (INITIAL_OBJECTS_DIRECTION_36.y * axis.z) - (INITIAL_OBJECTS_DIRECTION_36.z * axis.y);
@@ -1221,8 +1242,8 @@ namespace ai
         float crossLengthSq = (crossX * crossX) + (crossY * crossY) + (crossZ * crossZ);
 
         // Calculate angle between initial direction and target axis
-        float dotProduct =
-            INITIAL_OBJECTS_DIRECTION_36.x * axis.x + INITIAL_OBJECTS_DIRECTION_36.y * axis.y + INITIAL_OBJECTS_DIRECTION_36.z * axis.z;
+        float dotProduct = INITIAL_OBJECTS_DIRECTION_36.x * axis.x + INITIAL_OBJECTS_DIRECTION_36.y * axis.y +
+            INITIAL_OBJECTS_DIRECTION_36.z * axis.z;
         float angleBetween = atan2(sqrt(crossLengthSq), dotProduct);
 
         // Apply axis correction if significant misalignment

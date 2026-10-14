@@ -16,7 +16,7 @@ namespace m3d
 
     int CFlare::Init()
     {
-        for (unsigned i = 0; i<6;++i)
+        for (unsigned i = 0; i < 6; ++i)
         {
             auto fileName = "data\\fx\\flare" + CStr(i) + ".bmp";
             m_tex[i] = Application::g_pApp->m_renderer->AddTexture(fileName, 2);
@@ -70,14 +70,14 @@ namespace m3d
         {
             // NOTE: the visibility tests are only made for points the projection puts past z = 1.
             float half = w * 0.5f;
-            if (!(0.0f > half + m_ssx) && !(m_ssx - half > static_cast<float>(width)) && !(0.0f > half + m_ssy)
-                && !(m_ssy - half > fheight))
+            if (!(0.0f > half + m_ssx) && !(m_ssx - half > static_cast<float>(width)) && !(0.0f > half + m_ssy) &&
+                !(m_ssy - half > fheight))
             {
                 m_onScreen = true;
             }
             half = w * glowScale * 0.5f;
-            if (!(0.0f > half + m_ssx) && !(m_ssx - half > static_cast<float>(width)) && !(0.0f > half + m_ssy)
-                && !(m_ssy - half > fheight))
+            if (!(0.0f > half + m_ssx) && !(m_ssx - half > static_cast<float>(width)) && !(0.0f > half + m_ssy) &&
+                !(m_ssy - half > fheight))
             {
                 m_glowOnScreen = 1;
             }
@@ -108,10 +108,14 @@ namespace m3d
                 float const nw = 0.0f - w;
                 M3D_RENDERER->SetTexture(0, m_tex[5], -1.0);
                 M3D_APP->PutSpriteAbs(
-                    nw * c - nw * s + m_ssx, nw * c + nw * s + m_ssy,
-                    c * w - nw * s + m_ssx, nw * c + s * w + m_ssy,
-                    nw * c - s * w + m_ssx, c * w + nw * s + m_ssy,
-                    c * w - s * w + m_ssx, s * w + c * w + m_ssy,
+                    nw * c - nw * s + m_ssx,
+                    nw * c + nw * s + m_ssy,
+                    c * w - nw * s + m_ssx,
+                    nw * c + s * w + m_ssy,
+                    nw * c - s * w + m_ssx,
+                    c * w + nw * s + m_ssy,
+                    c * w - s * w + m_ssx,
+                    s * w + c * w + m_ssy,
                     0xFFFFFFFF);
                 polys = 2;
             }
@@ -148,8 +152,8 @@ namespace m3d
                         // NOTE: the set of classes to trace holds a single null class.
                         retruxx::set<Class*> classes;
                         classes.insert(nullptr);
-                        CVector const finish(dir.x * 100000.0f + start.x, start.y + dir.y * 100000.0f,
-                                             start.z + dir.z * 100000.0f);
+                        CVector const finish(
+                            dir.x * 100000.0f + start.x, start.y + dir.y * 100000.0f, start.z + dir.z * 100000.0f);
                         CVector hit;
                         if (!pClient->GetWorld().GetGraph().TraceLine(hit, start, finish, classes, 0))
                         {
@@ -211,11 +215,14 @@ namespace m3d
             for (int i = 0; i < 6; ++i)
             {
                 M3D_RENDERER->SetTexture(0, m_tex[i], -1.0);
-                unsigned int const r = static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(colors[i][0]) * intensity));
-                unsigned int const g = static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(colors[i][1]) * intensity));
-                unsigned int const b = static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(colors[i][2]) * intensity));
-                M3D_APP->PutSpriteAbs(offsets[i] * dx + hw, offsets[i] * dy + hh, sizes[i] * w,
-                                      0xFF000000 | (r << 16) | (g << 8) | b);
+                unsigned int const r =
+                    static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(colors[i][0]) * intensity));
+                unsigned int const g =
+                    static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(colors[i][1]) * intensity));
+                unsigned int const b =
+                    static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(colors[i][2]) * intensity));
+                M3D_APP->PutSpriteAbs(
+                    offsets[i] * dx + hw, offsets[i] * dy + hh, sizes[i] * w, 0xFF000000 | (r << 16) | (g << 8) | b);
             }
 
             if (blinding)
@@ -224,11 +231,12 @@ namespace m3d
                 {
                     intensity = 0.5f;
                 }
-                unsigned int const a = static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(intensity) * 255.0));
+                unsigned int const a =
+                    static_cast<unsigned char>(static_cast<__int64>(static_cast<double>(intensity) * 255.0));
                 rend::TexHandle const noTexture;
                 M3D_RENDERER->SetTexture(0, noTexture, -1.0);
-                M3D_APP->PutSpriteAbs(0.0f, 0.0f, static_cast<float>(width), fheight,
-                                      0xFF000000 | (a << 16) | (a << 8) | a);
+                M3D_APP->PutSpriteAbs(
+                    0.0f, 0.0f, static_cast<float>(width), fheight, 0xFF000000 | (a << 16) | (a << 8) | a);
                 polys += 2;
             }
             break;
@@ -242,4 +250,4 @@ namespace m3d
         M3D_RENDERER->PopBlend();
         return polys;
     }
-}
+}  // namespace m3d

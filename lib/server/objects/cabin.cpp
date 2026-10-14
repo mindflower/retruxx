@@ -214,20 +214,20 @@ namespace ai
         // set through the property system even though it can be read back.
         switch (propertyId)
         {
-            case 22:
-                m_maxTorque = newValue.GetAsFloat();
-                return true;
-            case 23:
-                m_maxSpeed = newValue.GetAsFloat();
-                return true;
-            case 24:
-                m_fuelConsumption = newValue.GetAsFloat();
-                return true;
-            case 25:
-                m_control = newValue.GetAsFloat();
-                return true;
-            default:
-                return VehiclePart::SetPropertyById(propertyId, newValue);
+        case 22:
+            m_maxTorque = newValue.GetAsFloat();
+            return true;
+        case 23:
+            m_maxSpeed = newValue.GetAsFloat();
+            return true;
+        case 24:
+            m_fuelConsumption = newValue.GetAsFloat();
+            return true;
+        case 25:
+            m_control = newValue.GetAsFloat();
+            return true;
+        default:
+            return VehiclePart::SetPropertyById(propertyId, newValue);
         }
     }
 

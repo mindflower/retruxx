@@ -3,11 +3,12 @@
 class GraphInfo
 {
 public:
-    void AddFiltred(float,int);
+    void AddFiltred(float, int);
     GraphInfo();
     float GetValue(int);
     void AddValue(float);
     float GetAverValue();
+
 protected:
 private:
     float valArray[1000];

@@ -205,7 +205,7 @@ namespace ai
     // RVA 0x826C30
     unsigned DecisionMatrix::UnsafeFirstDecision(unsigned stateNum, unsigned signalNum) const
     {
-        const DecisionMatrixElement& element = m_Elements[stateNum + signalNum * m_numStates];
+        DecisionMatrixElement const& element = m_Elements[stateNum + signalNum * m_numStates];
         if (element.m_PassageCommands.empty())
         {
             return 0xFFFF;
@@ -262,7 +262,7 @@ namespace ai
             printf("state[%d] %s\n", state, m_States[state].GetName().c_str());
             for (int signal = 0; signal < (int)m_Signals.size(); ++signal)
             {
-                const DecisionMatrixElement& element = m_Elements[state + signal * m_numStates];
+                DecisionMatrixElement const& element = m_Elements[state + signal * m_numStates];
                 if (element.m_PassageCommands.empty())
                 {
                     continue;
@@ -272,7 +272,7 @@ namespace ai
                 printf(" ");
                 for (int k = 0; k < (int)element.m_PassageCommands.size(); ++k)
                 {
-                    const AIPassageCommand& command = element.m_PassageCommands[k];
+                    AIPassageCommand const& command = element.m_PassageCommands[k];
                     printf("%s", m_States[command.m_StateNum].GetName().c_str());
                     if (!command.m_ParamRefList.empty())
                     {
@@ -358,7 +358,7 @@ namespace ai
         {
             for (int signal = 0; signal < (int)m_Signals.size(); ++signal)
             {
-                const DecisionMatrixElement& element = m_Elements[state + signal * m_numStates];
+                DecisionMatrixElement const& element = m_Elements[state + signal * m_numStates];
                 if (element.m_PassageCommands.empty())
                 {
                     continue;
@@ -377,7 +377,8 @@ namespace ai
                         OutStr += CStr(" -> ");
                     }
                 }
-                M3D_LOG_INFO(m_States[state].GetName() + CStr(", ") + m_Signals[signal].GetName() + CStr(", ") + OutStr);
+                M3D_LOG_INFO(
+                    m_States[state].GetName() + CStr(", ") + m_Signals[signal].GetName() + CStr(", ") + OutStr);
             }
         }
 
@@ -621,7 +622,8 @@ namespace ai
         return RT_CLASS_LOCAL(DecisionMatrix);
     }
 
-    void DecisionMatrix::SetRetValueInterpretation(char const* stateName, char const* schemeName, char const* signalName)
+    void
+        DecisionMatrix::SetRetValueInterpretation(char const* stateName, char const* schemeName, char const* signalName)
     {
         unsigned signalNum = 0xFFFF;
         auto stateNum = GetStateNum(stateName);

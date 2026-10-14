@@ -13,4 +13,4 @@ namespace ai
     protected:
         Sphere(dxGeom* const geomId, void (*movedCalback)(dxGeom*));
     };
-}
+}  // namespace ai

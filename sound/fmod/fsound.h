@@ -15,9 +15,9 @@ typedef struct FSOUND_DSPUNIT FSOUND_DSPUNIT;
 typedef struct FMUSIC_MODULE FMUSIC_MODULE;
 
 // Channel / sample index values
-#define FSOUND_FREE -1
+#define FSOUND_FREE      -1
 #define FSOUND_UNMANAGED -2
-#define FSOUND_ALL -3
+#define FSOUND_ALL       -3
 #define FSOUND_STEREOPAN -1
 
 // Sample / stream modes
@@ -55,7 +55,7 @@ enum FSOUND_MODES
 
 // Callbacks
 typedef signed char(F_CALLBACKAPI* FSOUND_STREAMCALLBACK)(FSOUND_STREAM* stream, void* buff, int len, void* userdata);
-typedef void*(F_CALLBACKAPI* FSOUND_OPENCALLBACK)(const char* name);
+typedef void*(F_CALLBACKAPI* FSOUND_OPENCALLBACK)(char const* name);
 typedef void(F_CALLBACKAPI* FSOUND_CLOSECALLBACK)(void* handle);
 typedef int(F_CALLBACKAPI* FSOUND_READCALLBACK)(void* buffer, int size, void* handle);
 typedef int(F_CALLBACKAPI* FSOUND_SEEKCALLBACK)(void* handle, int pos, signed char mode);
@@ -69,23 +69,25 @@ typedef struct
     signed char(F_API* FSOUND_Init)(int mixrate, int maxsoftwarechannels, unsigned int flags);
     void(F_API* FSOUND_Close)(void);
     void(F_API* FSOUND_Update)(void);
-    void(F_API* FSOUND_File_SetCallbacks)(FSOUND_OPENCALLBACK useropen, FSOUND_CLOSECALLBACK userclose,
-                                          FSOUND_READCALLBACK userread, FSOUND_SEEKCALLBACK userseek,
-                                          FSOUND_TELLCALLBACK usertell);
+    void(F_API* FSOUND_File_SetCallbacks)(
+        FSOUND_OPENCALLBACK useropen,
+        FSOUND_CLOSECALLBACK userclose,
+        FSOUND_READCALLBACK userread,
+        FSOUND_SEEKCALLBACK userseek,
+        FSOUND_TELLCALLBACK usertell);
     int(F_API* FSOUND_GetError)(void);
     int(F_API* FSOUND_GetMaxChannels)(void);
     float(F_API* FSOUND_GetCPUUsage)(void);
     void(F_API* FSOUND_GetMemoryStats)(unsigned int* currentalloced, unsigned int* maxalloced);
-    FSOUND_SAMPLE*(F_API* FSOUND_Sample_Load)(int index, const char* name_or_data, unsigned int mode, int offset,
-                                              int length);
+    FSOUND_SAMPLE*(
+        F_API* FSOUND_Sample_Load)(int index, char const* name_or_data, unsigned int mode, int offset, int length);
     void(F_API* FSOUND_Sample_Free)(FSOUND_SAMPLE* sptr);
     signed char(F_API* FSOUND_Sample_SetMode)(FSOUND_SAMPLE* sptr, unsigned int mode);
-    signed char(F_API* FSOUND_Sample_SetDefaults)(FSOUND_SAMPLE* sptr, int deffreq, int defvol, int defpan,
-                                                  int defpri);
+    signed char(F_API* FSOUND_Sample_SetDefaults)(FSOUND_SAMPLE* sptr, int deffreq, int defvol, int defpan, int defpri);
     signed char(F_API* FSOUND_Sample_SetMinMaxDistance)(FSOUND_SAMPLE* sptr, float min, float max);
     signed char(F_API* FSOUND_Sample_SetMaxPlaybacks)(FSOUND_SAMPLE* sptr, int max);
-    signed char(F_API* FSOUND_Sample_GetDefaults)(FSOUND_SAMPLE* sptr, int* deffreq, int* defvol, int* defpan,
-                                                  int* defpri);
+    signed char(
+        F_API* FSOUND_Sample_GetDefaults)(FSOUND_SAMPLE* sptr, int* deffreq, int* defvol, int* defpan, int* defpri);
     unsigned int(F_API* FSOUND_Sample_GetMode)(FSOUND_SAMPLE* sptr);
     int(F_API* FSOUND_PlaySoundEx)(int channel, FSOUND_SAMPLE* sptr, FSOUND_DSPUNIT* dsp, signed char startpaused);
     signed char(F_API* FSOUND_StopSound)(int channel);
@@ -94,24 +96,30 @@ typedef struct
     signed char(F_API* FSOUND_SetVolumeAbsolute)(int channel, int vol);
     signed char(F_API* FSOUND_SetPaused)(int channel, signed char paused);
     signed char(F_API* FSOUND_SetLoopMode)(int channel, unsigned int loopmode);
-    signed char(F_API* FSOUND_3D_SetAttributes)(int channel, const float* pos, const float* vel);
+    signed char(F_API* FSOUND_3D_SetAttributes)(int channel, float const* pos, float const* vel);
     signed char(F_API* FSOUND_IsPlaying)(int channel);
     int(F_API* FSOUND_GetFrequency)(int channel);
     int(F_API* FSOUND_GetVolume)(int channel);
-    void(F_API* FSOUND_3D_Listener_SetAttributes)(const float* pos, const float* vel, float fx, float fy, float fz,
-                                                  float tx, float ty, float tz);
-    FSOUND_STREAM*(F_API* FSOUND_Stream_Open)(const char* name_or_data, unsigned int mode, int offset, int length);
+    void(F_API* FSOUND_3D_Listener_SetAttributes)(
+        float const* pos,
+        float const* vel,
+        float fx,
+        float fy,
+        float fz,
+        float tx,
+        float ty,
+        float tz);
+    FSOUND_STREAM*(F_API* FSOUND_Stream_Open)(char const* name_or_data, unsigned int mode, int offset, int length);
     signed char(F_API* FSOUND_Stream_Close)(FSOUND_STREAM* stream);
-    int(F_API* FSOUND_Stream_PlayEx)(int channel, FSOUND_STREAM* stream, FSOUND_DSPUNIT* dsp,
-                                     signed char startpaused);
+    int(F_API* FSOUND_Stream_PlayEx)(int channel, FSOUND_STREAM* stream, FSOUND_DSPUNIT* dsp, signed char startpaused);
     signed char(F_API* FSOUND_Stream_Stop)(FSOUND_STREAM* stream);
     signed char(F_API* FSOUND_Stream_SetPosition)(FSOUND_STREAM* stream, unsigned int position);
     int(F_API* FSOUND_Stream_GetLengthMs)(FSOUND_STREAM* stream);
     signed char(F_API* FSOUND_Stream_SetMode)(FSOUND_STREAM* stream, unsigned int mode);
     unsigned int(F_API* FSOUND_Stream_GetMode)(FSOUND_STREAM* stream);
     FSOUND_SAMPLE*(F_API* FSOUND_Stream_GetSample)(FSOUND_STREAM* stream);
-    signed char(F_API* FSOUND_Stream_SetEndCallback)(FSOUND_STREAM* stream, FSOUND_STREAMCALLBACK callback,
-                                                     void* userdata);
+    signed char(
+        F_API* FSOUND_Stream_SetEndCallback)(FSOUND_STREAM* stream, FSOUND_STREAMCALLBACK callback, void* userdata);
 } FMOD_INSTANCE;
 
 // orig 0x5ee640 fmoddyn.h:253 / 0x5efb60 fmoddyn.h:529

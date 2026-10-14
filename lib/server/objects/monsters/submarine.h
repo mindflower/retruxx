@@ -22,14 +22,14 @@ namespace ai
     {
     public:
         SubmarinePrototypeInfo();
-        virtual  ~SubmarinePrototypeInfo() override;
+        virtual ~SubmarinePrototypeInfo() override;
         float m_maxLinearVelocity;
         float m_linearAcceleration;
         int m_platformOpenFps;
         float m_vehicleMaxSpeed;
         CVector m_vehicleRelativePosition;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual ai::Obj* CreateTargetObject() const override;
     };
 
@@ -38,11 +38,11 @@ namespace ai
         friend class SubmarinePrototypeInfo;
 
     protected:
-        virtual  ~Submarine() override;
+        virtual ~Submarine() override;
 
     private:
-        Submarine(const ai::SubmarinePrototypeInfo& prototypeInfo);
-        Submarine(const ai::Submarine&);
+        Submarine(ai::SubmarinePrototypeInfo const& prototypeInfo);
+        Submarine(ai::Submarine const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -50,28 +50,37 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSubmarine;
-        virtual const ai::SubmarinePrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::SubmarinePrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
         virtual CStr GetPropertyName(int id) const override;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override;
-        virtual int GetPropertyId(const char* PropertyName) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        virtual int OnEvent(const ai::Event& evn) override;
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override;
+        virtual int OnEvent(ai::Event const& evn) override;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void _InternalPostLoad() override;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
@@ -93,11 +102,13 @@ namespace ai
         void _UpdatePositionOnMove(float elapsedTime);
         void _WatchPlatformRotation();
         void _SetSubmarineState(ai::eSubmarineState newState);
-        void _FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState> >& cameraStates, const CVector& offset) const;
-        void _OnTargetReached(const ai::Event& evn);
-        void _OnSkipCinematic(const ai::Event& evn);
+        void _FillCameraStates(
+            retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>& cameraStates,
+            CVector const& offset) const;
+        void _OnTargetReached(ai::Event const& evn);
+        void _OnSkipCinematic(ai::Event const& evn);
 
     public:
         static void __fastcall Registration();
     };
-}
+}  // namespace ai

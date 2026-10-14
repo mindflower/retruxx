@@ -5,7 +5,7 @@ namespace m3d
 {
     struct sArgStack
     {
-        sArgStack(const m3d::sArgStack&);
+        sArgStack(m3d::sArgStack const&);
         sArgStack();
         ~sArgStack();
         unsigned int getNumInArgs() const;
@@ -28,4 +28,4 @@ namespace m3d
         unsigned int m_curInArg = 0;
         unsigned int m_curOutArg = 0;
     };
-}
+}  // namespace m3d

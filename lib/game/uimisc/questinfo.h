@@ -4,18 +4,21 @@
 #include <vector>
 #include <core/stringm3d.h>
 
-namespace m3d {
-    namespace cmn {
+namespace m3d
+{
+    namespace cmn
+    {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 struct CVector;
 
 class QuestInfo
 {
     friend class QuestInfoManager;
+
 public:
     class AuxLevelInfo
     {
@@ -28,6 +31,7 @@ public:
             COORDTYPE_NUM_COORDTYPES = 0x3,
             COORDTYPE_INVALID = 0x3,
         };
+
     public:
         void SetUp(CStr const&);
         void SetUp(CStr const&, CVector const&);
@@ -51,6 +55,7 @@ public:
         CStr m_targetObjName;
         CoordType m_coordType;
     };
+
 public:
     CStr const& GetBriefDiz() const;
     bool ExistsOnMap(CStr const&) const;
@@ -59,7 +64,7 @@ public:
     int GetQuestId() const;
     CStr const& GetSmallImageFie() const;
     QuestInfo();
-    std::vector<CStr, std::allocator<CStr> > GetMapNames() const;
+    std::vector<CStr, std::allocator<CStr>> GetMapNames() const;
     CStr const& GetFullDiz() const;
     CStr const& GetQuestInfoName() const;
     bool IsCoordinateModified() const;
@@ -91,7 +96,6 @@ private:
     bool m_isMainQuest;
     bool m_bCoordinateModified;
 };
-
 
 class QuestInfoManager
 {

@@ -19,14 +19,15 @@ namespace ai
     class RayBody : public ai::SimplePhysicBody
     {
         friend class SimplePhysicObjPrototypeInfo;
+
     protected:
-        RayBody(const ai::RayBodyPrototypeInfo& prototypeInfo);
+        RayBody(ai::RayBodyPrototypeInfo const& prototypeInfo);
         RayBody(float length);
         RayBody();
-        RayBody(const ai::RayBody& rhs);
+        RayBody(ai::RayBody const& rhs);
 
     public:
-        virtual  ~RayBody() override;
+        virtual ~RayBody() override;
         virtual m3d::Object* Clone() override;
         static m3d::Object* CreateObject();
         static m3d::Class* GetBaseClass();
@@ -35,11 +36,11 @@ namespace ai
         float GetLength() const;
         void SetLength(float);
         CVector GetDirection() const;
-        void SetDirection(const CVector&);
+        void SetDirection(CVector const&);
         virtual void SetMass(float newMassValue) override;
 
     private:
-        const ai::Ray* _Ray() const;
+        ai::Ray const* _Ray() const;
         ai::Ray* _Ray();
     };
-}
+}  // namespace ai

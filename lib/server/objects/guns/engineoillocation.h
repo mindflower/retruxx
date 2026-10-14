@@ -19,8 +19,8 @@ namespace ai
         virtual ~EngineOilLocation() override;
 
     private:
-        EngineOilLocation(const ai::EngineOilLocationPrototypeInfo& prototypeInfo);
-        EngineOilLocation(const ai::EngineOilLocation&);
+        EngineOilLocation(ai::EngineOilLocationPrototypeInfo const& prototypeInfo);
+        EngineOilLocation(ai::EngineOilLocation const&);
         virtual m3d::Object* Clone() override;
         static m3d::Object* __fastcall CreateObject();
 
@@ -28,10 +28,10 @@ namespace ai
         static m3d::Class* __fastcall GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classEngineOilLocation;
-        virtual const ai::EngineOilLocationPrototypeInfo* GetPrototypeInfo() const override;
+        virtual ai::EngineOilLocationPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
         virtual void OnObjectIn(ai::Obj* object) override;
         virtual void OnObjectOut(ai::Obj* object) override;
     };
-}
+}  // namespace ai

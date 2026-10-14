@@ -3,7 +3,7 @@
 #include "core/kernel.h"
 
 RT_CLASS_EXPORTS_BEGIN(ScreenWnd)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(ScreenWnd);
 
 m3d::Class* ScreenWnd::GetClass() const

@@ -19,7 +19,7 @@ namespace m3d
         // RVA 0x954790
     }
 
-    void ShadowVolume::Initialize(const AnimatedModel::Mesh& mesh, unsigned short* edgesBuf)
+    void ShadowVolume::Initialize(AnimatedModel::Mesh const& mesh, unsigned short* edgesBuf)
     {
         // RVA 0x9547A0 - the volume works on the welded copy of the mesh, sharing one edge buffer with every other
         // volume.
@@ -43,7 +43,8 @@ namespace m3d
         // replaced by the last one.
         for (unsigned int i = 0; i < numEdges; ++i)
         {
-            if ((m_edges[2 * i] == v0 && m_edges[2 * i + 1] == v1) || (m_edges[2 * i] == v1 && m_edges[2 * i + 1] == v0))
+            if ((m_edges[2 * i] == v0 && m_edges[2 * i + 1] == v1) ||
+                (m_edges[2 * i] == v1 && m_edges[2 * i + 1] == v0))
             {
                 if (numEdges > 1)
                 {
@@ -59,7 +60,7 @@ namespace m3d
         ++numEdges;
     }
 
-    unsigned int ShadowVolume::BuildShadowVolume(const CVector& lightDir, CVector* volumeVertexPool)
+    unsigned int ShadowVolume::BuildShadowVolume(CVector const& lightDir, CVector* volumeVertexPool)
     {
         // RVA 0x954810 - every silhouette edge becomes a quad (two triangles) stretched 25 units along the light.
         m_volume = volumeVertexPool;
@@ -96,7 +97,7 @@ namespace m3d
         return m_numVolumeVerts;
     }
 
-    void ShadowVolume::Render(const CMatrix& objToWorld, unsigned int) const
+    void ShadowVolume::Render(CMatrix const& objToWorld, unsigned int) const
     {
         // RVA 0x955160 - NOTE: the colour argument is ignored; only the stencil counts matter.
         if (!m_numVolumeVerts)
@@ -116,4 +117,4 @@ namespace m3d
         renderer->MatSetWorld(objToWorld);
         renderer->DrawPrimitive(rend::M3DPT_TRIANGLELIST, vofs, m_numVolumeVerts / 3);
     }
-}
+}  // namespace m3d

@@ -17,8 +17,7 @@ public:
 protected:
     virtual int GameDataUpdate(void* data, int dataType) override;
     virtual int GameDataClear(bool beforeContinuousMap) override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual void OnExit();
     int m_vehicleId;
     ChildPanel();

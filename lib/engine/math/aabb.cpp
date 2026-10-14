@@ -9,7 +9,7 @@
 #include "math/vector.h"
 #include "retruxx/common.h"
 
-void Aabb::Create(const CVector& min, const CVector& max)
+void Aabb::Create(CVector const& min, CVector const& max)
 {
     this->m_box[0] = min.x;
     this->m_box[1] = min.y;
@@ -19,7 +19,7 @@ void Aabb::Create(const CVector& min, const CVector& max)
     this->m_box[5] = max.z;
 }
 
-void Aabb::Offset(const CVector& ofs)
+void Aabb::Offset(CVector const& ofs)
 {
     // RVA 0x512420
     m_box[0] = ofs.x + m_box[0];
@@ -30,7 +30,7 @@ void Aabb::Offset(const CVector& ofs)
     m_box[5] = m_box[5] + ofs.z;
 }
 
-void Aabb::Scale(const CVector& sc)
+void Aabb::Scale(CVector const& sc)
 {
     // RVA 0x63F220 - scales about the world origin, not the box's centre.
     m_box[0] = sc.x * m_box[0];
@@ -83,7 +83,7 @@ void Aabb::StartEmbracing()
     m_box[5] = -10000.0f;
 }
 
-void Aabb::EmbracePoint(const CVector& v)
+void Aabb::EmbracePoint(CVector const& v)
 {
     // RVA 0x644F10
     if (m_box[0] > v.x)
@@ -100,7 +100,7 @@ void Aabb::EmbracePoint(const CVector& v)
         m_box[5] = v.z;
 }
 
-void Aabb::EmbraceBox(const Aabb& box)
+void Aabb::EmbraceBox(Aabb const& box)
 {
     auto v2 = &box;
     if (this->m_box[0] <= box.m_box[0])
@@ -156,7 +156,7 @@ float Aabb::MaximumComponent() const
     return result;
 }
 
-bool Aabb::IsPtInside(const CVector& pt) const
+bool Aabb::IsPtInside(CVector const& pt) const
 {
     // NOTE: declared in the PDB but never instantiated in the shipped binary, so this body does not
     // come from it: the full 3D version of IsPtInside2.
@@ -164,7 +164,7 @@ bool Aabb::IsPtInside(const CVector& pt) const
         pt.z <= m_box[5];
 }
 
-bool Aabb::IsPtInside2(const CVector& pt) const
+bool Aabb::IsPtInside2(CVector const& pt) const
 {
     // RVA 0x645660 - only x and y are tested.
     return m_box[0] <= pt.x && pt.x <= m_box[3] && m_box[1] <= pt.y && pt.y <= m_box[4];
@@ -177,12 +177,11 @@ void Aabb::Draw(unsigned int clr)
     a.y = this->m_box[1];
     a.z = this->m_box[2];
 
-    
     CVector b;
     b.x = this->m_box[0];
     b.y = this->m_box[1];
     b.z = this->m_box[5];
-    
+
     CVector c;
     c.x = this->m_box[3];
     c.y = this->m_box[1];

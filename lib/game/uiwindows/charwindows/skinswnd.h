@@ -12,7 +12,7 @@ namespace m3d
     {
         class ButtonWnd;
     }
-}
+}  // namespace m3d
 
 class SkinSwitcher
 {
@@ -70,8 +70,7 @@ public:
 
 protected:
     virtual int GameDataSetup() override;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-       ;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual int OnAfterRemoveFromWndStation() override;
     void BuySkin();

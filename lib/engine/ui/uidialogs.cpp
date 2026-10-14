@@ -204,8 +204,12 @@ namespace m3d
             return RT_CLASS_LOCAL(MsgBoxDlg);
         }
 
-        int MsgBoxDlg::CreateMsgBoxDlg(CStr const& caption, CStr const& msg, BoundsBase<float> const& rc,
-                                       unsigned flags, float maxWidth)
+        int MsgBoxDlg::CreateMsgBoxDlg(
+            CStr const& caption,
+            CStr const& msg,
+            BoundsBase<float> const& rc,
+            unsigned flags,
+            float maxWidth)
         {
             // RVA 0x7986E0 - only records what the dialog should look like; the
             // controls are built in OnInitModal, once the size is known.
@@ -380,8 +384,14 @@ namespace m3d
             return RT_CLASS_LOCAL(ArtDlg);
         }
 
-        int ArtDlg::CreateArtDlg(CStr const& caption, CStr const& msg, CStr const& imageFile, CStr const& soundFile,
-                                 BoundsBase<float> const& rc, unsigned flags, float maxWidth)
+        int ArtDlg::CreateArtDlg(
+            CStr const& caption,
+            CStr const& msg,
+            CStr const& imageFile,
+            CStr const& soundFile,
+            BoundsBase<float> const& rc,
+            unsigned flags,
+            float maxWidth)
         {
             // RVA 0x799650
             if (!MsgBoxDlg::CreateMsgBoxDlg(caption, msg, rc, flags, maxWidth))
@@ -392,8 +402,8 @@ namespace m3d
             m_soundFileName = soundFile;
             if (!m_soundFileName.empty() && IsSoundEnabled())
             {
-                m_soundTableId = M3D_APP->m_sound->AddSound(
-                    soundFile.c_str(), snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_HIGH);
+                m_soundTableId =
+                    M3D_APP->m_sound->AddSound(soundFile.c_str(), snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_HIGH);
             }
 
             if (!imageFile.empty())
@@ -409,10 +419,11 @@ namespace m3d
                     m_image = RT_DYNCAST(g_Kernel->New("ImageWnd"), ImageWnd);
                     if (m_image)
                     {
-                        BoundsBase<float> const imgB{DLG_BTN_GAP,
-                                                     DLG_BTN_GAP,
-                                                     static_cast<float>(texW) - DLG_BTN_GAP,
-                                                     static_cast<float>(texH) - DLG_BTN_GAP};
+                        BoundsBase<float> const imgB{
+                            DLG_BTN_GAP,
+                            DLG_BTN_GAP,
+                            static_cast<float>(texW) - DLG_BTN_GAP,
+                            static_cast<float>(texH) - DLG_BTN_GAP};
                         m_image->CreateImageWnd(imgB, m_tex);
                         AddChild(m_image);
                     }
@@ -501,8 +512,7 @@ namespace m3d
 
             if (m_soundTableId != -1 && m_soundChannelId == -1 && IsSoundEnabled())
             {
-                m_soundChannelId =
-                    M3D_APP->m_sound->PlaySound2D(m_soundTableId, (m_flags & MBX_SOUNDLOOP) != 0);
+                m_soundChannelId = M3D_APP->m_sound->PlaySound2D(m_soundTableId, (m_flags & MBX_SOUNDLOOP) != 0);
             }
             return 1;
         }

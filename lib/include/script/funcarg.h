@@ -18,23 +18,23 @@ namespace m3d
             ARGTYPE_QUATERNION = 7,
         };
 
-        sArg(m3d::sArg::eArgType, const void*);
-        sArg(const m3d::sArg&);
+        sArg(m3d::sArg::eArgType, void const*);
+        sArg(m3d::sArg const&);
         sArg();
         ~sArg();
-        bool operator==(const m3d::sArg&) const;
+        bool operator==(m3d::sArg const&) const;
         void SetI(int);
         void SetF(float f);
         void SetB(bool b);
-        void SetS(const char* s);
+        void SetS(char const* s);
         void SetO(m3d::Object* o);
-        void SetV(const CVector& v);
-        void SetQ(const Quaternion& v);
+        void SetV(CVector const& v);
+        void SetQ(Quaternion const& v);
         m3d::sArg::eArgType GetType() const;
         int GetI() const;
         float GetF() const;
         bool GetB() const;
-        const char* GetS() const;
+        char const* GetS() const;
         m3d::Object* GetO() const;
         CVector GetV() const;
         Quaternion GetQ() const;
@@ -51,4 +51,4 @@ namespace m3d
             float m_q[4];
         };
     };
-}
+}  // namespace m3d
