@@ -27,9 +27,9 @@ namespace m3d
 
     struct MemoryAllocationRoutines
     {
-        void*(__fastcall* AllocMem)(std::size_t, char const*, int);
-        void*(__fastcall* ReallocMem)(void*, std::size_t, char const*, int);
-        void(__fastcall* FreeMem)(void*, char const*, int);
+        void* (*AllocMem)(std::size_t, char const*, int);
+        void* (*ReallocMem)(void*, std::size_t, char const*, int);
+        void (*FreeMem)(void*, char const*, int);
     };
 
     //IMPORTANT: fields and member order is strict!

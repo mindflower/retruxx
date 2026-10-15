@@ -76,8 +76,8 @@ namespace m3d
     {
         char const* m_className = nullptr;
         int m_classSize = 0;
-        Object*(__fastcall* m_fnCreateObject)() = nullptr;
-        Class*(__fastcall* m_fnGetBaseClass)() = nullptr;
+        Object* (*m_fnCreateObject)() = nullptr;
+        Class* (*m_fnGetBaseClass)() = nullptr;
         int m_index = 0;
         ExportInfo* m_lExports = nullptr;
         void* m_scriptHandle = nullptr;
@@ -165,8 +165,8 @@ namespace m3d
         virtual char const* GetClassNameA() const;
         bool IsKindOf(char const* className) const;
         bool IsKindOf(m3d::Class const* object) const;
-        static m3d::Class* __fastcall GetBaseClass();
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Class* GetBaseClass();
+        static m3d::Object* CreateObject();
 
     protected:
         Object(m3d::Object const& clazz);

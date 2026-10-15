@@ -74,16 +74,16 @@ namespace ai
     private:
         Gadget(GadgetPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGadget;
         virtual ai::GadgetPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -113,7 +113,7 @@ namespace ai
         void SetSlotNum(int slotNum);
         bool ApplyToVehicle(ai::Vehicle* pVehicle, bool enable) const;
         bool ApplyToVp(ai::VehiclePart* vp, bool enable) const;
-        static void __fastcall Registration();
+        static void Registration();
 
     private:
         int m_slotNum;

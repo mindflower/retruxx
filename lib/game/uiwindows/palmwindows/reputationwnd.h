@@ -45,12 +45,12 @@ public:
 protected:
     int CreateFromPattern();
     int CreateChildren();
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    static void __fastcall ClearPattern();
+    static int LoadPattern(m3d::ui::Wnd* pattern);
+    static void ClearPattern();
     void UpdateTolerance();
     void UpdateToleranceIndicator(help::BlackWightTolerance bwTolerance);
     unsigned int BWTolerance2Color(help::BlackWightTolerance bwTolerance) const;
-    static CStr __fastcall BWTolerance2StrId1(help::BlackWightTolerance bwTolerance);
+    static CStr BWTolerance2StrId1(help::BlackWightTolerance bwTolerance);
     CStr BWTolerance2StrId2(help::BlackWightTolerance bwTolerance) const;
     void UpdateTooltip(help::BlackWightTolerance bwTolerance);
     int m_clanBelong;
@@ -64,8 +64,8 @@ protected:
 public:
     virtual ~ReputationButton() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(ReputationButton);
 
@@ -130,8 +130,8 @@ protected:
 public:
     virtual ~ReputationList() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(ReputationList);
 };
@@ -159,8 +159,8 @@ protected:
 public:
     virtual ~ReputationWnd() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(ReputationWnd);
 };

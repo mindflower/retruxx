@@ -29,17 +29,17 @@ namespace
     retruxx::map<CStr, m3d::Object*>* m_lGlobals = nullptr;
     m3d::MemoryManager* mm = nullptr;
 
-    void* __fastcall AllocateMemory(std::size_t sz, char const* file, int linenum)
+    void* AllocateMemory(std::size_t sz, char const* file, int linenum)
     {
         return mm->Malloc(sz, file, linenum);
     }
 
-    void* __fastcall ReallocateMemory(void* mem, std::size_t sz, char const* file, int linenum)
+    void* ReallocateMemory(void* mem, std::size_t sz, char const* file, int linenum)
     {
         return mm->Realloc(mem, sz, file, linenum);
     }
 
-    void __fastcall FreeMemory(void* p, char const* file, int linenum)
+    void FreeMemory(void* p, char const* file, int linenum)
     {
         return mm->Free(p);
     }

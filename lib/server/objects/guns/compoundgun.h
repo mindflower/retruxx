@@ -26,10 +26,10 @@ namespace ai
         CompoundGun(ai::CompoundGunPrototypeInfo const& prototypeInfo);
         CompoundGun(ai::CompoundGun const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(CompoundGun);
         virtual ai::CompoundGunPrototypeInfo const* GetPrototypeInfo() const override;

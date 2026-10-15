@@ -52,8 +52,8 @@ public:
     };
 
 protected:
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    static void __fastcall ClearPattern();
+    static int LoadPattern(m3d::ui::Wnd* pattern);
+    static void ClearPattern();
     int CreateFromPattern();
     int CreateChildren();
     CStr LocalTime2Str(_FILETIME localTime) const;
@@ -73,8 +73,8 @@ protected:
 public:
     virtual ~SaveButton() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(SaveButton);
 };
@@ -135,8 +135,8 @@ protected:
 public:
     virtual ~SaveList() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(SaveList);
 };
@@ -190,8 +190,8 @@ protected:
 public:
     virtual ~LSWnd() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(LSWnd);
 };

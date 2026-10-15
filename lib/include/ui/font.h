@@ -148,7 +148,7 @@ namespace m3d
         class FontManager
         {
         public:
-            static bool __fastcall NeedCharSetWChars(unsigned int);
+            static bool NeedCharSetWChars(unsigned int);
             int ValidateFontId(int&);
             int Init();
             void Clear();

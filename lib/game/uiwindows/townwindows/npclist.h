@@ -58,8 +58,8 @@ protected:
     CStr GetNameForNpc(ai::Npc const* npc) const;
     int CreateFromPattern();
     int CreateChildren();
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    static void __fastcall ClearPattern();
+    static int LoadPattern(m3d::ui::Wnd* pattern);
+    static void ClearPattern();
     int m_npcId;
     ref_ptr<NpcModelWnd> m_wndNpcIco;
     m3d::ui::ImageWnd* m_wndNpcIcoBg;
@@ -73,8 +73,8 @@ protected:
 public:
     virtual ~NpcButton() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classNpcButton;
 };
@@ -115,8 +115,8 @@ protected:
 public:
     virtual ~NpcList() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classNpcList;
 };

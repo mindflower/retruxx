@@ -52,8 +52,8 @@ protected:
 public:
     virtual ~QuestItem() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(QuestItem);
 };
@@ -98,8 +98,8 @@ protected:
 public:
     virtual ~QuestStatusBtn() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(QuestStatusBtn);
 };
@@ -141,8 +141,8 @@ protected:
 public:
     virtual ~QuestLabel() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(QuestLabel);
 };

@@ -38,16 +38,16 @@ namespace ai
         Player(ai::PlayerPrototypeInfo const& prototypeInfo);
         Player(ai::Player const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classPlayer;
         virtual ai::PlayerPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -102,7 +102,7 @@ namespace ai
         ai::IzvratRepository* GetRepository() const;
         CStr const& GetLastSaveDir() const;
         void SetLastSaveDir(CStr const& saveDir);
-        static void __fastcall Registration();
+        static void Registration();
         bool IsQuestItemPresent(CStr const& itemPrototypeName) const;
         int AddQuestItem(CStr const& itemPrototypeName);
         int RemoveQuestItem(CStr const& itemPrototypeName);

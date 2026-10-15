@@ -48,15 +48,15 @@ namespace ai
         Settlement(ai::SettlementPrototypeInfo const& prototypeInfo);
         Settlement(ai::Settlement const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSettlement;
         virtual ai::SettlementPrototypeInfo const* GetPrototypeInfo() const override;
         virtual int OnEvent(ai::Event const& evn) override;
-        static void __fastcall Registration();
+        static void Registration();
         virtual void Remove() override;
         virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
         virtual void AddChild(ai::Obj* pObj) override;

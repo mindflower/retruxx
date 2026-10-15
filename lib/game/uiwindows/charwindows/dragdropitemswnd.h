@@ -90,11 +90,11 @@ public:
     };
 
 public:
-    static bool __fastcall IsDragging();
-    static ai::GeomRepositoryItem __fastcall GetDragItem();
+    static bool IsDragging();
+    static ai::GeomRepositoryItem GetDragItem();
     virtual BoundsBase<float> GeomToWndBounds(BoundsBase<int> const&) = 0;
     virtual void Enable(bool needEnable);
-    static void __fastcall RemoveDragSlot();
+    static void RemoveDragSlot();
     virtual int CanAddDragItem(bool) = 0;
 
 protected:
@@ -130,7 +130,7 @@ protected:
 
 public:
     virtual ~DragDropItemsWnd() override;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     static m3d::Class m_classDragDropItemsWnd;
 };

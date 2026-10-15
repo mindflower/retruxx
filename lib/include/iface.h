@@ -57,7 +57,7 @@ namespace m3d
 
         struct IInput : public IBase
         {
-            virtual int Init(m3d::Kernel*, void(__fastcall*)(CStr const&)) = 0;
+            virtual int Init(m3d::Kernel*, void (*)(CStr const&)) = 0;
             virtual void NewFrame() = 0;
             virtual void SetAutorepeatTime(int) = 0;
             virtual void ClearBuffer() = 0;
@@ -103,7 +103,7 @@ namespace snd
 
     struct ISound : public IBase
     {
-        virtual bool Init(void(__fastcall*)(CStr const&), unsigned int, unsigned int, unsigned char, char const*) = 0;
+        virtual bool Init(void (*)(CStr const&), unsigned int, unsigned int, unsigned char, char const*) = 0;
         virtual int Update(double) = 0;
         virtual void SetMaxVolume(int) = 0;
         virtual void SetMusicFadeTime(float) = 0;

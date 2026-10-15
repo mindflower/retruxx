@@ -22,16 +22,16 @@ namespace ai
     {
     public:
         DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const&);
-        static void __fastcall LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const*);
+        static void LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const*);
         static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const;
-        static bool __fastcall FreeNameForTargetExists();
+        static bool FreeNameForTargetExists();
         virtual DynamicQuestDestroyPrototypeInfo const* GetPrototypeInfo() const;
         virtual void Update(float, unsigned int);
-        static void __fastcall SaveNamesForTargetsToXml(m3d::cmn::XmlNode*);
+        static void SaveNamesForTargetsToXml(m3d::cmn::XmlNode*);
         virtual DynamicQuestManager::QuestType GetQuestType() const;
         virtual int OnEvent(Event const&);
-        static CStr __fastcall GetRandomNameForTarget();
+        static CStr GetRandomNameForTarget();
 
     protected:
         virtual int _CalcReward();

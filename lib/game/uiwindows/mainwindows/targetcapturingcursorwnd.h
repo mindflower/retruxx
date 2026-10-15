@@ -17,11 +17,11 @@ public:
 
     virtual m3d::Class* GetClass() const;
     virtual ~TargetCapturingCursorWnd();
-    static CStr const& __fastcall GetCaptureTexName();
-    static float __fastcall GetCapturingTexAngle();
+    static CStr const& GetCaptureTexName();
+    static float GetCapturingTexAngle();
     static m3d::Class* GetBaseClass();
     static m3d::Object* CreateObject();
-    static PointBase<float> const& __fastcall GetCaptureTexSmallSz();
+    static PointBase<float> const& GetCaptureTexSmallSz();
     virtual m3d::Object* Clone();
 
 protected:

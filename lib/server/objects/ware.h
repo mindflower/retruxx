@@ -50,16 +50,16 @@ namespace ai
         Ware(ai::WarePrototypeInfo const& prototypeInfo);
         Ware(ai::Ware const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classWare;
         virtual ai::WarePrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -90,7 +90,7 @@ namespace ai
         unsigned int GetMaxItems() const;
         ai::NumericInRange<float> const& Durability() const;
         ai::NumericInRange<float>& Durability();
-        static void __fastcall Registration();
+        static void Registration();
         virtual unsigned int GetPrice(ai::IPriceCoeffProvider const* priceCoeffProvider) const override;
 
     private:

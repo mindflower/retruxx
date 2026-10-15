@@ -80,9 +80,9 @@ namespace snd
         };
         int m_group;
         // The engine's end-of-music callback. The original and Hard Truck Apocalypse's own
-        // sound.dll call it with the sound id in ecx (__fastcall); the engine header spells the
+        // sound.dll call it with the sound id in ecx (); the engine header spells the
         // pointer without a calling convention, so the manager stores it as this type.
-        void(__fastcall* m_endCallback)(int);
+        void (*m_endCallback)(int);
         CStr m_fileName;
     };
 }  // namespace snd

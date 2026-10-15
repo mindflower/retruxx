@@ -69,7 +69,7 @@ protected:
 
 public:
     virtual ~CBWnd() override;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     static m3d::Class m_classCBWnd;
 };

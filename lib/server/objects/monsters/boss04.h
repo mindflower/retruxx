@@ -53,16 +53,16 @@ namespace ai
         Boss04(ai::Boss04PrototypeInfo const& prototypeInfo);
         Boss04(ai::Boss04 const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss04;
         virtual ai::Boss04PrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
+        static void RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -135,6 +135,6 @@ namespace ai
         void _OnBoss04StationDestroyed(ai::Event const& evn);
 
     public:
-        static void __fastcall Registration();
+        static void Registration();
     };
 }  // namespace ai

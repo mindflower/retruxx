@@ -28,16 +28,16 @@ namespace ai
         Boss04Drone(ai::Boss04DronePrototypeInfo const& prototypeInfo);
         Boss04Drone(ai::Boss04Drone const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss04Drone;
         virtual ai::Boss04DronePrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
+        static void RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -69,7 +69,7 @@ namespace ai
         virtual void Update(float elapsedTime, unsigned int workTime) override;
         void SetFlyPathName(CStr const& flyPathName);
         virtual void InflictDamage(ai::DamageInfo const& damageInfo) override;
-        static void __fastcall Registration();
+        static void Registration();
         float GetMaxHealth() const;
         float GetHealth() const;
         void SetCustomControl(bool bCustomControl);

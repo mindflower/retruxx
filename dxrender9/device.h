@@ -46,7 +46,7 @@ HRESULT SaveSurfaceToTGAFile(
     int width,
     int height);
 HRESULT
-    SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName, IDirect3DSurface9* pSurface);
+SaveSurfaceToGrayscaleTGAFile(IDirect3DDevice9* pD3DDevice, char const* szFileName, IDirect3DSurface9* pSurface);
 
 // The build stamp the resource reports (vb_man_stats, ib_man_stats, texture_man_stats) write. In
 // the original binary each report carries its own compile time, so the original assembled it from
@@ -568,7 +568,7 @@ public:
     void* QueryIface(char const* ifaceName) override;
 
     // ---------------------------------------------------------------- device.cpp
-    int Create(void(__fastcall* logFunc)(CStr const&), m3d::Kernel* kernel) override;
+    int Create(void (*logFunc)(CStr const&), m3d::Kernel* kernel) override;
     int CreateDevice() override;
     int SwitchDisplayModes(HWND wnd, int w, int h, int fullscreen) override;
     int Reset() override;

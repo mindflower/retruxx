@@ -18,8 +18,8 @@ public:
     int GameDataUpdate(void*, int);
     WeaponGroup* CreateWeaponGroup(int);
     int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    static int __fastcall GetWeaponGroupsMaxCount();
-    static int __fastcall GetDefaultWeaponGroupIdForWeapon(CStr const&);
+    static int GetWeaponGroupsMaxCount();
+    static int GetDefaultWeaponGroupIdForWeapon(CStr const&);
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
     int AddWeaponGroup(WeaponGroup*);
@@ -28,7 +28,7 @@ public:
     int Init();
     int AddWeaponToWeaponGroup(CStr const&, int);
     int AddWeaponToWeaponGroup(int, int);
-    static CStr __fastcall GetGunPartNameByGunId(int);
+    static CStr GetGunPartNameByGunId(int);
     void RestoreWeaponGroups();
     virtual ~WeaponGroupManager();
     void OnVehiclePartChanged(void*);
@@ -84,12 +84,12 @@ public:
 public:
     virtual ~WeaponGroup() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classWeaponGroup;
     void SetGroupId(int groupId);
-    static Impulse __fastcall GetImpulseByGroupId(int groupId);
+    static Impulse GetImpulseByGroupId(int groupId);
     void ClearWeapons();
     int m_groupId;
     Impulse m_impulseId;

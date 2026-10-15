@@ -104,7 +104,7 @@ namespace m3d
             friend class WndStation;
             friend class ModalWnd;
             friend class TabWnd;
-            friend MbRetCodes __fastcall RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
+            friend MbRetCodes RunMsgBoxDlg(CStr const&, CStr const&, unsigned int, bool);
 
         protected:
             Wnd();
@@ -209,7 +209,7 @@ namespace m3d
             static inline m3d::ui::GfxServer* m_gfx;
 
         public:
-            static m3d::ui::GfxServer* __fastcall GetGfxServer();
+            static m3d::ui::GfxServer* GetGfxServer();
 
         protected:
             m3d::ui::Wnd* CaptureMouse();

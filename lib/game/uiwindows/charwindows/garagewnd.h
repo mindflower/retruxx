@@ -92,7 +92,7 @@ public:
     int SetupForWorkshop(int);
     bool IsListOpen() const;
     ai::Workshop* GetWorkshop() const;
-    static help::Color __fastcall GetValueColor(int, int);
+    static help::Color GetValueColor(int, int);
     virtual m3d::Object* Clone();
     int GetWorkshopId() const;
     virtual ~GarageWnd();

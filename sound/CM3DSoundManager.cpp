@@ -47,7 +47,7 @@ namespace snd
     {
         // orig 0x89b940 CM3DSoundManager.cpp (file static): the log callback. Unset in the original;
         // Hard Truck Apocalypse's Init stores the executable's callback here.
-        void(__fastcall* l_log)(CStr const&) = 0;
+        void (*l_log)(CStr const&) = 0;
 
         void Log(CStr const& msg)
         {
@@ -102,7 +102,7 @@ namespace snd
 
         // ISound, in the order of Hard Truck Apocalypse's vtable
         bool Init(
-            void(__fastcall* logFunc)(CStr const&),
+            void (*logFunc)(CStr const&),
             unsigned int SampleRate,
             unsigned int BitsPerSample,
             unsigned char maxSounds,
@@ -284,7 +284,7 @@ namespace snd
     // linked driver. Hard Truck Apocalypse's interface hands over the log callback as well; its
     // own sound.dll stores it before the original body, which is kept unchanged.
     bool CM3DSoundManager::Init(
-        void(__fastcall* logFunc)(CStr const&),
+        void (*logFunc)(CStr const&),
         unsigned int SampleRate,
         unsigned int BitsPerSample,
         unsigned char maxSounds,
@@ -1510,7 +1510,7 @@ namespace snd
         }
 
         // 1301: the engine's callback is invoked with the id in ecx (see CSoundItem::m_endCallback)
-        it->second->m_endCallback = (void(__fastcall*)(int))endCallback;
+        it->second->m_endCallback = (void (*)(int))endCallback;
         // 1302
         return true;
     }

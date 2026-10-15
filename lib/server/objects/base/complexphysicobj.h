@@ -17,8 +17,8 @@ namespace ai
     public:
         virtual ~ComplexPhysicObjPartDescription() override;
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classComplexPhysicObjPartDescription;
         void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
@@ -89,10 +89,10 @@ namespace ai
         ComplexPhysicObj(ai::ComplexPhysicObjPrototypeInfo const& prototypeInfo);
         ComplexPhysicObj(ai::ComplexPhysicObj const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classComplexPhysicObj;
         virtual ai::ComplexPhysicObjPrototypeInfo const* GetPrototypeInfo() const override;

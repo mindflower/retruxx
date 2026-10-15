@@ -97,7 +97,7 @@ public:
     ~CInput_di8() override;
 
     // IInput, in the order of Hard Truck Apocalypse's vtable
-    int Init(m3d::Kernel* kernel, void(__fastcall* logFunc)(CStr const&)) override;
+    int Init(m3d::Kernel* kernel, void (*logFunc)(CStr const&)) override;
     void NewFrame() override;
     void SetAutorepeatTime(int msecs) override;
     void ClearBuffer() override;
@@ -428,7 +428,7 @@ void CInput_di8::NewFrame()
 // original: int CInput_di8::Init() on the statically linked driver. Hard Truck Apocalypse's interface
 // hands over the kernel and the log callback here; its own input_di8.dll stores both before the
 // The original body, which is kept unchanged.
-int CInput_di8::Init(m3d::Kernel* kernel, void(__fastcall* logFunc)(CStr const&))
+int CInput_di8::Init(m3d::Kernel* kernel, void (*logFunc)(CStr const&))
 {
     g_kernel = kernel;
     m3d::g_Kernel = kernel;

@@ -25,10 +25,10 @@ namespace ai
         Mortar(ai::MortarPrototypeInfo const& prototypeInfo);
         Mortar(ai::Mortar const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(Mortar);
         virtual ai::MortarPrototypeInfo const* GetPrototypeInfo() const override;
@@ -42,7 +42,7 @@ namespace ai
         };
         virtual void LookAtPoint(CVector const& lookAt, float elapsedTime) override;
         virtual bool isLookAtPoint(CVector const& lookAt, float eps) const override;
-        static CVector __fastcall GetMortarShellPosition(CVector const& source, CVector const& velocity, float time);
+        static CVector GetMortarShellPosition(CVector const& source, CVector const& velocity, float time);
 
     protected:
         virtual void _LaunchShells() override;

@@ -21,18 +21,8 @@ public:
     unsigned int m_nfrustums;
 
     void createIndices();
-    static void __fastcall buildfrustum(
-        float* fr,
-        CVector const* v,
-        CMatrix const& m,
-        CVector const& org,
-        float offset);
-    static void __fastcall buildfrustum(
-        float* fr,
-        CVector const& n,
-        CMatrix const& m,
-        CVector const& org,
-        float offset);
+    static void buildfrustum(float* fr, CVector const* v, CMatrix const& m, CVector const& org, float offset);
+    static void buildfrustum(float* fr, CVector const& n, CMatrix const& m, CVector const& org, float offset);
     void createScreenFrustums(
         CVector const& origin,
         CMatrix const& rotMat,

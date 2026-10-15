@@ -138,13 +138,13 @@ namespace m3d
         Aabb m_bBox;
         int m_numvert;
         bool m_backflag;
-        static m3d::ParticleSystem* __fastcall New(CStr const& ClassName);
-        static m3d::ParticleSystem* __fastcall Factory(
+        static m3d::ParticleSystem* New(CStr const& ClassName);
+        static m3d::ParticleSystem* Factory(
             PSProps const& psprops,
             retruxx::vector<AttrProps, retruxx::allocator<AttrProps>> const& AttrProtos);
-        static m3d::ParticleSystem* __fastcall Factory(char const* fileName);
-        static m3d::ParticleSystem* __fastcall CreateCopy(m3d::ParticleSystem& CopyPS);
-        static void __fastcall SetInterpolateColorsOnLoad(bool c);
+        static m3d::ParticleSystem* Factory(char const* fileName);
+        static m3d::ParticleSystem* CreateCopy(m3d::ParticleSystem& CopyPS);
+        static void SetInterpolateColorsOnLoad(bool c);
         ParticleSystem(m3d::ParticleSystem const&);
         ParticleSystem();
         virtual ~ParticleSystem();

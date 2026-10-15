@@ -25,17 +25,17 @@ namespace ai
 
     private:
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classLocation;
         virtual ai::LocationPrototypeInfo const* GetPrototypeInfo() const override;
         virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -90,9 +90,9 @@ namespace ai
         bool IsPassageActive() const;
         bool SetPassageActive(bool);
         std::vector<ai::Npc*, std::allocator<ai::Npc*>> const& GetNpcs() const;
-        static CStr __fastcall GetLevelNameFromPassageAddress(CStr const& passageAddress);
-        static CStr __fastcall GetLocationNameFromPassageAddress(CStr const& passageAddress);
-        static void __fastcall Registration();
+        static CStr GetLevelNameFromPassageAddress(CStr const& passageAddress);
+        static CStr GetLocationNameFromPassageAddress(CStr const& passageAddress);
+        static void Registration();
 
     protected:
         virtual void _InternalPostLoad() override;

@@ -34,10 +34,10 @@ public:
     void ShowNextSkin();
     void ShowPrevSkin();
     int GetCurSkin() const;
-    static int __fastcall GetMaxSkinCount(ai::Vehicle* vehicle);
-    static bool __fastcall IsSkinApplicable(int skin, ai::Vehicle* vehicle);
-    static int __fastcall ApplySkin(int skin, ai::Vehicle* vehicle);
-    static int __fastcall GetVehicleSkin(ai::Vehicle* vehicle);
+    static int GetMaxSkinCount(ai::Vehicle* vehicle);
+    static bool IsSkinApplicable(int skin, ai::Vehicle* vehicle);
+    static int ApplySkin(int skin, ai::Vehicle* vehicle);
+    static int GetVehicleSkin(ai::Vehicle* vehicle);
 
 private:
     void UpdateSkinButtonsStates();
@@ -96,8 +96,8 @@ protected:
 public:
     virtual ~SkinsWnd() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(SkinsWnd);
 };

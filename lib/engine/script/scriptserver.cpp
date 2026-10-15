@@ -165,7 +165,7 @@ namespace
         // NOTE: the userdata block itself is called, while _addExports stores the function
         // address *inside* it, so invoking any native method jumps into data. No shipped class
         // seems to export one.
-        auto const func = reinterpret_cast<int(__fastcall*)(m3d::Object*, m3d::sArgStack*)>(lua_touserdata(L, 1));
+        auto const func = reinterpret_cast<int (*)(m3d::Object*, m3d::sArgStack*)>(lua_touserdata(L, 1));
         m3d::Object* const self = ctx.asObject(0, "Object");
 
         // NOTE: the arguments are popped from the top, so they reach the function in reverse

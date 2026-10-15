@@ -50,17 +50,17 @@ namespace ai
         DynamicQuest(ai::DynamicQuestPrototypeInfo const& prototypeInfo);
         DynamicQuest(ai::DynamicQuest const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classDynamicQuest;
         virtual ai::DynamicQuestPrototypeInfo const* GetPrototypeInfo() const override;
         virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -106,7 +106,7 @@ namespace ai
         virtual void PassToAnotherMap();
         virtual void UpdateBeforeShowInConversation();
         void Take();
-        static void __fastcall Registration();
+        static void Registration();
         virtual ai::DynamicQuestManager::QuestType GetQuestType() const = 0;
         int GetHirerObjId() const;
         int GetTargetObjId() const;

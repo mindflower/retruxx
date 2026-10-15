@@ -38,10 +38,10 @@ namespace ai
         BreakableObject(ai::BreakableObjectPrototypeInfo const& prototypeInfo);
         BreakableObject(ai::BreakableObject const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBreakableObject;
         virtual ai::BreakableObjectPrototypeInfo const* GetPrototypeInfo() const override;

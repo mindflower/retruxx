@@ -104,13 +104,13 @@ public:
     QuestInfoManager();
     QuestInfo const* GetQuestInfoByQuestInfoName(CStr const&) const;
     void SetCoordinateForQuest(CStr const&, CStr const&, CVector const&);
-    static CStr __fastcall GetDynamicQuestInfoPatternNameByType(int);
+    static CStr GetDynamicQuestInfoPatternNameByType(int);
     QuestInfo const* GetQuestInfoForStaticQuest(int) const;
     void Clear();
     ~QuestInfoManager();
     int Init();
     int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    static bool __fastcall IsQuestDynamic(CStr const&);
+    static bool IsQuestDynamic(CStr const&);
     int GameDataUpdate(void*, int);
     QuestInfo const* GetQuestInfoForDynamicQuest(int);
     int LoadModifiedQuestInfosFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);

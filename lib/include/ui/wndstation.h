@@ -63,7 +63,7 @@ namespace m3d
             void UpdateOnMouseInOut(m3d::ui::Wnd* newWnd);
             m3d::ui::Wnd* ModalOverride(m3d::ui::Wnd* w);
             void RemoveCurrentTooltip();
-            static m3d::ui::GfxServer* __fastcall getGfxServer();
+            static m3d::ui::GfxServer* getGfxServer();
             void OnOpenComboBox(m3d::ui::ComboBoxWnd* combo);
             void OnCloseComboBox(m3d::ui::ComboBoxWnd* combo);
 

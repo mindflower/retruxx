@@ -61,8 +61,8 @@ public:
     bool IsAutoHelpEnabled() const;
     CStr GetHelpMsgByHelpId(CStr const& strHelpId) const;
     CStr GetHelpTitleByHelpId(CStr const& strHelpId) const;
-    static HelpManager::HelpId __fastcall Str2EnumeredHelpId(CStr const& strHelpId);
-    static CStr __fastcall Enumered2StrHelpId(HelpManager::HelpId helpId);
+    static HelpManager::HelpId Str2EnumeredHelpId(CStr const& strHelpId);
+    static CStr Enumered2StrHelpId(HelpManager::HelpId helpId);
     void ResetAutoHelp();
 
     using PredefinedHelpWindowsMap = std::map<
@@ -104,8 +104,8 @@ protected:
 public:
     virtual ~HelpManager() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classHelpManager;
 };

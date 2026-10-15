@@ -584,7 +584,7 @@ namespace m3d
         unsigned long GetLocale() const;
         virtual m3d::ui::MbRetCodes
             RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool bPause);
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classApplication;
     };

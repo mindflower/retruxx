@@ -21,8 +21,8 @@ namespace m3d
         public:
             virtual ~ModelWnd() override;
             virtual m3d::Object* Clone() override;
-            static m3d::Object* __fastcall CreateObject();
-            static m3d::Class* __fastcall GetBaseClass();
+            static m3d::Object* CreateObject();
+            static m3d::Class* GetBaseClass();
             virtual m3d::Class* GetClass() const override;
             static m3d::Class m_classModelWnd;
             virtual int CreateModelWnd(
@@ -37,8 +37,8 @@ namespace m3d
                 BoundsBase<float> const& rc,
                 unsigned int id,
                 m3d::rend::TexHandle targetTex);
-            static PointBase<int> __fastcall GetFitTargetTextureSize(BoundsBase<float> const& wndBounds);
-            static m3d::rend::TexHandle __fastcall CreateTextureAsRenderTarget(PointBase<int> const& texSz);
+            static PointBase<int> GetFitTargetTextureSize(BoundsBase<float> const& wndBounds);
+            static m3d::rend::TexHandle CreateTextureAsRenderTarget(PointBase<int> const& texSz);
             int SetTargetTexture(m3d::rend::TexHandle targetTex);
             m3d::rend::TexHandle GetTargetTexture() const;
             virtual int ReadFromXmlNode(m3d::cmn::XmlFile* file, m3d::cmn::XmlNode* node) override;

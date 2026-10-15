@@ -55,16 +55,16 @@ namespace ai
         Boss03(ai::Boss03PrototypeInfo const& prototypeInfo);
         Boss03(ai::Boss03 const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss03;
         virtual ai::Boss03PrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
+        static void RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -178,11 +178,11 @@ namespace ai
         void _SetAllPartsNotDamageable();
         void _RecalcFlyPath();
         bool _OnHealthValueBeforeApplyModifier(ai::Modifier const& modifier, float& newHealth);
-        static CStr const& __fastcall _LiveStatusToStr(ai::Boss03::LiveStatus status);
-        static CStr const& __fastcall _DroneSpawningStatusToStr(ai::Boss03::DroneSpawningStatus status);
+        static CStr const& _LiveStatusToStr(ai::Boss03::LiveStatus status);
+        static CStr const& _DroneSpawningStatusToStr(ai::Boss03::DroneSpawningStatus status);
         float CalcKeyPartsMaxDurability() const;
 
     public:
-        static void __fastcall Registration();
+        static void Registration();
     };
 }  // namespace ai

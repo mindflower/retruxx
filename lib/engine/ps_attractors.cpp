@@ -56,7 +56,7 @@ namespace m3d
         // RVA 0x950740
     }
 
-    Attr* __fastcall Attr::New(CStr const& ClassName)
+    Attr* Attr::New(CStr const& ClassName)
     {
         if (ClassName == "Space")
         {

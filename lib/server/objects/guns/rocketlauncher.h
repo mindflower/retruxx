@@ -24,16 +24,16 @@ namespace ai
         RocketLauncher(ai::RocketLauncherPrototypeInfo const& prototypeInfo);
         RocketLauncher(ai::RocketLauncher const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classRocketLauncher;
         virtual ai::RocketLauncherPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
+        static void RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -59,7 +59,7 @@ namespace ai
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        static void __fastcall Registration();
+        static void Registration();
         virtual bool isLookAtPoint(CVector const& lookAt, float eps) const override;
         virtual bool CanLookAtTarget() const override;
 

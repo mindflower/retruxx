@@ -411,7 +411,7 @@ public:
     CStr const& Value() const
     {
         return value;
-    }                                  ///< Return the value of this attribute.
+    }  ///< Return the value of this attribute.
     int const IntValue() const;        ///< Return the value of this attribute, converted to an integer.
     double const DoubleValue() const;  ///< Return the value of this attribute, converted to a double.
 
@@ -422,7 +422,7 @@ public:
     void SetValue(CStr const& _value)
     {
         value = _value;
-    }                                   ///< Set the value.
+    }  ///< Set the value.
     void SetIntValue(int value);        ///< Set the value from an integer.
     void SetDoubleValue(double value);  ///< Set the value from a double.
 

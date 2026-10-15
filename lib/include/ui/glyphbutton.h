@@ -14,8 +14,8 @@ namespace m3d
         public:
             virtual ~GlyphButton() override;
             virtual Object* Clone() override;
-            static Object* __fastcall CreateObject();
-            static Class* __fastcall GetBaseClass();
+            static Object* CreateObject();
+            static Class* GetBaseClass();
             virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(GlyphButton);
 

@@ -29,16 +29,16 @@ namespace ai
         BulletLauncher(ai::BulletLauncherPrototypeInfo const& prototypeInfo);
         BulletLauncher(ai::BulletLauncher const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBulletLauncher;
         virtual ai::BulletLauncherPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -64,14 +64,14 @@ namespace ai
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        static void __fastcall Registration();
+        static void Registration();
         float GetGroupingAngle() const;
         float GetGroupingAngleClamped() const;
         float GetAccuracy() const;
         float GetAccuracyClamped() const;
         virtual float GetDamageForOneShell() const override;
-        static float __fastcall GroupingAngle2Accuracy(float groupingAngle);
-        static float __fastcall Accuracy2GroupingAngle(float accuracy);
+        static float GroupingAngle2Accuracy(float groupingAngle);
+        static float Accuracy2GroupingAngle(float accuracy);
 
     protected:
         virtual void _LaunchShells() override;

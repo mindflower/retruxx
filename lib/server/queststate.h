@@ -35,7 +35,7 @@ namespace ai
         void RecalcCanBeGiven();
         bool bIsTaken() const;
         bool Take();
-        static bool __fastcall LessByTakeTime(QuestState const*, QuestState const*);
+        static bool LessByTakeTime(QuestState const*, QuestState const*);
         void Update();
         bool Complete();
 

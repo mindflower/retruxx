@@ -25,16 +25,16 @@ namespace ai
         Npc(ai::NpcPrototypeInfo const& prototypeInfo);
         Npc(ai::Npc const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classNpc;
         virtual ai::NpcPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -95,8 +95,8 @@ namespace ai
         static inline ai::Npc* theCurrentNpc = nullptr;
 
     public:
-        static void __fastcall SetCurrentNpc(ai::Npc* npc);
-        static ai::Npc* __fastcall GetCurrentNpc();
-        static void __fastcall Registration();
+        static void SetCurrentNpc(ai::Npc* npc);
+        static ai::Npc* GetCurrentNpc();
+        static void Registration();
     };
 }  // namespace ai

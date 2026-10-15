@@ -34,10 +34,10 @@ namespace ai
         Boss02Arm(ai::Boss02ArmPrototypeInfo const& prototypeInfo);
         Boss02Arm(ai::Boss02Arm const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss02Arm;
         virtual ai::Boss02ArmPrototypeInfo const* GetPrototypeInfo() const override;

@@ -14,4 +14,4 @@ extern m3d::Kernel* g_kernel;
 // IRenderer::Create. Nothing is written before Create.
 void LogMsg(CStr const& msg);
 void LogMsg(char const* msg);
-void SetLogFunc(void(__fastcall* logFunc)(CStr const&));
+void SetLogFunc(void (*logFunc)(CStr const&));

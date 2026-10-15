@@ -26,8 +26,8 @@ namespace ai
     public:
         virtual ~DecisionMatrix() override;
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classDecisionMatrix;
         void Create(int numStates, int numSignals);
@@ -75,7 +75,7 @@ namespace ai
         std::vector<ai::AIParamRef, std::allocator<ai::AIParamRef>> m_tmpParamRefList;
         ai::DecisionMatrixElement& _GetElement(int signalNum, int stateNum);
         ai::DecisionMatrixElement const& _GetElement(int signalNum, int stateNum) const;
-        static void __fastcall _LogUnexpectedToken(CStr const& token);
+        static void _LogUnexpectedToken(CStr const& token);
         std::vector<ai::AIState, std::allocator<ai::AIState>> m_States;
         std::vector<ai::AISignal, std::allocator<ai::AISignal>> m_Signals;
         std::vector<ai::DecisionMatrixElement, std::allocator<ai::DecisionMatrixElement>> m_Elements;

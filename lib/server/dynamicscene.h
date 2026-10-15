@@ -32,8 +32,8 @@ namespace ai
     public:
         virtual ~DynamicScene() override;
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classDynamicScene;
 
@@ -83,16 +83,16 @@ namespace ai
         float m_physicTimeAccumulator;
 
     public:
-        static void __fastcall Clear();
-        static void __fastcall InitOnce();
-        static void __fastcall ClearOnce();
-        static int __fastcall ProcessShellAndBody(
+        static void Clear();
+        static void InitOnce();
+        static void ClearOnce();
+        static int ProcessShellAndBody(
             ai::Shell* shell,
             ai::PhysicBody* body,
             dContact* contact,
             unsigned int& numContacts,
             bool reverse);
-        static void __fastcall CollideBullet(ai::Bullet const& bullet);
+        static void CollideBullet(ai::Bullet const& bullet);
         void DeleteAll();
         void PurgeBodies();
         ai::Vehicle* GetVehicleControlledByPlayer() const;

@@ -115,7 +115,7 @@ namespace
 
 namespace
 {
-    unsigned int __fastcall VecToRgba(CVector const& normal, float h)
+    unsigned int VecToRgba(CVector const& normal, float h)
     {
         // RVA 0x7AF9F0 - packs a unit normal into RGB and the height into alpha.
         return (static_cast<unsigned int>(static_cast<int>(h * 255.0f)) << 24) |
@@ -135,17 +135,17 @@ namespace
         return TRUE;
     }
 
-    void __fastcall logDeviceFunc(CStr const& str)
+    void logDeviceFunc(CStr const& str)
     {
         M3D_LOG_INFO("d3d: " + str);
     }
 
-    void __fastcall logSoundFunc(CStr const& str)
+    void logSoundFunc(CStr const& str)
     {
         M3D_LOG_INFO("snd: " + str);
     }
 
-    void __fastcall logInputFunc(CStr const& str)
+    void logInputFunc(CStr const& str)
     {
         M3D_LOG_INFO("input: " + str);
     }

@@ -16,8 +16,8 @@ class RefuelButton : public AdvancedButton
 
 public:
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual ~RefuelButton() override;
     virtual m3d::Class* GetClass() const override;
 
@@ -46,8 +46,8 @@ public:
     virtual m3d::Class* GetClass() const override;
     virtual m3d::Object* Clone() override;
     virtual ~RefuelList() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
 
 protected:
     virtual AdvancedButton* NewItem() const override;

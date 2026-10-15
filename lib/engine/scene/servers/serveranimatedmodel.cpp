@@ -1507,7 +1507,7 @@ namespace m3d
 
     namespace
     {
-        void __fastcall DefineSkinsToLoad(m3d::LoadSkins& skinsToLoad, CStr const& paramsStr)
+        void DefineSkinsToLoad(m3d::LoadSkins& skinsToLoad, CStr const& paramsStr)
         {
             retruxx::string view(paramsStr.c_str(), paramsStr.length());
             auto const skinsPos = view.find("skins:");

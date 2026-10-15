@@ -37,7 +37,7 @@ public:
     virtual m3d::Class* GetClass() const;
     static m3d::Object* CreateObject();
     static m3d::Class* GetBaseClass();
-    static ResourceLoadType __fastcall Str2ResourceLoadType(CStr const&);
+    static ResourceLoadType Str2ResourceLoadType(CStr const&);
     virtual int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     virtual bool IsValid() const;
     virtual ~ResourceInfo();
@@ -69,8 +69,8 @@ protected:
 public:
     virtual ~WindowResourceInfo() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classWindowResourceInfo;
 };

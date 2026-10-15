@@ -21,8 +21,8 @@ namespace m3d
 
     public:
         ~CFlare();
-        static int __fastcall Init();
-        static void __fastcall Release();
+        static int Init();
+        static void Release();
         CFlare();
         int Render(FlareMode, CVector const&, float, float);
 

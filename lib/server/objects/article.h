@@ -30,7 +30,7 @@ namespace ai
 
     public:
         void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        static void __fastcall LoadArticlesFromNode(
+        static void LoadArticlesFromNode(
             std::vector<ai::Article, std::allocator<ai::Article>>&,
             m3d::cmn::XmlFile*,
             m3d::cmn::XmlNode const*);
@@ -49,10 +49,7 @@ namespace ai
         void PostLoad();
         void Update(float);
         bool IsSellable() const;
-        static void __fastcall SaveArticlesToNode(
-            std::vector<ai::Article> const&,
-            m3d::cmn::XmlFile*,
-            m3d::cmn::XmlNode*);
+        static void SaveArticlesToNode(std::vector<ai::Article> const&, m3d::cmn::XmlFile*, m3d::cmn::XmlNode*);
         void LoadFromXml(m3d::cmn::XmlFile const*, m3d::cmn::XmlNode const*);
 
     private:

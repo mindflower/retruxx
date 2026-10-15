@@ -42,13 +42,13 @@ namespace ai
         CompoundVehiclePart(ai::CompoundVehiclePartPrototypeInfo const& prototypeInfo);
         CompoundVehiclePart(ai::CompoundVehiclePart const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
         // GadgetPrototypeInfo::ApplyToVp passes a modification on to every part of a compound gun.
         friend class GadgetPrototypeInfo;
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classCompoundVehiclePart;
         virtual ai::CompoundVehiclePartPrototypeInfo const* GetPrototypeInfo() const override;

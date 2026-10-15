@@ -65,7 +65,7 @@ namespace m3d
         };
 
     protected:
-        static int __fastcall CompareRepEl(void const*, void const*);
+        static int CompareRepEl(void const*, void const*);
 
     public:
         CStr (*NameFromNum)(m3d::AIParam const*, int) = nullptr;

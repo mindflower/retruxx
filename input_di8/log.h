@@ -14,4 +14,4 @@ extern m3d::Kernel* g_kernel;
 // (the executable prefixes it with "input: "). Nothing is written before Init.
 void LogMsg(CStr const& msg);
 void LogMsg(char const* msg);
-void SetLogFunc(void(__fastcall* logFunc)(CStr const&));
+void SetLogFunc(void (*logFunc)(CStr const&));

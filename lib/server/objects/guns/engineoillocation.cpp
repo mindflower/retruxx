@@ -34,14 +34,14 @@ namespace ai
         return nullptr;
     }
 
-    m3d::Object* __fastcall EngineOilLocation::CreateObject()
+    m3d::Object* EngineOilLocation::CreateObject()
     {
         // RVA 0x846CD0
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
 
-    m3d::Class* __fastcall EngineOilLocation::GetBaseClass()
+    m3d::Class* EngineOilLocation::GetBaseClass()
     {
         return RT_CLASS_LOCAL(TemporaryLocation);
     }

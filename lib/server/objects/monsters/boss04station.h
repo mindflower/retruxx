@@ -30,16 +30,16 @@ namespace ai
         Boss04Station(ai::Boss04StationPrototypeInfo const& prototypeInfo);
         Boss04Station(ai::Boss04Station const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss04Station;
         virtual ai::Boss04StationPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
+        static void RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -73,7 +73,7 @@ namespace ai
         virtual void InflictDamage(ai::DamageInfo const& damageInfo) override;
         void EvaluateToDead();
         bool bDestroyed() const;
-        static void __fastcall Registration();
+        static void Registration();
 
     protected:
         virtual void _InternalPostLoad() override;

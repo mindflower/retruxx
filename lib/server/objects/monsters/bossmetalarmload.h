@@ -35,10 +35,10 @@ namespace ai
         BossMetalArmLoad(ai::BossMetalArmLoadPrototypeInfo const& prototypeInfo);
         BossMetalArmLoad(ai::BossMetalArmLoad const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBossMetalArmLoad;
         virtual ai::BossMetalArmLoadPrototypeInfo const* GetPrototypeInfo() const override;
@@ -57,7 +57,7 @@ namespace ai
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         void SetCollisionMode(ai::BossMetalArmLoad::CollisionMode collisionMode);
         void Explode();
-        static int __fastcall CollideBossMetalArmLoadWithObject(
+        static int CollideBossMetalArmLoadWithObject(
             m3d::Object* obj1,
             m3d::Object* obj2,
             dContact* contacts,

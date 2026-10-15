@@ -22,8 +22,8 @@ namespace m3d
         Attr(m3d::Attr const&);
         Attr();
         virtual ~Attr();
-        static m3d::Attr* __fastcall New(CStr const& ClassName);
-        static m3d::Attr* __fastcall Factory(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& attr);
+        static m3d::Attr* New(CStr const& ClassName);
+        static m3d::Attr* Factory(m3d::cmn::XmlFile* m_file, ref_ptr<m3d::cmn::XmlNode>& attr);
         void SetName(CStr name);
         CStr GetName();
         bool IsOn();

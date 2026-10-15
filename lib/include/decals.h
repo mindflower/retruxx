@@ -63,7 +63,7 @@ namespace m3d
         bool AddPolygon(long, CVector const*);
         void ClipMesh(GeometryInfo const&);
         long ClipPolygon(long, CVector const*, CVector*) const;
-        static long __fastcall ClipPolygonAgainstPlane(CVector4 const&, long, CVector const*, CVector*);
+        static long ClipPolygonAgainstPlane(CVector4 const&, long, CVector const*, CVector*);
 
     private:
         CVector decalCenter;

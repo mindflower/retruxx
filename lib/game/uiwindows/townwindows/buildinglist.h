@@ -45,8 +45,8 @@ private:
     CStr GetNameForBuilding(ai::Building const* building) const;
     int CreateFromPattern();
     int CreateChildren();
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    static void __fastcall ClearPattern();
+    static int LoadPattern(m3d::ui::Wnd* pattern);
+    static void ClearPattern();
     int m_buildingId;
     m3d::ui::ImageWnd* m_wndBuildingIco;
     m3d::ui::Wnd* m_lblBuildingName;
@@ -60,8 +60,8 @@ protected:
 public:
     virtual ~BuildingButton() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classBuildingButton;
 };
@@ -101,8 +101,8 @@ protected:
 public:
     virtual ~BuildingList() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classBuildingList;
 };

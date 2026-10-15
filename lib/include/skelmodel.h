@@ -275,9 +275,9 @@ namespace m3d
         AnimatedModel(m3d::AnimatedModel const&);
         AnimatedModel();
         ~AnimatedModel();
-        static void __fastcall CreateTexFileMapping();
-        static void __fastcall SetCubeMapTexName(CStr const& texName);
-        static void __fastcall UpdateTexturesFilter();
+        static void CreateTexFileMapping();
+        static void SetCubeMapTexName(CStr const& texName);
+        static void UpdateTexturesFilter();
         void SetVerification(bool);
         bool Load(CStr const& FileName, bool const bForceNextAnimation);
         bool LoadSAM(CStr const& FileName, bool const ForceNextAnimation);

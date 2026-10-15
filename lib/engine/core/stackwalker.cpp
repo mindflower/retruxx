@@ -71,7 +71,7 @@ LONG g_dwShowCount = 0;
 // Set until the first stack walk has loaded the module symbols.
 int bFirstTime = 1;
 
-void __fastcall WriteDump(char const* szFileName, _EXCEPTION_POINTERS* pExcP, unsigned long& lastError)
+void WriteDump(char const* szFileName, _EXCEPTION_POINTERS* pExcP, unsigned long& lastError)
 {
     // RVA 0x75A0E0
     struct MinidumpExceptionInformation
@@ -724,7 +724,7 @@ namespace
     }
 }  // namespace
 
-unsigned long __fastcall StackwalkFilter(
+unsigned long StackwalkFilter(
     _EXCEPTION_POINTERS const* ep,
     unsigned long status,
     char const* pszLogFile,
@@ -826,7 +826,7 @@ LONG WINAPI CrashHandlerExceptionFilter(PEXCEPTION_POINTERS pExPtrs)
     return 0;
 }
 
-unsigned int __fastcall DeInitAllocCheck()
+unsigned int DeInitAllocCheck()
 {
     // RVA 0x759DD0
     if (g_bInitialized)

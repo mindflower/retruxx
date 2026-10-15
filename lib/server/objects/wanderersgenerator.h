@@ -28,7 +28,7 @@ namespace ai
         {
         public:
             void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
-            static void __fastcall LoadPartFromXML(
+            static void LoadPartFromXML(
                 ai::WanderersGeneratorPrototypeInfo::VehiclePartDescription& part,
                 char const* partName,
                 m3d::cmn::XmlFile* xmlFile,

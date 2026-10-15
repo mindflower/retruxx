@@ -61,10 +61,10 @@ namespace ai
         short GetExplosionType() const;
         int GetDecalId() const;
         virtual float GetDamageForOneShell() const;
-        static ai::FiringTypes __fastcall Str2FiringType(CStr const& firingTypeStr);
-        static CStr __fastcall FiringType2Str(ai::FiringTypes firingType);
-        static ai::DamageType __fastcall Str2DamageType(CStr const& damageTypeStr);
-        static CStr __fastcall DamageType2Str(ai::DamageType damageType);
+        static ai::FiringTypes Str2FiringType(CStr const& firingTypeStr);
+        static CStr FiringType2Str(ai::FiringTypes firingType);
+        static ai::DamageType Str2DamageType(CStr const& damageTypeStr);
+        static CStr DamageType2Str(ai::DamageType damageType);
 
     private:
         bool _bIsRapidFiring() const;
@@ -82,17 +82,17 @@ namespace ai
         Gun(ai::GunPrototypeInfo const& prototypeInfo);
         Gun(ai::Gun const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGun;
         virtual ai::GunPrototypeInfo const* GetPrototypeInfo() const override;
         virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -138,7 +138,7 @@ namespace ai
         void SetHorizontalStopAngles(float leftStopAngle, float rightStopAngle);
         m3d::SgNode* GetBarrelNode() const;
         virtual void SetPassedToAnotherMapStatus() override;
-        static void __fastcall Registration();
+        static void Registration();
         ai::Gun::ChargeState GetChargeState() const;
         void SetChargeState(int Value);
         void SetChargeState(ai::Gun::ChargeState Value);

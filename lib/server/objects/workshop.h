@@ -46,10 +46,10 @@ namespace ai
         Workshop(ai::WorkshopPrototypeInfo const& prototypeInfo);
         Workshop(ai::Workshop const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classWorkshop;
         virtual ai::WorkshopPrototypeInfo const* GetPrototypeInfo() const override;
@@ -89,7 +89,7 @@ namespace ai
         unsigned int GetObjectRepairPrice(ai::Obj const* obj) const;
         float GetHealthPriceForOneUnit() const;
         float GetRepairPriceForOneUnit(ai::Obj const* obj) const;
-        static ai::WorkshopRepositoryType __fastcall GetRepositoryTypeByResourceId(int resId);
+        static ai::WorkshopRepositoryType GetRepositoryTypeByResourceId(int resId);
         void OnSaveVisitedMap();
 
         using RepositoryTypeMap = retruxx::map<
@@ -118,7 +118,7 @@ namespace ai
         bool _SellRealObject(ai::Obj const* obj);
         void _GetArticles(retruxx::vector<ai::Article, retruxx::allocator<ai::Article>>& articles) const;
         bool _ArticleExists(int articlePrototypeId) const;
-        static int __fastcall _GetWarePrototypeId(int wareObjId);
+        static int _GetWarePrototypeId(int wareObjId);
         retruxx::vector<int, retruxx::allocator<int>> m_originalObjectsInRepository;
         void ClearRepositoriesFromNonOriginalObjects();
     };

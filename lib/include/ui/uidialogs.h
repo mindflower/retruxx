@@ -17,8 +17,8 @@ namespace m3d
         public:
             virtual ~MsgBoxDlg() override;
             virtual Object* Clone() override;
-            static Object* __fastcall CreateObject();
-            static Class* __fastcall GetBaseClass();
+            static Object* CreateObject();
+            static Class* GetBaseClass();
             virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(MsgBoxDlg);
 
@@ -55,8 +55,8 @@ namespace m3d
         public:
             virtual ~ArtDlg() override;
             virtual Object* Clone() override;
-            static Object* __fastcall CreateObject();
-            static Class* __fastcall GetBaseClass();
+            static Object* CreateObject();
+            static Class* GetBaseClass();
             virtual Class* GetClass() const override;
             RT_CLASS_DECLARE(ArtDlg);
 

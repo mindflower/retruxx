@@ -23,10 +23,10 @@ namespace ai
         Trigger(ai::TriggerPrototypeInfo const& prototypeInfo);
         Trigger(ai::Trigger const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classTrigger;
 
@@ -34,7 +34,7 @@ namespace ai
         virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -84,7 +84,7 @@ namespace ai
         void LoadFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
-        static void __fastcall Registration();
+        static void Registration();
 
     private:
         retruxx::map<CStr, m3d::AIParam> m_variables;
@@ -120,7 +120,7 @@ namespace ai
         ai::Trigger::CallEventInfo m_callEvent;
         bool m_bCanUpdate;
 
-        static CStr __fastcall _EmbedTriggerBody(CStr const& scriptCode, CStr const& triggerName);
+        static CStr _EmbedTriggerBody(CStr const& scriptCode, CStr const& triggerName);
         void _LoadEventsFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void _LoadScriptFromMapXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void _LoadTriggerRuntimesFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);

@@ -61,7 +61,7 @@ namespace ai
         void SetLastId(int newId);
         virtual void HandleCommand(int cmdID, m3d::CConsoleParams const& params) override;
         virtual bool HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params) override;
-        static void __fastcall Register();
+        static void Register();
         void Init(m3d::CWorld* world);
         void Clear();
         void InitOnce();

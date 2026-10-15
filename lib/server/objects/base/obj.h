@@ -280,7 +280,7 @@ namespace ai
         void SetToMap();
         bool TimeOutFinished();
         int TimeOutActivated() const;
-        static void __fastcall Registration();
+        static void Registration();
         virtual eGObjPropertySaveStatus GetPropertySaveStatus(int id) const;
         virtual void GetPropertiesNames(retruxx::set<CStr>& Props) const;
         virtual void GetPropertiesIDs(retruxx::set<int>& Props) const;
@@ -360,7 +360,7 @@ namespace ai
         bool _GetDeadStatus() const;
         virtual void _InternalPostLoad();
         virtual void _InternalCreateVisualPart();
-        static void __fastcall RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus SaveStatus);
+        static void RegisterProperty(char const* Name, int id, eGObjPropertySaveStatus SaveStatus);
         virtual void _SetAllPropertiesToMax();
         virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const;
         virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const;

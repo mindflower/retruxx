@@ -42,7 +42,7 @@ public:
 protected:
     void UpdateTex();
     void ClearInfo();
-    static CStr __fastcall Mode2Str(Mode);
+    static CStr Mode2Str(Mode);
     MotherPanelTabButton(MotherPanelTabButton const&);
     MotherPanelTabButton();
     void UpdateTooltip();

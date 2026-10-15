@@ -80,7 +80,7 @@ namespace m3d
 
     public:
         virtual ~GameImpulse() override;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetRtClass() const;
         static m3d::Class m_classGameImpulse;
         CStr GetFormattedScriptErrorDesc(m3d::eScriptError err) const;

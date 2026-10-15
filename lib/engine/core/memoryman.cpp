@@ -353,12 +353,12 @@ namespace m3d
         // RVA 0x748610 - empty.
     }
 
-    void __fastcall MemoryManager::operator delete(void* d)
+    void MemoryManager::operator delete(void* d)
     {
         free(d);
     }
 
-    void* __fastcall MemoryManager::operator new(size_t sz)
+    void* MemoryManager::operator new(size_t sz)
     {
         return malloc(sz);
     }

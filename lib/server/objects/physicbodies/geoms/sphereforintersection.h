@@ -23,10 +23,8 @@ namespace ai
 
     public:
         virtual ~SphereForIntersection() override;
-        static ai::SphereForIntersection* __fastcall CreateObject(
-            float radius,
-            ai::SphereForIntersection::SpherePurpose purpose,
-            ai::Obstacle* owner);
+        static ai::SphereForIntersection*
+            CreateObject(float radius, ai::SphereForIntersection::SpherePurpose purpose, ai::Obstacle* owner);
         ai::SphereForIntersection::SpherePurpose GetPurpose() const;
         void SetTargetClasses(
             retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const&

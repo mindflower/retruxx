@@ -6,7 +6,7 @@ namespace ai
     class Sphere : public ai::Geom
     {
     public:
-        static ai::Sphere* __fastcall CreateObject(dxSpace* space, float radius, void (*movedCallback)(dxGeom*));
+        static ai::Sphere* CreateObject(dxSpace* space, float radius, void (*movedCallback)(dxGeom*));
         float GetRadius() const;
         void SetRadius(float radius);
 

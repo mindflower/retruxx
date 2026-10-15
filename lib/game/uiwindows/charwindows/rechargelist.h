@@ -4,8 +4,8 @@
 class RechargeList : public AdvancedList
 {
 public:
-    static m3d::Class* __fastcall GetBaseClass();
-    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* GetBaseClass();
+    static m3d::Object* CreateObject();
     virtual m3d::Object* Clone() override;
     virtual m3d::Class* GetClass() const override;
     virtual ~RechargeList() override;
@@ -35,8 +35,8 @@ class RechargeButton : public AdvancedButton
     };
 
 public:
-    static m3d::Class* __fastcall GetBaseClass();
-    static m3d::Object* __fastcall CreateObject();
+    static m3d::Class* GetBaseClass();
+    static m3d::Object* CreateObject();
     virtual m3d::Object* Clone() override;
     virtual m3d::Class* GetClass() const override;
     virtual ~RechargeButton() override;

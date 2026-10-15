@@ -33,8 +33,8 @@ private:
     void realloc(int sz);
 
 public:
-    static int __fastcall my_strcmp(char const* lhs, char const* rhs);
-    static int __fastcall my_stricmp(char const* lhs, char const* rhs);
+    static int my_strcmp(char const* lhs, char const* rhs);
+    static int my_stricmp(char const* lhs, char const* rhs);
     explicit CStr(Quaternion const& q);
     explicit CStr(CVector2 const& v);
     explicit CStr(CVector const& v);

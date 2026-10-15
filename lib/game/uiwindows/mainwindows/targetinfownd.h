@@ -35,7 +35,7 @@ public:
 public:
     static m3d::Object* CreateObject();
     virtual m3d::Class* GetClass() const;
-    static bool __fastcall IsObjClassValidForInfo(m3d::Class const*);
+    static bool IsObjClassValidForInfo(m3d::Class const*);
     virtual m3d::Object* Clone();
     int GetTargetObjId() const;
     bool NeedShow() const;

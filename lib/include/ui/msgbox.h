@@ -15,6 +15,6 @@ namespace m3d
             MBX_RET_USER = 0x4,
         };
 
-        MbRetCodes __fastcall RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool pause);
+        MbRetCodes RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool pause);
     }  // namespace ui
 }  // namespace m3d

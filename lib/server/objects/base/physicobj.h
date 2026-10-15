@@ -62,16 +62,16 @@ namespace ai
     public:
         PhysicObj(ai::PhysicObjPrototypeInfo const& prototypeInfo);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classPhysicObj;
         virtual ai::PhysicObjPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -168,7 +168,7 @@ namespace ai
         void TransferToNewSpace();
         virtual void RenderDebugInfo() const override;
         virtual void RenderObstacleDebugInfo() const;
-        static void __fastcall Registration();
+        static void Registration();
         int GetPhysicState() const;
         bool bIsStatic() const;
         bool bIsBodyDisabledGeomEnabled() const;
@@ -177,7 +177,7 @@ namespace ai
         void IncEnabledCellsCount();
         void DecEnabledCellsCount();
         void ZeroEnabledCellsCount();
-        static m3d::DbgCounter* __fastcall GetRelinksToCollisionCounter();
+        static m3d::DbgCounter* GetRelinksToCollisionCounter();
         bool bIsUpdatingByODE() const;
         virtual void SetUpdatingByODE(bool byODE);
         float GetIntersectionRadius() const;
@@ -231,10 +231,10 @@ namespace ai
         int m_skinNumber;
         float m_timeFromLastCollisionEffect;
         static inline m3d::DbgCounter* m_countRelinksToCollisionCells = nullptr;
-        static void __fastcall _CommonBodyChangeEnabledStateCallback(dxBody* bodyId);
+        static void _CommonBodyChangeEnabledStateCallback(dxBody* bodyId);
 
     public:
-        static m3d::AIParam __fastcall AIGetCurPos(ai::Obj* pObj);
+        static m3d::AIParam AIGetCurPos(ai::Obj* pObj);
         virtual void DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
     };
 

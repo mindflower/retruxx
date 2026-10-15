@@ -19,7 +19,7 @@ namespace ai
 
     public:
         virtual ~SimplePhysicBody() override;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetRtClass() const override;
         static m3d::Class m_classSimplePhysicBody;
         virtual void SetMass(float) = 0;

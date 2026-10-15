@@ -10,7 +10,7 @@ public:
     int SetupForQuest(help::QuestType questType, int questId);
     int GetNavPointId() const;
     NavPoint::NavPointType GetNavPointType() const;
-    static CStr __fastcall NavPointType2Str(NavPoint::NavPointType npType);
+    static CStr NavPointType2Str(NavPoint::NavPointType npType);
 
     struct AuxInfo
     {
@@ -46,8 +46,8 @@ protected:
 public:
     virtual ~NavPointButton() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classNavPointButton;
 };

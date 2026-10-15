@@ -104,7 +104,7 @@ public:
 protected:
     virtual int CreateFromPattern();
     virtual int CreateChildren();
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
+    static int LoadPattern(m3d::ui::Wnd* pattern);
     virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
     virtual int OnBeforeAddToWndStation() override;
     virtual void OnChangeMode();
@@ -172,7 +172,7 @@ protected:
 
 public:
     virtual ~AdvancedButton() override;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     static m3d::Class m_classAdvancedButton;
 };
@@ -224,7 +224,7 @@ protected:
 
 public:
     virtual ~AdvancedList() override;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     static m3d::Class m_classAdvancedList;
 };

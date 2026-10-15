@@ -106,7 +106,7 @@ namespace ai
         virtual ai::VehiclePrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -609,14 +609,14 @@ namespace ai
         int m_soundRechargeChannelId;
 
     public:
-        static void __fastcall Registration();
-        static m3d::AIParam __fastcall VehicleAIOnDefend(ai::Obj* pObj);
-        static m3d::AIParam __fastcall VehicleAIOnMove(ai::Obj* pObj);
-        static m3d::AIParam __fastcall VehicleAIOnAttack(ai::Obj* pObj);
-        static m3d::AIParam __fastcall VehicleAIOnDead(ai::Obj* pObj);
-        static char const* __fastcall MoveStatusName(ai::Vehicle::VehicleMoveStatus);
-        static char const* __fastcall AttackStatusName(ai::Vehicle::VehicleAttackStatus);
-        static ai::Vehicle::VehicleMoveStatus __fastcall MoveStatusID(CStr const&);
-        static ai::Vehicle::VehicleAttackStatus __fastcall AttackStatusID(CStr const&);
+        static void Registration();
+        static m3d::AIParam VehicleAIOnDefend(ai::Obj* pObj);
+        static m3d::AIParam VehicleAIOnMove(ai::Obj* pObj);
+        static m3d::AIParam VehicleAIOnAttack(ai::Obj* pObj);
+        static m3d::AIParam VehicleAIOnDead(ai::Obj* pObj);
+        static char const* MoveStatusName(ai::Vehicle::VehicleMoveStatus);
+        static char const* AttackStatusName(ai::Vehicle::VehicleAttackStatus);
+        static ai::Vehicle::VehicleMoveStatus MoveStatusID(CStr const&);
+        static ai::Vehicle::VehicleAttackStatus AttackStatusID(CStr const&);
     };
 }  // namespace ai

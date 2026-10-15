@@ -485,7 +485,7 @@ CDevice::~CDevice()
 }
 
 // orig 0x61a790 device.cpp:509
-int CDevice::Create(void(__fastcall* logFunc)(CStr const&), m3d::Kernel* kernel)
+int CDevice::Create(void (*logFunc)(CStr const&), m3d::Kernel* kernel)
 {
     // HTA hands over the log callback and the kernel; the original's Create() took nothing and logged
     // through the statically linked kernel. createIRenderer has already stored the kernel.

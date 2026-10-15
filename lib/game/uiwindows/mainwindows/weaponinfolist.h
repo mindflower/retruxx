@@ -158,8 +158,8 @@ protected:
     ai::DamageType GetWeaponTypeForGun(ai::Obj const* gun) const;
     int CreateFromPattern(WeaponInfoList::Type type);
     int CreateChildren(WeaponInfoList::Type type);
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern, WeaponInfoList::Type type);
-    static void __fastcall ClearPattern(WeaponInfoList::Type type);
+    static int LoadPattern(m3d::ui::Wnd* pattern, WeaponInfoList::Type type);
+    static void ClearPattern(WeaponInfoList::Type type);
     m3d::rend::TexHandle GetIco() const;
     m3d::rend::TexHandle GetBarTexture(bool bReady) const;
     bool IsGunReady() const;
@@ -186,8 +186,8 @@ protected:
 public:
     virtual ~WeaponInfoWnd() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classWeaponInfoWnd;
 };
@@ -195,7 +195,7 @@ public:
 class WeaponGroupChoiceDlg : public m3d::ui::ModalWnd
 {
 public:
-    static CStr __fastcall CreateTooltipForWeaponGroup(int groupId);
+    static CStr CreateTooltipForWeaponGroup(int groupId);
     using ButtonVector = std::vector<m3d::ui::ButtonWnd*, std::allocator<m3d::ui::ButtonWnd*>>;
 
     struct AuxInfo
@@ -222,8 +222,8 @@ protected:
 public:
     virtual ~WeaponGroupChoiceDlg() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(WeaponGroupChoiceDlg);
 };

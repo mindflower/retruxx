@@ -382,7 +382,7 @@ namespace m3d
         void GetWaterCellHeights(float& h0, float& h1, int x, int z) const;
         void GetDrawedCellHeights(float& h0, float& h1, int x, int y) const;
         bool IsThisVisCellHasWater(int x, int z) const;
-        static void __fastcall Register();
+        static void Register();
 
     protected:
         m3d::CWorld* m_owner;
@@ -479,7 +479,7 @@ namespace m3d
         void DrawJoint(dxJoint* joint);
         void DrawMassBox(dMass* mass, CVector const& pos, Quaternion const& rot);
         void GetFogStartAndEnd(float& s, float& e) const;
-        static void __fastcall SetRenderMode(m3d::RenderModes);
+        static void SetRenderMode(m3d::RenderModes);
         void PostServersLoad();
         int GenerateShoreLine();
         void EnableShoreRegion(int x, int z);
@@ -498,8 +498,8 @@ namespace m3d
         void setClrAtHfPoint(int, int, unsigned int);
         CVector const& getNormalAtPoint(int, int) const;
         void getMinMaxHeightForBox(float* box, float buldgeY);
-        static void __fastcall SetGameRenderMode();
-        static void __fastcall SetEditorRenderMode();
+        static void SetGameRenderMode();
+        static void SetEditorRenderMode();
 
         struct TileInfo
         {

@@ -735,7 +735,7 @@ namespace m3d
         //IMPORTANT: fields and member order is strict!
         struct IRenderer : public IBase
         {
-            virtual int Create(void __fastcall(CStr const&), m3d::Kernel*) = 0;
+            virtual int Create(void(CStr const&), m3d::Kernel*) = 0;
             virtual int CreateDevice() = 0;
             virtual int SwitchDisplayModes(HWND, int, int, int) = 0;
             virtual int Reset() = 0;

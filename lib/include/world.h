@@ -116,7 +116,7 @@ namespace m3d
 
     public:
         m3d::Level* m_level;
-        static void __fastcall Register();
+        static void Register();
         void SetOwner(m3d::CClient* cl);
         CVector const& GetSun(float azimuth) const;
         float GetSunAscention() const;

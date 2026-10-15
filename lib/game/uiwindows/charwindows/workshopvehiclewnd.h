@@ -61,8 +61,8 @@ protected:
 public:
     virtual ~WorkshopVehicleWnd() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(WorkshopVehicleWnd);
 };

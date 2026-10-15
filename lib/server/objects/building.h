@@ -38,10 +38,10 @@ namespace ai
         Building(ai::BuildingPrototypeInfo const& prototypeInfo);
         Building(ai::Building const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBuilding;
         virtual ai::BuildingPrototypeInfo const* GetPrototypeInfo() const override;
@@ -60,8 +60,8 @@ namespace ai
     public:
         retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>> const& GetNpcs() const;
         ai::BuildingType GetBuildingType() const;
-        static CStr __fastcall GetBuildingTypeName(ai::BuildingType buildingType);
-        static ai::BuildingType __fastcall GetBuildingTypeByName(CStr const& buildingTypeName);
+        static CStr GetBuildingTypeName(ai::BuildingType buildingType);
+        static ai::BuildingType GetBuildingTypeByName(CStr const& buildingTypeName);
 
     private:
         static inline CStr const m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};

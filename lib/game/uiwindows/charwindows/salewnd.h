@@ -28,7 +28,7 @@ public:
 public:
     virtual int SetUpForWorkshop(int workshopId);
     ai::Workshop* GetWorkshop() const;
-    static std::vector<int, std::allocator<int>> __fastcall GetResourceIdsForTabItem(SaleWnd::WorkshopTabType tabType);
+    static std::vector<int, std::allocator<int>> GetResourceIdsForTabItem(SaleWnd::WorkshopTabType tabType);
 
     struct AuxInfo
     {
@@ -68,7 +68,7 @@ protected:
     virtual void ClearTabItems();
     virtual void SetupListOfTabTypes();
     bool IsTabCreatedFromRepositorySource(SaleWnd::WorkshopTabType tabType) const;
-    static ai::WorkshopRepositoryType __fastcall GetWorkshopRepositoryType(SaleWnd::WorkshopTabType);
+    static ai::WorkshopRepositoryType GetWorkshopRepositoryType(SaleWnd::WorkshopTabType);
     virtual int OnBeforeAddToWndStation() override;
     virtual ai::BuildingType GetBuildingType() = 0;
     ref_ptr<m3d::ui::Wnd> GetWorkWndForTabItem(int tabId) const;
@@ -90,7 +90,7 @@ protected:
 
 public:
     virtual ~SaleWnd() override;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     static m3d::Class m_classSaleWnd;
 };

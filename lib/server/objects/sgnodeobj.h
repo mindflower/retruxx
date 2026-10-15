@@ -30,16 +30,16 @@ namespace ai
         SgNodeObj(ai::SgNodeObjPrototypeInfo const& prototypeInfo);
         SgNodeObj(ai::SgNodeObj const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSgNodeObj;
         virtual ai::SgNodeObjPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -75,7 +75,7 @@ namespace ai
         virtual void SetScale(float scale);
         float GetScale() const;
         virtual void Update(float elapsedTime, unsigned int workTime) override;
-        static void __fastcall Registration();
+        static void Registration();
 
     protected:
         virtual void _InternalCreateVisualPart() override;

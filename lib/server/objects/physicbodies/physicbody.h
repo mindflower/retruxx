@@ -45,7 +45,7 @@ namespace ai
 
     public:
         virtual ~PhysicBody() override;
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetRtClass() const override;
         static m3d::Class m_classPhysicBody;
 
@@ -114,22 +114,18 @@ namespace ai
         virtual void SetNodeCfgNum(int cfgNum);
         void SetAnimationStopped(bool bStopped);
         virtual void SetPassedToAnotherMapStatus() override;
-        static void __fastcall Registration();
+        static void Registration();
 
-        static m3d::SgNode* __fastcall CreateNode(
-            CStr const& modelname,
-            int action,
-            CVector const& scale,
-            ai::PhysicBody* owner,
-            bool addToRoot);
-        static m3d::SgNode* __fastcall CreateAnimatedNode(CStr const&, int, CVector const&, ai::PhysicBody*, bool);
-        static m3d::SgNode* __fastcall CreateEffectNode(
+        static m3d::SgNode*
+            CreateNode(CStr const& modelname, int action, CVector const& scale, ai::PhysicBody* owner, bool addToRoot);
+        static m3d::SgNode* CreateAnimatedNode(CStr const&, int, CVector const&, ai::PhysicBody*, bool);
+        static m3d::SgNode* CreateEffectNode(
             CStr const& modelname,
             CVector const& pos,
             Quaternion const& rot,
             bool bInsertInRemoveIfFree,
             float scale);
-        static m3d::DbgCounter* __fastcall GetCountNodeRelinks();
+        static m3d::DbgCounter* GetCountNodeRelinks();
 
         int GetOwnerId() const;
         virtual void SetOwner(ai::PhysicObj* owner);

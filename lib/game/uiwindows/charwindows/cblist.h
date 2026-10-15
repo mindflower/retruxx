@@ -61,8 +61,8 @@ public:
 protected:
     virtual int CreateFromPattern();
     virtual int CreateChildren();
-    static int __fastcall LoadPattern(ref_ptr<m3d::ui::Wnd> pattern, CBButton::Type type);
-    static void __fastcall ClearPattern(CBButton::Type type);
+    static int LoadPattern(ref_ptr<m3d::ui::Wnd> pattern, CBButton::Type type);
+    static void ClearPattern(CBButton::Type type);
     virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data)
         override;
     virtual int FullUpdate();
@@ -86,8 +86,8 @@ protected:
 public:
     virtual ~CBButton() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(CBButton);
 };
@@ -160,7 +160,7 @@ protected:
 
 public:
     virtual ~CBList() override;
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetRtClass() const;
     RT_CLASS_DECLARE(CBList);
 };

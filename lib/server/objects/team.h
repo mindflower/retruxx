@@ -47,17 +47,17 @@ namespace ai
         Team(ai::TeamPrototypeInfo const& prototypeInfo);
         Team(ai::Team const&);
         virtual m3d::Object* Clone() override;
-        static m3d::Object* __fastcall CreateObject();
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
+        static m3d::Class* GetBaseClass();
         virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classTeam;
         virtual ai::TeamPrototypeInfo const* GetPrototypeInfo() const override;
         virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
         virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
@@ -157,23 +157,23 @@ namespace ai
         void _OnUnderAttack(ai::Event const& evn);
 
     public:
-        static void __fastcall Registration();
-        static m3d::AIParam __fastcall TeamAIGetCurPos(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIGetCurAngle(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnDefend(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnAttack(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnMove(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnStartDefend(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnIdle(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnStartAttack(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnAttackOrder(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnEnemyDestroyed(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnStartSearch(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnPathFind(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnMoveAlongPath(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnFallIn(ai::Obj*);
-        static m3d::AIParam __fastcall TeamAIOnTargetReached(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnTargetUnreachable(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnMoveFinished(ai::Obj* pObj);
+        static void Registration();
+        static m3d::AIParam TeamAIGetCurPos(ai::Obj* pObj);
+        static m3d::AIParam TeamAIGetCurAngle(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnDefend(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnAttack(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnMove(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnStartDefend(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnIdle(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnStartAttack(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnAttackOrder(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnEnemyDestroyed(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnStartSearch(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnPathFind(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnMoveAlongPath(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnFallIn(ai::Obj*);
+        static m3d::AIParam TeamAIOnTargetReached(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnTargetUnreachable(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnMoveFinished(ai::Obj* pObj);
     };
 }  // namespace ai

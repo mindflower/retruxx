@@ -49,7 +49,7 @@ namespace ai
         void LineTo(CVector2 const&, unsigned char);
         void LoadFromRawFile(char const*);
         void Line4(CVector2 const&, CVector2 const&, unsigned char);
-        static void __fastcall SetGlobalMap(Map*);
+        static void SetGlobalMap(Map*);
         CVector2 const& GetCellSize() const;
         void DecRectangle(CVector2 const&, CVector2 const&, unsigned char);
         void Clear();
