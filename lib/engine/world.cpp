@@ -75,12 +75,12 @@ namespace m3d
     {
         // RVA 0x5C7F90 - an empty editor world.
         // NOTE: the current time is read and not used.
-        g_Kernel->GetTimer().GetCurTime();
+        M3D_KERNEL->GetTimer().GetCurTime();
         m_level->New(cam, lsSize);
         ai::pServer->Init(this);
         m_landscape.New(hgt0);
         m_weatherManager.CreateSky();
-        m_weatherManager.ReadFromXmlFile(M3D_KERNEL->GetEngineCfg().m_weather_ConfigFile.GetS());
+        m_weatherManager.ReadFromXmlFile(M3D_ENGINE_CFG.m_weather_ConfigFile.GetS());
         m_weatherManager.UpdateDayTime();
         m_roadManager.Init();
         m_roadManager.ReadRoadSetConfigFromXmlFile("data/models/Roads.xml");
@@ -114,11 +114,10 @@ namespace m3d
             M3D_LOG_INFO("----------------------- World Loading");
         }
         // The level is loaded by the name stored in the cvar, not by the argument.
-        M3D_KERNEL->GetEngineCfg().m_levFileName.Set(levelname.c_str(), true);
-        if (m_level->Load(CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()), cam, bQuiet) == 0)
+        M3D_ENGINE_CFG.m_levFileName.Set(levelname.c_str(), true);
+        if (m_level->Load(CStr(M3D_ENGINE_CFG.m_levFileName.GetS()), cam, bQuiet) == 0)
         {
-            M3D_LOG_INFO(
-                CStr("Level file ") + CStr(M3D_KERNEL->GetEngineCfg().m_levFileName.GetS()) + CStr(" not found"));
+            M3D_LOG_INFO(CStr("Level file ") + CStr(M3D_ENGINE_CFG.m_levFileName.GetS()) + CStr(" not found"));
             return 0;
         }
         ai::pServer->Init(this);
@@ -194,7 +193,7 @@ namespace m3d
         }
 
         ProcessCollisionStuff();
-        m_weatherManager.ReadFromXmlFile(M3D_KERNEL->GetEngineCfg().m_weather_ConfigFile.GetS());
+        m_weatherManager.ReadFromXmlFile(M3D_ENGINE_CFG.m_weather_ConfigFile.GetS());
         m_weatherManager.UpdateDayTime();
 
         auto const worldLoadedEnd = M3D_KERNEL->GetTimer().GetCurTime();
@@ -291,19 +290,19 @@ namespace m3d
         this->m_roadManager.SetOwner(&m_landscape);
         this->m_sunAzimuth = 45.0;
         this->m_lastId = 0;
-        this->m_level = dynamic_cast<Level*>(m3d::g_Kernel->New("Level"));
-        m3d::g_Kernel->UnRegisterGlobal("CurrentLevel");
-        m3d::g_Kernel->RegisterGlobal(this->m_level, "CurrentLevel");
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lsInscatterCoeff, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_lsOutscatterCoeff, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_skyInscatterCoeff, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_skyOutscatterCoeff, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorR, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorG, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_sunColorB, 0);
-        g_Kernel->GetEngineCfg().m_console->RegisterCVar(&this->m_fogStart, 0);
-        this->m_profilerUpdateOde = Application::g_pApp->GetProfilerStack().GetProfiler(
-            Application::g_pApp->GetProfilerStack().AddProfiler("AI other update", 0x1Eu));
+        this->m_level = dynamic_cast<Level*>(M3D_KERNEL->New("Level"));
+        M3D_KERNEL->UnRegisterGlobal("CurrentLevel");
+        M3D_KERNEL->RegisterGlobal(this->m_level, "CurrentLevel");
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_lsInscatterCoeff, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_lsOutscatterCoeff, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_skyInscatterCoeff, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_skyOutscatterCoeff, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_sunColorR, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_sunColorG, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_sunColorB, 0);
+        M3D_ENGINE_CFG.m_console->RegisterCVar(&this->m_fogStart, 0);
+        this->m_profilerUpdateOde =
+            M3D_APP->GetProfilerStack().GetProfiler(M3D_APP->GetProfilerStack().AddProfiler("AI other update", 0x1Eu));
         this->m_borderWallGeoms[0] = 0;
         this->m_borderWallGeoms[1] = 0;
         this->m_borderWallGeoms[2] = 0;
@@ -506,7 +505,7 @@ namespace m3d
     CWorld::~CWorld()
     {
         // RVA 0x5CB450 - the rest is destroyed as members.
-        IConsole* const console = M3D_KERNEL->GetEngineCfg().m_console;
+        IConsole* const console = M3D_ENGINE_CFG.m_console;
         console->UnregisterCVar(&m_lsInscatterCoeff);
         console->UnregisterCVar(&m_lsOutscatterCoeff);
         console->UnregisterCVar(&m_skyInscatterCoeff);
@@ -521,7 +520,7 @@ namespace m3d
 
     void CWorld::Update()
     {
-        if (M3D_KERNEL->GetEngineCfg().m_dbg_doNotUpdateAI.GetB())
+        if (M3D_ENGINE_CFG.m_dbg_doNotUpdateAI.GetB())
         {
             m_weatherManager.UpdateWheatherParticles();
             m_landscape.Update();
@@ -592,7 +591,7 @@ namespace m3d
             return 0;
         }
 
-        ref_ptr<m3d::cmn::XmlFile> xmlFile = m3d::g_Kernel->CreateXmlFile();
+        ref_ptr<m3d::cmn::XmlFile> xmlFile = M3D_KERNEL->CreateXmlFile();
 
         xmlFile->Read(*fileStream);
         fileStream->Close();
@@ -624,7 +623,7 @@ namespace m3d
             if (!fileStream->Open(prefabFile.c_str(), m3d::fs::IStream::OpenFlags::OPEN_READ))
                 continue;
 
-            ref_ptr<m3d::cmn::XmlFile> prefabXml = m3d::g_Kernel->CreateXmlFile();
+            ref_ptr<m3d::cmn::XmlFile> prefabXml = M3D_KERNEL->CreateXmlFile();
 
             prefabXml->Read(*fileStream);
             fileStream->Close();
@@ -758,7 +757,7 @@ namespace m3d
         // RVA 0x7ADD00 - a prefab is a template for CreatePrefabsNode to clone, so neither it
         // nor anything below it may think.
         char const* const name = pnode->GetAttribute("name");
-        SgNode* prefab = static_cast<SgNode*>(g_Kernel->New(pnode->GetAttribute("class")));
+        SgNode* prefab = static_cast<SgNode*>(M3D_KERNEL->New(pnode->GetAttribute("class")));
 
         if (!prefab->ReadFromXmlNode(file, pnode) || !prefab->ReadFromXmlNodeAfterAdd(file, pnode))
         {
@@ -822,7 +821,7 @@ namespace m3d
         M3D_LOG_INFO(CStr("%%%% read from xml: ") + CStr(M3D_KERNEL->GetTimer().GetCurTime() - parseStart));
 
         unsigned const linkStart = M3D_KERNEL->GetTimer().GetCurTime();
-        if (M3D_KERNEL->GetEngineCfg().m_ai_static_obstacles_enabled.GetB())
+        if (M3D_ENGINE_CFG.m_ai_static_obstacles_enabled.GetB())
         {
             // Every node below the root that answers the "is obstacle" property is one.
             retruxx::vector<SgNode*> stack;
@@ -927,7 +926,7 @@ namespace m3d
     void CWorld::LoadStaticObstacles()
     {
         // RVA 0x5C8670 - each Box of the static obstacles file becomes an oriented box obstacle.
-        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (fileStream->Open(
                 m_level->GetFullPathNameA(m_level->m_staticObstaclesFileName).c_str(), fs::IStream::OPEN_READ))
         {
@@ -976,10 +975,10 @@ namespace m3d
 
     void CWorld::Register()
     {
-        g_Kernel->AddClass(RT_CLASS_LOCAL(Weather));
-        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherClear));
-        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherInclement));
-        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherThunderstorm));
-        g_Kernel->AddClass(RT_CLASS_LOCAL(WeatherFoggy));
+        M3D_KERNEL->AddClass(RT_CLASS_LOCAL(Weather));
+        M3D_KERNEL->AddClass(RT_CLASS_LOCAL(WeatherClear));
+        M3D_KERNEL->AddClass(RT_CLASS_LOCAL(WeatherInclement));
+        M3D_KERNEL->AddClass(RT_CLASS_LOCAL(WeatherThunderstorm));
+        M3D_KERNEL->AddClass(RT_CLASS_LOCAL(WeatherFoggy));
     }
 }  // namespace m3d

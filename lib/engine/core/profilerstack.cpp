@@ -5,7 +5,7 @@
 
 namespace m3d
 {
-    Profiler::Profiler() : m_performanceCounterFrequency(Application::g_pApp->GetMeasuredCpuFrequency())
+    Profiler::Profiler() : m_performanceCounterFrequency(M3D_APP->GetMeasuredCpuFrequency())
     {
     }
 
@@ -27,7 +27,7 @@ namespace m3d
         m_lastClocks = 0;
         m_totalClocksForRecalcFrames = 0;
         m_averageClocks = 0;
-        m_performanceCounterFrequency = Application::g_pApp->GetMeasuredCpuFrequency();
+        m_performanceCounterFrequency = M3D_APP->GetMeasuredCpuFrequency();
     }
 
     void Profiler::StartCountdown()

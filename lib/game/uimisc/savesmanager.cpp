@@ -83,8 +83,7 @@ m3d::Object* SavesManager::Clone()
 
 CStr SavesManager::GetPathForTemporaryMaps() const
 {
-    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto profile = app->GetProfileManager()->GetCurProfile();
+    auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile)
     {
         auto path = profile->GetFolder() + "\\__temp_maps\\";
@@ -514,14 +513,14 @@ int SavesManager::SaveInfos(CStr const& folderName, CStr const& saveName)
 {
     // RVA 0x57C5A0 - writes SaveInfo.xml and records the save.
     CStr const filePath = GetSaveFolderPathByFolderName(folderName) + CStr("\\") + m_constantSaveInfo.m_infoFileName;
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(filePath.c_str(), m3d::fs::IStream::OPEN_WRITE))
     {
         M3D_LOG_INFO("SavesManager::SaveInfo error - can't open file " + filePath + " for write.");
         return 0;
     }
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "SaveInfo");
     xmlFile->AddChild(rootNode);
     rootNode->SetAttribute("Name", saveName.c_str());
@@ -677,13 +676,13 @@ int SavesManager::LoadInfos()
             continue;
         }
 
-        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(infoFilePath.c_str(), m3d::fs::IStream::OPEN_READ))
         {
             M3D_LOG_INFO("SavesManager::LoadInfos error - can't open file " + infoFilePath + " for read.");
             continue;
         }
-        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
             M3D_LOG_INFO(

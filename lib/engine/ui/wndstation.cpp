@@ -287,7 +287,7 @@ namespace m3d
             // RVA 0x592E30 - the second half of the click machine: the press and
             // release are recorded by "set", and the click is only delivered once
             // the double-click window has passed without a second press.
-            static unsigned clickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            static unsigned clickTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
             static PointBase<float> savePt{0.0f, 0.0f};
             static bool isSet = false;
 
@@ -309,7 +309,7 @@ namespace m3d
             {
                 if (pt)
                 {
-                    clickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                    clickTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
                     savePt = *pt;
                     isSet = true;
                 }
@@ -320,7 +320,7 @@ namespace m3d
             {
                 return 0;
             }
-            auto const now = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            auto const now = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
             if (now - clickTime <= static_cast<unsigned>(M3D_ENGINE_CFG.m_ui_dblClickDelay.GetI()))
             {
                 return 0;
@@ -332,7 +332,7 @@ namespace m3d
             {
                 // A click on the station itself is reported as an event instead.
                 Event clickEvent;
-                clickEvent.m_timeStamp = g_Kernel->GetTimer().GetCurTimeUnscaled() * 0.001;
+                clickEvent.m_timeStamp = M3D_KERNEL->GetTimer().GetCurTimeUnscaled() * 0.001;
                 clickEvent.m_eventType = EV_MOUSE_CLICK;
                 clickEvent.m_ushortEv[0] = static_cast<unsigned short>(savePt.x);
                 clickEvent.m_ushortEv[1] = static_cast<unsigned short>(savePt.y);
@@ -495,11 +495,11 @@ namespace m3d
         {
             if (urgent)
             {
-                Application::g_pApp->ImmediateMessage(40, from, to, msg, 0, {}, data);
+                M3D_APP->ImmediateMessage(40, from, to, msg, 0, {}, data);
             }
             else
             {
-                Application::g_pApp->EnqueueMessage(40, from, to, msg, 0, {}, data);
+                M3D_APP->EnqueueMessage(40, from, to, msg, 0, {}, data);
             }
             return 1;
         }
@@ -524,7 +524,7 @@ namespace m3d
 
             auto const startSequence = [&]()
             {
-                firstClickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                firstClickTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
                 clickState = DBLCLICK_PRESS;
                 firstClickCoords = pt;
             };
@@ -552,7 +552,7 @@ namespace m3d
                 return 0;
             }
 
-            auto const now = g_Kernel->GetTimer().GetCurTimeUnscaled();
+            auto const now = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
             if (now - firstClickTime > static_cast<unsigned>(M3D_ENGINE_CFG.m_ui_dblClickDelay.GetI()))
             {
                 // Too slow: this press, if any, becomes the start of a new pair.
@@ -577,7 +577,7 @@ namespace m3d
                 }
                 else
                 {
-                    firstClickTime = g_Kernel->GetTimer().GetCurTimeUnscaled();
+                    firstClickTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
                     firstClickCoords = pt;
                 }
                 prevClickPt = firstClickCoords;
@@ -1019,7 +1019,7 @@ namespace m3d
             }
             if (isModal)
             {
-                Application::g_pApp->EnqueueMessage(41, wnd, 0, 0, 0, {}, {});
+                M3D_APP->EnqueueMessage(41, wnd, 0, 0, 0, {}, {});
             }
             if (m_wndKbdCapture && (wnd == m_wndKbdCapture || m_wndKbdCapture->IsChildOf(wnd)))
             {
@@ -1084,7 +1084,7 @@ namespace m3d
         {
             // RVA 0x58CB00 - joystick input is not a window concern; it goes
             // straight to the impulse layer.
-            Application::g_pApp->m_pImpulses->HandleKeyboardMouseEvent(event, this);
+            M3D_APP->m_pImpulses->HandleKeyboardMouseEvent(event, this);
             return 1;
         }
 
@@ -1202,7 +1202,7 @@ namespace m3d
             RemoveAllChildren();
             GetGfxServer()->Done();
             delete m_curDefault;
-            Application::g_pApp->m_renderer->ReleaseTexture(m_currentCursor.m_tex);
+            M3D_RENDERER->ReleaseTexture(m_currentCursor.m_tex);
             delete GetGfxServer();
             return 1;
         }
@@ -1232,7 +1232,7 @@ namespace m3d
             // RVA 0x5916A0 - paints the whole window tree, refreshes the mouse-over
             // window and tooltip, then draws the cursor (as a hardware cursor when
             // enabled, otherwise as a sprite).
-            auto& renderer = *Application::g_pApp->m_renderer;
+            auto& renderer = *M3D_RENDERER;
             renderer.PushZbState(rend::ZB_DISABLE);
             renderer.PushLighting(false);
             renderer.PushBlend(rend::BM_NONE);
@@ -1261,7 +1261,7 @@ namespace m3d
                 {
                     m_currentCursor = *m_curDefault;
                 }
-                if (Application::g_pApp->IsDXCursorEnabled())
+                if (M3D_APP->IsDXCursorEnabled())
                 {
                     if (m_currentCursor == oldCursor)
                     {
@@ -1286,16 +1286,16 @@ namespace m3d
                     renderer.SetStageState(1, rend::BM_COLOR, rend::TS_NONE);
                     renderer.SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
                     renderer.SetTexture(0, m_currentCursor.m_tex, -1.0);
-                    auto mouseX = static_cast<float>(Application::g_pApp->GetMouseX());
-                    auto mouseY = static_cast<float>(Application::g_pApp->GetMouseY());
+                    auto mouseX = static_cast<float>(M3D_APP->GetMouseX());
+                    auto mouseY = static_cast<float>(M3D_APP->GetMouseY());
                     renderer.AbsToRel(mouseX, mouseY);
                     float const left = mouseX - m_currentCursor.m_spot.x;
                     float const top = mouseY - m_currentCursor.m_spot.y;
-                    Application::g_pApp->PutSpriteRel(
+                    M3D_APP->PutSpriteRel(
                         left, top, m_currentCursor.m_sz.x + left, m_currentCursor.m_sz.y + top, 0xFFFFFFFF);
                 }
             }
-            else if (Application::g_pApp->IsDXCursorEnabled())
+            else if (M3D_APP->IsDXCursorEnabled())
             {
                 renderer.ShowDXCursor(false);
             }

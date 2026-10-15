@@ -80,9 +80,9 @@ namespace m3d
             SafeStrAttrib(m_textureName, xmlNode, "image");
             if (!m_textureName.empty())
             {
-                m_texture = Application::g_pApp->m_renderer->AddTexture(m_textureName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
+                m_texture = M3D_RENDERER->AddTexture(m_textureName, 4);
+                M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
             }
             return 1;
         }

@@ -541,7 +541,7 @@ void TargetInfoWnd::ProcessFade()
 {
     if (m_fadeStartTime)
     {
-        auto const curTimeUnscaled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+        auto const curTimeUnscaled = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
         auto const fadeDelta = m_fadeStartTime + 1000;
         if (curTimeUnscaled < fadeDelta)
         {

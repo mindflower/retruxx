@@ -58,11 +58,11 @@ namespace m3d
             // RVA 0x79C7C0
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_glyphTexture);
+                M3D_RENDERER->ReleaseTexture(m_glyphTexture);
             }
             if (m_glyphTextureDisabled.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_glyphTextureDisabled);
+                M3D_RENDERER->ReleaseTexture(m_glyphTextureDisabled);
             }
         }
 
@@ -116,22 +116,22 @@ namespace m3d
             // RVA 0x79C9F0
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_glyphTexture);
+                M3D_RENDERER->ReleaseTexture(m_glyphTexture);
             }
             m_glyphTexture = tex;
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTexture);
+                M3D_RENDERER->ReferenceTexture(m_glyphTexture);
             }
 
             if (m_glyphTextureDisabled.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_glyphTextureDisabled);
+                M3D_RENDERER->ReleaseTexture(m_glyphTextureDisabled);
             }
             m_glyphTextureDisabled = texDisabled;
             if (m_glyphTextureDisabled.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTextureDisabled);
+                M3D_RENDERER->ReferenceTexture(m_glyphTextureDisabled);
             }
         }
 
@@ -140,22 +140,22 @@ namespace m3d
             // RVA 0x79C920 - only the enabled glyph decides success.
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_glyphTexture);
+                M3D_RENDERER->ReleaseTexture(m_glyphTexture);
             }
-            m_glyphTexture = Application::g_pApp->m_renderer->AddTexture(fileName, 4);
+            m_glyphTexture = M3D_RENDERER->AddTexture(fileName, 4);
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTexture);
+                M3D_RENDERER->ReferenceTexture(m_glyphTexture);
             }
 
             if (m_glyphTextureDisabled.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_glyphTextureDisabled);
+                M3D_RENDERER->ReleaseTexture(m_glyphTextureDisabled);
             }
-            m_glyphTextureDisabled = Application::g_pApp->m_renderer->AddTexture(fileNameDisabled, 4);
+            m_glyphTextureDisabled = M3D_RENDERER->AddTexture(fileNameDisabled, 4);
             if (m_glyphTextureDisabled.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTextureDisabled);
+                M3D_RENDERER->ReferenceTexture(m_glyphTextureDisabled);
             }
 
             return m_glyphTexture.IsValid();
@@ -180,7 +180,7 @@ namespace m3d
             m_glyphTextureDisabled.SetInvalid();
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTexture);
+                M3D_RENDERER->ReferenceTexture(m_glyphTexture);
             }
             return ButtonWnd::Create(caption, 0, rc, id);
         }
@@ -217,12 +217,12 @@ namespace m3d
             m_glyphTexture = glyph;
             if (m_glyphTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTexture);
+                M3D_RENDERER->ReferenceTexture(m_glyphTexture);
             }
             m_glyphTextureDisabled = glyphDisabled;
             if (m_glyphTextureDisabled.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_glyphTextureDisabled);
+                M3D_RENDERER->ReferenceTexture(m_glyphTextureDisabled);
             }
             return 1;
         }
@@ -237,8 +237,8 @@ namespace m3d
             CStr glyphFileDisabled)
         {
             // RVA 0x79C850
-            auto const glyph = Application::g_pApp->m_renderer->AddTexture(glyphFile, 4);
-            auto const glyphDisabled = Application::g_pApp->m_renderer->AddTexture(glyphFileDisabled, 4);
+            auto const glyph = M3D_RENDERER->AddTexture(glyphFile, 4);
+            auto const glyphDisabled = M3D_RENDERER->AddTexture(glyphFileDisabled, 4);
             return CreateGlyphButton(style, rc, type, caption, id, glyph, glyphDisabled);
         }
 

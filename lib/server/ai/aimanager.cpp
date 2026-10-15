@@ -14,7 +14,7 @@
 RT_CLASS_EXPORT_METHOD_DEFINE(AIManager, CreateNewDecisionMatrix)
 {
     context->asObject(0, "AIManager");
-    auto* obj = m3d::g_Kernel->New("DecisionMatrix");
+    auto* obj = M3D_KERNEL->New("DecisionMatrix");
     context->pushObject(obj);
     return 1;
 }

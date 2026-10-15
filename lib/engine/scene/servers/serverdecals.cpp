@@ -242,10 +242,10 @@ namespace m3d
 
     DecalsServer::DecalsServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("decals", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("decals", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
         DecalsList::LoadShaders();
     }

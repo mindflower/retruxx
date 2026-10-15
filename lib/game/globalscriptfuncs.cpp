@@ -103,7 +103,7 @@ namespace
         bool LinkToCells)
     {
         // RVA 0x4087D0
-        auto const modelId = m3d::g_Kernel->GetEngineCfg().GetModelIdByName(modelName);
+        auto const modelId = M3D_ENGINE_CFG.GetModelIdByName(modelName);
         auto* controlledNode = m3d::pClient->CreateServerControlledNode(modelId);
         if (!controlledNode)
         {
@@ -112,7 +112,7 @@ namespace
 
         if (TTL > 0)
         {
-            controlledNode->GetGraph()->InsertInTtlList(controlledNode, m3d::g_Kernel->GetTimer().GetCurTime() + TTL);
+            controlledNode->GetGraph()->InsertInTtlList(controlledNode, M3D_KERNEL->GetTimer().GetCurTime() + TTL);
         }
 
         m3d::pClient->GetWorld().GetGraph().GetRootNode()->AddChild(controlledNode);
@@ -142,7 +142,7 @@ namespace
 
 void RegisterGlobalNatives()
 {
-    auto& scriptServer = m3d::g_Kernel->GetScriptServer();
+    auto& scriptServer = M3D_KERNEL->GetScriptServer();
     scriptServer.registerGlobalFunction(
         &n_SetCameraPos,
         "SetCameraPos",
@@ -407,8 +407,7 @@ int n_SetProfileMotionBlur(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile == nullptr)
     {
         return -1;
@@ -432,8 +431,7 @@ int n_SetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile == nullptr)
     {
         return -1;
@@ -452,7 +450,7 @@ int n_SetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
 
 int n_GetCinematic(m3d::sArgStack& scriptStack)
 {
-    scriptStack.newOut()->SetO(m3d::Application::g_pApp->m_cinematic);
+    scriptStack.newOut()->SetO(M3D_APP->m_cinematic);
     return 1;
 }
 
@@ -488,7 +486,7 @@ int n_DisableCinematicDebug(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    m3d::Application::g_pApp->m_cinematic->SetDebugMode(0);
+    M3D_APP->m_cinematic->SetDebugMode(0);
     return 1;
 }
 
@@ -500,8 +498,7 @@ int n_AddImportantFadingMsgByStrIdFormatted(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->m_pInterfaceManager->AddImportantFadingMsgByStrId(msgId, params);
+    M3D_APP->m_pInterfaceManager->AddImportantFadingMsgByStrId(msgId, params);
     return 1;
 }
 
@@ -513,8 +510,7 @@ int n_AddFadingMsgByStrIdFormatted(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->m_pInterfaceManager->AddFadingMsgByStrId(msgId, params);
+    M3D_APP->m_pInterfaceManager->AddFadingMsgByStrId(msgId, params);
     return 1;
 }
 
@@ -526,8 +522,7 @@ int n_AddFadingMsgFormatted(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->m_pInterfaceManager->AddFadingMsg(msg, params);
+    M3D_APP->m_pInterfaceManager->AddFadingMsg(msg, params);
     return 1;
 }
 
@@ -538,8 +533,7 @@ int n_GetProfileMotionBlur(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile == nullptr)
     {
         return -1;
@@ -556,7 +550,7 @@ int n_CinematicPathDump(m3d::sArgStack& scriptStack)
 {
     if (scriptStack.getNumInArgs() != 1)
     {
-        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Usage: CinematicPathDump( <fileName> )\n");
+        M3D_ENGINE_CFG.m_console->PrintF("Usage: CinematicPathDump( <fileName> )\n");
         return -1;
     }
 
@@ -566,7 +560,7 @@ int n_CinematicPathDump(m3d::sArgStack& scriptStack)
         return -1;
     }
     auto const* filename = arg->GetS();
-    m3d::Application::g_pApp->m_cinematic->DumpCurrentPath(filename);
+    M3D_APP->m_cinematic->DumpCurrentPath(filename);
     return 1;
 }
 
@@ -582,8 +576,7 @@ int n_PlayVideo(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->StartPlayingVideo(arg->GetS(), &CMiracle3d::OnFinishVideoPlaying);
+    M3D_APP->StartPlayingVideo(arg->GetS(), &CMiracle3d::OnFinishVideoPlaying);
     return 1;
 }
 
@@ -599,7 +592,7 @@ int n_SetCameraAngle(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    m3d::Application::g_pApp->m_curCamera.m_rotYaw = arg->GetF() * 0.017453292;
+    M3D_APP->m_curCamera.m_rotYaw = arg->GetF() * 0.017453292;
     return 1;
 }
 
@@ -638,7 +631,7 @@ int n_SetCinematicCinemaPanel(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto flags = m3d::Application::g_pApp->m_cinematic->GetFlags();
+    auto flags = M3D_APP->m_cinematic->GetFlags();
     if (res)
     {
         flags &= 0xFB;
@@ -647,7 +640,7 @@ int n_SetCinematicCinemaPanel(m3d::sArgStack& scriptStack)
     {
         flags |= 4;
     }
-    m3d::Application::g_pApp->m_cinematic->SetFlags(flags);
+    M3D_APP->m_cinematic->SetFlags(flags);
     return 1;
 }
 
@@ -657,7 +650,7 @@ int n_RemoveCurrentCinematicPoint(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    m3d::Application::g_pApp->m_cinematic->RemoveCurrentDebugPoint();
+    M3D_APP->m_cinematic->RemoveCurrentDebugPoint();
     return 1;
 }
 
@@ -667,8 +660,7 @@ int n_SetCameraBehindPlayerVehicle(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    if (pGame->m_player.m_cameraMode != CM_FOLLOWMODE)
+    if (M3D_APP->m_player.m_cameraMode != CM_FOLLOWMODE)
     {
         return -1;
     }
@@ -678,7 +670,7 @@ int n_SetCameraBehindPlayerVehicle(m3d::sArgStack& scriptStack)
         return -1;
     }
     auto const playerDir = vehicle->GetDirection();
-    pGame->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.z);
+    M3D_APP->m_curCamera.m_rotYaw = atan2(-playerDir.x, playerDir.z);
     return 1;
 }
 
@@ -704,21 +696,16 @@ int n_AddCurrentPointToCinematicPath(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    scriptStack.newOut()->SetV(M3D_APP->m_curCamera.m_worldOrigin);
     Quaternion q;
-    q.fromYPR(
-        m3d::Application::g_pApp->m_curCamera.m_rotYaw,
-        m3d::Application::g_pApp->m_curCamera.m_rotPitch,
-        m3d::Application::g_pApp->m_curCamera.m_rotRoll);
-    m3d::Application::g_pApp->m_cinematic->AddPointToCurrentPath(
-        m3d::Application::g_pApp->m_curCamera.m_worldOrigin, q, 1.0, 1.0);
+    q.fromYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
+    M3D_APP->m_cinematic->AddPointToCurrentPath(M3D_APP->m_curCamera.m_worldOrigin, q, 1.0, 1.0);
     return 1;
 }
 
 int n_GetNormalTimescale(m3d::sArgStack& scriptStack)
 {
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto const timeScale = pGame->GetNormalTimeScale();
+    auto const timeScale = M3D_APP->GetNormalTimeScale();
     scriptStack.newOut()->SetF(timeScale);
     return 1;
 }
@@ -788,8 +775,7 @@ int n_StopPlayingCustomMusic(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->SetCurHackedMusicType(HACKMUSIC_GAME);
+    M3D_APP->SetCurHackedMusicType(HACKMUSIC_GAME);
     return 1;
 }
 
@@ -870,7 +856,7 @@ int n_DumpOpenFiles(m3d::sArgStack& scriptStack)
 
     M3D_LOG_INFO("********** DUMPING OPEN FILES ********************");
     retruxx::vector<CStr> fileList;
-    m3d::g_Kernel->GetFileServer().GetOpenFilesList(fileList);
+    M3D_KERNEL->GetFileServer().GetOpenFilesList(fileList);
     for (auto const& file : fileList)
     {
         M3D_LOG_INFO(file);
@@ -911,8 +897,7 @@ int n_SetNormalTimescale(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->SetNormalTimeScale(arg->GetF());
+    M3D_APP->SetNormalTimeScale(arg->GetF());
     return 1;
 }
 
@@ -950,8 +935,7 @@ int n_SetCoordinateForQuest(m3d::sArgStack& scriptStack)
     {
         levelName = help::GetCurrentLevelName();
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* infoManager = pGame->m_pInterfaceManager->GetQuestInfoManager();
+    auto* infoManager = M3D_APP->m_pInterfaceManager->GetQuestInfoManager();
     infoManager->SetCoordinateForQuest(questName, levelName, pos);
     return 1;
 }
@@ -967,14 +951,10 @@ int n_MoveCurrentCinematicPointToCamera(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    scriptStack.newOut()->SetV(M3D_APP->m_curCamera.m_worldOrigin);
     Quaternion q;
-    q.fromYPR(
-        m3d::Application::g_pApp->m_curCamera.m_rotYaw,
-        m3d::Application::g_pApp->m_curCamera.m_rotPitch,
-        m3d::Application::g_pApp->m_curCamera.m_rotRoll);
-    m3d::Application::g_pApp->m_cinematic->MoveCurrentDebugPoint(
-        m3d::Application::g_pApp->m_curCamera.m_worldOrigin, q, 1.0);
+    q.fromYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
+    M3D_APP->m_cinematic->MoveCurrentDebugPoint(M3D_APP->m_curCamera.m_worldOrigin, q, 1.0);
     return 1;
 }
 
@@ -1093,7 +1073,7 @@ int n_UpdateCinematic(m3d::sArgStack& scriptStack)
     {
         value = static_cast<float>(arg->GetI());
     }
-    m3d::Application::g_pApp->HandleCinematic(value);
+    M3D_APP->HandleCinematic(value);
     return 1;
 }
 
@@ -1146,8 +1126,7 @@ int n_IsPlayingCampaign(m3d::sArgStack& scriptStack)
 
 int n_GetMaxTimescale(m3d::sArgStack& scriptStack)
 {
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    scriptStack.newOut()->SetF(pGame->GetMaxTimeScale());
+    scriptStack.newOut()->SetF(M3D_APP->GetMaxTimeScale());
     return 1;
 }
 
@@ -1230,17 +1209,13 @@ int n_CreateEffectInsertedInRemove(m3d::sArgStack& scriptStack)
 
 int n_GetCameraPos(m3d::sArgStack& scriptStack)
 {
-    scriptStack.newOut()->SetV(m3d::Application::g_pApp->m_curCamera.m_worldOrigin);
+    scriptStack.newOut()->SetV(M3D_APP->m_curCamera.m_worldOrigin);
 
     Quaternion q;
-    q.fromYPR(
-        m3d::Application::g_pApp->m_curCamera.m_rotYaw,
-        m3d::Application::g_pApp->m_curCamera.m_rotPitch,
-        m3d::Application::g_pApp->m_curCamera.m_rotRoll);
+    q.fromYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
     scriptStack.newOut()->SetQ(q);
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    scriptStack.newOut()->SetV(pGame->m_hitPoint);
+    scriptStack.newOut()->SetV(M3D_APP->m_hitPoint);
     return 1;
 }
 
@@ -1300,7 +1275,7 @@ int n_ChangeMode(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    m3d::Application::g_pApp->OnChangeMode(m3d::AuxImpulseInfo(modeImpulse, true, -1, 0, 0));
+    M3D_APP->OnChangeMode(m3d::AuxImpulseInfo(modeImpulse, true, -1, 0, 0));
     return 1;
 }
 
@@ -1311,9 +1286,9 @@ int n_DumpSoundInfo(m3d::sArgStack& scriptStack)
         return -1;
     }
     M3D_LOG_INFO("********** DUMPING SOUND INFO ********************");
-    if (m3d::Application::g_pApp->m_sound)
+    if (M3D_SOUND)
     {
-        m3d::Application::g_pApp->m_sound->DumpSoundInfo();
+        M3D_SOUND->DumpSoundInfo();
     }
     M3D_LOG_INFO("Current sound nodes rendering: ");
     m3d::pClient->GetWorld().GetGraph().DumpRenderingNodesInfoForClass(
@@ -1440,8 +1415,7 @@ int n_SetMaxTimescale(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->SetMaxTimeScale(arg->GetF());
+    M3D_APP->SetMaxTimeScale(arg->GetF());
     return 1;
 }
 
@@ -1509,14 +1483,13 @@ int n_AddImportantFadingMsgFormatted(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->m_pInterfaceManager->AddImportantFadingMsg(msg, params);
+    M3D_APP->m_pInterfaceManager->AddImportantFadingMsg(msg, params);
     return 1;
 }
 
 int n_GetGameSpeed(m3d::sArgStack& scriptStack)
 {
-    scriptStack.newOut()->SetF(m3d::g_Kernel->GetTimer().GetTimeScale());
+    scriptStack.newOut()->SetF(M3D_KERNEL->GetTimer().GetTimeScale());
     return 1;
 }
 
@@ -1527,8 +1500,7 @@ int n_GetProfileBloom(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile == nullptr)
     {
         return -1;
@@ -1552,8 +1524,7 @@ int n_SetMinTimescale(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->SetMinTimeScale(arg->GetF());
+    M3D_APP->SetMinTimeScale(arg->GetF());
     return 1;
 }
 
@@ -1628,7 +1599,7 @@ int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
 {
     if (scriptStack.getNumInArgs() != 1)
     {
-        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Usage: EnableCinematicDebug( <pathName> )\n");
+        M3D_ENGINE_CFG.m_console->PrintF("Usage: EnableCinematicDebug( <pathName> )\n");
         return -1;
     }
     auto* arg = scriptStack.popIn();
@@ -1638,20 +1609,20 @@ int n_EnableCinematicDebug(m3d::sArgStack& scriptStack)
     }
 
     CStr const pathName = arg->GetS();
-    if (m3d::Application::g_pApp->m_cinematic->Load("camera_paths.xml"))
+    if (M3D_APP->m_cinematic->Load("camera_paths.xml"))
     {
-        if (m3d::Application::g_pApp->m_cinematic->SetPath(pathName.c_str()))
+        if (M3D_APP->m_cinematic->SetPath(pathName.c_str()))
         {
-            m3d::Application::g_pApp->m_cinematic->SetDebugMode(true);
+            M3D_APP->m_cinematic->SetDebugMode(true);
         }
         else
         {
-            m3d::g_Kernel->GetEngineCfg().m_console->PrintF("Path " + pathName + " not found\n");
+            M3D_ENGINE_CFG.m_console->PrintF("Path " + pathName + " not found\n");
         }
     }
     else
     {
-        m3d::g_Kernel->GetEngineCfg().m_console->PrintF("File camera_paths.xml not found\n");
+        M3D_ENGINE_CFG.m_console->PrintF("File camera_paths.xml not found\n");
     }
     return 1;
 }
@@ -1726,7 +1697,7 @@ int n_SetGameSpeed(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    m3d::g_Kernel->GetTimer().SetTimeScale(arg->GetF());
+    M3D_KERNEL->GetTimer().SetTimeScale(arg->GetF());
     return 1;
 }
 
@@ -1738,8 +1709,7 @@ int n_SetProfileBloom(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile == nullptr)
     {
         return -1;
@@ -1759,8 +1729,7 @@ int n_SetProfileBloom(m3d::sArgStack& scriptStack)
 
 int n_GetMinTimescale(m3d::sArgStack& scriptStack)
 {
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    scriptStack.newOut()->SetF(pGame->GetMinTimeScale());
+    scriptStack.newOut()->SetF(M3D_APP->GetMinTimeScale());
     return 1;
 }
 
@@ -1772,8 +1741,7 @@ int n_GetProfileMotionBlurAlpha(m3d::sArgStack& scriptStack)
         return -1;
     }
 
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto* profile = pGame->GetProfileManager()->GetCurProfile();
+    auto* profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile == nullptr)
     {
         return -1;
@@ -1859,14 +1827,12 @@ int n_PlayCustomMusic(m3d::sArgStack& scriptStack)
         return -1;
     }
     auto* arg = scriptStack.popIn();
-    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING ||
-        !m3d::Application::g_pApp->StartPlayingMusic(arg->GetS(), true, false))
+    if (arg->GetType() != m3d::sArg::ARGTYPE_STRING || !M3D_APP->StartPlayingMusic(arg->GetS(), true, false))
     {
         return -1;
     }
     // RVA 0x40A980 (SetCurHackedMusicType is inlined there)
-    auto* pGame = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    pGame->SetCurHackedMusicType(HACKMUSIC_CUSTOM);
+    M3D_APP->SetCurHackedMusicType(HACKMUSIC_CUSTOM);
     return 1;
 }
 
@@ -1876,7 +1842,7 @@ int n_GetCameraZoom(m3d::sArgStack& scriptStack)
     {
         return -1;
     }
-    scriptStack.newOut()->SetF(m3d::Application::g_pApp->getZoom());
+    scriptStack.newOut()->SetF(M3D_APP->getZoom());
     return 1;
 }
 

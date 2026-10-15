@@ -126,7 +126,7 @@ int QuestItem::CreateQuestItem(PointBase<float> origin, float maxWidth, help::Qu
 
     if (NeedNavPointBtnBeAdded(questType, questId))
     {
-        m_btnNavPoint = static_cast<NavPointButton*>(m3d::g_Kernel->New("NavPointButton"));
+        m_btnNavPoint = static_cast<NavPointButton*>(M3D_KERNEL->New("NavPointButton"));
         if (!m_btnNavPoint)
         {
             return 0;
@@ -144,7 +144,7 @@ int QuestItem::CreateQuestItem(PointBase<float> origin, float maxWidth, help::Qu
         AddChild(m_btnNavPoint);
     }
 
-    m_btnQuestStatus = static_cast<QuestStatusBtn*>(m3d::g_Kernel->New("QuestStatusBtn"));
+    m_btnQuestStatus = static_cast<QuestStatusBtn*>(M3D_KERNEL->New("QuestStatusBtn"));
     if (!m_btnQuestStatus)
     {
         return 0;
@@ -160,7 +160,7 @@ int QuestItem::CreateQuestItem(PointBase<float> origin, float maxWidth, help::Qu
     }
     AddChild(m_btnQuestStatus);
 
-    m_wndQuestLabel = static_cast<QuestLabel*>(m3d::g_Kernel->New("QuestLabel"));
+    m_wndQuestLabel = static_cast<QuestLabel*>(M3D_KERNEL->New("QuestLabel"));
     if (!m_wndQuestLabel)
     {
         return 0;
@@ -344,7 +344,7 @@ int QuestItem::SetupNavPointBtn(help::QuestType questType, int questId)
         return 1;
     }
 
-    m_btnNavPoint = static_cast<NavPointButton*>(m3d::g_Kernel->New("NavPointButton"));
+    m_btnNavPoint = static_cast<NavPointButton*>(M3D_KERNEL->New("NavPointButton"));
     if (!m_btnNavPoint)
     {
         return 0;

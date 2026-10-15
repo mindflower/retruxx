@@ -730,8 +730,7 @@ namespace m3d
             m_decalsVs->Release();
             m_decalsVs = nullptr;
         }
-        m_decalsVs = Application::g_pApp->m_renderer->NewHlslShader(
-            "data/shaders/decals.vs", "DecalsVS", rend::IHlslShader::VS_1_1);
+        m_decalsVs = M3D_RENDERER->NewHlslShader("data/shaders/decals.vs", "DecalsVS", rend::IHlslShader::VS_1_1);
         if (!m_decalsVs)
         {
             SYS_ERROR("m_decalsVs");
@@ -742,8 +741,7 @@ namespace m3d
             m_decalsPs->Release();
             m_decalsPs = nullptr;
         }
-        m_decalsPs = Application::g_pApp->m_renderer->NewHlslShader(
-            "data/shaders/decals.ps", "DecalsPS", rend::IHlslShader::PS_1_1);
+        m_decalsPs = M3D_RENDERER->NewHlslShader("data/shaders/decals.ps", "DecalsPS", rend::IHlslShader::PS_1_1);
         if (!m_decalsPs)
         {
             SYS_ERROR("m_decalsPs");

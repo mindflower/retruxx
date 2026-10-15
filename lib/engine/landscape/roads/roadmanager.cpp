@@ -71,7 +71,7 @@ namespace m3d
     {
         if (this->m_coveredCells)
         {
-            auto m_f = M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF();
+            auto m_f = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
             auto v4 = (int)(float)((float)(m_f * 8.0) + 4.0);
             if (v4 >= 4)
             {
@@ -83,7 +83,7 @@ namespace m3d
                 v4 = 4;
             }
 
-            auto& v5 = m3d::g_Kernel->GetTimer();
+            auto& v5 = M3D_KERNEL->GetTimer();
 
             auto v7 = m_owner->m_owner;
 

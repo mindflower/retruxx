@@ -11,12 +11,12 @@ namespace m3d
         {
             // RVA 0x75CA40
             BoundsBase<float> rc;
-            rc.x0 = (Application::g_pApp->m_bounds.width - 300.0f) * 0.5f;
-            rc.y0 = (Application::g_pApp->m_bounds.height - 200.0f) * 0.5f;
+            rc.x0 = (M3D_APP->m_bounds.width - 300.0f) * 0.5f;
+            rc.y0 = (M3D_APP->m_bounds.height - 200.0f) * 0.5f;
             rc.width = 300.0f;
             rc.height = 200.0f;
 
-            auto* dlg = static_cast<MsgBoxDlg*>(g_Kernel->New("MsgBoxDlg"));
+            auto* dlg = static_cast<MsgBoxDlg*>(M3D_KERNEL->New("MsgBoxDlg"));
             if (!dlg)
             {
                 return MBX_RET_NO;
@@ -25,12 +25,12 @@ namespace m3d
             dlg->CreateMsgBoxDlg(caption, message, rc, flags | 8, 1000.0f);
             if (pause)
             {
-                Application::g_pApp->Pause();
+                M3D_APP->Pause();
             }
             int const res = dlg->GetStation()->DoModal(dlg);
             if (pause)
             {
-                Application::g_pApp->UnPause();
+                M3D_APP->UnPause();
             }
             delete dlg;
             return static_cast<MbRetCodes>(res);

@@ -84,8 +84,8 @@ void ControlOptionsWnd::InitMouseSensitivityControls()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto mouseMaxSense = m3d::g_Kernel->GetEngineCfg().m_mouseMaxSensitivity.GetF();
-        auto mouseMinSense = m3d::g_Kernel->GetEngineCfg().m_mouseMinSensitivity.GetF();
+        auto mouseMaxSense = M3D_ENGINE_CFG.m_mouseMaxSensitivity.GetF();
+        auto mouseMinSense = M3D_ENGINE_CFG.m_mouseMinSensitivity.GetF();
         m_sliderMouseSensitivity->SetMinMax(mouseMinSense * 100.0, mouseMaxSense * 100.0);
         UpdateMouseSensitivityPrevNextButtonsState();
     }
@@ -340,7 +340,7 @@ void ControlOptionsWnd::InitControls()
 void ControlOptionsWnd::OnSliderMouseSensitivityChange(m3d::AIParam const&)
 {
     UpdateMouseSensitivityPrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderMouseSensitivityBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderMouseSensitivityBlocked)
     {
         ApplyMouseSensitivity();
     }

@@ -163,7 +163,7 @@ namespace ai
     int ColliderKrnl::Init()
     {
         g_collidersMap = new std::map<unsigned, ColliderEntry>;
-        m3d::g_Kernel->GetListOfClasses(g_allClasses, g_numClasses);
+        M3D_KERNEL->GetListOfClasses(g_allClasses, g_numClasses);
         return 1;
     }
 

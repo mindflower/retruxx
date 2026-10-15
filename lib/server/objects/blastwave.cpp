@@ -355,7 +355,7 @@ namespace ai
             float const force = blastWave->GetDampedForceIntensity(dist);
 
             // Only a blast strong enough for the object's own toughness breaks it.
-            if (force <= M3D_KERNEL->GetEngineCfg().m_ai_bo_activate_coeff.GetF() * breakable->GetCriticalHitEnergy())
+            if (force <= M3D_ENGINE_CFG.m_ai_bo_activate_coeff.GetF() * breakable->GetCriticalHitEnergy())
             {
                 blastWave->m_bCollided = true;
                 return 0;
@@ -382,7 +382,7 @@ namespace ai
         {
             auto* const unit = (PhysicUnit*)physicObj;
             float const force = blastWave->GetDampedForceIntensity(dist);
-            if (force <= M3D_KERNEL->GetEngineCfg().m_ai_ragdoll_activate_force.GetF())
+            if (force <= M3D_ENGINE_CFG.m_ai_ragdoll_activate_force.GetF())
             {
                 blastWave->m_bCollided = true;
                 return 0;

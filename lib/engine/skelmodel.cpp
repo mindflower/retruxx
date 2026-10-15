@@ -186,10 +186,10 @@ namespace m3d
     void AnimatedModel::CreateTexFileMapping()
     {
         // RVA 0x785FC0 - data/models/ModelTextures.xml: texture file name -> path; a repeated name overrides.
-        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (fileStream->Open("data/models/ModelTextures.xml", fs::IStream::OPEN_READ))
         {
-            ref_ptr xml = g_Kernel->CreateXmlFile();
+            ref_ptr xml = M3D_KERNEL->CreateXmlFile();
             if (xml->Read(*fileStream))
             {
                 fileStream->Close();
@@ -1141,7 +1141,7 @@ namespace m3d
 
     bool AnimatedModel::Load(CStr const& FileName, bool bForceNextAnimation)
     {
-        if (M3D_KERNEL->GetEngineCfg().m_loadFromGAM.GetB())
+        if (M3D_ENGINE_CFG.m_loadFromGAM.GetB())
             return m3d::AnimatedModel::LoadGAM(FileName, bForceNextAnimation);
         else
             return m3d::AnimatedModel::LoadSAM(FileName, bForceNextAnimation);
@@ -1902,7 +1902,7 @@ namespace m3d
     {
         if (!ai->IsEmpty())
         {
-            auto const curFrame = m3d::g_Kernel->GetTimer().GetCurFrame();
+            auto const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
             ai->InterpolateBones(curFrame);
             for (int i = 0; i < this->m_header.m_numNodes; ++i)
             {
@@ -2379,7 +2379,7 @@ namespace m3d
         if (pShader->IsParameterUsed(rend::IEffect::Time_Linear))
         {
             pShader->SetFloat(
-                rend::IEffect::Time_Linear, static_cast<float>(g_Kernel->GetTimer().GetFrameStartTimeSec()));
+                rend::IEffect::Time_Linear, static_cast<float>(M3D_KERNEL->GetTimer().GetFrameStartTimeSec()));
         }
     }
 

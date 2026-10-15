@@ -1011,7 +1011,7 @@ namespace ai
     {
         // RVA 0x5CBF40
         m_bIsShooting = false;
-        m_shootTypeChangeTime = m3d::g_Kernel->GetTimer().GetCurTime();
+        m_shootTypeChangeTime = M3D_KERNEL->GetTimer().GetCurTime();
         m_shootTimeToWait = static_cast<unsigned>(msc);
     }
 

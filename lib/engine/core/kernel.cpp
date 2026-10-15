@@ -16,7 +16,7 @@
 #include <ode/odememory.h>
 #include <script/scriptserver.h>
 
-// The global operator new/delete below go straight through g_Kernel->g_mar, so the kernel has
+// The global operator new/delete below go straight through M3D_KERNEL->g_mar, so the kernel has
 // to be constructed before any other global object - before user segment, but after lib segment.
 #pragma warning(push)
 #pragma warning(disable : 4075)
@@ -100,9 +100,9 @@ namespace m3d
 
     void Kernel::SysError(CStr const& whence, CStr const& descr)
     {
-        if (Application::g_pApp)
+        if (M3D_APP)
         {
-            Application::g_pApp->sysError(whence, descr);
+            M3D_APP->sysError(whence, descr);
         }
         ::MessageBox(0, (descr + ":" + whence).c_str(), TEXT("Error"), MB_ICONHAND);
     }
@@ -342,8 +342,8 @@ namespace m3d
 
     Kernel::Kernel()
     {
-        assert(nullptr == g_Kernel);
-        g_Kernel = this;
+        assert(nullptr == M3D_KERNEL);
+        M3D_KERNEL = this;
 
         m_memMan = new MemoryManager;
         g_mar.AllocMem = AllocateMemory;

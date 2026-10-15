@@ -269,7 +269,7 @@ namespace m3d
             // NOTE: the shipped code adds the unique id to the "Node" literal as a pointer, not a number, giving
             // "ode", "de", "e", "" and then whatever follows the literal in the executable; past 4 it is empty.
             static char const nodeLiteral[] = "Node";
-            int const id = g_Kernel->GetUniqueId();
+            int const id = M3D_KERNEL->GetUniqueId();
             m_name = id >= 0 && id < 5 ? nodeLiteral + id : "";
         }
         writeTo->SetAttribute("name", m_name.c_str());
@@ -383,7 +383,7 @@ namespace m3d
         if (res == nullptr)
         {
             auto const* classAttr = xmlNode->GetAttribute("class");
-            res = g_Kernel->New(classAttr);
+            res = M3D_KERNEL->New(classAttr);
             if (res == nullptr)
             {
                 M3D_LOG_INFO(CStr("ChildNodeFromXmlNode: Cannot load node: name = ") + classAttr);

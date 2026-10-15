@@ -19,9 +19,9 @@ namespace m3d
         for (unsigned i = 0; i < 6; ++i)
         {
             auto fileName = "data\\fx\\flare" + CStr(i) + ".bmp";
-            m_tex[i] = Application::g_pApp->m_renderer->AddTexture(fileName, 2);
+            m_tex[i] = M3D_RENDERER->AddTexture(fileName, 2);
         }
-        m_texSunGlow = Application::g_pApp->m_renderer->AddTexture("data\\fx\\flare0.bmp", 2);
+        m_texSunGlow = M3D_RENDERER->AddTexture("data\\fx\\flare0.bmp", 2);
         return 1;
     }
 

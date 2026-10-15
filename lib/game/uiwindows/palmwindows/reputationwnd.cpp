@@ -229,7 +229,7 @@ int ReputationButton::CreateChildren()
         return 0;
     }
 
-    m_wndClanIco = static_cast<m3d::ui::ImageWnd*>(m3d::g_Kernel->New("ImageWnd"));
+    m_wndClanIco = static_cast<m3d::ui::ImageWnd*>(M3D_KERNEL->New("ImageWnd"));
     if (!m_wndClanIco ||
         m_wndClanIco->Create(
             {},
@@ -244,7 +244,7 @@ int ReputationButton::CreateChildren()
     m_wndClanIco->SetPaneFlags(m_aif.m_wndPatternClanIco->GetPaneFlags());
     AddChild(m_wndClanIco);
 
-    m_lblClanName = static_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New("Wnd"));
+    m_lblClanName = static_cast<m3d::ui::Wnd*>(M3D_KERNEL->New("Wnd"));
     if (!m_lblClanName ||
         m_lblClanName->Create(
             {},
@@ -261,7 +261,7 @@ int ReputationButton::CreateChildren()
     m_lblClanName->SetFormatMode(m_aif.m_lblPatternClanName->GetFormatMode());
     AddChild(m_lblClanName);
 
-    m_wndToleranceName = static_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New("Wnd"));
+    m_wndToleranceName = static_cast<m3d::ui::Wnd*>(M3D_KERNEL->New("Wnd"));
     if (!m_wndToleranceName ||
         m_wndToleranceName->Create(
             {},
@@ -444,7 +444,7 @@ ReputationButton* AuxRPanel::AddButton(int clanBelong, m3d::ui::Wnd* parentWnd)
         return nullptr;
     }
 
-    auto* btn = static_cast<ReputationButton*>(m3d::g_Kernel->New("ReputationButton"));
+    auto* btn = static_cast<ReputationButton*>(M3D_KERNEL->New("ReputationButton"));
     if (!btn)
     {
         return nullptr;
@@ -764,7 +764,7 @@ int ReputationWnd::GameDataSetup()
         m3d::Object* child = GetChildByName(m_aif.m_reputationListName);
         if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
         {
-            m_reputationList = static_cast<ReputationList*>(m3d::g_Kernel->New("ReputationList"));
+            m_reputationList = static_cast<ReputationList*>(M3D_KERNEL->New("ReputationList"));
             if (m_reputationList)
             {
                 if (m_reputationList->CreateFromPattern(static_cast<m3d::ui::Wnd*>(child), true))

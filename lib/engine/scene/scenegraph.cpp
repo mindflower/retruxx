@@ -459,7 +459,7 @@ namespace m3d
         memset(this->m_sortedCellsY, 0xFF, sizeof(this->m_sortedCellsY));
 
         // Get the origin position from the renderer
-        CVector origin = Application::g_pApp->m_renderer->MatGetOrgInv();
+        CVector origin = M3D_RENDERER->MatGetOrgInv();
 
         // Calculate current grid position based on origin
         float gridScale = 1.0f / VISCELL_EDGE_LENGTH_6;
@@ -835,7 +835,7 @@ namespace m3d
 
     void SceneGraph::LightSwitchOffAllLights()
     {
-        auto* renderer = Application::g_pApp->m_renderer;
+        auto* renderer = M3D_RENDERER;
         for (int i = 0; i < renderer->GetMaxLights(); ++i)
         {
             renderer->LightEnable(i, 0);
@@ -1561,20 +1561,11 @@ namespace m3d
         M3D_ASSERT(m_roadSpriteShader);
         this->m_roadSpriteShader->SetDefaultTechnique(true);
         this->m_texShadow = M3D_RENDERER->AddDynamicTexture(
-            "$TexShadow",
-            g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
-            6);
+            "$TexShadow", M3D_ENGINE_CFG.m_lgtShadowTexSz.GetI(), M3D_ENGINE_CFG.m_lgtShadowTexSz.GetI(), 6);
         this->m_detTexShadow = M3D_RENDERER->AddDynamicTexture(
-            "$DetTexShadow",
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            6);
+            "$DetTexShadow", M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), 6);
         this->m_texBlurShadow = M3D_RENDERER->AddDynamicTexture(
-            "$TexBlurShadow",
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            6);
+            "$TexBlurShadow", M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), 6);
         M3D_RENDERER->SetTextureParameter(this->m_texBlurShadow, rend::TM_TEX_FILTER, 5u);
         this->m_lsShadowShader = M3D_RENDERER->NewEffect("data/shaders/lsShadows.fx", true);
         M3D_ASSERT(m_lsShadowShader);
@@ -1878,7 +1869,7 @@ namespace m3d
 
     void SceneGraph::UpdateTexShadowSizes()
     {
-        auto* renderer = Application::g_pApp->m_renderer;
+        auto* renderer = M3D_RENDERER;
 
         int oldSzX = 0;
         int oldSzY = 0;
@@ -1940,7 +1931,7 @@ namespace m3d
         release(m_treeLightShader);
         release(m_roadSpriteShader);
 
-        auto* renderer = Application::g_pApp->m_renderer;
+        auto* renderer = M3D_RENDERER;
         renderer->ReleaseTexture(m_texShadow);
         renderer->ReleaseTexture(m_detTexShadow);
         renderer->ReleaseTexture(m_texBlurShadow);

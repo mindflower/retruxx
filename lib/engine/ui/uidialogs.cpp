@@ -102,7 +102,7 @@ namespace m3d
                     b.y0 = y0;
                     b.width = btnW;
                     b.height = static_cast<float>(btnHeight);
-                    auto* btn = RT_DYNCAST(g_Kernel->New("GlyphButton"), GlyphButton);
+                    auto* btn = RT_DYNCAST(M3D_KERNEL->New("GlyphButton"), GlyphButton);
                     buttons[i] = btn;
                     btn->CreateGlyphButton(b, set.m_types[i]);
                     btn->m_activationOrder = i;
@@ -237,7 +237,7 @@ namespace m3d
             if (!m_caption.empty())
             {
                 rect.height = DLG_CAPTION_HEIGHT;
-                m_captionWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_captionWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_captionWnd->Create(m_caption, CAPTION_STYLE, rect, 0);
                 m_captionWnd->AdjustForWndTextToFit(0, m_width);
                 m_captionWnd->m_activationOrder = -1;
@@ -254,7 +254,7 @@ namespace m3d
 
             if (!m_msg.empty())
             {
-                m_msgWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_msgWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_msgWnd->Create(m_msg, MSG_STYLE, rect, 0);
                 m_msgWnd->AdjustForWndTextToFit(1, m_width);
                 m_msgWnd->SetDefaultFont(1);
@@ -416,7 +416,7 @@ namespace m3d
                     int texW = 0;
                     int texH = 0;
                     M3D_RENDERER->GetDims(m_tex, texW, texH);
-                    m_image = RT_DYNCAST(g_Kernel->New("ImageWnd"), ImageWnd);
+                    m_image = RT_DYNCAST(M3D_KERNEL->New("ImageWnd"), ImageWnd);
                     if (m_image)
                     {
                         BoundsBase<float> const imgB{
@@ -456,7 +456,7 @@ namespace m3d
             if (!m_caption.empty())
             {
                 rect.height = DLG_CAPTION_HEIGHT;
-                m_captionWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_captionWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_captionWnd->Create(m_caption, CAPTION_STYLE, rect, 0);
                 m_captionWnd->AdjustForWndTextToFit(0, maxTextWidth);
                 m_captionWnd->m_activationOrder = -1;
@@ -470,7 +470,7 @@ namespace m3d
 
             if (!m_msg.empty())
             {
-                m_msgWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_msgWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_msgWnd->Create(m_msg, MSG_STYLE, rect, 0);
                 m_msgWnd->AdjustForWndTextToFit(1, maxTextWidth);
                 m_msgWnd->SetDefaultFont(1);

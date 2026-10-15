@@ -11,7 +11,7 @@ namespace m3d
 
     namespace rend
     {
-        class IEffect;
+        struct IEffect;
     }
 
     class AnimInfo;

@@ -15,19 +15,19 @@ namespace m3d
     {
         int Cursor::Create(CStr const& name, PointBase<float> const& size, PointBase<float> const& spot)
         {
-            Application::g_pApp->m_renderer->ReleaseTexture(m_tex);
-            m_tex = Application::g_pApp->m_renderer->AddTexture(name, 12);
+            M3D_RENDERER->ReleaseTexture(m_tex);
+            m_tex = M3D_RENDERER->AddTexture(name, 12);
             m_sz = size;
             m_spot = spot;
-            Application::g_pApp->m_renderer->SetTextureParameter(m_tex, rend::TM_WRAP_S, 3);
-            Application::g_pApp->m_renderer->SetTextureParameter(m_tex, rend::TM_WRAP_T, 3);
+            M3D_RENDERER->SetTextureParameter(m_tex, rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_tex, rend::TM_WRAP_T, 3);
             return 1;
         }
 
         int Cursor::Create(CStr const& scriptName)
         {
-            ref_ptr iniFile = g_Kernel->CreateIniFile();
-            scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
+            ref_ptr iniFile = M3D_KERNEL->CreateIniFile();
+            scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (stream->Open(scriptName.c_str(), fs::IStream::OPEN_READ))
             {
                 iniFile->Read(*stream);
@@ -63,18 +63,18 @@ namespace m3d
             m_spot = c.m_spot;
             if (m_tex != c.m_tex)
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_tex);
+                M3D_RENDERER->ReleaseTexture(m_tex);
                 m_tex = c.m_tex;
-                Application::g_pApp->m_renderer->ReferenceTexture(m_tex);
+                M3D_RENDERER->ReferenceTexture(m_tex);
             }
             return *this;
         }
 
         Cursor::~Cursor()
         {
-            if (Application::g_pApp->m_renderer)
+            if (M3D_RENDERER)
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_tex);
+                M3D_RENDERER->ReleaseTexture(m_tex);
             }
         }
 

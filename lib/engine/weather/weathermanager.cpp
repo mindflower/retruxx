@@ -84,7 +84,7 @@ namespace m3d
     {
         // RVA 0x65EDE0 - the mirror of the Weather.xml half of ReadFromXmlFile. The per-level
         // WeatherDetail.xml data (WriteDetailToXmlNode) is not written here.
-        ref_ptr<cmn::XmlFile> xmlFile = g_Kernel->CreateXmlFile();
+        ref_ptr<cmn::XmlFile> xmlFile = M3D_KERNEL->CreateXmlFile();
         ref_ptr<cmn::XmlNode> rootNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "Weather");
         ref_ptr<cmn::XmlNode> weatherCommonNode = xmlFile->CreateNode(cmn::XML_NODE_ELEMENT, "WeatherCommonSets");
 
@@ -106,7 +106,7 @@ namespace m3d
         }
         xmlFile->AddChild(rootNode);
 
-        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (fileStream->Open(name, fs::IStream::OPEN_WRITE))
         {
             xmlFile->Write(*fileStream);
@@ -446,14 +446,14 @@ namespace m3d
         ref_ptr<m3d::cmn::XmlFile> rootXmlFile;
         ref_ptr<m3d::cmn::XmlNode> rootNode;
         {
-            scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+            scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (!fileStream->Open(name, fs::IStream::OPEN_READ))
             {
                 M3D_LOG_INFO("Error:WeatherManager can't read file: " + CStr(name));
                 return 0;
             }
 
-            rootXmlFile = g_Kernel->CreateXmlFile();
+            rootXmlFile = M3D_KERNEL->CreateXmlFile();
             if (!rootXmlFile->Read(*fileStream))
             {
                 M3D_LOG_INFO(
@@ -486,20 +486,20 @@ namespace m3d
             }
 
             m3d::SafeStrAttrib(m_StarsTextureName, weatherCommonSetsNode, "starsTexture");
-            m_starsTexture = M3D_RENDERER->AddTexture(
-                M3D_KERNEL->GetEngineCfg().m_weather_PathToTextures.GetS() + m_StarsTextureName, 0);
+            m_starsTexture =
+                M3D_RENDERER->AddTexture(M3D_ENGINE_CFG.m_weather_PathToTextures.GetS() + m_StarsTextureName, 0);
         }
 
         {
             auto const weatherDetailName = m_owner->m_level->GetFullPathNameA(m_owner->m_level->m_weatherDetailName);
-            scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+            scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (!fileStream->Open(weatherDetailName.c_str(), fs::IStream::OPEN_READ))
             {
                 M3D_LOG_INFO("Error:WeatherManager can't read file: " + weatherDetailName);
                 return 0;
             }
 
-            ref_ptr xmlFile = g_Kernel->CreateXmlFile();
+            ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
             if (!xmlFile->Read(*fileStream))
             {
                 M3D_LOG_INFO(

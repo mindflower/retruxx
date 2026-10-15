@@ -22,7 +22,7 @@ namespace m3d
     void MeshMaterialManager::Init(CStr const& logoFileName, CStr const& belongsToLogoFileName)
     {
         m_pLogos = new AnimatedModel;
-        if (g_Kernel->GetEngineCfg().m_loadFromGAM.GetB())
+        if (M3D_ENGINE_CFG.m_loadFromGAM.GetB())
         {
             m_pLogos->LoadGAM(logoFileName, true);
         }
@@ -31,14 +31,14 @@ namespace m3d
             m_pLogos->LoadSAM(logoFileName, true);
         }
 
-        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (fileStream->Open(belongsToLogoFileName.c_str(), fs::IStream::OPEN_READ) == 0)
         {
             M3D_LOG_ERR("Error: BelongsToLogos: Can't open file: " + belongsToLogoFileName);
             return;
         }
 
-        ref_ptr xmlFile = g_Kernel->CreateXmlFile();
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (xmlFile->Read(*fileStream))
         {
             fileStream->Close();

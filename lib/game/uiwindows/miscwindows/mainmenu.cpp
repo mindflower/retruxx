@@ -123,7 +123,7 @@ int MainMenuUI::GameDataSetup()
     {
         return 1;
     }
-    auto title = m3d::Application::g_pApp->GetWindowTitle();
+    auto title = M3D_APP->GetWindowTitle();
     m_wndVersion->SetText(title);
     m_gameDataFlags |= 1;
     return 1;
@@ -183,7 +183,7 @@ int MainMenuUI::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d::
     case 0x92828u:
     {
         OnStartVideoPlaying();
-        M3D_APP->StartPlayingVideo(M3D_KERNEL->GetEngineCfg().m_intro.GetS(), &CMiracle3d::OnFinishVideoPlaying);
+        M3D_APP->StartPlayingVideo(M3D_ENGINE_CFG.m_intro.GetS(), &CMiracle3d::OnFinishVideoPlaying);
         return 1;
     }
     case 0x92829u:

@@ -13,7 +13,7 @@ namespace m3d
 {
     namespace rend
     {
-        class IRenderer;
+        struct IRenderer;
     }
 
     class AIParam;

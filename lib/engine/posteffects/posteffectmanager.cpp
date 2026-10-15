@@ -36,9 +36,9 @@ void PostEffectManager::OnBeforeDeviceReset()
 
 void PostEffectManager::OnAfterDeviceReset()
 {
-    m_ScreenWidth[0] = m3d::g_Kernel->GetEngineCfg().m_r_width.GetI();
-    m_ScreenHeight[0] = m3d::g_Kernel->GetEngineCfg().m_r_height.GetI();
-    int const divisor = m3d::g_Kernel->GetEngineCfg().m_g_postEffectBloom.GetI() == 1 ? 4 : 2;
+    m_ScreenWidth[0] = M3D_ENGINE_CFG.m_r_width.GetI();
+    m_ScreenHeight[0] = M3D_ENGINE_CFG.m_r_height.GetI();
+    int const divisor = M3D_ENGINE_CFG.m_g_postEffectBloom.GetI() == 1 ? 4 : 2;
     int const width = static_cast<int>(m_ScreenWidth[0]) / divisor;
     int const height = static_cast<int>(m_ScreenHeight[0]) / divisor;
 
@@ -277,7 +277,7 @@ void PostEffectManager::Render(bool isBackgroundTextureUsing)
         M3D_RENDERER->TgDisable(stage);
     }
 
-    bool const bloomOn = m_Bloom[0] != 0.0f && m3d::g_Kernel->GetEngineCfg().m_g_postEffectBloom.GetI() != 0;
+    bool const bloomOn = m_Bloom[0] != 0.0f && M3D_ENGINE_CFG.m_g_postEffectBloom.GetI() != 0;
     if (bloomOn)
     {
         M3D_RENDERER->CopyRenderTargetToTexture(g_tex2);
@@ -720,8 +720,7 @@ void PostEffectManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
 
 void PostEffectManager::InitShaders()
 {
-    if (m3d::g_Kernel->GetEngineCfg().m_r_allowPS20.GetB() &&
-        M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
+    if (M3D_ENGINE_CFG.m_r_allowPS20.GetB() && M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_2_0))
     {
         g_DownsampleVs = M3D_RENDERER->NewHlslShader(
             "data/shaders/post_downsample_vs20.vs", "VS_Downsample", m3d::rend::IHlslShader::VS_2_0);

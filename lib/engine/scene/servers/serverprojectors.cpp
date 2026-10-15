@@ -110,7 +110,7 @@ namespace m3d
     ProjectorsServer::ProjectorsServer()
     {
         // RVA 0x760C50
-        m_profiler = Application::g_pApp->CreateProfiler("projectors");
+        m_profiler = M3D_APP->CreateProfiler("projectors");
 
         m_attenuationTex = M3D_RENDERER->AddTexture("data\\textures\\attenuation_256.tga", 4);
         M3D_RENDERER->SetTextureParameter(m_attenuationTex, rend::TM_TEX_FILTER, 1);

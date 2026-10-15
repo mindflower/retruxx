@@ -50,7 +50,7 @@ namespace m3d
             file.Open(fname.c_str(), fs::auxTaggedFile::PROCESS_NORMAL_IGNORE_CRC);
         if (openResult == fs::auxTaggedFile::BAD_FORMAT)
         {
-            scoped_ptr<fs::FileStream> stream(g_Kernel->GetFileServer().CreateFileStream());
+            scoped_ptr<fs::FileStream> stream(M3D_KERNEL->GetFileServer().CreateFileStream());
             if (!stream->Open(fname.c_str(), fs::IStream::OPEN_READ))
             {
                 M3D_LOG_INFO(CStr("Cannot read file: ") + fname);

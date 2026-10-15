@@ -842,7 +842,7 @@ void QuestInfoManager::GetAllQuestInfosByNamePattern(
 int QuestInfoManager::LoadFromFile(CStr const& fileName)
 {
     // RVA 0x573620
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         // NOTE: a missing file still counts as success, as in the original.
@@ -850,7 +850,7 @@ int QuestInfoManager::LoadFromFile(CStr const& fileName)
         return 1;
     }
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     if (!xmlFile->Read(*stream))
     {
         M3D_LOG_INFO("Error: cannot parse " + fileName + " (" + CStr(xmlFile->GetError()) + ") ");

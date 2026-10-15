@@ -53,7 +53,7 @@ enum ActionType : int32_t
 
 namespace m3d
 {
-    class Configuration;
+    struct Configuration;
     class AnimInfo;
 
     struct LoadSkins

@@ -50,7 +50,7 @@ namespace m3d
         if (m3d::DataServer::SetItemProperty(id, prop, src))
             return 1;
 
-        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB() && prop == 9856)
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB() && prop == 9856)
         {
             M3D_APP->m_sound->SetEndMusicCallback(
                 static_cast<MusicItem*>(m_models[id].m_ptr)->m_soundId, (void (*)(int))src);
@@ -63,7 +63,7 @@ namespace m3d
     {
         // RVA 0x761440 - plays the item's music with the two flags in params and returns the result in the int
         // after them.
-        if (!M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return;
         }
@@ -117,7 +117,7 @@ namespace m3d
     int MusicServer::AddItem(char const* params, char const* id)
     {
         // RVA 0x762200 - the music file of model id in the music XML, as a sound; its index.
-        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return -1;
         }
@@ -136,7 +136,7 @@ namespace m3d
             return -1;
         }
         CStr err;
-        ref_ptr xmlFile = ReadXmlFile(g_Kernel->GetEngineCfg().m_snd_pathToMusic.GetS(), &err);
+        ref_ptr xmlFile = ReadXmlFile(M3D_ENGINE_CFG.m_snd_pathToMusic.GetS(), &err);
         if (!xmlFile)
         {
             M3D_LOG_ERR("ServerMusic: " + err);
@@ -165,14 +165,13 @@ namespace m3d
         }
 
         CStr fileName = modelNode->GetAttribute("file");
-        auto res = m3d::Application::g_pApp->m_sound->AddSound(
-            fileName.c_str(), snd::SND_TYPE_MUSIC, 0, 1, snd::SND_PRIORITY_EXTRAHIGH);
+        auto res = M3D_SOUND->AddSound(fileName.c_str(), snd::SND_TYPE_MUSIC, 0, 1, snd::SND_PRIORITY_EXTRAHIGH);
         if (res == -1)
         {
             // NOTE: names the music XML, not the file that failed, as shipped.
             M3D_LOG_ERR(
-                "MusicServer: cannot read file: " + CStr(g_Kernel->GetEngineCfg().m_snd_pathToMusic.GetS()) +
-                " id = '" + CStr(id) + "'");
+                "MusicServer: cannot read file: " + CStr(M3D_ENGINE_CFG.m_snd_pathToMusic.GetS()) + " id = '" +
+                CStr(id) + "'");
             return -1;
         }
 
@@ -183,7 +182,7 @@ namespace m3d
 
     void MusicServer::AddItemsList(retruxx::vector<m3d::DataServer::ServerItem>& itemsList)
     {
-        if (!M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return;
         }
@@ -244,7 +243,7 @@ namespace m3d
         }
 
         CStr err;
-        if (ref_ptr xmlFile = m3d::ReadXmlFile(M3D_KERNEL->GetEngineCfg().m_snd_pathToMusic.GetS(), &err))
+        if (ref_ptr xmlFile = m3d::ReadXmlFile(M3D_ENGINE_CFG.m_snd_pathToMusic.GetS(), &err))
         {
             ref_ptr xmlNode = xmlFile->CreateNode();
             xmlFile->GetFirstChild(xmlNode, "Music");
@@ -291,8 +290,8 @@ namespace m3d
                 if (!item.m_fileWasRead)
                 {
                     M3D_LOG_ERR(
-                        "MusicServer: cannot read file: " + CStr(M3D_KERNEL->GetEngineCfg().m_snd_pathToSounds.GetS()) +
-                        " id = '" + item.m_id + "'");
+                        "MusicServer: cannot read file: " + CStr(M3D_ENGINE_CFG.m_snd_pathToSounds.GetS()) + " id = '" +
+                        item.m_id + "'");
                 }
             }
         }

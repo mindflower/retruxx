@@ -319,7 +319,7 @@ void WeaponSlotWnd::UpdateGunName(ai::VehiclePart const* gun)
 
 void WeaponSlotWnd::OnVehiclePartChanged(void* data)
 {
-    if (!IsChildOf(m3d::Application::g_pApp))
+    if (!IsChildOf(M3D_APP))
     {
         return;
     }

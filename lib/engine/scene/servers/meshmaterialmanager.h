@@ -5,7 +5,7 @@
 namespace m3d
 {
     class SgNode;
-    class DSurfaceMaterial;
+    struct DSurfaceMaterial;
 
     class MeshMaterialManager
     {

@@ -118,10 +118,10 @@ namespace m3d
     EngineConfig::EngineConfig()
     {
         // RVA 0x74BBF0 - creates the console and registers every engine cvar with its default.
-        g_Kernel->AddClass(RT_CLASS_LOCAL(IConsole));
+        M3D_KERNEL->AddClass(RT_CLASS_LOCAL(IConsole));
         m_console = ConsoleFactory();
         m_console->IncRef();
-        g_Kernel->RegisterGlobal(m_console, "console");
+        M3D_KERNEL->RegisterGlobal(m_console, "console");
 
         m_UseCinematicUpdate.Init("UseCinematicUpdate", "yes", CVar::CVAR_BOOL, CVar::CVAR_ARCHIVE);
         m_console->RegisterCVar(&m_UseCinematicUpdate, 0);

@@ -49,9 +49,8 @@ namespace
             {
                 char const ch[2] = {s[i], 0};
                 PointBase<float> size;
-                m3d::Application::g_pApp->GetTextExtent(
-                    CStr(ch), size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
-                m3d::Application::g_pApp->DrawTextAbs(cellCenter - size.x * 0.5f, y, dwColor, CStr(ch), 0, -1);
+                M3D_APP->GetTextExtent(CStr(ch), size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+                M3D_APP->DrawTextAbs(cellCenter - size.x * 0.5f, y, dwColor, CStr(ch), 0, -1);
             }
             cellCenter = cellWidth + cellCenter;
         }
@@ -63,8 +62,8 @@ namespace
         float const cellCenter = static_cast<float>(FontSizeX) * 0.5f + x;
         char const str[2] = {ch, 0};
         PointBase<float> size;
-        m3d::Application::g_pApp->GetTextExtent(CStr(str), size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
-        m3d::Application::g_pApp->DrawTextAbs(cellCenter - size.x * 0.5f, y, dwColor, CStr(str), 0, -1);
+        M3D_APP->GetTextExtent(CStr(str), size, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+        M3D_APP->DrawTextAbs(cellCenter - size.x * 0.5f, y, dwColor, CStr(str), 0, -1);
     }
 }  // namespace
 
@@ -344,7 +343,7 @@ void ConsoleImp::Render()
         lines = m_con.height;
     }
 
-    auto* app = m3d::Application::g_pApp;
+    auto* app = M3D_APP;
     auto* renderer = M3D_RENDERER;
     renderer->PushZbState(m3d::rend::ZB_DISABLE);
     renderer->PushFog(false);
@@ -1230,7 +1229,7 @@ void ConsoleImp::DrawInput()
     }
     float const y = static_cast<float>(m_con.vislines - 2 * m_FontSizeY);
     Gfx_PrintFixed(static_cast<float>(m_FontSizeX), y, m_FontSizeX, line, 0xFFE0E0E0, m_con.linewidth);
-    if ((m3d::g_Kernel->GetTimer().GetCurTimeUnscaled() & 0x100) != 0)
+    if ((M3D_KERNEL->GetTimer().GetCurTimeUnscaled() & 0x100) != 0)
     {
         Gfx_PrintCharFixed(
             static_cast<float>(m_key_linepos + 1) * static_cast<float>(m_FontSizeX), y, m_FontSizeX, '_', 0xFFE0E0E0);
@@ -1370,7 +1369,7 @@ void ConsoleImp::RenderNotify()
     }
     M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
     M3D_RENDERER->PushFog(false);
-    m3d::Application::g_pApp->SetFont(CStr("Impact"), 9.0f, 0, m3d::Application::g_pApp->m_codePage.CodePage);
+    M3D_APP->SetFont(CStr("Impact"), 9.0f, 0, M3D_APP->m_codePage.CodePage);
     int const rows = lines / m_FontSizeY;
     int display = m_con.display;
     m_con.vislines = lines;
@@ -1552,7 +1551,7 @@ void ConsoleImp::HandleCommand(int cmdId, m3d::CConsoleParams const& params)
         // conScript <filename>
         if (params.NumOfTokens(' ') == 2)
         {
-            if (auto res = m3d::g_Kernel->GetScriptServer().executeScriptFile(params.UnsafeStringToken(1, ' ')))
+            if (auto res = M3D_KERNEL->GetScriptServer().executeScriptFile(params.UnsafeStringToken(1, ' ')))
             {
                 PrintF(getFormatedScriptErrorDesc(res) + CStr("\n"));
             }

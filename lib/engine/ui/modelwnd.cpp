@@ -204,7 +204,7 @@ namespace m3d
             }
 
             // Advance the animation by the unscaled wall-clock delta since last paint.
-            unsigned const nowUnscaled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+            unsigned const nowUnscaled = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
             m_Animation->MoveFrame(nowUnscaled - m_LastTimeCalled);
             m_LastTimeCalled = nowUnscaled;
             m_Model->Update(m_Animation, false, &m_cfg);
@@ -432,7 +432,7 @@ namespace m3d
             // RVA 0x709EE0: m_renderTexture stays invalid and m_cfg stays empty via
             // their own default ctors; seed the frame-time baseline OnPaint deltas
             // against.
-            m_LastTimeCalled = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+            m_LastTimeCalled = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
         }
     }  // namespace ui
 }  // namespace m3d

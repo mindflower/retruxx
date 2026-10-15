@@ -186,7 +186,7 @@ namespace m3d
 
         void Wnd::AnimationInfo::SetupDefaultOnHide()
         {
-            auto const& cfg = g_Kernel->GetEngineCfg();
+            auto const& cfg = M3D_ENGINE_CFG;
             m_bEnabled = 1;
             m_startPt.x = 0.0;
             m_startPt.y = 0.0;
@@ -202,7 +202,7 @@ namespace m3d
 
         void Wnd::AnimationInfo::SetupDefaultOnShow()
         {
-            auto const& cfg = g_Kernel->GetEngineCfg();
+            auto const& cfg = M3D_ENGINE_CFG;
             m_bEnabled = 1;
             m_startPt.x = 0.0;
             m_startPt.y = 0.0;
@@ -820,14 +820,14 @@ namespace m3d
             m_bgTextureName = "";
             if (m_bgTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_bgTexture);
+                M3D_RENDERER->ReleaseTexture(m_bgTexture);
             }
             m_bgTexture = bgTex;
             if (!m_bgTexture.IsValid())
             {
                 return 0;
             }
-            Application::g_pApp->m_renderer->ReferenceTexture(m_bgTexture);
+            M3D_RENDERER->ReferenceTexture(m_bgTexture);
             return 1;
         }
 
@@ -836,13 +836,13 @@ namespace m3d
             m_bgTextureName = bgTextureName;
             if (m_bgTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_bgTexture);
+                M3D_RENDERER->ReleaseTexture(m_bgTexture);
             }
             if (!m_bgTextureName.empty())
             {
-                m_bgTexture = Application::g_pApp->m_renderer->AddTexture(m_bgTextureName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_bgTexture, rend::TM_WRAP_S, 3u);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_bgTexture, rend::TM_WRAP_T, 3u);
+                m_bgTexture = M3D_RENDERER->AddTexture(m_bgTextureName, 4);
+                M3D_RENDERER->SetTextureParameter(m_bgTexture, rend::TM_WRAP_S, 3u);
+                M3D_RENDERER->SetTextureParameter(m_bgTexture, rend::TM_WRAP_T, 3u);
             }
             else
             {
@@ -885,11 +885,11 @@ namespace m3d
         int Wnd::SetText(CStr const& caption)
         {
             m_caption = caption;
-            if (!Application::g_pApp->IsTextHieroglyphic(m_caption))
+            if (!M3D_APP->IsTextHieroglyphic(m_caption))
             {
                 return 1;
             }
-            if (g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (M3D_ENGINE_CFG.m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = m_gfx->m_hieroglyphicFontId;
             }
@@ -1736,9 +1736,9 @@ namespace m3d
 
         void Wnd::StopAnimationMoveSound()
         {
-            if (m_animationSoundMoveChannelId != -1 && Application::g_pApp->m_sound)
+            if (m_animationSoundMoveChannelId != -1 && M3D_SOUND)
             {
-                Application::g_pApp->m_sound->StopChannel(m_animationSoundMoveChannelId);
+                M3D_SOUND->StopChannel(m_animationSoundMoveChannelId);
                 m_animationSoundMoveChannelId = -1;
             }
         }
@@ -1917,8 +1917,7 @@ namespace m3d
 
         void Wnd::SetDefaultFont(int uiFont)
         {
-            if (Application::g_pApp->IsTextHieroglyphic(m_caption) &&
-                g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (M3D_APP->IsTextHieroglyphic(m_caption) && M3D_ENGINE_CFG.m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = GetGfxServer()->m_hieroglyphicFontId;
             }
@@ -1930,8 +1929,7 @@ namespace m3d
 
         void Wnd::SetDefaultFont(CStr const& name, float height, FontType type, FontParams params)
         {
-            if (Application::g_pApp->IsTextHieroglyphic(m_caption) &&
-                g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (M3D_APP->IsTextHieroglyphic(m_caption) && M3D_ENGINE_CFG.m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = GetGfxServer()->m_hieroglyphicFontId;
             }
@@ -2006,14 +2004,14 @@ namespace m3d
                 {
                     if (!m_toolTipTimeOut)
                     {
-                        Application::g_pApp->EnqueueMessage(45, this, 0, 0, 0, {}, {});
+                        M3D_APP->EnqueueMessage(45, this, 0, 0, 0, {}, {});
                         m_toolTipTimeOut = -1;
                     }
                 }
                 else if (!m_toolTipTimeOut)
                 {
                     m_toolTipWnd = CreateTooltipWnd();
-                    Application::g_pApp->EnqueueMessage(44, this, 0, 0, 0, {}, {});
+                    M3D_APP->EnqueueMessage(44, this, 0, 0, 0, {}, {});
                     m_toolTipTimeOut = 3000;
                 }
             }

@@ -918,7 +918,7 @@ namespace ai
     float ObjContainer::GetHeight(float x, float z) const
     {
         // RVA 0x62D260 - the landscape height, straight out of the engine config.
-        return M3D_KERNEL->GetEngineCfg().GetHeight(x, z);
+        return M3D_ENGINE_CFG.GetHeight(x, z);
     }
 
     m3d::Class* ObjContainer::GetBaseClass()
@@ -1317,9 +1317,9 @@ namespace ai
         // Handle map transition after fading
         if (ai::thePassageData)
         {
-            float fadingTime = m3d::g_Kernel->GetEngineCfg().m_fadingTimeBeforeNextMap.GetF();
+            float fadingTime = M3D_ENGINE_CFG.m_fadingTimeBeforeNextMap.GetF();
 
-            m3d::cmn::Timer& timer = m3d::g_Kernel->GetTimer();
+            m3d::cmn::Timer& timer = M3D_KERNEL->GetTimer();
             auto currentTime = timer.GetCurTimeUnscaled();
             auto elapsedFadingTime = (currentTime - ai::thePassageData->m_fadingStartTime) * 0.001;
 

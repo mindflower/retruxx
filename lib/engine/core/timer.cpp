@@ -53,12 +53,12 @@ namespace m3d
             // RVA 0x6449B0 - advances the clocks to now. With a fixed time step the clock only
             // moves, by m_timer_timestepvalue, when a new frame starts.
             uint32_t now;
-            if (g_Kernel->GetEngineCfg().m_timer_fixedtimestep.GetB())
+            if (M3D_ENGINE_CFG.m_timer_fixedtimestep.GetB())
             {
                 now = m_prevTime;
                 if (m_bIsNewFrame)
                 {
-                    now += g_Kernel->GetEngineCfg().m_timer_timestepvalue.GetI();
+                    now += M3D_ENGINE_CFG.m_timer_timestepvalue.GetI();
                 }
             }
             else
@@ -76,7 +76,7 @@ namespace m3d
             }
 
             uint32_t delta = now - m_prevTime;
-            if (m_bJustActivated && !g_Kernel->GetEngineCfg().m_timer_fixedtimestep.GetB())
+            if (m_bJustActivated && !M3D_ENGINE_CFG.m_timer_fixedtimestep.GetB())
             {
                 // Right after activation the real elapsed time (a pause, a load) is replaced
                 // by one nominal frame, and intermediate notches do not advance the clock.

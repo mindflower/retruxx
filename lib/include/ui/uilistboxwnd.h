@@ -38,7 +38,7 @@ namespace m3d
                     return 0;
                 }
                 BoundsBase<float> scrollBounds{0.0, 0.0, 0.0, 0.0};
-                m_scrollVWnd = dynamic_cast<ScrollWnd*>(g_Kernel->New("ScrollWnd"));
+                m_scrollVWnd = dynamic_cast<ScrollWnd*>(M3D_KERNEL->New("ScrollWnd"));
                 if (m_scrollVWnd)
                 {
                     if (auto pane = GetGfxServer()->GetScrollPane(m_scrollPaneName))

@@ -230,12 +230,11 @@ int LevelInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* 
     m3d::SafeStrAttrib(musicBlocks, xmlNode, "musicBlocks");
     ai::StrToStringVector(musicBlocks, m_musicBlockNames);
 
-    auto* app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    if (m3d::g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+    if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
     {
         for (auto const& block : m_musicBlockNames)
         {
-            if (!app->GetBlockMusicManager()->IsMusicBlockNameValid(block))
+            if (!M3D_APP->GetBlockMusicManager()->IsMusicBlockNameValid(block))
             {
                 SYS_ERROR("Error: invalid music block name: '" + block + "' for level info '" + m_name);
             }
@@ -244,7 +243,7 @@ int LevelInfo::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* 
 
     if (!m_imageFile1.empty())
     {
-        m_image1 = app->m_renderer->AddTexture(m_imageFile1, 2);
+        m_image1 = M3D_APP->m_renderer->AddTexture(m_imageFile1, 2);
     }
     return 1;
 }
@@ -267,7 +266,7 @@ LevelInfoManager::LevelInfoManager() :
     m_nextLevelInfoId(0),
     m_cvVisibilityRadius("minimapVisibilityRadius", "512", m3d::CVar::CVAR_INT, m3d::CVar::CVAR_ARCHIVE)
 {
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvVisibilityRadius, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvVisibilityRadius, nullptr);
 }
 
 LevelInfoManager::LevelInfoManager(LevelInfoManager const&) : m_nextLevelInfoId(0)
@@ -304,8 +303,7 @@ int LevelInfoManager::Init()
 {
     ClearBeforeNewLevel();
     ClearOnce();
-    auto* app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto fileName = app->m_pInterfaceManager->GetPathToLevelInfoFile();
+    auto fileName = M3D_APP->m_pInterfaceManager->GetPathToLevelInfoFile();
 
     auto res = LoadLevelInfoFromXml(fileName) & 1;
     res = LoadLevelSizes() & res;
@@ -817,14 +815,14 @@ void LevelInfoManager::UpdateLevelImages()
 
 int LevelInfoManager::LoadLevelInfoFromXml(CStr const& fileName)
 {
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         M3D_LOG_INFO("Can't open file " + fileName + " for read.");
         return 0;
     }
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     if (!xmlFile->Read(*stream))
     {
         M3D_LOG_INFO("Error: cannot parse " + fileName);
@@ -870,8 +868,8 @@ int LevelInfoManager::LoadLevelSizes()
 
 int LevelInfoManager::LoadLevelSizeFromXml(CStr const& fileName)
 {
-    ref_ptr file = m3d::g_Kernel->CreateIniFile();
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    ref_ptr file = M3D_KERNEL->CreateIniFile();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         M3D_LOG_INFO("Error: could't open " + fileName + " file");
@@ -1314,7 +1312,7 @@ m3d::Class const* ObjectInfo::GetObjectClass() const
     {
         return nullptr;
     }
-    return m3d::g_Kernel->FindClass(proto->m_className.c_str());
+    return M3D_KERNEL->FindClass(proto->m_className.c_str());
 }
 
 bool ObjectInfo::IsTown() const

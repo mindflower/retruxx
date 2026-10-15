@@ -164,7 +164,7 @@ void RadarWnd::NpDistance::Show(bool bShow)
     m3d::ui::Wnd::AnimationInfo animationInfo(
         bShow ? m_wndDigital->GetOnShowAnimation() : m_wndDigital->GetOnHideAnimation());
 
-    if (m_wndDigital->IsChildOf(m3d::Application::g_pApp))
+    if (m_wndDigital->IsChildOf(M3D_APP))
     {
         animationInfo.m_bEnabled = true;
         animationInfo.m_purpose = m3d::ui::Wnd::AnimationInfo::PURPOSE_UNKNOWN;
@@ -848,7 +848,7 @@ int RadarWnd::GameDataSetup()
             m3d::Object* child = GetChildByName(wndName);
             if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
             {
-                wndDigital = static_cast<ElectronicDigitalWnd*>(m3d::g_Kernel->New("ElectronicDigitalWnd"));
+                wndDigital = static_cast<ElectronicDigitalWnd*>(M3D_KERNEL->New("ElectronicDigitalWnd"));
                 if (!wndDigital)
                 {
                     M3D_LOG_INFO(

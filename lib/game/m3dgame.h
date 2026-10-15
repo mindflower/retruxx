@@ -170,10 +170,10 @@ public:
     virtual void SetMouseYAxisFlipped(bool bFlip);
     virtual void SetMouseXAxisFlipped(bool bFlip);
     ProfileManager* GetProfileManager() const;
+    virtual int AddChild(m3d::Object*);
 
 protected:
     virtual int OnEvent(m3d::Event const&);
-    virtual int AddChild(m3d::Object*);
     virtual int RemoveChildForce(m3d::Object*);
     virtual int Render(bool);
     virtual int RemoveChild(m3d::Object*);

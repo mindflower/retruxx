@@ -4,7 +4,7 @@ class WeaponSlotList;
 
 namespace ai
 {
-    class CollisionInfo;
+    struct CollisionInfo;
     class VehiclePart;
     class Geom;
 

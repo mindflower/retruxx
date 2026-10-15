@@ -6,7 +6,7 @@ namespace m3d
 {
     class AnimatedModel;
     class AnimInfo;
-    class Configuration;
+    struct Configuration;
 }  // namespace m3d
 
 namespace m3d

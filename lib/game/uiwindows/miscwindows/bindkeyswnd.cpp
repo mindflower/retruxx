@@ -123,7 +123,7 @@ BindKeysWnd::KeySetButton::KeySetButton(BoundsBase<float>& rc)
     m_impId = IM_ERROR;
     m_isInInputMode = false;
     m_isAnotherInInputMode = false;
-    m_lastTwinkleTime = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+    m_lastTwinkleTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
     Create(
         m_aif.m_filler,
         m3d::ui::WS_SEND_NOTIFY_MESSAGES | m3d::ui::WS_TEXT_CENTERED | m3d::ui::WS_IS_VISIBLE,
@@ -344,7 +344,7 @@ void BindKeysWnd::KeySetButton::DrawWndText(m3d::ui::DrawInfo const& di)
     // twinkle colour.
     if (m_isInInputMode)
     {
-        auto const now = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+        auto const now = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
         if (now - m_lastTwinkleTime >= m_aif.m_twinkleTime)
         {
             auto color = m_aif.m_normColor;
@@ -473,7 +473,7 @@ int BindKeysWnd::BindKeysItem::SetUp(
         }
     }
 
-    m_impLabel = RT_DYNCAST(m3d::g_Kernel->New("Wnd"), m3d::ui::Wnd);
+    m_impLabel = RT_DYNCAST(M3D_KERNEL->New("Wnd"), m3d::ui::Wnd);
     if (m_impLabel)
     {
         CStr const impName = M3D_APP->m_pImpulses->GetImpulseNameById(impId);
@@ -503,7 +503,7 @@ int BindKeysWnd::BindKeysItem::SetUp(
         res = 0;
     }
 
-    m_bg = RT_DYNCAST(m3d::g_Kernel->New("Wnd"), m3d::ui::Wnd);
+    m_bg = RT_DYNCAST(M3D_KERNEL->New("Wnd"), m3d::ui::Wnd);
     if (!m_bg)
     {
         return 0;

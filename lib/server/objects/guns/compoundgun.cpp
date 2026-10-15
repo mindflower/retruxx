@@ -25,7 +25,7 @@ namespace ai
         {
             return FT_NUM_FIRING_TYPES;
         }
-        m3d::Class* partClass = m3d::g_Kernel->FindClass(partPrototype->m_className.c_str());
+        m3d::Class* partClass = M3D_KERNEL->FindClass(partPrototype->m_className.c_str());
         if (!partClass || !partClass->IsKindOf(RT_CLASS_LOCAL(Gun)))
         {
             return FT_NUM_FIRING_TYPES;

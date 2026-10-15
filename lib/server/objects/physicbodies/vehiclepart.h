@@ -6,7 +6,7 @@
 
 namespace m3d
 {
-    class Configuration;
+    struct Configuration;
 }
 
 namespace ai

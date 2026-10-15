@@ -127,13 +127,13 @@ namespace m3d
 
         void ProgressBarWnd::SetBarTexture(rend::TexHandle barTexture)
         {
-            Application::g_pApp->m_renderer->ReleaseTexture(m_barTexture);
+            M3D_RENDERER->ReleaseTexture(m_barTexture);
             m_barTexture = barTexture;
             if (barTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReferenceTexture(m_barTexture);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_barTexture, rend::TM_WRAP_S, 1);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_barTexture, rend::TM_WRAP_T, 1);
+                M3D_RENDERER->ReferenceTexture(m_barTexture);
+                M3D_RENDERER->SetTextureParameter(m_barTexture, rend::TM_WRAP_S, 1);
+                M3D_RENDERER->SetTextureParameter(m_barTexture, rend::TM_WRAP_T, 1);
             }
         }
 
@@ -141,9 +141,9 @@ namespace m3d
         {
             if (!fileName.empty())
             {
-                auto tex = Application::g_pApp->m_renderer->AddTexture(fileName, 4);
+                auto tex = M3D_RENDERER->AddTexture(fileName, 4);
                 SetBarTexture(tex);
-                Application::g_pApp->m_renderer->ReleaseTexture(tex);
+                M3D_RENDERER->ReleaseTexture(tex);
             }
         }
 
@@ -219,7 +219,7 @@ namespace m3d
             writeTo->SetAttribute("orientation", CStr(static_cast<int>(m_orientation)).c_str());
 
             CStr barTexFile;
-            Application::g_pApp->m_renderer->GetTextureName(m_barTexture, barTexFile);
+            M3D_RENDERER->GetTextureName(m_barTexture, barTexFile);
             writeTo->SetAttribute("barTexture", barTexFile.c_str());
 
             writeTo->SetAttribute("textStyle", CStr(static_cast<int>(m_textStyle)).c_str());
@@ -353,7 +353,7 @@ namespace m3d
 
             int texWidth = 0;
             int texHeight = 0;
-            Application::g_pApp->m_renderer->GetDims(m_barTexture, texWidth, texHeight);
+            M3D_RENDERER->GetDims(m_barTexture, texWidth, texHeight);
             int const texLength = horizontal ? texWidth : texHeight;
 
             if (m_textureStyle == TEXTURE_CLAMP)

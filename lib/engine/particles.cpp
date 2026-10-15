@@ -287,7 +287,7 @@ namespace m3d
             for (unsigned i = 0; i < this->m_numIb; ++i)
             {
                 if (m_skinIb[i].IsValid())
-                    m3d::Application::g_pApp->m_renderer->ReleaseIb(m_skinIb[i]);
+                    M3D_RENDERER->ReleaseIb(m_skinIb[i]);
             }
             delete[] m_skinIb;
             m_skinIb = nullptr;

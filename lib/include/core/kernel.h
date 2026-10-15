@@ -106,7 +106,7 @@ namespace m3d
     extern Kernel* g_Kernel;
 }  // namespace m3d
 
-#define SYS_ERROR(msg) m3d::g_Kernel->SysError((__FILE__ ":") + CStr(__LINE__), (msg))
+#define SYS_ERROR(msg) M3D_KERNEL->SysError((__FILE__ ":") + CStr(__LINE__), (msg))
 #define M3D_ASSERT(cond) \
     if (!(cond))         \
     SYS_ERROR(#cond)

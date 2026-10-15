@@ -37,7 +37,7 @@ namespace
     int _getGlobalObject(lua_State* L)
     {
         auto glob = lua_tostring(L, 1);
-        auto obj = m3d::g_Kernel->FindGlobal(glob);
+        auto obj = M3D_KERNEL->FindGlobal(glob);
         if (obj)
         {
             auto scriptObj = m3d::ScriptServer::_getScriptObject(obj);
@@ -103,9 +103,9 @@ namespace
         if (_getLastErrorInfo(L, &ar))
         {
             auto v6 = NameFromFileName(g_scriptServer->getNameOfLastScript());
-            m3d::g_Kernel->m_Log->sourceLine() = ar.currentline;
-            m3d::g_Kernel->m_Log->setSourceFile(v6.c_str());
-            m3d::g_Kernel->m_Log->logTex(buf, m3d::LOG_INFO);
+            M3D_KERNEL->m_Log->sourceLine() = ar.currentline;
+            M3D_KERNEL->m_Log->setSourceFile(v6.c_str());
+            M3D_KERNEL->m_Log->logTex(buf, m3d::LOG_INFO);
         }
         return 0;
     }
@@ -503,7 +503,7 @@ namespace m3d
         delete[] m_data;
         m_data = nullptr;
         m_bLoaded = false;
-        scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (stream->Open(fileName, fs::IStream::OPEN_READ))
         {
             m_dataLen = stream->GetSize();

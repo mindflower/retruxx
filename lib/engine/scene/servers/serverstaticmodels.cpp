@@ -219,7 +219,7 @@ namespace m3d
 
             if (this->m_tessellate)
             {
-                float tessLevel = M3D_KERNEL->GetEngineCfg().m_NPatchLevel.GetF();
+                float tessLevel = M3D_ENGINE_CFG.m_NPatchLevel.GetF();
 
                 if (tessLevel < 1.0f)
                 {
@@ -248,7 +248,7 @@ namespace m3d
 
             // Handle tessellation
             this->m_tessellate = true;
-            float tessLevel = M3D_KERNEL->GetEngineCfg().m_NPatchLevel.GetF();
+            float tessLevel = M3D_ENGINE_CFG.m_NPatchLevel.GetF();
 
             if (tessLevel < 1.0f)
             {
@@ -334,7 +334,7 @@ namespace m3d
             //    this->GetItemProperty(id, 4, &tessModel);
             //
             //    if (tessModel) {
-            //        m3d::CVar* nPatchLevel = &m3d::g_Kernel->GetEngineCfg()->m_NPatchLevel;
+            //        m3d::CVar* nPatchLevel = &M3D_ENGINE_CFG->m_NPatchLevel;
             //        float tessLevel = (nPatchLevel->m_type == CVAR_FLOAT) ? nPatchLevel->m_f : static_cast<float>(nPatchLevel->m_i);
             //
             //        renderer->SetNPatchLevel(tessLevel, 0);
@@ -390,10 +390,10 @@ namespace m3d
 
     StaticModelsServer::StaticModelsServer()
     {
-        auto idx = Application::g_pApp->GetProfilerStack().AddProfiler("static", 0x1E);
-        if (idx < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto idx = M3D_APP->GetProfilerStack().AddProfiler("static", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
         else
         {

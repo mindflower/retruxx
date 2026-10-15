@@ -18,7 +18,7 @@ namespace m3d
         m_origin.x = 0.0f;
         m_origin.y = 0.0f;
         m_format = TF_LEFT;
-        m_isHieroglyphic = Application::g_pApp->IsTextHieroglyphic(m_text);
+        m_isHieroglyphic = M3D_APP->IsTextHieroglyphic(m_text);
     }
 
     ui::FormattedLine::FormattedLine()
@@ -63,11 +63,11 @@ namespace m3d
         }
         if (tw != TW_NOWRAP)
         {
-            Application::g_pApp->GetTextFit(text, result, maxWidth, tw);
+            M3D_APP->GetTextFit(text, result, maxWidth, tw);
         }
         else
         {
-            Application::g_pApp->GetTextExtent(text, result, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
+            M3D_APP->GetTextExtent(text, result, -1, nullptr, nullptr, nullptr, nullptr, nullptr);
         }
         return result;
     }
@@ -164,14 +164,14 @@ namespace m3d
 
             CVector2 const from(clipped.x0, clipped.y0);
             CVector2 const to(clipped.x0 + clipped.width, clipped.y0 + clipped.height);
-            Application::g_pApp->DrawWireRectRel(from, to, c);
+            M3D_APP->DrawWireRectRel(from, to, c);
         }
     }
 
     int ui::GfxServer::ReadFrames()
     {
         CStr err;
-        CStr filename = g_Kernel->GetEngineCfg().m_ui_pathToFrames.GetS();
+        CStr filename = M3D_ENGINE_CFG.m_ui_pathToFrames.GetS();
         ref_ptr file = ReadXmlFile(filename.c_str(), &err);
         if (file)
         {
@@ -282,10 +282,10 @@ namespace m3d
                 CStr buttonFile = node->GetAttribute("file");
                 if (!buttonName.empty())
                 {
-                    m_glyphButtonTextures[buttonName] = Application::g_pApp->m_renderer->AddTexture(buttonFile, 4);
+                    m_glyphButtonTextures[buttonName] = M3D_RENDERER->AddTexture(buttonFile, 4);
                     if (m_glyphButtonTextures[buttonName].IsValid())
                     {
-                        Application::g_pApp->m_renderer->ReferenceTexture(m_glyphButtonTextures[buttonName]);
+                        M3D_RENDERER->ReferenceTexture(m_glyphButtonTextures[buttonName]);
                     }
                 }
                 node->GetNextSibling(node, "Item");
@@ -380,7 +380,7 @@ namespace m3d
         renderer->SetStageState(0, rend::BM_COLOR, rend::TS_TEXTURE);
         renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
         renderer->PushBlend(rend::BM_ALPHA);
-        renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        renderer->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestInterface.GetI());
         renderer->PushZbState(rend::ZB_DISABLE);
 
         float cornerSz = 0.0f;
@@ -985,42 +985,42 @@ namespace m3d
         CStr sliderBody = node->GetAttribute("sliderBody");
         if (!sliderBody.empty())
         {
-            m_texTheme[8] = Application::g_pApp->m_renderer->AddTexture(sliderBody, 4);
+            m_texTheme[8] = M3D_RENDERER->AddTexture(sliderBody, 4);
         }
         if (m_texTheme[8].IsValid())
         {
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[8], rend::TM_WRAP_S, 1);
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[8], rend::TM_WRAP_T, 1);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[8], rend::TM_WRAP_S, 1);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[8], rend::TM_WRAP_T, 1);
         }
         CStr sliderThumb = node->GetAttribute("sliderThumb");
         if (!sliderThumb.empty())
         {
-            m_texTheme[9] = Application::g_pApp->m_renderer->AddTexture(sliderThumb, 4);
+            m_texTheme[9] = M3D_RENDERER->AddTexture(sliderThumb, 4);
         }
         if (m_texTheme[9].IsValid())
         {
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[9], rend::TM_WRAP_S, 3);
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[9], rend::TM_WRAP_T, 3);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[9], rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[9], rend::TM_WRAP_T, 3);
         }
         CStr sliderLeft = node->GetAttribute("sliderLeft");
         if (!sliderLeft.empty())
         {
-            m_texTheme[10] = Application::g_pApp->m_renderer->AddTexture(sliderLeft, 4);
+            m_texTheme[10] = M3D_RENDERER->AddTexture(sliderLeft, 4);
         }
         if (m_texTheme[10].IsValid())
         {
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[10], rend::TM_WRAP_S, 3);
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[10], rend::TM_WRAP_T, 3);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[10], rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[10], rend::TM_WRAP_T, 3);
         }
         CStr sliderRight = node->GetAttribute("sliderRight");
         if (!sliderRight.empty())
         {
-            m_texTheme[11] = Application::g_pApp->m_renderer->AddTexture(sliderRight, 4);
+            m_texTheme[11] = M3D_RENDERER->AddTexture(sliderRight, 4);
         }
         if (m_texTheme[11].IsValid())
         {
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_S, 3);
-            Application::g_pApp->m_renderer->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_T, 3);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_S, 3);
+            M3D_RENDERER->SetTextureParameter(m_texTheme[11], rend::TM_WRAP_T, 3);
         }
 
         m_colors[0] = 0x90808080;
@@ -1142,7 +1142,7 @@ namespace m3d
             else
             {
                 params.ttfParams.style = m_fontFlags[i];
-                codePage = Application::g_pApp->m_codePage.CodePage;
+                codePage = M3D_APP->m_codePage.CodePage;
             }
             params.ttfParams.codePage = codePage;
             int const id =
@@ -1156,7 +1156,7 @@ namespace m3d
         m_curFont = m_fontManager->GetFontById(0);
         m_hieroglyphicFontId = -1;
         auto frames = ReadFrames();
-        if (Application::g_pApp->m_sound)
+        if (M3D_SOUND)
         {
             ref_ptr newNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
             node->GetFirstChild(newNode, nullptr);
@@ -1197,7 +1197,7 @@ namespace m3d
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
         M3D_RENDERER->PushBlend(rend::BM_ALPHA);
-        M3D_RENDERER->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        M3D_RENDERER->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestInterface.GetI());
         M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
 
         rend::TexHandle const texC = down ? m_texTheme[TEX_BTN_C_1] : m_texTheme[TEX_BTN_C_0];
@@ -1268,7 +1268,7 @@ namespace m3d
         renderer->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
         renderer->PushBlend(rend::BM_ALPHA);
-        renderer->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        renderer->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestInterface.GetI());
         renderer->PushZbState(rend::ZB_DISABLE);
 
         // The corner size comes from the frame for the requested state, falling back to the
@@ -1571,7 +1571,7 @@ namespace m3d
 
     int ui::GfxServer::PlayControlSound(CStr const& soundName, bool* pbLooped)
     {
-        if (!M3D_APP->m_sound || !M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_APP->m_sound || !M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return -1;
         }
@@ -1693,7 +1693,7 @@ namespace m3d
         M3D_RENDERER->SetStageState(0, rend::BM_COLOR, rend::TS_MODULATE);
         M3D_RENDERER->SetStageState(0, rend::BM_ALPHA, rend::TS_MODULATE);
         M3D_RENDERER->PushBlend(rend::BM_ALPHA);
-        M3D_RENDERER->SetAlphaTest(g_Kernel->GetEngineCfg().m_alphaTestInterface.GetI());
+        M3D_RENDERER->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestInterface.GetI());
         M3D_RENDERER->PushZbState(rend::ZB_DISABLE);
         M3D_RENDERER->SetTexture(0, tex, -1.0);
         auto sx = 0;
@@ -1764,8 +1764,7 @@ namespace m3d
                 M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - sound file name is empty for sound " + soundName);
                 continue;
             }
-            auto const id = Application::g_pApp->m_sound->AddSound(
-                fileName.c_str(), snd::SND_TYPE_2DSOUND, 1, 4, snd::SND_PRIORITY_HIGH);
+            auto const id = M3D_SOUND->AddSound(fileName.c_str(), snd::SND_TYPE_2DSOUND, 1, 4, snd::SND_PRIORITY_HIGH);
             if (id == -1)
             {
                 M3D_LOG_WARN("GfxServer::LoadSoundsFromXml error - cannot load sound from file " + soundName);
@@ -1822,9 +1821,9 @@ namespace m3d
     {
         for (auto& [name, sound] : m_controlSoundInfos)
         {
-            if (Application::g_pApp->m_sound && sound)
+            if (M3D_SOUND && sound)
             {
-                Application::g_pApp->m_sound->DeleteIdTableSound(sound->m_soundTableId);
+                M3D_SOUND->DeleteIdTableSound(sound->m_soundTableId);
             }
             delete sound;
         }

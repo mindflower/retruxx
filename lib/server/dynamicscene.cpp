@@ -1019,8 +1019,8 @@ namespace ai
         }
 
         // Register player as global
-        m3d::g_Kernel->UnRegisterGlobal("g_Player");
-        m3d::g_Kernel->RegisterGlobal(ai::thePlayer, "g_Player");
+        M3D_KERNEL->UnRegisterGlobal("g_Player");
+        M3D_KERNEL->RegisterGlobal(ai::thePlayer, "g_Player");
 
         // Post-load processing for all objects
         for (auto* obj : *theObjects)

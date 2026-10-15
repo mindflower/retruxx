@@ -91,13 +91,13 @@ ObjectsIcons::~ObjectsIcons()
 
 int ObjectsIcons::Load(CStr const& fileName, bool bGlobal)
 {
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         M3D_LOG_INFO("Can't open file " + fileName + " for read.");
         return 0;
     }
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     if (!xmlFile->Read(*stream))
     {
         M3D_LOG_INFO("Error: cannot parse " + fileName);

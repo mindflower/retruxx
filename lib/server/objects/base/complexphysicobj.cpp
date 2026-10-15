@@ -583,8 +583,8 @@ namespace ai
     ComplexPhysicObj::ComplexPhysicObj(ComplexPhysicObjPrototypeInfo const& prototypeInfo) : PhysicObj(prototypeInfo)
     {
         this->m_isContoured = 0;
-        this->m_contourColor = M3D_KERNEL->GetEngineCfg().m_g_contourColor.GetC();
-        this->m_contourWidth = M3D_KERNEL->GetEngineCfg().m_g_contourWidth.GetF();
+        this->m_contourColor = M3D_ENGINE_CFG.m_g_contourColor.GetC();
+        this->m_contourWidth = M3D_ENGINE_CFG.m_g_contourWidth.GetF();
         this->m_targetId = -1;
         this->m_timeoutForReAimGuns = 0.0;
         this->m_currentTargetPos = {0.0, 0.0, 0.0};

@@ -407,10 +407,10 @@ namespace
                 memStatus.dwAvailPageFile >> 20);
         }
         fprintf(fLogFile, "\n%lu: Data from MemoryManager:\n", g_dwShowCount);
-        fprintf(fLogFile, "%lu: mem used:          %10d\n", g_dwShowCount, m3d::g_Kernel->debugMemUsed());
-        fprintf(fLogFile, "%lu: mem allocated:     %10d\n", g_dwShowCount, m3d::g_Kernel->debugMemAllocated());
-        fprintf(fLogFile, "%lu: mem overhead:      %10d\n", g_dwShowCount, m3d::g_Kernel->debugMemOverhead());
-        fprintf(fLogFile, "%d: last allocation:   %10d\n", g_dwShowCount, m3d::g_Kernel->debugMemLastAllocSize());
+        fprintf(fLogFile, "%lu: mem used:          %10d\n", g_dwShowCount, M3D_KERNEL->debugMemUsed());
+        fprintf(fLogFile, "%lu: mem allocated:     %10d\n", g_dwShowCount, M3D_KERNEL->debugMemAllocated());
+        fprintf(fLogFile, "%lu: mem overhead:      %10d\n", g_dwShowCount, M3D_KERNEL->debugMemOverhead());
+        fprintf(fLogFile, "%d: last allocation:   %10d\n", g_dwShowCount, M3D_KERNEL->debugMemLastAllocSize());
         if (M3D_APP->m_sound)
         {
             unsigned int curUsedBySound = 0;
@@ -820,7 +820,7 @@ LONG WINAPI CrashHandlerExceptionFilter(PEXCEPTION_POINTERS pExPtrs)
         pExPtrs->ExceptionRecord->ExceptionFlags,
         reinterpret_cast<DWORD>(pExPtrs->ExceptionRecord->ExceptionAddress));
     // MB_ICONHAND | MB_TASKMODAL
-    m3d::g_Kernel->MessageBoxA(nullptr, buffer, "Application Error", 0x2010);
+    M3D_KERNEL->MessageBoxA(nullptr, buffer, "Application Error", 0x2010);
     return status;
 #endif
     return 0;
@@ -894,7 +894,7 @@ int InitAllocCheck(eAllocCheckOutput eOutput, int bSetUnhandledExeptionFilter, u
 {
     // RVA 0x75C270 - picks the first free "exceptions/<binary>NNNN" names in the working directory for the crash
     // log, dump and game log copy.
-    char const* const workDir = m3d::g_Kernel->GetFileServer().GetCurrentWorkDir();
+    char const* const workDir = M3D_KERNEL->GetFileServer().GetCurrentWorkDir();
     char szModName[MAX_PATH];
     if (::GetModuleFileNameA(nullptr, szModName, MAX_PATH))
     {

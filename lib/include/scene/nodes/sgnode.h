@@ -24,7 +24,7 @@ namespace ai
 
 namespace m3d
 {
-    class GraphItemsForSgNode;
+    struct GraphItemsForSgNode;
     class DataServer;
     class SceneGraph;
 

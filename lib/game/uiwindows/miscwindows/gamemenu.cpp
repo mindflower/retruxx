@@ -427,8 +427,7 @@ int GameMenuWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m3d:
         }
         // RVA 0x4B5610 - with no profile selected yet, backing out to "Player Menu" makes it the lowest
         // reachable level, so the player can't leave without picking a profile.
-        if (!CStr::my_strcmp(m_curItem->m_name.c_str(), "Player Menu") &&
-            CStr(M3D_KERNEL->GetEngineCfg().m_profile.GetS()).empty())
+        if (!CStr::my_strcmp(m_curItem->m_name.c_str(), "Player Menu") && CStr(M3D_ENGINE_CFG.m_profile.GetS()).empty())
         {
             m_minItem = m_curItem;
         }
@@ -539,7 +538,7 @@ int GameMenuWnd::OnActivate(bool on)
 int GameMenuWnd::CreateGameMenuWnd()
 {
     // RVA 0xB4C50
-    auto bounds = m3d::Application::g_pApp->GetBounds();
+    auto bounds = M3D_APP->GetBounds();
     BoundsBase<float> rc;
     rc.width = 320.0;
     rc.height = 448.0;

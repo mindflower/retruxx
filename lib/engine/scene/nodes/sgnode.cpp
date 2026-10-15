@@ -936,8 +936,8 @@ namespace m3d
         this->m_frameTransparent = -1;
         this->m_isRemoveIfFree = 0;
         this->m_isInRemoveIfFree = 0;
-        this->m_contourColor = m3d::g_Kernel->GetEngineCfg().m_g_contourColor.GetC();
-        this->m_contourWidth = m3d::g_Kernel->GetEngineCfg().m_g_contourWidth.GetF();
+        this->m_contourColor = M3D_ENGINE_CFG.m_g_contourColor.GetC();
+        this->m_contourWidth = M3D_ENGINE_CFG.m_g_contourWidth.GetF();
         this->m_frameVisible = 0;
         this->m_frameVisible2 = 0;
         this->m_predictIdx = 0;

@@ -2,7 +2,7 @@
 
 namespace m3d
 {
-    class sArgStack;
+    struct sArgStack;
 }
 
 void RegisterGlobalNatives();

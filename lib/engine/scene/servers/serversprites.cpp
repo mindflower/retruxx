@@ -168,10 +168,10 @@ namespace m3d
 
     SpritesServer::SpritesServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("sprites", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("sprites", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
     }
 

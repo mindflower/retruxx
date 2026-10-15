@@ -17,7 +17,7 @@ namespace m3d
             {
                 if (tex.IsValid())
                 {
-                    Application::g_pApp->m_renderer->ReleaseTexture(tex);
+                    M3D_RENDERER->ReleaseTexture(tex);
                 }
             }
         }
@@ -49,97 +49,97 @@ namespace m3d
             SafeStrAttrib(texName, node, "bar_l");
             if (!texName.empty())
             {
-                m_textures[0] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[0], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[0], rend::TM_WRAP_T, wrapParam);
+                m_textures[0] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[0], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[0], rend::TM_WRAP_T, wrapParam);
             }
             texName = "";
             SafeStrAttrib(texName, node, "bar_t");
             if (!texName.empty())
             {
-                m_textures[1] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[1], rend::TM_WRAP_S, wrapParam);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[1], rend::TM_WRAP_T, 3);
+                m_textures[1] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[1], rend::TM_WRAP_S, wrapParam);
+                M3D_RENDERER->SetTextureParameter(m_textures[1], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "bar_r");
             if (!texName.empty())
             {
-                m_textures[2] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[2], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[2], rend::TM_WRAP_T, wrapParam);
+                m_textures[2] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[2], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[2], rend::TM_WRAP_T, wrapParam);
             }
             texName = "";
             SafeStrAttrib(texName, node, "bar_b");
             if (!texName.empty())
             {
-                m_textures[3] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[3], rend::TM_WRAP_S, wrapParam);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[3], rend::TM_WRAP_T, 3);
+                m_textures[3] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[3], rend::TM_WRAP_S, wrapParam);
+                M3D_RENDERER->SetTextureParameter(m_textures[3], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "corner_tl");
             if (!texName.empty())
             {
-                m_textures[4] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[4], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[4], rend::TM_WRAP_T, 3);
+                m_textures[4] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[4], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[4], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "corner_tr");
             if (!texName.empty())
             {
-                m_textures[5] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[5], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[5], rend::TM_WRAP_T, 3);
+                m_textures[5] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[5], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[5], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "corner_bl");
             if (!texName.empty())
             {
-                m_textures[6] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[6], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[6], rend::TM_WRAP_T, 3);
+                m_textures[6] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[6], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[6], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "corner_br");
             if (!texName.empty())
             {
-                m_textures[7] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[7], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[7], rend::TM_WRAP_T, 3);
+                m_textures[7] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[7], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[7], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_tl");
             if (!texName.empty())
             {
-                m_textures[8] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[8], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[8], rend::TM_WRAP_T, 3);
+                m_textures[8] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[8], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[8], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_tr");
             if (!texName.empty())
             {
-                m_textures[9] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[9], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[9], rend::TM_WRAP_T, 3);
+                m_textures[9] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[9], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[9], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_bl");
             if (!texName.empty())
             {
-                m_textures[10] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[10], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[10], rend::TM_WRAP_T, 3);
+                m_textures[10] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[10], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[10], rend::TM_WRAP_T, 3);
             }
             texName = "";
             SafeStrAttrib(texName, node, "tabbtn_corner_br");
             if (!texName.empty())
             {
-                m_textures[11] = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[11], rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_textures[11], rend::TM_WRAP_T, 3);
+                m_textures[11] = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_textures[11], rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_textures[11], rend::TM_WRAP_T, 3);
             }
             return 1;
         }
@@ -148,7 +148,7 @@ namespace m3d
         {
             if (m_texture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_texture);
+                M3D_RENDERER->ReleaseTexture(m_texture);
             }
         }
 
@@ -168,9 +168,9 @@ namespace m3d
             SafeStrAttrib(texName, node, "file");
             if (!texName.empty())
             {
-                m_texture = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_S, repeatUParam);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_T, repeatVParam);
+                m_texture = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_S, repeatUParam);
+                M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_T, repeatVParam);
             }
             return 1;
         }
@@ -273,9 +273,9 @@ namespace m3d
             SafeStrAttrib(texName, node, "scrollThumb");
             if (!texName.empty())
             {
-                m_thumbTex = Application::g_pApp->m_renderer->AddTexture(texName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_thumbTex, rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_thumbTex, rend::TM_WRAP_T, 3);
+                m_thumbTex = M3D_RENDERER->AddTexture(texName, 4);
+                M3D_RENDERER->SetTextureParameter(m_thumbTex, rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_thumbTex, rend::TM_WRAP_T, 3);
             }
             SafeStrAttrib(m_barPaneName, node, "scrollBarPane");
             SafeStrAttrib(m_prevButtonPaneName, node, "scrollBtnPrevPane");
@@ -288,7 +288,7 @@ namespace m3d
             // RVA 0x6F8930 - NOTE: unlike Frame and BackGround, this releases the
             // handle without checking it first, so a scroll pane that never loaded
             // a thumb still hands an invalid handle to the renderer.
-            Application::g_pApp->m_renderer->ReleaseTexture(m_thumbTex);
+            M3D_RENDERER->ReleaseTexture(m_thumbTex);
         }
 
         ScrollPane::ScrollPane()

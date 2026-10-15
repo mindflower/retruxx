@@ -100,10 +100,10 @@ namespace m3d
         m_blocks.clear();
         m_blockNamesToIds.clear();
         m_curBlockNum = -1;
-        if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             CStr err;
-            CStr fileName = g_Kernel->GetEngineCfg().m_snd_pathToMusicBlocks.GetS();
+            CStr fileName = M3D_ENGINE_CFG.m_snd_pathToMusicBlocks.GetS();
             ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &err);
             if (xmlFile)
             {

@@ -320,15 +320,15 @@ namespace m3d
 
     ParticlesServer::ParticlesServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("particles", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("particles", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
-        id = Application::g_pApp->GetProfilerStack().AddProfiler("particles update", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        id = M3D_APP->GetProfilerStack().AddProfiler("particles update", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profilerUpdate = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profilerUpdate = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
         QuadPS::CreateIb();
         SpritePS::CreateIb();

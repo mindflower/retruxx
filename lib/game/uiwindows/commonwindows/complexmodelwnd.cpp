@@ -162,7 +162,7 @@ ai::Obj* ComplexModelWnd::GetObj() const
 void ComplexModelWnd::SetObjId(int objId)
 {
     m_objId = objId;
-    if (IsChildOf(m3d::Application::g_pApp))
+    if (IsChildOf(M3D_APP))
     {
         SetupModel();
     }
@@ -235,7 +235,7 @@ int ComplexModelWnd::GameDataUpdate(void* data, int dataType)
 {
     if (dataType == 65)
     {
-        if (data && IsChildOf(m3d::Application::g_pApp))
+        if (data && IsChildOf(M3D_APP))
         {
             ai::Obj* obj = GetObj();
             auto const* evt = static_cast<m3d::Event const*>(data);

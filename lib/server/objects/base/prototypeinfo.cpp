@@ -42,7 +42,7 @@ namespace ai
         m3d::SafeStrAttrib(m_prototypeName, xmlNode, "Name");
         m3d::SafeStrAttrib(m_className, xmlNode, "Class");
 
-        this->m_protoClassObject = m3d::g_Kernel->FindClass(m_className.c_str());
+        this->m_protoClassObject = M3D_KERNEL->FindClass(m_className.c_str());
 
         CStr resType;
         m3d::SafeStrAttrib(resType, xmlNode, "ResourceType");

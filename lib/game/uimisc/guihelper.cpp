@@ -89,7 +89,7 @@ namespace help
             auto const attr = GetFileAttributesA(fileName.c_str());
             SetFileAttributesA(fileName.c_str(), (attr & ~0xFFul) | (attr & 0xFA));
             DeleteFileA(fileName.c_str());
-            m3d::g_Kernel->GetFileServer().RemoveFile(fileName.c_str());
+            M3D_KERNEL->GetFileServer().RemoveFile(fileName.c_str());
         }
         FindClose(hf);
     }
@@ -246,7 +246,7 @@ namespace help
                 {
                     auto childWnd = dynamic_cast<Wnd*>(child);
                     auto newObjClass = child->GetClass();
-                    auto newObj = m3d::g_Kernel->New(newObjClass);
+                    auto newObj = M3D_KERNEL->New(newObjClass);
                     auto newWnd = dynamic_cast<Wnd*>(newObj);
                     if (!newObj ||
                         newWnd->Create(
@@ -444,7 +444,7 @@ namespace help
             auto const attr = GetFileAttributesA(srcFileName.c_str());
             SetFileAttributesA(srcFileName.c_str(), (attr & ~0xFFul) | (attr & 0xFA));
             CopyFileA(srcFileName.c_str(), destFileName.c_str(), FALSE);
-            m3d::g_Kernel->GetFileServer().AddFile(destFileName.c_str());
+            M3D_KERNEL->GetFileServer().AddFile(destFileName.c_str());
         }
         FindClose(hf);
         return GetLastError() == ERROR_NO_MORE_FILES;

@@ -591,4 +591,5 @@ namespace m3d
 }  // namespace m3d
 
 #define M3D_APP      m3d::Application::g_pApp
-#define M3D_RENDERER m3d::Application::g_pApp->m_renderer
+#define M3D_RENDERER M3D_APP->m_renderer
+#define M3D_SOUND    M3D_APP->m_sound

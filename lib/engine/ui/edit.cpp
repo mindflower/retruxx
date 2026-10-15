@@ -405,7 +405,7 @@ namespace m3d
                 }
             }
 
-            if (g_Kernel->GetTimer().GetFrameStartTimeUnscaled() % CARET_BLINK_PERIOD > CARET_BLINK_ON_AFTER)
+            if (M3D_KERNEL->GetTimer().GetFrameStartTimeUnscaled() % CARET_BLINK_PERIOD > CARET_BLINK_ON_AFTER)
             {
                 GetGfxServer()->AddText(di, origin, m_strCursorColor + "_", m_defFont, TW_NOWRAP, TF_LEFT);
             }

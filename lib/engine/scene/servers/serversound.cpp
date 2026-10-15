@@ -23,12 +23,12 @@ namespace m3d
 {
     void Sound3DServer::UnregisterNode(m3d::SgNode* node)
     {
-        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             auto channel = -1;
             node->GetProperty(9729u, &channel);
             if (channel != -1)
-                m3d::Application::g_pApp->m_sound->StopChannel(channel);
+                M3D_SOUND->StopChannel(channel);
         }
     }
 
@@ -99,7 +99,7 @@ namespace m3d
 
     void Sound3DServer::RenderItem(int id, void* params)
     {
-        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB() || id == -2)
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB() || id == -2)
         {
             return;
         }
@@ -201,7 +201,7 @@ namespace m3d
         for (auto& model : m_models)
         {
             auto* const item = static_cast<SoundItem*>(model.m_ptr);
-            if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+            if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
             {
                 auto* const sound = M3D_APP->m_sound;
                 switch (item->type)
@@ -291,7 +291,7 @@ namespace m3d
         }
 
         CStr err;
-        if (ref_ptr xmlFile = m3d::ReadXmlFile(M3D_KERNEL->GetEngineCfg().m_snd_pathToSounds.GetS(), &err))
+        if (ref_ptr xmlFile = m3d::ReadXmlFile(M3D_ENGINE_CFG.m_snd_pathToSounds.GetS(), &err))
         {
             ref_ptr xmlNode = xmlFile->CreateNode();
             xmlFile->GetFirstChild(xmlNode, "sounds");
@@ -330,8 +330,8 @@ namespace m3d
                 if (!item.m_fileWasRead)
                 {
                     M3D_LOG_ERR(
-                        "MusicServer: cannot read file: " + CStr(M3D_KERNEL->GetEngineCfg().m_snd_pathToSounds.GetS()) +
-                        " id = '" + item.m_id + "'");
+                        "MusicServer: cannot read file: " + CStr(M3D_ENGINE_CFG.m_snd_pathToSounds.GetS()) + " id = '" +
+                        item.m_id + "'");
                 }
             }
         }
@@ -419,7 +419,7 @@ namespace m3d
 
     int Sound3DServer::_AddTripleItem(CStr f1, CStr f2, CStr f3, char const* id, char const* groupName)
     {
-        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return 0;
         }
@@ -474,7 +474,7 @@ namespace m3d
 
     int Sound3DServer::_AddItem(char const* fileName, char const* id, char const* groupName)
     {
-        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return 0;
         }
@@ -503,7 +503,7 @@ namespace m3d
 
     int Sound3DServer::_AddDoubleItem(CStr f1, CStr f2, char const* id, char const* groupName)
     {
-        if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return 0;
         }

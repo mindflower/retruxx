@@ -93,7 +93,7 @@ namespace m3d
         bool res1 = ext_checkTag(L, pos, tag_instance);
         lua_rawgeti(L, pos, 0);
         auto obj = reinterpret_cast<Object*>(lua_touserdata(L, -1));
-        auto cls = m3d::g_Kernel->FindClass(className);
+        auto cls = M3D_KERNEL->FindClass(className);
         bool res2 = obj->IsKindOf(cls);
         if (!res1 || !res2)
         {

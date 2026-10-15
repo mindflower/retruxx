@@ -12,7 +12,7 @@ Vivisector* g_Vivisector = nullptr;
 bool Vivisector::init()
 {
     // RVA 0x42D7C0
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCommand("vivisect", 0, this);
+    M3D_ENGINE_CFG.m_console->RegisterCommand("vivisect", 0, this);
     return true;
 }
 
@@ -53,7 +53,7 @@ bool initVivisectionBlock()
     if (vivisector != nullptr)
     {
         g_Vivisector = vivisector;
-        m3d::g_Kernel->GetEngineCfg().m_console->RegisterCommand("vivisect", 0, g_Vivisector);
+        M3D_ENGINE_CFG.m_console->RegisterCommand("vivisect", 0, g_Vivisector);
         return true;
     }
     g_Vivisector = nullptr;

@@ -394,7 +394,7 @@ int GameUiManager::GUI_LoadResourceInfosFromFile(
         auto res = 1;
         for (rootNode->GetFirstChild(node, "Item"); !node->IsEmpty(); node->GetNextSibling(node, "Item"))
         {
-            auto info = dynamic_cast<ResourceInfo*>(m3d::g_Kernel->New(className.c_str()));
+            auto info = dynamic_cast<ResourceInfo*>(M3D_KERNEL->New(className.c_str()));
             if (!info)
             {
                 return 0;
@@ -489,7 +489,7 @@ int GameUiManager::GUI_CreateWindow(int wndId, CStr const& className, bool needS
             "Interface: fail to create window " + CStr(wndId) + " - a window with specified Id already exists");
         return 0;
     }
-    auto wnd = dynamic_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New(className.c_str()));
+    auto wnd = dynamic_cast<m3d::ui::Wnd*>(M3D_KERNEL->New(className.c_str()));
     if (!wnd)
     {
         M3D_LOG_INFO("Interface: fail to create window " + className);
@@ -527,7 +527,7 @@ int GameUiManager::GUI_LoadStringsFromResourceInfo(ResourceInfo const* info)
     {
         return 0;
     }
-    auto const res = m3d::Application::g_pApp->LoadStrings(info->m_fileName);
+    auto const res = M3D_APP->LoadStrings(info->m_fileName);
     if (!res)
     {
         M3D_LOG_INFO("Interface: error load strings from file " + info->m_fileName);
@@ -1007,9 +1007,9 @@ void GameUiManager::GUI_RegisterCVars()
     m_cvPathToUiIcons.Init(
         "pathToUiIcons", "data\\if\\ico\\UiIcons.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE);
 
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiWindows, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiStrings, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToUiIcons, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvPathToUiWindows, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvPathToUiStrings, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvPathToUiIcons, nullptr);
 }
 
 int GameUiManager::GUI_LoadWindowFromResourceInfo(WindowResourceInfo const* info)
@@ -1134,8 +1134,7 @@ ref_ptr<m3d::ui::Wnd> GameUiManager::GUI_GetWindow(int wndId) const
 
 bool GameUiManager::GUI_IsCurrentLevelMainMenuLevel() const
 {
-    return CStr(M3D_KERNEL->GetEngineCfg().m_mainMenuLevelName.GetS()) ==
-        M3D_KERNEL->GetEngineCfg().m_levFileName.GetS();
+    return CStr(M3D_ENGINE_CFG.m_mainMenuLevelName.GetS()) == M3D_ENGINE_CFG.m_levFileName.GetS();
 }
 
 int GameUiManager::GUI_LoadIconsFromResourceInfo(IcoResourceInfo const* info)
@@ -1216,8 +1215,8 @@ int GameUiManager::GUI_ShowWindow(int wndId, bool forceShow, bool forceModal, bo
         {
             if (!wnd->GetParent())
             {
-                //TODP: check this
-                m3d::Application::g_pApp->AddChild(wnd);
+                //TODO: check this
+                M3D_APP->AddChild(wnd);
             }
             if (GUI_IsWndModalEqual(wnd))
             {

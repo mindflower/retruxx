@@ -205,31 +205,31 @@ namespace ai
 
     void IntersectionManager::Registration()
     {
-        auto idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("GetIntersectedObjects() calls");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        auto idx = M3D_APP->GetDbgCounterStack().AddCounter("GetIntersectedObjects() calls");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntIntersectionCalls = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntIntersectionCalls = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntIntersectionCalls->SetI(0);
 
-        idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("objects checked for intersection");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("objects checked for intersection");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntObjectsChecked = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntObjectsChecked = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntObjectsChecked->SetI(0);
 
-        idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("intersecting objects of them");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("intersecting objects of them");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntIntersectingObjectsChecked = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntIntersectingObjectsChecked = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntIntersectingObjectsChecked->SetI(0);
 
-        idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("objects satisfied intersection");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("objects satisfied intersection");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntObjectsSatisfied = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntObjectsSatisfied = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntObjectsSatisfied->SetI(0);
     }

@@ -66,7 +66,7 @@ namespace
             return nullptr;
         }
 
-        auto* wnd = RT_DYNCAST(m3d::g_Kernel->New("Wnd"), m3d::ui::Wnd);
+        auto* wnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), m3d::ui::Wnd);
         if (!wnd)
         {
             M3D_LOG_INFO("CREATE error - cannot instantiate object");
@@ -693,7 +693,7 @@ int SaveList::CreateItems()
     if (m_listType == TYPE_SAVE)
     {
         // A save list leads with a "new save" row built from the current state.
-        auto* newSaveBtn = RT_DYNCAST(m3d::g_Kernel->New("SaveButton"), SaveButton);
+        auto* newSaveBtn = RT_DYNCAST(M3D_KERNEL->New("SaveButton"), SaveButton);
         if (newSaveBtn)
         {
             auto* savesManager = M3D_APP->m_pInterfaceManager->GetSavesManager();
@@ -722,7 +722,7 @@ int SaveList::CreateItems()
     retruxx::vector<SaveButton*> btns;
     for (auto i = 0; i < static_cast<int>(saveFoldersList.size()); ++i)
     {
-        auto* btn = RT_DYNCAST(m3d::g_Kernel->New("SaveButton"), SaveButton);
+        auto* btn = RT_DYNCAST(M3D_KERNEL->New("SaveButton"), SaveButton);
         if (btn && btn->SetupForSave(saveFoldersList[i]))
         {
             btns.push_back(btn);
@@ -1074,7 +1074,7 @@ int LSWnd::GameDataSetup()
         auto wndSaveList = RT_DYNCAST(GetChildByName(m_aif.m_wndSaveListName), StringsListBoxWnd);
         if (wndSaveList && wndSaveList->IsKindOf(RT_CLASS_LOCAL(StringsListBoxWnd)))
         {
-            m_wndSaveList = RT_DYNCAST(m3d::g_Kernel->New("SaveList"), SaveList);
+            m_wndSaveList = RT_DYNCAST(M3D_KERNEL->New("SaveList"), SaveList);
             if (m_wndSaveList)
             {
                 if (m_wndSaveList->CreateFromPattern(wndSaveList, true))

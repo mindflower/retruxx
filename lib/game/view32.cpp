@@ -105,8 +105,7 @@ namespace
 
     CinemaPanel* GetCinemaPanel()
     {
-        auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-        auto wnd = app->m_pInterfaceManager->GetWindow(18);
+        auto wnd = M3D_APP->m_pInterfaceManager->GetWindow(18);
         if (!wnd)
         {
             return nullptr;
@@ -272,7 +271,7 @@ int CMiracle3d::OnChangeMode(m3d::AuxImpulseInfo const& impInfo)
 
         M3D_APP->m_pInterfaceManager->StartSplashing(11);
         int loadRes = LoadLevel(
-                          M3D_KERNEL->GetEngineCfg().m_levFileName.GetS(),
+                          M3D_ENGINE_CFG.m_levFileName.GetS(),
                           {},
                           false,
                           true,
@@ -382,16 +381,16 @@ bool CMiracle3d::LoadSavedGame(CStr const& saveDir)
     M3D_LOG_INFO("Game loading: \"" + saveDir + "\" ...");
 
     CStr const fileName = saveDir + "\\currentmap.xml";
-    m3d::g_Kernel->GetFileServer().AddFile(fileName.c_str());
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    M3D_KERNEL->GetFileServer().AddFile(fileName.c_str());
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         M3D_ENGINE_CFG.m_console->PrintF("File " + fileName + " not found\n");
         return false;
     }
 
-    m3d::g_Kernel->GetTimer().SetActiveState(1);
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    M3D_KERNEL->GetTimer().SetActiveState(1);
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     xmlFile->Read(*stream);
 
     ref_ptr ndGeneral = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
@@ -473,7 +472,7 @@ bool CMiracle3d::LoadSavedGame(CStr const& saveDir)
     ai::theStatisticManager->LoadFromXml(xmlFile, ndStatistics);
 
     PutSplash(90, GetStringByStringId0("SavedGameLoading").c_str());
-    m3d::g_Kernel->GetTimer().SetTimeScale(1.0f);
+    M3D_KERNEL->GetTimer().SetTimeScale(1.0f);
     m_serverAnimatedModels->GenerateImpostorsIfNeeded();
 
     PutSplash(100, GetStringByStringId0("SavedGameLoading").c_str());
@@ -481,7 +480,7 @@ bool CMiracle3d::LoadSavedGame(CStr const& saveDir)
     m_pInterfaceManager->LaunchEvent(85, GUI_EVENT_CUSTOM, &startType);
     M3D_LOG_INFO("Game loaded: \"" + saveDir + "\"");
 
-    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    M3D_KERNEL->GetTimer().SetActiveState(1);
     if (AppActive() && M3D_ENGINE_CFG.m_clipCursorWithinRenderWnd.GetB())
     {
         CaptureAndClipSystemCursor(true);
@@ -550,9 +549,9 @@ bool CMiracle3d::GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode)
 //Verified: CMiracle3d::OnFinishIntroVideoPlaying
 int CMiracle3d::OnFinishIntroVideoPlaying()
 {
-    if (M3D_KERNEL->GetEngineCfg().m_autoPlayVideo.GetB() && videoNum >= 0 && videoNum < 4)
+    if (M3D_ENGINE_CFG.m_autoPlayVideo.GetB() && videoNum >= 0 && videoNum < 4)
     {
-        auto const videoFile = M3D_KERNEL->GetEngineCfg().m_video[videoNum].GetS();
+        auto const videoFile = M3D_ENGINE_CFG.m_video[videoNum].GetS();
         ++videoNum;
         StartPlayingVideo(videoFile, &CMiracle3d::OnFinishIntroVideoPlaying);
     }
@@ -569,7 +568,7 @@ int CMiracle3d::GameDone()
     m_gameInited = false;
     delete m3d::pClient;
     m3d::pClient = nullptr;
-    M3D_KERNEL->GetEngineCfg().m_levFileName.Set("Empty", true);
+    M3D_ENGINE_CFG.m_levFileName.Set("Empty", true);
     return 1;
 }
 
@@ -667,7 +666,7 @@ int CMiracle3d::CinematicInit()
 
 void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
 {
-    if (M3D_KERNEL->GetEngineCfg().m_mus_Enable.GetB())
+    if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
     {
         if (musicType == HACKMUSIC_GAME)
         {
@@ -687,8 +686,8 @@ void CMiracle3d::PlayHackedMusic(HackedMusicType musicType, bool bForceRestart)
             else
             {
                 if (musicType != HACKMUSIC_CUSTOM &&
-                    (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType) &&
-                    m3d::Application::g_pApp->m_sound && musicType >= HACKMUSIC_MENU && musicType < m_musicNames.size())
+                    (m_bMustStartNewMusic || bForceRestart || musicType != this->m_hackedMusicType) && M3D_SOUND &&
+                    musicType >= HACKMUSIC_MENU && musicType < m_musicNames.size())
                 {
                     m3d::Application::StartPlayingMusic(this->m_musicNames[musicType].c_str(), 1, 1);
                 }
@@ -820,7 +819,7 @@ bool CMiracle3d::CinematicFade()
         currentCinematic->Stop();
 
         // Update engine configuration
-        m3d::g_Kernel->GetEngineCfg().m_FogOfWar.SetI(1, false);
+        M3D_ENGINE_CFG.m_FogOfWar.SetI(1, false);
         ai::pServer->EndCinematic();
 
         // Handle cinematic skipping or continuation
@@ -1188,7 +1187,7 @@ int CMiracle3d::CinematicClear()
         app->m_pInterfaceManager->ShowWindow(19, false, false, false, false, nullptr);
         app->m_pInterfaceManager->Show(!m_bGuiWasHiddenBeforeCinematic, true);
         GetStation()->SetCursorShow(true);
-        m3d::g_Kernel->GetEngineCfg().m_FogOfWar.SetI(1);
+        M3D_ENGINE_CFG.m_FogOfWar.SetI(1);
         if ((m_cinematic->GetCurItem().m_flags & 2) != 0)
         {
             ai::pServer->PostPlayerEvent(ai::GE_END_CINEMATIC);
@@ -1506,8 +1505,8 @@ int CMiracle3d::LoadLevel(
         m_curCamera.m_worldOrigin = ai::gDynamicScene->GetVehicleControlledByPlayer()->GetPosition();
     }
     m_blockMusicManager->Reset();
-    m3d::g_Kernel->GetTimer().SetActiveState(1);
-    if (app->AppActive() && m3d::g_Kernel->GetEngineCfg().m_clipCursorWithinRenderWnd.GetB())
+    M3D_KERNEL->GetTimer().SetActiveState(1);
+    if (app->AppActive() && M3D_ENGINE_CFG.m_clipCursorWithinRenderWnd.GetB())
     {
         CaptureAndClipSystemCursor(true);
     }
@@ -1519,7 +1518,7 @@ int CMiracle3d::LoadLevel(
 void CMiracle3d::FullSystyemAndUserUnpause()
 {
     // RVA 0x402420
-    m3d::g_Kernel->GetTimer().SetTimeScale(m_normalTimeScale);
+    M3D_KERNEL->GetTimer().SetTimeScale(m_normalTimeScale);
     m_paused = false;
     m_userPaused = false;
     m_saveTimeScale = 0.0f;
@@ -1732,8 +1731,8 @@ int CMiracle3d::LoadMainMenuLevel()
     {
         return 0;
     }
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
-    CStr mapName = m3d::g_Kernel->GetEngineCfg().m_mainMenuLevelName.GetS();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
+    CStr mapName = M3D_ENGINE_CFG.m_mainMenuLevelName.GetS();
     if (stream->Open(mapName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         stream->Close();
@@ -1752,7 +1751,7 @@ int CMiracle3d::LoadMainMenuLevel()
             m_bDoNotLoadMainmenuLevel = true;
             return 0;
         }
-        m3d::g_Kernel->GetEngineCfg().m_levFileName.Set(mapName.c_str());
+        M3D_ENGINE_CFG.m_levFileName.Set(mapName.c_str());
         return 1;
     }
     M3D_LOG_INFO("Could not find main menu level...");
@@ -1807,9 +1806,9 @@ int CMiracle3d::StartPlayingVideo(char const* videoFile, int (CMiracle3d::*onFin
     // RVA 0x422AB0 - plays a video (an empty name "plays" nothing and counts as started). Returns 0 when started,
     // 1 when a video is already playing, 2 when it can't be loaded; in the failure cases the callback runs at once.
     CStr const file = videoFile;
-    if (g_pApp->m_sound && !file.empty())
+    if (M3D_SOUND && !file.empty())
     {
-        g_pApp->m_sound->PauseAllSounds(true);
+        M3D_SOUND->PauseAllSounds(true);
     }
 
     int res = 0;
@@ -1884,7 +1883,7 @@ bool CMiracle3d::SaveGame(CStr const& saveDir, bool bQuiet)
     }
 
     CStr const fileName = saveDir + "\\currentmap.xml";
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_WRITE))
     {
         M3D_ENGINE_CFG.m_console->PrintF("File " + fileName + " couldn't be open for writing\n");
@@ -1895,9 +1894,9 @@ bool CMiracle3d::SaveGame(CStr const& saveDir, bool bQuiet)
     {
         CaptureMouse(this);
     }
-    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    M3D_KERNEL->GetTimer().SetActiveState(1);
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     ref_ptr ndGeneral = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "General");
     xmlFile->AddChild(ndGeneral);
     ndGeneral->SetAttribute("MapName", help::GetMapNameFromFileName(CStr(M3D_ENGINE_CFG.m_levFileName.GetS())).c_str());
@@ -1986,7 +1985,7 @@ bool CMiracle3d::SaveGame(CStr const& saveDir, bool bQuiet)
     stream->Close();
     M3D_LOG_INFO("Game '" + fileName + "' saved.");
 
-    m3d::g_Kernel->GetTimer().SetActiveState(1);
+    M3D_KERNEL->GetTimer().SetActiveState(1);
     if (AppActive() && M3D_ENGINE_CFG.m_clipCursorWithinRenderWnd.GetB())
     {
         CaptureAndClipSystemCursor(true);
@@ -2106,7 +2105,7 @@ m3d::ui::Wnd* CMiracle3d::CaptureMouse(m3d::ui::Wnd* wnd)
         M3D_APP->SetMouseXy(x, y);
         m_wndMouseCapture = self;
     }
-    if (m_wndMouseCapture == self || !m3d::g_Kernel->GetEngineCfg().m_r_dxcursor.GetB())
+    if (m_wndMouseCapture == self || !M3D_ENGINE_CFG.m_r_dxcursor.GetB())
     {
         EnableDXCursor(false);
     }
@@ -2322,7 +2321,7 @@ int CMiracle3d::Controls(double t0, double tlen)
         // Special controls
         if (impulses->GetImpulseState(IM_CAR_TURNTOWHEELS))
         {
-            auto turnToWheelsAllowed = m3d::g_Kernel->GetEngineCfg().m_ai_turntowheels_allowed;
+            auto turnToWheelsAllowed = M3D_ENGINE_CFG.m_ai_turntowheels_allowed;
             if (turnToWheelsAllowed.GetB())
             {
                 CVector torque{0.0f, 0.0f, 0.0f};
@@ -2563,12 +2562,12 @@ void CMiracle3d::Pause()
 {
     if (!m_paused && m_curGameMode.Get() != GS_MAINMENU)
     {
-        if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             PauseSound();
         }
-        m_saveTimeScale = m3d::g_Kernel->GetTimer().GetTimeScale();
-        m3d::g_Kernel->GetTimer().SetTimeScale(0.0);
+        m_saveTimeScale = M3D_KERNEL->GetTimer().GetTimeScale();
+        M3D_KERNEL->GetTimer().SetTimeScale(0.0);
         m_paused = true;
     }
 }
@@ -2577,7 +2576,7 @@ void CMiracle3d::UnPause()
 {
     if (m_paused)
     {
-        m3d::g_Kernel->GetTimer().SetTimeScale(m_saveTimeScale);
+        M3D_KERNEL->GetTimer().SetTimeScale(m_saveTimeScale);
         if (!m_userPaused)
         {
             UnPauseSound();
@@ -2604,9 +2603,9 @@ int CMiracle3d::GetCurDifficultyLevel() const
 
 void CMiracle3d::UnPauseSound()
 {
-    if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+    if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
     {
-        g_pApp->m_sound->PauseGroup(2, false);
+        M3D_SOUND->PauseGroup(2, false);
     }
 }
 
@@ -2617,9 +2616,9 @@ m3d::Class* CMiracle3d::GetClass() const
 
 void CMiracle3d::PauseSound()
 {
-    if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+    if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
     {
-        g_pApp->m_sound->PauseGroup(2, true);
+        M3D_SOUND->PauseGroup(2, true);
     }
 }
 
@@ -3005,9 +3004,9 @@ int CMiracle3d::DoneMedia()
 {
     // RVA 0x417790 - tears the game down: the level, the client, the UI and the media managers.
     M3D_LOG_INFO("--- Done Media ---");
-    if (g_pApp->m_sound != nullptr)
+    if (M3D_SOUND != nullptr)
     {
-        g_pApp->m_sound->StopAllSounds();
+        M3D_SOUND->StopAllSounds();
     }
     if (g_Vivisector != nullptr)
     {
@@ -3038,7 +3037,7 @@ int CMiracle3d::DoneMedia()
     delete m3d::pClient;
     m3d::pClient = nullptr;
 
-    m3d::g_Kernel->GetEngineCfg().m_levFileName.Set("Empty");
+    M3D_ENGINE_CFG.m_levFileName.Set("Empty");
     if (m_pInterfaceManager->DecRef() <= 0)
     {
         m_pInterfaceManager = nullptr;
@@ -3068,54 +3067,54 @@ int CMiracle3d::InitMedia()
 {
     M3D_LOG_INFO("--- Init Media ---");
     m_curGameMode.Set(GS_INITIALIZATION);
-    g_pApp->m_renderer->RegisterResetCallback(this);
+    M3D_RENDERER->RegisterResetCallback(this);
     m_postEffect = new PostEffectManager{};
     if (!m_postEffect->Initialize())
     {
         SYS_ERROR("m_postEffect->Initialize()");
     }
     RegisterGlobalNatives();
-    //m3d::g_Kernel->GetTimer().GetCurTime();
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_maxDist, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_minDist, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cameraSpeed, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cameraHeight, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_collideCameraRadius, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_smoothCameraRadius, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_minAngle, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_maxAngle, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_fov, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cinematic->m_fadePeriod, nullptr);
-    m3d::g_Kernel->AddClass(RT_CLASS_LOCAL(Profile));
-    m3d::g_Kernel->AddClass(RT_CLASS_LOCAL(ProfileManager));
+    //M3D_KERNEL->GetTimer().GetCurTime();
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_maxDist, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_minDist, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cameraSpeed, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cameraHeight, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_collideCameraRadius, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_smoothCameraRadius, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_minAngle, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_maxAngle, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_fov, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cinematic->m_fadePeriod, nullptr);
+    M3D_KERNEL->AddClass(RT_CLASS_LOCAL(Profile));
+    M3D_KERNEL->AddClass(RT_CLASS_LOCAL(ProfileManager));
     GetBlockMusicManager()->InitOnce();
 
     m_pInterfaceManager = new TruxxUiManager{};
     if (m_pInterfaceManager != nullptr)
     {
         m_pInterfaceManager->Init();
-        m_profileManager = dynamic_cast<ProfileManager*>(m3d::g_Kernel->New("ProfileManager"));
+        m_profileManager = dynamic_cast<ProfileManager*>(M3D_KERNEL->New("ProfileManager"));
         m_townMusicManager->Init();
         m_radioEngine->Init();
         g_pApp->m_pImpulses->LoadFromDefaults();
         RegisterConsoleCommands();
         initVivisectionBlock();
-        if (m3d::g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
-            g_pApp->m_sound->SetGroupVolume(0, m3d::g_Kernel->GetEngineCfg().m_mus_Volume.GetC());
-            g_pApp->m_sound->SetMaxVolume(m3d::g_Kernel->GetEngineCfg().m_mus_Volume.GetI());
+            M3D_SOUND->SetGroupVolume(0, M3D_ENGINE_CFG.m_mus_Volume.GetC());
+            M3D_SOUND->SetMaxVolume(M3D_ENGINE_CFG.m_mus_Volume.GetI());
         }
-        if (m3d::g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
-            g_pApp->m_sound->SetGroupVolume(1, m3d::g_Kernel->GetEngineCfg().m_snd_2dVolume.GetC());
-            g_pApp->m_sound->SetGroupVolume(2, m3d::g_Kernel->GetEngineCfg().m_snd_3dVolume.GetC());
+            M3D_SOUND->SetGroupVolume(1, M3D_ENGINE_CFG.m_snd_2dVolume.GetC());
+            M3D_SOUND->SetGroupVolume(2, M3D_ENGINE_CFG.m_snd_3dVolume.GetC());
         }
 
         std::srand(std::time(nullptr));
         GetMusicServer().AddItem("file:", "mainmenu");
         m_musicNames.resize(4);
         m_musicNames[0] = "mainmenu";
-        m_bDoNotLoadMainmenuLevel = m3d::g_Kernel->GetEngineCfg().m_DoNotLoadMainmenuLevel.GetB();
+        m_bDoNotLoadMainmenuLevel = M3D_ENGINE_CFG.m_DoNotLoadMainmenuLevel.GetB();
         CaptureMouse(nullptr);
         SetCursorShow(false);
         InitBackgroundTexture();
@@ -3135,8 +3134,8 @@ int CMiracle3d::FrameMove()
         profiler->StartCountdown();
         PlayHackedMusic(m_hackedMusicType, false);
         m3d::RadioEngine::GetInstance()->PlayNextSoundMessage();
-        auto startTime = m3d::g_Kernel->GetTimer().GetFrameStartTime();
-        auto lastTime = m3d::g_Kernel->GetTimer().GetLastFrameTime();
+        auto startTime = M3D_KERNEL->GetTimer().GetFrameStartTime();
+        auto lastTime = M3D_KERNEL->GetTimer().GetLastFrameTime();
         float const dT = static_cast<float>(lastTime * 0.001);
         if (m3d::pClient)
         {
@@ -3146,15 +3145,15 @@ int CMiracle3d::FrameMove()
                 ref_ptr wndTown = m_pInterfaceManager->GetWindow(4);
                 if (wndTown && wndTown->IsChildOf(M3D_APP))
                 {
-                    HandleCinematic(m3d::g_Kernel->GetTimer().GetLastFrameTimeUnscaled() * 0.001);
+                    HandleCinematic(M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled() * 0.001);
                 }
                 else
                 {
                     // Paused game time (a zero time scale) holds the cinematic.
                     float tlen = 0.0f;
-                    if (m3d::g_Kernel->GetTimer().GetTimeScale() > 0.0f)
+                    if (M3D_KERNEL->GetTimer().GetTimeScale() > 0.0f)
                     {
-                        tlen = static_cast<float>(m3d::g_Kernel->GetTimer().GetLastFrameTime() * 0.001);
+                        tlen = static_cast<float>(M3D_KERNEL->GetTimer().GetLastFrameTime() * 0.001);
                     }
                     HandleCinematic(tlen);
                 }
@@ -3365,7 +3364,7 @@ void CMiracle3d::setFov(float value)
 
 void CMiracle3d::RegisterConsoleCommands()
 {
-    auto& config = m3d::g_Kernel->GetEngineCfg();
+    auto& config = M3D_ENGINE_CFG;
     for (auto const& command : conCommands)
     {
         config.m_console->RegisterCommand(command.m_name, command.m_id, this);
@@ -3375,9 +3374,9 @@ void CMiracle3d::RegisterConsoleCommands()
 int CMiracle3d::InitImpulses()
 {
     using namespace m3d;
-    g_Kernel->AddClass(RT_CLASS_LOCAL(GameImpulse));
-    g_Kernel->AddClass(RT_CLASS_LOCAL(TruxxImpulse));
-    m_pImpulses = dynamic_cast<TruxxImpulse*>(m3d::g_Kernel->New("TruxxImpulse"));
+    M3D_KERNEL->AddClass(RT_CLASS_LOCAL(GameImpulse));
+    M3D_KERNEL->AddClass(RT_CLASS_LOCAL(TruxxImpulse));
+    m_pImpulses = dynamic_cast<TruxxImpulse*>(M3D_KERNEL->New("TruxxImpulse"));
     if (m_pImpulses == nullptr)
     {
         return 0;
@@ -3392,7 +3391,7 @@ int CMiracle3d::InitImpulses()
 
 void CMiracle3d::InitBackgroundTexture()
 {
-    m_backgroundTexture = g_pApp->m_renderer->GetFullFrameFrameBufferTexture();
-    g_pApp->m_renderer->SetTextureParameter(m_backgroundTexture, m3d::rend::TM_WRAP_S, 3);
-    g_pApp->m_renderer->SetTextureParameter(m_backgroundTexture, m3d::rend::TM_WRAP_T, 3);
+    m_backgroundTexture = M3D_RENDERER->GetFullFrameFrameBufferTexture();
+    M3D_RENDERER->SetTextureParameter(m_backgroundTexture, m3d::rend::TM_WRAP_S, 3);
+    M3D_RENDERER->SetTextureParameter(m_backgroundTexture, m3d::rend::TM_WRAP_T, 3);
 }

@@ -5,7 +5,7 @@
 #include <server/cinematicpath.h>
 #include <server/components/numericboundedbelow.h>
 
-class RandomCoeffWithDispersion;
+struct RandomCoeffWithDispersion;
 
 namespace ai
 {

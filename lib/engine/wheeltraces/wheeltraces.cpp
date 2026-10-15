@@ -177,7 +177,7 @@ namespace m3d
         SkidStrip& strip = m_skidStrips[stripIdx];
         strip.m_binUse = false;
         m_ownersToIdxMap.erase(it);
-        strip.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
+        strip.m_timeStamp = M3D_KERNEL->GetTimer().GetCurTime();
 
         if (smoothEnd && strip.m_stripSize > 0)
         {
@@ -215,7 +215,7 @@ namespace m3d
         strip.m_binUse = true;
         strip.m_texCoord = 0.0f;
         strip.m_stripSize = 0;
-        strip.m_lastFramestamp = g_Kernel->GetTimer().GetCurFrame();
+        strip.m_lastFramestamp = M3D_KERNEL->GetTimer().GetCurFrame();
         strip.m_soilType = type;
         strip.m_boundCenter = ZeroVector;
         strip.m_boundRadius = 0.0f;
@@ -257,7 +257,7 @@ namespace m3d
         M3D_ASSERT(m_shader);
         m_shader->SetDefaultTechnique(true);
 
-        ProfilerStack& profilers = m3d::Application::g_pApp->GetProfilerStack();
+        ProfilerStack& profilers = M3D_APP->GetProfilerStack();
         m_profiler = profilers.GetProfiler(profilers.AddProfiler("wheeltraces", 0x1Eu));
     }
 
@@ -296,7 +296,7 @@ namespace m3d
             SkidStrip& strip = m_skidStrips[stripIdx];
 
             // A skipped frame or a change of soil ends the trace.
-            unsigned const curFrame = g_Kernel->GetTimer().GetCurFrame();
+            unsigned const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
             if (static_cast<int>(curFrame - strip.m_lastFramestamp) > 1 || strip.m_soilType != soilType)
             {
                 EndSkidding(owner, true);

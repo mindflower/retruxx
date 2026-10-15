@@ -461,7 +461,7 @@ namespace ai
             this->m_deadTimer = v4;
             if (v4 <= 0.0 &&
                 (!this->m_testVisibility || m_physicBody == 0 || !m_physicBody->m_Node ||
-                 m_physicBody->m_Node->m_frameVisible != m3d::g_Kernel->GetTimer().GetCurFrame() - 1))
+                 m_physicBody->m_Node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1))
             {
                 Remove();
             }
@@ -596,7 +596,7 @@ namespace ai
 
     void SimplePhysicObj::RenderDebugInfo() const
     {
-        if (!m_physicBody->m_Node || m_physicBody->m_Node->m_frameVisible == m3d::g_Kernel->GetTimer().GetCurFrame())
+        if (!m_physicBody->m_Node || m_physicBody->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
         {
             PhysicObj::RenderDebugInfo();
             if (!m_spaceId || !m_bIsSpaceOwner || dGeomIsEnabled(m_spaceId))

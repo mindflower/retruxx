@@ -180,7 +180,7 @@ CVector const& ItemModelWnd::GetDefaultTranslation() const
 void ItemModelWnd::SetAutosized(bool bAutosized)
 {
     m_bAutosized = bAutosized;
-    if (!IsChildOf(m3d::Application::g_pApp))
+    if (!IsChildOf(M3D_APP))
     {
         return;
     }
@@ -212,7 +212,7 @@ void ItemModelWnd::SetDefaultRotationAngleX(float angle)
 void ItemModelWnd::SetDefaultTranslation(CVector const& translation)
 {
     m_defaultTranslation = translation;
-    if (!IsChildOf(m3d::Application::g_pApp))
+    if (!IsChildOf(M3D_APP))
     {
         return;
     }

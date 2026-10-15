@@ -12,8 +12,8 @@ namespace m3d
     bool SoundConHandler::HandleCVar(CVar const* var, CConsoleParams const& params)
     {
         if (var == nullptr ||
-            var != &g_Kernel->GetEngineCfg().m_mus_Volume && var != &g_Kernel->GetEngineCfg().m_snd_2dVolume &&
-                var != &g_Kernel->GetEngineCfg().m_snd_3dVolume)
+            var != &M3D_ENGINE_CFG.m_mus_Volume && var != &M3D_ENGINE_CFG.m_snd_2dVolume &&
+                var != &M3D_ENGINE_CFG.m_snd_3dVolume)
         {
             return true;
         }
@@ -28,26 +28,26 @@ namespace m3d
             intToken = 0;
         }
 
-        if (var == &g_Kernel->GetEngineCfg().m_mus_Volume)
+        if (var == &M3D_ENGINE_CFG.m_mus_Volume)
         {
-            if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+            if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
             {
-                Application::g_pApp->m_sound->SetGroupVolume(0, intToken);
-                Application::g_pApp->m_sound->SetMaxVolume(intToken);
+                M3D_SOUND->SetGroupVolume(0, intToken);
+                M3D_SOUND->SetMaxVolume(intToken);
             }
         }
-        else if (var == &g_Kernel->GetEngineCfg().m_snd_2dVolume)
+        else if (var == &M3D_ENGINE_CFG.m_snd_2dVolume)
         {
-            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+            if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
             {
-                Application::g_pApp->m_sound->SetGroupVolume(1, intToken);
+                M3D_SOUND->SetGroupVolume(1, intToken);
             }
         }
-        else if (var == &g_Kernel->GetEngineCfg().m_snd_3dVolume)
+        else if (var == &M3D_ENGINE_CFG.m_snd_3dVolume)
         {
-            if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+            if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
             {
-                Application::g_pApp->m_sound->SetGroupVolume(2, intToken);
+                M3D_SOUND->SetGroupVolume(2, intToken);
             }
         }
         return true;

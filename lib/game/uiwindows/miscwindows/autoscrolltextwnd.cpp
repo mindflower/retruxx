@@ -333,7 +333,7 @@ void AutoScrollTextWnd::PrecalcTextBounds()
 void AutoScrollTextWnd::ScrollTextOrigin()
 {
     // RVA 0x4A58C0: move the origin up by one unscaled frame time * pixel speed.
-    double const dtSec = static_cast<double>(m3d::g_Kernel->GetTimer().GetLastFrameTimeUnscaled()) * 0.001;
+    double const dtSec = static_cast<double>(M3D_KERNEL->GetTimer().GetLastFrameTimeUnscaled()) * 0.001;
     m_textBounds.y0 = static_cast<float>(m_textBounds.y0 - dtSec * m_scrollPixelSpeed);
 }
 

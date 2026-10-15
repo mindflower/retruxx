@@ -18,9 +18,9 @@ namespace m3d
     void RadioEngine::Init()
     {
         m_instance = this;
-        if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
-            auto pathToSamples = g_Kernel->GetEngineCfg().m_snd_pathToRadioSamples.GetS();
+            auto pathToSamples = M3D_ENGINE_CFG.m_snd_pathToRadioSamples.GetS();
             CStr err;
             ref_ptr samplesXmlFile = ReadXmlFile(pathToSamples, &err);
             if (samplesXmlFile)
@@ -45,14 +45,14 @@ namespace m3d
                             m_soundIdName[id] = textAttr;
 
                             auto soundAttr = sample->GetAttribute("sound");
-                            auto snd = Application::g_pApp->m_sound->AddSound(
-                                soundAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
+                            auto snd =
+                                M3D_SOUND->AddSound(soundAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
                             m_soundIdSound[id] = snd;
                         }
                     }
                 }
 
-                auto pathToRadioSounds = g_Kernel->GetEngineCfg().m_snd_pathToRadioSounds.GetS();
+                auto pathToRadioSounds = M3D_ENGINE_CFG.m_snd_pathToRadioSounds.GetS();
                 ref_ptr soundsXmlFile = ReadXmlFile(pathToRadioSounds, &err);
                 if (soundsXmlFile)
                 {
@@ -141,7 +141,7 @@ namespace m3d
     void RadioEngine::PlayNextSoundMessage()
     {
         // RVA 0x428470
-        if (!m_instance || !g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (!m_instance || !M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return;
         }
@@ -166,7 +166,7 @@ namespace m3d
 
         // A message type is repeated at most once every 10 seconds, and only
         // during normal gameplay.
-        if (g_Kernel->GetTimer().GetCurTime() - m_lastTime[sslFront.type] < 10000 || M3D_APP->GetCurGameMode() != 0)
+        if (M3D_KERNEL->GetTimer().GetCurTime() - m_lastTime[sslFront.type] < 10000 || M3D_APP->GetCurGameMode() != 0)
         {
             return;
         }
@@ -199,7 +199,7 @@ namespace m3d
         m_curTextToShow = m_soundIdName[sampleId];
         m_curChannelId = M3D_APP->m_sound->PlaySound2D(sound, false);
         M3D_APP->m_pInterfaceManager->AddFadingMsg(m_curTextToShow, {});
-        m_lastTime[sslFront.type] = g_Kernel->GetTimer().GetCurTime();
+        m_lastTime[sslFront.type] = M3D_KERNEL->GetTimer().GetCurTime();
     }
 
     RadioEngine* RadioEngine::GetInstance()
@@ -210,7 +210,7 @@ namespace m3d
     void RadioEngine::PlaySoundMessage(int belongId, int messageType, CStr const& soundId)
     {
         // RVA 0x4282C0
-        if (!g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return;
         }
@@ -218,7 +218,7 @@ namespace m3d
         if (belongId == -1)
         {
             // No speaker: only restart this message type's repeat timer.
-            m_lastTime[messageType] = g_Kernel->GetTimer().GetCurTime();
+            m_lastTime[messageType] = M3D_KERNEL->GetTimer().GetCurTime();
         }
         else if (m_groupNameByBelong.find(belongId) != m_groupNameByBelong.end())
         {

@@ -91,7 +91,7 @@ void GameOptionsWnd::InitAutoHelpControls()
 void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
 {
     UpdateNumRepliesPrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderNumRepliesBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderNumRepliesBlocked)
     {
         ApplyNumReplies();
     }
@@ -228,8 +228,7 @@ void GameOptionsWnd::InitGameDifficultyControls()
     {
         for (int i = 0; i < ai::theGlobProp.m_difficultyLevelCoeffs.size(); ++i)
         {
-            auto name =
-                m3d::Application::g_pApp->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name);
+            auto name = M3D_APP->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name);
             auto idx = m_cbGameDifficulty->AddItem(name);
             if (idx != -1)
             {

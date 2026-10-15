@@ -206,7 +206,7 @@ namespace m3d
             // the drop-down list as children. Only the origin and width of b are
             // used: the height follows from the layout.
             auto rect = b;
-            m_btnToggle = dynamic_cast<ButtonWnd*>(g_Kernel->New("ButtonWnd"));
+            m_btnToggle = dynamic_cast<ButtonWnd*>(M3D_KERNEL->New("ButtonWnd"));
             if (!m_btnToggle)
             {
                 return 0;
@@ -226,7 +226,7 @@ namespace m3d
             }
             m_btnToggle->SetPersistance(false);
 
-            m_wndSelText = dynamic_cast<Wnd*>(g_Kernel->New("Wnd"));
+            m_wndSelText = dynamic_cast<Wnd*>(M3D_KERNEL->New("Wnd"));
             if (!m_wndSelText)
             {
                 return 0;
@@ -243,7 +243,7 @@ namespace m3d
             }
             m_wndSelText->SetPersistance(false);
 
-            m_wndStringList = dynamic_cast<StringsListBoxWnd*>(g_Kernel->New("StringsListBoxWnd"));
+            m_wndStringList = dynamic_cast<StringsListBoxWnd*>(M3D_KERNEL->New("StringsListBoxWnd"));
             if (!m_wndStringList)
             {
                 return 0;
@@ -634,7 +634,7 @@ namespace m3d
                 RecalcSelfBounds();
                 UpdateToggleButtonPane();
                 int const msg = m_state == STATE_OPEN ? 47 : 48;
-                Application::g_pApp->EnqueueMessage(msg, this, 0, 0, 0, {}, {});
+                M3D_APP->EnqueueMessage(msg, this, 0, 0, 0, {}, {});
             }
         }
 
