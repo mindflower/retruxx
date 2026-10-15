@@ -41,9 +41,9 @@ public:
 
 public:
     static m3d::Class* GetBaseClass();
-    int AddMsgT(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&);
-    int AddMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&);
-    int AddMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > const&);
+    int AddMsgT(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&);
+    int AddMsgByStrId(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&);
+    int AddMsg(CStr const&, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> const&);
     virtual m3d::Object* Clone();
     virtual ~FadingMsgList();
     virtual m3d::Class* GetClass() const;
@@ -54,7 +54,8 @@ protected:
     int PushBack(class FadingMsgItem*);
     float GetSummaryHeight();
     int AddEnumeredMsg(int, m3d::Event const*);
-    void GetParamsForEnumeredMsg(int, m3d::Event const*, std::vector<m3d::AIParam, std::allocator<m3d::AIParam> >&) const;
+    void GetParamsForEnumeredMsg(int, m3d::Event const*, std::vector<m3d::AIParam, std::allocator<m3d::AIParam>>&)
+        const;
     void RecalcLayot();
     CStr MsgId2Name(int) const;
     int InsertMsg(FadingMsgItem*);
@@ -79,7 +80,7 @@ private:
     FadingMsgList::Direction m_direction;
 };
 
-class FadingMsgItem :  public m3d::ui::Wnd
+class FadingMsgItem : public m3d::ui::Wnd
 {
 public:
     enum Stage
@@ -109,18 +110,18 @@ public:
     };
 
 public:
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
-    int SetupForMsg(CStr const &, PointBase<float> const &,float, FadingMsgList::MsgType);
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Object* Clone();
+    int SetupForMsg(CStr const&, PointBase<float> const&, float, FadingMsgList::MsgType);
     virtual ~FadingMsgItem();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
+    virtual m3d::Class* GetClass() const;
+    static m3d::Object* CreateObject();
 
 protected:
     void Update();
     void StartFade();
     void Fade();
-    FadingMsgItem(FadingMsgItem const &);
+    FadingMsgItem(FadingMsgItem const&);
     FadingMsgItem();
 
 public:
@@ -137,4 +138,3 @@ private:
     // NOTE: not present in the header this class was extracted from.
     static inline FadingMsgItem::AuxInfo m_aif;
 };
-

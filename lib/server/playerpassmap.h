@@ -8,18 +8,18 @@ namespace ai
     {
     private:
         retruxx::vector<unsigned int> m_container;
-        /* 0x0010 */ unsigned int m_sideSize = 0;
+        unsigned int m_sideSize = 0;
 
     public:
-        PlayerPassMap(const ai::PlayerPassMap&);
+        PlayerPassMap(ai::PlayerPassMap const&);
         PlayerPassMap();
         void Create(unsigned int sideLength, bool bDefaultValue);
         void Fill(bool bValue);
         void Clear();
-        bool LoadFromBinaryFile(const CStr& fileName);
-        bool SaveToBinaryFile(const CStr& fileName) const;
+        bool LoadFromBinaryFile(CStr const& fileName);
+        bool SaveToBinaryFile(CStr const& fileName) const;
         bool GetValue(unsigned int x, unsigned int y) const;
         void SetValue(unsigned int x, unsigned int y, bool bValue);
         bool IsEmpty() const;
-    }; /* size: 0x0014 */
-}
+    };
+}  // namespace ai

@@ -51,7 +51,8 @@ namespace ai
     DynamicQuestReachPrototypeInfo const* DynamicQuestReach::GetPrototypeInfo() const
     {
         // RVA 0x82D350
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestReachPrototypeInfo const);
+        return RT_DYNCAST(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestReachPrototypeInfo const);
     }
 
     int DynamicQuestReach::OnEvent(Event const& evn)
@@ -100,8 +101,7 @@ namespace ai
         if (GetTargetObjId() != -1)
         {
             m3d::AIParam param(static_cast<int>(GE_OBJECT_ENTERS_LOCATION));
-            theProcessManager->PostMessageA(
-                GE_SUBSCRIBE, GetTargetObjId(), GetId(), 0.0, param, {}, 1);
+            theProcessManager->PostMessageA(GE_SUBSCRIBE, GetTargetObjId(), GetId(), 0.0, param, {}, 1);
         }
     }
 
@@ -122,8 +122,7 @@ namespace ai
         CVector const delta = target->GetPosition() - hirer->GetPosition();
 
         int const reward = static_cast<int>(
-            playerVehicle->GetSchwarz() * (sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) *
-                                          0.001) *
+            playerVehicle->GetSchwarz() * (sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) * 0.001) *
             prototypeInfo->m_playerSchwarzPart);
         return reward > prototypeInfo->m_minReward ? reward : prototypeInfo->m_minReward;
     }
@@ -165,4 +164,4 @@ namespace ai
         theProcessManager->PostMessageA(GE_UNSUBSCRIBE, GetTargetObjId(), GetId(), 0.0, param, {}, 1);
         _SetStatus(STATUS_COMPLETE);
     }
-}
+}  // namespace ai

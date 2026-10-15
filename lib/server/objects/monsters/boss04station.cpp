@@ -132,7 +132,8 @@ namespace ai
         return PhysicObj::GetPropertySaveStatus(id);
     }
 
-    void Boss04Station::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void Boss04Station::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // Declared in the PDB but never emitted in the shipped build; the usual property-map pattern.
         for (auto const& property : m_propertiesMap)

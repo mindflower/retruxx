@@ -15,8 +15,7 @@ static CVector project(CMatrix const& m, float scx, float scy, int w, int h, CVe
 {
     CVector view = m.vecRot(world);
 
-    return CVector(w * view.x * scx / (2.0f * view.z) + w / 2, h / 2 - h * view.y * scy / (2.0f * view.z),
-                   view.z);
+    return CVector(w * view.x * scx / (2.0f * view.z) + w / 2, h / 2 - h * view.y * scy / (2.0f * view.z), view.z);
 }
 
 // orig 0x625db0 coremath.h:196 - screen pixel to a unit direction in the space of m.
@@ -131,8 +130,10 @@ void CDevice::MatSet(CMatrix const& mat)
 // orig 0x6256c0 matrices.cpp:160 - view = mat * view
 void CDevice::MatMul(CMatrix const& mat)
 {
-    D3DXMatrixMultiply((D3DXMATRIX*)&m_matViewStack[m_matViewStackTop], (D3DXMATRIX const*)&mat,
-                       (D3DXMATRIX const*)&m_matViewStack[m_matViewStackTop]);
+    D3DXMatrixMultiply(
+        (D3DXMATRIX*)&m_matViewStack[m_matViewStackTop],
+        (D3DXMATRIX const*)&mat,
+        (D3DXMATRIX const*)&m_matViewStack[m_matViewStackTop]);
 
     m_matInvViewIsNotActuated = true;
     m_matViewIsNotActuated = true;
@@ -212,8 +213,7 @@ void CDevice::MatSetProj(CMatrix const& mat)
 // orig 0x625810 matrices.cpp:274
 void CDevice::ActuateProjectionMatrix()
 {
-    SetXFormMatrix(D3DTS_PROJECTION,
-                   m_fastClipEnabled ? m_fastClipPlaneProjMatrix : m_matProjStack[m_matProjStackTop]);
+    SetXFormMatrix(D3DTS_PROJECTION, m_fastClipEnabled ? m_fastClipPlaneProjMatrix : m_matProjStack[m_matProjStackTop]);
 }
 
 // orig 0x625860 matrices.cpp:289
@@ -265,9 +265,13 @@ CVector CDevice::Project(CVector const& world)
 CVector* CDevice::ProjectWorldAbs(CVector* result, CVector const* world)
 {
     CVector projectedVec;
-    D3DXVec3Project((D3DXVECTOR3*)&projectedVec, (D3DXVECTOR3 const*)world, &m_curViewportD3D,
-                    (D3DXMATRIX const*)&m_matProjStack[m_matProjStackTop],
-                    (D3DXMATRIX const*)&m_matViewStack[m_matViewStackTop], NULL);
+    D3DXVec3Project(
+        (D3DXVECTOR3*)&projectedVec,
+        (D3DXVECTOR3 const*)world,
+        &m_curViewportD3D,
+        (D3DXMATRIX const*)&m_matProjStack[m_matProjStackTop],
+        (D3DXMATRIX const*)&m_matViewStack[m_matViewStackTop],
+        NULL);
 
     *result = projectedVec;
     return result;
@@ -280,13 +284,15 @@ CMatrix const* CDevice::GetModelViewProjMatrix()
 
     if (m_updateModelViewProjWithWorld)
     {
-        modelViewProj = m_matWorldStack[m_matWorldStackTop] * m_matViewStack[m_matViewStackTop] *
-                        m_matProjStack[m_matProjStackTop];
+        modelViewProj =
+            m_matWorldStack[m_matWorldStackTop] * m_matViewStack[m_matViewStackTop] * m_matProjStack[m_matProjStackTop];
     }
     else if (m_updateModelViewProj)
     {
-        D3DXMatrixMultiply((D3DXMATRIX*)&modelViewProj, (D3DXMATRIX const*)&m_matViewStack[m_matViewStackTop],
-                           (D3DXMATRIX const*)&m_matProjStack[m_matProjStackTop]);
+        D3DXMatrixMultiply(
+            (D3DXMATRIX*)&modelViewProj,
+            (D3DXMATRIX const*)&m_matViewStack[m_matViewStackTop],
+            (D3DXMATRIX const*)&m_matProjStack[m_matProjStackTop]);
     }
 
     m_updateModelViewProj = false;

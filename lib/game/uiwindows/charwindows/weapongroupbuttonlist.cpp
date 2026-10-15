@@ -408,8 +408,8 @@ void WeaponGroupButtonList::UpdateCurGroupId()
         if (m_weaponGroupButtons[i])
         {
             m_weaponGroupButtons[i]->SetState(
-                m_weaponGroupButtons[i]->GetGroupId() == groupId ? WeaponGroupButton::STATE_SELECTED
-                                                                 : WeaponGroupButton::STATE_UNSELECTED);
+                m_weaponGroupButtons[i]->GetGroupId() == groupId ? WeaponGroupButton::STATE_SELECTED :
+                                                                   WeaponGroupButton::STATE_UNSELECTED);
         }
     }
 }
@@ -613,15 +613,17 @@ int WeaponGroupButtonList::CreateFromPattern()
     {
         return 0;
     }
-    if (!m_pattern.m_wndPattern || !M3D_APP->IsWndAlive(m_pattern.m_wndPattern, -1) ||
-        !m_pattern.m_wndPattern->Valid())
+    if (!m_pattern.m_wndPattern || !M3D_APP->IsWndAlive(m_pattern.m_wndPattern, -1) || !m_pattern.m_wndPattern->Valid())
     {
         M3D_LOG_INFO("WeaponGroupButtonList::CreateFromPattern error - null pattern");
         return 0;
     }
 
-    if (!Create(CStr(), m_pattern.m_wndPattern->GetStyle(), m_pattern.m_wndPattern->GetBounds(),
-                m_pattern.m_wndPattern->GetId()))
+    if (!Create(
+            CStr(),
+            m_pattern.m_wndPattern->GetStyle(),
+            m_pattern.m_wndPattern->GetBounds(),
+            m_pattern.m_wndPattern->GetId()))
     {
         M3D_LOG_INFO("WeaponGroupButtonList::CreateFromPattern error - cannot create window");
         return 0;

@@ -13,27 +13,27 @@ public:
 
     struct BasketAuxInfo
     {
-        /* 0x0000 */ CStr m_wndBasketCapacityValName;
-        BasketAuxInfo(const BasketCharacteristicsWnd::BasketAuxInfo&);
+        CStr m_wndBasketCapacityValName;
+        BasketAuxInfo(BasketCharacteristicsWnd::BasketAuxInfo const&);
         BasketAuxInfo();
-    }; /* size: 0x000c */
+    };
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int GameDataSetup() override;
     void SetupForCB(int cbId);
-    virtual void UpdateCharacteristics() override /* 0x120 */;
-    virtual void ClearCharacteristics() override /* 0x124 */;
-    const ai::Basket* GetBasket() const;
-    /* 0x02b4 */ m3d::ui::Wnd* m_wndBasketCapacityVal;
-    /* 0x02b8 */ BasketCharacteristicsWnd::BasketAuxInfo m_basketAif;
+    virtual void UpdateCharacteristics() override;
+    virtual void ClearCharacteristics() override;
+    ai::Basket const* GetBasket() const;
+    m3d::ui::Wnd* m_wndBasketCapacityVal;
+    BasketCharacteristicsWnd::BasketAuxInfo m_basketAif;
     BasketCharacteristicsWnd();
-    BasketCharacteristicsWnd(const BasketCharacteristicsWnd& rhs);
+    BasketCharacteristicsWnd(BasketCharacteristicsWnd const& rhs);
 
 public:
-    virtual ~BasketCharacteristicsWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual ~BasketCharacteristicsWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classBasketCharacteristicsWnd;
-}; /* size: 0x02c4 */
+};

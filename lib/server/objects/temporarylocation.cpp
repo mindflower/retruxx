@@ -78,7 +78,8 @@ namespace ai
     TemporaryLocationPrototypeInfo const* TemporaryLocation::GetPrototypeInfo() const
     {
         // RVA 0x906C10 - NOTE: the prototype is cast without a type check.
-        return static_cast<TemporaryLocationPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<TemporaryLocationPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void TemporaryLocation::LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)

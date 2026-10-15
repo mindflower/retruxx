@@ -36,8 +36,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(WeaponGroupManager, RestoreWeaponGroups)
 }
 
 RT_CLASS_EXPORTS_BEGIN(WeaponGroupManager)
-    RT_CLASS_EXPORT(WeaponGroupManager, m3d::METHOD, SaveWeaponGroups, "", "", "")
-    RT_CLASS_EXPORT(WeaponGroupManager, m3d::METHOD, RestoreWeaponGroups, "", "", "")
+RT_CLASS_EXPORT(WeaponGroupManager, m3d::METHOD, SaveWeaponGroups, "", "", "")
+RT_CLASS_EXPORT(WeaponGroupManager, m3d::METHOD, RestoreWeaponGroups, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(WeaponGroupManager);
 
@@ -108,7 +108,7 @@ int WeaponGroupManager::ValidateWeaponGroups()
         auto* gun = curWeapon[i];
         if (gun && IS_KIND_OF(gun, VehiclePart))
         {
-            const auto& partName = static_cast<VehiclePart*>(gun)->GetPartName();
+            auto const& partName = static_cast<VehiclePart*>(gun)->GetPartName();
             if (GetWeaponGroupIdForWeapon(partName) == -1)
             {
                 // Guns not assigned to any group go to their default group.
@@ -125,7 +125,7 @@ void WeaponGroupManager::GetAllWeapons(retruxx::set<CStr>& allWeapons) const
 {
     // RVA 0x587690
     allWeapons.clear();
-    for (const auto& group : m_weaponGroups)
+    for (auto const& group : m_weaponGroups)
     {
         if (group.second)
         {
@@ -138,7 +138,7 @@ void WeaponGroupManager::SaveWeaponGroups()
 {
     // RVA 0x587730
     ClearSavedGroups();
-    for (const auto& [groupId, group] : m_weaponGroups)
+    for (auto const& [groupId, group] : m_weaponGroups)
     {
         if (group && m_savedWeaponGroups.find(groupId) == m_savedWeaponGroups.end())
         {
@@ -262,7 +262,8 @@ int WeaponGroupManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
     if (!curGroupsNode->IsEmpty())
     {
         ref_ptr wgNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        for (curGroupsNode->GetFirstChild(wgNode, "WeaponGroup"); !wgNode->IsEmpty(); wgNode->GetNextSibling(wgNode, "WeaponGroup"))
+        for (curGroupsNode->GetFirstChild(wgNode, "WeaponGroup"); !wgNode->IsEmpty();
+             wgNode->GetNextSibling(wgNode, "WeaponGroup"))
         {
             auto* group = static_cast<WeaponGroup*>(M3D_KERNEL->New("WeaponGroup"));
             if (!group)
@@ -283,7 +284,8 @@ int WeaponGroupManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
     if (!savedGroupsNode->IsEmpty())
     {
         ref_ptr wgNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-        for (savedGroupsNode->GetFirstChild(wgNode, "WeaponGroup"); !wgNode->IsEmpty(); wgNode->GetNextSibling(wgNode, "WeaponGroup"))
+        for (savedGroupsNode->GetFirstChild(wgNode, "WeaponGroup"); !wgNode->IsEmpty();
+             wgNode->GetNextSibling(wgNode, "WeaponGroup"))
         {
             auto* group = static_cast<WeaponGroup*>(M3D_KERNEL->New("WeaponGroup"));
             if (!group)
@@ -292,7 +294,8 @@ int WeaponGroupManager::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNod
             }
 
             // NOTE: saved groups are not validated with AddWeaponGroup, only checked for a duplicate id.
-            if (!group->LoadFromXml(xmlFile, wgNode) || m_savedWeaponGroups.find(group->m_groupId) != m_savedWeaponGroups.end())
+            if (!group->LoadFromXml(xmlFile, wgNode) ||
+                m_savedWeaponGroups.find(group->m_groupId) != m_savedWeaponGroups.end())
             {
                 delete group;
                 res = 0;
@@ -316,7 +319,7 @@ int WeaponGroupManager::GetWeaponGroupsMaxCount()
     return 5;
 }
 
-int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(const CStr& gunPartName)
+int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(CStr const& gunPartName)
 {
     // RVA 0x586F30
     if (gunPartName.empty())
@@ -324,8 +327,8 @@ int WeaponGroupManager::GetDefaultWeaponGroupIdForWeapon(const CStr& gunPartName
         return -1;
     }
 
-    const auto gunResName = ai::theResourceManager->GetResourceNameByVehiclePartName(gunPartName);
-    const auto gunResId = ai::theResourceManager->GetResourceId(gunResName);
+    auto const gunResName = ai::theResourceManager->GetResourceNameByVehiclePartName(gunPartName);
+    auto const gunResId = ai::theResourceManager->GetResourceId(gunResName);
     if (gunResId == -1)
     {
         return -1;
@@ -385,7 +388,7 @@ int WeaponGroupManager::AddWeaponGroup(WeaponGroup* wg)
         return 0;
     }
 
-    const auto id = wg->GetGroupId();
+    auto const id = wg->GetGroupId();
     if (id < 0 || id >= 5 || wg->GetImpulseId() == IM_ERROR)
     {
         return 0;
@@ -440,7 +443,7 @@ int WeaponGroupManager::Init()
     return 1;
 }
 
-int WeaponGroupManager::AddWeaponToWeaponGroup(const CStr& gunPartName, int groupId)
+int WeaponGroupManager::AddWeaponToWeaponGroup(CStr const& gunPartName, int groupId)
 {
     // RVA 0x586E50
     int targetGroupId = groupId;
@@ -531,7 +534,7 @@ void WeaponGroupManager::RestoreWeaponGroups()
     }
 
     ClearGroups();
-    for (const auto& [groupId, savedGroup] : m_savedWeaponGroups)
+    for (auto const& [groupId, savedGroup] : m_savedWeaponGroups)
     {
         if (savedGroup)
         {
@@ -549,7 +552,9 @@ void WeaponGroupManager::RestoreWeaponGroups()
 
     if (!ValidateWeaponGroups())
     {
-        M3D_LOG_INFO("WeaponGroupManager::RestoreWeaponGroups(): warning - saved weapon groups not match current vehicle. Some corrections have been done");
+        M3D_LOG_INFO(
+            "WeaponGroupManager::RestoreWeaponGroups(): warning - saved weapon groups not match current vehicle. Some "
+            "corrections have been done");
     }
     else
     {
@@ -567,7 +572,7 @@ WeaponGroupManager::~WeaponGroupManager()
 void WeaponGroupManager::OnVehiclePartChanged(void* data)
 {
     // RVA 0x587620
-    const auto event = static_cast<m3d::Event*>(data);
+    auto const event = static_cast<m3d::Event*>(data);
     if (ai::thePlayer)
     {
         auto* vehicle = ai::thePlayer->GetVehicle();
@@ -578,7 +583,7 @@ void WeaponGroupManager::OnVehiclePartChanged(void* data)
             {
                 if (vehicle->GetPartByName(partName))
                 {
-                    const auto weaponGroup = GetWeaponGroupIdForWeapon(partName);
+                    auto const weaponGroup = GetWeaponGroupIdForWeapon(partName);
                     AddWeaponToWeaponGroup(partName, weaponGroup);
                 }
                 else
@@ -603,7 +608,7 @@ int WeaponGroupManager::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode*
 
     ref_ptr curGroupsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "CurrentWeaponGroups");
     xmlNode->AddChild(curGroupsNode);
-    for (const auto& [groupId, group] : m_weaponGroups)
+    for (auto const& [groupId, group] : m_weaponGroups)
     {
         if (!group)
         {
@@ -620,7 +625,7 @@ int WeaponGroupManager::SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode*
     {
         ref_ptr savedGroupsNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "SavedWeaponGroups");
         xmlNode->AddChild(savedGroupsNode);
-        for (const auto& [groupId, group] : m_savedWeaponGroups)
+        for (auto const& [groupId, group] : m_savedWeaponGroups)
         {
             if (!group)
             {
@@ -684,7 +689,7 @@ m3d::Class* WeaponGroupManager::GetClass() const
     return RT_CLASS_LOCAL(WeaponGroupManager);
 }
 
-int WeaponGroupManager::GetWeaponGroupIdForWeapon(const CStr& gunPartName) const
+int WeaponGroupManager::GetWeaponGroupIdForWeapon(CStr const& gunPartName) const
 {
     // RVA 0x5871B0
     if (gunPartName.empty())
@@ -697,8 +702,8 @@ int WeaponGroupManager::GetWeaponGroupIdForWeapon(const CStr& gunPartName) const
         auto* weaponGroup = group.second;
         if (weaponGroup)
         {
-            const auto& weapons = weaponGroup->GetWeapons();
-            const auto it = weapons.find(gunPartName);
+            auto const& weapons = weaponGroup->GetWeapons();
+            auto const it = weapons.find(gunPartName);
             if (it != weapons.end())
             {
                 return weaponGroup->GetGroupId();
@@ -742,7 +747,7 @@ void WeaponGroup::Reload()
         return;
     }
 
-    for (const auto& gunName : m_gunPartNames)
+    for (auto const& gunName : m_gunPartNames)
     {
         auto* part = vehicle->GetPartByName(gunName);
         if (part)
@@ -801,7 +806,8 @@ bool WeaponGroup::CanFire() const
     if (static_cast<unsigned int>(m_groupId) <= 4)
     {
         if (m_impulseId != IM_ERROR &&
-            (M3D_APP->m_pImpulses->GetImpulseState(m_impulseId) || M3D_APP->m_pImpulses->GetImpulseState(IM_CAR_FIRE_ALL)))
+            (M3D_APP->m_pImpulses->GetImpulseState(m_impulseId) ||
+             M3D_APP->m_pImpulses->GetImpulseState(IM_CAR_FIRE_ALL)))
         {
             return true;
         }
@@ -826,12 +832,18 @@ Impulse WeaponGroup::GetImpulseByGroupId(int groupId)
     // RVA 0x585790
     switch (groupId)
     {
-    case 0: return IM_CAR_FIRE_0;
-    case 1: return IM_CAR_FIRE_1;
-    case 2: return IM_CAR_FIRE_2;
-    case 3: return IM_CAR_FIRE_3;
-    case 4: return IM_CAR_FIRE_4;
-    default: return IM_ERROR;
+    case 0:
+        return IM_CAR_FIRE_0;
+    case 1:
+        return IM_CAR_FIRE_1;
+    case 2:
+        return IM_CAR_FIRE_2;
+    case 3:
+        return IM_CAR_FIRE_3;
+    case 4:
+        return IM_CAR_FIRE_4;
+    default:
+        return IM_ERROR;
     }
 }
 
@@ -841,7 +853,7 @@ m3d::Object* WeaponGroup::CreateObject()
     return new WeaponGroup;
 }
 
-int WeaponGroup::AddWeapon(const CStr& gunPartName)
+int WeaponGroup::AddWeapon(CStr const& gunPartName)
 {
     // RVA 0x585800
     using namespace ai;
@@ -904,8 +916,8 @@ void WeaponGroup::KeepFire()
     auto* vehicle = ai::thePlayer->GetVehicle();
     if (vehicle)
     {
-        const auto canFire = CanFire();
-        for (const auto& gunName : m_gunPartNames)
+        auto const canFire = CanFire();
+        for (auto const& gunName : m_gunPartNames)
         {
             vehicle->FireFromWeaponByGunPartName(gunName, canFire);
         }
@@ -954,8 +966,9 @@ int WeaponGroup::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const
 
     if (!IsValid())
     {
-        M3D_LOG_INFO("WeaponGroup::LoadFromXml error - invalid group: id - " + CStr(m_groupId) + CStr(", impulse - ") +
-                     M3D_APP->m_pImpulses->GetImpulseNameById(m_impulseId));
+        M3D_LOG_INFO(
+            "WeaponGroup::LoadFromXml error - invalid group: id - " + CStr(m_groupId) + CStr(", impulse - ") +
+            M3D_APP->m_pImpulses->GetImpulseNameById(m_impulseId));
         return 0;
     }
 
@@ -982,12 +995,24 @@ void WeaponGroup::SetGroupId(int groupId)
     m_groupId = groupId;
     switch (groupId)
     {
-    case 0u: m_impulseId = IM_CAR_FIRE_0; break;
-    case 1u: m_impulseId = IM_CAR_FIRE_1; break;
-    case 2u: m_impulseId = IM_CAR_FIRE_2; break;
-    case 3u: m_impulseId = IM_CAR_FIRE_3; break;
-    case 4u: m_impulseId = IM_CAR_FIRE_4; break;
-    default: m_impulseId = IM_ERROR; break;
+    case 0u:
+        m_impulseId = IM_CAR_FIRE_0;
+        break;
+    case 1u:
+        m_impulseId = IM_CAR_FIRE_1;
+        break;
+    case 2u:
+        m_impulseId = IM_CAR_FIRE_2;
+        break;
+    case 3u:
+        m_impulseId = IM_CAR_FIRE_3;
+        break;
+    case 4u:
+        m_impulseId = IM_CAR_FIRE_4;
+        break;
+    default:
+        m_impulseId = IM_ERROR;
+        break;
     }
 }
 

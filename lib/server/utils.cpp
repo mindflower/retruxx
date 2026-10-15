@@ -40,7 +40,7 @@ namespace ai
         // number characters is parsed with sscanf.
         // NOTE: trailing non-number characters after the last number yield one extra 0 (sscanf of an empty
         // string leaves the value at 0), e.g. "1 2 " gives {1, 2, 0}.
-        template <typename T>
+        template<typename T>
         void ScanNumbers(CStr const& str, retruxx::vector<T>& numbers, char const* format, bool (*isNumberChar)(char))
         {
             numbers.clear();
@@ -287,7 +287,8 @@ namespace ai
     {
         // RVA 0x7D3C80 - spawns a "BrokenModel" composite in obj's place that removes itself after a minute.
         // NOTE: the created object is used without checking that it exists.
-        int const objId = theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("BrokenModel")), "", -1, -1);
+        int const objId =
+            theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("BrokenModel")), "", -1, -1);
         auto* const brokenObj = static_cast<CompositeObj*>(theObjects->GetEntityByObjId(objId));
         float const mass = obj->GetMass();
         Quaternion const rot = obj->GetRotation();

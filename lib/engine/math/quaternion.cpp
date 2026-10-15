@@ -6,7 +6,7 @@
 
 #include "retruxx/common.h"
 
-const int nxt[3] = { 1,2,0 };
+int const nxt[3] = {1, 2, 0};
 
 void Quaternion::FromMatrix(CMatrix const& m)
 {
@@ -124,26 +124,22 @@ Quaternion::Quaternion(CMatrix const& m)
     FromMatrix(m);
 }
 
-Quaternion::Quaternion(float qx, float qy, float qz, float qw) :
-    x(qx),
-    y(qy),
-    z(qz),
-    w(qw)
+Quaternion::Quaternion(float qx, float qy, float qz, float qw) : x(qx), y(qy), z(qz), w(qw)
 {
 }
 
 CMatrix Quaternion::ToMatrix() const
 {
-    float v2; // xmm5_4
-    float v3; // xmm3_4
-    float v4; // xmm4_4
-    float v5; // xmm2_4
-    float v6; // xmm1_4
-    float wy; // [esp+4h] [ebp-50h]
-    float xy; // [esp+8h] [ebp-4Ch]
-    float xx; // [esp+Ch] [ebp-48h]
-    float yz; // [esp+10h] [ebp-44h]
-    CMatrix m; // [esp+14h] [ebp-40h] BYREF
+    float v2;   // xmm5_4
+    float v3;   // xmm3_4
+    float v4;   // xmm4_4
+    float v5;   // xmm2_4
+    float v6;   // xmm1_4
+    float wy;   // [esp+4h] [ebp-50h]
+    float xy;   // [esp+8h] [ebp-4Ch]
+    float xx;   // [esp+Ch] [ebp-48h]
+    float yz;   // [esp+10h] [ebp-44h]
+    CMatrix m;  // [esp+14h] [ebp-40h] BYREF
 
     v2 = this->z * this->w;
     v3 = this->z * this->x;
@@ -218,8 +214,8 @@ float Quaternion::operator[](unsigned int i) const
 void Quaternion::Lerp(Quaternion const& q1, Quaternion const& q2, float k2)
 {
     auto v6 = 0;
-    auto q1a = (float)((float)((float)(q1.z * q2.z) + (float)(q1.y * q2.y)) + (float)(q2.w * q1.w))
-        + (float)(q1.x * q2.x);
+    auto q1a =
+        (float)((float)((float)(q1.z * q2.z) + (float)(q1.y * q2.y)) + (float)(q2.w * q1.w)) + (float)(q1.x * q2.x);
     auto v5 = q1a;
     if (q1a < 0.0f)
     {
@@ -262,7 +258,7 @@ void Quaternion::RotZ(float radians)
     w = std::cos(h);
 }
 
-void Quaternion::FromAxisAngle(const CVector& axis, float radians)
+void Quaternion::FromAxisAngle(CVector const& axis, float radians)
 {
     auto v3 = radians * 0.5f;
     auto v4 = std::sin(v3);
@@ -340,14 +336,14 @@ Quaternion& Quaternion::operator*=(float v)
 
 void Quaternion::operator*=(Quaternion const& b)
 {
-    auto v2 = (float)((float)((float)(b.w * this->y) + (float)(this->w * b.y)) + (float)(this->z * b.x))
-        - (float)(b.z * this->x);
-    auto v3 = (float)((float)((float)(b.w * this->z) + (float)(this->x * b.y)) + (float)(b.z * this->w))
-        - (float)(b.x * this->y);
-    auto v4 = (float)((float)((float)(b.w * this->w) - (float)(b.x * this->x)) - (float)(b.y * this->y))
-        - (float)(this->z * b.z);
-    this->x = (float)((float)((float)(this->w * b.x) + (float)(b.z * this->y)) + (float)(b.w * this->x))
-        - (float)(this->z * b.y);
+    auto v2 = (float)((float)((float)(b.w * this->y) + (float)(this->w * b.y)) + (float)(this->z * b.x)) -
+        (float)(b.z * this->x);
+    auto v3 = (float)((float)((float)(b.w * this->z) + (float)(this->x * b.y)) + (float)(b.z * this->w)) -
+        (float)(b.x * this->y);
+    auto v4 = (float)((float)((float)(b.w * this->w) - (float)(b.x * this->x)) - (float)(b.y * this->y)) -
+        (float)(this->z * b.z);
+    this->x = (float)((float)((float)(this->w * b.x) + (float)(b.z * this->y)) + (float)(b.w * this->x)) -
+        (float)(this->z * b.y);
     this->y = v2;
     this->z = v3;
     this->w = v4;

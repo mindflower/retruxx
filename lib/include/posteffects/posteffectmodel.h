@@ -9,8 +9,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 enum CONDITION_UNITE
 {
@@ -32,50 +32,50 @@ class PostEffectModel
     // A running effect drives the model's units and exit conditions directly.
     friend class PostEffect;
 
-    using VarList = std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*> > >;
+    using VarList = std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*>>>;
 
 public:
-    PostEffectModel(std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*> > >* vList);
-    CStr& LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+    PostEffectModel(std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*>>>* vList);
+    CStr& LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
     bool IsInstant() const;
-    bool FindByName(const CStr name);
+    bool FindByName(CStr const name);
 
 private:
-    /* 0x0000 */ CStr m_name;
-    /* 0x000c */ std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*> > >* m_varList;
+    CStr m_name;
+    std::map<CStr, float*, std::less<CStr>, std::allocator<std::pair<CStr const, float*>>>* m_varList;
 
     struct ExitCondition
     {
-        /* 0x0000 */ float* m_var;
-        /* 0x0004 */ float m_limit;
-        /* 0x0008 */ bool m_evalIncrease;
-    }; /* size: 0x000c */
+        float* m_var;
+        float m_limit;
+        bool m_evalIncrease;
+    };
 
-    using ConditionList = std::vector<PostEffectModel::ExitCondition, std::allocator<PostEffectModel::ExitCondition> >;
+    using ConditionList = std::vector<PostEffectModel::ExitCondition, std::allocator<PostEffectModel::ExitCondition>>;
 
 private:
-    /* 0x0010 */ std::vector<PostEffectModel::ExitCondition, std::allocator<PostEffectModel::ExitCondition> > m_conditionList;
+    std::vector<PostEffectModel::ExitCondition, std::allocator<PostEffectModel::ExitCondition>> m_conditionList;
 
     struct EffectUnit
     {
-        /* 0x0000 */ float* m_var;
-        /* 0x0004 */ float m_initVal;
-        /* 0x0008 */ float m_params[4];
-        /* 0x0018 */ OPT_ACTIONS m_action;
-        /* 0x001c */ std::vector<PostEffectModel::ExitCondition, std::allocator<PostEffectModel::ExitCondition> >::iterator m_condItor;
-    }; /* size: 0x0020 */
+        float* m_var;
+        float m_initVal;
+        float m_params[4];
+        OPT_ACTIONS m_action;
+        std::vector<PostEffectModel::ExitCondition, std::allocator<PostEffectModel::ExitCondition>>::iterator
+            m_condItor;
+    };
 
-    using UnitsList = std::vector<PostEffectModel::EffectUnit, std::allocator<PostEffectModel::EffectUnit> >;
-
-private:
-    /* 0x0020 */ std::vector<PostEffectModel::EffectUnit, std::allocator<PostEffectModel::EffectUnit> > m_effectUnits;
-
-    using PUnitsList = std::vector<int, std::allocator<int> >;
+    using UnitsList = std::vector<PostEffectModel::EffectUnit, std::allocator<PostEffectModel::EffectUnit>>;
 
 private:
-    /* 0x0030 */ std::vector<int, std::allocator<int> > m_dynamicUnits;
-    /* 0x0040 */ bool m_allInstant;
-    /* 0x0041 */ char Padding_265[3];
-    /* 0x0044 */ CONDITION_UNITE m_conditionUnite;
-    /* 0x0048 */ float* m_pVarVal;
-}; /* size: 0x004c */
+    std::vector<PostEffectModel::EffectUnit, std::allocator<PostEffectModel::EffectUnit>> m_effectUnits;
+
+    using PUnitsList = std::vector<int, std::allocator<int>>;
+
+private:
+    std::vector<int, std::allocator<int>> m_dynamicUnits;
+    bool m_allInstant;
+    CONDITION_UNITE m_conditionUnite;
+    float* m_pVarVal;
+};

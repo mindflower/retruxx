@@ -9,7 +9,7 @@
 #include "game/uiwindows/charwindows/motherpanel.h"
 
 RT_CLASS_EXPORTS_BEGIN(OptionTabButton)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(OptionTabButton);
 
 RT_CLASS_EXPORTS_BEGIN(OptionsWnd)
@@ -42,19 +42,24 @@ int OptionsWnd::GameDataSetup()
                 {
                     if (!tabButton->CreateFromPattern(child, true))
                     {
-                        M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_tabButtonNames[i] + " from pattern class");
+                        M3D_LOG_INFO(
+                            "Make control error: cannot create " + m_aif.m_tabButtonNames[i] + " from pattern class");
                         res = 0;
                     }
                 }
                 else
                 {
-                    M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_tabButtonNames[i] + " - cannot find rtti class OptionTabButton");
+                    M3D_LOG_INFO(
+                        "Make control error: cannot create " + m_aif.m_tabButtonNames[i] +
+                        " - cannot find rtti class OptionTabButton");
                     res = 0;
                 }
             }
             else
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_tabButtonNames[i] + " is not found or incorrect type");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_tabButtonNames[i] +
+                    " is not found or incorrect type");
                 res = 0;
             }
             if (auto const& tabButton = m_tabButtons[i])
@@ -62,7 +67,7 @@ int OptionsWnd::GameDataSetup()
                 tabButton->SetupForTab(static_cast<Tab>(i));
             }
             auto wndId = -1;
-            switch(i)
+            switch (i)
             {
             case 0:
             {
@@ -118,8 +123,7 @@ m3d::Object* OptionsWnd::CreateObject()
 int OptionsWnd::OnBeforeAddToWndStation()
 {
     auto const curTab = m_lastTabId != TAB_NUM_TABS ? m_lastTabId : TAB_VIDEO;
-    if (curTab == m_curTabId
-        || !ShowOptionWindowForTab(curTab))
+    if (curTab == m_curTabId || !ShowOptionWindowForTab(curTab))
     {
         return Wnd::OnBeforeAddToWndStation();
     }
@@ -132,16 +136,11 @@ int OptionsWnd::OnBeforeAddToWndStation()
     return Wnd::OnBeforeAddToWndStation();
 }
 
-OptionsWnd::OptionsWnd() :
-    m_tabButtons(4, nullptr),
-    m_optionWindows(4, nullptr)
+OptionsWnd::OptionsWnd() : m_tabButtons(4, nullptr), m_optionWindows(4, nullptr)
 {
-
 }
 
-OptionsWnd::OptionsWnd(OptionsWnd const&) :
-    m_tabButtons(4, nullptr),
-    m_optionWindows(4, nullptr)
+OptionsWnd::OptionsWnd(OptionsWnd const&) : m_tabButtons(4, nullptr), m_optionWindows(4, nullptr)
 {
     // NOTE: the shipped Clone() (RVA 0x4C2CE0) copy-constructs but carries none of
     // the source's tab buttons / option windows across; a clone must be
@@ -259,7 +258,7 @@ int OptionsWnd::ShowOptionWindowForTab(Tab tabId)
         {
             if (IsDirectChild(wnd))
             {
-                const auto res = ApplyTabChanges(m_curTabId);
+                auto const res = ApplyTabChanges(m_curTabId);
                 if (!res)
                 {
                     return res;
@@ -406,10 +405,13 @@ int OptionTabButton::CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc)
     SetOnShowAnimation(buttonWnd->GetOnShowAnimation());
     SetOnHideAnimation(buttonWnd->GetOnHideAnimation());
 
-
     if (buttonWnd->IsImaged())
     {
-        SetImaged(buttonWnd->GetImageRegular(), buttonWnd->GetImageDown(), buttonWnd->GetImageIn(), buttonWnd->GetImageDisabled());
+        SetImaged(
+            buttonWnd->GetImageRegular(),
+            buttonWnd->GetImageDown(),
+            buttonWnd->GetImageIn(),
+            buttonWnd->GetImageDisabled());
     }
     else
     {

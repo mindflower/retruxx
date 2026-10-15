@@ -23,15 +23,15 @@ public:
         Texture = 6,
     };
 
-    /* 0x0000 */ Type m_type;
+    Type m_type;
     union
     {
-        /* 0x0004 */ bool b;
-        /* 0x0004 */ int i;
-        /* 0x0004 */ float f;
-        /* 0x0004 */ m3d::rend::TexHandle* tex;
-        /* 0x0004 */ nFloat4 f4;
-        /* 0x0004 */ float m[4][4];
+        bool b;
+        int i;
+        float f;
+        m3d::rend::TexHandle* tex;
+        nFloat4 f4;
+        float m[4][4];
     };
 
     // orig 0x6452b0 nshaderarg.h:97
@@ -198,12 +198,12 @@ public:
     {
         return tex;
     }
-}; /* size: 0x0044 */
+};
 
 class nShaderParams
 {
 public:
-    /* 0x0000 */ bool m_valid[m3d::rend::IEffect::NumParameters];
+    bool m_valid[m3d::rend::IEffect::NumParameters];
     /* ...... */ nShaderArg m_args[m3d::rend::IEffect::NumParameters];
 
     // orig 0x646080 nshaderparams.h:80

@@ -40,13 +40,13 @@ public:
     int LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
 
 private:
-    /* 0x0000 */ CStr m_name;
-    /* 0x000c */ CStr m_text;
-    /* 0x0018 */ Reply::Role m_role;
-    /* 0x001c */ CStr m_scriptCondition;
-    /* 0x0028 */ CStr m_scriptResult;
-    /* 0x0034 */ std::vector<CStr, std::allocator<CStr>> m_nextReplies;
-}; /* size: 0x0044 */
+    CStr m_name;
+    CStr m_text;
+    Reply::Role m_role;
+    CStr m_scriptCondition;
+    CStr m_scriptResult;
+    std::vector<CStr, std::allocator<CStr>> m_nextReplies;
+};
 
 class RepliesManager : public m3d::Object
 {
@@ -69,11 +69,11 @@ protected:
     RepliesManager(RepliesManager const& rhs);
 
 public:
-    virtual ~RepliesManager() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~RepliesManager() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classRepliesManager;
 
     using ReplyMap = std::map<CStr, Reply*, std::less<CStr>, std::allocator<std::pair<CStr const, Reply*>>>;
@@ -94,8 +94,7 @@ public:
         Reply::Role role,
         ai::Npc* curNpc);
     std::vector<CStr, std::allocator<CStr>> GetAllHelloReplyNamesForDynamicNpc();
-    /* 0x0034 */ std::map<CStr, Reply*, std::less<CStr>, std::allocator<std::pair<CStr const, Reply*>>> m_replies;
-    /* 0x0040 */ bool m_isInited = false;
-    /* 0x0041 */ char Padding_203[3];
-    /* 0x0044 */ int m_lastScriptConditionValue;
-}; /* size: 0x0048 */
+    std::map<CStr, Reply*, std::less<CStr>, std::allocator<std::pair<CStr const, Reply*>>> m_replies;
+    bool m_isInited = false;
+    int m_lastScriptConditionValue;
+};

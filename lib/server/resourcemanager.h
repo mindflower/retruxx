@@ -10,28 +10,29 @@ namespace m3d
     {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
     class Resource
     {
         friend class ResourceManager;
+
     public:
-        Resource(Resource const *);
-        PointBase<int> GetGeomSize() const ;
-        int GetParentId() const ;
-        CStr GetName() const ;
-        int GetId() const ;
-        bool bIsKindOf(int) const ;
-        void LoadFromXML(m3d::cmn::XmlFile *, m3d::cmn::XmlNode const *);
+        Resource(Resource const*);
+        PointBase<int> GetGeomSize() const;
+        int GetParentId() const;
+        CStr GetName() const;
+        int GetId() const;
+        bool bIsKindOf(int) const;
+        void LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
     private:
         int m_id = -1;
         int m_parentId = -1;
         CStr m_name;
-        PointBase<int> m_geomSize {-1, -1};
+        PointBase<int> m_geomSize{-1, -1};
     };
 
     class ResourceManager
@@ -60,4 +61,4 @@ namespace ai
     };
 
     inline ResourceManager* theResourceManager = nullptr;
-}
+}  // namespace ai

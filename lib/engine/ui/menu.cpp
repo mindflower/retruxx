@@ -133,7 +133,8 @@ namespace m3d
             {
                 for (Item* item = level->m_child; item; item = item->m_next)
                 {
-                    m_gfx->AddFlatAxialQuad(di, item->m_drawRect, m_itemUnderMouse == item ? ITEM_HOVER_COLOR : ITEM_COLOR);
+                    m_gfx->AddFlatAxialQuad(
+                        di, item->m_drawRect, m_itemUnderMouse == item ? ITEM_HOVER_COLOR : ITEM_COLOR);
                     PointBase<float> const at(item->m_drawRect.x0 + 2.0f, item->m_drawRect.y0);
                     m_gfx->AddText(di, at, item->m_caption, 0, TW_NOWRAP, TF_LEFT);
                 }
@@ -292,5 +293,5 @@ namespace m3d
             }
             return 0;
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

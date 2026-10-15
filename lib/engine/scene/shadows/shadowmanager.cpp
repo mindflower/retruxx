@@ -12,9 +12,9 @@ namespace m3d
 {
     namespace
     {
-        constexpr unsigned int MAX_VOLUMES = 100;
+        unsigned int constexpr MAX_VOLUMES = 100;
         // The vertex pool holds 100000 vertices; the volumes stop being built once 85000 are used.
-        constexpr unsigned int MAX_POOL_VERTS = 0x14C08;
+        unsigned int constexpr MAX_POOL_VERTS = 0x14C08;
 
         Profiler* AddShadowProfiler(char const* name)
         {
@@ -82,13 +82,13 @@ namespace m3d
         return m_shadowColor;
     }
 
-    void ShadowManager::AddDirectionalLight(const CVector& lightDir)
+    void ShadowManager::AddDirectionalLight(CVector const& lightDir)
     {
         // RVA 0x8EFF80
         m_lightDir = lightDir;
     }
 
-    void ShadowManager::AddShadowCaster(const CMatrix& objToWorldMat, const AnimatedModel::Mesh& caster)
+    void ShadowManager::AddShadowCaster(CMatrix const& objToWorldMat, AnimatedModel::Mesh const& caster)
     {
         // RVA 0x8F0090 - the light direction is taken into the caster's own space.
         m_profiler1->StartCountdown();
@@ -248,4 +248,4 @@ namespace m3d
         v[3] = {w + x, y, 0.0f, 0.1f, color};
         renderer->UnlockVb(m_fsQuadVb);
     }
-}
+}  // namespace m3d

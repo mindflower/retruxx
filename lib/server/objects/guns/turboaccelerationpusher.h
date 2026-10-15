@@ -13,9 +13,9 @@ namespace ai
         virtual Obj* CreateTargetObject() const;
 
     private:
-        /* 0x0198 */ float m_AccelerationValue;
-        /* 0x019c */ float m_AccelerationTime;
-    }; /* size: 0x01a0 */
+        float m_AccelerationValue;
+        float m_AccelerationTime;
+    };
 
     class TurboAccelerationPusher : public Gun
     {
@@ -37,4 +37,4 @@ namespace ai
     public:
         RT_CLASS_DECLARE(TurboAccelerationPusher);
     };
-}
+}  // namespace ai

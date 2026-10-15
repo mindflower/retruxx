@@ -94,7 +94,7 @@ int CBrezLine::step(int& curx, int& cury)
     return 1;
 }
 
-Quaternion Exp(const Quaternion& q)
+Quaternion Exp(Quaternion const& q)
 {
     // RVA 0x5FF430 - the exponential of a pure quaternion (w is ignored): rotation by the
     // angle |xyz| about xyz. When sin(angle) is tiny, xyz is passed through unscaled.
@@ -119,7 +119,7 @@ Quaternion Exp(const Quaternion& q)
     return result;
 }
 
-Quaternion Ln(const Quaternion& q)
+Quaternion Ln(Quaternion const& q)
 {
     // RVA 0x5FF4D0 - the logarithm of a unit quaternion: a pure quaternion angle * axis.
     // For |w| >= 1 or a tiny sin(angle), xyz is passed through unscaled.
@@ -271,7 +271,8 @@ Quaternion SQuad(float t, Quaternion const& p, Quaternion const& a, Quaternion c
     return SLerpAcc(outer, inner, (1.0f - t) * t * 2.0f);
 }
 
-Quaternion CubicInterpolation(float t, Quaternion const& q1, Quaternion const& q2, Quaternion const& q3, Quaternion const& q4)
+Quaternion
+    CubicInterpolation(float t, Quaternion const& q1, Quaternion const& q2, Quaternion const& q3, Quaternion const& q4)
 {
     // RVA 0x5FF9F0 - SQUAD between q2 and q3, with q1 and q4 shaping the tangents.
     Quaternion const outTangent = getTangent(q2, q3, q4);

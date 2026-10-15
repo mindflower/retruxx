@@ -17,23 +17,23 @@ namespace ai
     public:
         virtual void LinkGeomsToCollisionCells();
         void SetParentBarrel(unsigned int);
-        void SetTracer(m3d::SgNode *);
-        virtual m3d::Class * GetClass() const ;
-        Bullet(BulletPrototypeInfo const &);
-        virtual Geom::CellAabb GetCollisionCellAabb() const ;
-        virtual void RenderDebugInfo() const ;
-        Ray * _Ray();
-        Ray const * _Ray() const ;
+        void SetTracer(m3d::SgNode*);
+        virtual m3d::Class* GetClass() const;
+        Bullet(BulletPrototypeInfo const&);
+        virtual Geom::CellAabb GetCollisionCellAabb() const;
+        virtual void RenderDebugInfo() const;
+        Ray* _Ray();
+        Ray const* _Ray() const;
         virtual void RelinkGeomsToCollisionCells();
         void SetRange(float);
         virtual void UnlinkGeomsFromCollisionCells();
-        void SpecifyTracer(CVector const &);
-        virtual void SetDirection(CVector const &);
-        virtual CVector GetDirection() const ;
-        virtual void Update(float,unsigned int);
+        void SpecifyTracer(CVector const&);
+        virtual void SetDirection(CVector const&);
+        virtual CVector GetDirection() const;
+        virtual void Update(float, unsigned int);
         virtual void TransferPhysicParamsToSceneGraphNode();
-        static m3d::Class * GetBaseClass();
-        virtual BulletPrototypeInfo const * GetPrototypeInfo() const ;
+        static m3d::Class* GetBaseClass();
+        virtual BulletPrototypeInfo const* GetPrototypeInfo() const;
 
     protected:
         virtual ~Bullet();
@@ -42,11 +42,11 @@ namespace ai
         RT_CLASS_DECLARE(Bullet);
 
     private:
-        static m3d::Object * CreateObject();
-        virtual m3d::Object * Clone();
+        static m3d::Object* CreateObject();
+        virtual m3d::Object* Clone();
         unsigned __int16 m_explosionType;
         int m_framesToLive;
-        m3d::SgNode *m_tracer;
+        m3d::SgNode* m_tracer;
         unsigned int m_parentBarrel;
     };
-}
+}  // namespace ai

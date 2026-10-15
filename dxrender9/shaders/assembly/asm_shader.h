@@ -11,13 +11,13 @@ class CDevice;
 class AsmShaderImpl : public m3d::rend::IAsmShader
 {
 public:
-    /* 0x0008 */ CStr m_fileName;
-    /* 0x0014 */ Type m_type;
+    CStr m_fileName;
+    Type m_type;
     union
     {
-        /* 0x0018 */ void* m_shader;
-        /* 0x0018 */ IDirect3DVertexShader9* m_vs;
-        /* 0x0018 */ IDirect3DPixelShader9* m_ps;
+        void* m_shader;
+        IDirect3DVertexShader9* m_vs;
+        IDirect3DPixelShader9* m_ps;
     };
 
     static CDevice* m_dev;
@@ -25,8 +25,8 @@ public:
     AsmShaderImpl();
     virtual ~AsmShaderImpl();
 
-    bool LoadFromFile(const char* fileName, Type type);
-    bool LoadFromString(const char* str, unsigned int length, Type type);
+    bool LoadFromFile(char const* fileName, Type type);
+    bool LoadFromString(char const* str, unsigned int length, Type type);
 
     // IRenderResource
     bool IsValid() const override;
@@ -38,4 +38,4 @@ public:
     void OnDeviceRestore();
     void Invalidate();
     bool IsVertexShader() const;
-}; /* size: 0x001c */
+};

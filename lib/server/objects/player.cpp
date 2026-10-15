@@ -143,10 +143,10 @@ namespace ai
         class TestPlayerVisibility : public m3d::IsNodeTransparent
         {
         public:
-            virtual bool test(m3d::SgNode*, float) override /* 0x00 */;
-            virtual float getTransparentRadius() override /* 0x04 */;
-            virtual bool setPermanentTransparency(m3d::SgNode*) override /* 0x08 */;
-        }; /* size: 0x0004 */
+            virtual bool test(m3d::SgNode*, float) override;
+            virtual float getTransparentRadius() override;
+            virtual bool setPermanentTransparency(m3d::SgNode*) override;
+        };
 
         float Clamp01(float v)
         {

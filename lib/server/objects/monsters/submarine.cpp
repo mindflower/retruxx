@@ -111,7 +111,8 @@ namespace ai
         }
         else
         {
-            M3D_LOG_ERR(CStr("Error: LoadPoint not found: ") + LP_NAME_FOR_VEHICLE + CStr(" for ") + GetEngineModelName());
+            M3D_LOG_ERR(
+                CStr("Error: LoadPoint not found: ") + LP_NAME_FOR_VEHICLE + CStr(" for ") + GetEngineModelName());
         }
     }
 
@@ -335,9 +336,7 @@ namespace ai
         }
     }
 
-    Submarine::Submarine(SubmarinePrototypeInfo const& prototype) :
-        DummyObject(prototype),
-        m_nextMapAngle(-1)
+    Submarine::Submarine(SubmarinePrototypeInfo const& prototype) : DummyObject(prototype), m_nextMapAngle(-1)
     {
         // RVA 0x8035C0 - moved by hand in Update, so the geometry starts off.
         m_physicState |= 1u;
@@ -436,7 +435,8 @@ namespace ai
         // RVA 0x802590
         // Skipping (or finishing) the cinematic sends the player on to the next map at once.
         Vehicle* vehicle = thePlayer->GetVehicle();
-        if (m_nextMap.c_str() && strlen(m_nextMap.c_str()) && m_nextMapLocation.c_str() && strlen(m_nextMapLocation.c_str()) && vehicle)
+        if (m_nextMap.c_str() && strlen(m_nextMap.c_str()) && m_nextMapLocation.c_str() &&
+            strlen(m_nextMapLocation.c_str()) && vehicle)
         {
             vehicle->UnlimitMaxSpeed();
             theObjects->PassToMap(m_nextMap, m_nextMapLocation, m_nextMapAngle, true);
@@ -459,13 +459,16 @@ namespace ai
         float const dist = static_cast<float>(sqrt(distSq));
         float const invLen = static_cast<float>(1.0 / sqrt(distSq + 1.1920929e-7f));
         CVector const dirToMove(invLen * dx, invLen * dy, invLen * dz);
-        float const velocity = (m_linearVelocity.z * dirToMove.z + m_linearVelocity.y * dirToMove.y) + m_linearVelocity.x * dirToMove.x;
+        float const velocity =
+            (m_linearVelocity.z * dirToMove.z + m_linearVelocity.y * dirToMove.y) + m_linearVelocity.x * dirToMove.x;
         float newPos;
         float newVel;
-        bool const reached = GetSmoothAcceleratedValue(elapsedTime, dist, 0.0f, velocity, acceleration, maxVelocity, newPos, newVel);
+        bool const reached =
+            GetSmoothAcceleratedValue(elapsedTime, dist, 0.0f, velocity, acceleration, maxVelocity, newPos, newVel);
         m_linearVelocity = CVector(dirToMove.x * newVel, dirToMove.y * newVel, dirToMove.z * newVel);
         CVector const curPos = GetPosition();
-        SetPosition(CVector(curPos.x + dirToMove.x * newPos, curPos.y + dirToMove.y * newPos, curPos.z + dirToMove.z * newPos));
+        SetPosition(
+            CVector(curPos.x + dirToMove.x * newPos, curPos.y + dirToMove.y * newPos, curPos.z + dirToMove.z * newPos));
         if (reached)
         {
             m_linearVelocity = ZeroVector;
@@ -518,8 +521,22 @@ namespace ai
             cinematic->StartCinematic();
 
             vehicle->SetHandBrake();
-            theProcessManager->PostMessageA(GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_SKIP_CINEMATIC)), m3d::AIParam(), 1);
-            theProcessManager->PostMessageA(GE_SUBSCRIBE, thePlayer->GetId(), GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_END_CINEMATIC)), m3d::AIParam(), 1);
+            theProcessManager->PostMessageA(
+                GE_SUBSCRIBE,
+                thePlayer->GetId(),
+                GetId(),
+                0.0f,
+                m3d::AIParam(static_cast<int>(GE_SKIP_CINEMATIC)),
+                m3d::AIParam(),
+                1);
+            theProcessManager->PostMessageA(
+                GE_SUBSCRIBE,
+                thePlayer->GetId(),
+                GetId(),
+                0.0f,
+                m3d::AIParam(static_cast<int>(GE_END_CINEMATIC)),
+                m3d::AIParam(),
+                1);
             m_state = newState;
             return;
         }
@@ -549,12 +566,20 @@ namespace ai
         {
             CVector const vehiclePos = vehicle->GetPosition();
             points.push_back(CVector2(vehiclePos.x, vehiclePos.z));
-            points.push_back(CVector2(m_moveDirection.x * 30.0f + m_portPosition.x, m_portPosition.z + m_moveDirection.z * 30.0f));
+            points.push_back(
+                CVector2(m_moveDirection.x * 30.0f + m_portPosition.x, m_portPosition.z + m_moveDirection.z * 30.0f));
             points.push_back(CVector2(m_portPosition.x, m_portPosition.z));
         }
         vehicle->SetExternalPath(points);
         vehicle->LimitMaxSpeed(prototype->m_vehicleMaxSpeed);
-        theProcessManager->PostMessageA(GE_SUBSCRIBE, vehicle->GetId(), GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_TARGET_REACHED)), m3d::AIParam(), 1);
+        theProcessManager->PostMessageA(
+            GE_SUBSCRIBE,
+            vehicle->GetId(),
+            GetId(),
+            0.0f,
+            m3d::AIParam(static_cast<int>(GE_TARGET_REACHED)),
+            m3d::AIParam(),
+            1);
         m_state = newState;
     }
 
@@ -583,7 +608,9 @@ namespace ai
         }
     }
 
-    void Submarine::_FillCameraStates(retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>& cameraStates, CVector const& offset) const
+    void Submarine::_FillCameraStates(
+        retruxx::vector<m3d::CameraPathState, retruxx::allocator<m3d::CameraPathState>>& cameraStates,
+        CVector const& offset) const
     {
         // RVA 0x8037B0
         // The entry path's camera points shifted by offset, or just the current camera position.
@@ -614,8 +641,8 @@ namespace ai
         // The player's vehicle is aboard: on to the next map, after the fade.
         int const senderId = evn.m_senderObjId;
         Vehicle* vehicle = thePlayer->GetVehicle();
-        if (m_nextMap.c_str() && strlen(m_nextMap.c_str()) && m_nextMapLocation.c_str() && strlen(m_nextMapLocation.c_str()) && vehicle &&
-            senderId == vehicle->GetId())
+        if (m_nextMap.c_str() && strlen(m_nextMap.c_str()) && m_nextMapLocation.c_str() &&
+            strlen(m_nextMapLocation.c_str()) && vehicle && senderId == vehicle->GetId())
         {
             vehicle->UnlimitMaxSpeed();
             theObjects->PassToMap(m_nextMap, m_nextMapLocation, m_nextMapAngle, false);

@@ -5,7 +5,7 @@
 class SpeedometerWnd;
 class FuelIndicatorWnd;
 
-class VehicleInfoPanel :  public m3d::ui::Wnd
+class VehicleInfoPanel : public m3d::ui::Wnd
 {
 public:
     class AuxInfo
@@ -21,18 +21,18 @@ public:
     };
 
 public:
-    static m3d::Class * GetBaseClass();
+    static m3d::Class* GetBaseClass();
     virtual ~VehicleInfoPanel();
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
-    virtual m3d::Class * GetClass() const ;
+    static m3d::Object* CreateObject();
+    virtual m3d::Object* Clone();
+    virtual m3d::Class* GetClass() const;
 
 protected:
-    VehicleInfoPanel(VehicleInfoPanel const &);
+    VehicleInfoPanel(VehicleInfoPanel const&);
     VehicleInfoPanel();
     virtual int GameDataSetup();
     void OnPlayerVehicleChanged();
-    virtual int GameDataUpdate(void *,int);
+    virtual int GameDataUpdate(void*, int);
 
 public:
     RT_CLASS_DECLARE(VehicleInfoPanel);

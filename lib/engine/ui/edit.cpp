@@ -39,8 +39,7 @@ namespace m3d
             SetCursorColor(1);
         }
 
-        EditWnd::EditWnd(EditWnd const& ew)
-            : Wnd(ew)
+        EditWnd::EditWnd(EditWnd const& ew) : Wnd(ew)
         {
             // RVA 0x723A10 - the shipped copy constructor forwards to the Wnd one
             // and, unlike the default constructor, leaves the quick-erase flag,
@@ -406,7 +405,7 @@ namespace m3d
                 }
             }
 
-            if (g_Kernel->GetTimer().GetFrameStartTimeUnscaled() % CARET_BLINK_PERIOD > CARET_BLINK_ON_AFTER)
+            if (M3D_KERNEL->GetTimer().GetFrameStartTimeUnscaled() % CARET_BLINK_PERIOD > CARET_BLINK_ON_AFTER)
             {
                 GetGfxServer()->AddText(di, origin, m_strCursorColor + "_", m_defFont, TW_NOWRAP, TF_LEFT);
             }
@@ -479,8 +478,7 @@ namespace m3d
                             auto const c = static_cast<char>(key);
                             // A typed service symbol is stored escaped so it does
                             // not turn into markup.
-                            CStr const strToAdd =
-                                serviceSymbols.find(c) == CStr_npos ? CStr(c) : CStr('#') + CStr(c);
+                            CStr const strToAdd = serviceSymbols.find(c) == CStr_npos ? CStr(c) : CStr('#') + CStr(c);
 
                             if (m_cursorPosition == maxPos)
                             {
@@ -489,8 +487,8 @@ namespace m3d
                             else
                             {
                                 auto const strPos = CursorPos2StrPos(m_cursorPosition);
-                                m_caption = m_caption.substr(0, strPos) + strToAdd +
-                                            m_caption.substr(strPos, CStr_npos);
+                                m_caption =
+                                    m_caption.substr(0, strPos) + strToAdd + m_caption.substr(strPos, CStr_npos);
                             }
                             IncrementCursorPosition();
                         }

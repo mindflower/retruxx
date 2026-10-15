@@ -7,19 +7,19 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
 
     class AIParam;
-}
+}  // namespace m3d
 
 namespace ai
 {
     class AIPassageState
     {
     public:
-        /* 0x0000 */ int m_StateNum;
-        /* 0x0004 */ std::vector<m3d::AIParam, std::allocator<m3d::AIParam> > m_ParamList;
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        int m_StateNum;
+        std::vector<m3d::AIParam, std::allocator<m3d::AIParam>> m_ParamList;
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
-    }; /* size: 0x0014 */
-}
+    };
+}  // namespace ai

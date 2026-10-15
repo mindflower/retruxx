@@ -158,8 +158,8 @@ IbHandle CDevice::AddIb(int indexcount, bool dyn)
         ib.m_desc.Usage = D3DUSAGE_WRITEONLY;
     }
 
-    HRESULT hr = m_pd3dDevice->CreateIndexBuffer(ib.m_desc.Size, ib.m_desc.Usage, ib.m_desc.Format, ib.m_desc.Pool,
-                                                 &m_ibs[i].m_ib, 0);
+    HRESULT hr = m_pd3dDevice->CreateIndexBuffer(
+        ib.m_desc.Size, ib.m_desc.Usage, ib.m_desc.Format, ib.m_desc.Pool, &m_ibs[i].m_ib, 0);
     if (FAILED(hr))
     {
         m_ibs[i].m_ib = 0;
@@ -205,9 +205,13 @@ void CDevice::rstIbRestoreAfter()
         {
             if (m_ibs[i].m_desc.Pool == D3DPOOL_DEFAULT)
             {
-                HRESULT hr = m_pd3dDevice->CreateIndexBuffer(m_ibs[i].m_desc.Size, m_ibs[i].m_desc.Usage,
-                                                             m_ibs[i].m_desc.Format, m_ibs[i].m_desc.Pool,
-                                                             &m_ibs[i].m_ib, 0);
+                HRESULT hr = m_pd3dDevice->CreateIndexBuffer(
+                    m_ibs[i].m_desc.Size,
+                    m_ibs[i].m_desc.Usage,
+                    m_ibs[i].m_desc.Format,
+                    m_ibs[i].m_desc.Pool,
+                    &m_ibs[i].m_ib,
+                    0);
                 if (FAILED(hr))
                 {
                     m_ibs[i].m_ib = 0;

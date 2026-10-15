@@ -11,26 +11,28 @@ namespace ai
     public:
         struct ObjInfo
         {
-            /* 0x0000 */ int m_prototypeId;
-            /* 0x0004 */ CVector m_relPos;
-            /* 0x0010 */ Quaternion m_relRot;
-            /* 0x0020 */ float m_scale;
-            /* 0x0024 */ CStr m_modelName;
-            ObjInfo(const ai::ObjPrefabPrototypeInfo::ObjInfo& __that);
+            int m_prototypeId;
+            CVector m_relPos;
+            Quaternion m_relRot;
+            float m_scale;
+            CStr m_modelName;
+            ObjInfo(ai::ObjPrefabPrototypeInfo::ObjInfo const& __that);
             ObjInfo();
             void PostLoad();
-            /* 0x0030 */ CStr m_prototypeName;
-        }; /* size: 0x003c */
+            CStr m_prototypeName;
+        };
 
-        using ObjInfoVector = retruxx::vector<ai::ObjPrefabPrototypeInfo::ObjInfo, retruxx::allocator<ai::ObjPrefabPrototypeInfo::ObjInfo> >;
+        using ObjInfoVector = retruxx::
+            vector<ai::ObjPrefabPrototypeInfo::ObjInfo, retruxx::allocator<ai::ObjPrefabPrototypeInfo::ObjInfo>>;
 
     public:
         ObjPrefabPrototypeInfo();
-        /* 0x0080 */ retruxx::vector<ai::ObjPrefabPrototypeInfo::ObjInfo, retruxx::allocator<ai::ObjPrefabPrototypeInfo::ObjInfo> > m_objInfos;
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-        virtual void PostLoad() override /* 0x00 */;
-    }; /* size: 0x0090 */
+        retruxx::vector<ai::ObjPrefabPrototypeInfo::ObjInfo, retruxx::allocator<ai::ObjPrefabPrototypeInfo::ObjInfo>>
+            m_objInfos;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+        virtual void PostLoad() override;
+    };
 
     class ObjPrefab : public ai::SimplePhysicObj
     {
@@ -38,42 +40,43 @@ namespace ai
         friend class ObjPrefabPrototypeInfo;
 
     protected:
-        virtual  ~ObjPrefab() override /* 0x00 */;
+        virtual ~ObjPrefab() override;
 
     protected:
-        ObjPrefab(const ai::ObjPrefabPrototypeInfo& prototypeInfo);
-        ObjPrefab(const ai::ObjPrefab&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        ObjPrefab(ai::ObjPrefabPrototypeInfo const& prototypeInfo);
+        ObjPrefab(ai::ObjPrefab const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classObjPrefab;
-        virtual const ai::ObjPrefabPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual ai::ObjPrefabPrototypeInfo const* GetPrototypeInfo() const override;
 
-        using PhysicObjSet = retruxx::set<ai::PhysicObj*, retruxx::less<ai::PhysicObj*>, retruxx::allocator<ai::PhysicObj*> >;
-        using IdsVector = retruxx::vector<int, retruxx::allocator<int> >;
+        using PhysicObjSet =
+            retruxx::set<ai::PhysicObj*, retruxx::less<ai::PhysicObj*>, retruxx::allocator<ai::PhysicObj*>>;
+        using IdsVector = retruxx::vector<int, retruxx::allocator<int>>;
 
     public:
-        virtual void Remove() override /* 0x00 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x00 */;
-        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x00 */;
-        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
-        virtual void SetPosition(const CVector& pos) override /* 0x00 */;
-        virtual void SetRotation(const Quaternion& rot) override /* 0x00 */;
-        virtual void CreateChildren() override /* 0x00 */;
+        virtual void Remove() override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual bool RemoveChild(ai::Obj* pChild) override;
+        virtual void SetPositionSelf(CVector const& pos) override;
+        virtual void SetPosition(CVector const& pos) override;
+        virtual void SetRotation(Quaternion const& rot) override;
+        virtual void CreateChildren() override;
 
     protected:
-        virtual void _InternalPostLoad() override /* 0x00 */;
+        virtual void _InternalPostLoad() override;
 
     private:
-        /* 0x0144 */ retruxx::set<ai::PhysicObj*, retruxx::less<ai::PhysicObj*>, retruxx::allocator<ai::PhysicObj*> > m_physicObjs;
-        /* 0x0150 */ retruxx::set<ai::Obj*, retruxx::less<ai::Obj*>, retruxx::allocator<ai::Obj*> > m_otherChildren;
-        /* 0x015c */ ai::Team* m_team;
-        /* 0x0160 */ retruxx::vector<int, retruxx::allocator<int> > m_VehiclesForAdd;
+        retruxx::set<ai::PhysicObj*, retruxx::less<ai::PhysicObj*>, retruxx::allocator<ai::PhysicObj*>> m_physicObjs;
+        retruxx::set<ai::Obj*, retruxx::less<ai::Obj*>, retruxx::allocator<ai::Obj*>> m_otherChildren;
+        ai::Team* m_team;
+        retruxx::vector<int, retruxx::allocator<int>> m_VehiclesForAdd;
         void AddVehicleChild(ai::Vehicle* obj);
         void AddTeam();
-    }; /* size: 0x0170 */
-}
+    };
+}  // namespace ai

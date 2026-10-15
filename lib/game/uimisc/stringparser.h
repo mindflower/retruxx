@@ -37,6 +37,6 @@ class StringParser
 public:
     StringParser();
     ~StringParser();
-    void FormatString(CStr &,std::vector<FormatParam> const &) const ;
-    void FormatStringForDynamicQuest(CStr &, ai::DynamicQuest const *) const ;
+    void FormatString(CStr&, std::vector<FormatParam> const&) const;
+    void FormatStringForDynamicQuest(CStr&, ai::DynamicQuest const*) const;
 };

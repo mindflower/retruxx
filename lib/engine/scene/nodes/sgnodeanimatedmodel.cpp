@@ -34,8 +34,8 @@ namespace m3d
     int SgAnimatedModelNode::UpdateXForm(bool onlyVis, bool recombineWithParentXForm)
     {
         int result = SgNode::UpdateXForm(onlyVis, recombineWithParentXForm);
-        if (this->m_imposted
-            && (fabs(this->m_currentWorldRotation.x) >= 1.0e-10 || fabs(this->m_currentWorldRotation.z) >= 1.0e-10))
+        if (this->m_imposted &&
+            (fabs(this->m_currentWorldRotation.x) >= 1.0e-10 || fabs(this->m_currentWorldRotation.z) >= 1.0e-10))
         {
             this->m_imposted = 0;
         }
@@ -66,7 +66,7 @@ namespace m3d
         if (result)
         {
             SafeEnumAttrib(m_action, node, "ndmAction");
-            
+
             m3d::AnimatedModel* mdl = nullptr;
             GetServer()->GetItemProperty(m_srvId, 16394, &mdl);
             if (mdl)
@@ -98,7 +98,7 @@ namespace m3d
             return 1;
         }
 
-        const auto curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
+        auto const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
         if (m_frameVisible != curFrame - 1)
         {
             return 0;
@@ -134,10 +134,10 @@ namespace m3d
 
             struct RenderInfo
             {
-                /* 0x0000 */ m3d::SgNode* m_node = nullptr;
-                /* 0x0004 */ unsigned int m_dt = 0;
-                /* 0x0008 */ unsigned int m_fps = 0;
-            }; /* size: 0x000c */
+                m3d::SgNode* m_node = nullptr;
+                unsigned int m_dt = 0;
+                unsigned int m_fps = 0;
+            };
 
             RenderInfo ri;
             ri.m_node = this;
@@ -157,10 +157,10 @@ namespace m3d
         // What the node hands to AnimatedModelsServer::RenderItem (SgAnimatedModelNode::Render::RenderInfo in the PDB).
         struct RenderInfo
         {
-            /* 0x0000 */ CMatrix* m_localXForm;
-            /* 0x0004 */ float m_alpha;
-            /* 0x0008 */ m3d::SgNode* m_node;
-        }; /* size: 0x000c */
+            CMatrix* m_localXForm;
+            float m_alpha;
+            m3d::SgNode* m_node;
+        };
     }  // namespace
 
     int SgAnimatedModelNode::WriteToXmlNode(cmn::XmlFile* file, cmn::XmlNode* writeTo)
@@ -448,7 +448,7 @@ namespace m3d
             *(int*)property = this->m_SkinNumber;
             return 1;
         case 0x2203u:
-            *(const Configuration**)property = &(this->m_cfg);
+            *(Configuration const**)property = &(this->m_cfg);
             return 1;
         case 0x2209u:
             GetServer()->GetItemProperty(this->m_srvId, 8713, property);
@@ -552,4 +552,4 @@ namespace m3d
 
         RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
-}
+}  // namespace m3d

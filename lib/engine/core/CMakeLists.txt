@@ -9,7 +9,6 @@ target_sources(retruxx_lib PRIVATE
     log.cpp
     memoryman.cpp
     profilerstack.cpp
-    rtclass.cpp
     stackwalker.cpp
     stringm3d.cpp
     threadsync.cpp

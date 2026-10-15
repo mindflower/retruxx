@@ -6,11 +6,10 @@ namespace Graph
 {
     struct TQueueVertex
     {
-        /* 0x0000 */ bool inFirstPartite;
-        /* 0x0001 */ char Padding_146[3];
-        /* 0x0004 */ int index;
+        bool inFirstPartite;
+        int index;
         TQueueVertex(bool inFirstPartite_, int index_);
-    }; /* size: 0x0008 */
+    };
 
     template<class T>
     class CMatrix
@@ -19,7 +18,7 @@ namespace Graph
         using TMatrix = std::vector<std::vector<T>>;
 
     protected:
-        /* 0x0000 */ TMatrix m_Data;
+        TMatrix m_Data;
         void Resize(unsigned int n, unsigned int m)
         {
             std::vector<float> tLine(m, 0.0);
@@ -41,7 +40,7 @@ namespace Graph
         {
             return m_Data[i][j];
         }
-    }; /* size: 0x0010 */
+    };
 
     template<class T>
     class CSquareMatrix : public CMatrix<T>
@@ -83,9 +82,9 @@ namespace Graph
                 fprintf(f, "\n");
             }
         }
-    }; /* size: 0x0010 */
+    };
 
     std::vector<int> getMaxValuedMatching(Graph::CSquareMatrix<float> const&);
     std::vector<int> getMinValuedMatching(Graph::CSquareMatrix<float>);
     float getMatchingValue(Graph::CSquareMatrix<float> const&, std::vector<int> const&);
-}
+}  // namespace Graph

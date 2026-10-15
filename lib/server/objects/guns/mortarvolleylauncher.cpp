@@ -33,7 +33,8 @@ namespace ai
     {
         // RVA 0x849300
         // NOTE: the prototype is cast without a type check.
-        return static_cast<MortarVolleyLauncherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<MortarVolleyLauncherPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Class* MortarVolleyLauncher::GetClass() const

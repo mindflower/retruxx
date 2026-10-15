@@ -19,49 +19,49 @@ namespace m3d
     class CClient : public m3d::IConHandler, public m3d::IDeviceResetCallback
     {
     private:
-        /* 0x0008 */ m3d::CWorld* m_world = nullptr;
-        virtual void HandleCommand(int __formal, const m3d::CConsoleParams& __formal1) override /* 0x00 */;
-        virtual bool HandleCVar(const m3d::CVar* __formal, const m3d::CConsoleParams& __formal1) override /* 0x04 */;
+        m3d::CWorld* m_world = nullptr;
+        virtual void HandleCommand(int __formal, m3d::CConsoleParams const& __formal1) override;
+        virtual bool HandleCVar(m3d::CVar const* __formal, m3d::CConsoleParams const& __formal1) override;
 
         struct PredictInfo
         {
-            /* 0x0000 */ m3d::SgNode* m_node;
+            m3d::SgNode* m_node;
 
             struct Frame
             {
-                /* 0x0000 */ int m_timeStamp;
-                /* 0x0004 */ CVector m_origin;
-                /* 0x0010 */ Quaternion m_direction;
-            }; /* size: 0x0020 */
+                int m_timeStamp;
+                CVector m_origin;
+                Quaternion m_direction;
+            };
 
-            /* 0x0004 */ m3d::CClient::PredictInfo::Frame m_prev;
-            /* 0x0024 */ m3d::CClient::PredictInfo::Frame m_cur;
-        }; /* size: 0x0044 */
+            m3d::CClient::PredictInfo::Frame m_prev;
+            m3d::CClient::PredictInfo::Frame m_cur;
+        };
 
     private:
-        /* 0x000c */ retruxx::vector<m3d::CClient::PredictInfo, retruxx::allocator<m3d::CClient::PredictInfo> > m_predictData;
-        /* 0x001c */ retruxx::vector<int, retruxx::allocator<int> > m_predictLastEmptySlots;
+        retruxx::vector<m3d::CClient::PredictInfo, retruxx::allocator<m3d::CClient::PredictInfo>> m_predictData;
+        retruxx::vector<int, retruxx::allocator<int>> m_predictLastEmptySlots;
         void PredictInit();
         void PredictDone();
         void PredictUpdate(int curTime, unsigned int dt);
         void PredictAddNode(m3d::SgNode* n);
         void PredictRemoveNode(m3d::SgNode* n);
-        void PredictUpdateNode(m3d::SgNode* n, const Quaternion& direction, int curTime);
+        void PredictUpdateNode(m3d::SgNode* n, Quaternion const& direction, int curTime);
 
     public:
-        CClient(const m3d::CClient&);
+        CClient(m3d::CClient const&);
         CClient();
-        virtual  ~CClient() /* 0x08 */;
+        virtual ~CClient();
         int Init();
-        int RecieveData(const CSimpleNetPacket* pack, ai::CServer* server);
-        m3d::SgNode* CreateServerControlledNode(const int numModel);
+        int RecieveData(CSimpleNetPacket const* pack, ai::CServer* server);
+        m3d::SgNode* CreateServerControlledNode(int const numModel);
         int Update(int curTime, unsigned int dt);
         m3d::CWorld& GetWorld();
-        virtual void OnBeforeDeviceReset() override /* 0x04 */;
-        virtual void OnAfterDeviceReset() override /* 0x08 */;
+        virtual void OnBeforeDeviceReset() override;
+        virtual void OnAfterDeviceReset() override;
         void Reset();
-        virtual const char* GetCallbackName() const override /* 0x00 */;
-    }; /* size: 0x002c */
+        virtual char const* GetCallbackName() const override;
+    };
 
     inline CClient* pClient = nullptr;
-}
+}  // namespace m3d

@@ -18,154 +18,162 @@ namespace ai
     class TeamPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        /* 0x0040 */ int m_decisionMatrixNum;
-        /* 0x0044 */ bool m_bRemoveWhenChildrenDead;
-        /* 0x0045 */ char Padding_263[3];
-        /* 0x0048 */ int m_formationPrototypeId;
+        int m_decisionMatrixNum;
+        bool m_bRemoveWhenChildrenDead;
+        int m_formationPrototypeId;
         TeamPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x08 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
         float GetFormationDistBetweenVehicles() const;
         bool GetOverridesDistBetweenVehicles() const;
 
     protected:
-        /* 0x004c */ CStr m_formationPrototypeName;
+        CStr m_formationPrototypeName;
 
     private:
-        /* 0x0058 */ bool m_overridesDistBetweenVehicles;
-        /* 0x0059 */ char Padding_264[3];
-        /* 0x005c */ float m_formationDistBetweenVehicles;
-    }; /* size: 0x0060 */
+        bool m_overridesDistBetweenVehicles;
+        float m_formationDistBetweenVehicles;
+    };
 
     class Team : public ai::Obj
     {
         friend class TeamPrototypeInfo;
-    protected:
-        virtual  ~Team() override /* 0x00 */;
 
     protected:
-        Team(const ai::TeamPrototypeInfo& prototypeInfo);
-        Team(const ai::Team&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        virtual ~Team() override;
+
+    protected:
+        Team(ai::TeamPrototypeInfo const& prototypeInfo);
+        Team(ai::Team const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classTeam;
-        virtual const ai::TeamPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+        virtual ai::TeamPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
     protected:
-        static void __fastcall RegisterProperty(const char* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
+        static void RegisterProperty(char const* Name, int id, ai::eGObjPropertySaveStatus saveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x58 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x5c */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x60 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x78 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x7c */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x74 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x10c */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x108 */;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
-        using VehicleVector = retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*> >;
+        using VehicleVector = retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*>>;
 
     public:
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xac */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
-        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb4 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
-        virtual bool bIsEqualToPrototype() const override /* 0xbc */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x80 */;
-        virtual void Remove() override /* 0x54 */;
-        virtual void CreateChildren() override /* 0xa4 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
-        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x9c */;
-        virtual void RenderDebugInfo() const override /* 0xe4 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual bool bIsEqualToPrototype() const override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void Remove() override;
+        virtual void CreateChildren() override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual bool RemoveChild(ai::Obj* pChild) override;
+        virtual void RenderDebugInfo() const override;
         unsigned int GetNumVehicles() const;
         ai::Vehicle* GetVehicle(unsigned int index) const;
-        const retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*> >& GetVehicles() const;
-        void SetDestination(const CVector& destination);
+        retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*>> const& GetVehicles() const;
+        void SetDestination(CVector const& destination);
         void Stop();
         ai::Formation* GetFormation() const;
-        const retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector> > >& GetSteeringForceMap() const;
+        retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector>>> const&
+            GetSteeringForceMap() const;
         void AttackNow(int id);
         void HoldFire(int msc);
-        virtual void SetPassedToAnotherMapStatus() override /* 0x50 */;
+        virtual void SetPassedToAnotherMapStatus() override;
         void SetRemoveWhenChilrenDead(bool bRemoveWhenChildrenDead);
         bool GetTeamFrozen() const;
         void SetTeamFrozen(bool bFrozen);
         ai::TeamTactic* GetTeamTactic() const;
         void SetTeamTactic(ai::TeamTactic* tactic);
         void _AdjustBehaviour();
-        float GetDistToPhysicObj(const ai::PhysicObj* obj) const;
+        float GetDistToPhysicObj(ai::PhysicObj const* obj) const;
 
     protected:
-        /* 0x00c0 */ bool m_bRemoveWhenChildrenDead;
-        /* 0x00c1 */ bool m_bUseStandardUpdatingBehavior;
-        virtual void _TeamUpdate(float elapsedTime, unsigned int workTime) /* 0x110 */;
-        virtual ai::AI* GetAIPtr() override /* 0x44 */;
-        virtual void _InternalPostLoad() override /* 0xfc */;
-        virtual void _DoNoticeEnemy(int objId) /* 0x114 */;
-        virtual void _DoUnderAttack(int attackerId) /* 0x118 */;
-        virtual void _DoPosUnreachable() /* 0x11c */;
+        bool m_bRemoveWhenChildrenDead;
+        bool m_bUseStandardUpdatingBehavior;
+        virtual void _TeamUpdate(float elapsedTime, unsigned int workTime);
+        virtual ai::AI* GetAIPtr() override;
+        virtual void _InternalPostLoad() override;
+        virtual void _DoNoticeEnemy(int objId);
+        virtual void _DoUnderAttack(int attackerId);
+        virtual void _DoPosUnreachable();
         void _RemoveVehicles();
-        /* 0x00c2 */ char Padding_217[2];
 
     private:
-        /* 0x00c4 */ ai::AI m_AI;
-        /* 0x0124 */ retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*> > m_vehicles;
-        /* 0x0134 */ float m_maxTeamSpeed;
-        /* 0x0138 */ ai::Formation* m_formation;
-        /* 0x013c */ ai::CombatMastermind* m_combatMastermind;
-        /* 0x0140 */ ai::Path* m_pPath;
-        /* 0x0144 */ retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector> > > m_steeringForceMap;
-        /* 0x0150 */ bool m_needAdjustBehaviour;
-        /* 0x0151 */ bool m_bFrozen;
-        /* 0x0152 */ char Padding_218[2];
-        /* 0x0154 */ CStr m_TeamTacticName;
-        /* 0x0160 */ int m_TeamTacticId;
-        /* 0x0164 */ bool m_TeamTacticShouldBeAssigned;
-        /* 0x0165 */ bool m_bMustMoveToTarget;
+        ai::AI m_AI;
+        retruxx::vector<ai::Vehicle*, retruxx::allocator<ai::Vehicle*>> m_vehicles;
+        float m_maxTeamSpeed;
+        ai::Formation* m_formation;
+        ai::CombatMastermind* m_combatMastermind;
+        ai::Path* m_pPath;
+        retruxx::map<int, CVector, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, CVector>>>
+            m_steeringForceMap;
+        bool m_needAdjustBehaviour;
+        bool m_bFrozen;
+        CStr m_TeamTacticName;
+        int m_TeamTacticId;
+        bool m_TeamTacticShouldBeAssigned;
+        bool m_bMustMoveToTarget;
         float _GetTeamVelocity() const;
         void _AdjustRoles(int targetId);
-        void _GetTargetsPositions(retruxx::vector<CVector, retruxx::allocator<CVector> >& positions) const;
+        void _GetTargetsPositions(retruxx::vector<CVector, retruxx::allocator<CVector>>& positions) const;
         void _AddVehicleToFormation(ai::Vehicle* pVehicle);
         void _CreateFormation();
         void _TuneFormation();
         CVector _GetAggregatedPos() const;
         CVector _GetAggregatedTargetsPos() const;
         bool _IsTooFarFromTargets() const;
-        void _OnObjectDie(const ai::Event& evn);
-        void _OnNoticeEnemy(const ai::Event& evn);
-        void _OnPlayerVehicleChanged(const ai::Event& evn);
-        void _OnUnderAttack(const ai::Event& evn);
+        void _OnObjectDie(ai::Event const& evn);
+        void _OnNoticeEnemy(ai::Event const& evn);
+        void _OnPlayerVehicleChanged(ai::Event const& evn);
+        void _OnUnderAttack(ai::Event const& evn);
 
     public:
-        static void __fastcall Registration();
-        static m3d::AIParam __fastcall TeamAIGetCurPos(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIGetCurAngle(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnDefend(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnAttack(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnMove(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnStartDefend(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnIdle(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnStartAttack(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnAttackOrder(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnEnemyDestroyed(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnStartSearch(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnPathFind(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnMoveAlongPath(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnFallIn(ai::Obj*);
-        static m3d::AIParam __fastcall TeamAIOnTargetReached(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnTargetUnreachable(ai::Obj* pObj);
-        static m3d::AIParam __fastcall TeamAIOnMoveFinished(ai::Obj* pObj);
-    }; /* size: 0x0168 */
-}
+        static void Registration();
+        static m3d::AIParam TeamAIGetCurPos(ai::Obj* pObj);
+        static m3d::AIParam TeamAIGetCurAngle(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnDefend(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnAttack(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnMove(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnStartDefend(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnIdle(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnStartAttack(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnAttackOrder(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnEnemyDestroyed(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnStartSearch(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnPathFind(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnMoveAlongPath(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnFallIn(ai::Obj*);
+        static m3d::AIParam TeamAIOnTargetReached(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnTargetUnreachable(ai::Obj* pObj);
+        static m3d::AIParam TeamAIOnMoveFinished(ai::Obj* pObj);
+    };
+}  // namespace ai

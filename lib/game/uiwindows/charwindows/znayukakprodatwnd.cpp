@@ -229,7 +229,10 @@ int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsVehiclePart(
     return IsValid();
 }
 
-int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsRepositoryItem(int objId, Belong belong, PointBase<int> const& repositoryPos)
+int ZnayuKakProdatWnd::ItemSaveInfo::SetupAsRepositoryItem(
+    int objId,
+    Belong belong,
+    PointBase<int> const& repositoryPos)
 {
     // RVA 0x48C780
     m_gadgetSlotId = -1;
@@ -804,17 +807,17 @@ int ZnayuKakProdatWnd::SaveTradeState(bool bOriginaltState)
     switch (m_tradeType)
     {
     case TRADETYPE_VEHICLE:
-        res = SaveVehicleItemsState(BELONG_PLAYER, playerItems)
-            ? SaveVehicleItemsState(BELONG_WORKSHOP, workshopItems)
-            : 0;
+        res = SaveVehicleItemsState(BELONG_PLAYER, playerItems) ?
+            SaveVehicleItemsState(BELONG_WORKSHOP, workshopItems) :
+            0;
         break;
     case TRADETYPE_CABIN:
-        res = SaveVehicleItemsState(BELONG_PLAYER, playerItems) ? SaveCabinItemsState(BELONG_WORKSHOP, workshopItems)
-                                                                : 0;
+        res =
+            SaveVehicleItemsState(BELONG_PLAYER, playerItems) ? SaveCabinItemsState(BELONG_WORKSHOP, workshopItems) : 0;
         break;
     case TRADETYPE_BASKET:
-        res = SaveVehicleItemsState(BELONG_PLAYER, playerItems) ? SaveBasketItemsState(BELONG_WORKSHOP, workshopItems)
-                                                                : 0;
+        res = SaveVehicleItemsState(BELONG_PLAYER, playerItems) ? SaveBasketItemsState(BELONG_WORKSHOP, workshopItems) :
+                                                                  0;
         break;
     default:
         // The current values are not saved at all for an unknown trade type.
@@ -2345,8 +2348,8 @@ int ZnayuKakProdatWnd::CalcItemsCostByBelong(Belong belong) const
         {
             return -1;
         }
-        int const itemCost = belong == BELONG_PLAYER ? help::GetSellPriceByObjId(itemId, workshop->GetParentId())
-                                                     : help::GetBuyPriceByObjId(itemId, workshop->GetParentId());
+        int const itemCost = belong == BELONG_PLAYER ? help::GetSellPriceByObjId(itemId, workshop->GetParentId()) :
+                                                       help::GetBuyPriceByObjId(itemId, workshop->GetParentId());
         if (itemCost == -1)
         {
             return -1;
@@ -2363,8 +2366,8 @@ int ZnayuKakProdatWnd::CalcOneItemCost(int itemId, ai::Workshop const* workshop,
     {
         return -1;
     }
-    return belong == BELONG_PLAYER ? help::GetSellPriceByObjId(itemId, workshop->GetParentId())
-                                   : help::GetBuyPriceByObjId(itemId, workshop->GetParentId());
+    return belong == BELONG_PLAYER ? help::GetSellPriceByObjId(itemId, workshop->GetParentId()) :
+                                     help::GetBuyPriceByObjId(itemId, workshop->GetParentId());
 }
 
 bool ZnayuKakProdatWnd::IsItemRelevantForCurTradeState(ItemSaveInfo const* item) const
@@ -2494,8 +2497,8 @@ int ZnayuKakProdatWnd::GetItemCost(int itemId) const
     {
         return -1;
     }
-    return belong == BELONG_PLAYER ? help::GetSellPriceByObjId(itemId, workshop->GetParentId())
-                                   : help::GetBuyPriceByObjId(itemId, workshop->GetParentId());
+    return belong == BELONG_PLAYER ? help::GetSellPriceByObjId(itemId, workshop->GetParentId()) :
+                                     help::GetBuyPriceByObjId(itemId, workshop->GetParentId());
 }
 
 ZnayuKakProdatWnd::Belong ZnayuKakProdatWnd::GetItemBelong(int itemId) const
@@ -2604,8 +2607,6 @@ void ZnayuKakProdatWnd::UpdateTransferButtonsTooltips()
     CStr tipFromWorkshop =
         M3D_APP->GetStringByStringId0(m_aif.m_strIdTooltipTransferItemsFromWorkshopToPlayer[m_tradeType]);
 
-    m_btnTransferItemsFromPlayerToWorkshop->SetProperty(
-        PROP_WND_TOOLTIP, &tipFromPlayer);
-    m_btnTransferItemsFromWorkshopToPlayer->SetProperty(
-        PROP_WND_TOOLTIP, &tipFromWorkshop);
+    m_btnTransferItemsFromPlayerToWorkshop->SetProperty(PROP_WND_TOOLTIP, &tipFromPlayer);
+    m_btnTransferItemsFromWorkshopToPlayer->SetProperty(PROP_WND_TOOLTIP, &tipFromWorkshop);
 }

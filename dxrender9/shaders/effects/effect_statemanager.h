@@ -8,8 +8,8 @@ class CDevice;
 class StateManager : public ID3DXEffectStateManager
 {
 public:
-    /* 0x0004 */ CDevice* m_dev;
-    /* 0x0008 */ unsigned int m_nRefs;
+    CDevice* m_dev;
+    unsigned int m_nRefs;
 
     StateManager();
     void SetDevice(CDevice* dev);
@@ -28,17 +28,17 @@ public:
     HRESULT __stdcall SetNPatchMode(FLOAT NumSegments) override;
     HRESULT __stdcall SetFVF(DWORD FVF) override;
     HRESULT __stdcall SetVertexShader(LPDIRECT3DVERTEXSHADER9 pShader) override;
-    HRESULT __stdcall SetVertexShaderConstantF(UINT RegisterIndex, CONST FLOAT* pConstantData,
-                                               UINT RegisterCount) override;
-    HRESULT __stdcall SetVertexShaderConstantI(UINT RegisterIndex, CONST INT* pConstantData,
-                                               UINT RegisterCount) override;
-    HRESULT __stdcall SetVertexShaderConstantB(UINT RegisterIndex, CONST BOOL* pConstantData,
-                                               UINT RegisterCount) override;
+    HRESULT __stdcall SetVertexShaderConstantF(UINT RegisterIndex, CONST FLOAT* pConstantData, UINT RegisterCount)
+        override;
+    HRESULT __stdcall SetVertexShaderConstantI(UINT RegisterIndex, CONST INT* pConstantData, UINT RegisterCount)
+        override;
+    HRESULT __stdcall SetVertexShaderConstantB(UINT RegisterIndex, CONST BOOL* pConstantData, UINT RegisterCount)
+        override;
     HRESULT __stdcall SetPixelShader(LPDIRECT3DPIXELSHADER9 pShader) override;
-    HRESULT __stdcall SetPixelShaderConstantF(UINT RegisterIndex, CONST FLOAT* pConstantData,
-                                              UINT RegisterCount) override;
-    HRESULT __stdcall SetPixelShaderConstantI(UINT RegisterIndex, CONST INT* pConstantData,
-                                              UINT RegisterCount) override;
-    HRESULT __stdcall SetPixelShaderConstantB(UINT RegisterIndex, CONST BOOL* pConstantData,
-                                              UINT RegisterCount) override;
-}; /* size: 0x000c */
+    HRESULT __stdcall SetPixelShaderConstantF(UINT RegisterIndex, CONST FLOAT* pConstantData, UINT RegisterCount)
+        override;
+    HRESULT __stdcall SetPixelShaderConstantI(UINT RegisterIndex, CONST INT* pConstantData, UINT RegisterCount)
+        override;
+    HRESULT __stdcall SetPixelShaderConstantB(UINT RegisterIndex, CONST BOOL* pConstantData, UINT RegisterCount)
+        override;
+};

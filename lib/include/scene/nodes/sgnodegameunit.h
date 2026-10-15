@@ -7,13 +7,14 @@ namespace m3d
     {
     protected:
         SgGameUnitNode();
-        SgGameUnitNode(const m3d::SgGameUnitNode& node);
+        SgGameUnitNode(m3d::SgGameUnitNode const& node);
 
     public:
-        virtual m3d::Object* Clone() override /* 0x04 */;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSgGameUnitNode;
-    }; /* size: 0x0230 */;
-}
+    };
+    ;
+}  // namespace m3d

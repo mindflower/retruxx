@@ -348,7 +348,8 @@ namespace ai
             this->m_physicBody->Remove();
     }
 
-    void SimplePhysicObj::ReceiveNodesToLink(retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& nodelist) const
+    void SimplePhysicObj::ReceiveNodesToLink(
+        retruxx::list<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>>& nodelist) const
     {
         // RVA 0x7F57A0
         if (m_physicBody)
@@ -419,7 +420,8 @@ namespace ai
     SimplePhysicObjPrototypeInfo const* SimplePhysicObj::GetPrototypeInfo() const
     {
         // RVA 0x7F6540
-        return static_cast<SimplePhysicObjPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<SimplePhysicObjPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     CVector SimplePhysicObj::GetGeometricCenter() const
@@ -459,14 +461,15 @@ namespace ai
             this->m_deadTimer = v4;
             if (v4 <= 0.0 &&
                 (!this->m_testVisibility || m_physicBody == 0 || !m_physicBody->m_Node ||
-                 m_physicBody->m_Node->m_frameVisible != m3d::g_Kernel->GetTimer().GetCurFrame() - 1))
+                 m_physicBody->m_Node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1))
             {
                 Remove();
             }
         }
     }
 
-    void SimplePhysicObj::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void SimplePhysicObj::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // RVA 0x5EF690
         for (auto const& prop : m_propertiesMap)
@@ -593,7 +596,7 @@ namespace ai
 
     void SimplePhysicObj::RenderDebugInfo() const
     {
-        if (!m_physicBody->m_Node || m_physicBody->m_Node->m_frameVisible == m3d::g_Kernel->GetTimer().GetCurFrame())
+        if (!m_physicBody->m_Node || m_physicBody->m_Node->m_frameVisible == M3D_KERNEL->GetTimer().GetCurFrame())
         {
             PhysicObj::RenderDebugInfo();
             if (!m_spaceId || !m_bIsSpaceOwner || dGeomIsEnabled(m_spaceId))

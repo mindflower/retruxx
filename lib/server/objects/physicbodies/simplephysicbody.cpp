@@ -21,8 +21,8 @@ namespace ai
         // RVA 0x8510D0 - nothing of its own; the base does all the setup.
     }
 
-    SimplePhysicBody::SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const& prototypeInfo)
-        : PhysicBody(prototypeInfo)
+    SimplePhysicBody::SimplePhysicBody(ai::SimplePhysicBodyPrototypeInfo const& prototypeInfo) :
+        PhysicBody(prototypeInfo)
     {
         // RVA 0x851080 - nothing of its own.
     }
@@ -42,4 +42,4 @@ namespace ai
     SimplePhysicBody::SimplePhysicBody()
     {
     }
-}
+}  // namespace ai

@@ -12,8 +12,8 @@ namespace ai
         using ThisAfterChangeCallback = ai::MemberFunctionOneArg<ai::NumericInRangeRegenerating<T>, T, void>;
 
     public:
-        /* 0x00ac */ ai::FuncPtrOneArgRef<T, bool> m_BeforeRegenerate;
-        /* 0x00b4 */ ai::FuncPtrOneArg<T, void> m_AfterRegenerationChange;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeRegenerate;
+        ai::FuncPtrOneArg<T, void> m_AfterRegenerationChange;
 
         NumericInRangeRegenerating(T value, T minValue, T maxValue, T regeneration) :
             NumericInRange(value, minValue, maxValue),
@@ -24,7 +24,7 @@ namespace ai
             //throw std::runtime_error("not implemented");
         }
 
-        const ai::Numeric<T>& regeneration() const
+        ai::Numeric<T> const& regeneration() const
         {
             return m_regeneration;
         }
@@ -49,13 +49,13 @@ namespace ai
             value().m_AfterChange(oldValue);
         }
 
-        void assign(const ai::NumericInRangeRegenerating<T>&);
+        void assign(ai::NumericInRangeRegenerating<T> const&);
 
     protected:
-        void _AssignUnsafe(const ai::NumericInRangeRegenerating<T>&);
+        void _AssignUnsafe(ai::NumericInRangeRegenerating<T> const&);
 
     private:
         void _OnAfterRegenerationChange(T oldRegeneration);
-        /* 0x00bc */ ai::Numeric<T> m_regeneration;
-    }; /* size: 0x00d8 */
-}
+        ai::Numeric<T> m_regeneration;
+    };
+}  // namespace ai

@@ -75,8 +75,8 @@ int HelpWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_checkDisableAutoHelpName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_checkDisableAutoHelpName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -87,8 +87,9 @@ int HelpWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndCheckDisableAutoHelpEmbossName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndCheckDisableAutoHelpEmbossName +
+                " is not found or incorrect type");
             res = 0;
         }
 
@@ -103,8 +104,8 @@ int HelpWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_lblDisableAutoHelpName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_lblDisableAutoHelpName + " is not found or incorrect type");
         }
     }
 

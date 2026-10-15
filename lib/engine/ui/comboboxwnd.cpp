@@ -10,13 +10,12 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(ComboBoxWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
 
         RT_CLASS_DEFINE(ComboBoxWnd);
 
         ComboBoxWnd::AuxInfo::AuxInfo()
         {
-
         }
 
         int ComboBoxWnd::GetCurSel() const
@@ -45,7 +44,7 @@ namespace m3d
                 float w = 0.0;
                 for (int i = 0; i < m_wndStringList->GetCount(); ++i)
                 {
-                    const auto& bounds = m_wndStringList->GetItemBounds(i);
+                    auto const& bounds = m_wndStringList->GetItemBounds(i);
                     if (h + bounds.height > m_maxListH)
                     {
                         break;
@@ -63,16 +62,16 @@ namespace m3d
                     }
                 }
 
-                const auto selBounds = GetSelTextBounds();
+                auto const selBounds = GetSelTextBounds();
                 BoundsBase<float> result;
                 result.x0 = selBounds.x0;
                 result.y0 = selBounds.height + selBounds.y0;
                 result.width = selBounds.width + selBounds.x0 - selBounds.x0;
-                result.height = ((((w * 2.0) + h) + selBounds.height) + selBounds.y0) - (selBounds.height + selBounds.y0);
+                result.height =
+                    ((((w * 2.0) + h) + selBounds.height) + selBounds.y0) - (selBounds.height + selBounds.y0);
                 return result;
-
             }
-            return { 0.0, 0.0, 0.0, 0.0 };
+            return {0.0, 0.0, 0.0, 0.0};
         }
 
         void ComboBoxWnd::SetCurSel(int idx)
@@ -103,16 +102,17 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullBounds() const
         {
-            const auto selTextB = GetSelTextBounds();
-            const auto listB = GetListBounds();
+            auto const selTextB = GetSelTextBounds();
+            auto const listB = GetListBounds();
 
-            const float x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
-            const float y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
-            const float right =
-                (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ? selTextB.x0 + selTextB.width : listB.x0 + listB.width;
-            const float bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height)
-                                     ? selTextB.y0 + selTextB.height
-                                     : listB.y0 + listB.height;
+            float const x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
+            float const y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
+            float const right = (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ?
+                selTextB.x0 + selTextB.width :
+                listB.x0 + listB.width;
+            float const bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height) ?
+                selTextB.y0 + selTextB.height :
+                listB.y0 + listB.height;
 
             BoundsBase<float> result;
             result.x0 = x0;
@@ -194,13 +194,19 @@ namespace m3d
             return res;
         }
 
-        int ComboBoxWnd::Create(unsigned style, BoundsBase<float> const& b, int id, unsigned comboStyle, float listMaxH, float selTextFixedH)
+        int ComboBoxWnd::Create(
+            unsigned style,
+            BoundsBase<float> const& b,
+            int id,
+            unsigned comboStyle,
+            float listMaxH,
+            float selTextFixedH)
         {
             // RVA 0x71FC90 - builds the toggle button, the selected-text window and
             // the drop-down list as children. Only the origin and width of b are
             // used: the height follows from the layout.
             auto rect = b;
-            m_btnToggle = dynamic_cast<ButtonWnd*>(g_Kernel->New("ButtonWnd"));
+            m_btnToggle = dynamic_cast<ButtonWnd*>(M3D_KERNEL->New("ButtonWnd"));
             if (!m_btnToggle)
             {
                 return 0;
@@ -220,28 +226,31 @@ namespace m3d
             }
             m_btnToggle->SetPersistance(false);
 
-            m_wndSelText = dynamic_cast<Wnd*>(g_Kernel->New("Wnd"));
+            m_wndSelText = dynamic_cast<Wnd*>(M3D_KERNEL->New("Wnd"));
             if (!m_wndSelText)
             {
                 return 0;
             }
             // 0x400A20
-            if (m_wndSelText->Create({}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_TEXT_CENTERED_Y | WS_IS_VISIBLE |
-                                             WS_REFLECT_MS_AND_KEYS_TO_PARENT,
-                                     rc, 0) == 0)
+            if (m_wndSelText->Create(
+                    {},
+                    WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_TEXT_CENTERED_Y | WS_IS_VISIBLE |
+                        WS_REFLECT_MS_AND_KEYS_TO_PARENT,
+                    rc,
+                    0) == 0)
             {
                 return 0;
             }
             m_wndSelText->SetPersistance(false);
 
-            m_wndStringList = dynamic_cast<StringsListBoxWnd*>(g_Kernel->New("StringsListBoxWnd"));
+            m_wndStringList = dynamic_cast<StringsListBoxWnd*>(M3D_KERNEL->New("StringsListBoxWnd"));
             if (!m_wndStringList)
             {
                 return 0;
             }
             // 0x440200
-            if (m_wndStringList->Create({}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_SEND_NOTIFY_MESSAGES | WS_IS_VISIBLE,
-                                        rc, 6) == 0)
+            if (m_wndStringList->Create(
+                    {}, WS_NOTIFY_MESSAGES_FORCE_IMMEDIATE | WS_SEND_NOTIFY_MESSAGES | WS_IS_VISIBLE, rc, 6) == 0)
             {
                 return 0;
             }
@@ -272,7 +281,7 @@ namespace m3d
             m_bounds.width = rect.width;
             m_bounds.x0 = rect.x0;
             m_bounds.y0 = rect.y0;
-            SetBaseOrigin({ rect.x0, rect.y0 });
+            SetBaseOrigin({rect.x0, rect.y0});
             SetListMaxHeight(listMaxH);
             return 1;
         }
@@ -416,16 +425,17 @@ namespace m3d
 
         BoundsBase<float> ComboBoxWnd::GetFullMaxBounds() const
         {
-            const auto selTextB = GetSelTextBounds();
-            const auto listB = GetListMaxBounds();
+            auto const selTextB = GetSelTextBounds();
+            auto const listB = GetListMaxBounds();
 
-            const float x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
-            const float y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
-            const float right =
-                (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ? selTextB.x0 + selTextB.width : listB.x0 + listB.width;
-            const float bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height)
-                                     ? selTextB.y0 + selTextB.height
-                                     : listB.y0 + listB.height;
+            float const x0 = selTextB.x0 <= listB.x0 ? selTextB.x0 : listB.x0;
+            float const y0 = selTextB.y0 <= listB.y0 ? selTextB.y0 : listB.y0;
+            float const right = (listB.x0 + listB.width) <= (selTextB.x0 + selTextB.width) ?
+                selTextB.x0 + selTextB.width :
+                listB.x0 + listB.width;
+            float const bottom = (listB.y0 + listB.height) <= (selTextB.y0 + selTextB.height) ?
+                selTextB.y0 + selTextB.height :
+                listB.y0 + listB.height;
 
             BoundsBase<float> result;
             result.x0 = x0;
@@ -624,7 +634,7 @@ namespace m3d
                 RecalcSelfBounds();
                 UpdateToggleButtonPane();
                 int const msg = m_state == STATE_OPEN ? 47 : 48;
-                Application::g_pApp->EnqueueMessage(msg, this, 0, 0, 0, {}, {});
+                M3D_APP->EnqueueMessage(msg, this, 0, 0, 0, {}, {});
             }
         }
 
@@ -727,7 +737,8 @@ namespace m3d
                 SelectItem();
                 return 1;
             }
-            return 1;;
+            return 1;
+            ;
         }
 
         void ComboBoxWnd::RecalcListBounds()
@@ -779,5 +790,5 @@ namespace m3d
             M3D_APP->EnqueueMessage(47, this, 0, 0, 0, {}, {});
             return res;
         }
-    }    
-}
+    }  // namespace ui
+}  // namespace m3d

@@ -7,29 +7,29 @@ namespace ai
     {
     public:
         SmokeScreenLocationPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0094 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class SmokeScreenLocation : public ai::TemporaryLocation
     {
         friend class SmokeScreenLocationPrototypeInfo;
 
     protected:
-        virtual  ~SmokeScreenLocation() override /* 0x00 */;
+        virtual ~SmokeScreenLocation() override;
 
     private:
-        SmokeScreenLocation(const ai::SmokeScreenLocationPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        SmokeScreenLocation(ai::SmokeScreenLocationPrototypeInfo const& prototypeInfo);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classSmokeScreenLocation;
-        virtual const ai::SmokeScreenLocationPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual ai::SmokeScreenLocationPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        virtual void OnObjectIn(ai::Obj* object) override /* 0x00 */;
-        virtual void OnObjectOut(ai::Obj* object) override /* 0x00 */;
-    }; /* size: 0x0284 */
-}
+        virtual void OnObjectIn(ai::Obj* object) override;
+        virtual void OnObjectOut(ai::Obj* object) override;
+    };
+}  // namespace ai

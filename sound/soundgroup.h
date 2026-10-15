@@ -9,8 +9,8 @@ namespace m3d
     {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace snd
 {
@@ -77,12 +77,12 @@ namespace snd
         }
 
     private:
-        /* 0x0000 */ int m_id;
-        /* 0x0004 */ int m_parentId;
-        /* 0x0008 */ CStr m_name;
-        /* 0x0014 */ float m_volumeMult;
-        /* 0x0018 */ float m_minDist;
-        /* 0x001c */ float m_maxDist;
-        /* 0x0020 */ int m_currentVolume;
-    }; /* size: 0x0024 */
-}
+        int m_id;
+        int m_parentId;
+        CStr m_name;
+        float m_volumeMult;
+        float m_minDist;
+        float m_maxDist;
+        int m_currentVolume;
+    };
+}  // namespace snd

@@ -13,8 +13,8 @@ namespace m3d
     {
         class ImageWnd;
         class ButtonWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
 class RepositoryWnd;
 
@@ -38,29 +38,29 @@ public:
 
 public:
     virtual void SetVehicleId(int);
-    static m3d::Class * GetBaseClass();
+    static m3d::Class* GetBaseClass();
     void PickUpAll();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Object * CreateObject();
-    virtual m3d::Object * Clone();
+    virtual m3d::Class* GetClass() const;
+    static m3d::Object* CreateObject();
+    virtual m3d::Object* Clone();
     virtual ~GroundWnd();
 
 protected:
     virtual int OnAfterAddToWndStation();
     void SetupRepository();
-    void OnRepositoryChanged(void *);
+    void OnRepositoryChanged(void*);
     void OnStartLevel();
-    ai::GeomRepository * GetGroundRepository() const ;
+    ai::GeomRepository* GetGroundRepository() const;
     virtual int GameDataClear(bool);
     GroundWnd();
-    GroundWnd(GroundWnd const &);
+    GroundWnd(GroundWnd const&);
     void UpdatePickupButtonState();
-    virtual int GameDataUpdate(void *,int);
+    virtual int GameDataUpdate(void*, int);
     virtual int GameDataSetup();
     virtual int OnAfterRemoveFromWndStation();
     virtual int OnBeforeAddToWndStation();
     void UpdateGroundPicture();
-    virtual int OnWndNotify(m3d::ui::Wnd *,unsigned int,unsigned int,m3d::AIParam const &);
+    virtual int OnWndNotify(m3d::ui::Wnd*, unsigned int, unsigned int, m3d::AIParam const&);
 
 public:
     RT_CLASS_DECLARE(GroundWnd);
@@ -68,6 +68,6 @@ public:
 private:
     GroundWnd::AuxInfo m_aif;
     ref_ptr<RepositoryWnd> m_wndRepository;
-    m3d::ui::ButtonWnd *m_btnPickUpAll;
-    m3d::ui::ImageWnd *m_wndGroundPicture;
+    m3d::ui::ButtonWnd* m_btnPickUpAll;
+    m3d::ui::ImageWnd* m_wndGroundPicture;
 };

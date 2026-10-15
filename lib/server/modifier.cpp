@@ -93,13 +93,27 @@ namespace ai
         {
             switch (*p)
             {
-            case '*': m_Operation = MO_MULT; break;
-            case '+': m_Operation = MO_ADD; break;
-            case '-': m_Operation = MO_SUB; break;
-            case '/': m_Operation = MO_DIV; break;
-            case '=': m_Operation = MO_SET; break;
-            case '^': m_Operation = MO_BACK; break;
-            default:  noOperator = true; break;
+            case '*':
+                m_Operation = MO_MULT;
+                break;
+            case '+':
+                m_Operation = MO_ADD;
+                break;
+            case '-':
+                m_Operation = MO_SUB;
+                break;
+            case '/':
+                m_Operation = MO_DIV;
+                break;
+            case '=':
+                m_Operation = MO_SET;
+                break;
+            case '^':
+                m_Operation = MO_BACK;
+                break;
+            default:
+                noOperator = true;
+                break;
             }
 
             // Step over the operator and, if there is one, the separator.
@@ -179,13 +193,26 @@ namespace ai
         CStr operationValue("MO_ADD");
         switch (m_Operation)
         {
-        case MO_SET:  operationValue = CStr("MO_SET"); break;
-        case MO_BACK: operationValue = CStr("MO_BACK"); break;
-        case MO_ADD:  operationValue = CStr("MO_ADD"); break;
-        case MO_SUB:  operationValue = CStr("MO_SUB"); break;
-        case MO_MULT: operationValue = CStr("MO_MULT"); break;
-        case MO_DIV:  operationValue = CStr("MO_DIV"); break;
-        default: break;
+        case MO_SET:
+            operationValue = CStr("MO_SET");
+            break;
+        case MO_BACK:
+            operationValue = CStr("MO_BACK");
+            break;
+        case MO_ADD:
+            operationValue = CStr("MO_ADD");
+            break;
+        case MO_SUB:
+            operationValue = CStr("MO_SUB");
+            break;
+        case MO_MULT:
+            operationValue = CStr("MO_MULT");
+            break;
+        case MO_DIV:
+            operationValue = CStr("MO_DIV");
+            break;
+        default:
+            break;
         }
         OwnNode->SetAttribute("Operation", operationValue.c_str());
 
@@ -206,12 +233,24 @@ namespace ai
             float const value = m_Value.GetAsFloat();
             switch (m_Operation)
             {
-            case MO_SET:  *Property = value; break;
-            case MO_BACK: *Property = base; break;
-            case MO_ADD:  *Property = *Property + value; break;
-            case MO_SUB:  *Property = *Property - value; break;
-            case MO_MULT: *Property = value * base + *Property; break;
-            case MO_DIV:  *Property = *Property - value * base; break;
+            case MO_SET:
+                *Property = value;
+                break;
+            case MO_BACK:
+                *Property = base;
+                break;
+            case MO_ADD:
+                *Property = *Property + value;
+                break;
+            case MO_SUB:
+                *Property = *Property - value;
+                break;
+            case MO_MULT:
+                *Property = value * base + *Property;
+                break;
+            case MO_DIV:
+                *Property = *Property - value * base;
+                break;
             default:
             {
                 M3D_LOG_INFO(CStr("Incorrect operation of Modifier ") + m_PropertyName);
@@ -227,12 +266,24 @@ namespace ai
             CVector2 const value = m_Value.GetAsRange();
             switch (m_Operation)
             {
-            case MO_SET:  *Property = value.randomValue(); break;
-            case MO_BACK: *Property = base; break;
-            case MO_ADD:  *Property = value.randomValue() + *Property; break;
-            case MO_SUB:  *Property = *Property - value.randomValue(); break;
-            case MO_MULT: *Property = value.randomValue() * base + *Property; break;
-            case MO_DIV:  *Property = *Property - value.randomValue() * base; break;
+            case MO_SET:
+                *Property = value.randomValue();
+                break;
+            case MO_BACK:
+                *Property = base;
+                break;
+            case MO_ADD:
+                *Property = value.randomValue() + *Property;
+                break;
+            case MO_SUB:
+                *Property = *Property - value.randomValue();
+                break;
+            case MO_MULT:
+                *Property = value.randomValue() * base + *Property;
+                break;
+            case MO_DIV:
+                *Property = *Property - value.randomValue() * base;
+                break;
             default:
             {
                 M3D_LOG_INFO(CStr("Incorrect operation of Modifier ") + m_PropertyName);
@@ -245,8 +296,7 @@ namespace ai
         case m3d::AIPARAM_VECTOR:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply CVector to float property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply CVector to float property"));
             break;
         }
 
@@ -434,8 +484,7 @@ namespace ai
         case m3d::AIPARAM_VECTOR:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply CVector to CVector2 property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply CVector to CVector2 property"));
             break;
         }
 
@@ -453,24 +502,21 @@ namespace ai
         case m3d::AIPARAM_VECTOR:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply CVector to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply CVector to Index property"));
             break;
         }
 
         case m3d::AIPARAM_FLOAT:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply float to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply float to Index property"));
             break;
         }
 
         case m3d::AIPARAM_RANGE:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply Range to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply Range to Index property"));
             break;
         }
 
@@ -481,8 +527,8 @@ namespace ai
             if (id == -1)
             {
                 M3D_LOG_INFO(
-                    CStr("Incorrect Modifier ") + m_PropertyName +
-                    CStr(". Couldn't find engine model <") + value + CStr(">"));
+                    CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't find engine model <") + value +
+                    CStr(">"));
                 return;
             }
 
@@ -516,24 +562,21 @@ namespace ai
         case m3d::AIPARAM_VECTOR:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply CVector to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply CVector to Index property"));
             break;
         }
 
         case m3d::AIPARAM_FLOAT:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply float to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply float to Index property"));
             break;
         }
 
         case m3d::AIPARAM_RANGE:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply Range to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply Range to Index property"));
             break;
         }
 
@@ -545,8 +588,8 @@ namespace ai
             if (List.empty() || List[0] == -1)
             {
                 M3D_LOG_INFO(
-                    CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't find <") +
-                    m_Value.GetAsStr() + CStr(">"));
+                    CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't find <") + m_Value.GetAsStr() +
+                    CStr(">"));
                 return;
             }
 
@@ -583,24 +626,21 @@ namespace ai
         case m3d::AIPARAM_VECTOR:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply CVector to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply CVector to Index property"));
             break;
         }
 
         case m3d::AIPARAM_FLOAT:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply float to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply float to Index property"));
             break;
         }
 
         case m3d::AIPARAM_RANGE:
         {
             M3D_LOG_INFO(
-                CStr("Incorrect Modifier ") + m_PropertyName +
-                CStr(". Couldn't apply Range to Index property"));
+                CStr("Incorrect Modifier ") + m_PropertyName + CStr(". Couldn't apply Range to Index property"));
             break;
         }
 
@@ -666,4 +706,4 @@ namespace ai
             break;
         }
     }
-}
+}  // namespace ai

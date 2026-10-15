@@ -13,9 +13,9 @@ public:
     {
         ConnectionDrawInfo(LevelConnectionsWnd::ConnectionDrawInfo const& __that);
         ConnectionDrawInfo(PointBase<float> const& pt0, PointBase<float> const& pt1);
-        /* 0x0000 */ PointBase<float> m_pt0;
-        /* 0x0008 */ PointBase<float> m_pt1;
-    }; /* size: 0x0010 */
+        PointBase<float> m_pt0;
+        PointBase<float> m_pt1;
+    };
 
     using ConnectionDrawInfoVector =
         std::vector<LevelConnectionsWnd::ConnectionDrawInfo, std::allocator<LevelConnectionsWnd::ConnectionDrawInfo>>;
@@ -28,48 +28,47 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_connectionTexName;
-        /* 0x000c */ float m_connectionH;
+        CStr m_connectionTexName;
+        float m_connectionH;
         AuxInfo(LevelConnectionsWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0010 */
+    };
 
 protected:
-    virtual int OnPaint(m3d::ui::DrawInfo const& di) override /* 0x88 */;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
     void DrawConnections(m3d::ui::DrawInfo const& di);
-    /* 0x0220 */ std::
-        vector<LevelConnectionsWnd::ConnectionDrawInfo, std::allocator<LevelConnectionsWnd::ConnectionDrawInfo>>
-            m_connectionDrawInfo;
-    /* 0x0230 */ LevelConnectionsWnd::AuxInfo m_aif;
-    /* 0x0240 */ m3d::rend::TexHandle m_connectionTex;
+    std::vector<LevelConnectionsWnd::ConnectionDrawInfo, std::allocator<LevelConnectionsWnd::ConnectionDrawInfo>>
+        m_connectionDrawInfo;
+    LevelConnectionsWnd::AuxInfo m_aif;
+    m3d::rend::TexHandle m_connectionTex;
     LevelConnectionsWnd();
     LevelConnectionsWnd(LevelConnectionsWnd const& rhs);
 
 public:
-    virtual ~LevelConnectionsWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~LevelConnectionsWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classLevelConnectionsWnd;
-}; /* size: 0x0244 */
+};
 
 class GlobalMapWnd : public ScreenWnd
 {
 public:
     struct Connection
     {
-        /* 0x0000 */ CStr m_levelNameFrom;
-        /* 0x000c */ CStr m_levelNameTo;
-    }; /* size: 0x0018 */
+        CStr m_levelNameFrom;
+        CStr m_levelNameTo;
+    };
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_levelIcoName;
-        /* 0x000c */ CStr m_wndChartName;
+        CStr m_levelIcoName;
+        CStr m_wndChartName;
         AuxInfo(GlobalMapWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0018 */
+    };
 
     using LevelIcoMap =
         std::map<CStr, ref_ptr<LevelIco>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<LevelIco>>>>;
@@ -77,12 +76,12 @@ public:
     using ConnectionVector = std::vector<GlobalMapWnd::Connection, std::allocator<GlobalMapWnd::Connection>>;
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int idFrom, unsigned int message, m3d::AIParam const& data)
-        override /* 0x00 */;
-    virtual int OnAfterAddToWndStation() override /* 0x00 */;
+        override;
+    virtual int OnAfterAddToWndStation() override;
     void OnStartLevel();
     void OnLocationStateChanged();
     void UpdateConnections();
@@ -92,23 +91,22 @@ protected:
     int InitLevelIcons();
     void LaunchLocalMap();
     int CreateConnectionsWnd();
-    /* 0x0224 */ std::
-        map<CStr, ref_ptr<LevelIco>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<LevelIco>>>>
-            m_levelIcons;
-    /* 0x0230 */ std::vector<GlobalMapWnd::Connection, std::allocator<GlobalMapWnd::Connection>> m_connections;
-    /* 0x0240 */ GlobalMapWnd::AuxInfo m_aif;
-    /* 0x0258 */ LevelConnectionsWnd* m_wndConnections;
+    std::map<CStr, ref_ptr<LevelIco>, std::less<CStr>, std::allocator<std::pair<CStr const, ref_ptr<LevelIco>>>>
+        m_levelIcons;
+    std::vector<GlobalMapWnd::Connection, std::allocator<GlobalMapWnd::Connection>> m_connections;
+    GlobalMapWnd::AuxInfo m_aif;
+    LevelConnectionsWnd* m_wndConnections;
     GlobalMapWnd();
     GlobalMapWnd(GlobalMapWnd const& rhs);
 
 public:
-    virtual ~GlobalMapWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~GlobalMapWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classGlobalMapWnd;
-}; /* size: 0x025c */
+};
 
 class LevelIco : public m3d::ui::ImageWnd
 {
@@ -127,31 +125,31 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_selFrameTexName;
+        CStr m_selFrameTexName;
         AuxInfo(LevelIco::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x000c */
+    };
 
 protected:
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int OnPaint(m3d::ui::DrawInfo const& di) override /* 0x88 */;
-    virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override /* 0x00 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
+    virtual int OnMouseButton0(unsigned int state, PointBase<float> const& at) override;
     void OnStartLevel();
     void UpdateState();
     void SetState(LevelIco::State state);
     bool IsValid() const;
-    /* 0x0234 */ CStr m_levelName;
-    /* 0x0240 */ LevelIco::State m_state;
+    CStr m_levelName;
+    LevelIco::State m_state;
     static LevelIco::AuxInfo m_aif;
-    /* 0x0244 */ m3d::rend::TexHandle m_selFrameTex;
+    m3d::rend::TexHandle m_selFrameTex;
     LevelIco();
     LevelIco(LevelIco const& rhs);
 
 public:
-    virtual ~LevelIco() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~LevelIco() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classLevelIco;
-}; /* size: 0x0248 */
+};

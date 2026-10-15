@@ -8,10 +8,10 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
+    }  // namespace cmn
 
     class AIParam;
-}
+}  // namespace m3d
 
 namespace ai
 {
@@ -23,11 +23,11 @@ namespace ai
     class AI
     {
     public:
-        AI(const ai::AI&);
+        AI(ai::AI const&);
         AI();
         void AIInit();
-        const CStr& GetCurState2Name();
-        const CStr& GetCurState1Name();
+        CStr const& GetCurState2Name();
+        CStr const& GetCurState1Name();
         int GetCurState2Num();
         int GetCurState1Num();
         m3d::AIParam GetCmdParam(unsigned int paramNum);
@@ -38,16 +38,16 @@ namespace ai
         void SetDecisionMatrix(int MatrixNum);
         ai::DecisionMatrix* GetDecisionMatrixPtr();
         void AIUpdate(ai::Obj* pObj);
-        void SetState2Param(int ParamNum, const m3d::AIParam& Param);
-        void SetState1Param(int ParamNum, const m3d::AIParam& Param);
-        void PutCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3);
-        void PutCommand(const ai::AIMessage& command);
-        void InsCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3);
-        void SetCommand(int Num, const m3d::AIParam& Param1, const m3d::AIParam& Param2, const m3d::AIParam& Param3);
+        void SetState2Param(int ParamNum, m3d::AIParam const& Param);
+        void SetState1Param(int ParamNum, m3d::AIParam const& Param);
+        void PutCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3);
+        void PutCommand(ai::AIMessage const& command);
+        void InsCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3);
+        void SetCommand(int Num, m3d::AIParam const& Param1, m3d::AIParam const& Param2, m3d::AIParam const& Param3);
         void CommandStackOpen();
         void CommandStackClose();
-        void PutMessage2(const ai::AIMessage& Message);
-        void PutMessage1(const ai::AIMessage& Message);
+        void PutMessage2(ai::AIMessage const& Message);
+        void PutMessage1(ai::AIMessage const& Message);
         void LoadAIFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode);
         void SaveAIToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
         void Dump();
@@ -58,16 +58,15 @@ namespace ai
         int _CurrentState1Num();
         int _CurrentMessage2CommandNum();
         int _CurrentMessage1CommandNum();
-        /* 0x0000 */ retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState> > m_StateStack2;
-        /* 0x0010 */ retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState> > m_StateStack1;
-        /* 0x0020 */ ai::DecisionMatrix* m_pDM;
-        /* 0x0024 */ bool m_fStateStack2Changed;
-        /* 0x0025 */ char Padding_177[3];
-        /* 0x0028 */ retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Messages2;
-        /* 0x0038 */ retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Messages1;
-        /* 0x0048 */ retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage> > m_Commands;
-        /* 0x0058 */ int m_numCurCommand;
-        /* 0x005c */ bool m_CommandProcessed;
-        /* 0x005d */ bool m_CommandStackOpen;
-    }; /* size: 0x0060 */
-}
+        retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState>> m_StateStack2;
+        retruxx::vector<ai::AIPassageState, retruxx::allocator<ai::AIPassageState>> m_StateStack1;
+        ai::DecisionMatrix* m_pDM;
+        bool m_fStateStack2Changed;
+        retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage>> m_Messages2;
+        retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage>> m_Messages1;
+        retruxx::vector<ai::AIMessage, retruxx::allocator<ai::AIMessage>> m_Commands;
+        int m_numCurCommand;
+        bool m_CommandProcessed;
+        bool m_CommandStackOpen;
+    };
+}  // namespace ai

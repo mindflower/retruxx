@@ -164,7 +164,7 @@ namespace ai
         pH = nullptr;
     }
 
-    void Path::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode, ai::Map* pMap)
+    void Path::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode, ai::Map* pMap)
     {
         // RVA 0x7BF6B0 - an unfinished search is restarted from its original question; a finished
         // one has its points read straight back.
@@ -232,10 +232,8 @@ namespace ai
         if (m_bSearching)
         {
             OwnNode->SetAttribute("InSearching", "1");
-            OwnNode->SetAttribute("Start",
-                CStr::format_("%.3f %.3f", m_startPoint.x, m_startPoint.y).c_str());
-            OwnNode->SetAttribute("End",
-                CStr::format_("%.3f %.3f", m_endPoint.x, m_endPoint.y).c_str());
+            OwnNode->SetAttribute("Start", CStr::format_("%.3f %.3f", m_startPoint.x, m_startPoint.y).c_str());
+            OwnNode->SetAttribute("End", CStr::format_("%.3f %.3f", m_endPoint.x, m_endPoint.y).c_str());
             OwnNode->SetAttribute("radius", CStr(m_radius).c_str());
             OwnNode->SetAttribute("BV", CStr(m_blockedValue).c_str());
             OwnNode->SetAttribute("RectLeft", CStr(m_minIndex.x).c_str());
@@ -260,11 +258,11 @@ namespace ai
         OwnNode->SetAttribute("PathPoints", buff.substr(0, buff.length() - 1).c_str());
     }
 
-    Path::Path(const std::vector<CVector2, std::allocator<CVector2>>& path)
-        : m_startPointIndex(0, 0)
-        , m_endPointIndex(0, 0)
-        , m_minIndex(0, 0)
-        , m_maxIndex(0, 0)
+    Path::Path(std::vector<CVector2, std::allocator<CVector2>> const& path) :
+        m_startPointIndex(0, 0),
+        m_endPointIndex(0, 0),
+        m_minIndex(0, 0),
+        m_maxIndex(0, 0)
     {
         this->m_size = 0;
         this->m_pPath = 0;
@@ -279,17 +277,13 @@ namespace ai
 
         m_size = path.size();
         m_pPath = new CVector2[m_size];
-        for (int i = 0 ; i < m_size ; ++i)
+        for (int i = 0; i < m_size; ++i)
         {
             m_pPath[i] = path[i];
         }
     }
 
-    Path::Path()
-        : m_startPointIndex(0, 0)
-        , m_endPointIndex(0, 0)
-        , m_minIndex(0, 0)
-        , m_maxIndex(0, 0)
+    Path::Path() : m_startPointIndex(0, 0), m_endPointIndex(0, 0), m_minIndex(0, 0), m_maxIndex(0, 0)
     {
         this->m_size = 0;
         this->m_pPath = 0;
@@ -309,7 +303,11 @@ namespace ai
         ClearHelpers();
     }
 
-    void Path::StartSearch(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint, float radius,
+    void Path::StartSearch(
+        ai::Map* pMap,
+        CVector2 const& startPoint,
+        CVector2 const& endPoint,
+        float radius,
         unsigned char blockedValue)
     {
         // RVA 0x7BED00 - searches the whole map. A search already under way is left alone.
@@ -322,8 +320,8 @@ namespace ai
         m_SearchResult = PATH_NOT_ENOUGH_TIME;
         m_pMap = pMap;
         // The radius is in cells, measured against the smaller of the two cell dimensions.
-        m_radius = static_cast<int>(radius /
-            (pMap->m_cellSize.x <= pMap->m_cellSize.y ? pMap->m_cellSize.x : pMap->m_cellSize.y));
+        m_radius = static_cast<int>(
+            radius / (pMap->m_cellSize.x <= pMap->m_cellSize.y ? pMap->m_cellSize.x : pMap->m_cellSize.y));
         m_startPoint = startPoint;
         m_endPoint = endPoint;
         m_minIndex.x = 0;
@@ -332,8 +330,14 @@ namespace ai
         StartSearchInternal();
     }
 
-    void Path::StartSearchInRect(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint,
-        const CVector2& rectPoint1, const CVector2& rectPoint2, float radius, unsigned char blockedValue)
+    void Path::StartSearchInRect(
+        ai::Map* pMap,
+        CVector2 const& startPoint,
+        CVector2 const& endPoint,
+        CVector2 const& rectPoint1,
+        CVector2 const& rectPoint2,
+        float radius,
+        unsigned char blockedValue)
     {
         // RVA 0x7BD600 - as StartSearch, but confined to a rectangle of the map.
         if (m_bSearching)
@@ -344,8 +348,8 @@ namespace ai
         m_bSearching = true;
         m_SearchResult = PATH_NOT_ENOUGH_TIME;
         m_pMap = pMap;
-        m_radius = static_cast<int>(radius /
-            (pMap->m_cellSize.x <= pMap->m_cellSize.y ? pMap->m_cellSize.x : pMap->m_cellSize.y));
+        m_radius = static_cast<int>(
+            radius / (pMap->m_cellSize.x <= pMap->m_cellSize.y ? pMap->m_cellSize.x : pMap->m_cellSize.y));
 
         // NOTE: the end point indices are computed from the PREVIOUS search's points, because
         // m_startPoint and m_endPoint are only assigned afterwards. StartSearchInternal recomputes
@@ -409,10 +413,8 @@ namespace ai
             {
                 // A diagonal may not cut a corner between two blocked cells.
                 bool const fDiagBad = dir >= NUM_STRAIGHT_DIRS &&
-                    (m_pMap->GetValue(cx + m_minIndex.x, cy + m_minIndex.y + PathDir[dir].m_dy) >=
-                            m_blockedValue ||
-                        m_pMap->GetValue(cx + m_minIndex.x + PathDir[dir].m_dx, cy + m_minIndex.y) >=
-                            m_blockedValue);
+                    (m_pMap->GetValue(cx + m_minIndex.x, cy + m_minIndex.y + PathDir[dir].m_dy) >= m_blockedValue ||
+                     m_pMap->GetValue(cx + m_minIndex.x + PathDir[dir].m_dx, cy + m_minIndex.y) >= m_blockedValue);
 
                 int const nx = cx + PathDir[dir].m_dx;
                 int const ny = cy + PathDir[dir].m_dy;
@@ -423,8 +425,8 @@ namespace ai
                 }
 
                 w = nx + ny * m_maxIndex.x;
-                unsigned int const newDist = PathDir[dir].m_weight + pDist[v] +
-                    m_pMap->GetValue(nx + m_minIndex.x, ny + m_minIndex.y);
+                unsigned int const newDist =
+                    PathDir[dir].m_weight + pDist[v] + m_pMap->GetValue(nx + m_minIndex.x, ny + m_minIndex.y);
                 if (newDist >= pDist[w])
                 {
                     continue;
@@ -489,16 +491,15 @@ namespace ai
                 int const cy = v / m_maxIndex.x;
 
                 bool const fDiagBad = dir >= NUM_STRAIGHT_DIRS &&
-                    (m_pMap->IsBlocked(m_minIndex.x + cx + PathDir[dir].m_dx, cy + m_minIndex.y, dir,
-                         m_radius, m_blockedValue) ||
-                        m_pMap->IsBlocked(cx + m_minIndex.x, m_minIndex.y + cy + PathDir[dir].m_dy, dir,
-                            m_radius, m_blockedValue));
+                    (m_pMap->IsBlocked(
+                         m_minIndex.x + cx + PathDir[dir].m_dx, cy + m_minIndex.y, dir, m_radius, m_blockedValue) ||
+                     m_pMap->IsBlocked(
+                         cx + m_minIndex.x, m_minIndex.y + cy + PathDir[dir].m_dy, dir, m_radius, m_blockedValue));
 
                 int const nx = cx + PathDir[dir].m_dx;
                 int const ny = cy + PathDir[dir].m_dy;
                 if (nx < 0 || nx >= m_maxIndex.x || ny < 0 || ny >= m_maxIndex.y || fDiagBad ||
-                    m_pMap->IsBlocked(
-                        nx + m_minIndex.x, ny + m_minIndex.y, dir, m_radius, m_blockedValue))
+                    m_pMap->IsBlocked(nx + m_minIndex.x, ny + m_minIndex.y, dir, m_radius, m_blockedValue))
                 {
                     continue;
                 }
@@ -528,8 +529,7 @@ namespace ai
             {
                 // NOTE: unlike ProceedSearch1 this always rebuilds from the target cell, even when
                 // the search ran out of nodes without reaching it, and always reports PATH_OK.
-                unsigned int const endNode =
-                    m_endPointIndex.x + m_maxIndex.x * m_endPointIndex.y;
+                unsigned int const endNode = m_endPointIndex.x + m_maxIndex.x * m_endPointIndex.y;
                 _BuildPathFromParents(endNode, true);
                 ClearHelpers();
                 m_bSearching = false;
@@ -571,9 +571,12 @@ namespace ai
             unsigned int j = curPos + 1;
             for (; j < m_size; ++j)
             {
-                if (m_pMap->IsLine4Blocked(x1, y1,
+                if (m_pMap->IsLine4Blocked(
+                        x1,
+                        y1,
                         static_cast<int>(m_pPath[j].x / m_pMap->m_cellSize.x),
-                        static_cast<int>(m_pPath[j].y / m_pMap->m_cellSize.y), m_blockedValue))
+                        static_cast<int>(m_pPath[j].y / m_pMap->m_cellSize.y),
+                        m_blockedValue))
                 {
                     last = j - 1;
                     break;
@@ -681,8 +684,7 @@ namespace ai
         unsigned int curTime = begTime;
 
         unsigned int closestNode = v;
-        unsigned int minDist = (m_endPointIndex.y - v / m_maxIndex.x) *
-                (m_endPointIndex.y - v / m_maxIndex.x) +
+        unsigned int minDist = (m_endPointIndex.y - v / m_maxIndex.x) * (m_endPointIndex.y - v / m_maxIndex.x) +
             (m_endPointIndex.x - v % m_maxIndex.x) * (m_endPointIndex.x - v % m_maxIndex.x);
         bool fProceed = true;
         bool fTarget = false;
@@ -700,16 +702,15 @@ namespace ai
                 int const cy = v / m_maxIndex.x;
 
                 bool const fDiagBad = dir >= NUM_STRAIGHT_DIRS &&
-                    (m_pMap->IsBlocked(m_minIndex.x + cx + PathDir[dir].m_dx, cy + m_minIndex.y, dir,
-                         m_radius, m_blockedValue) ||
-                        m_pMap->IsBlocked(cx + m_minIndex.x, cy + PathDir[dir].m_dy + m_minIndex.y, dir,
-                            m_radius, m_blockedValue));
+                    (m_pMap->IsBlocked(
+                         m_minIndex.x + cx + PathDir[dir].m_dx, cy + m_minIndex.y, dir, m_radius, m_blockedValue) ||
+                     m_pMap->IsBlocked(
+                         cx + m_minIndex.x, cy + PathDir[dir].m_dy + m_minIndex.y, dir, m_radius, m_blockedValue));
 
                 int const nx = cx + PathDir[dir].m_dx;
                 int const ny = cy + PathDir[dir].m_dy;
                 if (nx < 0 || nx >= m_maxIndex.x || ny < 0 || ny >= m_maxIndex.y || fDiagBad ||
-                    m_pMap->IsBlocked(
-                        nx + m_minIndex.x, ny + m_minIndex.y, dir, m_radius, m_blockedValue))
+                    m_pMap->IsBlocked(nx + m_minIndex.x, ny + m_minIndex.y, dir, m_radius, m_blockedValue))
                 {
                     continue;
                 }
@@ -807,13 +808,17 @@ namespace ai
     {
         if (ItemNum < m_size)
         {
-            const auto& coord = m_pPath[ItemNum];
+            auto const& coord = m_pPath[ItemNum];
             *PathCoordx = coord.x;
             *PathCoordy = coord.y;
         }
     }
 
-    bool Path::IsStraightPathValid(ai::Map* pMap, const CVector2& startPoint, const CVector2& endPoint, float radius,
+    bool Path::IsStraightPathValid(
+        ai::Map* pMap,
+        CVector2 const& startPoint,
+        CVector2 const& endPoint,
+        float radius,
         unsigned char blockedValue)
     {
         // RVA 0x7BCD70 - if the two points can see each other there is nothing to search for, and
@@ -824,8 +829,8 @@ namespace ai
         }
         m_blockedValue = blockedValue;
         m_pMap = pMap;
-        m_radius = static_cast<int>(radius /
-            (pMap->m_cellSize.x <= pMap->m_cellSize.y ? pMap->m_cellSize.x : pMap->m_cellSize.y));
+        m_radius = static_cast<int>(
+            radius / (pMap->m_cellSize.x <= pMap->m_cellSize.y ? pMap->m_cellSize.x : pMap->m_cellSize.y));
 
         m_startPointIndex.x = static_cast<int>(startPoint.x / pMap->m_cellSize.x);
         m_startPointIndex.y = static_cast<int>(startPoint.y / pMap->m_cellSize.y);
@@ -881,8 +886,8 @@ namespace ai
 
         if (m_startPointIndex.x < m_minIndex.x || m_startPointIndex.x >= m_maxIndex.x ||
             m_startPointIndex.y < m_minIndex.y || m_startPointIndex.y >= m_maxIndex.y ||
-            m_endPointIndex.x < m_minIndex.x || m_endPointIndex.x >= m_maxIndex.x ||
-            m_endPointIndex.y < m_minIndex.y || m_endPointIndex.y >= m_maxIndex.y)
+            m_endPointIndex.x < m_minIndex.x || m_endPointIndex.x >= m_maxIndex.x || m_endPointIndex.y < m_minIndex.y ||
+            m_endPointIndex.y >= m_maxIndex.y)
         {
             m_bSearching = false;
             m_SearchResult = PATH_POS_UNREACHABLE;
@@ -1002,7 +1007,7 @@ namespace ai
         pLength = nullptr;
     }
 
-    unsigned int Path::MapIndexToId(const ai::MapIndex& v) const
+    unsigned int Path::MapIndexToId(ai::MapIndex const& v) const
     {
         // RVA 0x7BC800 - the search grid is addressed row-major within the search rectangle.
         return v.x + v.y * m_maxIndex.x;
@@ -1131,4 +1136,4 @@ namespace ai
         delete[] m_pPath;
         m_pPath = pNewPath;
     }
-}
+}  // namespace ai

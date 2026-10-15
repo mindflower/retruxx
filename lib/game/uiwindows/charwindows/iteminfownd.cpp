@@ -214,9 +214,8 @@ bool ItemInfoWnd::NeedShowChargeSize() const
     {
         return false;
     }
-    return std::find(
-               firingTypesToNotShowChargeSize.begin(), firingTypesToNotShowChargeSize.end(), firingType) ==
-           firingTypesToNotShowChargeSize.end();
+    return std::find(firingTypesToNotShowChargeSize.begin(), firingTypesToNotShowChargeSize.end(), firingType) ==
+        firingTypesToNotShowChargeSize.end();
 }
 
 void ItemInfoWnd::SetUpForRepositoryItem(ai::GeomRepositoryItem const& item, ref_ptr<m3d::ui::Wnd> srcWnd)
@@ -527,8 +526,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
         int const cur = static_cast<int>(part->Durability().value().get());
         int const max = static_cast<int>(part->Durability().maxValue().get());
         return emit(
-            ROW_FLAGS,
-            NamePrefix(NameWithUnits(m_aif.m_propStrIds[prop], "CurMax")) + CStr(cur) + "/" + CStr(max));
+            ROW_FLAGS, NamePrefix(NameWithUnits(m_aif.m_propStrIds[prop], "CurMax")) + CStr(cur) + "/" + CStr(max));
     }
 
     case PROP_SOLIDITY:
@@ -591,8 +589,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
         }
         auto const* cabin = static_cast<ai::Cabin const*>(obj);
         return emit(
-            ROW_FLAGS,
-            NamePrefix(Localized(m_aif.m_propStrIds[prop])) + CStr(static_cast<int>(cabin->GetMaxPower())));
+            ROW_FLAGS, NamePrefix(Localized(m_aif.m_propStrIds[prop])) + CStr(static_cast<int>(cabin->GetMaxPower())));
     }
 
     case PROP_DAMAGE:
@@ -634,8 +631,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
         }
         return emit(
             ROW_FLAGS,
-            NamePrefix(NameWithUnits(m_aif.m_propStrIds[prop], "ShotInMinute")) +
-                CStr(static_cast<int>(firingRate)));
+            NamePrefix(NameWithUnits(m_aif.m_propStrIds[prop], "ShotInMinute")) + CStr(static_cast<int>(firingRate)));
     }
 
     case PROP_FIRING_RANGE:
@@ -684,9 +680,8 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
         }
 
         // Away from a town there is no trade price, only the list price.
-        CStr const caption = M3D_APP->m_pInterfaceManager->GetCurrentTown()
-                                 ? Localized(m_aif.m_propStrIds[prop])
-                                 : Localized("BasePrice");
+        CStr const caption = M3D_APP->m_pInterfaceManager->GetCurrentTown() ? Localized(m_aif.m_propStrIds[prop]) :
+                                                                              Localized("BasePrice");
         return emit(ROW_FLAGS, NamePrefix(caption) + priceStr);
     }
 
@@ -710,9 +705,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
                 values += "/";
             }
         }
-        return emit(
-            ROW_FLAGS,
-            NamePrefix(Localized(m_aif.m_propStrIds[prop]) + " (" + damageTypes + ")") + values);
+        return emit(ROW_FLAGS, NamePrefix(Localized(m_aif.m_propStrIds[prop]) + " (" + damageTypes + ")") + values);
     }
 
     case PROP_SHELLPOOL:
@@ -780,8 +773,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
             return 1;
         }
         return emit(
-            ROW_FLAGS,
-            NamePrefix(NameWithUnits(m_aif.m_propStrIds[prop], "Secunde")) + help::ftoa(rechargingTime, -1));
+            ROW_FLAGS, NamePrefix(NameWithUnits(m_aif.m_propStrIds[prop], "Secunde")) + help::ftoa(rechargingTime, -1));
     }
 
     case PROP_REPOSITORY_CAPACITY:
@@ -800,8 +792,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
             return 0;
         }
         return emit(
-            ROW_FLAGS,
-            NamePrefix(Localized(m_aif.m_propStrIds[prop])) + CStr(prototypeInfo->GetRepositoryCapacity()));
+            ROW_FLAGS, NamePrefix(Localized(m_aif.m_propStrIds[prop])) + CStr(prototypeInfo->GetRepositoryCapacity()));
     }
 
     case PROP_DESCRIPTION:
@@ -842,8 +833,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
         {
             return 0;
         }
-        return emit(
-            ROW_FLAGS, NamePrefix(Localized(m_aif.m_propStrIds[prop])) + Localized(resourceName));
+        return emit(ROW_FLAGS, NamePrefix(Localized(m_aif.m_propStrIds[prop])) + Localized(resourceName));
     }
 
     case PROP_UNCOMPATIBLE:
@@ -917,8 +907,7 @@ int ItemInfoWnd::ShowPropertyInfo(ItemInfoWnd::Property prop, bool updateOnly)
         {
             return 0;
         }
-        CStr const firingTypeName =
-            Localized(ai::GunPrototypeInfo::FiringType2Str(help::GetGunFiringType(obj)));
+        CStr const firingTypeName = Localized(ai::GunPrototypeInfo::FiringType2Str(help::GetGunFiringType(obj)));
         return emit(ROW_FLAGS, NamePrefix(Localized(m_aif.m_propStrIds[prop])) + firingTypeName);
     }
 

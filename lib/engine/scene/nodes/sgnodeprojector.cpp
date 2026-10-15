@@ -11,8 +11,8 @@ namespace m3d
         // node's world transform with the projector's reach appended.
         struct ProjectorRenderInfo
         {
-            /* 0x0000 */ CMatrix m_xform;
-            /* 0x0040 */ float m_radius;
+            CMatrix m_xform;
+            float m_radius;
         };
 
         // Property ids this node understands beyond SgNode's own.
@@ -170,4 +170,4 @@ namespace m3d
         *(float*)&this->m_props[1] = 10.0;
         RitualInConstructor(RITUAL_REGISTERED_NODE);
     }
-}
+}  // namespace m3d

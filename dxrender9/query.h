@@ -10,10 +10,10 @@ class CDevice;
 class Query : public m3d::rend::IQuery
 {
 public:
-    /* 0x0008 */ Type m_type;
-    /* 0x000c */ State m_state;
-    /* 0x0010 */ IDirect3DQuery9* m_query;
-    /* 0x0018 */ m3d::rend::QueryReturnValue m_retVal;
+    Type m_type;
+    State m_state;
+    IDirect3DQuery9* m_query;
+    m3d::rend::QueryReturnValue m_retVal;
 
     static CDevice* m_dev;
 
@@ -36,4 +36,4 @@ public:
     void End() override;
     State GetState() override;
     m3d::rend::QueryReturnValue const& GetData() override;
-}; /* size: 0x0038 */
+};

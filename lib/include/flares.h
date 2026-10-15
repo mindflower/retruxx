@@ -18,10 +18,11 @@ namespace m3d
     {
         static rend::TexHandle m_tex[6];
         static rend::TexHandle m_texSunGlow;
+
     public:
         ~CFlare();
-        static int __fastcall Init();
-        static void __fastcall Release();
+        static int Init();
+        static void Release();
         CFlare();
         int Render(FlareMode, CVector const&, float, float);
 
@@ -33,4 +34,4 @@ namespace m3d
         unsigned int m_event;
         int m_glowOnScreen;
     };
-}
+}  // namespace m3d

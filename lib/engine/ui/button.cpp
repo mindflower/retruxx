@@ -147,44 +147,44 @@ namespace m3d
                 SafeStrAttrib(image, xmlNode, "btnImage");
                 if (!image.empty())
                 {
-                    m_image = Application::g_pApp->m_renderer->AddTexture(image, 4);
+                    m_image = M3D_RENDERER->AddTexture(image, 4);
                 }
 
                 CStr imageDown;
                 SafeStrAttrib(imageDown, xmlNode, "btnImageDown");
                 if (!imageDown.empty())
                 {
-                    m_imageMouseDown = Application::g_pApp->m_renderer->AddTexture(imageDown, 4);
+                    m_imageMouseDown = M3D_RENDERER->AddTexture(imageDown, 4);
                 }
 
                 CStr imageIn;
                 SafeStrAttrib(imageIn, xmlNode, "btnImageIn");
                 if (!imageIn.empty())
                 {
-                    m_imageMouseIn = Application::g_pApp->m_renderer->AddTexture(imageIn, 4);
+                    m_imageMouseIn = M3D_RENDERER->AddTexture(imageIn, 4);
                 }
 
                 CStr imageDis;
                 SafeStrAttrib(imageDis, xmlNode, "btnImageDisabled");
                 if (!imageDis.empty())
                 {
-                    m_imageDisabled = Application::g_pApp->m_renderer->AddTexture(imageDis, 4);
+                    m_imageDisabled = M3D_RENDERER->AddTexture(imageDis, 4);
                 }
 
                 if (!m_imageMouseDown.IsValid())
                 {
                     m_imageMouseDown = m_image;
-                    Application::g_pApp->m_renderer->ReferenceTexture(m_image);
+                    M3D_RENDERER->ReferenceTexture(m_image);
                 }
                 if (!m_imageMouseIn.IsValid())
                 {
                     m_imageMouseIn = m_image;
-                    Application::g_pApp->m_renderer->ReferenceTexture(m_image);
+                    M3D_RENDERER->ReferenceTexture(m_image);
                 }
                 if (!m_imageDisabled.IsValid())
                 {
                     m_imageDisabled = m_image;
-                    Application::g_pApp->m_renderer->ReferenceTexture(m_image);
+                    M3D_RENDERER->ReferenceTexture(m_image);
                 }
             }
             return 1;
@@ -340,7 +340,7 @@ namespace m3d
             {
                 return Wnd::OnMouseButton0(state, at);
             }
-            if (!M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
+            if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
             {
                 return Wnd::OnMouseButton0(state, at);
             }

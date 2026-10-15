@@ -29,20 +29,20 @@ public:
 
     struct WeaponSlotWnd::AuxInfo
     {
-        /* 0x0000 */ CStr m_wndPatternName;
-        /* 0x000c */ CStr m_wndPatternGunPartIcoName;
-        /* 0x0018 */ CStr m_wndPatternGunNameName;
-        /* 0x0024 */ CStr m_wndPatternGunIcoName;
-        /* 0x0030 */ CStr m_wndPatternInactiveBgName;
-        /* 0x003c */ CStr m_texIdGunPart;
-        /* 0x0048 */ CStr m_texIdGunPartNone;
-        /* 0x0054 */ CStr m_strPadding;
-        /* 0x0060 */ CStr m_strIdGunNone;
-        /* 0x006c */ unsigned int m_colorGunNone;
+        CStr m_wndPatternName;
+        CStr m_wndPatternGunPartIcoName;
+        CStr m_wndPatternGunNameName;
+        CStr m_wndPatternGunIcoName;
+        CStr m_wndPatternInactiveBgName;
+        CStr m_texIdGunPart;
+        CStr m_texIdGunPartNone;
+        CStr m_strPadding;
+        CStr m_strIdGunNone;
+        unsigned int m_colorGunNone;
 
         AuxInfo(WeaponSlotWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0070 */
+    };
 
     struct WeaponSlotWnd::Pattern
     {
@@ -52,22 +52,22 @@ public:
         void DecRef();
         int GetRef() const;
 
-        /* 0x0000 */ m3d::ui::Wnd* m_wndPattern;
-        /* 0x0004 */ m3d::ui::ImageWnd* m_wndPatternGunPartIco;
-        /* 0x0008 */ m3d::ui::Wnd* m_wndPatternGunName;
-        /* 0x000c */ m3d::ui::ImageWnd* m_wndPatternGunIco;
-        /* 0x0010 */ m3d::ui::Wnd* m_wndPatternWeaponGroups;
-        /* 0x0014 */ m3d::ui::Wnd* m_wndPatternInactiveBg;
+        m3d::ui::Wnd* m_wndPattern;
+        m3d::ui::ImageWnd* m_wndPatternGunPartIco;
+        m3d::ui::Wnd* m_wndPatternGunName;
+        m3d::ui::ImageWnd* m_wndPatternGunIco;
+        m3d::ui::Wnd* m_wndPatternWeaponGroups;
+        m3d::ui::Wnd* m_wndPatternInactiveBg;
 
         void Clear();
-        /* 0x0018 */ int m_ref;
-    }; /* size: 0x001c */
+        int m_ref;
+    };
 
 protected:
-    virtual int CreateFromPattern() /* 0x11c */;
-    virtual int CreateChildren() /* 0x120 */;
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
+    virtual int CreateFromPattern();
+    virtual int CreateChildren();
+    static int LoadPattern(m3d::ui::Wnd* pattern);
+    virtual int GameDataUpdate(void* data, int dataType) override;
     void OnVehiclePartChanged(void* data);
     void UpdateOnGunPartChanged();
     void UpdateActiveState();
@@ -82,13 +82,13 @@ protected:
     bool NeedShowWeaponGroups() const;
     void ClearWeaponGroups();
 
-    /* 0x0220 */ CStr m_gunPartName;
-    /* 0x022c */ int m_vehicleId;
-    /* 0x0230 */ m3d::ui::ImageWnd* m_wndGunPartIco;
-    /* 0x0234 */ m3d::ui::Wnd* m_wndGunName;
-    /* 0x0238 */ m3d::ui::ImageWnd* m_wndGunIco;
-    /* 0x023c */ ref_ptr<WeaponGroupButtonList> m_wndWeaponGroups;
-    /* 0x0240 */ m3d::ui::Wnd* m_wndInactiveBg;
+    CStr m_gunPartName;
+    int m_vehicleId;
+    m3d::ui::ImageWnd* m_wndGunPartIco;
+    m3d::ui::Wnd* m_wndGunName;
+    m3d::ui::ImageWnd* m_wndGunIco;
+    ref_ptr<WeaponGroupButtonList> m_wndWeaponGroups;
+    m3d::ui::Wnd* m_wndInactiveBg;
 
     static inline WeaponSlotWnd::AuxInfo m_aif;
     static inline WeaponSlotWnd::Pattern m_pattern;
@@ -97,10 +97,10 @@ protected:
     WeaponSlotWnd(WeaponSlotWnd const& rhs);
 
 public:
-    virtual ~WeaponSlotWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~WeaponSlotWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classWeaponSlotWnd;
-}; /* size: 0x0244 */
+};

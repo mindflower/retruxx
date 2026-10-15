@@ -36,7 +36,11 @@ namespace m3d
         }
 
         TabItemInfo::TabItemInfo(
-            CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled, int data) :
+            CStr const& caption,
+            CStr const& diz,
+            rend::TexHandle image,
+            rend::TexHandle imageDisabled,
+            int data) :
             m_caption(caption),
             m_diz(diz),
             m_image(image),
@@ -72,7 +76,11 @@ namespace m3d
         }
 
         void TabItemInfo::Set(
-            CStr const& caption, CStr const& diz, rend::TexHandle image, rend::TexHandle imageDisabled, int data)
+            CStr const& caption,
+            CStr const& diz,
+            rend::TexHandle image,
+            rend::TexHandle imageDisabled,
+            int data)
         {
             // RVA 0x6FB8E0 - note the two centring flags are deliberately left
             // alone, unlike operator= which carries them across.

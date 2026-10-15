@@ -10,8 +10,6 @@
 #include <stack>
 #include <queue>
 
-#define RETRUXX_NOT_IMPLEMENTED __debugbreak(); std::abort()
-
 namespace retruxx
 {
     using logic_error = std::logic_error;
@@ -45,23 +43,21 @@ namespace retruxx
 
     using string = std::string;
 
-    //template<typename... Args>
-    //using _Bidit = std::_Bidit<Args...>;
-
     template<typename... Args>
-    struct _Bidit {};
+    struct _Bidit
+    {
+    };
 
     using bidirectional_iterator_tag = std::bidirectional_iterator_tag;
 
-    //template<typename... Args>
-    //using binary_function = std::binary_function<Args...>;
-
     template<typename... Args>
-    struct binary_function {};
+    struct binary_function
+    {
+    };
 
     template<typename... Args>
     using stack = std::stack<Args...>;
 
     template<typename... Args>
     using queue = std::queue<Args...>;
-}
+}  // namespace retruxx

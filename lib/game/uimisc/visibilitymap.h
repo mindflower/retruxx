@@ -8,12 +8,12 @@
 
 namespace m3d
 {
-	namespace cmn
-	{
+    namespace cmn
+    {
         class XmlFile;
         struct XmlNode;
-	}
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 class VisibilityMap
 {
@@ -51,7 +51,6 @@ public:
     bool IsWorldPositionVisible(CVector const&) const;
     void UpdateBg();
 
-
 private:
     BoundsBase<int> GetCellBounds(int) const;
     int CreateEmptyBg();
@@ -80,6 +79,6 @@ private:
     unsigned __int8* m_circleBits = 0;
     CStr m_levelName;
     PointBase<int> m_bgSize{0, 0};
-    PointBase<int> m_circleSize{ 0, 0 };
-    PointBase<int> m_gridSize{ 0, 0 };
+    PointBase<int> m_circleSize{0, 0};
+    PointBase<int> m_gridSize{0, 0};
 };

@@ -21,48 +21,50 @@ namespace ai
     {
     public:
         BuildingPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-        /* 0x0040 */ ai::BuildingType m_buildingType;
-    }; /* size: 0x0044 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+        ai::BuildingType m_buildingType;
+    };
 
     class Building : public ai::Obj
     {
         // BuildingPrototypeInfo::CreateTargetObject constructs a plain Building.
         friend class BuildingPrototypeInfo;
-    protected:
-        virtual  ~Building() override /* 0x00 */;
 
     protected:
-        Building(const ai::BuildingPrototypeInfo& prototypeInfo);
-        Building(const ai::Building&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        virtual ~Building() override;
+
+    protected:
+        Building(ai::BuildingPrototypeInfo const& prototypeInfo);
+        Building(ai::Building const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBuilding;
-        virtual const ai::BuildingPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual ai::BuildingPrototypeInfo const* GetPrototypeInfo() const override;
 
-        using BuildingTypeSet = retruxx::set<enum ai::BuildingType, retruxx::less<enum ai::BuildingType>, retruxx::allocator<enum ai::BuildingType> >;
-
-    public:
-        virtual void Remove() override /* 0x54 */;
-        virtual void AddChild(ai::Obj* pObj) override /* 0x94 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x98 */;
-        virtual bool RemoveChild(ai::Obj* pChild) override /* 0x9c */;
-
-        using NpcVector = retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> >;
+        using BuildingTypeSet = retruxx::
+            set<enum ai::BuildingType, retruxx::less<enum ai::BuildingType>, retruxx::allocator<enum ai::BuildingType>>;
 
     public:
-        const retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> >& GetNpcs() const;
+        virtual void Remove() override;
+        virtual void AddChild(ai::Obj* pObj) override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual bool RemoveChild(ai::Obj* pChild) override;
+
+        using NpcVector = retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>>;
+
+    public:
+        retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>> const& GetNpcs() const;
         ai::BuildingType GetBuildingType() const;
-        static CStr __fastcall GetBuildingTypeName(ai::BuildingType buildingType);
-        static ai::BuildingType __fastcall GetBuildingTypeByName(const CStr& buildingTypeName);
+        static CStr GetBuildingTypeName(ai::BuildingType buildingType);
+        static ai::BuildingType GetBuildingTypeByName(CStr const& buildingTypeName);
 
     private:
-        static inline const CStr m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};
-        /* 0x00c0 */ retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*> > m_npcs;
-    }; /* size: 0x00d0 */
-}
+        static inline CStr const m_buildingTypeNames[5] = {"Administration", "Bar", "Shop", "Workshop", "Garage"};
+        retruxx::vector<ai::Npc*, retruxx::allocator<ai::Npc*>> m_npcs;
+    };
+}  // namespace ai

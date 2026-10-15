@@ -79,7 +79,8 @@ namespace ai
         m_propertiesSaveStatesMap[id] = saveStatus;
     }
 
-    void Boss04StationPart::GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
+    void Boss04StationPart::GetPropertiesIDs(
+        retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const
     {
         // Declared in the PDB but never emitted in the shipped build; the usual property-map pattern.
         for (auto const& property : m_propertiesMap)
@@ -133,7 +134,8 @@ namespace ai
     Boss04StationPartPrototypeInfo const* Boss04StationPart::GetPrototypeInfo() const
     {
         // RVA 0x804E60
-        return static_cast<Boss04StationPartPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<Boss04StationPartPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     Boss04StationPart::Boss04StationPart(Boss04StationPartPrototypeInfo const& prototype) : VehiclePart(prototype)
@@ -152,7 +154,8 @@ namespace ai
         return health;
     }
 
-    void Boss04StationPart::GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
+    void Boss04StationPart::GetPropertiesNames(
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const
     {
         // Declared in the PDB but never emitted in the shipped build; the usual property-map pattern.
         for (auto const& property : m_propertiesMap)

@@ -20,37 +20,23 @@ add_subdirectory(wheeltraces)
 add_subdirectory(zlib)
 
 target_sources(retruxx_lib PRIVATE
-    benchmark.cpp
     cameracontroller.cpp
     cinematic.cpp
     client.cpp
-    clientpredict.cpp
     clipper.cpp
     config.cpp
-    configurations.cpp
     decals.cpp
     draftmodel.cpp
-    exportdesc.cpp
     flares.cpp
-    fontformat.cpp
-    gamparser.cpp
     gsmodel.cpp
-    landscapeoverlays.cpp
     level.cpp
     graphinfo.cpp
     m3dapp.cpp
-    m3dapp_console.cpp
-    m3dfont.cpp
     particles.cpp
-    prefabs.cpp
     ps_attractors.cpp
     psprops.cpp
     renderhelpers.cpp
-    serialization.cpp
     skelmodel.cpp
     soundconhandler.cpp
-    sprite.cpp
-    texgen.cpp
     tracelinemanager.cpp
-    utilit.cpp
     world.cpp)

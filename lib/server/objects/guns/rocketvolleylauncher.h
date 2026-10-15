@@ -6,11 +6,11 @@ namespace ai
     class RocketVolleyLauncherPrototypeInfo : public ai::RocketLauncherPrototypeInfo
     {
     public:
-        /* 0x019c */ float m_actionDist;
+        float m_actionDist;
         RocketVolleyLauncherPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x01a0 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     // Fires a whole volley at once: one rocket per barrel at the nearest enemies in range, then
     // keeps launching until every queued target has had its rocket.
@@ -19,32 +19,32 @@ namespace ai
         friend class RocketVolleyLauncherPrototypeInfo;
 
     protected:
-        virtual ~RocketVolleyLauncher() override /* 0x00 */;
+        virtual ~RocketVolleyLauncher() override;
 
     private:
-        RocketVolleyLauncher(const ai::RocketVolleyLauncherPrototypeInfo& prototypeInfo);
-        RocketVolleyLauncher(const ai::RocketVolleyLauncher&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        RocketVolleyLauncher(ai::RocketVolleyLauncherPrototypeInfo const& prototypeInfo);
+        RocketVolleyLauncher(ai::RocketVolleyLauncher const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(RocketVolleyLauncher);
-        virtual const ai::RocketVolleyLauncherPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-        virtual void SetInvisible() override /* 0x00 */;
-        virtual bool Fire(bool enable) override /* 0x00 */;
+        virtual ai::RocketVolleyLauncherPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        virtual void SetInvisible() override;
+        virtual bool Fire(bool enable) override;
 
     protected:
-        virtual bool _bIsVolleyFiring() const override /* 0x00 */;
-        virtual bool _bIsUsingVolley() const override /* 0x00 */;
+        virtual bool _bIsVolleyFiring() const override;
+        virtual bool _bIsUsingVolley() const override;
 
     private:
-        /* 0x0330 */ std::vector<int, std::allocator<int> > m_hadToLaunch;
-        /* 0x0340 */ bool m_bIsVolleyFiring;
+        std::vector<int, std::allocator<int>> m_hadToLaunch;
+        bool m_bIsVolleyFiring;
         void _TryToLaunch();
-    }; /* size: 0x0344 */
-}
+    };
+}  // namespace ai

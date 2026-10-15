@@ -15,7 +15,7 @@
 
 namespace m3d
 {
-    Attr::Attr(const Attr& other) :
+    Attr::Attr(Attr const& other) :
         m_Name(other.m_Name),
         m_ClassName(other.m_ClassName),
         m_On(other.m_On),
@@ -56,7 +56,7 @@ namespace m3d
         // RVA 0x950740
     }
 
-    Attr* __fastcall Attr::New(const CStr& ClassName)
+    Attr* Attr::New(CStr const& ClassName)
     {
         if (ClassName == "Space")
         {
@@ -111,7 +111,8 @@ namespace m3d
     {
         // RVA 0x950100 - inside the working part of the repeat period.
         float const t = time - m_wtime.m_start;
-        return t >= 0.0f && m_wtime.m_length > t - static_cast<float>(static_cast<int>(t / m_wtime.m_repeat)) * m_wtime.m_repeat;
+        return t >= 0.0f &&
+            m_wtime.m_length > t - static_cast<float>(static_cast<int>(t / m_wtime.m_repeat)) * m_wtime.m_repeat;
     }
 
     void Attr::SetState(float Time)
@@ -139,8 +140,7 @@ namespace m3d
         }
     }
 
-
-    void Attr::ReadFromProto(const AttrProps& props)
+    void Attr::ReadFromProto(AttrProps const& props)
     {
         m_Name = props.m_Name;
         m_ClassName = props.m_ClassName;
@@ -332,7 +332,7 @@ namespace m3d
         psroot->AddChild(attr);
     }
 
-    void Attractor::ReadFromProto(const AttrProps& props)
+    void Attractor::ReadFromProto(AttrProps const& props)
     {
         // RVA 0x9504A0. The base copy has to run first - without it none of
         // m_On, m_wtime, m_mode, m_State, m_org or m_force[] is ever set, so an
@@ -371,7 +371,8 @@ namespace m3d
             toAttractor.z = pParticle->m_locorigin.z - m_org.z;
 
             // Calculate distance
-            float distance = sqrt(toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z);
+            float distance =
+                sqrt(toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z);
 
             // If too close, fade out particle
             if (distance < 0.1f)
@@ -411,7 +412,8 @@ namespace m3d
             toAttractor.z = pParticle->m_locorigin.z - m_org.z;
 
             // Calculate squared distance
-            float distanceSq = toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z;
+            float distanceSq =
+                toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z;
 
             // Calculate actual distance
             float distance = sqrt(distanceSq);
@@ -475,7 +477,8 @@ namespace m3d
         toAttractor.z = pParticle->m_locorigin.z - m_org.z;
 
         // Calculate distance to attractor
-        float distance = sqrt(toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z);
+        float distance =
+            sqrt(toAttractor.x * toAttractor.x + toAttractor.y * toAttractor.y + toAttractor.z * toAttractor.z);
 
         // If particle is too close to attractor, kill it
         if (distance < 0.1f)
@@ -1028,9 +1031,12 @@ namespace m3d
                 auto forces = m3d::CalcForces(m_csType, m_force, Time, pParticle->m_dir);
                 if (Orient)
                 {
-                    auto v15 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) + (float)(Local._12 * forces.x);
-                    auto v11 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) + (float)(Local._13 * forces.x);
-                    forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                    auto v15 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) +
+                        (float)(Local._12 * forces.x);
+                    auto v11 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) +
+                        (float)(Local._13 * forces.x);
+                    forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) +
+                        (float)(Local._11 * forces.x);
                     forces.y = v15;
                     forces.z = v11;
                 }
@@ -1044,9 +1050,12 @@ namespace m3d
             auto forces = m3d::CalcForces(m_csType, m_force, Time, pParticle->m_dir);
             if (Orient)
             {
-                auto v7 = (float)((float)(Local._22 * forces.y) + (float)(Local._12 * forces.x)) + (float)(Local._32 * forces.z);
-                auto v8 = (float)((float)(Local._23 * forces.y) + (float)(Local._13 * forces.x)) + (float)(Local._33 * forces.z);
-                forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                auto v7 = (float)((float)(Local._22 * forces.y) + (float)(Local._12 * forces.x)) +
+                    (float)(Local._32 * forces.z);
+                auto v8 = (float)((float)(Local._23 * forces.y) + (float)(Local._13 * forces.x)) +
+                    (float)(Local._33 * forces.z);
+                forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) +
+                    (float)(Local._11 * forces.x);
                 forces.y = v7;
                 forces.z = v8;
             }
@@ -1082,9 +1091,12 @@ namespace m3d
             auto forces = m3d::CalcForces(this->m_csType, m_force, Time, pParticle->m_dir);
             if (Orient)
             {
-                auto v6 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) + (float)(Local._12 * forces.x);
-                auto v7 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) + (float)(Local._13 * forces.x);
-                forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                auto v6 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) +
+                    (float)(Local._12 * forces.x);
+                auto v7 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) +
+                    (float)(Local._13 * forces.x);
+                forces.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) +
+                    (float)(Local._11 * forces.x);
                 forces.y = v6;
                 forces.z = v7;
             }
@@ -1104,9 +1116,12 @@ namespace m3d
             auto forces = m3d::CalcForces(m_csType, m_force, time, dir);
             if (Orient)
             {
-                auto v6 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) + (float)(Local._12 * forces.x);
-                auto v7 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) + (float)(Local._13 * forces.x);
-                dir.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) + (float)(Local._11 * forces.x);
+                auto v6 = (float)((float)(Local._22 * forces.y) + (float)(Local._32 * forces.z)) +
+                    (float)(Local._12 * forces.x);
+                auto v7 = (float)((float)(Local._23 * forces.y) + (float)(Local._33 * forces.z)) +
+                    (float)(Local._13 * forces.x);
+                dir.x = (float)((float)(Local._21 * forces.y) + (float)(Local._31 * forces.z)) +
+                    (float)(Local._11 * forces.x);
                 dir.y = v6;
                 dir.z = v7;
                 forces.x = dir.x;
@@ -1179,7 +1194,7 @@ namespace m3d
         // RVA 0x8E1C50
         for (int i = 0; i < 3; ++i)
         {
-            const Force& force = (forces)[i];
+            Force const& force = (forces)[i];
             float minValue = force.m_min;    // *((float *)p_m_type - 3)
             float maxValue = force.m_max;    // *((float *)p_m_type - 2)
             float frequency = force.m_freq;  // *((float *)p_m_type - 1)
@@ -1208,7 +1223,7 @@ namespace m3d
         // Calculate force components for each spherical coordinate (radius, theta, phi)
         for (int i = 0; i < 3; ++i)
         {
-            const Force& currentForce = (forces)[i];
+            Force const& currentForce = (forces)[i];
             float minValue = currentForce.m_min;    // *((float *)p_m_type - 3)
             float maxValue = currentForce.m_max;    // *((float *)p_m_type - 2)
             float frequency = currentForce.m_freq;  // *((float *)p_m_type - 1)

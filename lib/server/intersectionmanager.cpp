@@ -27,8 +27,10 @@ namespace ai
             class ref_ptr<class ai::Obstacle>,
             struct std::less<class ref_ptr<class ai::Obstacle>>,
             class std::allocator<class ref_ptr<class ai::Obstacle>>>* tmpObstacles = nullptr;
-        std::set<struct m3d::Class*, struct std::less<struct m3d::Class*>, class std::allocator<struct m3d::Class*>> const*
-            tmpTargetClasses = nullptr;
+        std::set<
+            struct m3d::Class*,
+            struct std::less<struct m3d::Class*>,
+            class std::allocator<struct m3d::Class*>> const* tmpTargetClasses = nullptr;
         bool bPlayerPassCellCollided = false;
 
         void PushObstacle(ai::Obstacle* pOb)
@@ -145,7 +147,11 @@ namespace ai
         }
     }  // namespace
 
-    bool IntersectionManager::SpheresIntersect(CVector const& center1, float radius1, CVector const center2, float radius2)
+    bool IntersectionManager::SpheresIntersect(
+        CVector const& center1,
+        float radius1,
+        CVector const center2,
+        float radius2)
     {
         // RVA 0x7E9960 - strictly overlapping spheres; touching ones do not count.
         cntIntersectingObjectsChecked->IncI();
@@ -161,7 +167,9 @@ namespace ai
     }
 
     void IntersectionManager::GetIntersectedObjects(
-        retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::Obstacle>>>& objIds,
+        retruxx::
+            set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::Obstacle>>>&
+                objIds,
         ai::Sphere const* pLookSphere,
         retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const& targetClasses,
         bool bCheckBoxes,
@@ -172,13 +180,16 @@ namespace ai
     }
 
     void IntersectionManager::GetIntersectedObjectsByKindOf(
-        retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::Obstacle>>>& objIds,
+        retruxx::
+            set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle>>, retruxx::allocator<ref_ptr<ai::Obstacle>>>&
+                objIds,
         ai::Sphere const* pLookSphere,
         retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const& targetClasses,
         bool bCheckBoxes)
     {
         // RVA 0x7EB010
-        _GetIntersectedObjectsCustom(objIds, pLookSphere, targetClasses, IntersectionCallbackByKindOf, bCheckBoxes, false);
+        _GetIntersectedObjectsCustom(
+            objIds, pLookSphere, targetClasses, IntersectionCallbackByKindOf, bCheckBoxes, false);
     }
 
     bool IntersectionManager::IsSphereValid(
@@ -187,37 +198,38 @@ namespace ai
         bool bCheckPlayerPassmap)
     {
         retruxx::set<ref_ptr<ai::Obstacle>> objIds;
-        _GetIntersectedObjectsCustom(objIds, pIntersectionSphere, targetClasses, IntersectionCallback, true, bCheckPlayerPassmap);
+        _GetIntersectedObjectsCustom(
+            objIds, pIntersectionSphere, targetClasses, IntersectionCallback, true, bCheckPlayerPassmap);
         return objIds.empty() && (!bCheckPlayerPassmap || !bPlayerPassCellCollided);
     }
 
     void IntersectionManager::Registration()
     {
-        auto idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("GetIntersectedObjects() calls");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        auto idx = M3D_APP->GetDbgCounterStack().AddCounter("GetIntersectedObjects() calls");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntIntersectionCalls = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntIntersectionCalls = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntIntersectionCalls->SetI(0);
 
-        idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("objects checked for intersection");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("objects checked for intersection");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntObjectsChecked = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntObjectsChecked = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntObjectsChecked->SetI(0);
 
-        idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("intersecting objects of them");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("intersecting objects of them");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntIntersectingObjectsChecked = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntIntersectingObjectsChecked = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntIntersectingObjectsChecked->SetI(0);
 
-        idx = m3d::Application::g_pApp->GetDbgCounterStack().AddCounter("objects satisfied intersection");
-        if (idx < m3d::Application::g_pApp->GetDbgCounterStack().GetNumCounters())
+        idx = M3D_APP->GetDbgCounterStack().AddCounter("objects satisfied intersection");
+        if (idx < M3D_APP->GetDbgCounterStack().GetNumCounters())
         {
-            cntObjectsSatisfied = m3d::Application::g_pApp->GetDbgCounterStack().GetCounter(idx);
+            cntObjectsSatisfied = M3D_APP->GetDbgCounterStack().GetCounter(idx);
         }
         cntObjectsSatisfied->SetI(0);
     }
@@ -332,7 +344,8 @@ namespace ai
                     else
                     {
                         M3D_LOG_ERR(
-                            "Error: NULL object is linked to collision cell x = " + CStr(x) + ", y = " + CStr(z) + ", id = " + CStr(objId));
+                            "Error: NULL object is linked to collision cell x = " + CStr(x) + ", y = " + CStr(z) +
+                            ", id = " + CStr(objId));
                     }
                 }
 
@@ -343,7 +356,8 @@ namespace ai
                     // NOTE: the shipped ref_ptr asserts on a null pointer before this check is reached.
                     if (!obstacle)
                     {
-                        M3D_LOG_ERR("Error: NULL obstacle is linked to collision cell x = " + CStr(x) + ", y = " + CStr(z));
+                        M3D_LOG_ERR(
+                            "Error: NULL obstacle is linked to collision cell x = " + CStr(x) + ", y = " + CStr(z));
                         continue;
                     }
 
@@ -368,7 +382,12 @@ namespace ai
 
                             dContact contact;
                             if (!bCheckBoxes || !obstacleBox ||
-                                dCollide(pLookSphere->GetGeomId(), obstacleBox->GetGeomId(), 1, &contact.geom, sizeof(dContact)))
+                                dCollide(
+                                    pLookSphere->GetGeomId(),
+                                    obstacleBox->GetGeomId(),
+                                    1,
+                                    &contact.geom,
+                                    sizeof(dContact)))
                             {
                                 nearCallback(nullptr, pLookSphere->GetGeomId(), obstacleSphere->GetGeomId());
                             }
@@ -383,7 +402,8 @@ namespace ai
                     {
                         dContact contact;
                         if (geomObject->IsKindOf(&m3d::GeomObjectPassCell::m_classGeomObjectPassCell) &&
-                            dCollide(pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, sizeof(dContact)))
+                            dCollide(
+                                pLookSphere->GetGeomId(), geomObject->GetGeom(), 1, &contact.geom, sizeof(dContact)))
                         {
                             bPlayerPassCellCollided = true;
                         }

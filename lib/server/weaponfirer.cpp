@@ -18,7 +18,7 @@ namespace ai
         {
             if (target)
             {
-                const auto flags = target->GetFlags();
+                auto const flags = target->GetFlags();
                 if ((flags & 8) == 0 && (flags & 2) == 0 && !target->GetParentRepository())
                 {
                     enemyPos = obj->GetSmoothTargetPointForObj(target, elapsedTime);
@@ -28,7 +28,7 @@ namespace ai
                     objPos.y = enemyPos.y - objPos.y;
                     objPos.z = enemyPos.z - objPos.z;
 
-                    const auto range = objPos.length();
+                    auto const range = objPos.length();
                     if (GetMaxFiringRange(obj) > range)
                     {
                         WeaponLookAtPoint(obj, enemyPos, elapsedTime);
@@ -43,7 +43,11 @@ namespace ai
         FireFromWeaponsIfPossible(obj, enable, enemyPos, target);
     }
 
-    void WeaponFirer::FireFromWeaponsIfPossible(ComplexPhysicObj* obj, bool enable, const CVector& targetPoint, Obj* target)
+    void WeaponFirer::FireFromWeaponsIfPossible(
+        ComplexPhysicObj* obj,
+        bool enable,
+        CVector const& targetPoint,
+        Obj* target)
     {
         // RVA 0x3C2FC0
         ai::Vehicle* controlledVehicle = nullptr;
@@ -128,13 +132,13 @@ namespace ai
     void WeaponFirer::WeaponLookAtPoint(ComplexPhysicObj* obj, CVector const& lookAt, float elapsedTime)
     {
         // RVA 0x3C3210
-        const auto gunResourceId = theResourceManager->GetResourceId("GUN");
-        const auto specialWeaponResourceId = theResourceManager->GetResourceId("SPECIAL_WEAPON");
+        auto const gunResourceId = theResourceManager->GetResourceId("GUN");
+        auto const specialWeaponResourceId = theResourceManager->GetResourceId("SPECIAL_WEAPON");
 
         for (auto& [name, vehiclePart] : obj->m_vehicleParts)
         {
-            const auto* prototypeInfo = vehiclePart->GetPrototypeInfo();
-            const auto resId = prototypeInfo->m_resourceId;
+            auto const* prototypeInfo = vehiclePart->GetPrototypeInfo();
+            auto const resId = prototypeInfo->m_resourceId;
             if (resId != specialWeaponResourceId && theResourceManager->bResourceIsKindOf(resId, gunResourceId))
             {
                 if (IS_KIND_OF(vehiclePart, Gun))
@@ -193,4 +197,4 @@ namespace ai
         }
         return res;
     }
-}
+}  // namespace ai

@@ -38,7 +38,7 @@ namespace
         h.SetInvalid();
         return h;
     }
-}
+}  // namespace
 
 // orig 0x634c40 vb_man.cpp:34
 int CDevice::ReferenceVb(VbHandle const* id)
@@ -103,8 +103,8 @@ void CDevice::SetToStreams01(VbHandle const& id0, VbHandle const& id1)
         CVertexBuffer& vb1 = m_vbs[VbId(id1)];
 
         std::pair<IDirect3DVertexDeclaration9*, IDirect3DVertexDeclaration9*> key(vb0.m_vertexDecl, vb1.m_vertexDecl);
-        std::map<std::pair<IDirect3DVertexDeclaration9*, IDirect3DVertexDeclaration9*>, IDirect3DVertexDeclaration9*>::iterator it =
-            m_combinedVD.find(key);
+        std::map<std::pair<IDirect3DVertexDeclaration9*, IDirect3DVertexDeclaration9*>, IDirect3DVertexDeclaration9*>::
+            iterator it = m_combinedVD.find(key);
 
         if (it != m_combinedVD.end() && it->second)
         {
@@ -469,8 +469,8 @@ void CDevice::rstVbRestoreAfter()
             continue;
         }
 
-        HRESULT hr = m_pd3dDevice->CreateVertexBuffer(m_vbs[i].m_desc.Size, m_vbs[i].m_desc.Usage, m_vbs[i].m_desc.FVF,
-                                                      m_vbs[i].m_desc.Pool, &m_vbs[i].m_vb, 0);
+        HRESULT hr = m_pd3dDevice->CreateVertexBuffer(
+            m_vbs[i].m_desc.Size, m_vbs[i].m_desc.Usage, m_vbs[i].m_desc.FVF, m_vbs[i].m_desc.Pool, &m_vbs[i].m_vb, 0);
 
         if (FAILED(hr))
         {
@@ -568,7 +568,8 @@ VbPoolField CDevice::AddVbPoolField(VertexType Type, unsigned int Size)
 // orig 0x6354c0 vb_man.cpp:724
 void CDevice::ReleaseVbPoolField(VbPoolField& PoolField)
 {
-    std::vector<VertexType>::iterator TypeIter = std::find(m_VbPoolTypes.begin(), m_VbPoolTypes.end(), PoolField.VertType);
+    std::vector<VertexType>::iterator TypeIter =
+        std::find(m_VbPoolTypes.begin(), m_VbPoolTypes.end(), PoolField.VertType);
     if (TypeIter == m_VbPoolTypes.end())
     {
         LogMsg("[ReleaseVbPoolField]: Cant find specified vertex buffer");
@@ -712,13 +713,11 @@ void CDevice::InitVertexDeclarations()
     m_pd3dDevice->CreateVertexDeclaration(ddXYZN, &m_vdXYZN);
 
     static const D3DVERTEXELEMENT9 ddXYZ[] = {
-        {0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-        D3DDECL_END()};
+        {0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0}, D3DDECL_END()};
     m_pd3dDevice->CreateVertexDeclaration(ddXYZ, &m_vdXYZ);
 
     static const D3DVERTEXELEMENT9 ddXYZW[] = {
-        {0, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0},
-        D3DDECL_END()};
+        {0, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0}, D3DDECL_END()};
     m_pd3dDevice->CreateVertexDeclaration(ddXYZW, &m_vdXYZW);
 
     static const D3DVERTEXELEMENT9 ddXYZC[] = {
@@ -812,8 +811,7 @@ void CDevice::InitVertexDeclarations()
     m_pd3dDevice->CreateVertexDeclaration(ddXYZNCT1_UV2_S1, &m_vdXYZNCT1_UV2_S1);
 
     static const D3DVERTEXELEMENT9 ddWaterTest[] = {
-        {0, 0, D3DDECLTYPE_SHORT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-        D3DDECL_END()};
+        {0, 0, D3DDECLTYPE_SHORT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0}, D3DDECL_END()};
     m_pd3dDevice->CreateVertexDeclaration(ddWaterTest, &m_vdWaterTest);
 
     static const D3DVERTEXELEMENT9 ddGrassTest[] = {
@@ -842,8 +840,7 @@ void CDevice::InitVertexDeclarations()
     m_pd3dDevice->CreateVertexDeclaration(ddXYZT1I, &m_vdXYZT1I);
 
     static const D3DVERTEXELEMENT9 ddInstanceId[] = {
-        {1, 0, D3DDECLTYPE_SHORT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 1},
-        D3DDECL_END()};
+        {1, 0, D3DDECLTYPE_SHORT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 1}, D3DDECL_END()};
     m_pd3dDevice->CreateVertexDeclaration(ddInstanceId, &m_vdInstanceId);
 
     m_vdXYZW4NCT1 = 0;

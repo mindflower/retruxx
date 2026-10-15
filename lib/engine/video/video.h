@@ -17,8 +17,8 @@ public:
     virtual HRESULT STDMETHODCALLTYPE QueryService(const _GUID& siid, const _GUID& riid, void** ppv) override;
 
 private:
-    /* 0x0004 */ volatile long m_cRef;
-}; /* size: 0x0008 */
+    volatile long m_cRef;
+};
 
 namespace m3d
 {
@@ -31,17 +31,17 @@ namespace m3d
     {
     public:
         CTextureRenderer(IUnknown* pUnk, HRESULT* phr);
-        virtual ~CTextureRenderer() override /* 0x00 */;
-        virtual HRESULT CheckMediaType(const CMediaType* pmt) override /* 0x00 */;
-        virtual HRESULT SetMediaType(const CMediaType* pmt) override /* 0x00 */;
-        virtual HRESULT DoRenderSample(IMediaSample* pSample) override /* 0x00 */;
-        /* 0x0160 */ int m_bUseDynamicTextures;
-        /* 0x0164 */ long m_lVidWidth;
-        /* 0x0168 */ long m_lVidHeight;
-        /* 0x016c */ long m_lVidPitch;
+        virtual ~CTextureRenderer() override;
+        virtual HRESULT CheckMediaType(const CMediaType* pmt) override;
+        virtual HRESULT SetMediaType(const CMediaType* pmt) override;
+        virtual HRESULT DoRenderSample(IMediaSample* pSample) override;
+        int m_bUseDynamicTextures;
+        long m_lVidWidth;
+        long m_lVidHeight;
+        long m_lVidPitch;
         void GetTextureDims(int& w, int& h);
         void GetVideoDims(int& w, int& h);
-    }; /* size: 0x0170 */
+    };
 
 
 

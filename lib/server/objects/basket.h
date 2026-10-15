@@ -8,42 +8,57 @@ namespace ai
     class BasketPrototypeInfo : public ai::VehiclePartPrototypeInfo
     {
     protected:
-        virtual void _InternalCopyFrom(const ai::PrototypeInfo& rhs) override /* 0x00 */;
+        virtual void _InternalCopyFrom(ai::PrototypeInfo const& rhs) override;
 
-        using SlotPositionMap = retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int> > > >;
+        using SlotPositionMap = retruxx::map<
+            CStr,
+            PointBase<int>,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, PointBase<int>>>>;
 
     public:
         BasketPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-        const retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int> > > >& GetSlotPositions() const;
-        const PointBase<int>& GetRepositorySize() const;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+        retruxx::map<
+            CStr,
+            PointBase<int>,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, PointBase<int>>>> const&
+            GetSlotPositions() const;
+        PointBase<int> const& GetRepositorySize() const;
         int GetRepositoryCapacity() const;
-        BoundsBase<int> GetSlotBounds(const CStr& gunPartName, bool bWithEmptyBorders) const;
+        BoundsBase<int> GetSlotBounds(CStr const& gunPartName, bool bWithEmptyBorders) const;
 
-        using SlotPositionPair = retruxx::pair<CStr, PointBase<int> >;
+        using SlotPositionPair = retruxx::pair<CStr, PointBase<int>>;
 
     protected:
-        /* 0x0110 */ retruxx::map<CStr, PointBase<int>, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, PointBase<int> > > > m_slots;
-        /* 0x011c */ PointBase<int> m_repositorySize;
-    }; /* size: 0x0124 */
+        retruxx::map<
+            CStr,
+            PointBase<int>,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, PointBase<int>>>>
+            m_slots;
+        PointBase<int> m_repositorySize;
+    };
 
     class Basket : public ai::VehiclePart
     {
         friend class BasketPrototypeInfo;
+
     protected:
-        virtual  ~Basket() override /* 0x00 */;
+        virtual ~Basket() override;
 
     private:
-        Basket(const ai::BasketPrototypeInfo& prototypeInfo);
-        Basket(const ai::Basket&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        Basket(ai::BasketPrototypeInfo const& prototypeInfo);
+        Basket(ai::Basket const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBasket;
-        virtual const ai::BasketPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
-    }; /* size: 0x02c8 */
-}
+        virtual ai::BasketPrototypeInfo const* GetPrototypeInfo() const override;
+    };
+}  // namespace ai

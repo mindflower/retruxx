@@ -43,25 +43,37 @@ namespace ai
         VehiclesGeneratorInfoCache(VehiclesGeneratorInfoCache const&);
         VehiclesGeneratorInfoCache();
         void EnsureInitialized();
-        retruxx::map<CStr, VehicleGroupInfo, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, VehicleGroupInfo>>> const& GetVehicleGroupInfos()
-            const;
+        retruxx::map<
+            CStr,
+            VehicleGroupInfo,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, VehicleGroupInfo>>> const&
+            GetVehicleGroupInfos() const;
         retruxx::vector<WareInfo, retruxx::allocator<WareInfo>> const& GetWareInfos() const;
         retruxx::map<
             CStr,
             retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>,
             retruxx::less<CStr>,
-            retruxx::allocator<retruxx::pair<CStr const, retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>>>> const&
+            retruxx::allocator<retruxx::pair<
+                CStr const,
+                retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>>>> const&
             GetGunInfos() const;
 
     private:
         bool m_bInited;
-        retruxx::map<CStr, VehicleGroupInfo, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, VehicleGroupInfo>>> m_vehicleGroupInfos;
+        retruxx::map<
+            CStr,
+            VehicleGroupInfo,
+            retruxx::less<CStr>,
+            retruxx::allocator<retruxx::pair<CStr const, VehicleGroupInfo>>>
+            m_vehicleGroupInfos;
         retruxx::vector<WareInfo, retruxx::allocator<WareInfo>> m_wareInfos;
         retruxx::map<
             CStr,
             retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>,
             retruxx::less<CStr>,
-            retruxx::allocator<retruxx::pair<CStr const, retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>>>>
+            retruxx::allocator<
+                retruxx::pair<CStr const, retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>>>>
             m_gunInfos;
 
         VehiclePartInfo _GetVehiclePartInfo(int id) const;
@@ -69,12 +81,15 @@ namespace ai
         void _GetVehiclePartInfos(
             retruxx::vector<int, retruxx::allocator<int>> const& prototypes,
             retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>& vehiclePartInfos);
-        void _GetWareInfos(retruxx::vector<int, retruxx::allocator<int>> const& prototypes, retruxx::vector<WareInfo, retruxx::allocator<WareInfo>>& wareInfos);
+        void _GetWareInfos(
+            retruxx::vector<int, retruxx::allocator<int>> const& prototypes,
+            retruxx::vector<WareInfo, retruxx::allocator<WareInfo>>& wareInfos);
         void _GetVehiclePartInfosForVehicle(
             VehiclePrototypeInfo const* protoV,
             CStr const& partName,
             retruxx::vector<VehiclePartInfo, retruxx::allocator<VehiclePartInfo>>& vehiclePartInfos);
-        void _GetAbstractVehiclesPrototypeIds(retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds);
+        void _GetAbstractVehiclesPrototypeIds(
+            retruxx::vector<int, retruxx::allocator<int>>& abstractVehiclesPrototypeIds);
         void _InitializeVehicleParts();
         void _InitializeWares();
         void _InitializeGuns();
@@ -116,7 +131,8 @@ namespace ai
         virtual Obj* CreateTargetObject() const override;
         virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
         virtual void PostLoad() override;
-        void Generate(unsigned int restSchwarz, retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds) const;
+        void Generate(unsigned int restSchwarz, retruxx::vector<int, retruxx::allocator<int>>& generatedVehicleIds)
+            const;
         void GenerateAndPlace(
             retruxx::vector<CVector, retruxx::allocator<CVector>> const& points,
             unsigned int restSchwarz,
@@ -125,18 +141,27 @@ namespace ai
 
     private:
         static int _GetBestPrototypeByMoney(
-            retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>> const& partInfos,
+            retruxx::vector<
+                VehiclesGeneratorInfoCache::VehiclePartInfo,
+                retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>> const& partInfos,
             float money);
         static int _GetBestPrototypeByMoneyEconomy(
-            retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>> const& partInfos,
+            retruxx::vector<
+                VehiclesGeneratorInfoCache::VehiclePartInfo,
+                retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>> const& partInfos,
             float money);
         static int _GetRandomPrototypeByMoney(
-            retruxx::vector<VehiclesGeneratorInfoCache::WareInfo, retruxx::allocator<VehiclesGeneratorInfoCache::WareInfo>> const& wareInfos,
+            retruxx::vector<
+                VehiclesGeneratorInfoCache::WareInfo,
+                retruxx::allocator<VehiclesGeneratorInfoCache::WareInfo>> const& wareInfos,
             float money);
         static int _GetRandomPrototypeByMoney(
-            retruxx::vector<VehiclesGeneratorInfoCache::VehiclePartInfo, retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>> const& partInfos,
+            retruxx::vector<
+                VehiclesGeneratorInfoCache::VehiclePartInfo,
+                retruxx::allocator<VehiclesGeneratorInfoCache::VehiclePartInfo>> const& partInfos,
             float money);
-        static unsigned int _ChangeVehiclePart(Vehicle* v, CStr const& partName, int newPartProtoId, int affixGenetatorProtoId);
+        static unsigned int
+            _ChangeVehiclePart(Vehicle* v, CStr const& partName, int newPartProtoId, int affixGenetatorProtoId);
     };
 
     inline VehiclesGeneratorInfoCache* theVehiclesGeneratorInfoCache = nullptr;

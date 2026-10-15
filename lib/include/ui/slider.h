@@ -48,5 +48,5 @@ namespace m3d
             // reachable through GetMin/GetMax/GetNotch.
             float m_notchWidth;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

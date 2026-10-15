@@ -12,25 +12,24 @@ namespace ai
     class GeomRepository : public m3d::Object
     {
     protected:
-        GeomRepository(const PointBase<int>& geomSize);
+        GeomRepository(PointBase<int> const& geomSize);
         GeomRepository();
-        GeomRepository(const ai::GeomRepository& rep);
+        GeomRepository(ai::GeomRepository const& rep);
 
     public:
-        virtual  ~GeomRepository() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual ~GeomRepository() override;
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGeomRepository;
 
     protected:
-        /* 0x0034 */ bool m_Changed;
-        /* 0x0035 */ char Padding_207[3];
-        /* 0x0038 */ PointBase<int> m_geomSize;
-        /* 0x0040 */ std::vector<ai::GeomRepositoryItem, std::allocator<ai::GeomRepositoryItem> > m_slots;
-        /* 0x0050 */ std::set<int, std::less<int>, std::allocator<int> > m_referenceChests;
-        /* 0x005c */ int m_vehicleId;
+        bool m_Changed;
+        PointBase<int> m_geomSize;
+        std::vector<ai::GeomRepositoryItem, std::allocator<ai::GeomRepositoryItem>> m_slots;
+        std::set<int, std::less<int>, std::allocator<int>> m_referenceChests;
+        int m_vehicleId;
 
     public:
         // Public because SetSortStyle below is: a caller cannot name the argument otherwise.
@@ -43,44 +42,47 @@ namespace ai
         ai::GeomRepository::SortStyle GetSortStyle() const;
         bool SetSortStyle(ai::GeomRepository::SortStyle sortStyle, bool bRepackImmediate);
         bool Sort(ai::GeomRepository::SortStyle sortStyle);
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
-        virtual bool SetGeomSize(const PointBase<int>& geomSize) /* 0x3c */;
+        virtual bool SetGeomSize(PointBase<int> const& geomSize);
         PointBase<int> GetGeomSize() const;
         int GetFirstSlotByResourceId(int resourceId) const;
-        int GetSlotByPlace(const PointBase<int>& pt) const;
+        int GetSlotByPlace(PointBase<int> const& pt) const;
         unsigned int GetAmountInSlot(int slotNum) const;
         unsigned int GetAmountByResourceId(int resourceId) const;
         unsigned int GetAmountByPrototypeId(int prototypeId) const;
         unsigned int GetNumItems() const;
         ai::GeomRepositoryItem GetItem(int slotNum) const;
         bool AppendChest(ai::Chest* pChest);
-        void FlushInReferenceChests(const CVector& pos);
+        void FlushInReferenceChests(CVector const& pos);
         bool IsChanged();
-        virtual void Purge() /* 0x40 */;
+        virtual void Purge();
         bool IsEmpty();
-        void DropAll(const CVector& Position);
-        virtual int CanAddThingToPlace(const ai::GeomRepositoryItem& item, const PointBase<int>& origin, int* existingSlot) const /* 0x44 */;
-        virtual bool AddThingToPlace(ai::GeomRepositoryItem& item, const PointBase<int>& origin) /* 0x48 */;
-        bool CanAddThing(const ai::GeomRepositoryItem& item) const;
-        bool AddThing(const ai::GeomRepositoryItem& item, int minY);
-        int GetFirstNonCompleteSlot(const ai::GeomRepositoryItem& item) const;
+        void DropAll(CVector const& Position);
+        virtual int CanAddThingToPlace(
+            ai::GeomRepositoryItem const& item,
+            PointBase<int> const& origin,
+            int* existingSlot) const;
+        virtual bool AddThingToPlace(ai::GeomRepositoryItem& item, PointBase<int> const& origin);
+        bool CanAddThing(ai::GeomRepositoryItem const& item) const;
+        bool AddThing(ai::GeomRepositoryItem const& item, int minY);
+        int GetFirstNonCompleteSlot(ai::GeomRepositoryItem const& item) const;
         int GetSlotByObjId(int objId) const;
-        ai::GeomRepositoryItem PutThingToSlot(int slotNum, const ai::GeomRepositoryItem& item);
+        ai::GeomRepositoryItem PutThingToSlot(int slotNum, ai::GeomRepositoryItem const& item);
         int GiveUpThingByResourceId(int resourceId, int amount);
         int GiveUpThingByPrototypeId(int prototypeId, int amount);
         bool GiveUpThingByObjId(int objId);
         unsigned int GiveUpThingFromSlot(unsigned int slotNum, unsigned int Amount);
         unsigned int GiveUpThingFromSlotUnsafe(unsigned int slotNum, unsigned int amount);
-        virtual void Clear(bool bUnsafe) /* 0x4c */;
+        virtual void Clear(bool bUnsafe);
         void SetChanged();
         bool AddItems(int prototypeId, int amount);
-        bool AddItems(const char* prototypeName, int amount);
-        bool RemoveItems(const char* prototypeName, int amount);
+        bool AddItems(char const* prototypeName, int amount);
+        bool RemoveItems(char const* prototypeName, int amount);
         void TransferToRepository(ai::GeomRepository* targetRepository);
-        bool HasAmountOfItems(const char* prototypeName, int amount) const;
+        bool HasAmountOfItems(char const* prototypeName, int amount) const;
         bool CanPlaceItems(int prototypeId, int amount);
-        bool CanPlaceItems(const char* prototypeName, int amount);
+        bool CanPlaceItems(char const* prototypeName, int amount);
         void DetachAllObjectsFromParents();
         void ApplyDamageToAllItems(float damage);
         void SetVehicle(ai::Vehicle* vehicle);
@@ -89,12 +91,12 @@ namespace ai
 
     protected:
         bool _RepackItems(ai::GeomRepository::SortStyle sortStyle);
-        bool _AddThingUnsorted(const ai::GeomRepositoryItem& item, int minY);
+        bool _AddThingUnsorted(ai::GeomRepositoryItem const& item, int minY);
         int _GetMinEmptyY() const;
-        /* 0x0060 */ ai::GeomRepository::SortStyle m_sortStyle;
+        ai::GeomRepository::SortStyle m_sortStyle;
 
     private:
         bool _AppendRepository(ai::GeomRepository* repository, ai::Chest* pChest);
-        bool _bItemInBounds(const ai::GeomRepositoryItem& item) const;
-    }; /* size: 0x0064 */
-}
+        bool _bItemInBounds(ai::GeomRepositoryItem const& item) const;
+    };
+}  // namespace ai

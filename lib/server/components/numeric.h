@@ -10,7 +10,7 @@ namespace ai
         using Base = ai::Component<T>;
 
     public:
-        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeApplyModifier;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeApplyModifier;
         Numeric(T value) : m_value(value), m_BeforeApplyModifier(nullptr)
         {
         }
@@ -94,6 +94,6 @@ namespace ai
         }
 
     private:
-        /* 0x0018 */ T m_value{};
-    }; /* size: 0x001c */
+        T m_value{};
+    };
 }  // namespace ai

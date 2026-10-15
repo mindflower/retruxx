@@ -20,8 +20,10 @@ namespace ai
         }
     }
 
-    ai::SphereForIntersection* SphereForIntersection::CreateObject(float radius,
-        ai::SphereForIntersection::SpherePurpose purpose, ai::Obstacle* owner)
+    ai::SphereForIntersection* SphereForIntersection::CreateObject(
+        float radius,
+        ai::SphereForIntersection::SpherePurpose purpose,
+        ai::Obstacle* owner)
     {
         if (radius < 0.1)
             radius = 0.1;
@@ -37,7 +39,7 @@ namespace ai
     }
 
     void SphereForIntersection::SetTargetClasses(
-        const retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>>& targetClasses)
+        retruxx::set<m3d::Class*, retruxx::less<m3d::Class*>, retruxx::allocator<m3d::Class*>> const& targetClasses)
     {
         m_targetClasses = targetClasses;
     }
@@ -47,8 +49,11 @@ namespace ai
         return m_owner;
     }
 
-    SphereForIntersection::SphereForIntersection(dxGeom* const geomId, ai::SphereForIntersection::SpherePurpose purpose,
-        ai::Obstacle* owner) : Sphere(geomId, nullptr)
+    SphereForIntersection::SphereForIntersection(
+        dxGeom* const geomId,
+        ai::SphereForIntersection::SpherePurpose purpose,
+        ai::Obstacle* owner) :
+        Sphere(geomId, nullptr)
     {
         this->m_signature = -238835241;
         this->m_purpose = purpose;
@@ -68,4 +73,4 @@ namespace ai
             ai::IntersectionManager::AddLookingSphere(this);
         }
     }
-}
+}  // namespace ai

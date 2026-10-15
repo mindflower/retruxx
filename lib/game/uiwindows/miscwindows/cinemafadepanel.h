@@ -8,11 +8,11 @@ protected:
     CinemaFadePanel(CinemaFadePanel const& rhs);
 
 public:
-    virtual ~CinemaFadePanel() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~CinemaFadePanel() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(CinemaFadePanel);
 
     enum FadeState
@@ -24,19 +24,19 @@ public:
     };
 
 protected:
-    /* 0x0220 */ bool m_isCinematicRelated;
-    /* 0x0224 */ float m_fadePeriod;
-    /* 0x0228 */ int m_fadeStart;
-    /* 0x022c */ float m_curAlpha;
-    /* 0x0230 */ CinemaFadePanel::FadeState m_state;
-    /* 0x0234 */ bool m_isFading;
+    bool m_isCinematicRelated;
+    float m_fadePeriod;
+    int m_fadeStart;
+    float m_curAlpha;
+    CinemaFadePanel::FadeState m_state;
+    bool m_isFading;
     float GetAlpha();
     void StartFadeCinematicUnrelated(float fadePeriod, int direction);
-    virtual int OnPaint(m3d::ui::DrawInfo const& di) override /* 0x88 */;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
 
 public:
     void FadeUp(float fadePeriod);
     void FadeDown(float fadePeriod);
     void AttachToScreenCinematicRelated();
     bool IsFading();
-}; /* size: 0x0238 */
+};

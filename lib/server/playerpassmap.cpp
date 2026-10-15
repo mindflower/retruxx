@@ -9,7 +9,8 @@ namespace ai
     bool PlayerPassMap::GetValue(unsigned x, unsigned y) const
     {
         M3D_ASSERT(x < m_sideSize && y < m_sideSize);
-        return ((1 << ((y + x * LOBYTE(this->m_sideSize)) & 0x1F)) & this->m_container[(y + x * this->m_sideSize) >> 5]) != 0;
+        return ((1 << ((y + x * LOBYTE(this->m_sideSize)) & 0x1F)) &
+                this->m_container[(y + x * this->m_sideSize) >> 5]) != 0;
     }
 
     void PlayerPassMap::Clear()
@@ -151,4 +152,4 @@ namespace ai
         file.Close();
         return true;
     }
-}
+}  // namespace ai

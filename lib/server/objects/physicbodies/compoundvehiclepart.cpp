@@ -93,14 +93,14 @@ namespace ai
         return nullptr;
     }
 
-    m3d::Object* __fastcall CompoundVehiclePart::CreateObject()
+    m3d::Object* CompoundVehiclePart::CreateObject()
     {
         // RVA 0x6F4B60
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
 
-    m3d::Class* __fastcall CompoundVehiclePart::GetBaseClass()
+    m3d::Class* CompoundVehiclePart::GetBaseClass()
     {
         return RT_CLASS_LOCAL(VehiclePart);
     }

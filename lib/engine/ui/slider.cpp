@@ -9,7 +9,7 @@ namespace m3d
     namespace ui
     {
         RT_CLASS_EXPORTS_BEGIN(SliderWnd)
-    	RT_CLASS_EXPORTS_END;
+        RT_CLASS_EXPORTS_END;
         RT_CLASS_DEFINE(SliderWnd);
 
         Object* SliderWnd::CreateObject()
@@ -200,7 +200,7 @@ namespace m3d
         {
             m_tracking = state != 0;
             GetStation()->CaptureMouse(state != 0 ? this : nullptr);
-            OnMouseMove(at, { 0.0, 0.0 });
+            OnMouseMove(at, {0.0, 0.0});
             return 1;
         }
 
@@ -209,12 +209,11 @@ namespace m3d
             m_style = 274944;
         }
 
-        SliderWnd::SliderWnd(SliderWnd const& sw)
-            : Wnd(sw)
+        SliderWnd::SliderWnd(SliderWnd const& sw) : Wnd(sw)
         {
             // RVA 0x6B25F0 - the shipped copy constructor chains to the Wnd one and
             // copies none of the slider's own state, so a cloned slider starts with
             // an indeterminate range, notch and notch width.
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

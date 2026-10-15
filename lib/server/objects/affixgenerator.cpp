@@ -25,7 +25,8 @@ namespace ai
         if (result)
         {
             ref_ptr affixNode = xmlFile->CreateNode();
-            for (xmlNode->GetFirstChild(affixNode, "Affix"); !affixNode->IsEmpty(); affixNode->GetNextSibling(affixNode, "Affix"))
+            for (xmlNode->GetFirstChild(affixNode, "Affix"); !affixNode->IsEmpty();
+                 affixNode->GetNextSibling(affixNode, "Affix"))
             {
                 AffixDescription newDescription;
                 m3d::SafeStrAttrib(newDescription.m_affixName, affixNode, "AffixName");
@@ -70,8 +71,7 @@ namespace ai
         retruxx::set<int> affixIds;
         for (auto const& description : m_affixDescriptions)
         {
-            int const affixId =
-                affixManager->GetAffixIdByNameAndResource(description.m_affixName, resourceId);
+            int const affixId = affixManager->GetAffixIdByNameAndResource(description.m_affixName, resourceId);
             if (affixId != -1)
             {
                 affixIds.insert(affixId);

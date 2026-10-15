@@ -30,9 +30,9 @@ namespace m3d
         {
             struct _AnimationType2Str
             {
-                /* 0x0000 */ ui::Wnd::AnimationInfo::AnimationType m_type;
-                /* 0x0004 */ char const* m_name;
-            }; /* size: 0x0008 */
+                ui::Wnd::AnimationInfo::AnimationType m_type;
+                char const* m_name;
+            };
 
             _AnimationType2Str l_animationType2Str[17] = {
                 {Wnd::AnimationInfo::ANIMATIONTYPE_USER, "USER"},
@@ -186,7 +186,7 @@ namespace m3d
 
         void Wnd::AnimationInfo::SetupDefaultOnHide()
         {
-            auto const& cfg = g_Kernel->GetEngineCfg();
+            auto const& cfg = M3D_ENGINE_CFG;
             m_bEnabled = 1;
             m_startPt.x = 0.0;
             m_startPt.y = 0.0;
@@ -202,7 +202,7 @@ namespace m3d
 
         void Wnd::AnimationInfo::SetupDefaultOnShow()
         {
-            auto const& cfg = g_Kernel->GetEngineCfg();
+            auto const& cfg = M3D_ENGINE_CFG;
             m_bEnabled = 1;
             m_startPt.x = 0.0;
             m_startPt.y = 0.0;
@@ -545,12 +545,14 @@ namespace m3d
             PointBase<float> const cur{x0, y0};
 
             // Slide in from "from" to the base origin.
-            auto const slideIn = [&](float fromX, float fromY) {
+            auto const slideIn = [&](float fromX, float fromY)
+            {
                 anim.m_startPt = interpolateWithPrevious ? cur : PointBase<float>{fromX, fromY};
                 anim.m_endPt = m_baseOrigin;
             };
             // Slide out from the base origin to "to".
-            auto const slideOut = [&](float toX, float toY) {
+            auto const slideOut = [&](float toX, float toY)
+            {
                 anim.m_startPt = interpolateWithPrevious ? cur : m_baseOrigin;
                 anim.m_endPt = PointBase<float>{toX, toY};
             };
@@ -563,23 +565,56 @@ namespace m3d
                     anim.m_startPt = cur;
                 }
                 break;
-            case AnimationInfo::ANIMATIONTYPE_TO_LEFT: slideIn(beyondRight, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT: slideOut(beyondLeft, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_RIGHT: slideIn(beyondLeft, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT: slideOut(beyondRight, y0); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_TOP: slideIn(x0, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP: slideOut(x0, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM: slideIn(x0, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM: slideOut(x0, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP: slideIn(beyondRight, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP: slideOut(beyondLeft, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM: slideIn(beyondRight, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM: slideOut(beyondLeft, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP: slideIn(beyondLeft, beyondBottom); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP: slideOut(beyondRight, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM: slideIn(beyondLeft, beyondTop); break;
-            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM: slideOut(beyondRight, beyondBottom); break;
-            default: break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFT:
+                slideIn(beyondRight, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFT:
+                slideOut(beyondLeft, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHT:
+                slideIn(beyondLeft, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHT:
+                slideOut(beyondRight, y0);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_TOP:
+                slideIn(x0, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_TOP:
+                slideOut(x0, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BOTTOM:
+                slideIn(x0, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_BOTTOM:
+                slideOut(x0, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFTTOP:
+                slideIn(beyondRight, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTTOP:
+                slideOut(beyondLeft, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_LEFTBOTTOM:
+                slideIn(beyondRight, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_LEFTBOTTOM:
+                slideOut(beyondLeft, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTTOP:
+                slideIn(beyondLeft, beyondBottom);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTTOP:
+                slideOut(beyondRight, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_RIGHTBOTTOM:
+                slideIn(beyondLeft, beyondTop);
+                break;
+            case AnimationInfo::ANIMATIONTYPE_TO_BEYOND_RIGHTBOTTOM:
+                slideOut(beyondRight, beyondBottom);
+                break;
+            default:
+                break;
             }
 
             m_bounds.x0 = anim.m_startPt.x;
@@ -785,14 +820,14 @@ namespace m3d
             m_bgTextureName = "";
             if (m_bgTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_bgTexture);
+                M3D_RENDERER->ReleaseTexture(m_bgTexture);
             }
             m_bgTexture = bgTex;
             if (!m_bgTexture.IsValid())
             {
                 return 0;
             }
-            Application::g_pApp->m_renderer->ReferenceTexture(m_bgTexture);
+            M3D_RENDERER->ReferenceTexture(m_bgTexture);
             return 1;
         }
 
@@ -801,13 +836,13 @@ namespace m3d
             m_bgTextureName = bgTextureName;
             if (m_bgTexture.IsValid())
             {
-                Application::g_pApp->m_renderer->ReleaseTexture(m_bgTexture);
+                M3D_RENDERER->ReleaseTexture(m_bgTexture);
             }
             if (!m_bgTextureName.empty())
             {
-                m_bgTexture = Application::g_pApp->m_renderer->AddTexture(m_bgTextureName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_bgTexture, rend::TM_WRAP_S, 3u);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_bgTexture, rend::TM_WRAP_T, 3u);
+                m_bgTexture = M3D_RENDERER->AddTexture(m_bgTextureName, 4);
+                M3D_RENDERER->SetTextureParameter(m_bgTexture, rend::TM_WRAP_S, 3u);
+                M3D_RENDERER->SetTextureParameter(m_bgTexture, rend::TM_WRAP_T, 3u);
             }
             else
             {
@@ -850,11 +885,11 @@ namespace m3d
         int Wnd::SetText(CStr const& caption)
         {
             m_caption = caption;
-            if (!Application::g_pApp->IsTextHieroglyphic(m_caption))
+            if (!M3D_APP->IsTextHieroglyphic(m_caption))
             {
                 return 1;
             }
-            if (g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (M3D_ENGINE_CFG.m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = m_gfx->m_hieroglyphicFontId;
             }
@@ -1701,9 +1736,9 @@ namespace m3d
 
         void Wnd::StopAnimationMoveSound()
         {
-            if (m_animationSoundMoveChannelId != -1 && Application::g_pApp->m_sound)
+            if (m_animationSoundMoveChannelId != -1 && M3D_SOUND)
             {
-                Application::g_pApp->m_sound->StopChannel(m_animationSoundMoveChannelId);
+                M3D_SOUND->StopChannel(m_animationSoundMoveChannelId);
                 m_animationSoundMoveChannelId = -1;
             }
         }
@@ -1882,8 +1917,7 @@ namespace m3d
 
         void Wnd::SetDefaultFont(int uiFont)
         {
-            if (Application::g_pApp->IsTextHieroglyphic(m_caption) &&
-                g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (M3D_APP->IsTextHieroglyphic(m_caption) && M3D_ENGINE_CFG.m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = GetGfxServer()->m_hieroglyphicFontId;
             }
@@ -1895,8 +1929,7 @@ namespace m3d
 
         void Wnd::SetDefaultFont(CStr const& name, float height, FontType type, FontParams params)
         {
-            if (Application::g_pApp->IsTextHieroglyphic(m_caption) &&
-                g_Kernel->GetEngineCfg().m_ui_forceHieroglyphicFont.GetB())
+            if (M3D_APP->IsTextHieroglyphic(m_caption) && M3D_ENGINE_CFG.m_ui_forceHieroglyphicFont.GetB())
             {
                 m_defFont = GetGfxServer()->m_hieroglyphicFontId;
             }
@@ -1971,14 +2004,14 @@ namespace m3d
                 {
                     if (!m_toolTipTimeOut)
                     {
-                        Application::g_pApp->EnqueueMessage(45, this, 0, 0, 0, {}, {});
+                        M3D_APP->EnqueueMessage(45, this, 0, 0, 0, {}, {});
                         m_toolTipTimeOut = -1;
                     }
                 }
                 else if (!m_toolTipTimeOut)
                 {
                     m_toolTipWnd = CreateTooltipWnd();
-                    Application::g_pApp->EnqueueMessage(44, this, 0, 0, 0, {}, {});
+                    M3D_APP->EnqueueMessage(44, this, 0, 0, 0, {}, {});
                     m_toolTipTimeOut = 3000;
                 }
             }

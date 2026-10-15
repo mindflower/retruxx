@@ -7,17 +7,17 @@ class Aabb;
 class Obb
 {
 public:
-    CVector toWorld(const CVector& v) const;
-    CVector toLocalRotate(const CVector& v) const;
+    CVector toWorld(CVector const& v) const;
+    CVector toLocalRotate(CVector const& v) const;
     CVector m_origin;
-    /* 0x000c */ CVector m_basis[3];
+    CVector m_basis[3];
     CVector m_min;
     CVector m_max;
-    void Create(const CVector& min, const CVector& max, const CMatrix& mat, bool noScale);
-    void Create(const Aabb& aabb, const CMatrix& mat, bool noScale);
+    void Create(CVector const& min, CVector const& max, CMatrix const& mat, bool noScale);
+    void Create(Aabb const& aabb, CMatrix const& mat, bool noScale);
     void Draw(unsigned int clr);
-    float IntersectRay(const CVector& v0, const CVector& dir) const;
-    int IsPtInside(const CVector& v) const;
-    int IsPtInside2(const CVector& v) const;
+    float IntersectRay(CVector const& v0, CVector const& dir) const;
+    int IsPtInside(CVector const& v) const;
+    int IsPtInside2(CVector const& v) const;
     Aabb GetBounds() const;
-}; /* size: 0x0048 */
+};

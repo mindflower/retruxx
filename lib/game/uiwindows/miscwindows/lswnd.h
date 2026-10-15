@@ -10,7 +10,7 @@ namespace m3d
     {
         class ImageWnd;
     }
-}
+}  // namespace m3d
 
 class SaveButton : public m3d::ui::ButtonWnd
 {
@@ -40,44 +40,44 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndPatternName;
-        /* 0x000c */ CStr m_wndSaveNameName;
-        /* 0x0018 */ CStr m_wndTimeName;
-        /* 0x0024 */ m3d::ui::ButtonWnd* m_wndPattern;
-        /* 0x0028 */ m3d::ui::Wnd* m_wndPatternSaveName;
-        /* 0x002c */ m3d::ui::Wnd* m_wndPatternTime;
-        /* 0x0030 */ unsigned int m_selectColor;
+        CStr m_wndPatternName;
+        CStr m_wndSaveNameName;
+        CStr m_wndTimeName;
+        m3d::ui::ButtonWnd* m_wndPattern;
+        m3d::ui::Wnd* m_wndPatternSaveName;
+        m3d::ui::Wnd* m_wndPatternTime;
+        unsigned int m_selectColor;
         AuxInfo(SaveButton::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0034 */
+    };
 
 protected:
-    static int __fastcall LoadPattern(m3d::ui::Wnd* pattern);
-    static void __fastcall ClearPattern();
+    static int LoadPattern(m3d::ui::Wnd* pattern);
+    static void ClearPattern();
     int CreateFromPattern();
     int CreateChildren();
     CStr LocalTime2Str(_FILETIME localTime) const;
 
-    /* 0x023c */ m3d::ui::Wnd* m_wndSaveName;
-    /* 0x0240 */ m3d::ui::Wnd* m_wndTime;
+    m3d::ui::Wnd* m_wndSaveName;
+    m3d::ui::Wnd* m_wndTime;
     static SaveButton::AuxInfo m_aif;
-    /* 0x0244 */ CStr m_saveFolderName;
-    /* 0x0250 */ CStr m_saveName;
-    /* 0x025c */ _FILETIME m_saveModifyLocalTime;
-    /* 0x0264 */ m3d::AIParam m_gameTime;
-    /* 0x0280 */ CStr m_levelName;
+    CStr m_saveFolderName;
+    CStr m_saveName;
+    _FILETIME m_saveModifyLocalTime;
+    m3d::AIParam m_gameTime;
+    CStr m_levelName;
 
     SaveButton();
     SaveButton(SaveButton const& rhs);
 
 public:
-    virtual ~SaveButton() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual ~SaveButton() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(SaveButton);
-}; /* size: 0x028c */
+};
 
 class SaveList : public m3d::ui::ListBoxWnd<SaveButton*>
 {
@@ -110,88 +110,88 @@ public:
     SaveList::SortDir GetCurSortDir() const;
     SaveList::ListType GetListType() const;
     void SetListType(SaveList::ListType type);
-    virtual void SetCurSel(int idx) override /* 0x11c */;
+    virtual void SetCurSel(int idx) override;
     using SaveButtonVector = retruxx::vector<SaveButton*>;
 
 protected:
-    virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override /* 0x134 */;
-    virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override /* 0x138 */;
-    virtual int DeleteItem(int itemIdx) override /* 0x13c */;
-    virtual int CompareItem(int itemIdx0, int itemIdx1) override /* 0x140 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
+    virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override;
+    virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override;
+    virtual int DeleteItem(int itemIdx) override;
+    virtual int CompareItem(int itemIdx0, int itemIdx1) override;
+    virtual int OnBeforeAddToWndStation() override;
     void Clear();
     int CreateItems();
     int AddButton(SaveButton* btn);
     int GetSaveFoldersList(retruxx::vector<CStr>& saveFoldersList) const;
     void SortSaves0(SaveList::SortArg sortArg, SaveList::SortDir sortDir, retruxx::vector<SaveButton*>& btns);
 
-    /* 0x0238 */ SaveList::SortArg m_curSortArg;
-    /* 0x023c */ SaveList::SortDir m_curSortDir;
-    /* 0x0240 */ SaveList::ListType m_listType;
+    SaveList::SortArg m_curSortArg;
+    SaveList::SortDir m_curSortDir;
+    SaveList::ListType m_listType;
 
     SaveList();
     SaveList(SaveList const& rhs);
 
 public:
-    virtual ~SaveList() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual ~SaveList() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(SaveList);
-}; /* size: 0x0244 */
+};
 
 class LSWnd : public m3d::ui::ModalWnd
 {
 public:
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndSaveListName;
-        /* 0x000c */ CStr m_wndScreenshotName;
-        /* 0x0018 */ CStr m_wndInfoName;
-        /* 0x0024 */ CStr m_btnSortByNameName;
-        /* 0x0030 */ CStr m_btnSortByTimeName;
-        /* 0x003c */ CStr m_wndSortByNameArrowName;
-        /* 0x0048 */ CStr m_wndSortByTimeArrowName;
-        /* 0x0054 */ CStr m_texIdSortArrow;
+        CStr m_wndSaveListName;
+        CStr m_wndScreenshotName;
+        CStr m_wndInfoName;
+        CStr m_btnSortByNameName;
+        CStr m_btnSortByTimeName;
+        CStr m_wndSortByNameArrowName;
+        CStr m_wndSortByTimeArrowName;
+        CStr m_texIdSortArrow;
         AuxInfo(LSWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0060 */
+    };
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override /* 0x00 */;
-    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
     void OnSortByArg(SaveList::SortArg arg);
-    virtual void OnSaveSelectionChange() /* 0x130 */;
-    virtual void OnCurProfileChanged() /* 0x134 */;
-    virtual void OnCurProfileParamChanged(void* data) /* 0x138 */;
-    virtual void ClearControls() /* 0x13c */;
-    virtual int SetScreenshotForSave(int saveIdx) /* 0x140 */;
+    virtual void OnSaveSelectionChange();
+    virtual void OnCurProfileChanged();
+    virtual void OnCurProfileParamChanged(void* data);
+    virtual void ClearControls();
+    virtual int SetScreenshotForSave(int saveIdx);
     void OnScreenshotRelease(void* data);
     void UpdateSortButtonStates();
-    virtual void OnEnter() /* 0x144 */;
+    virtual void OnEnter();
     void LaunchGameMenu();
     void UpdateSortArrowsState();
 
-    /* 0x0224 */ LSWnd::AuxInfo m_aif;
-    /* 0x0284 */ m3d::ui::ImageWnd* m_wndScreenshot;
-    /* 0x0288 */ m3d::ui::Wnd* m_wndInfo;
-    /* 0x028c */ SaveList* m_wndSaveList;
-    /* 0x0290 */ m3d::ui::ButtonWnd* m_btnSortByName;
-    /* 0x0294 */ m3d::ui::ButtonWnd* m_btnSortByTime;
-    /* 0x0298 */ m3d::ui::ImageWnd* m_wndSortByNameArrow;
-    /* 0x029c */ m3d::ui::ImageWnd* m_wndSortByTimeArrow;
+    LSWnd::AuxInfo m_aif;
+    m3d::ui::ImageWnd* m_wndScreenshot;
+    m3d::ui::Wnd* m_wndInfo;
+    SaveList* m_wndSaveList;
+    m3d::ui::ButtonWnd* m_btnSortByName;
+    m3d::ui::ButtonWnd* m_btnSortByTime;
+    m3d::ui::ImageWnd* m_wndSortByNameArrow;
+    m3d::ui::ImageWnd* m_wndSortByTimeArrow;
 
     LSWnd();
     LSWnd(LSWnd const& rhs);
 
 public:
-    virtual ~LSWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual ~LSWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(LSWnd);
-}; /* size: 0x02a0 */
+};

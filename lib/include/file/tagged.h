@@ -113,28 +113,28 @@ namespace m3d
                 return m_file.getChunkData(id, &m_data);
             }
 
-            template <class T>
-            T get(const size_t byteCount)
+            template<class T>
+            T get(size_t const byteCount)
             {
                 auto res = *static_cast<T*>(m_data);
                 m_data = static_cast<uint8_t*>(m_data) + byteCount;
                 return res;
             }
 
-            template <class T>
+            template<class T>
             T get()
             {
                 return get<T>(sizeof(T));
             }
 
-            const char* getStr(const size_t byteCount)
+            char const* getStr(size_t const byteCount)
             {
-                auto res = static_cast<const char*>(m_data);
+                auto res = static_cast<char const*>(m_data);
                 m_data = static_cast<uint8_t*>(m_data) + byteCount;
                 return res;
             }
 
-            void* getRaw(const size_t byteCount)
+            void* getRaw(size_t const byteCount)
             {
                 auto res = m_data;
                 m_data = static_cast<uint8_t*>(m_data) + byteCount;
@@ -145,5 +145,5 @@ namespace m3d
             m3d::fs::auxTaggedFile& m_file;
             void* m_data = nullptr;
         };
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

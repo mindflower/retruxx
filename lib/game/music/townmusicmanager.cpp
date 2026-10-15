@@ -15,7 +15,7 @@ namespace m3d
     void TownMusicManager::Activate()
     {
         // RVA 0x42CF00
-        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return;
         }
@@ -31,7 +31,7 @@ namespace m3d
     int TownMusicManager::LaunchAmbientWorkshop()
     {
         // RVA 0x42D0F0
-        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return -1;
         }
@@ -40,7 +40,8 @@ namespace m3d
         if (!m_ambientWorkshopSounds.empty())
         {
             auto const numSounds = static_cast<unsigned>(m_ambientWorkshopSounds.size());
-            m_curAmbientChannelId = M3D_APP->m_sound->PlaySound2D(m_ambientWorkshopSounds[static_cast<unsigned>(rand()) % numSounds], true);
+            m_curAmbientChannelId =
+                M3D_APP->m_sound->PlaySound2D(m_ambientWorkshopSounds[static_cast<unsigned>(rand()) % numSounds], true);
         }
         return m_curAmbientChannelId;
     }
@@ -59,11 +60,11 @@ namespace m3d
         // RVA 0x42CB40
         m_ambientShopSounds.clear();
         m_ambientWorkshopSounds.clear();
-        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return;
         }
-        auto fileName = g_Kernel->GetEngineCfg().m_snd_pathToTownAmbient.GetS();
+        auto fileName = M3D_ENGINE_CFG.m_snd_pathToTownAmbient.GetS();
         CStr err;
         ref_ptr xmlFile = ReadXmlFile(fileName, &err);
         if (xmlFile)
@@ -75,8 +76,7 @@ namespace m3d
             {
                 auto pathAttr = node->GetAttribute("path");
                 // Same arguments as the original: (path, 2D, 1, 1, normal priority).
-                auto snd = Application::g_pApp->m_sound->AddSound(
-                    pathAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
+                auto snd = M3D_SOUND->AddSound(pathAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
                 auto typeAttr = node->GetAttribute("type");
                 if (!CStr::my_strcmp(typeAttr, "shop"))
                 {
@@ -97,7 +97,7 @@ namespace m3d
     int TownMusicManager::LaunchAmbientShop()
     {
         // RVA 0x42D070
-        if (!g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             return -1;
         }
@@ -106,7 +106,8 @@ namespace m3d
         if (!m_ambientShopSounds.empty())
         {
             auto const numSounds = static_cast<unsigned>(m_ambientShopSounds.size());
-            m_curAmbientChannelId = M3D_APP->m_sound->PlaySound2D(m_ambientShopSounds[static_cast<unsigned>(rand()) % numSounds], true);
+            m_curAmbientChannelId =
+                M3D_APP->m_sound->PlaySound2D(m_ambientShopSounds[static_cast<unsigned>(rand()) % numSounds], true);
         }
         return m_curAmbientChannelId;
     }

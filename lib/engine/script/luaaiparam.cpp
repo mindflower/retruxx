@@ -114,7 +114,7 @@ int ext_AIParamCmp(lua_State* L)
 int ext_AIParamGet(lua_State* L)
 {
     // RVA 0x9460B0
-    auto aiParam  = (m3d::AIParam*)lua_touserdata(L, 1);
+    auto aiParam = (m3d::AIParam*)lua_touserdata(L, 1);
     auto param = luaL_checklstring(L, 2, 0);
     if (!strcmp(param, "internalTag"))
     {
@@ -185,13 +185,8 @@ int ext_AIParamSet(lua_State* L)
 {
     auto* param = (m3d::AIParam*)lua_touserdata(L, 1);
     auto str = luaL_checklstring(L, 2, 0);
-    if (!strcmp(str, "AsFloat")
-        || !strcmp(str, "AsID")
-        || !strcmp(str, "AsInt")
-        || !strcmp(str, "AsString")
-        || !strcmp(str, "AsVector")
-        || !strcmp(str, "AsRange")
-        || !strcmp(str, "AsNumList"))
+    if (!strcmp(str, "AsFloat") || !strcmp(str, "AsID") || !strcmp(str, "AsInt") || !strcmp(str, "AsString") ||
+        !strcmp(str, "AsVector") || !strcmp(str, "AsRange") || !strcmp(str, "AsNumList"))
     {
         SetParams(param, L);
         return 1;
@@ -206,7 +201,7 @@ int ext_AIParamSet(lua_State* L)
 int ext_AIParamEq(lua_State* L)
 {
     assert(ext_checkTag(L, 1, tag_luaAIParam) && ext_checkTag(L, 2, tag_luaAIParam));
-    
+
     auto* lhs = (m3d::AIParam*)lua_touserdata(L, 1);
     auto* rhs = (m3d::AIParam*)lua_touserdata(L, 2);
     auto res = *lhs == *rhs;

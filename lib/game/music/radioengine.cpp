@@ -18,9 +18,9 @@ namespace m3d
     void RadioEngine::Init()
     {
         m_instance = this;
-        if (g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
-            auto pathToSamples = g_Kernel->GetEngineCfg().m_snd_pathToRadioSamples.GetS();
+            auto pathToSamples = M3D_ENGINE_CFG.m_snd_pathToRadioSamples.GetS();
             CStr err;
             ref_ptr samplesXmlFile = ReadXmlFile(pathToSamples, &err);
             if (samplesXmlFile)
@@ -32,7 +32,8 @@ namespace m3d
                 samplesXmlFile->GetFirstChild(radioSamples, "RadioSamples");
 
                 ref_ptr sample = samplesXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                for (radioSamples->GetFirstChild(sample, "Sample"); !sample->IsEmpty(); sample->GetNextSibling(sample, "Sample"))
+                for (radioSamples->GetFirstChild(sample, "Sample"); !sample->IsEmpty();
+                     sample->GetNextSibling(sample, "Sample"))
                 {
                     auto idAttr = sample->GetAttribute("id");
                     if (idAttr)
@@ -45,13 +46,13 @@ namespace m3d
 
                             auto soundAttr = sample->GetAttribute("sound");
                             auto snd =
-                                Application::g_pApp->m_sound->AddSound(soundAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
+                                M3D_SOUND->AddSound(soundAttr, snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_NORMAL);
                             m_soundIdSound[id] = snd;
                         }
                     }
                 }
 
-                auto pathToRadioSounds = g_Kernel->GetEngineCfg().m_snd_pathToRadioSounds.GetS();
+                auto pathToRadioSounds = M3D_ENGINE_CFG.m_snd_pathToRadioSounds.GetS();
                 ref_ptr soundsXmlFile = ReadXmlFile(pathToRadioSounds, &err);
                 if (soundsXmlFile)
                 {
@@ -61,7 +62,8 @@ namespace m3d
                     soundsXmlFile->GetFirstChild(radioSounds, "RadioSounds");
 
                     ref_ptr group = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                    for (radioSounds->GetFirstChild(group, "Group"); !group->IsEmpty(); group->GetNextSibling(group, "Group"))
+                    for (radioSounds->GetFirstChild(group, "Group"); !group->IsEmpty();
+                         group->GetNextSibling(group, "Group"))
                     {
                         auto nameAttr = group->GetAttribute("name");
                         auto belongsAttr = group->GetAttribute("belongs");
@@ -79,7 +81,8 @@ namespace m3d
                         ref_ptr enemy = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
                         group->GetFirstChild(enemy, "Enemy");
                         ref_ptr sound = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                        for (enemy->GetFirstChild(sound, "Sound"); !sound->IsEmpty(); sound->GetNextSibling(sound, "Sound"))
+                        for (enemy->GetFirstChild(sound, "Sound"); !sound->IsEmpty();
+                             sound->GetNextSibling(sound, "Sound"))
                         {
                             auto idAttr = sound->GetAttribute("id");
                             auto probAttr = sound->GetAttribute("probability");
@@ -96,7 +99,8 @@ namespace m3d
                         ref_ptr neutral = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
                         group->GetFirstChild(neutral, "Neutral");
                         ref_ptr sound2 = soundsXmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                        for (neutral->GetFirstChild(sound2, "Sound"); !sound2->IsEmpty(); sound2->GetNextSibling(sound2, "Sound"))
+                        for (neutral->GetFirstChild(sound2, "Sound"); !sound2->IsEmpty();
+                             sound2->GetNextSibling(sound2, "Sound"))
                         {
                             auto idAttr = sound2->GetAttribute("id");
                             auto probAttr = sound2->GetAttribute("probability");
@@ -137,7 +141,7 @@ namespace m3d
     void RadioEngine::PlayNextSoundMessage()
     {
         // RVA 0x428470
-        if (!m_instance || !g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (!m_instance || !M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return;
         }
@@ -162,7 +166,7 @@ namespace m3d
 
         // A message type is repeated at most once every 10 seconds, and only
         // during normal gameplay.
-        if (g_Kernel->GetTimer().GetCurTime() - m_lastTime[sslFront.type] < 10000 || M3D_APP->GetCurGameMode() != 0)
+        if (M3D_KERNEL->GetTimer().GetCurTime() - m_lastTime[sslFront.type] < 10000 || M3D_APP->GetCurGameMode() != 0)
         {
             return;
         }
@@ -195,7 +199,7 @@ namespace m3d
         m_curTextToShow = m_soundIdName[sampleId];
         m_curChannelId = M3D_APP->m_sound->PlaySound2D(sound, false);
         M3D_APP->m_pInterfaceManager->AddFadingMsg(m_curTextToShow, {});
-        m_lastTime[sslFront.type] = g_Kernel->GetTimer().GetCurTime();
+        m_lastTime[sslFront.type] = M3D_KERNEL->GetTimer().GetCurTime();
     }
 
     RadioEngine* RadioEngine::GetInstance()
@@ -206,7 +210,7 @@ namespace m3d
     void RadioEngine::PlaySoundMessage(int belongId, int messageType, CStr const& soundId)
     {
         // RVA 0x4282C0
-        if (!g_Kernel->GetEngineCfg().m_snd_Enable.GetB())
+        if (!M3D_ENGINE_CFG.m_snd_Enable.GetB())
         {
             return;
         }
@@ -214,7 +218,7 @@ namespace m3d
         if (belongId == -1)
         {
             // No speaker: only restart this message type's repeat timer.
-            m_lastTime[messageType] = g_Kernel->GetTimer().GetCurTime();
+            m_lastTime[messageType] = M3D_KERNEL->GetTimer().GetCurTime();
         }
         else if (m_groupNameByBelong.find(belongId) != m_groupNameByBelong.end())
         {

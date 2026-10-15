@@ -87,7 +87,7 @@ namespace m3d
 
     DataServer* SgSoundSourceNode::GetServer() const
     {
-        return &m3d::Application::g_pApp->GetSoundServer();
+        return &M3D_APP->GetSoundServer();
     }
 
     int SgSoundSourceNode::GetPropertiesList(retruxx::set<unsigned>& props) const
@@ -178,8 +178,9 @@ namespace m3d
             return 1;
         }
 
-        if (M3D_KERNEL->GetEngineCfg().m_snd_Enable.GetB())
-            m3d::Application::g_pApp->m_sound->SetChannelFrequency(this->m_props[1], (int)(float)((float)(int)this->m_props[3] * *(float*)property));
+        if (M3D_ENGINE_CFG.m_snd_Enable.GetB())
+            M3D_SOUND->SetChannelFrequency(
+                this->m_props[1], (int)(float)((float)(int)this->m_props[3] * *(float*)property));
         return 1;
     }
 
@@ -265,9 +266,9 @@ namespace m3d
 
         struct RenderInfo
         {
-            /* 0x0000 */ m3d::SgNode* m_node;
-            /* 0x0004 */ int m_currentSoundNum;
-        }; /* size: 0x0008 */
+            m3d::SgNode* m_node;
+            int m_currentSoundNum;
+        };
 
         RenderInfo ri;
         ri.m_node = this;
@@ -277,4 +278,4 @@ namespace m3d
         IsFree();
         return 1;
     }
-}
+}  // namespace m3d

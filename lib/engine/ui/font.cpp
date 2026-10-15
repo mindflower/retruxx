@@ -328,7 +328,7 @@ namespace m3d
             m_nameShort = prototype->m_nameShort;
             m_nameFull = prototype->m_nameFull;
             m_heightUnscaled = heightUnscaled;
-            auto vieport = Application::g_pApp->m_renderer->GetViewport();
+            auto vieport = M3D_RENDERER->GetViewport();
             m_heightScaled = (vieport.m_width * heightUnscaled) * 0.0009765625f;
             m_scaleTex = (prototype->m_scaleTex / prototype->m_heightScaled) * m_heightScaled;
             m_textures = prototype->m_textures;
@@ -336,7 +336,7 @@ namespace m3d
             {
                 if (tex.IsValid())
                 {
-                    Application::g_pApp->m_renderer->ReferenceTexture(tex);
+                    M3D_RENDERER->ReferenceTexture(tex);
                 }
             }
             for (int i = 0; i < FontManager::GetTCharDictionary().GetNumOfTChars(); ++i)
@@ -430,14 +430,14 @@ namespace m3d
             }
             for (auto const& file : filesVector)
             {
-                auto tex = Application::g_pApp->m_renderer->AddTexture(file, 4);
+                auto tex = M3D_RENDERER->AddTexture(file, 4);
                 if (!tex.IsValid())
                 {
                     Clear();
                     M3D_LOG_ERR("Font " + m_nameShort + ": fail to create from xml - invalid texture");
                     return 0;
                 }
-                Application::g_pApp->m_renderer->SetTextureParameter(tex, rend::TM_TEX_FILTER, 2);
+                M3D_RENDERER->SetTextureParameter(tex, rend::TM_TEX_FILTER, 2);
                 m_textures.push_back(tex);
             }
             ref_ptr node = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
@@ -800,7 +800,7 @@ namespace m3d
             {
                 if (texture.IsValid())
                 {
-                    Application::g_pApp->m_renderer->ReleaseTexture(texture);
+                    M3D_RENDERER->ReleaseTexture(texture);
                 }
             }
             m_textures.clear();
@@ -856,7 +856,7 @@ namespace m3d
             if (!m_textures.empty())
             {
                 PointBase<int> res;
-                Application::g_pApp->m_renderer->GetDims(m_textures.front(), res.x, res.y);
+                M3D_RENDERER->GetDims(m_textures.front(), res.x, res.y);
                 return res;
             }
             return {0, 0};
@@ -935,7 +935,7 @@ namespace m3d
                 return 0;
             }
             Font const* const font = m_fonts[id];
-            auto const viewport = Application::g_pApp->m_renderer->GetViewport();
+            auto const viewport = M3D_RENDERER->GetViewport();
             // Exact comparison on purpose: m_heightScaled was computed with this same
             // float expression when the font was rasterised, so any difference means
             // the viewport width has changed since.
@@ -955,7 +955,7 @@ namespace m3d
             }
             else
             {
-                params.ttfParams.codePage = Application::g_pApp->m_codePage.CodePage;
+                params.ttfParams.codePage = M3D_APP->m_codePage.CodePage;
                 params.ttfParams.style = font->m_style;
             }
             // The font was rasterised for another resolution: swap the caller's id for the
@@ -1041,7 +1041,7 @@ namespace m3d
         int FontManager::ReadFontsFromXml()
         {
             CStr err;
-            ref_ptr file = ReadXmlFile(g_Kernel->GetEngineCfg().m_ui_pathToFonts.GetS(), &err);
+            ref_ptr file = ReadXmlFile(M3D_ENGINE_CFG.m_ui_pathToFonts.GetS(), &err);
             if (file)
             {
                 ref_ptr fontsNode = file->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
@@ -1069,7 +1069,7 @@ namespace m3d
                 M3D_LOG_INFO("FontManager: fonts are loaded successfully");
                 return 1;
             }
-            M3D_LOG_ERR("cannot load " + CStr(g_Kernel->GetEngineCfg().m_ui_pathToFonts.GetS()) + " err: " + err);
+            M3D_LOG_ERR("cannot load " + CStr(M3D_ENGINE_CFG.m_ui_pathToFonts.GetS()) + " err: " + err);
             return 0;
         }
 
@@ -1115,8 +1115,8 @@ namespace m3d
         unsigned FontManager::GetCodePageByCharset(unsigned charset)
         {
             CHARSETINFO charsetInfo{};
-            if (::TranslateCharsetInfo(reinterpret_cast<DWORD*>(static_cast<std::uintptr_t>(charset)), &charsetInfo,
-                                       TCI_SRCCHARSET))
+            if (::TranslateCharsetInfo(
+                    reinterpret_cast<DWORD*>(static_cast<std::uintptr_t>(charset)), &charsetInfo, TCI_SRCCHARSET))
             {
                 return charsetInfo.ciACP;
             }
@@ -1186,7 +1186,7 @@ namespace m3d
                 return -1;
             }
 
-            auto const viewport = Application::g_pApp->m_renderer->GetViewport();
+            auto const viewport = M3D_RENDERER->GetViewport();
             // Fonts are rasterised for the current viewport; 1/1024 is the reference width the
             // unscaled heights are quoted against.
             float const heightScaled = (viewport.m_width * heightUnscaled) * 0.0009765625;

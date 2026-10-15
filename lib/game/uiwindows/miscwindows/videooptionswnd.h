@@ -9,7 +9,7 @@ namespace m3d
         class ButtonWnd;
         class SliderWnd;
         class ComboBoxWnd;
-    }
+    }  // namespace ui
 }  // namespace m3d
 
 class VideoOptionsWnd : public m3d::ui::Wnd
@@ -23,23 +23,23 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_cbResolutionName;
-        /* 0x000c */ CStr m_sliderGammaName;
-        /* 0x0018 */ CStr m_cbGraphicQualityName;
-        /* 0x0024 */ CStr m_sliderFarDistanceName;
-        /* 0x0030 */ CStr m_cbGrassName;
-        /* 0x003c */ CStr m_cbShadowsName;
-        /* 0x0048 */ CStr m_cbWaterQualityName;
-        /* 0x0054 */ CStr m_cbAntialiasingName;
-        /* 0x0060 */ CStr m_cbFiltrationName;
-        /* 0x006c */ CStr m_cbBlumName;
-        /* 0x0078 */ CStr m_btnGammaNextName;
-        /* 0x0084 */ CStr m_btnGammaPrevName;
-        /* 0x0090 */ CStr m_btnFarDistancePrevName;
-        /* 0x009c */ CStr m_btnFarDistanceNextName;
+        CStr m_cbResolutionName;
+        CStr m_sliderGammaName;
+        CStr m_cbGraphicQualityName;
+        CStr m_sliderFarDistanceName;
+        CStr m_cbGrassName;
+        CStr m_cbShadowsName;
+        CStr m_cbWaterQualityName;
+        CStr m_cbAntialiasingName;
+        CStr m_cbFiltrationName;
+        CStr m_cbBlumName;
+        CStr m_btnGammaNextName;
+        CStr m_btnGammaPrevName;
+        CStr m_btnFarDistancePrevName;
+        CStr m_btnFarDistanceNextName;
         AuxInfo(VideoOptionsWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x00a8 */
+    };
 
     enum Resolution
     {
@@ -120,20 +120,19 @@ public:
 
     struct ShadowSettings
     {
-        /* 0x0000 */ int shadowTexSize;
-        /* 0x0004 */ int detShadowTexSize;
-        /* 0x0008 */ float shadowBlurCoeff;
-        /* 0x000c */ float detailRadius;
+        int shadowTexSize;
+        int detShadowTexSize;
+        float shadowBlurCoeff;
+        float detailRadius;
         ShadowSettings(int sts, int dsts, float sbc, float dr);
         bool operator==(VideoOptionsWnd::ShadowSettings const& shs) const;
-    }; /* size: 0x0010 */
+    };
 
 protected:
-    virtual int GameDataSetup() override /* 0x104 */;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data)
-        override /* 0xc8 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x68 */;
-    virtual int OnAfterRemoveFromWndStation() override /* 0x74 */;
+    virtual int GameDataSetup() override;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+    virtual int OnBeforeAddToWndStation() override;
+    virtual int OnAfterRemoveFromWndStation() override;
     void InitControls();
     void InitResolutionControls();
     void InitGammaControls();
@@ -229,22 +228,22 @@ protected:
     void ValidateWaterQualityVal(int& waterQualityVal) const;
     int GetWaterShaderVersionByWaterQualityVal(int waterQualityVal) const;
     int GetWaterQualityValByWaterShaderVersion(int waterShaderVersion) const;
-    /* 0x0220 */ m3d::ui::ComboBoxWnd* m_cbResolution = nullptr;
-    /* 0x0224 */ m3d::ui::SliderWnd* m_sliderGamma = nullptr;
-    /* 0x0228 */ m3d::ui::ComboBoxWnd* m_cbGraphicQuality = nullptr;
-    /* 0x022c */ m3d::ui::SliderWnd* m_sliderFarDistance = nullptr;
-    /* 0x0230 */ m3d::ui::ComboBoxWnd* m_cbGrass = nullptr;
-    /* 0x0234 */ m3d::ui::ComboBoxWnd* m_cbShadows = nullptr;
-    /* 0x0238 */ m3d::ui::ComboBoxWnd* m_cbWaterQuality = nullptr;
-    /* 0x023c */ m3d::ui::ComboBoxWnd* m_cbAntialiasing = nullptr;
-    /* 0x0240 */ m3d::ui::ComboBoxWnd* m_cbFiltration = nullptr;
-    /* 0x0244 */ m3d::ui::ComboBoxWnd* m_cbBlum = nullptr;
-    /* 0x0248 */ m3d::ui::ButtonWnd* m_btnGammaPrev = nullptr;
-    /* 0x024c */ m3d::ui::ButtonWnd* m_btnGammaNext = nullptr;
-    /* 0x0250 */ m3d::ui::ButtonWnd* m_btnFarDistancePrev = nullptr;
-    /* 0x0254 */ m3d::ui::ButtonWnd* m_btnFarDistanceNext = nullptr;
-    /* 0x0258 */ VideoOptionsWnd::AuxInfo m_aif;
-    /* 0x0300 */ bool m_bVideoOptionsChanged = false;
+    m3d::ui::ComboBoxWnd* m_cbResolution = nullptr;
+    m3d::ui::SliderWnd* m_sliderGamma = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbGraphicQuality = nullptr;
+    m3d::ui::SliderWnd* m_sliderFarDistance = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbGrass = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbShadows = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbWaterQuality = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbAntialiasing = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbFiltration = nullptr;
+    m3d::ui::ComboBoxWnd* m_cbBlum = nullptr;
+    m3d::ui::ButtonWnd* m_btnGammaPrev = nullptr;
+    m3d::ui::ButtonWnd* m_btnGammaNext = nullptr;
+    m3d::ui::ButtonWnd* m_btnFarDistancePrev = nullptr;
+    m3d::ui::ButtonWnd* m_btnFarDistanceNext = nullptr;
+    VideoOptionsWnd::AuxInfo m_aif;
+    bool m_bVideoOptionsChanged = false;
     static inline PointBase<int> m_screenWH[5] = {
         {800, 600},
         {1024, 768},
@@ -262,24 +261,24 @@ protected:
     static inline int m_antialiasings[5] = {0, 2, 4, 8, 16};
     static inline int m_waterQualities[3] = {1, 2, 3};
     static inline int m_blumQualities[3] = {0, 1, 2};
-    /* 0x0304 */ int m_cbResolutionBlocked = 0;
-    /* 0x0308 */ int m_sliderGammaBlocked = 0;
-    /* 0x030c */ int m_cbGraphicQualityBlocked = 0;
-    /* 0x0310 */ int m_sliderFarDistanceBlocked = 0;
-    /* 0x0314 */ int m_cbGrassBlocked = 0;
-    /* 0x0318 */ int m_cbShadowsBlocked = 0;
-    /* 0x031c */ int m_cbBlumBlocked = 0;
-    /* 0x0320 */ int m_cbFiltrationBlocked = 0;
-    /* 0x0324 */ int m_cbAntialiasingBlocked = 0;
-    /* 0x0328 */ int m_cbWaterQualityBlocked = 0;
+    int m_cbResolutionBlocked = 0;
+    int m_sliderGammaBlocked = 0;
+    int m_cbGraphicQualityBlocked = 0;
+    int m_sliderFarDistanceBlocked = 0;
+    int m_cbGrassBlocked = 0;
+    int m_cbShadowsBlocked = 0;
+    int m_cbBlumBlocked = 0;
+    int m_cbFiltrationBlocked = 0;
+    int m_cbAntialiasingBlocked = 0;
+    int m_cbWaterQualityBlocked = 0;
     VideoOptionsWnd();
     VideoOptionsWnd(VideoOptionsWnd const& rhs);
 
 public:
-    virtual ~VideoOptionsWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~VideoOptionsWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(VideoOptionsWnd);
-}; /* size: 0x032c */
+};

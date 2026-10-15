@@ -106,8 +106,7 @@ namespace m3d
             m_defFont = 1;
         }
 
-        StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const& slbw)
-            : ListBoxWnd<CStr>(slbw)
+        StringsListBoxWnd::StringsListBoxWnd(StringsListBoxWnd const& slbw) : ListBoxWnd<CStr>(slbw)
         {
             // RVA 0x71ECC0 - carries the items, the selection and the draw flags
             // across; unlike the default constructor it does not reset the font.

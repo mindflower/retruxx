@@ -8,9 +8,7 @@
 
 namespace ai
 {
-    AIMatrix::AIMatrix(CStr const& name, DecisionMatrix* pDM) :
-        m_name(name),
-        m_pDM(pDM)
+    AIMatrix::AIMatrix(CStr const& name, DecisionMatrix* pDM) : m_name(name), m_pDM(pDM)
     {
     }
 
@@ -36,4 +34,4 @@ namespace ai
         m_name = Name;
         m_pDM = pDM;
     }
-}
+}  // namespace ai

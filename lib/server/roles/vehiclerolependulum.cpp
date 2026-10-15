@@ -147,7 +147,8 @@ namespace ai
         double const cosB = cos(m_angle) * prototype->m_B;
         float const dx = static_cast<float>(sinA * m_Direction.x - cosB * m_Direction.y);
         float const dz = static_cast<float>(cosB * m_Direction.x + sinA * m_Direction.y);
-        double const scaledTime = elapsedTime / sqrt(double(prototype->m_B) * prototype->m_B + double(prototype->m_A) * prototype->m_A);
+        double const scaledTime =
+            elapsedTime / sqrt(double(prototype->m_B) * prototype->m_B + double(prototype->m_A) * prototype->m_A);
         m_angle = static_cast<float>(v->GetMaxSpeed() * scaledTime * 0.30000001f + m_angle);
         if (m_angle > 18.849556f)
         {
@@ -176,7 +177,8 @@ namespace ai
     VehicleRolePendulumPrototypeInfo const* VehicleRolePendulum::GetPrototypeInfo() const
     {
         // RVA 0x7FD940 - NOTE: the prototype is cast without a type check.
-        return static_cast<VehicleRolePendulumPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<VehicleRolePendulumPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRolePendulum::CreateObject()

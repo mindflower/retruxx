@@ -324,8 +324,7 @@ int CBButton::CreateChildren()
         auto* patChild = static_cast<m3d::ui::Wnd*>(child);
 
         auto* copy = static_cast<m3d::ui::Wnd*>(M3D_KERNEL->New(patChild->GetClassNameA()));
-        if (!copy ||
-            !copy->Create(patChild->GetText(), patChild->GetStyle(), patChild->GetBounds(), patChild->GetId()))
+        if (!copy || !copy->Create(patChild->GetText(), patChild->GetStyle(), patChild->GetBounds(), patChild->GetId()))
         {
             continue;
         }
@@ -392,8 +391,7 @@ int CBButton::CreateChildren()
     m3d::Object* picture = GetChildByName(m_aif.m_wndPictureName);
     if (!picture || !picture->IsKindOf(&m3d::ui::Wnd::m_classWnd))
     {
-        M3D_LOG_INFO(
-            "Make control error: control " + m_aif.m_wndPictureName + " is not found or incorrect type");
+        M3D_LOG_INFO("Make control error: control " + m_aif.m_wndPictureName + " is not found or incorrect type");
         return 0;
     }
 
@@ -424,8 +422,7 @@ int CBButton::FullUpdate()
 
     m_wndName->SetText(part->GetFullDescriptionWithAffixes());
     m_wndDurability->SetText(CStr(static_cast<int>(part->Durability().maxValue().get())));
-    m_wndResistPiercing->SetText(
-        CStr(static_cast<int>(part->GetDurabilityCoeffForDamageType(ai::DAMAGE_PIERCING))));
+    m_wndResistPiercing->SetText(CStr(static_cast<int>(part->GetDurabilityCoeffForDamageType(ai::DAMAGE_PIERCING))));
     m_wndResistBlast->SetText(CStr(static_cast<int>(part->GetDurabilityCoeffForDamageType(ai::DAMAGE_BLAST))));
     m_wndResistEnergy->SetText(CStr(static_cast<int>(part->GetDurabilityCoeffForDamageType(ai::DAMAGE_ENERGY))));
     m_wndWeight->SetText(CStr(static_cast<int>(part->GetMass())));

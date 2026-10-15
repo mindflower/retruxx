@@ -319,7 +319,7 @@ namespace m3d
                 }
                 m_pFileData = nullptr;
                 unsigned size = 0;
-                scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+                scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
                 if (fileStream->Open(_fname, IStream::OPEN_READ))
                 {
                     size = fileStream->GetSize();

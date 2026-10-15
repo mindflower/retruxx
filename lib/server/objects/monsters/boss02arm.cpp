@@ -165,7 +165,13 @@ namespace ai
                 {
                     // NOTE: the container is left where it is, physics still disabled.
                     theProcessManager->PostMessageA(
-                        GE_UNSUBSCRIBE, m_loadObjId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+                        GE_UNSUBSCRIBE,
+                        m_loadObjId,
+                        GetId(),
+                        0.0f,
+                        m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+                        m3d::AIParam(),
+                        1);
                     m_loadObjId = -1;
                     _SetCustomState(CUSTOM_NONE);
                     CauseEvent(GE_BOSS_ARM_ACTION_FINISHED, 0.0f, m3d::AIParam(), m3d::AIParam());
@@ -192,7 +198,13 @@ namespace ai
                     container->SetCollisionMode(BossMetalArmLoad::COLLIDE_NORMAL);
                     container->SetLinearVelocity(_GetCurLoadVelocity());
                     theProcessManager->PostMessageA(
-                        GE_UNSUBSCRIBE, m_loadObjId, GetId(), 0.0f, m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+                        GE_UNSUBSCRIBE,
+                        m_loadObjId,
+                        GetId(),
+                        0.0f,
+                        m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+                        m3d::AIParam(),
+                        1);
                     m_loadObjId = -1;
                     _SetCustomState(CUSTOM_NONE);
                     _SetEffectsDisabled();

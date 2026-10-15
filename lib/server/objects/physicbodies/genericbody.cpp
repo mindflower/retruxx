@@ -4,9 +4,9 @@ extern "C" void __cdecl _assert(char const* message, char const* file, unsigned 
 
 namespace ai
 {
-	RT_CLASS_EXPORTS_BEGIN(GenericBody)
+    RT_CLASS_EXPORTS_BEGIN(GenericBody)
     RT_CLASS_EXPORTS_END;
-	RT_CLASS_DEFINE(GenericBody);
+    RT_CLASS_DEFINE(GenericBody);
 
     GenericBody::GenericBody(float massValue)
     {
@@ -19,13 +19,15 @@ namespace ai
         // RVA 0x904510
         // NOTE: the shipped constructor is an assert(0), so a GenericBody can never be
         // built. The class is only here to hold a slot in the body hierarchy.
-        _assert("0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\PhysicBodies\\GenericBody.h", 17);
+        _assert(
+            "0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\PhysicBodies\\GenericBody.h", 17);
     }
 
-    GenericBody::GenericBody(const ai::GenericBody&)
+    GenericBody::GenericBody(ai::GenericBody const&)
     {
         // RVA 0x9044E0 - likewise an assert(0); a body is not copyable.
-        _assert("0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\PhysicBodies\\GenericBody.h", 18);
+        _assert(
+            "0", "e:\\Builders\\ExMachina\\tmpBuildDir5084\\truxx\\Server\\Objects\\PhysicBodies\\GenericBody.h", 18);
     }
 
     GenericBody::~GenericBody() = default;
@@ -80,4 +82,4 @@ namespace ai
             dMassSetSphereTotal(&m_mass, newMassValue, 1.0);
         }
     }
-}
+}  // namespace ai

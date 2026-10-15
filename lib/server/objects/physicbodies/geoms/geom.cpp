@@ -170,7 +170,7 @@ namespace ai
         float aabb[6];
         dGeomGetAABB(this->m_geomId, aabb);
 
-        const float VISCELL_EDGE_LENGTH_INV = 0.0078125;
+        float const VISCELL_EDGE_LENGTH_INV = 0.0078125;
 
         auto x0 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[0]);
         auto x1 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[1]);
@@ -180,7 +180,6 @@ namespace ai
             M3D_LOG_ERR("Error: incorrect cell AABB for geom: x0 = " + CStr(x0) + ", x1 = " + CStr(x1));
             x0 = x1;
         }
-
 
         auto z0 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[4]);
         auto z1 = (int)(float)(VISCELL_EDGE_LENGTH_INV * aabb[5]);
@@ -265,10 +264,8 @@ namespace ai
     void Geom::RelinkToCollisionCells(int physicObjId)
     {
         auto newAabb = ai::Geom::CountCellAabb();
-        if (newAabb.x0 != this->m_curAabb.x0
-            || newAabb.z0 != this->m_curAabb.z0
-            || newAabb.x1 != this->m_curAabb.x1
-            || newAabb.z1 != this->m_curAabb.z1)
+        if (newAabb.x0 != this->m_curAabb.x0 || newAabb.z0 != this->m_curAabb.z0 || newAabb.x1 != this->m_curAabb.x1 ||
+            newAabb.z1 != this->m_curAabb.z1)
         {
             ai::Geom::UnlinkFromCollisionCells(physicObjId);
             ai::Geom::LinkToCollisionCells(physicObjId, &newAabb);
@@ -308,8 +305,7 @@ namespace ai
     {
         // RVA 0x756CA0 - a debug dump of what ODE currently holds for this geom.
         dReal const* const posArray = dGeomGetPosition(m_geomId);
-        xmlNode->SetAttribute(
-            "Position", CStr(CVector(posArray[0], posArray[1], posArray[2])).c_str());
+        xmlNode->SetAttribute("Position", CStr(CVector(posArray[0], posArray[1], posArray[2])).c_str());
 
         // ODE stores a quaternion as w, x, y, z.
         float dq[4];
@@ -325,7 +321,7 @@ namespace ai
                 .c_str());
     }
 
-    Geom::Geom(dxGeom* const geomId, void(* movedCallback)(dxGeom*))
+    Geom::Geom(dxGeom* const geomId, void (*movedCallback)(dxGeom*))
     {
         m_geomId = geomId;
         m_curAabb.x0 = 0;
@@ -336,4 +332,4 @@ namespace ai
         dGeomSetCategoryBits(geomId, 0xFFFFu);
         dGeomSetCollideBits(geomId, 0xFFFFu);
     }
-}
+}  // namespace ai

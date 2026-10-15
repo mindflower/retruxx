@@ -11,66 +11,75 @@ namespace ai
     class Boss04DronePrototypeInfo : public ai::ComplexPhysicObjPrototypeInfo
     {
     public:
-        /* 0x0090 */ float m_maxLinearVelocity;
+        float m_maxLinearVelocity;
         Boss04DronePrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0094 */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class Boss04Drone : public ai::ComplexPhysicObj
     {
         friend class Boss04DronePrototypeInfo;
 
     protected:
-        virtual  ~Boss04Drone() override /* 0x00 */;
+        virtual ~Boss04Drone() override;
 
     private:
-        Boss04Drone(const ai::Boss04DronePrototypeInfo& prototypeInfo);
-        Boss04Drone(const ai::Boss04Drone&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        Boss04Drone(ai::Boss04DronePrototypeInfo const& prototypeInfo);
+        Boss04Drone(ai::Boss04Drone const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBoss04Drone;
-        virtual const ai::Boss04DronePrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
+        virtual ai::Boss04DronePrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        static void __fastcall RegisterProperty(const char*, int, ai::eGObjPropertySaveStatus);
+        static void RegisterProperty(char const*, int, ai::eGObjPropertySaveStatus);
 
     public:
-        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override /* 0x00 */;
-        virtual void GetPropertiesNames(retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> >& Props) const override /* 0x00 */;
-        virtual void GetPropertiesIDs(retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& Props) const override /* 0x00 */;
-        virtual CStr GetPropertyName(int id) const override /* 0x00 */;
-        virtual bool SetPropertyById(int propertyId, const m3d::AIParam& newValue) override /* 0x00 */;
-        virtual int GetPropertyId(const char* PropertyName) const override /* 0x00 */;
+        virtual ai::eGObjPropertySaveStatus GetPropertySaveStatus(int id) const override;
+        virtual void GetPropertiesNames(
+            retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>>& Props) const override;
+        virtual void GetPropertiesIDs(
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& Props) const override;
+        virtual CStr GetPropertyName(int id) const override;
+        virtual bool SetPropertyById(int propertyId, m3d::AIParam const& newValue) override;
+        virtual int GetPropertyId(char const* PropertyName) const override;
 
     protected:
-        static inline retruxx::map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int> > > m_propertiesMap;
-        static inline retruxx::map<int, enum ai::eGObjPropertySaveStatus, retruxx::less<int>, retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus> > > m_propertiesSaveStatesMap;
-        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
-        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override /* 0x00 */;
+        static inline retruxx::
+            map<CStr, int, ai::Obj::LessNoCaseCStr, retruxx::allocator<retruxx::pair<CStr const, int>>>
+                m_propertiesMap;
+        static inline retruxx::map<
+            int,
+            enum ai::eGObjPropertySaveStatus,
+            retruxx::less<int>,
+            retruxx::allocator<retruxx::pair<int const, enum ai::eGObjPropertySaveStatus>>>
+            m_propertiesSaveStatesMap;
+        virtual bool _GetPropertyDefaultInternal(int propertyId, m3d::AIParam& retVal) const override;
+        virtual bool _GetPropertyInternal(int propertyId, m3d::AIParam& retVal) const override;
 
     public:
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0xb0 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0xb8 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-        void SetFlyPathName(const CStr& flyPathName);
-        virtual void InflictDamage(const ai::DamageInfo& damageInfo) override /* 0x00 */;
-        static void __fastcall Registration();
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        void SetFlyPathName(CStr const& flyPathName);
+        virtual void InflictDamage(ai::DamageInfo const& damageInfo) override;
+        static void Registration();
         float GetMaxHealth() const;
         float GetHealth() const;
         void SetCustomControl(bool bCustomControl);
 
     private:
-        /* 0x014c */ CStr m_flyPathName;
-        /* 0x0158 */ m3d::CameraPath* m_currentFlyPath;
-        /* 0x015c */ float m_currentFlyTime;
-        /* 0x0160 */ bool m_bCustomControl;
+        CStr m_flyPathName;
+        m3d::CameraPath* m_currentFlyPath;
+        float m_currentFlyTime;
+        bool m_bCustomControl;
         void _RecalcFlyPath();
         void _UpdateLookAtPlayer();
-    }; /* size: 0x0164 */
-}
+    };
+}  // namespace ai

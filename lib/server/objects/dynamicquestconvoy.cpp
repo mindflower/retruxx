@@ -116,7 +116,8 @@ namespace ai
     DynamicQuestConvoyPrototypeInfo const* DynamicQuestConvoy::GetPrototypeInfo() const
     {
         // RVA 0x747880
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestConvoyPrototypeInfo const);
+        return RT_DYNCAST(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestConvoyPrototypeInfo const);
     }
 
     m3d::Class* DynamicQuestConvoy::GetBaseClass()
@@ -187,16 +188,14 @@ namespace ai
         if (m_caravanId != -1)
         {
             m3d::AIParam targetReached(static_cast<int>(GE_TARGET_REACHED));
-            theProcessManager->PostMessageA(
-                GE_UNSUBSCRIBE, m_caravanId, GetId(), 0.0, targetReached, {}, 1);
+            theProcessManager->PostMessageA(GE_UNSUBSCRIBE, m_caravanId, GetId(), 0.0, targetReached, {}, 1);
             m3d::AIParam objectDie(static_cast<int>(GE_OBJECT_DIE));
             theProcessManager->PostMessageA(GE_UNSUBSCRIBE, m_caravanId, GetId(), 0.0, objectDie, {}, 1);
         }
         if (m_targetLocationId != -1)
         {
             m3d::AIParam entersLocation(static_cast<int>(GE_OBJECT_ENTERS_LOCATION));
-            theProcessManager->PostMessageA(
-                GE_UNSUBSCRIBE, m_targetLocationId, GetId(), 0.0, entersLocation, {}, 1);
+            theProcessManager->PostMessageA(GE_UNSUBSCRIBE, m_targetLocationId, GetId(), 0.0, entersLocation, {}, 1);
         }
         m_caravanId = -1;
         m_targetLocationId = -1;
@@ -221,8 +220,7 @@ namespace ai
         }
 
         Obj* const target = theObjects->GetEntityByObjId(GetTargetObjId());
-        if (!target ||
-            (!target->IsKindOf(&ai::Location::m_classLocation) && !target->IsKindOf(&ai::Town::m_classTown)))
+        if (!target || (!target->IsKindOf(&ai::Location::m_classLocation) && !target->IsKindOf(&ai::Town::m_classTown)))
         {
             M3D_LOG_ERR("Error: invalid target for " + GetDebugDescription());
             if (target)
@@ -277,8 +275,7 @@ namespace ai
         CVector const delta = target->GetPosition() - hirer->GetPosition();
 
         int const reward = static_cast<int>(
-            playerVehicle->GetSchwarz() * (sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) *
-                                          0.001) *
+            playerVehicle->GetSchwarz() * (sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) * 0.001) *
             prototypeInfo->m_playerSchwarzPart);
         return reward > prototypeInfo->m_minReward ? reward : prototypeInfo->m_minReward;
     }
@@ -301,8 +298,7 @@ namespace ai
         m3d::AIParam objectDie(static_cast<int>(GE_OBJECT_DIE));
         theProcessManager->PostMessageA(GE_SUBSCRIBE, caravanId, GetId(), 0.0, objectDie, {}, 1);
         m3d::AIParam entersLocation(static_cast<int>(GE_OBJECT_ENTERS_LOCATION));
-        theProcessManager->PostMessageA(
-            GE_SUBSCRIBE, targetLocationId, GetId(), 0.0, entersLocation, {}, 1);
+        theProcessManager->PostMessageA(GE_SUBSCRIBE, targetLocationId, GetId(), 0.0, entersLocation, {}, 1);
 
         m_caravanId = caravanId;
         m_targetLocationId = targetLocationId;
@@ -366,4 +362,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
-}
+}  // namespace ai

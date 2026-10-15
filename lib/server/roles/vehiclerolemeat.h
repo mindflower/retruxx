@@ -28,6 +28,7 @@ namespace ai
         virtual void setTargetObj(Obj const*);
         virtual m3d::Class* GetClass() const;
         virtual VehicleRoleMeatPrototypeInfo const* GetPrototypeInfo() const;
+
     protected:
         virtual ~VehicleRoleMeat();
 
@@ -46,4 +47,4 @@ namespace ai
         int m_chaseTargetId;
         bool m_needCreateChaseTactics;
     };
-}
+}  // namespace ai

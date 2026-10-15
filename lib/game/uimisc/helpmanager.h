@@ -4,6 +4,7 @@
 class HelpManager : public m3d::Object
 {
     friend class TruxxUiManager;
+
 public:
     enum HelpId
     {
@@ -53,25 +54,29 @@ public:
     };
 
 public:
-    void ShowHelp(const CStr& strHelpId, bool bAllowDisableAutoHelp);
+    void ShowHelp(CStr const& strHelpId, bool bAllowDisableAutoHelp);
     int GameDataUpdate(void* data, int dataType);
     void Clear();
     void EnableAutoHelp(bool bEnable);
     bool IsAutoHelpEnabled() const;
-    CStr GetHelpMsgByHelpId(const CStr& strHelpId) const;
-    CStr GetHelpTitleByHelpId(const CStr& strHelpId) const;
-    static HelpManager::HelpId __fastcall Str2EnumeredHelpId(const CStr& strHelpId);
-    static CStr __fastcall Enumered2StrHelpId(HelpManager::HelpId helpId);
+    CStr GetHelpMsgByHelpId(CStr const& strHelpId) const;
+    CStr GetHelpTitleByHelpId(CStr const& strHelpId) const;
+    static HelpManager::HelpId Str2EnumeredHelpId(CStr const& strHelpId);
+    static CStr Enumered2StrHelpId(HelpManager::HelpId helpId);
     void ResetAutoHelp();
 
-    using PredefinedHelpWindowsMap = std::map<enum HelpManager::HelpId, int, std::less<enum HelpManager::HelpId>, std::allocator<std::pair<enum HelpManager::HelpId const, int> > >;
+    using PredefinedHelpWindowsMap = std::map<
+        enum HelpManager::HelpId,
+        int,
+        std::less<enum HelpManager::HelpId>,
+        std::allocator<std::pair<enum HelpManager::HelpId const, int>>>;
     using PredefinedHelpWindowsPair = std::pair<enum HelpManager::HelpId, int>;
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_strTitleSuffix;
-        AuxInfo(const HelpManager::AuxInfo&);
+        CStr m_strTitleSuffix;
+        AuxInfo(HelpManager::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x000c */
+    };
 
 protected:
     void ShowHelpEnumered(HelpManager::HelpId helpId, bool bAllowDisableAutoHelp);
@@ -82,20 +87,25 @@ protected:
     bool IsHelpIdValidForCurrentInterfaceState(HelpManager::HelpId helpId) const;
     void HideCurrentHelpWindow();
     int GetCurHelpWndGuiId() const;
-    void GetAllHelpWndGuiIds(std::vector<int, std::allocator<int> >& guiIds) const;
+    void GetAllHelpWndGuiIds(std::vector<int, std::allocator<int>>& guiIds) const;
     bool WasHelpShown(HelpManager::HelpId helpId) const;
     ProfileParam GetProfileParamIdByHelpId(HelpManager::HelpId helpId) const;
     void MarkHelpAsShown(HelpManager::HelpId helpId);
-    /* 0x0034 */ std::map<enum HelpManager::HelpId, int, std::less<enum HelpManager::HelpId>, std::allocator<std::pair<enum HelpManager::HelpId const, int> > > m_predefinedHelpWindows;
-    /* 0x0040 */ HelpManager::AuxInfo m_aif;
+    std::map<
+        enum HelpManager::HelpId,
+        int,
+        std::less<enum HelpManager::HelpId>,
+        std::allocator<std::pair<enum HelpManager::HelpId const, int>>>
+        m_predefinedHelpWindows;
+    HelpManager::AuxInfo m_aif;
     HelpManager();
-    HelpManager(const HelpManager& rhs);
+    HelpManager(HelpManager const& rhs);
 
 public:
-    virtual  ~HelpManager() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~HelpManager() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classHelpManager;
-}; /* size: 0x004c */
+};

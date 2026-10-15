@@ -54,4 +54,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
-}
+}  // namespace ai

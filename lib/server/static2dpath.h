@@ -5,24 +5,24 @@
 
 namespace ai
 {
-    class Static2DPath :  public m3d::Object
+    class Static2DPath : public m3d::Object
     {
     public:
         void Remove(int);
-        static m3d::Object * CreateObject();
-        static m3d::Class * GetBaseClass();
-        virtual m3d::Object * Clone();
-        void Push(float,float);
-        int GetCount() const ;
-        virtual m3d::Class * GetClass() const ;
-        float GetX(int) const ;
-        float GetY(int) const ;
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Object* Clone();
+        void Push(float, float);
+        int GetCount() const;
+        virtual m3d::Class* GetClass() const;
+        float GetX(int) const;
+        float GetY(int) const;
         virtual ~Static2DPath();
-        std::vector<CVector,std::allocator<CVector> > asVector();
+        std::vector<CVector, std::allocator<CVector>> asVector();
 
     protected:
         Static2DPath();
-        Static2DPath(Static2DPath const &);
+        Static2DPath(Static2DPath const&);
 
     public:
         RT_CLASS_DECLARE(Static2DPath);
@@ -30,4 +30,4 @@ namespace ai
     private:
         std::vector<PointBase<float>> m_Points;
     };
-}
+}  // namespace ai

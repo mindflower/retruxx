@@ -14,33 +14,33 @@ namespace m3d
     namespace
     {
         // Property ids the decal nodes and the server trade in.
-        int const DECALS_LIST = 0x2900;   // 10496 - fetch a node's DecalsList
-        int const ADD_DECAL = 0x2901;     // 10497 - stamp a new decal on a node
-        int const RECALC_DECALS = 0x2902; // 10498 - re-fit decals to a new mesh
+        int const DECALS_LIST = 0x2900;    // 10496 - fetch a node's DecalsList
+        int const ADD_DECAL = 0x2901;      // 10497 - stamp a new decal on a node
+        int const RECALC_DECALS = 0x2902;  // 10498 - re-fit decals to a new mesh
 
         // The void* every DataServer::Model carries is, for this server, the
         // decal's description as read from its .xml.
         struct DecalProto
         {
-            /* 0x0000 */ float m_width = 0.1f;
-            /* 0x0004 */ float m_height = 0.1f;
-            /* 0x0008 */ float m_depth = 0.1f;
-            /* 0x000c */ rend::TexHandle m_texture;
+            float m_width = 0.1f;
+            float m_height = 0.1f;
+            float m_depth = 0.1f;
+            rend::TexHandle m_texture;
         };
 
         // What an SgDecalsNode hands the server for the decal properties: the
         // payload plus the node the decals live on.
         struct DecalParams
         {
-            /* 0x0000 */ void* m_data;
-            /* 0x0004 */ SgNode* m_node;
+            void* m_data;
+            SgNode* m_node;
         };
 
         // And what it hands RenderItem.
         struct DecalRenderParams
         {
-            /* 0x0000 */ CMatrix* m_transform;
-            /* 0x0004 */ SgNode* m_node;
+            CMatrix* m_transform;
+            SgNode* m_node;
         };
 
         DecalsList* GetDecalsList(SgNode* node)
@@ -242,10 +242,10 @@ namespace m3d
 
     DecalsServer::DecalsServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("decals", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("decals", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
         DecalsList::LoadShaders();
     }
@@ -276,4 +276,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

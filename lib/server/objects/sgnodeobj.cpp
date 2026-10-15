@@ -320,11 +320,20 @@ namespace ai
         // defaults to the identity.
         switch (propertyId)
         {
-            case 4: retVal = ZeroVector; return true;
-            case 5: retVal = IdentityQuaternion; return true;
-            case 7: retVal = 1.0f; return true;
-            case 44: retVal = GetPrototypeInfo()->GetEngineModelName(); return true;
-            default: return Obj::_GetPropertyDefaultInternal(propertyId, retVal);
+        case 4:
+            retVal = ZeroVector;
+            return true;
+        case 5:
+            retVal = IdentityQuaternion;
+            return true;
+        case 7:
+            retVal = 1.0f;
+            return true;
+        case 44:
+            retVal = GetPrototypeInfo()->GetEngineModelName();
+            return true;
+        default:
+            return Obj::_GetPropertyDefaultInternal(propertyId, retVal);
         }
     }
 
@@ -333,11 +342,20 @@ namespace ai
         // RVA 0x82F920
         switch (propertyId)
         {
-            case 4: retVal = m_position; return true;
-            case 5: retVal = m_rotation; return true;
-            case 7: retVal = m_scale; return true;
-            case 44: retVal = m_modelName; return true;
-            default: return Obj::_GetPropertyInternal(propertyId, retVal);
+        case 4:
+            retVal = m_position;
+            return true;
+        case 5:
+            retVal = m_rotation;
+            return true;
+        case 7:
+            retVal = m_scale;
+            return true;
+        case 44:
+            retVal = m_modelName;
+            return true;
+        default:
+            return Obj::_GetPropertyInternal(propertyId, retVal);
         }
     }
 

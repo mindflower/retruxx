@@ -16,10 +16,10 @@ int statsInited = 0;
 
 struct PointLightStats
 {
-    /* 0x0000 */ int numLightsToRender = 0;
-    /* 0x0004 */ int numLightCellsRendered = 0;
-    /* 0x0008 */ int numLightModelsRendered = 0;
-    /* 0x000c */ int curFrame = 0;
+    int numLightsToRender = 0;
+    int numLightCellsRendered = 0;
+    int numLightModelsRendered = 0;
+    int curFrame = 0;
 
     void Zero()
     {
@@ -27,8 +27,7 @@ struct PointLightStats
         int numLightCellsRendered = 0;
         int numLightModelsRendered = 0;
     }
-
-}; /* size: 0x0010 */
+};
 
 namespace m3d
 {
@@ -142,7 +141,8 @@ namespace m3d
             renderer->SetStageState(1, rend::BM_ALPHA, rend::TS_NONE);
 
             // Once a frame, print what the previous frame's lights cost and start counting afresh.
-            if (M3D_ENGINE_CFG.m_g_showProjectorsStats.GetB() && stats_0.curFrame != M3D_KERNEL->GetTimer().GetCurFrame())
+            if (M3D_ENGINE_CFG.m_g_showProjectorsStats.GetB() &&
+                stats_0.curFrame != M3D_KERNEL->GetTimer().GetCurFrame())
             {
                 renderer->PushZbState(rend::ZB_DISABLE);
                 M3D_APP->SetFont(CStr("Lucida Console"), 10.0f, 1, M3D_APP->m_codePage.CodePage);
@@ -206,7 +206,8 @@ namespace m3d
             roadShader->SetFloat(rend::IEffect::User_float_param, radius);
             roadShader->SetVector3(rend::IEffect::User_float3_param, color);
 
-            float const fadeDist = (static_cast<float>(M3D_ENGINE_CFG.m_g_projectorsFarDist.GetI()) - 0.5f) * VISCELL_EDGE_LENGTH;
+            float const fadeDist =
+                (static_cast<float>(M3D_ENGINE_CFG.m_g_projectorsFarDist.GetI()) - 0.5f) * VISCELL_EDGE_LENGTH;
             lsShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
             roadShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
             graph.m_objectLightShader->SetFloat(rend::IEffect::User_float_param2, fadeDist);
@@ -229,7 +230,8 @@ namespace m3d
                 float const dy = pos.y - (cell.m_h1 + cell.m_h0) * 0.5f;
                 float const dz = pos.z - (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH;
                 // The shipped code squares and sums on the x87 stack, hence the double precision.
-                double const dist = sqrt(static_cast<double>(dz) * dz + static_cast<double>(dy) * dy + static_cast<double>(dx) * dx);
+                double const dist =
+                    sqrt(static_cast<double>(dz) * dz + static_cast<double>(dy) * dy + static_cast<double>(dx) * dx);
                 if (static_cast<double>(VISCELL_EDGE_LENGTH) * 0.70700002f + radius > dist)
                 {
                     ls.drawCellOverlayedShader(x, z, lsShader);
@@ -268,7 +270,9 @@ namespace m3d
                 renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_TEXTURE);
                 renderer->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
                 M3D_APP->m_serverAnimatedModels->RenderNodeSet(
-                    nodesVector.empty() ? nullptr : nodesVector.data(), static_cast<unsigned int>(nodesVector.size()), rni);
+                    nodesVector.empty() ? nullptr : nodesVector.data(),
+                    static_cast<unsigned int>(nodesVector.size()),
+                    rni);
                 renderer->SetAlphaTest(0);
                 renderer->SetStageState(0, rend::BM_COLOR, rend::TS_DIFFUSE);
                 renderer->SetStageState(0, rend::BM_ALPHA, rend::TS_NONE);
@@ -301,10 +305,10 @@ namespace m3d
 
     LightsServer::LightsServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("point lights", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("point lights", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
     }
 

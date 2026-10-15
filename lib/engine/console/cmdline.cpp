@@ -8,7 +8,10 @@ namespace m3d
         // above 127 (signed chars).
         m_cmdLine = cmdStr;
         m_params.clear();
-        auto const isSeparator = [](char c) { return c <= ' ' || c == 127; };
+        auto const isSeparator = [](char c)
+        {
+            return c <= ' ' || c == 127;
+        };
         for (char const* c = cmdStr; *c;)
         {
             if (isSeparator(*c))
@@ -45,4 +48,4 @@ namespace m3d
         }
         return false;
     }
-}
+}  // namespace m3d

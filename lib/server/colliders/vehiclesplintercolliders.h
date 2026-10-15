@@ -3,13 +3,13 @@
 
 namespace m3d
 {
-	class Object;
+    class Object;
 }
 
 namespace ai
 {
-	int CollideParticleSplinter(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
-	int CollidePOAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
-	int CollideVehicleSplinterAndLandscape(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
-	int CollideParticleSplinterAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
-}
+    int CollideParticleSplinter(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+    int CollidePOAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+    int CollideVehicleSplinterAndLandscape(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+    int CollideParticleSplinterAndWater(m3d::Object*, m3d::Object*, dContact*, unsigned int&, bool);
+}  // namespace ai

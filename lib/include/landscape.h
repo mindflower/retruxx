@@ -56,12 +56,12 @@ namespace m3d
                 return m_data[index];
             }
 
-            const T& operator[](int index) const
+            T const& operator[](int index) const
             {
                 return m_data[index];
             }
 
-            void push_back(const T& shit)
+            void push_back(T const& shit)
             {
                 if (m_numItems < m_maxItems)
                 {
@@ -80,11 +80,11 @@ namespace m3d
                 return m_numItems;
             }
 
-            /* 0x0000 */ T* m_data = nullptr;
-            /* 0x0004 */ int m_numItems = 0;
-            /* 0x0008 */ int m_maxItems = 0;
-        }; /* size: 0x000c */
-    }
+            T* m_data = nullptr;
+            int m_numItems = 0;
+            int m_maxItems = 0;
+        };
+    }  // namespace cmn
 
     enum CliffGeometryTypes
     {
@@ -119,160 +119,170 @@ namespace m3d
 
     protected:
         Landscape();
-        Landscape(const m3d::Landscape& ls);
+        Landscape(m3d::Landscape const& ls);
 
     public:
-        virtual ~Landscape() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual ~Landscape() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* CreateObject();
         static m3d::Class* GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classLandscape;
 
-        using GeomObjectList = retruxx::set<m3d::GeomObject*, retruxx::less<m3d::GeomObject*>, retruxx::allocator<m3d::GeomObject*> >;
+        using GeomObjectList =
+            retruxx::set<m3d::GeomObject*, retruxx::less<m3d::GeomObject*>, retruxx::allocator<m3d::GeomObject*>>;
 
         struct CollisionCellItem
         {
-            /* 0x0000 */ retruxx::set<m3d::GeomObject*, retruxx::less<m3d::GeomObject*>, retruxx::allocator<m3d::GeomObject*> > m_geomsList;
-            /* 0x000c */ bool m_wasEnabledLastFrame;
-            /* 0x000d */ bool m_bMustCheck;
+            retruxx::set<m3d::GeomObject*, retruxx::less<m3d::GeomObject*>, retruxx::allocator<m3d::GeomObject*>>
+                m_geomsList;
+            bool m_wasEnabledLastFrame;
+            bool m_bMustCheck;
             CollisionCellItem();
             ~CollisionCellItem();
             void InsertPhysicObjId(int objId);
             void ErasePhysicObjId(int objId);
             void InsertObstacle(ai::Obstacle* ob);
             void EraseObstacle(ai::Obstacle* ob);
-            const retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& GetPhysicObjIds() const;
-            const retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >& GetObstacles() const;
-            /* 0x000e */ char Padding_152[2];
-            /* 0x0010 */ retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> > m_physicObjIds;
-            /* 0x001c */ retruxx::set<ref_ptr<ai::Obstacle>, retruxx::less<ref_ptr<ai::Obstacle> >, retruxx::allocator<ref_ptr<ai::Obstacle> > >* m_obstacles;
-        }; /* size: 0x0020 */
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>> const& GetPhysicObjIds() const;
+            retruxx::set<
+                ref_ptr<ai::Obstacle>,
+                retruxx::less<ref_ptr<ai::Obstacle>>,
+                retruxx::allocator<ref_ptr<ai::Obstacle>>> const&
+                GetObstacles() const;
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>> m_physicObjIds;
+            retruxx::set<
+                ref_ptr<ai::Obstacle>,
+                retruxx::less<ref_ptr<ai::Obstacle>>,
+                retruxx::allocator<ref_ptr<ai::Obstacle>>>* m_obstacles;
+        };
 
     public:
-        /* 0x01d8 */ m3d::Landscape::CollisionCellItem** m_oCollisionitems;
-        /* 0x01dc */ m3d::GeomObject* m_terrainObject;
-        /* 0x01e0 */ int m_maxLOD;
+        m3d::Landscape::CollisionCellItem** m_oCollisionitems;
+        m3d::GeomObject* m_terrainObject;
+        int m_maxLOD;
 
         class CollisionInfo
         {
         public:
-            /* 0x0000 */ int m_tag;
-            /* 0x0004 */ int m_numVerts;
-            /* 0x0008 */ CVector* m_verts;
-            /* 0x000c */ int m_numTris;
-            /* 0x0010 */ unsigned short* m_tris;
-            /* 0x0014 */ Aabb m_box;
-            /* 0x002c */ Obb m_obb;
-            CollisionInfo(const m3d::Landscape::CollisionInfo&);
+            int m_tag;
+            int m_numVerts;
+            CVector* m_verts;
+            int m_numTris;
+            unsigned short* m_tris;
+            Aabb m_box;
+            Obb m_obb;
+            CollisionInfo(m3d::Landscape::CollisionInfo const&);
             CollisionInfo();
             ~CollisionInfo();
-            void Create(int numVerts, CVector* verts, int numTris, unsigned short* tris, const CMatrix& toWorld);
-            float TraceRay(const CVector& org, const CVector& dir);
+            void Create(int numVerts, CVector* verts, int numTris, unsigned short* tris, CMatrix const& toWorld);
+            float TraceRay(CVector const& org, CVector const& dir);
             float GetHeight(float x, float y);
             void Draw(unsigned int clr);
-        }; /* size: 0x0074 */
+        };
 
-        using CollInfoVec = retruxx::vector<m3d::Landscape::CollisionInfo*, retruxx::allocator<m3d::Landscape::CollisionInfo*> >;
+        using CollInfoVec =
+            retruxx::vector<m3d::Landscape::CollisionInfo*, retruxx::allocator<m3d::Landscape::CollisionInfo*>>;
         class CollInfoVecIter;
 
     public:
-        /* 0x01e4 */ retruxx::vector<m3d::Landscape::CollisionInfo*, retruxx::allocator<m3d::Landscape::CollisionInfo*> > m_collisions;
-        /* 0x01f4 */ float* m_heightMap;
-        /* 0x01f8 */ short* m_waterMap;
-        /* 0x01fc */ CVector* m_vnormal;
-        /* 0x0200 */ retruxx::vector<m3d::rend::IbHandle, retruxx::allocator<m3d::rend::IbHandle> > m_landIbConst;
-        /* 0x0210 */ m3d::rend::VbHandle m_landUVVb;
-        /* 0x0214 */ m3d::rend::VbHandle m_landVb;
-        /* 0x0218 */ m3d::rend::IbHandle m_waterIb[16];
-        /* 0x0258 */ m3d::rend::VbHandle m_waterVb;
-        /* 0x025c */ m3d::rend::IQuery* m_waterQueries[3];
-        /* 0x0268 */ int m_currWaterQuery;
-        /* 0x026c */ bool m_isWaterVisible;
-        /* 0x026d */ bool m_currentWaterVis;
-        /* 0x026e */ char Padding_157[2];
-        /* 0x0270 */ m3d::rend::IbHandle m_shoresIb;
-        /* 0x0274 */ m3d::rend::VbHandle m_shoresVb;
-        /* 0x0278 */ m3d::rend::IEffect* m_shoresShader;
-        /* 0x027c */ m3d::rend::VbHandle m_solidVb;
-        /* 0x0280 */ m3d::rend::IbHandle m_solidIb[4];
-        /* 0x0290 */ m3d::rend::IHlslShader* m_solidVs;
-        /* 0x0294 */ m3d::rend::IHlslShader* m_solidPs;
-        /* 0x0298 */ m3d::rend::IHlslShader* m_solidBindVs;
-        /* 0x029c */ m3d::rend::IHlslShader* m_solidBindPs;
-        /* 0x02a0 */ float m_bindDevider;
-        /* 0x02a4 */ m3d::rend::IHlslShader* m_solidDeepVs;
-        /* 0x02a8 */ m3d::rend::IHlslShader* m_solidDeepPs;
-        /* 0x02ac */ m3d::rend::IHlslShader* m_landscapeVs;
-        /* 0x02b0 */ m3d::rend::IHlslShader* m_landscapePsFP;
-        /* 0x02b4 */ m3d::rend::IHlslShader* m_landscapePsSP;
-        /* 0x02b8 */ CMatrix m_matScale;
-        /* 0x02f8 */ int vertsPerCell;
-        /* 0x02fc */ int trisPerCell[4];
+        retruxx::vector<m3d::Landscape::CollisionInfo*, retruxx::allocator<m3d::Landscape::CollisionInfo*>>
+            m_collisions;
+        float* m_heightMap;
+        short* m_waterMap;
+        CVector* m_vnormal;
+        retruxx::vector<m3d::rend::IbHandle, retruxx::allocator<m3d::rend::IbHandle>> m_landIbConst;
+        m3d::rend::VbHandle m_landUVVb;
+        m3d::rend::VbHandle m_landVb;
+        m3d::rend::IbHandle m_waterIb[16];
+        m3d::rend::VbHandle m_waterVb;
+        m3d::rend::IQuery* m_waterQueries[3];
+        int m_currWaterQuery;
+        bool m_isWaterVisible;
+        bool m_currentWaterVis;
+        m3d::rend::IbHandle m_shoresIb;
+        m3d::rend::VbHandle m_shoresVb;
+        m3d::rend::IEffect* m_shoresShader;
+        m3d::rend::VbHandle m_solidVb;
+        m3d::rend::IbHandle m_solidIb[4];
+        m3d::rend::IHlslShader* m_solidVs;
+        m3d::rend::IHlslShader* m_solidPs;
+        m3d::rend::IHlslShader* m_solidBindVs;
+        m3d::rend::IHlslShader* m_solidBindPs;
+        float m_bindDevider;
+        m3d::rend::IHlslShader* m_solidDeepVs;
+        m3d::rend::IHlslShader* m_solidDeepPs;
+        m3d::rend::IHlslShader* m_landscapeVs;
+        m3d::rend::IHlslShader* m_landscapePsFP;
+        m3d::rend::IHlslShader* m_landscapePsSP;
+        CMatrix m_matScale;
+        int vertsPerCell;
+        int trisPerCell[4];
         void BuildSolidLandscape();
 
         struct WaveSets
         {
-            /* 0x0000 */ float m_tcomp = -1.0f;
-            /* 0x0004 */ float m_tlevel = 0.1f;
-            /* 0x0008 */ float m_tamplitude = 0.25f;
-            /* 0x000c */ float m_tphase = 0.0f;
-            /* 0x0010 */ float m_tfreq = 0.2f;
-            /* 0x0014 */ float m_scomp = -1.0f;
-            /* 0x0018 */ float m_slevel = 2.0f;
-            /* 0x001c */ float m_samplitude = 0.89999998f;
-            /* 0x0020 */ float m_sphase = 0.15000001f;
-            /* 0x0024 */ float m_sfreq = 0.2f;
-            /* 0x0028 */ rend::TexHandle m_texHandle;
-        }; /* size: 0x002c */
+            float m_tcomp = -1.0f;
+            float m_tlevel = 0.1f;
+            float m_tamplitude = 0.25f;
+            float m_tphase = 0.0f;
+            float m_tfreq = 0.2f;
+            float m_scomp = -1.0f;
+            float m_slevel = 2.0f;
+            float m_samplitude = 0.89999998f;
+            float m_sphase = 0.15000001f;
+            float m_sfreq = 0.2f;
+            rend::TexHandle m_texHandle;
+        };
 
     public:
-        /* 0x030c */ retruxx::vector<m3d::Landscape::WaveSets, retruxx::allocator<m3d::Landscape::WaveSets> > m_waves;
+        retruxx::vector<m3d::Landscape::WaveSets, retruxx::allocator<m3d::Landscape::WaveSets>> m_waves;
 
-        using CVectorVec = retruxx::vector<CVector, retruxx::allocator<CVector> >;
+        using CVectorVec = retruxx::vector<CVector, retruxx::allocator<CVector>>;
 
     public:
-        /* 0x031c */ retruxx::vector<retruxx::vector<CVector, retruxx::allocator<CVector> >, retruxx::allocator<retruxx::vector<CVector, retruxx::allocator<CVector> > > > m_shoreLines;
-        /* 0x032c */ retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> > m_noShoresSet;
-        /* 0x0338 */ m3d::rend::VertexXYZNCT2* m_dummyVB;
-        /* 0x033c */ unsigned short* m_remappedIndices;
-        /* 0x0340 */ unsigned short* m_lsIndicesDubb;
-        /* 0x0344 */ int m_ver;
-        /* 0x0348 */ CPlane m_waterPlane;
-        /* 0x0360 */ CClipper m_frustumCull;
-        /* 0x0778 */ int m_numWaterCells;
-        /* 0x077c */ int m_drawRadius;
-        /* 0x0780 */ int m_landscapeClip0;
-        /* 0x0784 */ int m_landscapeClip1;
-        /* 0x0788 */ int m_landscapeClip2;
-        /* 0x078c */ float m_landscapeClip0z;
-        /* 0x0790 */ float m_landscapeClip1z;
-        /* 0x0794 */ float m_landscapeClip2z;
-        /* 0x0798 */ float m_landscapeClip0zSq;
-        /* 0x079c */ float m_landscapeClip1zSq;
-        /* 0x07a0 */ float m_landscapeClip2zSq;
-        /* 0x07a4 */ int m_saveClip[3];
+        retruxx::vector<
+            retruxx::vector<CVector, retruxx::allocator<CVector>>,
+            retruxx::allocator<retruxx::vector<CVector, retruxx::allocator<CVector>>>>
+            m_shoreLines;
+        retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int>> m_noShoresSet;
+        m3d::rend::VertexXYZNCT2* m_dummyVB;
+        unsigned short* m_remappedIndices;
+        unsigned short* m_lsIndicesDubb;
+        int m_ver;
+        CPlane m_waterPlane;
+        CClipper m_frustumCull;
+        int m_numWaterCells;
+        int m_drawRadius;
+        int m_landscapeClip0;
+        int m_landscapeClip1;
+        int m_landscapeClip2;
+        float m_landscapeClip0z;
+        float m_landscapeClip1z;
+        float m_landscapeClip2z;
+        float m_landscapeClip0zSq;
+        float m_landscapeClip1zSq;
+        float m_landscapeClip2zSq;
+        int m_saveClip[3];
         void PushLsClip(int, int);
         void PopLsClip();
 
         struct CellParams
         {
-            /* 0x0000 */ float m_h0;
-            /* 0x0004 */ float m_h1;
-            /* 0x0008 */ bool m_iswatercell = false;
-            /* 0x0009 */ char Padding_153[3];
-            /* 0x000c */ float m_minwater;
-            /* 0x0010 */ float m_maxwater;
-            /* 0x0014 */ float m_lodDelta[5];
-            /* 0x0028 */ bool m_lodDeltaCreated = false;
-            /* 0x0029 */ char Padding_154[3];
-            /* 0x002c */ float m_normalTheta = 0.0;
-            /* 0x0030 */ CVector m_normalAverage;
-        }; /* size: 0x003c */
+            float m_h0;
+            float m_h1;
+            bool m_iswatercell = false;
+            float m_minwater;
+            float m_maxwater;
+            float m_lodDelta[5];
+            bool m_lodDeltaCreated = false;
+            float m_normalTheta = 0.0;
+            CVector m_normalAverage;
+        };
 
     public:
         int isWaterCell(int x, int y) const;
-        unsigned int getLsColorByDist(const CVector&, const CVector&, unsigned char);
+        unsigned int getLsColorByDist(CVector const&, CVector const&, unsigned char);
         void DrawWaterLayer();
         void QueryWaterVisibility();
         void StartWaterQuery();
@@ -282,15 +292,15 @@ namespace m3d
         int ReflectionWaterClipCell(int, int);
         void renderZGuard();
         void drawPolygonOverlayed(CVector2*, int, unsigned int);
-        /* 0x07b0 */ CClipper m_reflectedFrustum;
-        /* 0x0bc8 */ m3d::CVar m_lockVis;
+        CClipper m_reflectedFrustum;
+        m3d::CVar m_lockVis;
         void CreateHeights(m3d::Landscape::CellParams* dest, int ls, int cellSize);
         void CreateLod();
         void ReleaseLod();
-        /* 0x0bf4 */ m3d::Landscape::CellParams* m_cellParams;
-        /* 0x0bf8 */ m3d::Landscape::CellParams* m_drawedCellParams;
-        virtual void HandleCommand(int cmdID, const m3d::CConsoleParams& params) override /* 0x00 */;
-        virtual bool HandleCVar(const m3d::CVar* cvar, const m3d::CConsoleParams& params) override /* 0x04 */;
+        m3d::Landscape::CellParams* m_cellParams;
+        m3d::Landscape::CellParams* m_drawedCellParams;
+        virtual void HandleCommand(int cmdID, m3d::CConsoleParams const& params) override;
+        virtual bool HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params) override;
 
         enum VisibilityMode
         {
@@ -312,76 +322,87 @@ namespace m3d
 
     public:
         void DrawSolidLandscape(m3d::Landscape::LandRenderMode landMode, int lod);
-        /* 0x0bfc */ m3d::CFlare m_flares;
-        /* 0x0c14 */ bool m_dirtyReflection;
-        /* 0x0c15 */ char Padding_158[3];
-        /* 0x0c18 */ m3d::rend::TexHandle m_texRtReflection;
-        /* 0x0c1c */ m3d::rend::TexHandle m_texRtRefraction;
-        /* 0x0c20 */ m3d::rend::TexHandle m_baseWaterTex;
-        /* 0x0c24 */ m3d::rend::TexHandle m_texLightmap;
-        /* 0x0c28 */ int m_texNormalMapSize;
+        m3d::CFlare m_flares;
+        bool m_dirtyReflection;
+        m3d::rend::TexHandle m_texRtReflection;
+        m3d::rend::TexHandle m_texRtRefraction;
+        m3d::rend::TexHandle m_baseWaterTex;
+        m3d::rend::TexHandle m_texLightmap;
+        int m_texNormalMapSize;
 
         struct AlphaMask
         {
-            /* 0x0000 */ CStr m_name;
-            using maskVector = retruxx::vector<m3d::rend::TexHandle, retruxx::allocator<m3d::rend::TexHandle> >;
-            /* 0x000c */ retruxx::vector<m3d::rend::TexHandle, retruxx::allocator<m3d::rend::TexHandle> > m_texMasks[4];
-        }; /* size: 0x004c */
+            CStr m_name;
+            using maskVector = retruxx::vector<m3d::rend::TexHandle, retruxx::allocator<m3d::rend::TexHandle>>;
+            retruxx::vector<m3d::rend::TexHandle, retruxx::allocator<m3d::rend::TexHandle>> m_texMasks[4];
+        };
 
         struct LandType
         {
-            /* 0x0000 */ CStr m_name;
-            /* 0x000c */ int m_passmask;
-            /* 0x0010 */ int m_alphaset;
-            /* 0x0014 */ int m_priority;
-            /* 0x0018 */ retruxx::vector<int, retruxx::allocator<int> > m_texIndices;
-        }; /* size: 0x0028 */
+            CStr m_name;
+            int m_passmask;
+            int m_alphaset;
+            int m_priority;
+            retruxx::vector<int, retruxx::allocator<int>> m_texIndices;
+        };
 
     public:
-        /* 0x0c2c */ retruxx::vector<m3d::Landscape::AlphaMask, retruxx::allocator<m3d::Landscape::AlphaMask> > m_AlphaSets;
-        /* 0x0c3c */ retruxx::vector<m3d::Landscape::LandType, retruxx::allocator<m3d::Landscape::LandType> > m_Lands;
-        /* 0x0c4c */ m3d::CIntHash<int> m_hashIdxToPass;
-        /* 0x0c74 */ m3d::CStrHash<int> m_hashAlphaToLand;
+        retruxx::vector<m3d::Landscape::AlphaMask, retruxx::allocator<m3d::Landscape::AlphaMask>> m_AlphaSets;
+        retruxx::vector<m3d::Landscape::LandType, retruxx::allocator<m3d::Landscape::LandType>> m_Lands;
+        m3d::CIntHash<int> m_hashIdxToPass;
+        m3d::CStrHash<int> m_hashAlphaToLand;
         int GetNumAlphas() const;
         CStr GetAlphaName(int) const;
         int GetUsedAlphaIdx(int) const;
         CStr GetUsedAlpha(int) const;
         int GetNumLands() const;
-        const CStr& GetLandName(int) const;
-        int GetLandByName(const CStr&) const;
+        CStr const& GetLandName(int) const;
+        int GetLandByName(CStr const&) const;
         int GetNumTexturesInLand(int) const;
         int GetTexIndexFromLand(int, int) const;
         void DeleteIndexFromLand(int, int);
         int GetPriorityofLand(int) const;
         void SetPriorityofLand(int, int);
         void SetAlphaofLand(int, int);
-        /* 0x0c80 */ int m_CurAlphaSet;
-        int AddOneTexture(const CStr& name);
+        int m_CurAlphaSet;
+        int AddOneTexture(CStr const& name);
         void UpdateTexturesFilters();
-        /* 0x0c84 */ char* m_passedCells;
-        /* 0x0c88 */ unsigned char* m_cliffHeightMap;
-        /* 0x0c8c */ unsigned int* m_normalMap;
-        void AddCollisionTris(int tag, int numVerts, CVector* verts, int numTris, unsigned short* tris, const CMatrix& toWorld);
+        char* m_passedCells;
+        unsigned char* m_cliffHeightMap;
+        unsigned int* m_normalMap;
+        void AddCollisionTris(
+            int tag,
+            int numVerts,
+            CVector* verts,
+            int numTris,
+            unsigned short* tris,
+            CMatrix const& toWorld);
         void RemoveCollisionTris(int tag);
         void GetVisCellHeights(float& h0, float& h1, int x, int y) const;
         void GetWaterCellHeights(float& h0, float& h1, int x, int z) const;
         void GetDrawedCellHeights(float& h0, float& h1, int x, int y) const;
         bool IsThisVisCellHasWater(int x, int z) const;
-        static void __fastcall Register();
+        static void Register();
 
     protected:
-        /* 0x0c90 */ m3d::CWorld* m_owner;
+        m3d::CWorld* m_owner;
         static m3d::RenderModes m_renderMode;
-        bool traceLineThruBox(float&, float*, const CVector&, const CVector&);
-        bool traceLineThruCellLs0(float& ttt, int cellX, int cellZ, const CVector& start, const CVector& dir);
-        bool traceLineThruCellLs(float& ttt, int cellX, int cellZ, const CVector& start, const CVector& dir, bool allowColInfo);
+        bool traceLineThruBox(float&, float*, CVector const&, CVector const&);
+        bool traceLineThruCellLs0(float& ttt, int cellX, int cellZ, CVector const& start, CVector const& dir);
+        bool traceLineThruCellLs(
+            float& ttt,
+            int cellX,
+            int cellZ,
+            CVector const& start,
+            CVector const& dir,
+            bool allowColInfo);
 
         struct wallCells
         {
-            /* 0x0000 */ int m_x;
-            /* 0x0004 */ int m_y;
+            int m_x;
+            int m_y;
             wallCells(int, int);
-        }; /* size: 0x0008 */
+        };
 
     protected:
         int IsBackfaced(int xx, int yy, m3d::rend::Cull cull);
@@ -394,29 +415,38 @@ namespace m3d
         };
 
     protected:
-        /* 0x0c94 */ m3d::Landscape::RenderTypes m_lastState;
-        /* 0x0c98 */ int m_firstpasscounter;
-        /* 0x0c9c */ int m_otherpasscounter;
+        m3d::Landscape::RenderTypes m_lastState;
+        int m_firstpasscounter;
+        int m_otherpasscounter;
 
         struct TIVChunk
         {
-            /* 0x0000 */ retruxx::vector<m3d::rend::VbHandle, retruxx::allocator<m3d::rend::VbHandle> > m_vbHandle;
-            /* 0x0010 */ m3d::rend::TexHandle m_texHandle;
-            /* 0x0014 */ unsigned int m_offsetsmap[65536];
-            /* 0x40014 */ unsigned short m_banknumber[65536];
-            /* 0x60014 */ unsigned short m_numCellsPerCellMap[4096];
-            /* 0x62014 */ int iotherPassOffset = 0;
-            /* 0x62018 */ int iotherPassBankNumber = 0;
-        }; /* size: 0x6201c */
+            retruxx::vector<m3d::rend::VbHandle, retruxx::allocator<m3d::rend::VbHandle>> m_vbHandle;
+            m3d::rend::TexHandle m_texHandle;
+            unsigned int m_offsetsmap[65536];
+            unsigned short m_banknumber[65536];
+            unsigned short m_numCellsPerCellMap[4096];
+            int iotherPassOffset = 0;
+            int iotherPassBankNumber = 0;
+        };
 
-        using TexVec = retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*> >;
+        using TexVec = retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*>>;
         class TexVecIter;
 
     protected:
-        /* 0x0ca0 */ retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int> >* m_texSetsmap;
-        void DrawCells0(const m3d::cmn::vector<unsigned int>& cellsPerTex, m3d::Landscape::RenderTypes RenderType);
-        void DrawCellsFast0(const m3d::cmn::vector<unsigned int>& cellsPerTex, m3d::Landscape::TIVChunk& tivchunk, m3d::Landscape::RenderTypes RenderType);
-        void BuildCells0(m3d::rend::VertexLandscape* vert, m3d::Landscape::TIVChunk& chunk, int& vofs, const m3d::cmn::vector<unsigned int>& cellsPerTex, m3d::Landscape::RenderTypes RenderType, retruxx::vector<int, retruxx::allocator<int> >& bankSwitchingMap);
+        retruxx::set<unsigned int, retruxx::less<unsigned int>, retruxx::allocator<unsigned int>>* m_texSetsmap;
+        void DrawCells0(m3d::cmn::vector<unsigned int> const& cellsPerTex, m3d::Landscape::RenderTypes RenderType);
+        void DrawCellsFast0(
+            m3d::cmn::vector<unsigned int> const& cellsPerTex,
+            m3d::Landscape::TIVChunk& tivchunk,
+            m3d::Landscape::RenderTypes RenderType);
+        void BuildCells0(
+            m3d::rend::VertexLandscape* vert,
+            m3d::Landscape::TIVChunk& chunk,
+            int& vofs,
+            m3d::cmn::vector<unsigned int> const& cellsPerTex,
+            m3d::Landscape::RenderTypes RenderType,
+            retruxx::vector<int, retruxx::allocator<int>>& bankSwitchingMap);
         void BuildUVSet();
         void CompleteShores();
         void RecursiveEnableShore(unsigned char* marks, int x, int z);
@@ -443,134 +473,135 @@ namespace m3d
         void ReleaseOdeCollisionData();
         void LinkNodeObstacleToCells(m3d::SgNode* node);
         void LinkObstacleToCells(ai::Obstacle* obstacle);
-        void LinkPassMapCellToCollisionCell(const PointBase<int>& cellPos);
+        void LinkPassMapCellToCollisionCell(PointBase<int> const& cellPos);
         void DrawCollisionGeoms(bool allGeoms);
         void DrawGeom(dxGeom* geom);
         void DrawJoint(dxJoint* joint);
-        void DrawMassBox(dMass* mass, const CVector& pos, const Quaternion& rot);
+        void DrawMassBox(dMass* mass, CVector const& pos, Quaternion const& rot);
         void GetFogStartAndEnd(float& s, float& e) const;
-        static void __fastcall SetRenderMode(m3d::RenderModes);
+        static void SetRenderMode(m3d::RenderModes);
         void PostServersLoad();
         int GenerateShoreLine();
         void EnableShoreRegion(int x, int z);
         void DisableShoreRegion(int x, int z);
         void ChangeShoreState(int x, int z, bool enable);
-        bool traceLineThruWallCells(const CVector&, CVector&, bool);
+        bool traceLineThruWallCells(CVector const&, CVector&, bool);
         void setDrawRadius(int clip0, int clip1, int clip2);
-        /* 0x0ca4 */ m3d::rend::IEffect* overlayShader;
+        m3d::rend::IEffect* overlayShader;
         void SetOverlayShader(m3d::rend::IEffect* os);
         int getClip0() const;
-        void DrawCells(const m3d::cmn::vector<unsigned int>& cellsPerTex, unsigned int clr);
-        void DrawCellsOverlayedEditor(const m3d::cmn::vector<unsigned int>& cellsPerTex, unsigned int clr);
+        void DrawCells(m3d::cmn::vector<unsigned int> const& cellsPerTex, unsigned int clr);
+        void DrawCellsOverlayedEditor(m3d::cmn::vector<unsigned int> const& cellsPerTex, unsigned int clr);
         float getHgtAtHfPoint(int x, int y) const;
         void setHgtAtHfPoint(int x, int y, float h);
         unsigned int getClrAtHfPoint(int, int) const;
         void setClrAtHfPoint(int, int, unsigned int);
-        const CVector& getNormalAtPoint(int, int) const;
+        CVector const& getNormalAtPoint(int, int) const;
         void getMinMaxHeightForBox(float* box, float buldgeY);
-        static void __fastcall SetGameRenderMode();
-        static void __fastcall SetEditorRenderMode();
+        static void SetGameRenderMode();
+        static void SetEditorRenderMode();
 
         struct TileInfo
         {
-            /* 0x0000 */ int m_texIndex0;
-            /* 0x0004 */ int m_angle = 0;
-            /* 0x0008 */ int m_texIndices[4];
-            /* 0x0018 */ int m_texFlags[4];
-            /* 0x0028 */ int m_numTexs;
-            /* 0x002c */ int m_maskIndex;
-            /* 0x0030 */ int m_rotate;
-        }; /* size: 0x0034 */
+            int m_texIndex0;
+            int m_angle = 0;
+            int m_texIndices[4];
+            int m_texFlags[4];
+            int m_numTexs;
+            int m_maskIndex;
+            int m_rotate;
+        };
 
         struct DrawCliffInfo
         {
-            /* 0x0000 */ m3d::AnimatedModel* m_modelToDraw;
-            /* 0x0004 */ int m_cliffSetId;
-            /* 0x0008 */ int m_cliffSubIndex;
-            /* 0x000c */ int m_cliffType;
-            /* 0x0010 */ m3d::CliffGeometryTypes m_cliffGeometryType;
-            /* 0x0014 */ m3d::CliffOpenEndOrientation m_cliffOrientation;
-            /* 0x0018 */ bool m_mirrored;
-            /* 0x0019 */ char Padding_156[3];
-            /* 0x001c */ int m_rotate;
-            /* 0x0020 */ int m_numVertices;
-            /* 0x0024 */ int m_numIndices;
-            /* 0x0028 */ unsigned int m_mask;
-            /* 0x002c */ float m_heightToDraw;
-            /* 0x0030 */ CVector m_scale;
-            /* 0x003c */ m3d::rend::VbHandle m_vbHandle;
+            m3d::AnimatedModel* m_modelToDraw;
+            int m_cliffSetId;
+            int m_cliffSubIndex;
+            int m_cliffType;
+            m3d::CliffGeometryTypes m_cliffGeometryType;
+            m3d::CliffOpenEndOrientation m_cliffOrientation;
+            bool m_mirrored;
+            int m_rotate;
+            int m_numVertices;
+            int m_numIndices;
+            unsigned int m_mask;
+            float m_heightToDraw;
+            CVector m_scale;
+            m3d::rend::VbHandle m_vbHandle;
             ~DrawCliffInfo();
-            DrawCliffInfo(const m3d::Landscape::DrawCliffInfo&);
+            DrawCliffInfo(m3d::Landscape::DrawCliffInfo const&);
             DrawCliffInfo();
-        }; /* size: 0x0040 */
+        };
 
         struct CliffSet
         {
-            /* 0x0000 */ CStr m_name;
-            /* 0x000c */ unsigned int m_id;
-            /* 0x0010 */ float m_height;
-            /* 0x0014 */ CStr m_baseTileName;
-            /* 0x0020 */ CStr m_topTileName;
-            /* 0x002c */ CVector m_scale;
-            /* 0x0038 */ retruxx::vector<m3d::AnimatedModel*, retruxx::allocator<m3d::AnimatedModel*> > m_cliffShapeHandles[5];
+            CStr m_name;
+            unsigned int m_id;
+            float m_height;
+            CStr m_baseTileName;
+            CStr m_topTileName;
+            CVector m_scale;
+            retruxx::vector<m3d::AnimatedModel*, retruxx::allocator<m3d::AnimatedModel*>> m_cliffShapeHandles[5];
             ~CliffSet();
-        }; /* size: 0x0088 */
+        };
 
     public:
         m3d::rend::TexHandle GetTexByIdx(int) const;
 
     private:
-        /* 0x0ca8 */ m3d::CIntHash<int> m_hashTexToIndex;
-        /* 0x0cd0 */ m3d::CStrHash<int> m_texToIdx;
-        /* 0x0cdc */ m3d::CIntHash<int> m_hashIdxToLandType;
-        /* 0x0d04 */ retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*> > m_tilesTextures;
-        /* 0x0d14 */ m3d::Landscape::TileInfo* m_tiles;
-        /* 0x0d18 */ unsigned int* m_colormap;
-        /* 0x0d1c */ float m_uvForAngles[4][25][2];
+        m3d::CIntHash<int> m_hashTexToIndex;
+        m3d::CStrHash<int> m_texToIdx;
+        m3d::CIntHash<int> m_hashIdxToLandType;
+        retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*>> m_tilesTextures;
+        m3d::Landscape::TileInfo* m_tiles;
+        unsigned int* m_colormap;
+        float m_uvForAngles[4][25][2];
 
         struct AlphaSetUnit
         {
-            /* 0x0000 */ float m_uvForAngles[4][25][2];
-        }; /* size: 0x0320 */
+            float m_uvForAngles[4][25][2];
+        };
 
         struct TextureAlphaSet
         {
-            /* 0x0000 */ m3d::Landscape::AlphaSetUnit m_sets[8][5];
-        }; /* size: 0x7d00 */
+            m3d::Landscape::AlphaSetUnit m_sets[8][5];
+        };
 
     private:
-        /* 0x103c */ m3d::Landscape::TextureAlphaSet m_setAndUVs;
-        /* 0x8d3c */ m3d::cmn::vector<m3d::cmn::vector<unsigned int> > m_cellsPerTex;
-        /* 0x8d48 */ CStr m_pathTile;
-        /* 0x8d54 */ bool m_loadAllTextures;
-        /* 0x8d55 */ char Padding_159[3];
-        /* 0x8d58 */ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_usedTexturesList;
+        m3d::Landscape::TextureAlphaSet m_setAndUVs;
+        m3d::cmn::vector<m3d::cmn::vector<unsigned int>> m_cellsPerTex;
+        CStr m_pathTile;
+        bool m_loadAllTextures;
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>> m_usedTexturesList;
 
     public:
         m3d::rend::TexHandle GetLightmapTexture() const;
-        void ReloadLightmapTexture(const CStr& fileName);
+        void ReloadLightmapTexture(CStr const& fileName);
         void SetAllTexturesLoading(bool value);
-        void GetTilesLoadParams(m3d::CIntHash<int>**, m3d::CStrHash<int>**, retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*> >**);
+        void GetTilesLoadParams(
+            m3d::CIntHash<int>**,
+            m3d::CStrHash<int>**,
+            retruxx::vector<m3d::Landscape::TIVChunk*, retruxx::allocator<m3d::Landscape::TIVChunk*>>**);
         void AddIdxToLand(int, int);
 
     protected:
-        int LoadTiles(const CStr& filename);
+        int LoadTiles(CStr const& filename);
         void FreeTiles();
-        /* 0x8d64 */ retruxx::vector<int, retruxx::allocator<int> > m_lsNumIndices;
-        /* 0x8d74 */ int m_wtNumTris[16];
+        retruxx::vector<int, retruxx::allocator<int>> m_lsNumIndices;
+        int m_wtNumTris[16];
 
     public:
-        bool LoadNormalMap(const CStr& FileName);
-        bool SaveNormalMap(const CStr& FileName);
-        bool LoadShoreLine(const CStr& FileName);
-        bool SaveShoreLine(const CStr& FileName);
+        bool LoadNormalMap(CStr const& FileName);
+        bool SaveNormalMap(CStr const& FileName);
+        bool LoadShoreLine(CStr const& FileName);
+        bool SaveShoreLine(CStr const& FileName);
         void DrawSpotInColorMap(float, float, int);
         unsigned char GetColor(float x, float y);
         void ReadTileInfo(int loadExtraTextures);
         void SaveTileInfo();
         int GetPassForTexture(int) const;
         float GetFloatToShortScale() const;
-        const CStr& GetPathToTiles() const;
+        CStr const& GetPathToTiles() const;
         int GetLsSize() const;
         int GetTileSize() const;
         float GetScaleForTile() const;
@@ -579,18 +610,18 @@ namespace m3d
         void SetTileRot(int, int, int);
         void SetTile(int, int, int);
         m3d::rend::TexHandle GetTexHandleFromList(unsigned int num) const;
-        /* 0x8db4 */ int m_drawtextured;
+        int m_drawtextured;
         int RecalcNormalMap(int x, int y, int sizex, int sizey);
         void RecalcUV();
         void CreateHelperStructures();
         int GetNumTiles() const;
-        bool Save16bitDisplace(const CStr& Name, int stripe);
-        bool SaveColorMap(const CStr& Name, int stripe);
-        int SaveCameraMap(const CStr& Name, int stripe);
+        bool Save16bitDisplace(CStr const& Name, int stripe);
+        bool SaveColorMap(CStr const& Name, int stripe);
+        int SaveCameraMap(CStr const& Name, int stripe);
         short* GetWaterPtr();
         m3d::Landscape::TileInfo* GetTilesPtr();
         float* GetHeightPtr();
-        const m3d::Landscape::TileInfo& GetTileInfo(int x, int y) const;
+        m3d::Landscape::TileInfo const& GetTileInfo(int x, int y) const;
         void SwitchDrawMode();
         float GetLsHeight(float x, float y) const;
         void SetLsHeight(float x, float y, float h);
@@ -598,12 +629,12 @@ namespace m3d
         float GetHeightWithCollisions(float x, float y, bool forVehicle) const;
         CVector getNormal(float xx, float yy);
         unsigned int GetRotatedInt(unsigned int, int) const;
-        bool WaterSave(const CStr&);
+        bool WaterSave(CStr const&);
         void WaterClear();
         int Load();
         int New(float heightLevel);
-        /*virtual*/ void Render() /* 0x00 */;
-        virtual int Render(m3d::SgNodeRenderFlags flags, void* data, int dt, int curTime) override /* 0x00 */;
+        /*virtual*/ void Render();
+        virtual int Render(m3d::SgNodeRenderFlags flags, void* data, int dt, int curTime) override;
         void Update();
         void UpdateVis(bool vp);
         void Restore();
@@ -614,22 +645,33 @@ namespace m3d
         void ReleaseReflectionRefractionTextures();
         float getWaterHeight(int x, int z) const;
         float getCameraHeight(float x, float z) const;
-        void drawSpriteOverlayed(unsigned int clr, const CVector& o, const CVector& scale, float rotZ);
-        void drawSpriteOverlayedProjected(unsigned int clr, const CVector& o, const CMatrix& projectorMatrix, const CClipper& clipper);
+        void drawSpriteOverlayed(unsigned int clr, CVector const& o, CVector const& scale, float rotZ);
+        void drawSpriteOverlayedProjected(
+            unsigned int clr,
+            CVector const& o,
+            CMatrix const& projectorMatrix,
+            CClipper const& clipper);
         void drawSpriteOverlayed2(float cx, float cz, float hsx, float hsz, unsigned int clr, bool all);
-        void drawSpriteOverlayed2Projected(float cx, float cz, float hsx, float hsz, unsigned int clr, bool all, const CClipper& clipper);
+        void drawSpriteOverlayed2Projected(
+            float cx,
+            float cz,
+            float hsx,
+            float hsz,
+            unsigned int clr,
+            bool all,
+            CClipper const& clipper);
         void drawCellOverlayedShader(int x, int z, m3d::rend::IEffect* shader);
         void setOwner(m3d::CWorld* cl);
         void ChangedNumberOfUsedTextures(unsigned int numTexs);
-        /* 0x8db8 */ int m_mapSize;
+        int m_mapSize;
 
         struct GrassInstance
         {
-            /* 0x0000 */ CVector pos;
-            /* 0x000c */ float scale;
-            /* 0x0010 */ float sinYaw;
-            /* 0x0014 */ float cosYaw;
-        }; /* size: 0x0018 */
+            CVector pos;
+            float scale;
+            float sinYaw;
+            float cosYaw;
+        };
 
         enum RenderGrassType
         {
@@ -641,74 +683,89 @@ namespace m3d
     public:
         bool InitGrass();
         void DoneGrass();
-        bool AddGrassModel(const char* modelFileName);
+        bool AddGrassModel(char const* modelFileName);
         unsigned int GetNumGrassModels() const;
-        const char* GetGrassModelName(unsigned int modelIdx) const;
-        unsigned int AddGrassInstance(int modelId, const CVector& pos, float yaw, float scale, bool placeOnTerrain);
+        char const* GetGrassModelName(unsigned int modelIdx) const;
+        unsigned int AddGrassInstance(int modelId, CVector const& pos, float yaw, float scale, bool placeOnTerrain);
         void RemoveGrassInstance(unsigned int instance);
         void RemoveGrassTile(int x, int z);
-        void RemoveGrassRadius(const CVector& pos, float radius);
-        void RemoveGrassRectangle(const CVector2& Min, const CVector2& Max);
-        void ScaleGrassRadius(const CVector& pos, float radius, float coeff);
-        void PutGrassToLandscape(const CVector2& Min, const CVector2& Max);
-        unsigned int GetNearestGrassInstance(const CVector& point) const;
+        void RemoveGrassRadius(CVector const& pos, float radius);
+        void RemoveGrassRectangle(CVector2 const& Min, CVector2 const& Max);
+        void ScaleGrassRadius(CVector const& pos, float radius, float coeff);
+        void PutGrassToLandscape(CVector2 const& Min, CVector2 const& Max);
+        unsigned int GetNearestGrassInstance(CVector const& point) const;
         void _dbgGenerateGrass();
-        void RenderGrass(unsigned int numVisibleInstances, m3d::Landscape::GrassInstance** visGrassInstances, int* visModelsForGrassInstances, m3d::Landscape::RenderGrassType rgt);
-        void RenderGrass(const retruxx::deque<retruxx::pair<int, int>, retruxx::allocator<retruxx::pair<int, int> > >& excludedCells);
-        void CollectGrassCell(int x, int z, unsigned int& numVisibleInstances, m3d::Landscape::GrassInstance** visGrassInstances, int* visModelsForGrassInstances);
-        int getGrassModelIdByName(const char* modelFileName) const;
-        bool WriteGrassToXmlFile(const char* fileName);
-        void ReadGrassFromXmlFile(const char* fileName);
+        void RenderGrass(
+            unsigned int numVisibleInstances,
+            m3d::Landscape::GrassInstance** visGrassInstances,
+            int* visModelsForGrassInstances,
+            m3d::Landscape::RenderGrassType rgt);
+        void RenderGrass(
+            retruxx::deque<retruxx::pair<int, int>, retruxx::allocator<retruxx::pair<int, int>>> const& excludedCells);
+        void CollectGrassCell(
+            int x,
+            int z,
+            unsigned int& numVisibleInstances,
+            m3d::Landscape::GrassInstance** visGrassInstances,
+            int* visModelsForGrassInstances);
+        int getGrassModelIdByName(char const* modelFileName) const;
+        bool WriteGrassToXmlFile(char const* fileName);
+        void ReadGrassFromXmlFile(char const* fileName);
 
     private:
-        /* 0x8dbc */ m3d::Profiler* m_profilerDraw;
-        /* 0x8dc0 */ m3d::Profiler* m_profilerUpdateVis;
-        /* 0x8dc4 */ m3d::Profiler* m_profilerDrawGrass;
-        /* 0x8dc8 */ m3d::Profiler* m_profilerDrawWater;
-        /* 0x8dcc */ m3d::DbgCounter* m_countPhysicObjsInCells;
-        /* 0x8dd0 */ m3d::rend::TexHandle m_waveBumpTex;
-        /* 0x8dd4 */ m3d::rend::TexHandle m_waveBumpSmTex;
-        /* 0x8dd8 */ m3d::rend::TexHandle m_fresnelTex;
-        /* 0x8ddc */ m3d::rend::TexHandle m_waveReflMap;
-        /* 0x8de0 */ m3d::rend::IHlslShader* m_waterVs;
-        /* 0x8de4 */ m3d::rend::IHlslShader* m_waterPs;
-        /* 0x8de8 */ m3d::rend::IHlslShader* m_waterDumbVs;
-        /* 0x8dec */ m3d::rend::IHlslShader* m_waterDumbPs;
-        /* 0x8df0 */ int m_waterShaderVersion;
-        /* 0x8df4 */ int m_maxWaterCellPerPass;
+        m3d::Profiler* m_profilerDraw;
+        m3d::Profiler* m_profilerUpdateVis;
+        m3d::Profiler* m_profilerDrawGrass;
+        m3d::Profiler* m_profilerDrawWater;
+        m3d::DbgCounter* m_countPhysicObjsInCells;
+        m3d::rend::TexHandle m_waveBumpTex;
+        m3d::rend::TexHandle m_waveBumpSmTex;
+        m3d::rend::TexHandle m_fresnelTex;
+        m3d::rend::TexHandle m_waveReflMap;
+        m3d::rend::IHlslShader* m_waterVs;
+        m3d::rend::IHlslShader* m_waterPs;
+        m3d::rend::IHlslShader* m_waterDumbVs;
+        m3d::rend::IHlslShader* m_waterDumbPs;
+        int m_waterShaderVersion;
+        int m_maxWaterCellPerPass;
 
-        using CellsToDraw = retruxx::vector<retruxx::pair<unsigned int, float>, retruxx::allocator<retruxx::pair<unsigned int, float> > >;
+        using CellsToDraw =
+            retruxx::vector<retruxx::pair<unsigned int, float>, retruxx::allocator<retruxx::pair<unsigned int, float>>>;
 
     private:
-        /* 0x8df8 */ retruxx::vector<retruxx::pair<unsigned int, float>, retruxx::allocator<retruxx::pair<unsigned int, float> > > waterCellsToDraw[16];
-        /* 0x8ef8 */ CVector4* waterTileInfo;
+        retruxx::vector<retruxx::pair<unsigned int, float>, retruxx::allocator<retruxx::pair<unsigned int, float>>>
+            waterCellsToDraw[16];
+        CVector4* waterTileInfo;
         void DrawNonTransformGeom(dxGeom* geom);
-        /* 0x8efc */ m3d::rend::IHlslShader* m_grassVs;
-        /* 0x8f00 */ m3d::rend::IHlslShader* m_grassPs;
-        /* 0x8f04 */ m3d::Landscape::VisibilityMode m_curVisMode;
+        m3d::rend::IHlslShader* m_grassVs;
+        m3d::rend::IHlslShader* m_grassPs;
+        m3d::Landscape::VisibilityMode m_curVisMode;
         void SetCurVisMode(m3d::Landscape::VisibilityMode visMode);
         m3d::Landscape::VisibilityMode GetCurVisMode() const;
         void RenderRoads();
 
         struct GrassInstancesForModel
         {
-            /* 0x0000 */ int modelId;
-            /* 0x0004 */ int numInstances;
-            /* 0x0008 */ retruxx::vector<m3d::Landscape::GrassInstance*, retruxx::allocator<m3d::Landscape::GrassInstance*> > grass;
-        }; /* size: 0x0018 */
+            int modelId;
+            int numInstances;
+            retruxx::vector<m3d::Landscape::GrassInstance*, retruxx::allocator<m3d::Landscape::GrassInstance*>> grass;
+        };
 
         struct TileGrass
         {
-            /* 0x0000 */ unsigned int numDiffModels;
-            /* 0x0004 */ unsigned int numInstances;
-            /* 0x0008 */ retruxx::vector<m3d::Landscape::GrassInstancesForModel*, retruxx::allocator<m3d::Landscape::GrassInstancesForModel*> > instancesPerModel;
-        }; /* size: 0x0018 */
+            unsigned int numDiffModels;
+            unsigned int numInstances;
+            retruxx::vector<
+                m3d::Landscape::GrassInstancesForModel*,
+                retruxx::allocator<m3d::Landscape::GrassInstancesForModel*>>
+                instancesPerModel;
+        };
 
     public:
-        /* 0x8f08 */ m3d::Landscape::TileGrass** m_grassArray;
-        /* 0x8f0c */ unsigned int m_numGrassModels;
-    }; /* size: 0x8f10 */
-}
+        m3d::Landscape::TileGrass** m_grassArray;
+        unsigned int m_numGrassModels;
+    };
+}  // namespace m3d
 
 // Scratch buffers the grass passes collect a cell into before handing it to
 // Landscape::RenderGrass. They live in the global namespace in the original
@@ -717,20 +774,27 @@ int const MAX_VISIBLE_GRASS_INSTANCES = 2000;
 extern m3d::Landscape::GrassInstance* visGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
 extern int visModelsForGrassInstances[MAX_VISIBLE_GRASS_INSTANCES];
 
-bool intersectTriangle(CVector const& orig, CVector const& dir, CVector const& a, CVector const& b, CVector const& c, float& t, float& u, float& v);
+bool intersectTriangle(
+    CVector const& orig,
+    CVector const& dir,
+    CVector const& a,
+    CVector const& b,
+    CVector const& c,
+    float& t,
+    float& u,
+    float& v);
 
 struct GrassModelInfo
 {
-    /* 0x0000 */ m3d::rend::VbHandle vb;
-    /* 0x0004 */ m3d::rend::IbHandle ib;
-    /* 0x0008 */ m3d::rend::TexHandle tex;
-    /* 0x000c */ unsigned short numVerts;
-    /* 0x000e */ unsigned short numTris;
-    /* 0x0010 */ unsigned short numIndices;
-    /* 0x0012 */ char Padding_121[2];
-    /* 0x0014 */ CStr modelName;
-    /* 0x0020 */ float boundRadius;
-}; /* size: 0x0024 */
+    m3d::rend::VbHandle vb;
+    m3d::rend::IbHandle ib;
+    m3d::rend::TexHandle tex;
+    unsigned short numVerts;
+    unsigned short numTris;
+    unsigned short numIndices;
+    CStr modelName;
+    float boundRadius;
+};
 
 // 0xA17A30 - a fixed table, not a growable one; m_numGrassModels says how many
 // of the slots are in use.

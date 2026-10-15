@@ -8,8 +8,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -30,7 +30,10 @@ namespace ai
 
     public:
         void SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
-        static void __fastcall LoadArticlesFromNode(std::vector<ai::Article, std::allocator<ai::Article> >&, m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        static void LoadArticlesFromNode(
+            std::vector<ai::Article, std::allocator<ai::Article>>&,
+            m3d::cmn::XmlFile*,
+            m3d::cmn::XmlNode const*);
         float getRuntimePriceCoefficient() const;
         void Sell(unsigned int);
         bool IsBuyable() const;
@@ -46,7 +49,7 @@ namespace ai
         void PostLoad();
         void Update(float);
         bool IsSellable() const;
-        static void __fastcall SaveArticlesToNode(std::vector<ai::Article> const&, m3d::cmn::XmlFile*, m3d::cmn::XmlNode*);
+        static void SaveArticlesToNode(std::vector<ai::Article> const&, m3d::cmn::XmlFile*, m3d::cmn::XmlNode*);
         void LoadFromXml(m3d::cmn::XmlFile const*, m3d::cmn::XmlNode const*);
 
     private:
@@ -75,4 +78,4 @@ namespace ai
         float m_RegenerationPeriod;
         float m_AfterLastRegeneration;
     };
-}
+}  // namespace ai

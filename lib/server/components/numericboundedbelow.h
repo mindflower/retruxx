@@ -14,12 +14,12 @@ namespace ai
         using ThisBeforeApplyModifierCallback = ai::MemberFunctionTwoArgsRef<ThisType, ai::Modifier, T, bool>;
 
     public:
-        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
-        /* 0x0018 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
-        /* 0x0020 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
-        /* 0x0028 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
-        /* 0x0030 */ ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
-        /* 0x0038 */ ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
 
         NumericBoundedBelow(T value, T minValue) : m_value{value}, m_minValue{minValue}
         {
@@ -128,7 +128,7 @@ namespace ai
             return m_BeforeMinValueApplyModifier(modifier, oldValue);
         }
 
-        /* 0x0040 */ ai::Numeric<T> m_value;
-        /* 0x005c */ ai::Numeric<T> m_minValue;
-    }; /* size: 0x0078 */
+        ai::Numeric<T> m_value;
+        ai::Numeric<T> m_minValue;
+    };
 }  // namespace ai

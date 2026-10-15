@@ -538,8 +538,8 @@ int WareItem::LoadPattern(m3d::ui::Wnd* pattern)
 
     // The rows are laid out by the list, so the pattern itself sits at the origin.
     m_pattern.m_wndPattern->SetBounds(
-        BoundsBase<float>(0.0f, 0.0f, m_pattern.m_wndPattern->GetBounds().width,
-            m_pattern.m_wndPattern->GetBounds().height),
+        BoundsBase<float>(
+            0.0f, 0.0f, m_pattern.m_wndPattern->GetBounds().width, m_pattern.m_wndPattern->GetBounds().height),
         false);
     return res;
 }
@@ -557,15 +557,17 @@ int WareItem::CreateFromPattern()
     {
         return 0;
     }
-    if (!m_pattern.m_wndPattern || !M3D_APP->IsWndAlive(m_pattern.m_wndPattern, -1) ||
-        !m_pattern.m_wndPattern->Valid())
+    if (!m_pattern.m_wndPattern || !M3D_APP->IsWndAlive(m_pattern.m_wndPattern, -1) || !m_pattern.m_wndPattern->Valid())
     {
         M3D_LOG_INFO("WareItem::CreateFromPattern error - null pattern");
         return 0;
     }
 
-    if (!Create(CStr(), m_pattern.m_wndPattern->GetStyle(), m_pattern.m_wndPattern->GetBounds(),
-                m_pattern.m_wndPattern->GetId()))
+    if (!Create(
+            CStr(),
+            m_pattern.m_wndPattern->GetStyle(),
+            m_pattern.m_wndPattern->GetBounds(),
+            m_pattern.m_wndPattern->GetId()))
     {
         M3D_LOG_INFO("WareItem::CreateFromPattern error - cannot create window");
         return 0;
@@ -627,7 +629,9 @@ int WareItem::CreateChildren()
             if (patBtn->IsImaged())
             {
                 btn->SetImaged(
-                    patBtn->GetImageRegular(), patBtn->GetImageDown(), patBtn->GetImageIn(),
+                    patBtn->GetImageRegular(),
+                    patBtn->GetImageDown(),
+                    patBtn->GetImageIn(),
                     patBtn->GetImageDisabled());
             }
             else
@@ -1503,8 +1507,8 @@ int WareWnd::UpdateOnItemQuickDrop(ItemAcceptInfo const& info)
 void WareWnd::OnDistantMouseIn(ai::GeomRepositoryItem const& item)
 {
     // RVA 0x47BC80 - dragging a ware anywhere on screen highlights its row here.
-    if ((m_gameDataFlags & 1) == 0 || !item.IsValid() || !GetWorkshop() ||
-        !IsItemCompatibleByResourceType(item) || !m_wndWareList)
+    if ((m_gameDataFlags & 1) == 0 || !item.IsValid() || !GetWorkshop() || !IsItemCompatibleByResourceType(item) ||
+        !m_wndWareList)
     {
         return;
     }
@@ -1663,8 +1667,7 @@ int WareWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, 
     {
         // A child reported the mouse left it; if the pointer is outside this
         // window too, the whole window counts as exited.
-        PointBase<float> mousePt(
-            static_cast<float>(M3D_APP->GetMouseX()), static_cast<float>(M3D_APP->GetMouseY()));
+        PointBase<float> mousePt(static_cast<float>(M3D_APP->GetMouseX()), static_cast<float>(M3D_APP->GetMouseY()));
         M3D_RENDERER->AbsToRel(mousePt.x, mousePt.y);
         PointBase<float> const origin = ToScreen(PointBase<float>(0.0f, 0.0f));
         PointBase<float> const local(mousePt.x - origin.x, mousePt.y - origin.y);
@@ -1770,8 +1773,9 @@ int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
         m_wndWareList = wareList;
         if (!m_wndWareList)
         {
-            M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndWareListName +
-                " - cannot find rtti class " + CStr("WareList"));
+            M3D_LOG_INFO(
+                "Make control error: cannot create " + m_aif.m_wndWareListName + " - cannot find rtti class " +
+                CStr("WareList"));
             res = 0;
         }
         else if (!m_wndWareList->CreateFromPattern(static_cast<m3d::ui::Wnd*>(wareListPattern), deleteSrc))
@@ -1824,7 +1828,8 @@ int WareWnd::CreateFromPattern(m3d::ui::Wnd* pattern, bool deleteSrc)
         return wnd;
     };
 
-    m_btnMode = static_cast<m3d::ui::ButtonWnd*>(takeControl(m_aif.m_btnModeName, &m3d::ui::ButtonWnd::m_classButtonWnd));
+    m_btnMode =
+        static_cast<m3d::ui::ButtonWnd*>(takeControl(m_aif.m_btnModeName, &m3d::ui::ButtonWnd::m_classButtonWnd));
     takeControl(m_aif.m_wndSellPricesIcoName, &m3d::ui::Wnd::m_classWnd);
     takeControl(m_aif.m_wndBuyPricesIcoName, &m3d::ui::Wnd::m_classWnd);
     takeControl(m_aif.m_wndAmountsIcoName, &m3d::ui::Wnd::m_classWnd);

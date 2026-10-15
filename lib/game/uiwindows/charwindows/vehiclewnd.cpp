@@ -97,8 +97,8 @@ int VehicleWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_wndCBCharacteristicsName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_wndCBCharacteristicsName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -109,21 +109,22 @@ int VehicleWnd::GameDataSetup()
             m_wndVehicleModel = static_cast<ComplexModelWnd*>(M3D_KERNEL->New("ComplexModelWnd"));
             if (!m_wndVehicleModel)
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndTruckPictureName +
-                             " - cannot find rtti class ComplexModelWnd");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndTruckPictureName +
+                    " - cannot find rtti class ComplexModelWnd");
                 res = 0;
             }
             else if (!m_wndVehicleModel->CreateFromPattern(static_cast<m3d::ui::Wnd*>(pattern), true))
             {
-                M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndTruckPictureName +
-                             " from pattern class");
+                M3D_LOG_INFO(
+                    "Make control error: cannot create " + m_aif.m_wndTruckPictureName + " from pattern class");
                 res = 0;
             }
         }
         else
         {
-            M3D_LOG_INFO("Make control error: control " + m_aif.m_wndTruckPictureName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Make control error: control " + m_aif.m_wndTruckPictureName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -252,11 +253,11 @@ void VehicleWnd::SetVehicleId(int vehicleId)
     }
 
     ChildPanel::SetVehicleId(vehicleId);
-    const int newId = GetVehicleId();
+    int const newId = GetVehicleId();
 
     ai::Vehicle* vehicle = GetVehicle();
-    const ai::Cabin* cabin = vehicle ? vehicle->GetCabin() : nullptr;
-    const ai::Basket* basket = vehicle ? vehicle->GetBasket() : nullptr;
+    ai::Cabin const* cabin = vehicle ? vehicle->GetCabin() : nullptr;
+    ai::Basket const* basket = vehicle ? vehicle->GetBasket() : nullptr;
 
     m_wndVehicleModel->SetObjId(newId);
 
@@ -289,7 +290,7 @@ void VehicleWnd::UpdateVehicleName()
     }
 
     ai::Vehicle* vehicle = GetVehicle();
-    const ai::VehiclePrototypeInfo* proto = vehicle ? vehicle->GetPrototypeInfo() : nullptr;
+    ai::VehiclePrototypeInfo const* proto = vehicle ? vehicle->GetPrototypeInfo() : nullptr;
     if (proto)
     {
         m_lblName->SetText(ai::thePrototypeManager->GetPrototypeFullName(proto->m_prototypeName));
@@ -309,7 +310,7 @@ void VehicleWnd::OnVehiclePartChanged(void* data)
         return;
     }
 
-    const auto* evt = static_cast<const m3d::Event*>(data);
+    auto const* evt = static_cast<m3d::Event const*>(data);
     if (GetVehicleId() != evt->m_intEv[0])
     {
         return;
@@ -321,15 +322,15 @@ void VehicleWnd::OnVehiclePartChanged(void* data)
         return;
     }
 
-    const char* changedPart = evt->m_strEv.c_str();
+    char const* changedPart = evt->m_strEv.c_str();
     if (CStr::my_strcmp(changedPart, "CABIN") == 0)
     {
-        const ai::Cabin* cabin = vehicle->GetCabin();
+        ai::Cabin const* cabin = vehicle->GetCabin();
         m_wndCabinCharacteristics->SetupForCabin(cabin ? cabin->GetId() : -1);
     }
     else if (CStr::my_strcmp(changedPart, "BASKET") == 0)
     {
-        const ai::Basket* basket = vehicle->GetBasket();
+        ai::Basket const* basket = vehicle->GetBasket();
         m_wndBasketCharacteristics->SetupForBasket(basket ? basket->GetId() : -1);
     }
 }
@@ -366,7 +367,7 @@ void VehicleWnd::OnCharacteristicTabSelChanged(void* data)
         return;
     }
 
-    const auto* evt = static_cast<const m3d::Event*>(data);
+    auto const* evt = static_cast<m3d::Event const*>(data);
     if (evt->m_intEv[1] == GetUniqueId())
     {
         return;

@@ -6,12 +6,12 @@ namespace m3d
     // Asks the parent's server where a loadpoint currently is (server item property 0x3004).
     struct PropSrvLoadpoint
     {
-        /* 0x0000 */ m3d::SgNode* m_node;
-        /* 0x0004 */ CVector m_newOrg;
-        /* 0x0010 */ Quaternion m_newRot;
-        /* 0x0020 */ CVector m_newScale;
-        /* 0x002c */ int m_fromLoadpoint;
-    }; /* size: 0x0030 */
+        m3d::SgNode* m_node;
+        CVector m_newOrg;
+        Quaternion m_newRot;
+        CVector m_newScale;
+        int m_fromLoadpoint;
+    };
 
     class SgLoadpointNode : public SgNode
     {
@@ -32,4 +32,4 @@ namespace m3d
     public:
         RT_CLASS_DECLARE(SgLoadpointNode);
     };
-}
+}  // namespace m3d

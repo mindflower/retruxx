@@ -59,8 +59,8 @@ namespace m3d
         topPlane.z = -binormal.z;
         topPlane.w = source.height * 0.5f + b;
 
-        float const n = source.normal.y * source.center.y + source.normal.z * source.center.z +
-            source.normal.x * source.center.x;
+        float const n =
+            source.normal.y * source.center.y + source.normal.z * source.center.z + source.normal.x * source.center.x;
         frontPlane.x = -source.normal.x;
         frontPlane.y = -source.normal.y;
         frontPlane.z = -source.normal.z;
@@ -115,8 +115,8 @@ namespace m3d
 
             float const facing =
                 faceNormal.z * decalNormal.z + faceNormal.y * decalNormal.y + faceNormal.x * decalNormal.x;
-            float const len = sqrt(
-                faceNormal.z * faceNormal.z + faceNormal.y * faceNormal.y + faceNormal.x * faceNormal.x);
+            float const len =
+                sqrt(faceNormal.z * faceNormal.z + faceNormal.y * faceNormal.y + faceNormal.x * faceNormal.x);
             if (facing <= len * 0.25f)
             {
                 continue;
@@ -345,7 +345,10 @@ namespace m3d
 
                 dContactGeom meshContacts[3];
                 int const numContacts = dCollide(
-                    ray->GetGeomId(), static_cast<ai::Geom*>(newGeometry.mesh)->GetGeomId(), 3, meshContacts,
+                    ray->GetGeomId(),
+                    static_cast<ai::Geom*>(newGeometry.mesh)->GetGeomId(),
+                    3,
+                    meshContacts,
                     sizeof(dContactGeom));
                 if (!numContacts)
                 {
@@ -356,13 +359,15 @@ namespace m3d
                 // The contact closest to the old centre wins.
                 CVector pos(meshContacts[0].pos[0], meshContacts[0].pos[1], meshContacts[0].pos[2]);
                 float invLen = static_cast<float>(
-                    1.0 / sqrt(
-                              static_cast<double>(meshContacts[0].normal[1]) * meshContacts[0].normal[1] +
-                              static_cast<double>(meshContacts[0].normal[2]) * meshContacts[0].normal[2] +
-                              static_cast<double>(meshContacts[0].normal[0]) * meshContacts[0].normal[0] +
-                              0.00000011920929f));
+                    1.0 /
+                    sqrt(
+                        static_cast<double>(meshContacts[0].normal[1]) * meshContacts[0].normal[1] +
+                        static_cast<double>(meshContacts[0].normal[2]) * meshContacts[0].normal[2] +
+                        static_cast<double>(meshContacts[0].normal[0]) * meshContacts[0].normal[0] +
+                        0.00000011920929f));
                 CVector normal(
-                    invLen * meshContacts[0].normal[0], meshContacts[0].normal[1] * invLen,
+                    invLen * meshContacts[0].normal[0],
+                    meshContacts[0].normal[1] * invLen,
                     meshContacts[0].normal[2] * invLen);
                 for (int i = 1; i < numContacts; ++i)
                 {
@@ -378,12 +383,13 @@ namespace m3d
                     {
                         pos = CVector(contact.pos[0], contact.pos[1], contact.pos[2]);
                         invLen = static_cast<float>(
-                            1.0 / sqrt(
-                                      static_cast<double>(contact.normal[0]) * contact.normal[0] +
-                                      static_cast<double>(contact.normal[2]) * contact.normal[2] +
-                                      static_cast<double>(contact.normal[1]) * contact.normal[1] +
-                                      0.00000011920929f));
-                        normal = CVector(invLen * contact.normal[0], contact.normal[1] * invLen, contact.normal[2] * invLen);
+                            1.0 /
+                            sqrt(
+                                static_cast<double>(contact.normal[0]) * contact.normal[0] +
+                                static_cast<double>(contact.normal[2]) * contact.normal[2] +
+                                static_cast<double>(contact.normal[1]) * contact.normal[1] + 0.00000011920929f));
+                        normal =
+                            CVector(invLen * contact.normal[0], contact.normal[1] * invLen, contact.normal[2] * invLen);
                     }
                 }
 
@@ -399,13 +405,15 @@ namespace m3d
                     helper = CVector(1.0f, 0.0f, 0.0f);
                 }
                 float const invTangentLen = static_cast<float>(
-                    1.0 / sqrt(
-                              static_cast<double>(helper.x) * helper.x + static_cast<double>(helper.z) * helper.z +
-                              static_cast<double>(helper.y) * helper.y + 0.00000011920929f));
+                    1.0 /
+                    sqrt(
+                        static_cast<double>(helper.x) * helper.x + static_cast<double>(helper.z) * helper.z +
+                        static_cast<double>(helper.y) * helper.y + 0.00000011920929f));
 
                 decal.source.center = pos;
                 decal.source.normal = normal;
-                decal.source.tangent = CVector(invTangentLen * helper.x, helper.y * invTangentLen, helper.z * invTangentLen);
+                decal.source.tangent =
+                    CVector(invTangentLen * helper.x, helper.y * invTangentLen, helper.z * invTangentLen);
                 m_workDecal.Init(decal.source, newGeometry);
                 decal.mesh = newGeometry.mesh;
                 if (!m_workDecal.decalVertexCount || !m_workDecal.decalTriangleCount)
@@ -448,7 +456,8 @@ namespace m3d
             }
             else
             {
-                if (ibOffset + decal.sizeInIb > IB_POOL_SIZE || vbOffset + static_cast<unsigned>(decal.sizeInVb) > VB_POOL_SIZE)
+                if (ibOffset + decal.sizeInIb > IB_POOL_SIZE ||
+                    vbOffset + static_cast<unsigned>(decal.sizeInVb) > VB_POOL_SIZE)
                 {
                     m_decals.erase(it, m_decals.end());
                     break;
@@ -510,8 +519,7 @@ namespace m3d
 
         // Each transform costs four vertex shader constants and ten are spoken
         // for, so a mesh with too many bones simply does not get decals.
-        unsigned const maxTransforms =
-            static_cast<unsigned>((M3D_RENDERER->GetMaxVertexShaderConst() - 10) / 4);
+        unsigned const maxTransforms = static_cast<unsigned>((M3D_RENDERER->GetMaxVertexShaderConst() - 10) / 4);
         if (m_transforms.size() > maxTransforms)
         {
             M3D_LOG_INFO("Decals: too much transforms for shader");
@@ -553,8 +561,7 @@ namespace m3d
         {
             matrices[i] = (m_invBindtransforms[i] * (*m_transforms[i])) * wvp;
         }
-        m_decalsVs->SetMatrixArray(
-            m_decalsVs->GetParamHandleByName("matrices"), matrices, m_transforms.size());
+        m_decalsVs->SetMatrixArray(m_decalsVs->GetParamHandleByName("matrices"), matrices, m_transforms.size());
 
         M3D_RENDERER->SetTexture(0, tex, -1.0);
         M3D_RENDERER->SetToStream0(m_VbPoolField);
@@ -723,7 +730,7 @@ namespace m3d
             m_decalsVs->Release();
             m_decalsVs = nullptr;
         }
-        m_decalsVs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/decals.vs", "DecalsVS", rend::IHlslShader::VS_1_1);
+        m_decalsVs = M3D_RENDERER->NewHlslShader("data/shaders/decals.vs", "DecalsVS", rend::IHlslShader::VS_1_1);
         if (!m_decalsVs)
         {
             SYS_ERROR("m_decalsVs");
@@ -734,7 +741,7 @@ namespace m3d
             m_decalsPs->Release();
             m_decalsPs = nullptr;
         }
-        m_decalsPs = Application::g_pApp->m_renderer->NewHlslShader("data/shaders/decals.ps", "DecalsPS", rend::IHlslShader::PS_1_1);
+        m_decalsPs = M3D_RENDERER->NewHlslShader("data/shaders/decals.ps", "DecalsPS", rend::IHlslShader::PS_1_1);
         if (!m_decalsPs)
         {
             SYS_ERROR("m_decalsPs");
@@ -768,4 +775,4 @@ namespace m3d
         }
         return static_cast<short>(m_transforms.size() - 1);
     }
-}
+}  // namespace m3d

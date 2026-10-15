@@ -17,21 +17,21 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndTitleName = "wndTitle";
-        /* 0x000c */ CStr m_wndMsgName = "wndMsg";
-        /* 0x0018 */ CStr m_wndUpLineName = "wndUpLine";
-        /* 0x0024 */ CStr m_wndDownLineName = "wndDownLine";
-        /* 0x0030 */ CStr m_buttonName = "button_";
-        /* 0x003c */ CStr m_idioticEmbossName = "buttonEmboss_";
-        /* 0x0048 */ CStr m_wndFrameName = "wndFrame";
-        /* 0x0054 */ CStr m_wndBgName = "wndBg";
+        CStr m_wndTitleName = "wndTitle";
+        CStr m_wndMsgName = "wndMsg";
+        CStr m_wndUpLineName = "wndUpLine";
+        CStr m_wndDownLineName = "wndDownLine";
+        CStr m_buttonName = "button_";
+        CStr m_idioticEmbossName = "buttonEmboss_";
+        CStr m_wndFrameName = "wndFrame";
+        CStr m_wndBgName = "wndBg";
         AuxInfo(MsgBox::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0060 */
+    };
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int CloseModal(int ret) override /* 0x124 */;
+    virtual int GameDataSetup() override;
+    virtual int CloseModal(int ret) override;
     int LoadPattern();
     void ClearPattern();
     int CreateFromPattern();
@@ -65,30 +65,30 @@ protected:
         MAX_NUM_BUTTONS = 3,
     };
 
-    /* 0x0224 */ m3d::ui::Wnd* m_wndTitle = nullptr;
-    /* 0x0228 */ m3d::ui::Wnd* m_wndMsg = nullptr;
-    /* 0x022c */ m3d::ui::LineWnd* m_wndUpLine = nullptr;
-    /* 0x0230 */ m3d::ui::LineWnd* m_wndDownLine = nullptr;
-    /* 0x0234 */ m3d::ui::ButtonWnd* m_buttons[3] = {};
-    /* 0x0240 */ m3d::ui::Wnd* m_idioticEmbosses[3] = {};
-    /* 0x024c */ m3d::ui::Wnd* m_wndFrame = nullptr;
-    /* 0x0250 */ m3d::ui::Wnd* m_wndBg = nullptr;
+    m3d::ui::Wnd* m_wndTitle = nullptr;
+    m3d::ui::Wnd* m_wndMsg = nullptr;
+    m3d::ui::LineWnd* m_wndUpLine = nullptr;
+    m3d::ui::LineWnd* m_wndDownLine = nullptr;
+    m3d::ui::ButtonWnd* m_buttons[3] = {};
+    m3d::ui::Wnd* m_idioticEmbosses[3] = {};
+    m3d::ui::Wnd* m_wndFrame = nullptr;
+    m3d::ui::Wnd* m_wndBg = nullptr;
 
     static m3d::ui::Wnd* m_pattern;
     static int m_ref;
-    
-    /* 0x0254 */ unsigned int m_msgBoxFlags = 0;
-    /* 0x0258 */ CStr m_msg;
-    /* 0x0264 */ CStr m_title;
-    /* 0x0270 */ MsgBox::AuxInfo m_aif;
+
+    unsigned int m_msgBoxFlags = 0;
+    CStr m_msg;
+    CStr m_title;
+    MsgBox::AuxInfo m_aif;
     MsgBox();
     MsgBox(MsgBox const& rhs);
 
 public:
-    virtual ~MsgBox() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual ~MsgBox() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classMsgBox;
-}; /* size: 0x02d0 */
+};

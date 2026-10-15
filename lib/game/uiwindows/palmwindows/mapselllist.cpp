@@ -110,7 +110,12 @@ int MapSellItem::GetBuyPrice() const
 }
 
 int MapSellItem::SetUp(
-    int warePrototypeId, int sellPrice, int buyPrice, PointBase<float> const& origin, float maxWidth, bool bLastItem)
+    int warePrototypeId,
+    int sellPrice,
+    int buyPrice,
+    PointBase<float> const& origin,
+    float maxWidth,
+    bool bLastItem)
 {
     // RVA 0xF1870
     if (warePrototypeId == -1)
@@ -347,8 +352,8 @@ int MapSellList::SetUpForObject(ObjectInfo* objectInfo)
     m_objectInfo = objectInfo;
 
     ai::Town* currentTown = M3D_APP->m_pInterfaceManager->GetCurrentTown();
-    bool const useRealObject = currentTown != nullptr &&
-        objectInfo->GetLevelName() == help::GetCurrentLevelName() && objectInfo->GetId() == currentTown->GetId();
+    bool const useRealObject = currentTown != nullptr && objectInfo->GetLevelName() == help::GetCurrentLevelName() &&
+        objectInfo->GetId() == currentTown->GetId();
 
     if (useRealObject)
     {

@@ -12,14 +12,21 @@
 namespace
 {
     // Virtual keys past the DirectInput scan codes, see l_keyNames.
-    constexpr int VKEY_CONTROL = 0x105;
-    constexpr int VKEY_ALT = 0x106;
-    constexpr int VKEY_SHIFT = 0x107;
+    int constexpr VKEY_CONTROL = 0x105;
+    int constexpr VKEY_ALT = 0x106;
+    int constexpr VKEY_SHIFT = 0x107;
 
     // One modifier step of GameImpulse::FilterShifts (inlined three times in the shipped code). Returns false when
     // the key is one of the two variants but the combined state did not change.
     bool FoldModifierKey(
-        int& key, bool& state, int leftKey, int rightKey, int combinedKey, bool& leftDown, bool& rightDown, bool& wasDown)
+        int& key,
+        bool& state,
+        int leftKey,
+        int rightKey,
+        int combinedKey,
+        bool& leftDown,
+        bool& rightDown,
+        bool& wasDown)
     {
         if (key != leftKey && key != rightKey)
         {
@@ -406,7 +413,7 @@ namespace m3d
             {
                 UnbindAll();
             }
-            auto err = g_Kernel->GetScriptServer().executeScriptFile(bindFile.c_str());
+            auto err = M3D_KERNEL->GetScriptServer().executeScriptFile(bindFile.c_str());
             if (err)
             {
                 M3D_LOG_ERR("Key bindings: loading error - " + GetFormattedScriptErrorDesc(err));
@@ -414,7 +421,7 @@ namespace m3d
             }
             else
             {
-                Application::g_pApp->EnqueueMessage(46, -1, 0, 0, 0, {}, {});
+                M3D_APP->EnqueueMessage(46, -1, 0, 0, 0, {}, {});
                 M3D_LOG_INFO("Key bindings: were loaded successfully from file " + bindFile);
             }
             m_bSuppressEvent = false;
@@ -496,8 +503,8 @@ namespace m3d
             M3D_LOG_INFO("Key bindings: fail to init because already is inited");
             return 0;
         }
-        g_Kernel->UnRegisterGlobal("IMPULSES");
-        g_Kernel->RegisterGlobal(this, "IMPULSES");
+        M3D_KERNEL->UnRegisterGlobal("IMPULSES");
+        M3D_KERNEL->RegisterGlobal(this, "IMPULSES");
         m_isInited = true;
         M3D_LOG_INFO("Key bindings: were inited successfully");
         return 1;
@@ -512,7 +519,7 @@ namespace m3d
             return 0;
         }
 
-        int const res = SaveToFile(g_Kernel->GetEngineCfg().m_pathToDefaultKeyBindings.GetS());
+        int const res = SaveToFile(M3D_ENGINE_CFG.m_pathToDefaultKeyBindings.GetS());
         if (res)
         {
             M3D_LOG_INFO("Key bindings: current bindings were saved as defaults");
@@ -524,7 +531,7 @@ namespace m3d
     {
         // RVA 0x595200
         UnbindAll();
-        g_Kernel->UnRegisterGlobal("IMPULSES");
+        M3D_KERNEL->UnRegisterGlobal("IMPULSES");
         m_isInited = false;
         M3D_LOG_INFO("Key bindings: is done");
         return 1;
@@ -913,10 +920,18 @@ namespace m3d
         static bool controlDown = false;
 
         // A folded key no longer matches the later checks, so they fall through.
-        return FoldModifierKey(keyToSearchBy, state, KEY_LSHIFT, KEY_RSHIFT, VKEY_SHIFT, shiftLDown, shiftRDown, shiftDown) &&
-               FoldModifierKey(keyToSearchBy, state, KEY_LALT, KEY_RALT, VKEY_ALT, altLDown, altRDown, altDown) &&
-               FoldModifierKey(
-                   keyToSearchBy, state, KEY_LCONTROL, KEY_RCONTROL, VKEY_CONTROL, controlLDown, controlRDown, controlDown);
+        return FoldModifierKey(
+                   keyToSearchBy, state, KEY_LSHIFT, KEY_RSHIFT, VKEY_SHIFT, shiftLDown, shiftRDown, shiftDown) &&
+            FoldModifierKey(keyToSearchBy, state, KEY_LALT, KEY_RALT, VKEY_ALT, altLDown, altRDown, altDown) &&
+            FoldModifierKey(
+                   keyToSearchBy,
+                   state,
+                   KEY_LCONTROL,
+                   KEY_RCONTROL,
+                   VKEY_CONTROL,
+                   controlLDown,
+                   controlRDown,
+                   controlDown);
     }
 
     int GameImpulse::BindKey2(CStr const& strGameMode, CStr const& strKey1, CStr const& strKey2, CStr const& strImp)
@@ -1000,7 +1015,7 @@ namespace m3d
             }
             if (!m_bSuppressEvent)
             {
-                m3d::Application::g_pApp->EnqueueMessage(46, impId, 0, 0, 0, {}, {});
+                M3D_APP->EnqueueMessage(46, impId, 0, 0, 0, {}, {});
             }
             if (action == 1)
             {
@@ -1032,8 +1047,8 @@ namespace m3d
         CStr desc;
         if (err)
         {
-            char const* const errorDesc = g_Kernel->GetScriptServer().getErrorDescString(err);
-            auxScriptErrorDesc const& lastErrorDesc = g_Kernel->GetScriptServer().getLastErrorDesc();
+            char const* const errorDesc = M3D_KERNEL->GetScriptServer().getErrorDescString(err);
+            auxScriptErrorDesc const& lastErrorDesc = M3D_KERNEL->GetScriptServer().getLastErrorDesc();
             desc = CStr("(");
             desc += lastErrorDesc.sourceString;
             desc += CStr(" @ ");
@@ -1066,7 +1081,7 @@ namespace m3d
     {
         if (m_isInited)
         {
-            auto res = LoadFromFile(g_Kernel->GetEngineCfg().m_pathToDefaultKeyBindings.GetS());
+            auto res = LoadFromFile(M3D_ENGINE_CFG.m_pathToDefaultKeyBindings.GetS());
             if (res)
             {
                 M3D_LOG_INFO("Key bindings: were bind from defaults");
@@ -1104,7 +1119,7 @@ namespace m3d
             m_isBinded = false;
             if (!m_bSuppressEvent)
             {
-                m3d::Application::g_pApp->EnqueueMessage(46, -1, 0, 0, 0, {}, {});
+                M3D_APP->EnqueueMessage(46, -1, 0, 0, 0, {}, {});
             }
             M3D_LOG_INFO("Key bindings: unbind all is done");
         }
@@ -1218,7 +1233,8 @@ namespace m3d
         // clears it on success, so a successful save is logged as an error and returns 0, and a
         // save counts as successful only if the first write failed and every later one did too.
         CStr const strCommon("IMPULSES = GET_GLOBAL_OBJECT \"IMPULSES\"\n\nIMPULSES:UnbindAll()\n\n");
-        int res = fr.WriteBytes(strCommon.c_str(), static_cast<unsigned int>(strlen(strCommon.c_str()))) != static_cast<unsigned int>(strlen(strCommon.c_str()));
+        int res = fr.WriteBytes(strCommon.c_str(), static_cast<unsigned int>(strlen(strCommon.c_str()))) !=
+            static_cast<unsigned int>(strlen(strCommon.c_str()));
 
         for (auto& [gameMode, bindStation] : m_bindings)
         {
@@ -1266,7 +1282,8 @@ namespace m3d
                         funcStr += paramImpulse;
                         funcStr += CStr(")");
                         funcStr += CStr("\n");
-                        res &= fr.WriteBytes(funcStr.c_str(), static_cast<unsigned int>(strlen(funcStr.c_str()))) != static_cast<unsigned int>(strlen(funcStr.c_str()));
+                        res &= fr.WriteBytes(funcStr.c_str(), static_cast<unsigned int>(strlen(funcStr.c_str()))) !=
+                            static_cast<unsigned int>(strlen(funcStr.c_str()));
                     }
                 }
             }

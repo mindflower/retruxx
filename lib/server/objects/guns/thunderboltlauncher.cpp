@@ -53,7 +53,8 @@ namespace ai
     ThunderboltLauncherPrototypeInfo const* ThunderboltLauncher::GetPrototypeInfo() const
     {
         // RVA 0x8488F0 - NOTE: the prototype is cast without a type check.
-        return static_cast<ThunderboltLauncherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<ThunderboltLauncherPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Class* ThunderboltLauncher::GetBaseClass()
@@ -87,8 +88,8 @@ namespace ai
         float const nz0 = dir.x - ny0;
         float const ny1 = dir.z * 0.0f - dir.x * 0.0f;
         float const nx0 = ny0 - dir.z;
-        float const invLen = static_cast<float>(1.0 / std::sqrt(
-            double(nz0) * nz0 + double(ny1) * ny1 + double(nx0) * nx0 + double(1.1920929e-7f)));
+        float const invLen = static_cast<float>(
+            1.0 / std::sqrt(double(nz0) * nz0 + double(ny1) * ny1 + double(nx0) * nx0 + double(1.1920929e-7f)));
         CPlane dividerPlane;
         dividerPlane.m_normal = CVector(invLen * nx0, invLen * ny1, invLen * nz0);
         CVector const ownerPos = owner->GetPosition();

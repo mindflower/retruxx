@@ -298,7 +298,7 @@ int GlobalMapWnd::InitLevelIcons()
             continue;
         }
 
-        ref_ptr<LevelIco> levelIco = static_cast<LevelIco*>(m3d::g_Kernel->New("LevelIco"));
+        ref_ptr<LevelIco> levelIco = static_cast<LevelIco*>(M3D_KERNEL->New("LevelIco"));
         if (!levelIco->CreateFromPattern(static_cast<m3d::ui::Wnd*>(pattern), true))
         {
             M3D_LOG_INFO("Make control error: cannot create " + levelIcoName + " from pattern class");
@@ -345,7 +345,7 @@ int GlobalMapWnd::CreateConnectionsWnd()
     }
     auto* chartWnd = static_cast<m3d::ui::Wnd*>(chart);
 
-    m_wndConnections = static_cast<LevelConnectionsWnd*>(m3d::g_Kernel->New("LevelConnectionsWnd"));
+    m_wndConnections = static_cast<LevelConnectionsWnd*>(M3D_KERNEL->New("LevelConnectionsWnd"));
     if (!m_wndConnections)
     {
         return 0;

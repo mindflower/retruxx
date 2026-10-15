@@ -52,13 +52,13 @@ protected:
     ~NavPoint();
     void Invalidate();
 
-    /* 0x0000 */ NavPoint::NavPointType m_navPointType;
-    /* 0x0004 */ NavPoint::ObjectType m_objectType;
-    /* 0x0008 */ int m_objectId;
-    /* 0x000c */ int m_id;
-    /* 0x0010 */ CStr m_levelName;
-    /* 0x001c */ CVector m_coordinate;
-}; /* size: 0x0028 */
+    NavPoint::NavPointType m_navPointType;
+    NavPoint::ObjectType m_objectType;
+    int m_objectId;
+    int m_id;
+    CStr m_levelName;
+    CVector m_coordinate;
+};
 
 class NavPointManager
 {
@@ -106,6 +106,6 @@ private:
     int UpdateOnDynamicQuestStateChanged(void* data);
     int MakeNavPointOnFirstFitStaticQuest(CStr const& levelName, bool bIsMainQuest);
     int MakeNavPointOnFirstFitDynamicQuest();
-    /* 0x0000 */ std::map<int, NavPoint*, std::less<int>, std::allocator<std::pair<int const, NavPoint*>>> m_navPoints;
-    /* 0x000c */ int m_nextNavPointId = 0;
-}; /* size: 0x0010 */
+    std::map<int, NavPoint*, std::less<int>, std::allocator<std::pair<int const, NavPoint*>>> m_navPoints;
+    int m_nextNavPointId = 0;
+};

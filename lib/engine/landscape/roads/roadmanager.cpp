@@ -71,7 +71,7 @@ namespace m3d
     {
         if (this->m_coveredCells)
         {
-            auto m_f = M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF();
+            auto m_f = M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
             auto v4 = (int)(float)((float)(m_f * 8.0) + 4.0);
             if (v4 >= 4)
             {
@@ -83,7 +83,7 @@ namespace m3d
                 v4 = 4;
             }
 
-            auto& v5 = m3d::g_Kernel->GetTimer();
+            auto& v5 = M3D_KERNEL->GetTimer();
 
             auto v7 = m_owner->m_owner;
 
@@ -312,28 +312,29 @@ namespace m3d
                     rend::IEffect* effect = nullptr;
                     switch (rrt)
                     {
-                        case 1:
-                            effect = graph.GetRoadShadowShader();
-                            break;
-                        case 2:
-                            effect = graph.GetRoadProjectorShader();
-                            break;
-                        case 3:
-                            effect = graph.GetRoadDetShadowShader();
-                            break;
-                        case 4:
-                            effect = graph.GetRoadLightShader();
-                            break;
-                        case 5:
-                            effect = graph.GetRoadSpriteShader();
-                            break;
-                        default:
-                        {
-                            // A skin the model lacks falls back to the first one.
-                            unsigned const skin = roadNode->m_skinNumber < model->GetNumSkins() ? roadNode->m_skinNumber : 0;
-                            effect = model->ApplyMaterial(model->GetSkin(skin)[mesh.m_MaterialNumber]);
-                            break;
-                        }
+                    case 1:
+                        effect = graph.GetRoadShadowShader();
+                        break;
+                    case 2:
+                        effect = graph.GetRoadProjectorShader();
+                        break;
+                    case 3:
+                        effect = graph.GetRoadDetShadowShader();
+                        break;
+                    case 4:
+                        effect = graph.GetRoadLightShader();
+                        break;
+                    case 5:
+                        effect = graph.GetRoadSpriteShader();
+                        break;
+                    default:
+                    {
+                        // A skin the model lacks falls back to the first one.
+                        unsigned const skin =
+                            roadNode->m_skinNumber < model->GetNumSkins() ? roadNode->m_skinNumber : 0;
+                        effect = model->ApplyMaterial(model->GetSkin(skin)[mesh.m_MaterialNumber]);
+                        break;
+                    }
                     }
 
                     // NOTE: without a shader the original only asserts, and then draws with
@@ -367,7 +368,11 @@ namespace m3d
                     }
 
                     M3D_RENDERER->DrawIndexedPrimitiveEffect(
-                        rend::M3DPT_TRIANGLELIST, effect, 0, mesh.m_numDrawVerts, roadNode->m_IbPoolField.RealOffset,
+                        rend::M3DPT_TRIANGLELIST,
+                        effect,
+                        0,
+                        mesh.m_numDrawVerts,
+                        roadNode->m_IbPoolField.RealOffset,
                         mesh.m_numFaces);
                     numRoadPolys += mesh.m_numFaces;
                 }
@@ -496,7 +501,8 @@ namespace m3d
                 auto& mesh = model->GetMesh(0);
                 auto const vertexAt = [&mesh](unsigned idx)
                 {
-                    return reinterpret_cast<float const*>(static_cast<char const*>(mesh.m_verts) + idx * mesh.m_VertexTypeSize);
+                    return reinterpret_cast<float const*>(
+                        static_cast<char const*>(mesh.m_verts) + idx * mesh.m_VertexTypeSize);
                 };
 
                 // Walks the side up to the first vertex past the new one along sortAxis,
@@ -940,47 +946,47 @@ namespace m3d
             node->m_bInverted = false;
             switch (numLinks)
             {
-                case 0:
-                    node->m_type = 3;
-                    break;
-                case 1:
-                    // An end piece faces the way of its only link.
-                    node->m_type = 3;
-                    if (next && node->m_linkedNodes[1])
-                    {
-                        node->m_bInverted = true;
-                    }
-                    break;
-                case 2:
-                    node->m_type = 0;
-                    break;
-                case 3:
+            case 0:
+                node->m_type = 3;
+                break;
+            case 1:
+                // An end piece faces the way of its only link.
+                node->m_type = 3;
+                if (next && node->m_linkedNodes[1])
                 {
-                    // A T junction is mirrored when its stem, taken from the side links, turns
-                    // the other way. Without a previous node the node itself stands in for the next.
-                    node->m_type = 1;
-                    if (!node->m_linkedNodes[1])
-                    {
-                        next = node;
-                    }
-                    RoadNode const* left = node->m_linkedNodes[2];
-                    RoadNode const* right = node->m_linkedNodes[3];
-                    if (left && right && next &&
-                        (right->m_origin.z - left->m_origin.z) * (next->m_origin.x - left->m_origin.x) -
-                                (next->m_origin.z - left->m_origin.z) * (right->m_origin.x - left->m_origin.x) <
-                            0.0f)
-                    {
-                        node->m_bInverted = true;
-                    }
-                    break;
+                    node->m_bInverted = true;
                 }
-                case 4:
-                    node->m_type = 2;
-                    break;
-                default:
-                    M3D_LOG_INFO(CStr("RoadNode not connected: ") + CStr(node->GetName()));
-                    node->m_type = 3;
-                    break;
+                break;
+            case 2:
+                node->m_type = 0;
+                break;
+            case 3:
+            {
+                // A T junction is mirrored when its stem, taken from the side links, turns
+                // the other way. Without a previous node the node itself stands in for the next.
+                node->m_type = 1;
+                if (!node->m_linkedNodes[1])
+                {
+                    next = node;
+                }
+                RoadNode const* left = node->m_linkedNodes[2];
+                RoadNode const* right = node->m_linkedNodes[3];
+                if (left && right && next &&
+                    (right->m_origin.z - left->m_origin.z) * (next->m_origin.x - left->m_origin.x) -
+                            (next->m_origin.z - left->m_origin.z) * (right->m_origin.x - left->m_origin.x) <
+                        0.0f)
+                {
+                    node->m_bInverted = true;
+                }
+                break;
+            }
+            case 4:
+                node->m_type = 2;
+                break;
+            default:
+                M3D_LOG_INFO(CStr("RoadNode not connected: ") + CStr(node->GetName()));
+                node->m_type = 3;
+                break;
             }
 
             // NOTE: nothing guards against a road set without pieces of this type: the

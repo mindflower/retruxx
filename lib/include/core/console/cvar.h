@@ -5,7 +5,7 @@
 
 namespace m3d
 {
-    class IConHandler;
+    struct IConHandler;
 
     //IMPORTANT: fields and members order is strict
     class CVar

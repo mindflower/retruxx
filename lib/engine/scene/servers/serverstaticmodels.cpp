@@ -17,22 +17,22 @@ namespace m3d
 {
     struct OverrideRenderSettings
     {
-        /* 0x0000 */ int m_dontOverrideBlend;
-        /* 0x0004 */ m3d::rend::TextureState m_color0;
-        /* 0x0008 */ m3d::rend::TextureState m_alpha0;
-        /* 0x000c */ m3d::rend::TextureState m_color1;
-        /* 0x0010 */ m3d::rend::TextureState m_alpha1;
-        /* 0x0014 */ bool m_tessellate;
-    }; /* size: 0x0018 */
+        int m_dontOverrideBlend;
+        m3d::rend::TextureState m_color0;
+        m3d::rend::TextureState m_alpha0;
+        m3d::rend::TextureState m_color1;
+        m3d::rend::TextureState m_alpha1;
+        bool m_tessellate;
+    };
 
     // What SgStaticModelNode hands to RenderItem (SgStaticModelNode::Render::renderInfo in the PDB).
     struct StaticModelRenderInfo
     {
-        /* 0x0000 */ CMatrix* m_localXForm;
-        /* 0x0004 */ float m_alpha;
-        /* 0x0008 */ m3d::rend::Cull m_culling;
-    }; /* size: 0x000c */
-}
+        CMatrix* m_localXForm;
+        float m_alpha;
+        m3d::rend::Cull m_culling;
+    };
+}  // namespace m3d
 
 int ModelsRenderHandleCommon(int id, void* params)
 {
@@ -187,8 +187,8 @@ namespace m3d
             PrepareToRender();
         }
 
-
-        if (id == -2) {
+        if (id == -2)
+        {
             // Begin rendering mode
             ModelsRenderHandleCommon(-2, params);
 
@@ -206,7 +206,8 @@ namespace m3d
 
             m3d::OverrideRenderSettings* settings = (m3d::OverrideRenderSettings*)params;
             // Set blend mode
-            if (!settings || !settings->m_dontOverrideBlend) {
+            if (!settings || !settings->m_dontOverrideBlend)
+            {
                 M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_ALPHA, 0);
             }
 
@@ -218,19 +219,20 @@ namespace m3d
 
             if (this->m_tessellate)
             {
-                float tessLevel = M3D_KERNEL->GetEngineCfg().m_NPatchLevel.GetF();
+                float tessLevel = M3D_ENGINE_CFG.m_NPatchLevel.GetF();
 
-                if (tessLevel < 1.0f) {
+                if (tessLevel < 1.0f)
+                {
                     this->m_tessellate = false;
                 }
 
-                if (M3D_RENDERER->GetMaxNPatchTessellationLevel() < 1.0) {
+                if (M3D_RENDERER->GetMaxNPatchTessellationLevel() < 1.0)
+                {
                     this->m_tessellate = false;
                 }
             }
 
             M3D_RENDERER->SetAlphaTest(80);
-
         }
         else if (id == -3)
         {
@@ -239,25 +241,29 @@ namespace m3d
             ModelsRenderHandleCommon(-3, settings);
 
             // Reset blend mode
-            if (!settings || !settings->m_dontOverrideBlend) {
+            if (!settings || !settings->m_dontOverrideBlend)
+            {
                 M3D_RENDERER->SetBlend(m3d::rend::BlendMode::BM_NONE, 0);
             }
 
             // Handle tessellation
             this->m_tessellate = true;
-            float tessLevel = M3D_KERNEL->GetEngineCfg().m_NPatchLevel.GetF();
+            float tessLevel = M3D_ENGINE_CFG.m_NPatchLevel.GetF();
 
-            if (tessLevel < 1.0f) {
+            if (tessLevel < 1.0f)
+            {
                 this->m_tessellate = false;
             }
 
-            if (M3D_RENDERER->GetMaxNPatchTessellationLevel() < 1.0) {
+            if (M3D_RENDERER->GetMaxNPatchTessellationLevel() < 1.0)
+            {
                 this->m_tessellate = false;
             }
 
             M3D_RENDERER->PopFog();
         }
-        else if (id != -4) {
+        else if (id != -4)
+        {
             // Render specific model
             m3d::CGSModel* model = (m3d::CGSModel*)this->m_models[id].m_ptr;
 
@@ -274,7 +280,6 @@ namespace m3d
                 M3D_RENDERER->SetIndices(this->m_ibArrayForAllModels[model->m_numibbank], 0);
                 this->m_curibBank = model->m_numibbank;
             }
-
 
             // RVA 0x7784E0 - see-through models do not write depth.
             auto const* const ri = static_cast<StaticModelRenderInfo const*>(params);
@@ -329,7 +334,7 @@ namespace m3d
             //    this->GetItemProperty(id, 4, &tessModel);
             //
             //    if (tessModel) {
-            //        m3d::CVar* nPatchLevel = &m3d::g_Kernel->GetEngineCfg()->m_NPatchLevel;
+            //        m3d::CVar* nPatchLevel = &M3D_ENGINE_CFG->m_NPatchLevel;
             //        float tessLevel = (nPatchLevel->m_type == CVAR_FLOAT) ? nPatchLevel->m_f : static_cast<float>(nPatchLevel->m_i);
             //
             //        renderer->SetNPatchLevel(tessLevel, 0);
@@ -385,10 +390,10 @@ namespace m3d
 
     StaticModelsServer::StaticModelsServer()
     {
-        auto idx = Application::g_pApp->GetProfilerStack().AddProfiler("static", 0x1E);
-        if (idx < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto idx = M3D_APP->GetProfilerStack().AddProfiler("static", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
         else
         {
@@ -479,8 +484,8 @@ namespace m3d
         }
         m_models.push_back(Model(model, modelFileName.c_str(), pp, id));
 
-        CStr const passfilename = modelFileName.substr(0, static_cast<int>(strlen(modelFileName.c_str())) - 4) +
-            CStr(".raw");
+        CStr const passfilename =
+            modelFileName.substr(0, static_cast<int>(strlen(modelFileName.c_str())) - 4) + CStr(".raw");
         unsigned char* shot = nullptr;
         scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (stream->Open(passfilename.c_str(), fs::IStream::OPEN_READ))
@@ -597,8 +602,8 @@ namespace m3d
             }
             m_models.push_back(Model(model, modelFileName.c_str(), pp, id));
 
-            CStr const passfilename = modelFileName.substr(0, static_cast<int>(strlen(modelFileName.c_str())) - 4) +
-                CStr(".raw");
+            CStr const passfilename =
+                modelFileName.substr(0, static_cast<int>(strlen(modelFileName.c_str())) - 4) + CStr(".raw");
             unsigned char* shot = nullptr;
             scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
             if (stream->Open(passfilename.c_str(), fs::IStream::OPEN_READ))
@@ -701,7 +706,8 @@ namespace m3d
                 M3D_RENDERER->UnlockVb(m_vbArrayForAllModels[curVbBank]);
                 ++curVbBank;
                 vertOffset = 0;
-                verts = static_cast<rend::VertexXYZNT1*>(M3D_RENDERER->LockVb(m_vbArrayForAllModels[curVbBank], 0, 0, 0));
+                verts =
+                    static_cast<rend::VertexXYZNT1*>(M3D_RENDERER->LockVb(m_vbArrayForAllModels[curVbBank], 0, 0, 0));
             }
             if (idxOffset + model->m_numDrawIndices > 0x10000)
             {
@@ -721,4 +727,4 @@ namespace m3d
         M3D_RENDERER->UnlockIb(m_ibArrayForAllModels[curIbBank]);
         return 1;
     }
-}
+}  // namespace m3d

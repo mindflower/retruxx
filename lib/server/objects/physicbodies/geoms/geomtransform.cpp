@@ -4,7 +4,7 @@
 
 namespace ai
 {
-    ai::GeomTransform* GeomTransform::CreateObject(dxSpace* space, void(* movedCalback)(dxGeom*))
+    ai::GeomTransform* GeomTransform::CreateObject(dxSpace* space, void (*movedCalback)(dxGeom*))
     {
         auto geom = dCreateGeomTransform(space);
         return new GeomTransform(geom, movedCalback);
@@ -15,7 +15,7 @@ namespace ai
         delete m_innerGeom;
     }
 
-    const ai::Geom* GeomTransform::GetGeom() const
+    ai::Geom const* GeomTransform::GetGeom() const
     {
         // RVA 0x5CE5E0
         return m_innerGeom;
@@ -26,10 +26,11 @@ namespace ai
         return m_innerGeom;
     }
 
-    GeomTransform::GeomTransform(dxGeom* const geomId, void(*movedCalback)(dxGeom*)) : Geom(geomId, movedCalback)
+    GeomTransform::GeomTransform(dxGeom* const geomId, void (*movedCalback)(dxGeom*)) : Geom(geomId, movedCalback)
     {
         this->m_innerGeom = 0;
-        dGeomTransformSetCleanup(m_geomId, 0);;
+        dGeomTransformSetCleanup(m_geomId, 0);
+        ;
     }
 
     void GeomTransform::SetGeom(ai::Geom* pGeom)
@@ -39,4 +40,4 @@ namespace ai
         dGeomTransformSetGeom(m_geomId, pGeom->GetGeomId());
         m_innerGeom = pGeom;
     }
-}
+}  // namespace ai

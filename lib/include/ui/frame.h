@@ -9,7 +9,7 @@ namespace m3d
     {
         struct XmlNode;
     }
-}
+}  // namespace m3d
 
 namespace m3d
 {
@@ -47,7 +47,6 @@ namespace m3d
             rend::TexHandle m_texture;
         };
 
-
         class Pane
         {
         public:
@@ -81,5 +80,5 @@ namespace m3d
             PointBase<float> m_btnSize{20.0, 20.0};
             float m_space = 0.0;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

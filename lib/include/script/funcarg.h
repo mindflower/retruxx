@@ -18,37 +18,37 @@ namespace m3d
             ARGTYPE_QUATERNION = 7,
         };
 
-        sArg(m3d::sArg::eArgType, const void*);
-        sArg(const m3d::sArg&);
+        sArg(m3d::sArg::eArgType, void const*);
+        sArg(m3d::sArg const&);
         sArg();
         ~sArg();
-        bool operator==(const m3d::sArg&) const;
+        bool operator==(m3d::sArg const&) const;
         void SetI(int);
         void SetF(float f);
         void SetB(bool b);
-        void SetS(const char* s);
+        void SetS(char const* s);
         void SetO(m3d::Object* o);
-        void SetV(const CVector& v);
-        void SetQ(const Quaternion& v);
+        void SetV(CVector const& v);
+        void SetQ(Quaternion const& v);
         m3d::sArg::eArgType GetType() const;
         int GetI() const;
         float GetF() const;
         bool GetB() const;
-        const char* GetS() const;
+        char const* GetS() const;
         m3d::Object* GetO() const;
         CVector GetV() const;
         Quaternion GetQ() const;
 
-        /* 0x0000 */ m3d::sArg::eArgType m_type = ARGTYPE_VOID;
+        m3d::sArg::eArgType m_type = ARGTYPE_VOID;
         union
         {
-            /* 0x0004 */ int m_i = 0;
-            /* 0x0004 */ float m_f;
-            /* 0x0004 */ bool m_b;
-            /* 0x0004 */ char* m_s;
-            /* 0x0004 */ m3d::Object* m_o;
-            /* 0x0004 */ float m_v[3];
-            /* 0x0004 */ float m_q[4];
-        }; /* size: 0x000c */
-    }; /* size: 0x0014 */
-}
+            int m_i = 0;
+            float m_f;
+            bool m_b;
+            char* m_s;
+            m3d::Object* m_o;
+            float m_v[3];
+            float m_q[4];
+        };
+    };
+}  // namespace m3d

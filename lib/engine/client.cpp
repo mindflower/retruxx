@@ -63,8 +63,7 @@ namespace m3d
 
     CClient::CClient()
     {
-        M3D_RENDERER->RegisterResetCallback(
-            this);
+        M3D_RENDERER->RegisterResetCallback(this);
     }
 
     int CClient::Update(int curTime, unsigned dt)
@@ -143,4 +142,4 @@ namespace m3d
     {
         return *m_world;
     }
-}
+}  // namespace m3d

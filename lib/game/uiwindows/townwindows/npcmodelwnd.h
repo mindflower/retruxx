@@ -14,22 +14,22 @@ public:
     int SetUpForNpc(int npcId);
 
 protected:
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x00 */;
-    virtual int OnNewFrame() override /* 0x130 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual int OnNewFrame() override;
     void OnNpcReplyShown(void* data);
-    virtual bool IsValid() const override /* 0x13c */;
+    virtual bool IsValid() const override;
     void RandomizeAnimationFrame();
     void UpdateAnimation();
-    /* 0x02bc */ int m_npcId;
+    int m_npcId;
     NpcModelWnd();
     NpcModelWnd(NpcModelWnd const& rhs);
 
 public:
-    virtual ~NpcModelWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~NpcModelWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classNpcModelWnd;
-}; /* size: 0x02c0 */
+};

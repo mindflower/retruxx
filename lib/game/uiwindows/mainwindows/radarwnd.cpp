@@ -164,7 +164,7 @@ void RadarWnd::NpDistance::Show(bool bShow)
     m3d::ui::Wnd::AnimationInfo animationInfo(
         bShow ? m_wndDigital->GetOnShowAnimation() : m_wndDigital->GetOnHideAnimation());
 
-    if (m_wndDigital->IsChildOf(m3d::Application::g_pApp))
+    if (m_wndDigital->IsChildOf(M3D_APP))
     {
         animationInfo.m_bEnabled = true;
         animationInfo.m_purpose = m3d::ui::Wnd::AnimationInfo::PURPOSE_UNKNOWN;
@@ -848,7 +848,7 @@ int RadarWnd::GameDataSetup()
             m3d::Object* child = GetChildByName(wndName);
             if (child && child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
             {
-                wndDigital = static_cast<ElectronicDigitalWnd*>(m3d::g_Kernel->New("ElectronicDigitalWnd"));
+                wndDigital = static_cast<ElectronicDigitalWnd*>(M3D_KERNEL->New("ElectronicDigitalWnd"));
                 if (!wndDigital)
                 {
                     M3D_LOG_INFO(
@@ -1620,8 +1620,7 @@ CVector RadarWnd::GetWorldsideCoords(Worldside side) const
     }
 
     CVector const playerPos = vehicle->GetPosition();
-    return CVector{
-        worldDirs[side].x + playerPos.x, worldDirs[side].y + playerPos.y, worldDirs[side].z + playerPos.z};
+    return CVector{worldDirs[side].x + playerPos.x, worldDirs[side].y + playerPos.y, worldDirs[side].z + playerPos.z};
 }
 
 // ===========================================================================
@@ -1710,17 +1709,7 @@ void RadarWnd::DrawCameraSight(m3d::ui::DrawInfo const& di) const
     }
 
     M3D_APP->PutSpriteRelRot(
-        coord.x + xEdge,
-        (coord.y + yEdge) - halfH,
-        halfW,
-        halfH,
-        0xFFFFFFFF,
-        cameraAngle,
-        0.0,
-        halfH,
-        0.0,
-        0.0,
-        0.0);
+        coord.x + xEdge, (coord.y + yEdge) - halfH, halfW, halfH, 0xFFFFFFFF, cameraAngle, 0.0, halfH, 0.0, 0.0, 0.0);
 }
 
 void RadarWnd::OnPaintOverChildren(m3d::ui::DrawInfo const& di)

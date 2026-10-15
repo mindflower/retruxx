@@ -59,4 +59,4 @@ namespace snd
             m_maxDist = m_minDist * 2.0f;
         }
     }
-}
+}  // namespace snd

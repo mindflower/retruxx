@@ -161,7 +161,8 @@ namespace ai
         speed = m_velocity.value().get();
         CVector const vel = GetLinearVelocity();
         float const invLen = static_cast<float>(
-            1.0 / std::sqrt(double(vel.x) * vel.x + double(vel.y) * vel.y + double(vel.z) * vel.z + double(1.1920929e-7f)));
+            1.0 /
+            std::sqrt(double(vel.x) * vel.x + double(vel.y) * vel.y + double(vel.z) * vel.z + double(1.1920929e-7f)));
         SetLinearVelocity(CVector(vel.x * invLen * speed, vel.y * invLen * speed, vel.z * invLen * speed));
         SetPosition(newPos);
     }

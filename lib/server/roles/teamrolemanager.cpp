@@ -16,9 +16,9 @@ namespace ai
         // The vehicle roles of a tactic are weighed against each vehicle of the team: entry (i, j)
         // is how well role j suits vehicle i. The best one-to-one pairing of roles with vehicles is
         // returned, and its total fit in value.
-        template <class Fit>
-        retruxx::vector<int> matchRoles(
-            retruxx::vector<int> const& rolePrototypeIds, Team const* team, float& value, Fit fit)
+        template<class Fit>
+        retruxx::vector<int>
+            matchRoles(retruxx::vector<int> const& rolePrototypeIds, Team const* team, float& value, Fit fit)
         {
             int const numVehicles = static_cast<int>(team->GetVehicles().size());
             Graph::CSquareMatrix<float> weights(numVehicles);
@@ -41,7 +41,8 @@ namespace ai
         VehicleRole* createRole(int prototypeId)
         {
             // NOTE: the new object is taken to be a vehicle role without a type check.
-            return static_cast<VehicleRole*>(theObjects->GetEntityByObjId(theObjects->CreateNewObject(prototypeId, "", -1, -1)));
+            return static_cast<VehicleRole*>(
+                theObjects->GetEntityByObjId(theObjects->CreateNewObject(prototypeId, "", -1, -1)));
         }
     }  // namespace
 
@@ -62,8 +63,14 @@ namespace ai
         float& value)
     {
         // RVA 0x8AD400
-        return matchRoles(rolePrototypeIds, team, value, [target](VehicleRolePrototypeInfo const* role, Vehicle* v)
-            { return role->FitAgainstVehicle(v, target); });
+        return matchRoles(
+            rolePrototypeIds,
+            team,
+            value,
+            [target](VehicleRolePrototypeInfo const* role, Vehicle* v)
+            {
+                return role->FitAgainstVehicle(v, target);
+            });
     }
 
     retruxx::vector<int, retruxx::allocator<int>> TeamRoleManager::getAgainstTeam(
@@ -75,8 +82,14 @@ namespace ai
     {
         // RVA 0x8AD700 - the vehicle each role would pick in the target team is thrown away here.
         Vehicle* targetVehicle = nullptr;
-        return matchRoles(rolePrototypeIds, team, value, [target, &targetVehicle](VehicleRolePrototypeInfo const* role, Vehicle* v)
-            { return role->FitAgainstTeam(v, target, &targetVehicle); });
+        return matchRoles(
+            rolePrototypeIds,
+            team,
+            value,
+            [target, &targetVehicle](VehicleRolePrototypeInfo const* role, Vehicle* v)
+            {
+                return role->FitAgainstTeam(v, target, &targetVehicle);
+            });
     }
 
     retruxx::vector<int, retruxx::allocator<int>> TeamRoleManager::getAgainstObj(
@@ -87,11 +100,20 @@ namespace ai
         float& value)
     {
         // RVA 0x8ADA50
-        return matchRoles(rolePrototypeIds, team, value, [target](VehicleRolePrototypeInfo const* role, Vehicle* v)
-            { return role->FitAgainstObj(v, target); });
+        return matchRoles(
+            rolePrototypeIds,
+            team,
+            value,
+            [target](VehicleRolePrototypeInfo const* role, Vehicle* v)
+            {
+                return role->FitAgainstObj(v, target);
+            });
     }
 
-    void TeamRoleManager::AssignAgainstVehicle(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Vehicle const* target)
+    void TeamRoleManager::AssignAgainstVehicle(
+        ai::TeamTacticWithRoles const* tactic,
+        ai::Team* team,
+        ai::Vehicle const* target)
     {
         // RVA 0x8AD5A0 - every vehicle of the team gets a role aimed at the target.
         // NOTE: the best pairing of roles with vehicles is worked out, but the roles are then handed
@@ -108,7 +130,10 @@ namespace ai
         }
     }
 
-    void TeamRoleManager::AssignAgainstTeam(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Team const* target)
+    void TeamRoleManager::AssignAgainstTeam(
+        ai::TeamTacticWithRoles const* tactic,
+        ai::Team* team,
+        ai::Team const* target)
     {
         // RVA 0x8AD8A0 - every vehicle of the team gets a role aimed at the target team, and at the
         // vehicle of it that the role itself thinks best.
@@ -144,7 +169,10 @@ namespace ai
         }
     }
 
-    float TeamRoleManager::FitAgainstVehicle(ai::TeamTacticWithRoles const* tactic, ai::Team const* team, ai::Vehicle const* target)
+    float TeamRoleManager::FitAgainstVehicle(
+        ai::TeamTacticWithRoles const* tactic,
+        ai::Team const* team,
+        ai::Vehicle const* target)
     {
         // RVA 0x8ADD50 - how well the tactic's roles, best paired, suit the team against the target.
         retruxx::vector<int> rolePrototypeIds;
@@ -154,7 +182,10 @@ namespace ai
         return value;
     }
 
-    float TeamRoleManager::FitAgainstTeam(ai::TeamTacticWithRoles const* tactic, ai::Team const* team, ai::Team const* target)
+    float TeamRoleManager::FitAgainstTeam(
+        ai::TeamTacticWithRoles const* tactic,
+        ai::Team const* team,
+        ai::Team const* target)
     {
         // RVA 0x8ADDF0
         retruxx::vector<int> rolePrototypeIds;
@@ -164,7 +195,10 @@ namespace ai
         return value;
     }
 
-    float TeamRoleManager::FitAgainstObj(ai::TeamTacticWithRoles const* tactic, ai::Team const* team, ai::Obj const* target)
+    float TeamRoleManager::FitAgainstObj(
+        ai::TeamTacticWithRoles const* tactic,
+        ai::Team const* team,
+        ai::Obj const* target)
     {
         // RVA 0x8ADE90
         retruxx::vector<int> rolePrototypeIds;
@@ -188,7 +222,9 @@ namespace ai
         }
     }
 
-    void TeamRoleManager::GetTargetsPositions(ai::Team const* team, retruxx::vector<CVector, retruxx::allocator<CVector>>& positions)
+    void TeamRoleManager::GetTargetsPositions(
+        ai::Team const* team,
+        retruxx::vector<CVector, retruxx::allocator<CVector>>& positions)
     {
         // RVA 0x8ACD30 - where the targets of the team's roles are.
         positions.clear();

@@ -8,13 +8,14 @@ namespace m3d
     namespace rend
     {
         // orig 0x642940 i_renderer_resource.h:20
-        IRenderResource::IRenderResource() :
-            m_refCount(0)
+        IRenderResource::IRenderResource() : m_refCount(0)
         {
         }
 
         // orig 0x642950 i_renderer_resource.h:35
-        IRenderResource::~IRenderResource() {}
+        IRenderResource::~IRenderResource()
+        {
+        }
 
         // orig 0x642990 i_renderer_resource.h:43
         int IRenderResource::AddRef()
@@ -40,27 +41,36 @@ namespace m3d
         }
 
         // orig 0x642a00 i_renderer_query.h:247
-        IQuery::~IQuery() {}
+        IQuery::~IQuery()
+        {
+        }
 
         // orig 0x64acc0 i_renderer_shader.h:113
-        IHlslShader::~IHlslShader() {}
+        IHlslShader::~IHlslShader()
+        {
+        }
 
         // orig 0x64c500 i_renderer_shader.h:46
-        IAsmShader::~IAsmShader() {}
+        IAsmShader::~IAsmShader()
+        {
+        }
 
         // orig 0x645290 i_renderer_shader.h:285
-        IEffect::~IEffect() {}
+        IEffect::~IEffect()
+        {
+        }
 
-        const IHlslShader::ParameterHandle IHlslShader::INVALID_PARAM = static_cast<IHlslShader::ParameterHandle>(-1);
+        IHlslShader::ParameterHandle const IHlslShader::INVALID_PARAM = static_cast<IHlslShader::ParameterHandle>(-1);
 
         // orig 0x6429e0 i_renderer_query.h:156
-        QueryReturnValue::QueryReturnValue() :
-            m_type(NotValid)
+        QueryReturnValue::QueryReturnValue() : m_type(NotValid)
         {
         }
 
         // orig 0x6429f0 i_renderer_query.h:163
-        QueryReturnValue::~QueryReturnValue() {}
+        QueryReturnValue::~QueryReturnValue()
+        {
+        }
 
         bool QueryReturnValue::operator==(QueryReturnValue const& rhs) const
         {
@@ -130,11 +140,11 @@ namespace m3d
         }
 
         // orig 0x63a2d0 i_renderer.h:635
-        ShaderMacro::ShaderMacro() {}
+        ShaderMacro::ShaderMacro()
+        {
+        }
 
-        ShaderMacro::ShaderMacro(ShaderMacro const& rhs) :
-            name(rhs.name),
-            definition(rhs.definition)
+        ShaderMacro::ShaderMacro(ShaderMacro const& rhs) : name(rhs.name), definition(rhs.definition)
         {
         }
     }  // namespace rend

@@ -8,13 +8,8 @@ add_subdirectory(uiwindows)
 
 target_sources(retruxx_lib PRIVATE
     game.cpp
-    game_initdone.cpp
     globalscriptfuncs.cpp
     main.cpp
     profile.cpp
     view32.cpp
-    view32_cinematic.cpp
-    view32_console.cpp
-    view32_loadsave.cpp
-    view32_video.cpp
     vivisectionblock.cpp)

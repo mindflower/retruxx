@@ -62,8 +62,7 @@ namespace ai
         return static_cast<Vehicle*>(theObjects->GetEntityByObjId(m_chaserId));
     }
 
-    ChaseMotionTactics::ChaseMotionTactics(int targetId, int chaserId) :
-        m_chaseMotionData(-1, -1)
+    ChaseMotionTactics::ChaseMotionTactics(int targetId, int chaserId) : m_chaseMotionData(-1, -1)
     {
         // RVA 0x906000
         m_chaseMotionData = ChaseMotionData(targetId, chaserId);

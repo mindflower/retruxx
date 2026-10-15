@@ -322,8 +322,7 @@ int GarageWnd::GameDataSetup()
             {
                 return;
             }
-            PointBase<float> const pos =
-                ToWindow(PointBase<float>(list->m_bounds.x0, list->m_bounds.y0));
+            PointBase<float> const pos = ToWindow(PointBase<float>(list->m_bounds.x0, list->m_bounds.y0));
             list->m_bounds.x0 = pos.x;
             list->m_bounds.y0 = pos.y;
             list->SetSwitchWndBounds(listButton->GetBounds());
@@ -1025,7 +1024,8 @@ int GarageWnd::GetUnitsToRepair() const
         {
             continue;
         }
-        unitsToRepair += static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
+        unitsToRepair +=
+            static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
     }
     return unitsToRepair;
 }
@@ -1163,7 +1163,8 @@ void GarageWnd::GetPossibleRepair(int& units, int& price) const
 
         // NOTE: the unit counts and prices round to nearest (a bare fistp), but what the money affords is
         // truncated, as shipped.
-        int const healthUnits = static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
+        int const healthUnits =
+            static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
         units = healthUnits;
         price = static_cast<int>(lrintf(static_cast<float>(healthUnits) * pricePerUnit));
 
@@ -1377,7 +1378,8 @@ void GarageWnd::Repair(int units)
     }
 
     // Rounded to nearest (a bare fistp).
-    int const healthUnits = static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
+    int const healthUnits =
+        static_cast<int>(lrintf(vehicle->Health().maxValue().get() - vehicle->Health().value().get()));
     if (healthUnits > units)
     {
         vehicle->Health().value().set(vehicle->Health().value().get() + static_cast<float>(units));
@@ -1394,7 +1396,8 @@ void GarageWnd::Repair(int units)
         {
             continue;
         }
-        int const partUnits = static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
+        int const partUnits =
+            static_cast<int>(lrintf(part->Durability().maxValue().get() - part->Durability().value().get()));
         if (partUnits > unitsLeft)
         {
             part->Durability().value().set(part->Durability().value().get() + static_cast<float>(unitsLeft));

@@ -30,12 +30,11 @@ RT_CLASS_EXPORT_METHOD_DEFINE(NPCMotionController, setVehicleUnderControl)
     return 1;
 }
 
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(NPCMotionController)
-        RT_CLASS_EXPORT(NPCMotionController, m3d::METHOD, getVehicleUnderControl, "", "", "")
-        RT_CLASS_EXPORT(NPCMotionController, m3d::METHOD, setVehicleUnderControl, "", "", "")
+    RT_CLASS_EXPORT(NPCMotionController, m3d::METHOD, getVehicleUnderControl, "", "", "")
+    RT_CLASS_EXPORT(NPCMotionController, m3d::METHOD, setVehicleUnderControl, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(NPCMotionController);
 
@@ -78,14 +77,26 @@ namespace ai
         }
         if (m_vehicleUnderControlId != -1)
         {
-            theProcessManager->PostMessageA(GE_UNSUBSCRIBE, m_vehicleUnderControlId, GetId(), 0.0f,
-                m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+            theProcessManager->PostMessageA(
+                GE_UNSUBSCRIBE,
+                m_vehicleUnderControlId,
+                GetId(),
+                0.0f,
+                m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+                m3d::AIParam(),
+                1);
         }
         m_vehicleUnderControlId = vehicle->GetId();
         if (m_vehicleUnderControlId != -1)
         {
-            theProcessManager->PostMessageA(GE_SUBSCRIBE, m_vehicleUnderControlId, GetId(), 0.0f,
-                m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)), m3d::AIParam(), 1);
+            theProcessManager->PostMessageA(
+                GE_SUBSCRIBE,
+                m_vehicleUnderControlId,
+                GetId(),
+                0.0f,
+                m3d::AIParam(static_cast<int>(GE_OBJECT_DIE)),
+                m3d::AIParam(),
+                1);
         }
         vehicle->SetNpcMotionControllerId(GetId());
     }
@@ -204,7 +215,8 @@ namespace ai
     NPCMotionControllerPrototypeInfo const* NPCMotionController::GetPrototypeInfo() const
     {
         // RVA 0x7FB4F0 - NOTE: the prototype is cast without a type check.
-        return static_cast<NPCMotionControllerPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<NPCMotionControllerPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Class* NPCMotionController::GetBaseClass()
@@ -346,4 +358,4 @@ namespace ai
         m_lastDesiredPosition = desiredPos;
         vehicle->SetExternalDestination(desiredPos);
     }
-}
+}  // namespace ai

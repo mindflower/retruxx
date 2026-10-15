@@ -31,8 +31,8 @@ RT_CLASS_EXPORT_METHOD_DEFINE(TownDlg, IsTownWithConditionalClosing)
 }
 
 RT_CLASS_EXPORTS_BEGIN(TownDlg)
-	RT_CLASS_EXPORT(TownDlg, m3d::METHOD, SetConditionalClosingForTown, "", "", "")
-	RT_CLASS_EXPORT(TownDlg, m3d::METHOD, IsTownWithConditionalClosing, "", "", "")
+RT_CLASS_EXPORT(TownDlg, m3d::METHOD, SetConditionalClosingForTown, "", "", "")
+RT_CLASS_EXPORT(TownDlg, m3d::METHOD, IsTownWithConditionalClosing, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TownDlg);
 
@@ -339,15 +339,13 @@ bool TownDlg::IsTownWithConditionalClosing(CStr const& townName, CStr const& lev
     return GetConditionalClosingInfoForTown(townName, levelName) != nullptr;
 }
 
-TownDlg::ConditionalClosingInfo* TownDlg::GetConditionalClosingInfoForTown(
-    CStr const& townName,
-    CStr const& levelName) const
+TownDlg::ConditionalClosingInfo* TownDlg::GetConditionalClosingInfoForTown(CStr const& townName, CStr const& levelName)
+    const
 {
     // RVA 0xA41B0
     for (ConditionalClosingInfo* info : m_conditionalClosingInfoList)
     {
-        if (info && info->m_townName == townName &&
-            CStr::my_strcmp(info->m_levelName.c_str(), levelName.c_str()) == 0)
+        if (info && info->m_townName == townName && CStr::my_strcmp(info->m_levelName.c_str(), levelName.c_str()) == 0)
         {
             return info;
         }
@@ -374,8 +372,7 @@ void TownDlg::RemoveConditionalClosingInfo(CStr const& townName, CStr const& lev
     for (auto it = m_conditionalClosingInfoList.begin(); it != m_conditionalClosingInfoList.end(); ++it)
     {
         ConditionalClosingInfo* info = *it;
-        if (info && info->m_townName == townName &&
-            CStr::my_strcmp(info->m_levelName.c_str(), levelName.c_str()) == 0)
+        if (info && info->m_townName == townName && CStr::my_strcmp(info->m_levelName.c_str(), levelName.c_str()) == 0)
         {
             delete info;
             m_conditionalClosingInfoList.erase(it);

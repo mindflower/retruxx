@@ -8,4 +8,4 @@ namespace ai
         virtual ~IPriceCoeffProvider() = default;
         virtual float GetPriceCoeffForObj(Obj const*) const = 0;
     };
-}
+}  // namespace ai

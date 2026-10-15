@@ -179,7 +179,7 @@ void CinemaPanel::ClearNormal()
     }
 }
 
-int CinemaPanel::OnPaint(const m3d::ui::DrawInfo& di)
+int CinemaPanel::OnPaint(m3d::ui::DrawInfo const& di)
 {
     // RVA 0x4AEDE0
     if (m_bSkipMessage)
@@ -199,7 +199,7 @@ int CinemaPanel::OnPaint(const m3d::ui::DrawInfo& di)
     }
     if (m_bIsShowingMessage)
     {
-        const auto diff = M3D_KERNEL->GetTimer().GetCurTime() - m_curMessageStartTime;
+        auto const diff = M3D_KERNEL->GetTimer().GetCurTime() - m_curMessageStartTime;
         if (diff >= 1000 * m_minTimeToExists)
         {
             if (!M3D_APP->m_sound || m_soundChannelId == -1 || !M3D_APP->m_sound->IsChannelPlaying(m_soundChannelId))
@@ -210,10 +210,10 @@ int CinemaPanel::OnPaint(const m3d::ui::DrawInfo& di)
     }
     if (!m_msgInfos.empty() && !m_bIsShowingMessage)
     {
-        const auto& nextMsg = m_msgInfos.front();
-        const auto msgId = nextMsg.m_msgId;
-        const auto delay = nextMsg.m_delay;
-        const auto timeSinceLastMessage = M3D_KERNEL->GetTimer().GetCurTime() - m_curMessageEndTime;
+        auto const& nextMsg = m_msgInfos.front();
+        auto const msgId = nextMsg.m_msgId;
+        auto const delay = nextMsg.m_delay;
+        auto const timeSinceLastMessage = M3D_KERNEL->GetTimer().GetCurTime() - m_curMessageEndTime;
 
         if (timeSinceLastMessage >= (delay * 1000.0f))
         {
@@ -232,7 +232,7 @@ void CinemaPanel::SetPanelTypeForMsg(int msgId)
 {
     m_panelType = PANELTYPE_NORMAL;
     auto* msgManager = M3D_APP->m_pInterfaceManager->GetMsgManager();
-    const auto* msgInfo = msgManager->GetMsgInfo(msgId);
+    auto const* msgInfo = msgManager->GetMsgInfo(msgId);
     if (msgInfo)
     {
         m_panelType = msgInfo->GetMsgType() == MsgInfo::MSGTYPE_SCROLL ? PANELTYPE_SCROLL : PANELTYPE_NORMAL;
@@ -251,7 +251,7 @@ int CinemaPanel::_SetMsg(int msgId)
     Clear();
 
     auto* msgManager = M3D_APP->m_pInterfaceManager->GetMsgManager();
-    const auto* msgInfo = msgManager->GetMsgInfo(msgId);
+    auto const* msgInfo = msgManager->GetMsgInfo(msgId);
     if (!msgInfo)
     {
         return 0;
@@ -303,7 +303,7 @@ void CinemaPanel::SetupPortrait(MsgInfo const* msgInfo)
 
     if (portrait->GetModel() && portrait->Animation())
     {
-        const ActionType randomMove = help::GetRandomMoveAnimation(portrait->GetModel());
+        ActionType const randomMove = help::GetRandomMoveAnimation(portrait->GetModel());
         if (!portrait->Animation()->SetAnimation(randomMove))
         {
             portrait->Animation()->SetAnimation(AT_MOVE1);
@@ -323,7 +323,7 @@ void CinemaPanel::SetupPortrait(MsgInfo const* msgInfo)
     float roll = 0.0f;
     m.getYPR(yaw, pitch, roll);
 
-    const float newPitch = msgInfo->IsModelAutosized() ? portrait->GetDefaultRotationAngleX() : 0.0f;
+    float const newPitch = msgInfo->IsModelAutosized() ? portrait->GetDefaultRotationAngleX() : 0.0f;
     m.rotYPR(yaw, newPitch, roll);
     rotation.FromMatrix(m);
 
@@ -404,7 +404,7 @@ void CinemaPanel::SetupTextScroll(MsgInfo const* msgInfo)
     }
 
     m_wndScrollText->m_bScrollingEnabled = true;
-    const auto clientBounds = m_wndScrollText->GetClientBounds();
+    auto const clientBounds = m_wndScrollText->GetClientBounds();
     m_wndScrollText->m_textBounds.y0 = clientBounds.y0 + clientBounds.height;
 }
 
@@ -522,7 +522,9 @@ int CinemaPanel::GameDataSetup()
         }
         else
         {
-            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndScrollImageUpOverlayName + " is not found or incorrect type");
+            M3D_LOG_ERR(
+                "Get control error: control " + m_aif.m_wndScrollImageUpOverlayName +
+                " is not found or incorrect type");
             success = false;
         }
 
@@ -533,7 +535,9 @@ int CinemaPanel::GameDataSetup()
         }
         else
         {
-            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndScrollImageDownOverlayName + " is not found or incorrect type");
+            M3D_LOG_ERR(
+                "Get control error: control " + m_aif.m_wndScrollImageDownOverlayName +
+                " is not found or incorrect type");
             success = false;
         }
 
@@ -544,7 +548,8 @@ int CinemaPanel::GameDataSetup()
         }
         else
         {
-            M3D_LOG_ERR("Get control error: control " + m_aif.m_wndPortraitOverlayName + " is not found or incorrect type");
+            M3D_LOG_ERR(
+                "Get control error: control " + m_aif.m_wndPortraitOverlayName + " is not found or incorrect type");
             success = false;
         }
 
@@ -556,13 +561,16 @@ int CinemaPanel::GameDataSetup()
             {
                 if (!m_wndScrollText->CreateFromPattern(dynamic_cast<m3d::ui::Wnd*>(child), true))
                 {
-                    M3D_LOG_ERR("Make control error: cannot create " + m_aif.m_wndScrollTextName + " from pattern class");
+                    M3D_LOG_ERR(
+                        "Make control error: cannot create " + m_aif.m_wndScrollTextName + " from pattern class");
                     success = false;
                 }
             }
             else
             {
-                M3D_LOG_ERR("Make control error: cannot create " + m_aif.m_wndScrollTextName + " - cannot find rtti class AutoScrollTextWnd");
+                M3D_LOG_ERR(
+                    "Make control error: cannot create " + m_aif.m_wndScrollTextName +
+                    " - cannot find rtti class AutoScrollTextWnd");
                 success = false;
             }
         }
@@ -574,7 +582,7 @@ int CinemaPanel::GameDataSetup()
 
         for (int i = 0; i < 2; ++i)
         {
-            const auto portraitName = m_aif.m_wndPortraitName + CStr(i);
+            auto const portraitName = m_aif.m_wndPortraitName + CStr(i);
             child = GetChildByName(portraitName);
             if (child && child->IsKindOf(&m3d::ui::ModelWnd::m_classModelWnd))
             {
@@ -589,7 +597,8 @@ int CinemaPanel::GameDataSetup()
                 }
                 else
                 {
-                    M3D_LOG_ERR("Make control error: cannot create " + portraitName + " - cannot find rtti class ItemModelWnd");
+                    M3D_LOG_ERR(
+                        "Make control error: cannot create " + portraitName + " - cannot find rtti class ItemModelWnd");
                     success = false;
                 }
             }
@@ -754,7 +763,7 @@ void CinemaPanel::SetupTime(MsgInfo const* msgInfo)
         return;
     }
 
-    const int time = msgInfo->GetTime();
+    int const time = msgInfo->GetTime();
     m_minTimeToExists = (time == -1) ? 10 : time;
     m_curMessageStartTime = M3D_KERNEL->GetTimer().GetCurTime();
 }

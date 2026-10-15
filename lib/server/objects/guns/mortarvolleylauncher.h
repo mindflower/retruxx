@@ -29,4 +29,4 @@ namespace ai
     public:
         RT_CLASS_DECLARE(MortarVolleyLauncher);
     };
-}
+}  // namespace ai

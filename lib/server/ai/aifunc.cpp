@@ -6,13 +6,13 @@
 
 namespace ai
 {
-    void AIFunc::Set(CStr const& name, m3d::AIParam(*funcAction)(Obj*))
+    void AIFunc::Set(CStr const& name, m3d::AIParam (*funcAction)(Obj*))
     {
         m_name = name;
         m_funcAction = funcAction;
     }
 
-    AIFunc::AIFunc(CStr const& name, m3d::AIParam(*funcAction)(Obj*))
+    AIFunc::AIFunc(CStr const& name, m3d::AIParam (*funcAction)(Obj*))
     {
         Set(name, funcAction);
     }
@@ -40,4 +40,4 @@ namespace ai
     {
         return m_funcAction(pObj);
     }
-}
+}  // namespace ai

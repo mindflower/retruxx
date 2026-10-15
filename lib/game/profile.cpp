@@ -21,11 +21,11 @@ RT_CLASS_DEFINE(Profile);
 
 namespace
 {
-	struct Name2Id
-	{
+    struct Name2Id
+    {
         CStr m_name;
         int m_id;
-	};
+    };
 
     Name2Id l_paramName2Id[] = {
         {"PP_SAVE_SORT_ARG", 0},
@@ -48,7 +48,7 @@ namespace
         {"PP_HELP_ID_INVENTORY", 17},
         {"PP_HELP_ID_VEHICLE_CHARACTERISTICS", 18},
         {"PP_HELP_ID_QUESTLOG_QUESTS", 19},
-		{"PP_HELP_ID_QUESTLOG_QUEST_ITEMS", 20},
+        {"PP_HELP_ID_QUESTLOG_QUEST_ITEMS", 20},
         {"PP_HELP_ID_LOCAL_MAP", 21},
         {"PP_HELP_ID_GLOBAL_MAP", 22},
         {"PP_HELP_ID_HISTORY", 23},
@@ -58,7 +58,7 @@ namespace
         {"PP_HELP_ID_ENCYCLOPAEDIA", 27},
         {"PP_HELP_ID_SHOP_GUNS", 28},
         {"PP_HELP_ID_SHOP_GOODS", 29},
-		{"PP_HELP_ID_WORKSHOP", 30},
+        {"PP_HELP_ID_WORKSHOP", 30},
         {"PP_HELP_ID_WORKSHOP_CABINS", 31},
         {"PP_HELP_ID_WORKSHOP_BASKETS", 32},
         {"PP_HELP_ID_WORKSHOP_VEHICLE", 33},
@@ -68,12 +68,12 @@ namespace
         {"PP_HELP_ID_WORKSHOP_RECHARGE", 37},
         {"PP_HELP_ID_BUY_CABIN", 38},
         {"PP_HELP_ID_BUY_BASKET", 39},
-		{"PP_HELP_ID_BUY_VEHICLE", 40},
+        {"PP_HELP_ID_BUY_VEHICLE", 40},
         {"PP_HELP_ID_TOWN", 41},
         {"PP_HELP_ID_BAR", 42},
         {"PP_HELP_ID_TALK_WITH_NPC", 43},
     };
-}
+}  // namespace
 
 int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
 {
@@ -90,7 +90,8 @@ int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xm
             if (!paramsNode->IsEmpty())
             {
                 ref_ptr paramNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-                for (paramsNode->GetFirstChild(paramNode, "Param"); !paramNode->IsEmpty();paramNode->GetNextSibling(paramNode, "Param"))
+                for (paramsNode->GetFirstChild(paramNode, "Param"); !paramNode->IsEmpty();
+                     paramNode->GetNextSibling(paramNode, "Param"))
                 {
                     CStr idStr;
                     m3d::SafeStrAttrib(idStr, paramNode, "Id");
@@ -130,8 +131,8 @@ int Profile::LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xm
             return 0;
         }
     }
-	M3D_LOG_INFO("Profile::LoadFromXml error - invalid xmlFile or xmlNode");
-	return 0;
+    M3D_LOG_INFO("Profile::LoadFromXml error - invalid xmlFile or xmlNode");
+    return 0;
 }
 
 CStr const& Profile::GetFolder() const
@@ -233,10 +234,9 @@ int Profile::SetParam(ProfileParam paramId, m3d::AIParam const& paramVal)
         return 0;
     }
     m_params[paramId] = paramVal;
-    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    if (app->GetProfileManager()->GetCurProfile() == this)
+    if (M3D_APP->GetProfileManager()->GetCurProfile() == this)
     {
-        app->EnqueueMessage(65680, paramId, 0, 0, 0, {}, {});
+        M3D_APP->EnqueueMessage(65680, paramId, 0, 0, 0, {}, {});
     }
     return 1;
 }
@@ -312,16 +312,18 @@ int Profile::SetParamsDefault()
             aiParam = static_cast<float>(1.0);
             break;
         case 8:
-            aiParam = !m3d::g_Kernel->GetEngineCfg().m_input_defaultInputLanguageBase.GetB();
+            aiParam = !M3D_ENGINE_CFG.m_input_defaultInputLanguageBase.GetB();
             break;
         case 9:
-            aiParam = static_cast<float>(1.0);;
+            aiParam = static_cast<float>(1.0);
+            ;
             break;
         case 11:
             aiParam = "no";
             break;
         case 12:
-            aiParam = static_cast<float>(0.0);;
+            aiParam = static_cast<float>(0.0);
+            ;
             break;
         case 13:
             aiParam = "no";
@@ -358,10 +360,10 @@ ProfileParam Profile::ParamName2Id(CStr const& name) const
 {
     for (auto const& param : l_paramName2Id)
     {
-	    if (name == param.m_name)
-	    {
+        if (name == param.m_name)
+        {
             return static_cast<ProfileParam>(param.m_id);
-	    }
+        }
     }
     return PP_NUM_PROFILE_PARAMS;
 }
@@ -403,8 +405,8 @@ int ProfileManager::SetCurProfile(CStr const& profileName)
     if (_GetProfileByName(profileName))
     {
         m_curProfileName = profileName;
-        m3d::g_Kernel->GetEngineCfg().m_profile.Set(profileName.c_str());
-        m3d::Application::g_pApp->EnqueueMessage(65678, 0, 0, 0, 0, {}, {});
+        M3D_ENGINE_CFG.m_profile.Set(profileName.c_str());
+        M3D_APP->EnqueueMessage(65678, 0, 0, 0, 0, {}, {});
         M3D_LOG_INFO("Profile \"" + profileName + "\" set");
         return res;
     }
@@ -512,7 +514,7 @@ int ProfileManager::Init()
     auto res = LoadProfiles();
     if (!m_profiles.empty())
     {
-        CStr const lastProfileName = M3D_KERNEL->GetEngineCfg().m_profile.GetS();
+        CStr const lastProfileName = M3D_ENGINE_CFG.m_profile.GetS();
         auto profile = _GetProfileByName(lastProfileName);
         if (!profile)
         {
@@ -530,7 +532,7 @@ int ProfileManager::Init()
 Profile const* ProfileManager::CreateNewProfile(CStr const& profileName)
 {
     // RVA 0x40F8E0
-    auto* profile = static_cast<Profile*>(m3d::g_Kernel->New("Profile"));
+    auto* profile = static_cast<Profile*>(M3D_KERNEL->New("Profile"));
     if (!profile)
     {
         M3D_LOG_INFO("ProfileManager::CreateNewProfile error - cannot instatntiate profile object");
@@ -567,8 +569,8 @@ ProfileManager::~ProfileManager()
 {
     // RVA 0x40EF90
     Clear();
-    m3d::g_Kernel->GetEngineCfg().m_console->UnregisterCVar(&m_cvPathToProfiles);
-    m3d::g_Kernel->GetEngineCfg().m_console->UnregisterCVar(&m_cvProfileFileName);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvPathToProfiles);
+    M3D_ENGINE_CFG.m_console->UnregisterCVar(&m_cvProfileFileName);
 }
 
 m3d::Object* ProfileManager::CreateObject()
@@ -582,16 +584,15 @@ int ProfileManager::LoadProfiles()
     retruxx::vector<CStr> files;
     if (!GetProfileFiles(files))
     {
-
         M3D_LOG_INFO("ProfileManager::LoadProfiles error - cannot load profile files");
         return 0;
     }
     for (auto& file : files)
     {
-        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (stream->Open(file.c_str(), m3d::fs::IStream::OPEN_READ))
         {
-            ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+            ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
             if (xmlFile->Read(*stream))
             {
                 stream->Close();
@@ -599,17 +600,17 @@ int ProfileManager::LoadProfiles()
                 xmlFile->GetFirstChild(node, "Profile");
                 if (!node->IsEmpty())
                 {
-                    auto profile = dynamic_cast<Profile*>(m3d::g_Kernel->New("Profile"));
+                    auto profile = dynamic_cast<Profile*>(M3D_KERNEL->New("Profile"));
                     if (profile)
                     {
-	                    if (profile->LoadFromXml(xmlFile, node))
-	                    {
+                        if (profile->LoadFromXml(xmlFile, node))
+                        {
                             profile->SetFolder(DirectoryFromFileName(file));
                             if (!AddProfile(profile))
                             {
                                 M3D_LOG_INFO("ProfileManager::LoadProfiles - cannot add profile " + profile->GetName());
                             }
-	                    }
+                        }
                         else
                         {
                             M3D_LOG_INFO("ProfileManager::LoadProfiles - error by loading profile");
@@ -690,7 +691,7 @@ int ProfileManager::AddProfile(Profile* profile)
         return 0;
     }
     m_profiles.push_back(profile);
-    m3d::Application::g_pApp->EnqueueMessage(65679, 0, 0, 0, 0, {}, {});
+    M3D_APP->EnqueueMessage(65679, 0, 0, 0, 0, {}, {});
     return 1;
 }
 
@@ -701,11 +702,11 @@ ProfileManager::ProfileManager(ProfileManager const&)
 }
 
 ProfileManager::ProfileManager() :
-	m_cvPathToProfiles("pathToProfiles", "data\\profiles", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE),
-	m_cvProfileFileName("profileFileName", "profile.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE)
+    m_cvPathToProfiles("pathToProfiles", "data\\profiles", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE),
+    m_cvProfileFileName("profileFileName", "profile.xml", m3d::CVar::CVAR_STRING, m3d::CVar::CVAR_ARCHIVE)
 {
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvPathToProfiles, nullptr);
-    m3d::g_Kernel->GetEngineCfg().m_console->RegisterCVar(&m_cvProfileFileName, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvPathToProfiles, nullptr);
+    M3D_ENGINE_CFG.m_console->RegisterCVar(&m_cvProfileFileName, nullptr);
 }
 
 int ProfileManager::GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CStr>>& files) const
@@ -728,7 +729,7 @@ int ProfileManager::GetProfileFiles(retruxx::vector<CStr, retruxx::allocator<CSt
     }
     for (auto& dir : profileDirs)
     {
-        auto profileFile = pathToProfiles + "\\" + dir+ CStr("\\") + m_cvProfileFileName.GetS();
+        auto profileFile = pathToProfiles + "\\" + dir + CStr("\\") + m_cvProfileFileName.GetS();
         attr = GetFileAttributesA(profileFile.c_str());
         if (attr != -1 && (attr & 0x10) == 0)
         {
@@ -782,14 +783,14 @@ int ProfileManager::SaveProfile(Profile const* profile) const
     }
 
     CStr const profileFileName = folder + "\\" + CStr(m_cvProfileFileName.GetS());
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(profileFileName.c_str(), m3d::fs::IStream::OPEN_WRITE))
     {
         M3D_LOG_INFO("ProfileManager::SaveProfile error - can't open file " + profileFileName + " for write.");
         return 0;
     }
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     ref_ptr node = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "Profile");
     xmlFile->AddChild(node);
 

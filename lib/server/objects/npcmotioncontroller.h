@@ -16,7 +16,7 @@ namespace ai
         virtual bool LoadFromXML(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
     };
 
-   class NPCMotionController : public Obj
+    class NPCMotionController : public Obj
     {
     public:
         enum MotionStyle
@@ -60,7 +60,7 @@ namespace ai
     public:
         RT_CLASS_DECLARE(NPCMotionController);
 
-   private:
+    private:
         int m_vehicleUnderControlId;
         MotionStyle m_style;
         float m_elapsedStateTime;
@@ -68,5 +68,5 @@ namespace ai
         CVector m_lastDesiredPosition;
         float m_characteristicDist;
         float m_characteristicPeriod;
-    }; /* size: 0x00e4 */
-}
+    };
+}  // namespace ai

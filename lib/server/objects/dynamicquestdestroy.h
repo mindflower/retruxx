@@ -21,17 +21,17 @@ namespace ai
     class DynamicQuestDestroy : public DynamicQuest
     {
     public:
-        DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const &);
-        static void __fastcall LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const *);
-        static m3d::Class * GetBaseClass();
-        virtual m3d::Class * GetClass() const ;
-        static bool __fastcall FreeNameForTargetExists();
-        virtual DynamicQuestDestroyPrototypeInfo const * GetPrototypeInfo() const ;
-        virtual void Update(float,unsigned int);
-        static void __fastcall SaveNamesForTargetsToXml(m3d::cmn::XmlNode *);
-        virtual DynamicQuestManager::QuestType GetQuestType() const ;
-        virtual int OnEvent(Event const &);
-        static CStr __fastcall GetRandomNameForTarget();
+        DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const&);
+        static void LoadNamesForTargetsFromXml(m3d::cmn::XmlNode const*);
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const;
+        static bool FreeNameForTargetExists();
+        virtual DynamicQuestDestroyPrototypeInfo const* GetPrototypeInfo() const;
+        virtual void Update(float, unsigned int);
+        static void SaveNamesForTargetsToXml(m3d::cmn::XmlNode*);
+        virtual DynamicQuestManager::QuestType GetQuestType() const;
+        virtual int OnEvent(Event const&);
+        static CStr GetRandomNameForTarget();
 
     protected:
         virtual int _CalcReward();
@@ -39,15 +39,15 @@ namespace ai
         virtual ~DynamicQuestDestroy();
 
     private:
-        virtual m3d::Object * Clone();
-        void _OnObjectDie(Event const &);
-        static m3d::Object * CreateObject();
+        virtual m3d::Object* Clone();
+        void _OnObjectDie(Event const&);
+        static m3d::Object* CreateObject();
 
     public:
         RT_CLASS_DECLARE(DynamicQuestDestroy);
 
     private:
         // The pool of names still free for a bandit leader; saved with the level.
-        static inline retruxx::vector<CStr, retruxx::allocator<CStr> > m_namesForTargets;
+        static inline retruxx::vector<CStr, retruxx::allocator<CStr>> m_namesForTargets;
     };
-}
+}  // namespace ai

@@ -7,8 +7,8 @@ namespace ai
     {
     public:
         LocationPusherPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0198 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     // A "gun" that drops a temporary location (an oil slick and the like) behind the vehicle.
     class LocationPusher : public ai::Gun
@@ -16,24 +16,24 @@ namespace ai
         friend class LocationPusherPrototypeInfo;
 
     protected:
-        virtual ~LocationPusher() override /* 0x00 */;
+        virtual ~LocationPusher() override;
 
     private:
-        LocationPusher(const ai::LocationPusherPrototypeInfo& prototypeInfo);
-        LocationPusher(const ai::LocationPusher&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        LocationPusher(ai::LocationPusherPrototypeInfo const& prototypeInfo);
+        LocationPusher(ai::LocationPusher const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(LocationPusher);
-        virtual const ai::LocationPusherPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual ai::LocationPusherPrototypeInfo const* GetPrototypeInfo() const override;
 
     private:
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const override /* 0x16c */;
+        virtual bool isLookAtPoint(CVector const& lookAt, float eps) const override;
 
     protected:
-        virtual void _LaunchShells() override /* 0x198 */;
-    }; /* size: 0x0330 */
-}
+        virtual void _LaunchShells() override;
+    };
+}  // namespace ai

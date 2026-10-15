@@ -22,8 +22,8 @@ namespace
     // projector's description as read from its .xml.
     struct ProjectorProto
     {
-        /* 0x0000 */ int m_radius = 0;
-        /* 0x0004 */ m3d::rend::TexHandle m_texture;
+        int m_radius = 0;
+        m3d::rend::TexHandle m_texture;
     };
 
     // Property id: read a projector's radius back as a float.
@@ -33,19 +33,19 @@ namespace
     // radius.
     struct ProjectorRenderInfo
     {
-        /* 0x0000 */ CMatrix m_xform;
-        /* 0x0040 */ float m_radius;
+        CMatrix m_xform;
+        float m_radius;
     };
 
     float const VISCELL_EDGE_LENGTH_16 = 128.0f;
-}
+}  // namespace
 
 struct ProjectorStats
 {
-    /* 0x0000 */ int numProjToRender;
-    /* 0x0004 */ int numCellsRendered;
-    /* 0x0008 */ int numModelsRendered;
-    /* 0x000c */ int curFrame;
+    int numProjToRender;
+    int numCellsRendered;
+    int numModelsRendered;
+    int curFrame;
 
     void Zero()
     {
@@ -63,7 +63,7 @@ struct ProjectorStats
         this->numProjToRender = 0;
         this->numCellsRendered = 0;
     }
-}; /* size: 0x0010 */
+};
 
 namespace m3d
 {
@@ -110,7 +110,7 @@ namespace m3d
     ProjectorsServer::ProjectorsServer()
     {
         // RVA 0x760C50
-        m_profiler = Application::g_pApp->CreateProfiler("projectors");
+        m_profiler = M3D_APP->CreateProfiler("projectors");
 
         m_attenuationTex = M3D_RENDERER->AddTexture("data\\textures\\attenuation_256.tga", 4);
         M3D_RENDERER->SetTextureParameter(m_attenuationTex, rend::TM_TEX_FILTER, 1);
@@ -342,8 +342,10 @@ namespace m3d
                 int const landSize = ls.m_owner->m_level->land_size;
                 float const cellRadius = VISCELL_EDGE_LENGTH_16 * 0.70700002f;
                 Landscape::CellParams const& cell = ls.m_cellParams[x + z * landSize];
-                CVector const cellOrg((static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH_16,
-                    (cell.m_h1 + cell.m_h0) * 0.5f, (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH_16);
+                CVector const cellOrg(
+                    (static_cast<float>(x) + 0.5f) * VISCELL_EDGE_LENGTH_16,
+                    (cell.m_h1 + cell.m_h0) * 0.5f,
+                    (static_cast<float>(z) + 0.5f) * VISCELL_EDGE_LENGTH_16);
                 if (projectorFrusta.testSphere(cellOrg, cellRadius))
                 {
                     ls.drawCellOverlayedShader(x, z, lsShader);
@@ -366,7 +368,8 @@ namespace m3d
                 rni.isCullInverted = false;
                 rni.isPrimaryRender = false;
                 rni.isUseImpostors = true;
-                float const invLen = 1.0f / std::sqrt(dir.x * dir.x + dir.z * dir.z + dir.y * dir.y + 0.00000011920929f);
+                float const invLen =
+                    1.0f / std::sqrt(dir.x * dir.x + dir.z * dir.z + dir.y * dir.y + 0.00000011920929f);
                 rni.projDir = CVector(0.0f - invLen * dir.x, 0.0f - dir.y * invLen, 0.0f - dir.z * invLen);
                 rni.projOrg = org;
                 rni.projTansform = projWorldMat;
@@ -422,4 +425,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

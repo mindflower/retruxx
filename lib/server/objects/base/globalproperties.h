@@ -11,8 +11,8 @@ namespace m3d
     {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -101,4 +101,4 @@ namespace ai
     };
 
     extern GlobalProperties theGlobProp;
-}
+}  // namespace ai

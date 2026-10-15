@@ -10,7 +10,7 @@
 
 namespace ai
 {
-    bool ExternalPaths::Load(const CStr& fileName)
+    bool ExternalPaths::Load(CStr const& fileName)
     {
         scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
@@ -22,7 +22,8 @@ namespace ai
         ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
-            M3D_LOG_ERR("Error: ExternalPaths can't read xml " + CStr(fileName) + "(" + CStr(xmlFile->GetError()) + ")");
+            M3D_LOG_ERR(
+                "Error: ExternalPaths can't read xml " + CStr(fileName) + "(" + CStr(xmlFile->GetError()) + ")");
             return false;
         }
 
@@ -35,7 +36,8 @@ namespace ai
         }
 
         ref_ptr pathNode = xmlFile->CreateNode();
-        for (pathsNode->GetFirstChild(pathNode, "Path"); !pathNode->IsEmpty(); pathNode->GetNextSibling(pathNode, "Path"))
+        for (pathsNode->GetFirstChild(pathNode, "Path"); !pathNode->IsEmpty();
+             pathNode->GetNextSibling(pathNode, "Path"))
         {
             CStr name = pathNode->GetAttribute("Name");
             if (name.empty())
@@ -52,7 +54,8 @@ namespace ai
 
             retruxx::vector<CVector2> paths;
             ref_ptr pointNode = xmlFile->CreateNode();
-            for (pathNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty(); pointNode->GetNextSibling(pointNode, "Point"))
+            for (pathNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty();
+                 pointNode->GetNextSibling(pointNode, "Point"))
             {
                 CVector2 point(0.0, 0.0);
                 if (m3d::SafeVector2Attrib(point, pointNode, "coord"))
@@ -71,7 +74,7 @@ namespace ai
     }
 
     // RVA 0x7C8750
-    bool ExternalPaths::Save(const CStr& filename)
+    bool ExternalPaths::Save(CStr const& filename)
     {
         if (filename.empty())
         {
@@ -105,7 +108,7 @@ namespace ai
         return true;
     }
 
-    const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& ExternalPaths::GetPath(const CStr& pathName) const
+    retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& ExternalPaths::GetPath(CStr const& pathName) const
     {
         auto it = m_paths.find(pathName);
         if (it != m_paths.end())
@@ -117,8 +120,9 @@ namespace ai
         return m_emptyPath;
     }
 
-    bool ExternalPaths::SetPath(const CStr& pathName,
-        const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& thePath)
+    bool ExternalPaths::SetPath(
+        CStr const& pathName,
+        retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& thePath)
     {
         // RVA 0x7CA370
         if (pathName.empty())
@@ -130,8 +134,9 @@ namespace ai
         return true;
     }
 
-    bool ExternalPaths::AddPath(const CStr& pathName,
-        const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& thePath)
+    bool ExternalPaths::AddPath(
+        CStr const& pathName,
+        retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& thePath)
     {
         // RVA 0x7CA410 - NOTE: unlike SetPath, an empty name is not rejected.
         if (m_paths.find(pathName) != m_paths.end())
@@ -143,7 +148,7 @@ namespace ai
         return true;
     }
 
-    bool ExternalPaths::DelPath(const CStr& pathName)
+    bool ExternalPaths::DelPath(CStr const& pathName)
     {
         // RVA 0x7C9660
         PathMap::iterator const it = m_paths.find(pathName);
@@ -156,7 +161,7 @@ namespace ai
         return true;
     }
 
-    const retruxx::vector<CStr, retruxx::allocator<CStr>>& ExternalPaths::GetPathNames() const
+    retruxx::vector<CStr, retruxx::allocator<CStr>> const& ExternalPaths::GetPathNames() const
     {
         // RVA 0x7C9230 - NOTE: the names are collected into m_emptyNames, so this const method
         // rebuilds that member on every call.
@@ -168,4 +173,4 @@ namespace ai
         }
         return names;
     }
-}
+}  // namespace ai

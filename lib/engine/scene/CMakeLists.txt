@@ -5,7 +5,4 @@ add_subdirectory(servers)
 add_subdirectory(shadows)
 
 target_sources(retruxx_lib PRIVATE
-    scenegraph.cpp
-    scenelights.cpp
-    sceneshadows.cpp
-    traceline.cpp)
+    scenegraph.cpp)

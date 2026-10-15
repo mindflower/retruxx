@@ -5,7 +5,7 @@
 #include "game/profile.h"
 
 RT_CLASS_EXPORTS_BEGIN(TruxxImpulse)
-    RT_CLASS_EXPORTS_END;
+RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(TruxxImpulse);
 
 namespace
@@ -19,8 +19,8 @@ namespace
     AuxIdToName l_gameModeNames[] = {
         {"GS_GAME", 0},
         {"GS_CINEMATIC", 1},
-        {"GS_MAINMENU" , 2},
-        {"GS_INITIALIZATION" , 3},
+        {"GS_MAINMENU", 2},
+        {"GS_INITIALIZATION", 3},
     };
 
     AuxIdToName l_impulseNames[] = {
@@ -78,7 +78,7 @@ namespace
         {"IM_UI_PICKUP_ALL", 55},
         {"IM_UI_HELP", 50},
     };
-}
+}  // namespace
 
 int TruxxImpulse::HandleImpulse(m3d::AuxImpulseInfo const& impInfo, m3d::ui::Wnd* causeWnd)
 {
@@ -153,13 +153,13 @@ int TruxxImpulse::GetImpulseIdByName(CStr const& impName)
 {
     if (!impName.empty())
     {
-	    for (auto const& name : l_impulseNames)
-	    {
-		    if (name.m_name == impName)
-		    {
+        for (auto const& name : l_impulseNames)
+        {
+            if (name.m_name == impName)
+            {
                 return name.m_id;
-		    }
-	    }
+            }
+        }
     }
     return -1;
 }
@@ -168,10 +168,10 @@ int TruxxImpulse::GetGameModeIdByName(CStr const& modeName)
 {
     for (auto const& mode : l_gameModeNames)
     {
-	    if (mode.m_name == modeName)
-	    {
+        if (mode.m_name == modeName)
+        {
             return mode.m_id;
-	    }
+        }
     }
     return -1;
 }
@@ -253,8 +253,7 @@ TruxxImpulse::TruxxImpulse()
 {
 }
 
-TruxxImpulse::TruxxImpulse(TruxxImpulse const&) :
-    m3d::GameImpulse()
+TruxxImpulse::TruxxImpulse(TruxxImpulse const&) : m3d::GameImpulse()
 {
     // RVA 0x5504D0 - the source is ignored: the base is default-constructed,
     // so Clone() yields a fresh impulse handler rather than a copy.

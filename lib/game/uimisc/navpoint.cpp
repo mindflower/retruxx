@@ -300,7 +300,8 @@ int NavPointManager::AddNavPoint(NavPoint* np)
     ++m_nextNavPointId;
 
     m3d::AIParam param5;
-    M3D_APP->ImmediateMessage(UM_NAVPOINT_ADDED, id, np->m_objectId, np->m_objectType, np->m_navPointType, np->m_levelName, param5);
+    M3D_APP->ImmediateMessage(
+        UM_NAVPOINT_ADDED, id, np->m_objectId, np->m_objectType, np->m_navPointType, np->m_levelName, param5);
     return id;
 }
 
@@ -684,13 +685,18 @@ int NavPointManager::UpdateOnDynamicQuestStateChanged(void* data)
     {
         // A freshly taken dynamic quest gets a nav point.
         AddNavPointObjectDependend(
-            help::GetCurrentLevelName(), NavPoint::NAVPOINT_TYPE_USER_QUEST, NavPoint::OBJECT_TYPE_DYNAMIC_QUEST, questId, false);
+            help::GetCurrentLevelName(),
+            NavPoint::NAVPOINT_TYPE_USER_QUEST,
+            NavPoint::OBJECT_TYPE_DYNAMIC_QUEST,
+            questId,
+            false);
         return 1;
     }
 
     // Any other status drops the quest's nav point; when that leaves no quest
     // nav point on the level, the next suitable quest gets one.
-    NavPoint const* np = GetNavPointByObjectId(help::GetCurrentLevelName(), questId, NavPoint::OBJECT_TYPE_DYNAMIC_QUEST);
+    NavPoint const* np =
+        GetNavPointByObjectId(help::GetCurrentLevelName(), questId, NavPoint::OBJECT_TYPE_DYNAMIC_QUEST);
     if (np)
     {
         RemoveNavPointById(np->GetId());

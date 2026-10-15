@@ -9,50 +9,51 @@ namespace m3d
         class ButtonWnd : public Wnd
         {
             friend class ScrollWnd;
-        public:
-			static Object* CreateObject();
-			static Class* GetBaseClass();
 
         public:
-			virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-			rend::TexHandle GetImageDown() const;
-			virtual Class* GetClass() const;
-			void SetRegular();
-			int SetImaged(rend::TexHandle, rend::TexHandle, rend::TexHandle, rend::TexHandle);
-			rend::TexHandle GetImageRegular() const;
-			virtual Object* Clone();
-			bool IsImaged() const;
-			virtual ~ButtonWnd();
-			virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
-			rend::TexHandle GetImageDisabled() const;
-			rend::TexHandle GetImageIn() const;
-			virtual float GetFrameWidth() const;
-			virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
+            static Object* CreateObject();
+            static Class* GetBaseClass();
 
         public:
-			virtual int OnMouseOut();
-			virtual int OnLoosingFocus();
-			virtual int OnMouseIn();
-		    ButtonWnd(ButtonWnd const&);
-			void ReleaseTextures();
-			virtual void OnNcPaint(DrawInfo const&, unsigned int);
-			virtual int OnPaint(DrawInfo const&);
-			virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
-			virtual int OnKey(unsigned short, unsigned char, unsigned int);
-			ButtonWnd();
-			virtual int OnObtainingFocus();
+            virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+            rend::TexHandle GetImageDown() const;
+            virtual Class* GetClass() const;
+            void SetRegular();
+            int SetImaged(rend::TexHandle, rend::TexHandle, rend::TexHandle, rend::TexHandle);
+            rend::TexHandle GetImageRegular() const;
+            virtual Object* Clone();
+            bool IsImaged() const;
+            virtual ~ButtonWnd();
+            virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+            rend::TexHandle GetImageDisabled() const;
+            rend::TexHandle GetImageIn() const;
+            virtual float GetFrameWidth() const;
+            virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
+
+        public:
+            virtual int OnMouseOut();
+            virtual int OnLoosingFocus();
+            virtual int OnMouseIn();
+            ButtonWnd(ButtonWnd const&);
+            void ReleaseTextures();
+            virtual void OnNcPaint(DrawInfo const&, unsigned int);
+            virtual int OnPaint(DrawInfo const&);
+            virtual int OnMouseButton0(unsigned int, PointBase<float> const&);
+            virtual int OnKey(unsigned short, unsigned char, unsigned int);
+            ButtonWnd();
+            virtual int OnObtainingFocus();
 
         public:
             RT_CLASS_DECLARE(ButtonWnd);
 
         protected:
-            /* 0x0220 */ int m_isImaged = 0;
-            /* 0x0224 */ int m_isInside = 0;
-            /* 0x0228 */ rend::TexHandle m_image;
-            /* 0x022c */ rend::TexHandle m_imageMouseIn;
-            /* 0x0230 */ rend::TexHandle m_imageMouseDown;
-            /* 0x0234 */ rend::TexHandle m_imageDisabled;
-            /* 0x0238 */ bool m_isSounded = true;
+            int m_isImaged = 0;
+            int m_isInside = 0;
+            rend::TexHandle m_image;
+            rend::TexHandle m_imageMouseIn;
+            rend::TexHandle m_imageMouseDown;
+            rend::TexHandle m_imageDisabled;
+            bool m_isSounded = true;
         };
 
         class CheckWnd : public ButtonWnd
@@ -91,5 +92,5 @@ namespace m3d
             CStr m_checkedPaneName = "defaultCheckChecked";
             CStr m_uncheckedPaneName = "defaultCheckUnchecked";
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

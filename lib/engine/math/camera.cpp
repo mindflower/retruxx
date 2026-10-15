@@ -8,11 +8,7 @@
 #include <cmath>
 #include <cstring>
 
-CAffineXForm::CAffineXForm() :
-    m_worldOrigin(0.0, 0.0, 0.0),
-    m_rotRoll(0.0),
-    m_rotPitch(0.0),
-    m_rotYaw(0.0)
+CAffineXForm::CAffineXForm() : m_worldOrigin(0.0, 0.0, 0.0), m_rotRoll(0.0), m_rotPitch(0.0), m_rotYaw(0.0)
 {
 }
 
@@ -76,9 +72,7 @@ void CCamera::createProjectionMatrix(CMatrix& vv, float f) const
     vv._22 = static_cast<float>(1.0 / std::tan(halfFovY * 0.5));
 }
 
-CCamera::CCamera() :
-    m_fovX(120.0),
-    m_fovY(90.0)
+CCamera::CCamera() : m_fovX(120.0), m_fovY(90.0)
 {
 }
 
@@ -92,7 +86,7 @@ void CCamera::lookAt(CVector const& aim, CVector const& up)
 
 void CCamera::lookAt(CVector const& aim)
 {
-    CVector up; // [esp+0h] [ebp-4Ch] BYREF
+    CVector up;  // [esp+0h] [ebp-4Ch] BYREF
     CMatrix v4;
 
     up.x = 0.0;

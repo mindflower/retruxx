@@ -7,29 +7,29 @@ namespace ai
     {
     public:
         NailLocationPrototypeInfo();
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x0094 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class NailLocation : public ai::TemporaryLocation
     {
         friend class NailLocationPrototypeInfo;
 
     protected:
-        virtual  ~NailLocation() override /* 0x00 */;
+        virtual ~NailLocation() override;
 
     private:
-        NailLocation(const ai::NailLocationPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        NailLocation(ai::NailLocationPrototypeInfo const& prototypeInfo);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classNailLocation;
-        virtual const ai::NailLocationPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual ai::NailLocationPrototypeInfo const* GetPrototypeInfo() const override;
 
     protected:
-        virtual void OnObjectIn(ai::Obj* object) override /* 0x00 */;
-        virtual void OnObjectOut(ai::Obj* object) override /* 0x00 */;
-    }; /* size: 0x0284 */
-}
+        virtual void OnObjectIn(ai::Obj* object) override;
+        virtual void OnObjectOut(ai::Obj* object) override;
+    };
+}  // namespace ai

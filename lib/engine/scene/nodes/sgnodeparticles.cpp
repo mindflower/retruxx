@@ -43,8 +43,8 @@ namespace m3d
     {
         if (this->m_srvId == -1)
             return 0;
-        if (this->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1
-            && (!this->m_isRemoveIfFree || curTime - this->m_lastTimeUpdated < 500))
+        if (this->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1 &&
+            (!this->m_isRemoveIfFree || curTime - this->m_lastTimeUpdated < 500))
         {
             return 0;
         }
@@ -164,7 +164,7 @@ namespace m3d
         else if (propId == 9475)
         {
             auto v8 = dynamic_cast<m3d::ParticlesServer*>(this->GetServer());
-            v8->AddParticles(this, static_cast<const retruxx::vector<CVector>*>(property));
+            v8->AddParticles(this, static_cast<retruxx::vector<CVector> const*>(property));
             return 0;
         }
         else
@@ -172,7 +172,7 @@ namespace m3d
             if (propId == 9474)
             {
                 auto v9 = dynamic_cast<m3d::ParticlesServer*>(this->GetServer());
-                v9->MoveParticles(this, static_cast<const retruxx::vector<CVector>*>(property));
+                v9->MoveParticles(this, static_cast<retruxx::vector<CVector> const*>(property));
             }
             return 0;
         }
@@ -203,8 +203,8 @@ namespace m3d
         // it can reach the node's ParticlesList.
         struct ParticlesNodeParams
         {
-            /* 0x0000 */ CMatrix* m_localXForm;
-            /* 0x0004 */ SgNode* m_node;
+            CMatrix* m_localXForm;
+            SgNode* m_node;
         };
 
         ParticlesNodeParams ri;
@@ -295,4 +295,4 @@ namespace m3d
     SgParticlesOpaqueNode::SgParticlesOpaqueNode()
     {
     }
-}
+}  // namespace m3d

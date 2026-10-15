@@ -12,10 +12,10 @@ namespace m3d
     {
         class ImageWnd;
         class ProgressBarWnd;
-    }
-}
+    }  // namespace ui
+}  // namespace m3d
 
-class FuelIndicatorWnd :  public m3d::ui::Wnd
+class FuelIndicatorWnd : public m3d::ui::Wnd
 {
 public:
     class AuxInfo
@@ -33,19 +33,19 @@ public:
 
 public:
     void SetVehicleId(int);
-    virtual m3d::Class * GetClass() const ;
+    virtual m3d::Class* GetClass() const;
     virtual ~FuelIndicatorWnd();
-    virtual m3d::Object * Clone();
-    static m3d::Class * GetBaseClass();
-    int CreateFromPattern(m3d::ui::Wnd *,bool);
-    static m3d::Object * CreateObject();
+    virtual m3d::Object* Clone();
+    static m3d::Class* GetBaseClass();
+    int CreateFromPattern(m3d::ui::Wnd*, bool);
+    static m3d::Object* CreateObject();
 
 protected:
-    FuelIndicatorWnd(FuelIndicatorWnd const &);
+    FuelIndicatorWnd(FuelIndicatorWnd const&);
     FuelIndicatorWnd();
-    virtual int GameDataUpdate(void *,int);
+    virtual int GameDataUpdate(void*, int);
     int UpdateProgressBar();
-    ai::Vehicle * GetVehicle() const ;
+    ai::Vehicle* GetVehicle() const;
     int UpdateLowFuelIco();
     int UpdateOnNewFrame();
 
@@ -53,8 +53,8 @@ public:
     RT_CLASS_DECLARE(FuelIndicatorWnd);
 
 private:
-    m3d::ui::ImageWnd *m_imgLowFuelIco;
-    m3d::ui::ProgressBarWnd *m_wndProgressBar;
+    m3d::ui::ImageWnd* m_imgLowFuelIco;
+    m3d::ui::ProgressBarWnd* m_wndProgressBar;
     int m_vehicleId;
     FuelIndicatorWnd::AuxInfo m_aif;
     float m_lowFuelThreshold;

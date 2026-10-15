@@ -41,7 +41,7 @@ namespace m3d
             LineWndDirection GetDirection();
 
         protected:
-            /* 0x0220 */ LineWndDirection m_direction = LINEWND_HORIZONTAL;
+            LineWndDirection m_direction = LINEWND_HORIZONTAL;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

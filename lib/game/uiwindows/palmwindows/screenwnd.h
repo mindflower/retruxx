@@ -4,16 +4,16 @@
 class ScreenWnd : public ChildPanel
 {
 protected:
-    virtual int AddChild(m3d::Object* w) override /* 0x00 */;
-    virtual int GameDataSetup() override /* 0x00 */;
+    virtual int AddChild(m3d::Object* w) override;
+    virtual int GameDataSetup() override;
     ScreenWnd();
     ScreenWnd(ScreenWnd const& rhs);
 
 public:
-    virtual ~ScreenWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~ScreenWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(ScreenWnd);
-}; /* size: 0x0224 */
+};

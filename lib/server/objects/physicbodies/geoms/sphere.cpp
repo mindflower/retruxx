@@ -5,7 +5,7 @@
 
 namespace ai
 {
-    ai::Sphere* Sphere::CreateObject(dxSpace* space, float radius, void(* movedCallback)(dxGeom*))
+    ai::Sphere* Sphere::CreateObject(dxSpace* space, float radius, void (*movedCallback)(dxGeom*))
     {
         if (radius < 0.1)
             radius = 0.1;
@@ -25,7 +25,7 @@ namespace ai
         dGeomSphereSetRadius(this->m_geomId, radius);
     }
 
-    Sphere::Sphere(dxGeom* const geomId, void(*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)
+    Sphere::Sphere(dxGeom* const geomId, void (*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)
     {
     }
-}
+}  // namespace ai

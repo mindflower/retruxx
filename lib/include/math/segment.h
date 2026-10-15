@@ -4,18 +4,18 @@
 class Segment
 {
 private:
-    /* 0x0000 */ CVector m_begin;
-    /* 0x000c */ CVector m_end;
+    CVector m_begin;
+    CVector m_end;
 
 public:
-    Segment(const Segment&);
-    Segment(const CVector& _begin, const CVector& _end);
+    Segment(Segment const&);
+    Segment(CVector const& _begin, CVector const& _end);
     Segment();
     float length() const;
     float lengthSq() const;
     CVector& begin();
-    const CVector& begin() const;
+    CVector const& begin() const;
     CVector& end();
-    const CVector& end() const;
-    const CVector getDirection() const;
-}; /* size: 0x0018 */
+    CVector const& end() const;
+    CVector const getDirection() const;
+};

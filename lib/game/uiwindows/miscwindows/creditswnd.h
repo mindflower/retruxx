@@ -12,22 +12,22 @@ class CreditsWnd : public m3d::ui::ModalWnd
     {
         AuxInfo(CreditsWnd::AuxInfo const&);
         AuxInfo();
-        /* 0x0000 */ CStr m_wndTextName;
-        /* 0x000c */ CStr m_wndPortraitName;
-        /* 0x0018 */ CStr m_texIdBg;
-    }; /* size: 0x0024 */
+        CStr m_wndTextName;
+        CStr m_wndPortraitName;
+        CStr m_texIdBg;
+    };
 
     struct PageInfo
     {
         PageInfo(CreditsWnd::PageInfo const&);
         PageInfo();
-        /* 0x0000 */ CStr m_text;
-        /* 0x000c */ float m_fontSize;
-        /* 0x0010 */ CStr m_modelName;
-        /* 0x001c */ unsigned int m_modelSkin;
-        /* 0x0020 */ unsigned int m_modelCfg;
-        /* 0x0024 */ float m_showTime;
-    }; /* size: 0x0028 */
+        CStr m_text;
+        float m_fontSize;
+        CStr m_modelName;
+        unsigned int m_modelSkin;
+        unsigned int m_modelCfg;
+        float m_showTime;
+    };
 
     struct Pointer
     {
@@ -38,25 +38,25 @@ class CreditsWnd : public m3d::ui::ModalWnd
         void Draw(m3d::ui::DrawInfo const& di);
         void Init();
         void Clear();
-        /* 0x0000 */ float m_minAngle;
-        /* 0x0004 */ float m_maxAngle;
-        /* 0x0008 */ float m_curAngle;
-        /* 0x000c */ PointBase<float> m_texSz;
-        /* 0x0014 */ PointBase<float> m_rotationCenter;
-        /* 0x001c */ PointBase<float> m_rotationScreenCenter;
-        /* 0x0024 */ CStr m_texId;
-        /* 0x0030 */ m3d::rend::TexHandle m_texture;
-    }; /* size: 0x0034 */
+        float m_minAngle;
+        float m_maxAngle;
+        float m_curAngle;
+        PointBase<float> m_texSz;
+        PointBase<float> m_rotationCenter;
+        PointBase<float> m_rotationScreenCenter;
+        CStr m_texId;
+        m3d::rend::TexHandle m_texture;
+    };
 
-    using PageInfoVector = std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*> >;
+    using PageInfoVector = std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*>>;
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0x00 */;
-    virtual int OnPaint(m3d::ui::DrawInfo const& di) override /* 0x00 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x00 */;
-    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
+    virtual int OnPaint(m3d::ui::DrawInfo const& di) override;
+    virtual int OnBeforeAddToWndStation() override;
+    virtual int OnAfterRemoveFromWndStation() override;
     void LoadPageInfo();
     void OnNewFrame();
     void StartShowingPages();
@@ -87,34 +87,34 @@ protected:
     void Reset();
     void UpdatePortraitAnimation();
 
-    /* 0x0224 */ m3d::ui::Wnd* m_wndText;
-    /* 0x0228 */ ItemModelWnd* m_wndPortrait;
-    /* 0x022c */ m3d::rend::TexHandle m_texBgShow;
-    /* 0x0230 */ m3d::rend::TexHandle m_texBgBreak;
-    /* 0x0234 */ float m_breakTime;
-    /* 0x0238 */ int m_showSoundTableId;
-    /* 0x023c */ int m_breakSoundTableId;
-    /* 0x0240 */ int m_ambientSoundTableId;
-    /* 0x0244 */ int m_musicTableId;
-    /* 0x0248 */ int m_switchSoundChannelId;
-    /* 0x024c */ int m_ambientSoundChannelId;
-    /* 0x0250 */ int m_musicChannelId;
-    /* 0x0254 */ std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*> > m_pageInfos;
-    /* 0x0264 */ int m_curPageId;
-    /* 0x0268 */ bool m_bInBreak;
-    /* 0x026c */ CreditsWnd::Pointer m_pointer;
-    /* 0x02a0 */ float m_startTime;
-    /* 0x02a4 */ m3d::CVar m_cvPathToPageInfo;
-    /* 0x02d0 */ CreditsWnd::AuxInfo m_aif;
+    m3d::ui::Wnd* m_wndText;
+    ItemModelWnd* m_wndPortrait;
+    m3d::rend::TexHandle m_texBgShow;
+    m3d::rend::TexHandle m_texBgBreak;
+    float m_breakTime;
+    int m_showSoundTableId;
+    int m_breakSoundTableId;
+    int m_ambientSoundTableId;
+    int m_musicTableId;
+    int m_switchSoundChannelId;
+    int m_ambientSoundChannelId;
+    int m_musicChannelId;
+    std::vector<CreditsWnd::PageInfo*, std::allocator<CreditsWnd::PageInfo*>> m_pageInfos;
+    int m_curPageId;
+    bool m_bInBreak;
+    CreditsWnd::Pointer m_pointer;
+    float m_startTime;
+    m3d::CVar m_cvPathToPageInfo;
+    CreditsWnd::AuxInfo m_aif;
 
     CreditsWnd();
     CreditsWnd(CreditsWnd const& rhs);
 
 public:
-    virtual ~CreditsWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x00 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x00 */;
+    virtual ~CreditsWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(CreditsWnd);
-}; /* size: 0x02f4 */
+};

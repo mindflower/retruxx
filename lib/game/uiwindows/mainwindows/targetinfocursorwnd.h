@@ -3,29 +3,31 @@
 // TargetCursorWnd to be a complete type (TargetInfoCursorWnd derives from it).
 #include "targetcursorwnd.h"
 
-class TargetInfoCursorWnd :  public TargetCursorWnd
+class TargetInfoCursorWnd : public TargetCursorWnd
 {
 public:
     // NOTE: not present in the header this class was extracted from.
     struct AuxInfo
     {
         AuxInfo();
-        /* 0x0000 */ CStr m_texName;
-        /* 0x000c */ PointBase<float> m_texSz;
-    }; /* size: 0x0014 */
+        CStr m_texName;
+        PointBase<float> m_texSz;
+    };
 
-    static struct m3d::Class * GetBaseClass();
-    virtual class m3d::Object * Clone();
-    static class m3d::Object * CreateObject();
-    virtual struct m3d::Class * GetClass() const ;
+    static struct m3d::Class* GetBaseClass();
+    virtual class m3d::Object* Clone();
+    static class m3d::Object* CreateObject();
+    virtual struct m3d::Class* GetClass() const;
     virtual ~TargetInfoCursorWnd();
+
 protected:
-    virtual int GetTargetObjId() const ;
+    virtual int GetTargetObjId() const;
     virtual int GameDataSetup();
     void UpdateTex();
     virtual void OnNewFrame();
     TargetInfoCursorWnd();
-    TargetInfoCursorWnd(class TargetInfoCursorWnd const &);
+    TargetInfoCursorWnd(class TargetInfoCursorWnd const&);
+
 private:
     TargetInfoCursorWnd::AuxInfo m_aif;
     m3d::rend::TexHandle m_tex;

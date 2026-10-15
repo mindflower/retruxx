@@ -98,8 +98,7 @@ namespace ai
         if (GetPrototypeInfo()->m_WithLifeTime && m_LifeTime < 0.0)
         {
             SimplePhysicBody const* const body = GetPhysicBody();
-            if (!body || !body->m_Node ||
-                body->m_Node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1)
+            if (!body || !body->m_Node || body->m_Node->m_frameVisible != M3D_KERNEL->GetTimer().GetCurFrame() - 1)
             {
                 Remove();
             }

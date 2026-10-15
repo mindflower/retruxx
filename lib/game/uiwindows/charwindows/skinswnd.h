@@ -12,7 +12,7 @@ namespace m3d
     {
         class ButtonWnd;
     }
-}
+}  // namespace m3d
 
 class SkinSwitcher
 {
@@ -34,10 +34,10 @@ public:
     void ShowNextSkin();
     void ShowPrevSkin();
     int GetCurSkin() const;
-    static int __fastcall GetMaxSkinCount(ai::Vehicle* vehicle);
-    static bool __fastcall IsSkinApplicable(int skin, ai::Vehicle* vehicle);
-    static int __fastcall ApplySkin(int skin, ai::Vehicle* vehicle);
-    static int __fastcall GetVehicleSkin(ai::Vehicle* vehicle);
+    static int GetMaxSkinCount(ai::Vehicle* vehicle);
+    static bool IsSkinApplicable(int skin, ai::Vehicle* vehicle);
+    static int ApplySkin(int skin, ai::Vehicle* vehicle);
+    static int GetVehicleSkin(ai::Vehicle* vehicle);
 
 private:
     void UpdateSkinButtonsStates();
@@ -47,11 +47,11 @@ private:
     ai::Vehicle* GetVehicle() const;
     bool IsValid() const;
 
-    /* 0x0000 */ int m_vehicleId;
-    /* 0x0004 */ m3d::ui::ButtonWnd* m_btnSkinNext;
-    /* 0x0008 */ m3d::ui::ButtonWnd* m_btnSkinPrev;
-    /* 0x000c */ int m_curSkin;
-}; /* size: 0x0010 */
+    int m_vehicleId;
+    m3d::ui::ButtonWnd* m_btnSkinNext;
+    m3d::ui::ButtonWnd* m_btnSkinPrev;
+    int m_curSkin;
+};
 
 class SkinsWnd : public m3d::ui::Wnd
 {
@@ -60,20 +60,19 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_btnPrevName;
-        /* 0x000c */ CStr m_btnNextName;
-        /* 0x0018 */ CStr m_btnBuyName;
-        /* 0x0024 */ CStr m_wndPriceName;
+        CStr m_btnPrevName;
+        CStr m_btnNextName;
+        CStr m_btnBuyName;
+        CStr m_wndPriceName;
         AuxInfo(SkinsWnd::AuxInfo const& rhs);
         AuxInfo();
-    }; /* size: 0x0030 */
+    };
 
 protected:
-    virtual int GameDataSetup() override /* 0x104 */;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-        /* 0xc8 */;
-    virtual int OnBeforeAddToWndStation() override /* 0x68 */;
-    virtual int OnAfterRemoveFromWndStation() override /* 0x74 */;
+    virtual int GameDataSetup() override;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+    virtual int OnBeforeAddToWndStation() override;
+    virtual int OnAfterRemoveFromWndStation() override;
     void BuySkin();
     int GetSkinPrice(int vehicleId, int skinId) const;
     ai::Vehicle* GetVehicle() const;
@@ -82,14 +81,14 @@ protected:
     void ShowPrevSkin();
     void OnChangeSkin();
 
-    /* 0x0220 */ SkinSwitcher* m_skinSwitcher;
-    /* 0x0224 */ m3d::ui::ButtonWnd* m_btnPrev;
-    /* 0x0228 */ m3d::ui::ButtonWnd* m_btnNext;
-    /* 0x022c */ m3d::ui::ButtonWnd* m_btnBuy;
-    /* 0x0230 */ m3d::ui::Wnd* m_wndPrice;
-    /* 0x0234 */ SkinsWnd::AuxInfo m_aif;
-    /* 0x0264 */ int m_vehicleId;
-    /* 0x0268 */ int m_savedSkinId;
+    SkinSwitcher* m_skinSwitcher;
+    m3d::ui::ButtonWnd* m_btnPrev;
+    m3d::ui::ButtonWnd* m_btnNext;
+    m3d::ui::ButtonWnd* m_btnBuy;
+    m3d::ui::Wnd* m_wndPrice;
+    SkinsWnd::AuxInfo m_aif;
+    int m_vehicleId;
+    int m_savedSkinId;
 
     SkinsWnd();
     SkinsWnd(SkinsWnd const& rhs);
@@ -97,8 +96,8 @@ protected:
 public:
     virtual ~SkinsWnd() override;
     virtual m3d::Object* Clone() override;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
     virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(SkinsWnd);
-}; /* size: 0x026c */
+};

@@ -57,5 +57,5 @@ namespace m3d
             Item* m_itemUnderMouse;
             Item* m_menu;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

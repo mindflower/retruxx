@@ -24,9 +24,9 @@ namespace m3d
         std::set<int>::reverse_iterator rbegin() const;
         std::set<int>::reverse_iterator rend() const;
 
-        friend bool operator==(const KeysSet& lhd, const KeysSet& rhd);
-        friend KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd);
-        friend KeysSet operator-(const KeysSet& lhd, int key);
+        friend bool operator==(KeysSet const& lhd, KeysSet const& rhd);
+        friend KeysSet operator-(KeysSet const& lhd, KeysSet const& rhd);
+        friend KeysSet operator-(KeysSet const& lhd, int key);
 
     private:
         std::set<int> m_set;
@@ -62,4 +62,4 @@ namespace m3d
         std::vector<BindKey>::iterator m_lastIndex;
         int m_longestComboLen = 0;
     };
-}
+}  // namespace m3d

@@ -136,4 +136,4 @@ namespace ai
         // RVA 0x72E760
         M3D_ASSERT(0);
     }
-}
+}  // namespace ai

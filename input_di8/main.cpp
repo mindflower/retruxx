@@ -20,11 +20,11 @@ namespace m3d
 
     // orig 0x570b40 input_di8.cpp:1829
     input::IInput* InputFactory();
-}
+}  // namespace m3d
 
 namespace
 {
-    void(__fastcall* g_logFunc)(CStr const&) = nullptr;
+    void (*g_logFunc)(CStr const&) = nullptr;
 }
 
 void LogMsg(CStr const& msg)
@@ -40,7 +40,7 @@ void LogMsg(char const* msg)
     LogMsg(CStr(msg));
 }
 
-void SetLogFunc(void(__fastcall* logFunc)(CStr const&))
+void SetLogFunc(void (*logFunc)(CStr const&))
 {
     g_logFunc = logFunc;
 }

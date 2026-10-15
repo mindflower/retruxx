@@ -82,8 +82,8 @@ int BasketWnd::GameDataSetup()
         m3d::Object* child = GetChildByName(m_aif.m_wndInventoryName);
         if (!child || !child->IsKindOf(&m3d::ui::Wnd::m_classWnd))
         {
-            M3D_LOG_INFO(CStr("Make control error: control ") + m_aif.m_wndInventoryName +
-                         " is not found or incorrect type");
+            M3D_LOG_INFO(
+                CStr("Make control error: control ") + m_aif.m_wndInventoryName + " is not found or incorrect type");
             res = 0;
         }
         else
@@ -91,14 +91,15 @@ int BasketWnd::GameDataSetup()
             m_wndInventory = static_cast<IzvratRepositoryWnd*>(M3D_KERNEL->New("IzvratRepositoryWnd"));
             if (!m_wndInventory)
             {
-                M3D_LOG_INFO(CStr("Make control error: cannot create ") + m_aif.m_wndInventoryName +
-                             " - cannot find rtti class IzvratRepositoryWnd");
+                M3D_LOG_INFO(
+                    CStr("Make control error: cannot create ") + m_aif.m_wndInventoryName +
+                    " - cannot find rtti class IzvratRepositoryWnd");
                 res = 0;
             }
             else if (!m_wndInventory->CreateFromPattern(static_cast<m3d::ui::Wnd*>(child), true))
             {
-                M3D_LOG_INFO(CStr("Make control error: cannot create ") + m_aif.m_wndInventoryName +
-                             " from pattern class");
+                M3D_LOG_INFO(
+                    CStr("Make control error: cannot create ") + m_aif.m_wndInventoryName + " from pattern class");
                 res = 0;
             }
         }
@@ -197,9 +198,10 @@ void BasketWnd::SetupInventory()
     ai::Vehicle* vehicle = GetVehicle();
     ai::IzvratRepository* repository = vehicle ? vehicle->GetRepository() : nullptr;
 
-    m_wndInventory->SetIzvratRepository(repository, m_vehicleType != InventoryWnd::VEHICLETYPE_PLAYER
-                                                       ? RepositoryWnd::REPOSITORYTYPE_WORKSHOP_VEHICLE
-                                                       : RepositoryWnd::REPOSITORYTYPE_PLAYER);
+    m_wndInventory->SetIzvratRepository(
+        repository,
+        m_vehicleType != InventoryWnd::VEHICLETYPE_PLAYER ? RepositoryWnd::REPOSITORYTYPE_WORKSHOP_VEHICLE :
+                                                            RepositoryWnd::REPOSITORYTYPE_PLAYER);
 
     if (repository)
     {
@@ -230,19 +232,19 @@ void BasketWnd::SetupChildVehicleParts()
     {
         return;
     }
-    const ai::Basket* basket = vehicle->GetBasket();
+    ai::Basket const* basket = vehicle->GetBasket();
     if (!basket)
     {
         return;
     }
-    const ai::BasketPrototypeInfo* proto = basket->GetPrototypeInfo();
+    ai::BasketPrototypeInfo const* proto = basket->GetPrototypeInfo();
     if (!proto)
     {
         return;
     }
 
-    const BoundsBase<float> maxBounds = m_wndInventory->GetMaxRepositoryBounds();
-    const PointBase<float> cellSize = m_wndInventory->GetCellSize();
+    BoundsBase<float> const maxBounds = m_wndInventory->GetMaxRepositoryBounds();
+    PointBase<float> const cellSize = m_wndInventory->GetCellSize();
 
     for (auto const& slot : proto->GetSlotPositions())
     {
@@ -255,14 +257,14 @@ void BasketWnd::SetupChildVehicleParts()
 
 void BasketWnd::UpdateOnSaleTabChanged(void* data)
 {
-    const auto tabType = static_cast<SaleWnd::WorkshopTabType>(reinterpret_cast<intptr_t>(data));
+    auto const tabType = static_cast<SaleWnd::WorkshopTabType>(reinterpret_cast<intptr_t>(data));
     if (tabType == 0)
     {
         return;
     }
 
     m_wndInventory->SetItemDrawStyleByResourceId(4, -1);
-    const std::vector<int> resourceIds = SaleWnd::GetResourceIdsForTabItem(tabType);
+    std::vector<int> const resourceIds = SaleWnd::GetResourceIdsForTabItem(tabType);
     m_wndInventory->SetItemDrawStyleByResourceId(12, -1);
     for (int rcId : resourceIds)
     {

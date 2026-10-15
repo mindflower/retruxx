@@ -313,8 +313,7 @@ int MsgManager::ShowMsgBox(int msgId, bool pause)
     MsgInfo const* info = GetMsgInfo(msgId);
     if (!info)
     {
-        M3D_LOG_INFO(
-            "MsgManager::ShowMsgBox error - MsgInfo for msg with id " + CStr(msgId) + " not found");
+        M3D_LOG_INFO("MsgManager::ShowMsgBox error - MsgInfo for msg with id " + CStr(msgId) + " not found");
         // The shipped code returns -1; MbRetCodes has no error member, so
         // callers read any non-positive value as "no dialog shown".
         return -1;
@@ -421,8 +420,7 @@ int MsgManager::AddMsg(MsgInfo* msgInfo, bool bGlobal)
     auto it = msgs.find(id);
     if (it != msgs.end())
     {
-        M3D_LOG_INFO(
-            "MsgManager::AddMsg warning - msg with id " + CStr(id) + " already exists and wiil be replaced");
+        M3D_LOG_INFO("MsgManager::AddMsg warning - msg with id " + CStr(id) + " already exists and wiil be replaced");
         delete it->second;
         it->second = nullptr;
         msgs.erase(it);
@@ -445,14 +443,14 @@ MsgManager::MsgManager()
 int MsgManager::LoadFromXml(CStr const& fileName, bool bGlobal)
 {
     // RVA 0x5697B0
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
     {
         M3D_LOG_INFO("Can't open file " + fileName + " for read.");
         return 0;
     }
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     if (!xmlFile->Read(*stream))
     {
         M3D_LOG_INFO("Error: cannot parse " + fileName + " (" + CStr(xmlFile->GetError()) + ") ");

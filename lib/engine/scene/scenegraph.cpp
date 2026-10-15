@@ -44,11 +44,11 @@ namespace
     struct ShadowStats
     {
         // RVA 0x8A1D10
-        /* 0x0000 */ int numToTexDIPs = 0;
-        /* 0x0004 */ int numPutDIPs = 0;
-        /* 0x0008 */ int numToTexPolys = 0;
-        /* 0x000c */ int numPutPolys = 0;
-        /* 0x0010 */ int numCells = 0;
+        int numToTexDIPs = 0;
+        int numPutDIPs = 0;
+        int numToTexPolys = 0;
+        int numPutPolys = 0;
+        int numCells = 0;
     };
 
     // RVA 0x8A2360 - builds the world -> shadow texture transform for one cell
@@ -113,7 +113,7 @@ namespace
             return (az * az + y * y) + ax * ax > (bz * bz + y * y) + bx * bx;
         }
 
-        /* 0x0000 */ CVector pos;
+        CVector pos;
     };
 
     CVector camOrg;
@@ -128,7 +128,7 @@ namespace
     // The shipped MemoryManager::Malloc puts the block size and 0xDEADBEEF in front of every allocation and
     // 0xFEEBDAED behind it, and CheckNodeValidity reads those words around a node. This build allocates nodes with
     // the C runtime instead, so the words are not there and the check is switched off.
-    constexpr bool NODES_HAVE_GUARD_WORDS = false;
+    bool constexpr NODES_HAVE_GUARD_WORDS = false;
 
     // Read by RenderDebugForNode but never assigned, so every label says 0.
     int g_nodeNum = 0;
@@ -459,7 +459,7 @@ namespace m3d
         memset(this->m_sortedCellsY, 0xFF, sizeof(this->m_sortedCellsY));
 
         // Get the origin position from the renderer
-        CVector origin = Application::g_pApp->m_renderer->MatGetOrgInv();
+        CVector origin = M3D_RENDERER->MatGetOrgInv();
 
         // Calculate current grid position based on origin
         float gridScale = 1.0f / VISCELL_EDGE_LENGTH_6;
@@ -835,7 +835,7 @@ namespace m3d
 
     void SceneGraph::LightSwitchOffAllLights()
     {
-        auto* renderer = Application::g_pApp->m_renderer;
+        auto* renderer = M3D_RENDERER;
         for (int i = 0; i < renderer->GetMaxLights(); ++i)
         {
             renderer->LightEnable(i, 0);
@@ -1018,7 +1018,11 @@ namespace m3d
     }
 
     SgNode* SceneGraph::TraceLine(
-        CVector& hit, CVector const& start, CVector const& finish, retruxx::set<Class*> const& cl0, unsigned traceMode)
+        CVector& hit,
+        CVector const& start,
+        CVector const& finish,
+        retruxx::set<Class*> const& cl0,
+        unsigned traceMode)
     {
         // RVA 0x88DE90 (traceline.cpp) - walks the visibility cells under the segment and returns the nearest node
         // of the wanted classes it crosses (the landscape counts as a node). A set holding nullptr means the
@@ -1066,8 +1070,9 @@ namespace m3d
         {
             // NOTE: the "dst" part of the message prints the start point again, and "ssz = " follows the z0 value
             // without a space.
-            M3D_LOG_INFO(CStr("TRACELINE ERROR: x0 = ") + CStr(x0) + CStr(" z0 = ") + CStr(z0) + CStr("ssz = ") +
-                CStr(ssz) + CStr(" src = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z) +
+            M3D_LOG_INFO(
+                CStr("TRACELINE ERROR: x0 = ") + CStr(x0) + CStr(" z0 = ") + CStr(z0) + CStr("ssz = ") + CStr(ssz) +
+                CStr(" src = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z) +
                 CStr(" dst = ") + CStr(start.x) + CStr(",") + CStr(start.y) + CStr(",") + CStr(start.z));
             return nullptr;
         }
@@ -1250,7 +1255,8 @@ namespace m3d
         // RVA 0x634B90 - labels the node with its class above its origin. NOTE: the label is lifted along Y by half
         // the box's Z extent.
         auto* const renderer = M3D_RENDERER;
-        CVector const org(n->m_currentWorldOrigin.x,
+        CVector const org(
+            n->m_currentWorldOrigin.x,
             n->m_currentWorldOrigin.y + (n->m_boundingBox.m_box[5] - n->m_boundingBox.m_box[2]) * 0.5f,
             n->m_currentWorldOrigin.z);
         CVector const screen = renderer->Project(org - renderer->MatGetOrgInv());
@@ -1555,20 +1561,11 @@ namespace m3d
         M3D_ASSERT(m_roadSpriteShader);
         this->m_roadSpriteShader->SetDefaultTechnique(true);
         this->m_texShadow = M3D_RENDERER->AddDynamicTexture(
-            "$TexShadow",
-            g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_lgtShadowTexSz.GetI(),
-            6);
+            "$TexShadow", M3D_ENGINE_CFG.m_lgtShadowTexSz.GetI(), M3D_ENGINE_CFG.m_lgtShadowTexSz.GetI(), 6);
         this->m_detTexShadow = M3D_RENDERER->AddDynamicTexture(
-            "$DetTexShadow",
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            6);
+            "$DetTexShadow", M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), 6);
         this->m_texBlurShadow = M3D_RENDERER->AddDynamicTexture(
-            "$TexBlurShadow",
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            g_Kernel->GetEngineCfg().m_detShadowTexSz.GetI(),
-            6);
+            "$TexBlurShadow", M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), M3D_ENGINE_CFG.m_detShadowTexSz.GetI(), 6);
         M3D_RENDERER->SetTextureParameter(this->m_texBlurShadow, rend::TM_TEX_FILTER, 5u);
         this->m_lsShadowShader = M3D_RENDERER->NewEffect("data/shaders/lsShadows.fx", true);
         M3D_ASSERT(m_lsShadowShader);
@@ -1872,7 +1869,7 @@ namespace m3d
 
     void SceneGraph::UpdateTexShadowSizes()
     {
-        auto* renderer = Application::g_pApp->m_renderer;
+        auto* renderer = M3D_RENDERER;
 
         int oldSzX = 0;
         int oldSzY = 0;
@@ -1934,7 +1931,7 @@ namespace m3d
         release(m_treeLightShader);
         release(m_roadSpriteShader);
 
-        auto* renderer = Application::g_pApp->m_renderer;
+        auto* renderer = M3D_RENDERER;
         renderer->ReleaseTexture(m_texShadow);
         renderer->ReleaseTexture(m_detTexShadow);
         renderer->ReleaseTexture(m_texBlurShadow);
@@ -3213,15 +3210,19 @@ namespace m3d
             retruxx::vector<SgNode*> shadowNodes(nodes.begin(), nodes.end());
             CVector const cameraPos = M3D_RENDERER->MatGetOrgInv();
             // ShadowNodesSortPred: nearest to the camera first.
-            std::sort(shadowNodes.begin(), shadowNodes.end(), [&cameraPos](SgNode const* node1, SgNode const* node2) {
-                float const d1z = node1->m_currentWorldOrigin.z - cameraPos.z;
-                float const d1y = node1->m_currentWorldOrigin.y - cameraPos.y;
-                float const d1x = node1->m_currentWorldOrigin.x - cameraPos.x;
-                float const d2y = node2->m_currentWorldOrigin.y - cameraPos.y;
-                float const d2z = node2->m_currentWorldOrigin.z - cameraPos.z;
-                float const d2x = node2->m_currentWorldOrigin.x - cameraPos.x;
-                return d2z * d2z + d2y * d2y + d2x * d2x > d1z * d1z + d1y * d1y + d1x * d1x;
-            });
+            std::sort(
+                shadowNodes.begin(),
+                shadowNodes.end(),
+                [&cameraPos](SgNode const* node1, SgNode const* node2)
+                {
+                    float const d1z = node1->m_currentWorldOrigin.z - cameraPos.z;
+                    float const d1y = node1->m_currentWorldOrigin.y - cameraPos.y;
+                    float const d1x = node1->m_currentWorldOrigin.x - cameraPos.x;
+                    float const d2y = node2->m_currentWorldOrigin.y - cameraPos.y;
+                    float const d2z = node2->m_currentWorldOrigin.z - cameraPos.z;
+                    float const d2x = node2->m_currentWorldOrigin.x - cameraPos.x;
+                    return d2z * d2z + d2y * d2y + d2x * d2x > d1z * d1z + d1y * d1y + d1x * d1x;
+                });
             if (numNodes > 100)
             {
                 numNodes = 100;

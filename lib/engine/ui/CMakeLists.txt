@@ -23,8 +23,5 @@ target_sources(retruxx_lib PRIVATE
     textbox.cpp
     ui_srv.cpp
     uidialogs.cpp
-    uiserialization.cpp
-    uistrings.cpp
     wnd.cpp
-    wndbase.cpp
     wndstation.cpp)

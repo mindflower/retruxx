@@ -139,7 +139,8 @@ namespace ai
     ai::RocketVolleyLauncherPrototypeInfo const* RocketVolleyLauncher::GetPrototypeInfo() const
     {
         // RVA 0x7DC590 - NOTE: the prototype is cast without a type check.
-        return static_cast<RocketVolleyLauncherPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<RocketVolleyLauncherPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     bool RocketVolleyLauncher::_bIsUsingVolley() const

@@ -49,7 +49,7 @@ namespace m3d
             uint32_t c;
 
         public:
-            void xyzw(float,float,float,float);
+            void xyzw(float, float, float, float);
         };
 
         struct VertexXYZNT1
@@ -81,33 +81,33 @@ namespace m3d
 
         struct VertexXYZWCT1
         {
-            void xyzw(const CVector4& v);
+            void xyzw(CVector4 const& v);
             void xyzw(float xx, float yy, float zz, float ww);
             void uv0(float u, float v);
-            /* 0x0000 */ float x;
-            /* 0x0004 */ float y;
-            /* 0x0008 */ float z;
-            /* 0x000c */ float w;
-            /* 0x0010 */ uint32_t c;
-            /* 0x0014 */ float tu;
-            /* 0x0018 */ float tv;
-        }; /* size: 0x001c */
+            float x;
+            float y;
+            float z;
+            float w;
+            uint32_t c;
+            float tu;
+            float tv;
+        };
 
         struct VertexXYZCT2
         {
-            void xyz(const CVector&);
+            void xyz(CVector const&);
             void xyz(float, float, float);
             void uv0(float, float);
             void uv1(float, float);
-            /* 0x0000 */ float x;
-            /* 0x0004 */ float y;
-            /* 0x0008 */ float z;
-            /* 0x000c */ uint32_t c;
-            /* 0x0010 */ float tu0;
-            /* 0x0014 */ float tv0;
-            /* 0x0018 */ float tu1;
-            /* 0x001c */ float tv1;
-        }; /* size: 0x0020 */
+            float x;
+            float y;
+            float z;
+            uint32_t c;
+            float tu0;
+            float tv0;
+            float tu1;
+            float tv1;
+        };
 
         struct VertexXYZC
         {
@@ -122,18 +122,18 @@ namespace m3d
 
         struct VertexXYZNC
         {
-            void xyz(const CVector& v);
+            void xyz(CVector const& v);
             void xyz(float xx, float yy, float zz);
             void n(float nnx, float nny, float nnz);
-            void n(const CVector& nn);
-            /* 0x0000 */ float x;
-            /* 0x0004 */ float y;
-            /* 0x0008 */ float z;
-            /* 0x000c */ float nx;
-            /* 0x0010 */ float ny;
-            /* 0x0014 */ float nz;
-            /* 0x0018 */ uint32_t c;
-        }; /* size: 0x001c */
+            void n(CVector const& nn);
+            float x;
+            float y;
+            float z;
+            float nx;
+            float ny;
+            float nz;
+            uint32_t c;
+        };
 
         struct VertexXYZT1I
         {
@@ -152,16 +152,16 @@ namespace m3d
 
         struct VertexXYZCT1
         {
-            void xyz(const CVector& v);
+            void xyz(CVector const& v);
             void xyz(float xx, float yy, float zz);
             void uv0(float u, float v);
-            /* 0x0000 */ float x;
-            /* 0x0004 */ float y;
-            /* 0x0008 */ float z;
-            /* 0x000c */ uint32_t c;
-            /* 0x0010 */ float tu;
-            /* 0x0014 */ float tv;
-        }; /* size: 0x0018 */
+            float x;
+            float y;
+            float z;
+            uint32_t c;
+            float tu;
+            float tv;
+        };
 
         struct VertexXYZNCT2
         {
@@ -197,5 +197,5 @@ namespace m3d
         static_assert(sizeof(VertexXYZCT1) == 0x0018);
         static_assert(sizeof(VertexXYZNCT2) == 0x002c);
         static_assert(sizeof(VertexLandscape) == 0x0008);
-    }
-}
+    }  // namespace rend
+}  // namespace m3d

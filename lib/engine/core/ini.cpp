@@ -13,10 +13,10 @@ namespace m3d
 {
     cmn::XmlFile* ReadXmlFile(char const* filename, CStr* errorStr)
     {
-        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (fileStream->Open(filename, fs::IStream::OPEN_READ))
         {
-            auto* xmlFile = g_Kernel->CreateXmlFile();
+            auto* xmlFile = M3D_KERNEL->CreateXmlFile();
             xmlFile->Read(*fileStream);
             fileStream->Close();
             if (xmlFile->GetError() != nullptr)
@@ -40,7 +40,7 @@ namespace m3d
     int WriteXmlFile(char const* filename, cmn::XmlFile* xmlFile, CStr* errorStr)
     {
         // RVA 0x5AEAC0 - writes to a temp file first and only then replaces the target.
-        scoped_ptr fileStream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr fileStream = M3D_KERNEL->GetFileServer().CreateFileStream();
         char path[MAX_PATH];
         if (!GetTempFileNameA(".", "temp", 0, path))
         {
@@ -484,7 +484,7 @@ TiXmlNode* XmlFileImpl::GetDeclarationNode()
     return node;
 }
 
-IniFileImpl::IniFileImpl() : m_file(m3d::g_Kernel->CreateXmlFile())
+IniFileImpl::IniFileImpl() : m_file(M3D_KERNEL->CreateXmlFile())
 {
 }
 

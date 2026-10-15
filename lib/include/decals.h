@@ -63,7 +63,7 @@ namespace m3d
         bool AddPolygon(long, CVector const*);
         void ClipMesh(GeometryInfo const&);
         long ClipPolygon(long, CVector const*, CVector*) const;
-        static long __fastcall ClipPolygonAgainstPlane(CVector4 const&, long, CVector const*, CVector*);
+        static long ClipPolygonAgainstPlane(CVector4 const&, long, CVector const*, CVector*);
 
     private:
         CVector decalCenter;
@@ -87,15 +87,15 @@ namespace m3d
         static void ReleaseShaders();
         ~DecalsList();
         unsigned int GetNumDecals();
-        void RecalcDecalsForMesh(GeometryInfo const &);
+        void RecalcDecalsForMesh(GeometryInfo const&);
         DecalsList();
-        DecalInfo const & GetDecal(int);
+        DecalInfo const& GetDecal(int);
         void Render(rend::TexHandle);
-        void AddDecal(DecalSource const &,GeometryInfo const &);
+        void AddDecal(DecalSource const&, GeometryInfo const&);
         static void LoadShaders();
 
     private:
-        short GetMatrixId(CMatrix *);
+        short GetMatrixId(CMatrix*);
 
     private:
         Decal m_workDecal;
@@ -106,7 +106,7 @@ namespace m3d
         unsigned int m_ibStart;
         rend::IbPoolField m_IbPoolField;
         rend::VbPoolField m_VbPoolField;
-        std::vector<CMatrix *> m_transforms;
+        std::vector<CMatrix*> m_transforms;
         std::vector<CMatrix> m_invBindtransforms;
 
     private:
@@ -114,4 +114,4 @@ namespace m3d
         static rend::IHlslShader* m_decalsPs;
         static CMatrix m_identityMatrix;
     };
-}
+}  // namespace m3d

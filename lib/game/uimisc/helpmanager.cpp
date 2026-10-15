@@ -18,11 +18,11 @@ namespace
     };
 
     _HelpId2ProfileParamId l_helpId2ProfileParamId[] = {
-        {HelpManager::HELP_ID_MAIN_GAME_INTERFACE, PP_HELP_ID_MAIN_GAME_INTERFACE },
-        {HelpManager::HELP_ID_INVENTORY, PP_HELP_ID_INVENTORY },
-        {HelpManager::HELP_ID_VEHICLE_CHARACTERISTICS, PP_HELP_ID_VEHICLE_CHARACTERISTICS },
-        {HelpManager::HELP_ID_QUESTLOG_QUESTS, PP_HELP_ID_QUESTLOG_QUESTS },
-        {HelpManager::HELP_ID_QUESTLOG_QUEST_ITEMS, PP_HELP_ID_QUESTLOG_QUEST_ITEMS },
+        {HelpManager::HELP_ID_MAIN_GAME_INTERFACE, PP_HELP_ID_MAIN_GAME_INTERFACE},
+        {HelpManager::HELP_ID_INVENTORY, PP_HELP_ID_INVENTORY},
+        {HelpManager::HELP_ID_VEHICLE_CHARACTERISTICS, PP_HELP_ID_VEHICLE_CHARACTERISTICS},
+        {HelpManager::HELP_ID_QUESTLOG_QUESTS, PP_HELP_ID_QUESTLOG_QUESTS},
+        {HelpManager::HELP_ID_QUESTLOG_QUEST_ITEMS, PP_HELP_ID_QUESTLOG_QUEST_ITEMS},
         {HelpManager::HELP_ID_LOCAL_MAP, PP_HELP_ID_LOCAL_MAP},
         {HelpManager::HELP_ID_GLOBAL_MAP, PP_HELP_ID_GLOBAL_MAP},
         {HelpManager::HELP_ID_HISTORY, PP_HELP_ID_HISTORY},
@@ -100,8 +100,8 @@ namespace
         {"HELP_ID_HOW_TO_USE_MAIN_GAME_INTERFACE_HELP", HelpManager::HELP_ID_HOW_TO_USE_MAIN_GAME_INTERFACE_HELP},
     };
 
-    constexpr int HELP_WND_GUI_ID_DEFAULT = 168;
-}
+    int constexpr HELP_WND_GUI_ID_DEFAULT = 168;
+}  // namespace
 
 RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, ShowHelp)
 {
@@ -137,10 +137,10 @@ RT_CLASS_EXPORT_METHOD_DEFINE(HelpManager, ResetAutoHelp)
 }
 
 RT_CLASS_EXPORTS_BEGIN(HelpManager)
-	RT_CLASS_EXPORT(HelpManager, m3d::METHOD, ShowHelp, "", "", "")
-    RT_CLASS_EXPORT(HelpManager, m3d::METHOD, EnableAutoHelp, "", "", "")
-    RT_CLASS_EXPORT(HelpManager, m3d::METHOD, IsAutoHelpEnabled, "", "", "")
-    RT_CLASS_EXPORT(HelpManager, m3d::METHOD, ResetAutoHelp, "", "", "")
+RT_CLASS_EXPORT(HelpManager, m3d::METHOD, ShowHelp, "", "", "")
+RT_CLASS_EXPORT(HelpManager, m3d::METHOD, EnableAutoHelp, "", "", "")
+RT_CLASS_EXPORT(HelpManager, m3d::METHOD, IsAutoHelpEnabled, "", "", "")
+RT_CLASS_EXPORT(HelpManager, m3d::METHOD, ResetAutoHelp, "", "", "")
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(HelpManager);
 
@@ -240,7 +240,7 @@ void HelpManager::ResetAutoHelp()
     if (auto const profile = M3D_APP->GetProfileManager()->GetCurProfile())
     {
         m3d::AIParam const param{0};
-        for (auto const& helpId : l_helpId2ProfileParamId )
+        for (auto const& helpId : l_helpId2ProfileParamId)
         {
             profile->SetParam(helpId.m_profileParamId, param);
         }
@@ -315,8 +315,7 @@ HelpManager::HelpManager()
     m_predefinedHelpWindows.emplace(HELP_ID_MAIN_GAME_INTERFACE, 169);
 }
 
-HelpManager::HelpManager(HelpManager const&) :
-    m3d::Object()
+HelpManager::HelpManager(HelpManager const&) : m3d::Object()
 {
     // RVA 0x558E60 - nothing is copied, and unlike the default constructor the
     // predefined main-interface help window is not registered.
@@ -489,9 +488,9 @@ bool HelpManager::IsHelpIdValidForCurrentInterfaceState(HelpId helpId) const
     case HELP_ID_BUY_BASKET:
     case HELP_ID_BUY_VEHICLE:
     {
-        auto const tradeType = helpId == HELP_ID_BUY_CABIN
-            ? ZnayuKakProdatWnd::TRADETYPE_CABIN
-            : (helpId == HELP_ID_BUY_BASKET ? ZnayuKakProdatWnd::TRADETYPE_BASKET : ZnayuKakProdatWnd::TRADETYPE_VEHICLE);
+        auto const tradeType = helpId == HELP_ID_BUY_CABIN ?
+            ZnayuKakProdatWnd::TRADETYPE_CABIN :
+            (helpId == HELP_ID_BUY_BASKET ? ZnayuKakProdatWnd::TRADETYPE_BASKET : ZnayuKakProdatWnd::TRADETYPE_VEHICLE);
         auto wnd = ui->GetWindow(94);
         return wnd && wnd->IsKindOf(&ZnayuKakProdatWnd::m_classZnayuKakProdatWnd) && wnd->IsChildOf(M3D_APP) &&
             static_cast<ZnayuKakProdatWnd*>(static_cast<m3d::ui::Wnd*>(wnd))->m_tradeType == tradeType;

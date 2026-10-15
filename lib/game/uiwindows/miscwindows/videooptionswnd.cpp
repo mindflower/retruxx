@@ -32,10 +32,9 @@ RT_CLASS_DEFINE(VideoOptionsWnd);
 bool VideoOptionsWnd::ShadowSettings::operator==(ShadowSettings const& shs) const
 {
     // The differences are taken on the x87 stack, so they are not rounded back to float.
-    return this->shadowTexSize == shs.shadowTexSize
-        && this->detShadowTexSize == shs.detShadowTexSize
-        && fabs(static_cast<double>(this->shadowBlurCoeff) - shs.shadowBlurCoeff) <= 1e-5f
-        && fabs(static_cast<double>(this->detailRadius) - shs.detailRadius) <= 0.1f;
+    return this->shadowTexSize == shs.shadowTexSize && this->detShadowTexSize == shs.detShadowTexSize &&
+        fabs(static_cast<double>(this->shadowBlurCoeff) - shs.shadowBlurCoeff) <= 1e-5f &&
+        fabs(static_cast<double>(this->detailRadius) - shs.detailRadius) <= 0.1f;
 }
 
 VideoOptionsWnd::ShadowSettings::ShadowSettings(int texSize, int detTexSize, float blurCoeff, float radius) :
@@ -165,7 +164,7 @@ void VideoOptionsWnd::OnCbBlumChange(m3d::AIParam const&)
 
 VideoOptionsWnd::ShadowsQuality VideoOptionsWnd::GetCurrentShadowQuality() const
 {
-    if (!M3D_KERNEL->GetEngineCfg().m_dsShadows.GetB())
+    if (!M3D_ENGINE_CFG.m_dsShadows.GetB())
     {
         return SHADOWS_QUALITY_NONE;
     }
@@ -191,7 +190,7 @@ void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality graphicQuality)
             int antialiasing = 0;
             if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
             {
-                antialiasing = M3D_KERNEL->GetEngineCfg().m_r_multiSamplesNum.GetI();
+                antialiasing = M3D_ENGINE_CFG.m_r_multiSamplesNum.GetI();
             }
             else
             {
@@ -229,8 +228,10 @@ void VideoOptionsWnd::UpdateAntialiasingControls(GraphicQuality graphicQuality)
 VideoOptionsWnd::ShadowSettings const& VideoOptionsWnd::GetShadowSettings(GraphicQuality graphicQuality) const
 {
     // RVA 0x4CD3D0
-    if (graphicQuality == GRAPHIC_QUALITY_MEDIUM) return m_shadowSettings[1];
-    if (graphicQuality == GRAPHIC_QUALITY_MAX) return m_shadowSettings[2];
+    if (graphicQuality == GRAPHIC_QUALITY_MEDIUM)
+        return m_shadowSettings[1];
+    if (graphicQuality == GRAPHIC_QUALITY_MAX)
+        return m_shadowSettings[2];
     return m_shadowSettings[0];
 }
 
@@ -240,13 +241,13 @@ CStr VideoOptionsWnd::GraphicQuality2Str(GraphicQuality graphicQuality) const
     {
         return {};
     }
-    static const CStr names[] = {
+    static CStr const names[] = {
         "LowQuality",
         "MediumQuality",
         "MaxQuality",
         "CustomQuality",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[graphicQuality]);
+    return M3D_APP->GetStringByStringId0(names[graphicQuality]);
 }
 
 void VideoOptionsWnd::ApplyGamma()
@@ -254,20 +255,21 @@ void VideoOptionsWnd::ApplyGamma()
     if ((m_gameDataFlags & 1) != 0)
     {
         auto const gamma = m_sliderGamma->GetNotch() * 0.0099999998;
-        M3D_KERNEL->GetEngineCfg().m_gammaGamma.SetF(gamma, true);
+        M3D_ENGINE_CFG.m_gammaGamma.SetF(gamma, true);
         M3D_APP->m_renderer->SetGamma(
-            M3D_KERNEL->GetEngineCfg().m_gammaGamma.GetF(),
-            M3D_KERNEL->GetEngineCfg().m_gammaBrightness.GetF(),
-            M3D_KERNEL->GetEngineCfg().m_gammaContrast.GetF()
-        );
+            M3D_ENGINE_CFG.m_gammaGamma.GetF(),
+            M3D_ENGINE_CFG.m_gammaBrightness.GetF(),
+            M3D_ENGINE_CFG.m_gammaContrast.GetF());
     }
 }
 
 int VideoOptionsWnd::GetWaterShaderVersionByWaterQualityVal(int waterQualityVal) const
 {
     // RVA 0x4CDE00
-    if (waterQualityVal == 2) return 14;
-    if (waterQualityVal == 3) return 20;
+    if (waterQualityVal == 2)
+        return 14;
+    if (waterQualityVal == 3)
+        return 20;
     return 11;
 }
 
@@ -296,7 +298,7 @@ int VideoOptionsWnd::BlumQualityEnum2Val(BlumQuality bq) const
 int VideoOptionsWnd::GetCurrentBlum() const
 {
     // RVA 0x4CD5A0
-    return M3D_KERNEL->GetEngineCfg().m_g_postEffectBloom.GetI();
+    return M3D_ENGINE_CFG.m_g_postEffectBloom.GetI();
 }
 
 CStr VideoOptionsWnd::BlumQuality2Str(BlumQuality blumQuality) const
@@ -305,12 +307,12 @@ CStr VideoOptionsWnd::BlumQuality2Str(BlumQuality blumQuality) const
     {
         return {};
     }
-    static const CStr names[] = {
+    static CStr const names[] = {
         "None",
         "LowQuality",
         "HighQuality",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[blumQuality]);
+    return M3D_APP->GetStringByStringId0(names[blumQuality]);
 }
 
 CStr VideoOptionsWnd::Antialiasing2Str(Antialiasing antialiasing) const
@@ -319,14 +321,14 @@ CStr VideoOptionsWnd::Antialiasing2Str(Antialiasing antialiasing) const
     {
         return {};
     }
-    static const CStr names[] = {
+    static CStr const names[] = {
         "None",
         "Antialiasing_x2",
         "Antialiasing_x4",
         "Antialiasing_x8",
         "Antialiasing_x16",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[antialiasing]);
+    return M3D_APP->GetStringByStringId0(names[antialiasing]);
 }
 
 int VideoOptionsWnd::GameDataSetup()
@@ -365,7 +367,8 @@ int VideoOptionsWnd::GameDataSetup()
         else
         {
             res = false;
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbGraphicQualityName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_cbGraphicQualityName + " is not found or incorrect type");
         }
 
         auto distance = GetChildByName(m_aif.m_sliderFarDistanceName);
@@ -376,7 +379,8 @@ int VideoOptionsWnd::GameDataSetup()
         else
         {
             res = false;
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderFarDistanceName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_sliderFarDistanceName + " is not found or incorrect type");
         }
 
         auto grass = GetChildByName(m_aif.m_cbGrassName);
@@ -409,7 +413,8 @@ int VideoOptionsWnd::GameDataSetup()
         else
         {
             res = false;
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbWaterQualityName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_cbWaterQualityName + " is not found or incorrect type");
         }
 
         auto antialiasing = GetChildByName(m_aif.m_cbAntialiasingName);
@@ -420,7 +425,8 @@ int VideoOptionsWnd::GameDataSetup()
         else
         {
             res = false;
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbAntialiasingName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_cbAntialiasingName + " is not found or incorrect type");
         }
 
         auto filtration = GetChildByName(m_aif.m_cbFiltrationName);
@@ -475,7 +481,8 @@ int VideoOptionsWnd::GameDataSetup()
         else
         {
             res = false;
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnFarDistancePrevName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnFarDistancePrevName + " is not found or incorrect type");
         }
 
         auto distanceNext = GetChildByName(m_aif.m_btnFarDistanceNextName);
@@ -491,7 +498,8 @@ int VideoOptionsWnd::GameDataSetup()
         else
         {
             res = false;
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnFarDistanceNextName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnFarDistanceNextName + " is not found or incorrect type");
         }
     }
     if ((m_gameDataFlags & 1) != 0)
@@ -507,14 +515,14 @@ CStr VideoOptionsWnd::ShadowsQuality2Str(ShadowsQuality shadowsQuality) const
 {
     if (shadowsQuality >= SHADOWS_QUALITY_NUM_SHADOWS_QUALITIES)
     {
-        return{};
+        return {};
     }
-    static const CStr names[] = {
+    static CStr const names[] = {
         "None",
         "LowQuality",
         "HighQuality",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[shadowsQuality]);
+    return M3D_APP->GetStringByStringId0(names[shadowsQuality]);
 }
 
 m3d::ui::MbRetCodes VideoOptionsWnd::RunChangeWarningDlg()
@@ -586,7 +594,7 @@ void VideoOptionsWnd::UpdateFiltrationControls(GraphicQuality graphicQuality)
             int filter = 0.0;
             if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
             {
-                filter = M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetI();
+                filter = M3D_ENGINE_CFG.m_g_texturesFilter.GetI();
             }
             else
             {
@@ -673,7 +681,7 @@ void VideoOptionsWnd::InitShadowsControls()
 int VideoOptionsWnd::GetCurrentAntialiasing() const
 {
     // RVA 0x4CD560
-    return M3D_KERNEL->GetEngineCfg().m_r_multiSamplesNum.GetI();
+    return M3D_ENGINE_CFG.m_r_multiSamplesNum.GetI();
 }
 
 void VideoOptionsWnd::OnCbShadowsChange(m3d::AIParam const&)
@@ -776,12 +784,12 @@ void VideoOptionsWnd::ApplyFiltration()
     }
 
     int const texturesFilter = m_filtrations[filtration];
-    if (M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetI() == texturesFilter)
+    if (M3D_ENGINE_CFG.m_g_texturesFilter.GetI() == texturesFilter)
     {
         return;
     }
 
-    M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.SetI(texturesFilter, true);
+    M3D_ENGINE_CFG.m_g_texturesFilter.SetI(texturesFilter, true);
     if (m3d::pClient)
     {
         m3d::pClient->GetWorld().GetLandscape().UpdateTexturesFilters();
@@ -795,7 +803,7 @@ void VideoOptionsWnd::UpdateGammaControls()
     {
         ++m_sliderGammaBlocked;
         // Rounded to nearest (a bare fistp), not truncated.
-        m_sliderGamma->SetNotch(static_cast<int>(lrintf(M3D_KERNEL->GetEngineCfg().m_gammaGamma.GetF() * 100.0f)));
+        m_sliderGamma->SetNotch(static_cast<int>(lrintf(M3D_ENGINE_CFG.m_gammaGamma.GetF() * 100.0f)));
     }
 }
 
@@ -804,8 +812,8 @@ void VideoOptionsWnd::UpdateResolutionControls()
     // RVA 0xCB530
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto const height = M3D_KERNEL->GetEngineCfg().m_r_height.GetI();
-        auto const width = M3D_KERNEL->GetEngineCfg().m_r_width.GetI();
+        auto const height = M3D_ENGINE_CFG.m_r_height.GetI();
+        auto const width = M3D_ENGINE_CFG.m_r_width.GetI();
         int i = 0;
         for (; i < RESOLUTION_NUM_RESOLUTIONS; ++i)
         {
@@ -827,7 +835,7 @@ void VideoOptionsWnd::UpdateResolutionControls()
             auto const count = m_cbResolution->GetCount();
             if (count > 0)
             {
-                for (int j = 0; j < count;++j)
+                for (int j = 0; j < count; ++j)
                 {
                     if (m_cbResolution->GetItemData(j) == i)
                     {
@@ -844,7 +852,7 @@ void VideoOptionsWnd::UpdateResolutionControls()
 void VideoOptionsWnd::OnSliderFarDistanceChange(m3d::AIParam const&)
 {
     UpdateFarDistancePrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderFarDistanceBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderFarDistanceBlocked)
     {
         m_bVideoOptionsChanged = true;
         OnGraphicQualityDependendControlChanged();
@@ -877,7 +885,7 @@ VideoOptionsWnd::Antialiasing VideoOptionsWnd::AntialiasingVal2Enum(int val) con
 int VideoOptionsWnd::GetCurrentFiltration() const
 {
     // RVA 0x4CD580
-    return M3D_KERNEL->GetEngineCfg().m_g_texturesFilter.GetI();
+    return M3D_ENGINE_CFG.m_g_texturesFilter.GetI();
 }
 
 VideoOptionsWnd::Resolution VideoOptionsWnd::ScreenWH2Resolution(PointBase<int> const& wh) const
@@ -921,8 +929,8 @@ int VideoOptionsWnd::FiltrationEnum2Val(Filtration f) const
 
 void VideoOptionsWnd::OnSliderGammaChange(m3d::AIParam const&)
 {
-	UpdateGammaPrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderGammaBlocked)
+    UpdateGammaPrevNextButtonsState();
+    if (IsChildOf(M3D_APP) && !m_sliderGammaBlocked)
         ApplyGamma();
     if (m_sliderGammaBlocked > 0)
         m_sliderGammaBlocked = m_sliderGammaBlocked - 1;
@@ -941,7 +949,7 @@ void VideoOptionsWnd::UpdateGammaPrevNextButtonsState()
 VideoOptionsWnd::GraphicQuality VideoOptionsWnd::DetectCurrentGraphicQuality() const
 {
     // RVA 0xCCEC0 - the preset whose settings all match the current config, or CUSTOM.
-    auto& cfg = M3D_KERNEL->GetEngineCfg();
+    auto& cfg = M3D_ENGINE_CFG;
     std::set<GraphicQuality> possibleGraphicQualities;
     for (int gq = GRAPHIC_QUALITY_LOW; gq <= GRAPHIC_QUALITY_MAX; ++gq)
     {
@@ -990,9 +998,9 @@ void VideoOptionsWnd::UpdateFarDistanceControls(GraphicQuality graphicQuality)
         return;
     }
 
-    float const farDistance = (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
-                                  ? M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF()
-                                  : GetDefaultFarDistanceForGraphicQuality(graphicQuality);
+    float const farDistance = (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES) ?
+        M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF() :
+        GetDefaultFarDistanceForGraphicQuality(graphicQuality);
 
     // Rounded to nearest (a bare fistp): 0.53 * 100 is 52.999996, which must land on notch 53.
     ++m_sliderFarDistanceBlocked;
@@ -1003,14 +1011,14 @@ void VideoOptionsWnd::InitGraphicQualityControls()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-	    for (int i = 0; i < 4; ++i)
-	    {
+        for (int i = 0; i < 4; ++i)
+        {
             auto idx = m_cbGraphicQuality->AddItem(GraphicQuality2Str(static_cast<GraphicQuality>(i)));
             if (idx != -1)
             {
                 m_cbGraphicQuality->SetItemData(idx, i);
             }
-	    }
+        }
     }
 }
 
@@ -1036,8 +1044,8 @@ void VideoOptionsWnd::ApplyResolution()
     }
 
     PointBase<int> const screenWH = Resolution2ScreenWH(static_cast<Resolution>(resolution));
-    bool const bFullScreen = M3D_KERNEL->GetEngineCfg().m_r_fullScreen.GetB();
-    M3D_KERNEL->GetEngineCfg().m_console->executeCommand(
+    bool const bFullScreen = M3D_ENGINE_CFG.m_r_fullScreen.GetB();
+    M3D_ENGINE_CFG.m_console->executeCommand(
         CStr("/r_videomode ") + CStr(screenWH.x) + " " + CStr(screenWH.y) + " " + CStr(bFullScreen));
 }
 
@@ -1086,7 +1094,7 @@ void VideoOptionsWnd::UpdateFarDistancePrevNextButtonsState()
 float VideoOptionsWnd::GetCurrentFarDistance() const
 {
     // RVA 0x4CD4E0
-    return M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF();
+    return M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF();
 }
 
 void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
@@ -1098,7 +1106,7 @@ void VideoOptionsWnd::UpdateBlumControls(GraphicQuality graphicQuality)
             int blum = 0;
             if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
             {
-                blum = M3D_KERNEL->GetEngineCfg().m_g_postEffectBloom.GetI();
+                blum = M3D_ENGINE_CFG.m_g_postEffectBloom.GetI();
             }
             else
             {
@@ -1144,7 +1152,8 @@ void VideoOptionsWnd::OnBtnFarDistanceNextClick(m3d::AIParam const&)
 PointBase<int> VideoOptionsWnd::Resolution2ScreenWH(Resolution resolution) const
 {
     // RVA 0x4CB4D0
-    if (resolution == RESOLUTION_NUM_RESOLUTIONS) return PointBase<int>{0, 0};
+    if (resolution == RESOLUTION_NUM_RESOLUTIONS)
+        return PointBase<int>{0, 0};
     return m_screenWH[resolution];
 }
 
@@ -1172,7 +1181,7 @@ void VideoOptionsWnd::ApplyWaterQuality()
     // throws the answer away, applying the setting either way; preserved.
     IsWaterQualitySupported(static_cast<WaterQuality>(waterQuality));
 
-    M3D_KERNEL->GetEngineCfg().m_r_waterQuality.SetI(m_waterQualities[waterQuality], true);
+    M3D_ENGINE_CFG.m_r_waterQuality.SetI(m_waterQualities[waterQuality], true);
     if (m3d::pClient)
     {
         m3d::pClient->GetWorld().GetLandscape().InitReflectionRefractionTextures();
@@ -1187,10 +1196,10 @@ void VideoOptionsWnd::ValidateWaterQualityVal(int& waterQualityVal) const
     }
     else if (waterQualityVal == 2)
     {
-	    if (M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_1_4))
-	    {
+        if (M3D_RENDERER->IsFeatureSupported(m3d::rend::FEATURE_PS_1_4))
+        {
             return;
-	    }
+        }
     }
     else if (waterQualityVal == 3)
     {
@@ -1205,18 +1214,19 @@ void VideoOptionsWnd::ValidateWaterQualityVal(int& waterQualityVal) const
 VideoOptionsWnd::ShadowSettings VideoOptionsWnd::GetCurrentShadowSettings() const
 {
     return ShadowSettings{
-        M3D_KERNEL->GetEngineCfg().m_lgtShadowTexSz.GetI(),
-        M3D_KERNEL->GetEngineCfg().m_detShadowTexSz.GetI(),
-        M3D_KERNEL->GetEngineCfg().m_g_shadowBlurCoeff.GetF(),
-        M3D_KERNEL->GetEngineCfg().m_g_shadowDetailRadius.GetF()
-    };
+        M3D_ENGINE_CFG.m_lgtShadowTexSz.GetI(),
+        M3D_ENGINE_CFG.m_detShadowTexSz.GetI(),
+        M3D_ENGINE_CFG.m_g_shadowBlurCoeff.GetF(),
+        M3D_ENGINE_CFG.m_g_shadowDetailRadius.GetF()};
 }
 
 float VideoOptionsWnd::GetDefaultFarDistanceForGraphicQuality(GraphicQuality graphicQuality) const
 {
     // RVA 0x4CD370
-    if (graphicQuality == GRAPHIC_QUALITY_LOW) return 0.5f;
-    if (graphicQuality == GRAPHIC_QUALITY_MEDIUM || graphicQuality == GRAPHIC_QUALITY_MAX) return 1.0f;
+    if (graphicQuality == GRAPHIC_QUALITY_LOW)
+        return 0.5f;
+    if (graphicQuality == GRAPHIC_QUALITY_MEDIUM || graphicQuality == GRAPHIC_QUALITY_MAX)
+        return 1.0f;
     return 0.0f;
 }
 
@@ -1229,7 +1239,7 @@ void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
             float drawDist = 0.0;
             if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
             {
-                drawDist = M3D_KERNEL->GetEngineCfg().m_g_grassDrawDist.GetF();
+                drawDist = M3D_ENGINE_CFG.m_g_grassDrawDist.GetF();
             }
             else
             {
@@ -1254,7 +1264,7 @@ void VideoOptionsWnd::UpdateGrassControls(GraphicQuality graphicQuality)
                     break;
                 }
             }
-            if (i >=3)
+            if (i >= 3)
             {
                 if (graphicQuality != GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
                     return;
@@ -1286,7 +1296,7 @@ void VideoOptionsWnd::ApplyFarDistance()
     double const farDist = m_sliderFarDistance->GetNotch() * 0.0099999998;
     char buf[16];
     std::sprintf(buf, "%.2f", farDist);
-    M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.Set(buf, true);
+    M3D_ENGINE_CFG.m_lsViewDistanceDivider.Set(buf, true);
 }
 
 int VideoOptionsWnd::GetDefaultFiltrationForGraphicQuality(GraphicQuality graphicQuality) const
@@ -1313,8 +1323,7 @@ void VideoOptionsWnd::UpdateControls()
     {
         // Rounded to nearest (a bare fistp), not truncated.
         ++m_sliderFarDistanceBlocked;
-        m_sliderFarDistance->SetNotch(
-            static_cast<int>(lrintf(M3D_KERNEL->GetEngineCfg().m_lsViewDistanceDivider.GetF() * 100.0f)));
+        m_sliderFarDistance->SetNotch(static_cast<int>(lrintf(M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF() * 100.0f)));
     }
     UpdateGrassControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
     UpdateShadowsControls(GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES);
@@ -1339,7 +1348,7 @@ void VideoOptionsWnd::OnCbWaterQualityChange(m3d::AIParam const&)
 int VideoOptionsWnd::GetCurrentWaterQuality() const
 {
     // RVA 0x4CD540
-    return M3D_KERNEL->GetEngineCfg().m_r_waterQuality.GetI();
+    return M3D_ENGINE_CFG.m_r_waterQuality.GetI();
 }
 
 CStr VideoOptionsWnd::ScreenWH2Str(PointBase<int> const& wh) const
@@ -1350,7 +1359,7 @@ CStr VideoOptionsWnd::ScreenWH2Str(PointBase<int> const& wh) const
 float VideoOptionsWnd::GetCurrentGrass() const
 {
     // RVA 0x4CD510
-    return M3D_KERNEL->GetEngineCfg().m_g_grassDrawDist.GetF();
+    return M3D_ENGINE_CFG.m_g_grassDrawDist.GetF();
 }
 
 void VideoOptionsWnd::UpdateGraphicQualityControls()
@@ -1380,14 +1389,14 @@ CStr VideoOptionsWnd::Filtration2Str(Filtration filtration) const
 {
     if (filtration >= FILTRATION_NUM_FILTRATIONS)
     {
-        return{};
+        return {};
     }
-    static const CStr names[] = {
-    "BilinearFiltration",
-    "TrilinearFiltration",
-    "AnisotropFiltration",
+    static CStr const names[] = {
+        "BilinearFiltration",
+        "TrilinearFiltration",
+        "AnisotropFiltration",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[filtration]);
+    return M3D_APP->GetStringByStringId0(names[filtration]);
 }
 
 void VideoOptionsWnd::SetDefaultParamsForGraphicQuality(GraphicQuality graphicQuality)
@@ -1468,7 +1477,7 @@ void VideoOptionsWnd::ApplyAntialiasing()
     }
 
     int const samplesNum = m_antialiasings[antialiasing];
-    M3D_KERNEL->GetEngineCfg().m_r_multiSamplesNum.SetI(samplesNum, true);
+    M3D_ENGINE_CFG.m_r_multiSamplesNum.SetI(samplesNum, true);
     if (M3D_RENDERER->IsMultiSamplingSupported(samplesNum))
     {
         M3D_RENDERER->Reset();
@@ -1524,21 +1533,21 @@ void VideoOptionsWnd::ApplyBlum()
         return;
     }
 
-    M3D_KERNEL->GetEngineCfg().m_g_postEffectBloom.SetI(m_blumQualities[blumQuality], true);
+    M3D_ENGINE_CFG.m_g_postEffectBloom.SetI(m_blumQualities[blumQuality], true);
 }
 
 CStr VideoOptionsWnd::WaterQuality2Str(WaterQuality waterQuality) const
 {
     if (waterQuality >= WATER_QUALITY_NUM_WATER_QUALITIES)
     {
-        return{};
+        return {};
     }
-    static const CStr names[] = {
+    static CStr const names[] = {
         "LowQuality",
         "MediumQuality",
         "HighQuality",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[waterQuality]);
+    return M3D_APP->GetStringByStringId0(names[waterQuality]);
 }
 
 bool VideoOptionsWnd::IsChanged() const
@@ -1566,7 +1575,7 @@ void VideoOptionsWnd::ApplyGrass()
         return;
     }
 
-    M3D_KERNEL->GetEngineCfg().m_g_grassDrawDist.SetF(m_grassDistances[grassDistance], true);
+    M3D_ENGINE_CFG.m_g_grassDrawDist.SetF(m_grassDistances[grassDistance], true);
 }
 
 VideoOptionsWnd::GrassDistance VideoOptionsWnd::GrassDistanceVal2Enum(float val) const
@@ -1751,18 +1760,18 @@ void VideoOptionsWnd::ApplyShadows()
 
     if (shadowsQuality == SHADOWS_QUALITY_NONE)
     {
-        M3D_KERNEL->GetEngineCfg().m_dsShadows.Set("0", true);
+        M3D_ENGINE_CFG.m_dsShadows.Set("0", true);
         return;
     }
 
     ShadowSettings const& shs = m_shadowSettings[shadowsQuality];
-    M3D_KERNEL->GetEngineCfg().m_dsShadows.Set("1", true);
-    M3D_KERNEL->GetEngineCfg().m_lgtShadowTexSz.SetI(shs.shadowTexSize, true);
-    M3D_KERNEL->GetEngineCfg().m_detShadowTexSz.SetI(shs.detShadowTexSize, true);
-    M3D_KERNEL->GetEngineCfg().m_g_shadowBlur.Set("1", true);
-    M3D_KERNEL->GetEngineCfg().m_g_shadowBlurCoeff.SetF(shs.shadowBlurCoeff, true);
-    M3D_KERNEL->GetEngineCfg().m_g_shadowDetailRadius.SetF(shs.detailRadius, true);
-    M3D_KERNEL->GetEngineCfg().m_g_shadowFarDist.SetI(SHADOW_FAR_DIST, true);
+    M3D_ENGINE_CFG.m_dsShadows.Set("1", true);
+    M3D_ENGINE_CFG.m_lgtShadowTexSz.SetI(shs.shadowTexSize, true);
+    M3D_ENGINE_CFG.m_detShadowTexSz.SetI(shs.detShadowTexSize, true);
+    M3D_ENGINE_CFG.m_g_shadowBlur.Set("1", true);
+    M3D_ENGINE_CFG.m_g_shadowBlurCoeff.SetF(shs.shadowBlurCoeff, true);
+    M3D_ENGINE_CFG.m_g_shadowDetailRadius.SetF(shs.detailRadius, true);
+    M3D_ENGINE_CFG.m_g_shadowFarDist.SetI(SHADOW_FAR_DIST, true);
 
     if (m3d::pClient)
     {
@@ -1774,14 +1783,14 @@ CStr VideoOptionsWnd::GrassDistance2Str(GrassDistance grassDistance) const
 {
     if (grassDistance >= GRASS_DISTANCE_NUM_GRASS_DISTANCES)
     {
-        return{};
+        return {};
     }
-    static const CStr names[] = {
+    static CStr const names[] = {
         "None",
         "Near",
         "Far",
     };
-    return m3d::Application::g_pApp->GetStringByStringId0(names[grassDistance]);
+    return M3D_APP->GetStringByStringId0(names[grassDistance]);
 }
 
 int VideoOptionsWnd::OnAfterRemoveFromWndStation()
@@ -1853,8 +1862,10 @@ void VideoOptionsWnd::OnCbGraphicQualityChange(m3d::AIParam const&)
 int VideoOptionsWnd::GetWaterQualityValByWaterShaderVersion(int waterShaderVersion) const
 {
     // RVA 0x4CDE30
-    if (waterShaderVersion == 11) return 1;
-    if (waterShaderVersion == 14) return 2;
+    if (waterShaderVersion == 11)
+        return 1;
+    if (waterShaderVersion == 14)
+        return 2;
     return waterShaderVersion == 20 ? 3 : 1;
 }
 
@@ -1894,7 +1905,7 @@ void VideoOptionsWnd::UpdateWaterQualityControls(GraphicQuality graphicQuality)
             int waterQuality = 0;
             if (graphicQuality == GRAPHIC_QUALITY_NUM_GRAPHIC_QUALITIES)
             {
-                waterQuality = M3D_KERNEL->GetEngineCfg().m_r_waterQuality.GetI();
+                waterQuality = M3D_ENGINE_CFG.m_r_waterQuality.GetI();
             }
             else
             {

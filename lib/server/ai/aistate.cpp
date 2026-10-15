@@ -27,7 +27,7 @@ namespace ai
         this->m_SignalIDs[15] = 0xFFFF;
     }
 
-    void AIState::Set(const CStr& Name, int FuncNum)
+    void AIState::Set(CStr const& Name, int FuncNum)
     {
         m_name = Name;
         m_FuncNum = FuncNum;
@@ -43,7 +43,7 @@ namespace ai
         }
     }
 
-    const CStr& AIState::GetName() const
+    CStr const& AIState::GetName() const
     {
         return m_name;
     }
@@ -73,4 +73,4 @@ namespace ai
             printf(" Sublevel present");
         }
     }
-}
+}  // namespace ai

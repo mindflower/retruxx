@@ -38,7 +38,7 @@ public:
     T height;
 };
 
-template <class T>
+template<class T>
 BoundsBase<T> BoundsBase<T>::SizeRect() const
 {
     // RVA 0x437650 - the extents moved to the origin.
@@ -50,7 +50,7 @@ BoundsBase<T> BoundsBase<T>::SizeRect() const
     return res;
 }
 
-template <class T>
+template<class T>
 int BoundsBase<T>::IsPtInBounds(PointBase<T> const& p) const
 {
     // RVA 0x4450B0 (float) / 0x45BC10 (int). Left/top inclusive, right/bottom
@@ -58,28 +58,28 @@ int BoundsBase<T>::IsPtInBounds(PointBase<T> const& p) const
     return p.x >= x0 && (width + x0) > p.x && p.y >= y0 && (height + y0) > p.y;
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::Height() const
 {
     // RVA 0x435530
     return height;
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::Width() const
 {
     // RVA 0x437640
     return width;
 }
 
-template <class T>
+template<class T>
 PointBase<T> BoundsBase<T>::BottomLeft() const
 {
     // RVA 0x4E5A80
     return PointBase<T>(x0, height + y0);
 }
 
-template <class T>
+template<class T>
 void BoundsBase<T>::Inflate(T a, T b)
 {
     // RVA 0x43F580 (float) / 0x6B9040 (int) - grows on all four sides.
@@ -89,21 +89,21 @@ void BoundsBase<T>::Inflate(T a, T b)
     height = height + b * static_cast<T>(2);
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::Bottom() const
 {
     // RVA 0x4355A0
     return height + y0;
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::Top() const
 {
     // RVA 0x41CF90
     return y0;
 }
 
-template <class T>
+template<class T>
 int BoundsBase<T>::Empty() const
 {
     // ExMachina 1.02 NoCD RVA 0x491C50 (the float instantiation emitted for
@@ -112,11 +112,11 @@ int BoundsBase<T>::Empty() const
     // the rounding of those expressions is reproduced here. Note that the second
     // term is negated relative to the first, which is why an empty rect compares
     // equal to zero on both.
-    return static_cast<T>((this->width + this->x0) - this->x0) == static_cast<T>(0)
-        && static_cast<T>(this->y0 - (this->height + this->y0)) == static_cast<T>(0);
+    return static_cast<T>((this->width + this->x0) - this->x0) == static_cast<T>(0) &&
+        static_cast<T>(this->y0 - (this->height + this->y0)) == static_cast<T>(0);
 }
 
-template <class T>
+template<class T>
 void BoundsBase<T>::Offset(PointBase<T> const& p)
 {
     // RVA 0x440E30 (float) / 0x6B9020 (int) - moves the origin, keeps extents.
@@ -124,7 +124,7 @@ void BoundsBase<T>::Offset(PointBase<T> const& p)
     y0 = p.y + y0;
 }
 
-template <class T>
+template<class T>
 void BoundsBase<T>::Zero()
 {
     // RVA 0x673AE0
@@ -134,14 +134,14 @@ void BoundsBase<T>::Zero()
     height = static_cast<T>(0);
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::Right() const
 {
     // RVA 0x43FEA0
     return width + x0;
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::CenterX() const
 {
     // RVA 0x4DCF20 (float: (x0 * 2 + width) * 0.5) / 0x584B00 (int: the same
@@ -149,14 +149,14 @@ T BoundsBase<T>::CenterX() const
     return (x0 + x0 + width) / static_cast<T>(2);
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::Left() const
 {
     // RVA 0x41CFA0
     return x0;
 }
 
-template <class T>
+template<class T>
 void BoundsBase<T>::CenterIn(BoundsBase<T> const& rc)
 {
     // RVA 0x4B7290. NOTE: the shipped code centres against rc's EXTENTS only -
@@ -166,28 +166,28 @@ void BoundsBase<T>::CenterIn(BoundsBase<T> const& rc)
     y0 = (rc.height - height) / static_cast<T>(2);
 }
 
-template <class T>
+template<class T>
 PointBase<T> BoundsBase<T>::BottomRight() const
 {
     // RVA 0x445060
     return PointBase<T>(width + x0, height + y0);
 }
 
-template <class T>
+template<class T>
 T BoundsBase<T>::CenterY() const
 {
     // RVA 0x4375F0 (float) / 0x584B10 (int)
     return (y0 + y0 + height) / static_cast<T>(2);
 }
 
-template <class T>
+template<class T>
 PointBase<T> BoundsBase<T>::TopLeft() const
 {
     // RVA 0x41CD70
     return PointBase<T>(x0, y0);
 }
 
-template <class T>
+template<class T>
 BoundsBase<T>::BoundsBase(int)
 {
     // RVA 0x611910 - the argument is ignored; everything zeroes.
@@ -197,16 +197,12 @@ BoundsBase<T>::BoundsBase(int)
     height = static_cast<T>(0);
 }
 
-template <class T>
-BoundsBase<T>::BoundsBase(BoundsBase<T> const& rhs) :
-    x0(rhs.x0),
-    y0(rhs.y0),
-    width(rhs.width),
-    height(rhs.height)
+template<class T>
+BoundsBase<T>::BoundsBase(BoundsBase<T> const& rhs) : x0(rhs.x0), y0(rhs.y0), width(rhs.width), height(rhs.height)
 {
 }
 
-template <class T>
+template<class T>
 BoundsBase<T>::BoundsBase(T a, T b)
 {
     this->x0 = 0.0;
@@ -215,7 +211,7 @@ BoundsBase<T>::BoundsBase(T a, T b)
     this->height = b;
 }
 
-template <class T>
+template<class T>
 BoundsBase<T>::BoundsBase(T x, T y, T xx, T yy)
 {
     x0 = x;
@@ -224,7 +220,7 @@ BoundsBase<T>::BoundsBase(T x, T y, T xx, T yy)
     height = yy - y;
 }
 
-template <class T>
+template<class T>
 BoundsBase<T>::BoundsBase(PointBase<T> const& topLeft, PointBase<T> const& bottomRight)
 {
     // RVA 0x445080 - corners in, extents stored.
@@ -234,7 +230,7 @@ BoundsBase<T>::BoundsBase(PointBase<T> const& topLeft, PointBase<T> const& botto
     height = bottomRight.y - y0;
 }
 
-template <class T>
+template<class T>
 BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
 {
     // RVA 0x46E3A0 - the overlap of the two rectangles; all zero when they do not touch.
@@ -262,7 +258,7 @@ BoundsBase<T> BoundsBase<T>::Intersect(BoundsBase<T> const& b) const
     return result;
 }
 
-template <class T>
+template<class T>
 PointBase<T> BoundsBase<T>::TopRight() const
 {
     // RVA 0x4E5A60

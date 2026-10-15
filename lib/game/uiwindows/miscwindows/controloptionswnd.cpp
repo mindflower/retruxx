@@ -84,9 +84,9 @@ void ControlOptionsWnd::InitMouseSensitivityControls()
 {
     if ((m_gameDataFlags & 1) != 0)
     {
-        auto mouseMaxSense = m3d::g_Kernel->GetEngineCfg().m_mouseMaxSensitivity.GetF();
-        auto mouseMinSense = m3d::g_Kernel->GetEngineCfg().m_mouseMinSensitivity.GetF();
-        m_sliderMouseSensitivity->SetMinMax(mouseMinSense*100.0, mouseMaxSense*100.0);
+        auto mouseMaxSense = M3D_ENGINE_CFG.m_mouseMaxSensitivity.GetF();
+        auto mouseMinSense = M3D_ENGINE_CFG.m_mouseMinSensitivity.GetF();
+        m_sliderMouseSensitivity->SetMinMax(mouseMinSense * 100.0, mouseMaxSense * 100.0);
         UpdateMouseSensitivityPrevNextButtonsState();
     }
 }
@@ -161,7 +161,8 @@ int ControlOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderMouseSensitivityName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_sliderMouseSensitivityName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -172,7 +173,9 @@ int ControlOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnMouseSensitivityPrevName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnMouseSensitivityPrevName +
+                " is not found or incorrect type");
             res = 0;
         }
 
@@ -183,7 +186,9 @@ int ControlOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnMouseSensitivityNextName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnMouseSensitivityNextName +
+                " is not found or incorrect type");
             res = 0;
         }
 
@@ -194,7 +199,8 @@ int ControlOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_checkMouseFlipYName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_checkMouseFlipYName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -205,7 +211,8 @@ int ControlOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_checkMouseFlipXName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_checkMouseFlipXName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -249,40 +256,40 @@ int ControlOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg
     switch (id)
     {
     case 0x28A0u:
-	    {
-		    if (msg != 5)
-                return 0;
-    		ControlOptionsWnd::OnSliderMouseSensitivityChange(data);
-            return 1;
-	    }
+    {
+        if (msg != 5)
+            return 0;
+        ControlOptionsWnd::OnSliderMouseSensitivityChange(data);
+        return 1;
+    }
     case 0x28A1u:
-	    {
-		    if (msg != 1)
-                return 0;
-    		ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        ControlOptionsWnd::OnBtnMouseSensitivityPrevClick(data);
+        return 1;
+    }
     case 0x28A2u:
-	    {
-		    if (msg != 1)
-                return 0;
-    		ControlOptionsWnd::OnBtnMouseSensitivityNextClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        ControlOptionsWnd::OnBtnMouseSensitivityNextClick(data);
+        return 1;
+    }
     case 0x28A3u:
-	    {
-		    if (msg != 1)
-                return 0;
-    		ControlOptionsWnd::OnCheckMouseFlipYClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        ControlOptionsWnd::OnCheckMouseFlipYClick(data);
+        return 1;
+    }
     case 0x28A4u:
-	    {
-		    if (msg != 1)
-                return 0;
-    		ControlOptionsWnd::OnCheckMouseFlipXClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        ControlOptionsWnd::OnCheckMouseFlipXClick(data);
+        return 1;
+    }
     default:
         return 0;
     }
@@ -333,7 +340,7 @@ void ControlOptionsWnd::InitControls()
 void ControlOptionsWnd::OnSliderMouseSensitivityChange(m3d::AIParam const&)
 {
     UpdateMouseSensitivityPrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderMouseSensitivityBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderMouseSensitivityBlocked)
     {
         ApplyMouseSensitivity();
     }

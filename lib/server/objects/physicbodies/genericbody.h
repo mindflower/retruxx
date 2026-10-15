@@ -6,18 +6,19 @@ namespace ai
     class GenericBody : public ai::SimplePhysicBody
     {
         friend class SimplePhysicObjPrototypeInfo;
+
     protected:
         GenericBody(float massValue);
         GenericBody();
-        GenericBody(const ai::GenericBody& rhs);
+        GenericBody(ai::GenericBody const& rhs);
 
     public:
-        virtual  ~GenericBody() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x00 */;
+        virtual ~GenericBody() override;
+        virtual m3d::Object* Clone() override;
         static m3d::Object* CreateObject();
         static m3d::Class* GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGenericBody;
-        virtual void SetMass(float newMassValue) override /* 0x160 */;
-    }; /* size: 0x0158 */
-}
+        virtual void SetMass(float newMassValue) override;
+    };
+}  // namespace ai

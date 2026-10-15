@@ -8,9 +8,9 @@
 
 namespace ai
 {
-	RT_CLASS_EXPORTS_BEGIN(Formation)
+    RT_CLASS_EXPORTS_BEGIN(Formation)
     RT_CLASS_EXPORTS_END;
-	RT_CLASS_DEFINE(Formation);
+    RT_CLASS_DEFINE(Formation);
 
     FormationPrototypeInfo::FormationPrototypeInfo()
     {
@@ -23,7 +23,7 @@ namespace ai
         this->m_angularVelocity = 0.5;
     }
 
-    bool FormationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    bool FormationPrototypeInfo::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         auto result = ai::PrototypeInfo::LoadFromXML(xmlFile, xmlNode);
         if (result)
@@ -46,7 +46,7 @@ namespace ai
         return this->m_maxVehicles;
     }
 
-    const retruxx::vector<CVector2, retruxx::allocator<CVector2>>& FormationPrototypeInfo::GetPolylinePoints() const
+    retruxx::vector<CVector2, retruxx::allocator<CVector2>> const& FormationPrototypeInfo::GetPolylinePoints() const
     {
         // RVA 0x7ECA70
         return m_polylinePoints;
@@ -79,13 +79,14 @@ namespace ai
         calcPolylineLengths();
     }
 
-    void FormationPrototypeInfo::loadPolylinePoints(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void FormationPrototypeInfo::loadPolylinePoints(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         ref_ptr polylineNode = xmlFile->CreateNode();
         xmlNode->GetFirstChild(polylineNode, "Polyline");
 
         ref_ptr pointNode = xmlFile->CreateNode();
-        for (polylineNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty(); pointNode->GetNextSibling(pointNode, "Point"))
+        for (polylineNode->GetFirstChild(pointNode, "Point"); !pointNode->IsEmpty();
+             pointNode->GetNextSibling(pointNode, "Point"))
         {
             CVector2 point;
             m3d::SafeVector2Attrib(point, pointNode, "Coord");
@@ -112,8 +113,8 @@ namespace ai
         // Iterate through each segment of the polyline
         for (size_t i = 0; i < this->m_polylinePoints.size() - 1; ++i)
         {
-            const CVector2& currentPoint = this->m_polylinePoints[i];
-            const CVector2& nextPoint = this->m_polylinePoints[i + 1];
+            CVector2 const& currentPoint = this->m_polylinePoints[i];
+            CVector2 const& nextPoint = this->m_polylinePoints[i + 1];
 
             // Calculate segment length using distance formula
             float dx = nextPoint.x - currentPoint.x;
@@ -133,7 +134,8 @@ namespace ai
 
     Formation::~Formation() = default;
 
-    Formation::Formation(const ai::FormationPrototypeInfo& prototypeInfo) : Obj(prototypeInfo),
+    Formation::Formation(ai::FormationPrototypeInfo const& prototypeInfo) :
+        Obj(prototypeInfo),
         m_maxVehicles(prototypeInfo.GetMaxVehicles())
     {
         this->m_pPath = 0;
@@ -169,7 +171,7 @@ namespace ai
         return RT_CLASS_LOCAL(Formation);
     }
 
-    const ai::FormationPrototypeInfo* Formation::GetPrototypeInfo() const
+    ai::FormationPrototypeInfo const* Formation::GetPrototypeInfo() const
     {
         // RVA 0x7EDE60
         return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), FormationPrototypeInfo const);
@@ -187,7 +189,7 @@ namespace ai
         xmlNode->SetAttribute("NumPathPoint", CStr(m_numPathPoint).c_str());
     }
 
-    void Formation::LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode)
+    void Formation::LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode)
     {
         // RVA 0x7ECD80
         Obj::LoadFromXML(xmlFile, xmlNode);
@@ -199,7 +201,10 @@ namespace ai
         m3d::SafeIntAttrib(m_numPathPoint, xmlNode, "NumPathPoint");
     }
 
-    void Formation::GetPositionAndDirectionForVehicle(int numVehicle, int totalVehicles, CVector& position,
+    void Formation::GetPositionAndDirectionForVehicle(
+        int numVehicle,
+        int totalVehicles,
+        CVector& position,
         CVector& direction) const
     {
         // RVA 0x7EE9D0 - the slot shape is generated in formation-local units and then scaled by
@@ -209,20 +214,17 @@ namespace ai
             generatePositions(totalVehicles);
         }
 
-        CVector const relPos(m_positions[numVehicle].x * m_distBetweenVehicles, 0.0f,
-            m_positions[numVehicle].y * m_distBetweenVehicles);
+        CVector const relPos(
+            m_positions[numVehicle].x * m_distBetweenVehicles, 0.0f, m_positions[numVehicle].y * m_distBetweenVehicles);
 
         CVector const INITIAL_UP_DIRECTION(0.0, 1.0, 0.0);
         Quaternion rot;
         rot.FromAxisAngle(INITIAL_UP_DIRECTION, GetAngle());
         CMatrix const rotMatrix = rot.ToMatrix();
 
-        position.x = m_position.x + rotMatrix._11 * relPos.x + rotMatrix._21 * relPos.y +
-            rotMatrix._31 * relPos.z;
-        position.y = m_position.y + rotMatrix._12 * relPos.x + rotMatrix._22 * relPos.y +
-            rotMatrix._32 * relPos.z;
-        position.z = m_position.z + rotMatrix._13 * relPos.x + rotMatrix._23 * relPos.y +
-            rotMatrix._33 * relPos.z;
+        position.x = m_position.x + rotMatrix._11 * relPos.x + rotMatrix._21 * relPos.y + rotMatrix._31 * relPos.z;
+        position.y = m_position.y + rotMatrix._12 * relPos.x + rotMatrix._22 * relPos.y + rotMatrix._32 * relPos.z;
+        position.z = m_position.z + rotMatrix._13 * relPos.x + rotMatrix._23 * relPos.y + rotMatrix._33 * relPos.z;
 
         // Every vehicle in a formation faces the same way.
         direction = m_direction;
@@ -253,7 +255,7 @@ namespace ai
         return m_position;
     }
 
-    void Formation::SetPosition(const CVector& pos)
+    void Formation::SetPosition(CVector const& pos)
     {
         // RVA 0x7ECA80 - a formation is a flat shape, so it never carries a height.
         m_position = pos;
@@ -265,7 +267,7 @@ namespace ai
         return m_direction;
     }
 
-    void Formation::SetDirection(const CVector& direction)
+    void Formation::SetDirection(CVector const& direction)
     {
         // RVA 0x7ECAB0 - NOTE: unlike SetPosition this keeps whatever y it is handed.
         m_direction = direction;
@@ -336,7 +338,8 @@ namespace ai
     {
         if (m_vehicles.size() >= this->m_maxVehicles)
         {
-            M3D_CRITICAL_ERROR("maximum vehicles count exceeded: " + CStr(m_maxVehicles) + " for " + GetDebugDescription());
+            M3D_CRITICAL_ERROR(
+                "maximum vehicles count exceeded: " + CStr(m_maxVehicles) + " for " + GetDebugDescription());
         }
         m_vehicles.push_back(vehicle);
     }
@@ -437,8 +440,7 @@ namespace ai
                     dir.x = segment.x * invLength;
                     dir.y = segment.y * invLength;
                 }
-                m_positions.push_back(
-                    CVector2(points[i].x + dir.x * offset, points[i].y + dir.y * offset));
+                m_positions.push_back(CVector2(points[i].x + dir.x * offset, points[i].y + dir.y * offset));
 
                 bool const segmentExhausted = segmentLength < offset + 1.0f;
                 offset += 1.0f;
@@ -457,7 +459,7 @@ namespace ai
         }
     }
 
-    void Formation::_UpdateDirection(float elapsedTime, const CVector& desiredDir)
+    void Formation::_UpdateDirection(float elapsedTime, CVector const& desiredDir)
     {
         // RVA 0x7ECF20 - turns towards desiredDir at the formation's angular velocity, and snaps
         // onto it once the turn would carry past it.
@@ -478,12 +480,9 @@ namespace ai
         CMatrix const rotMatrix = rot.ToMatrix();
 
         CVector newDir;
-        newDir.x = rotMatrix._11 * m_direction.x + rotMatrix._21 * m_direction.y +
-            rotMatrix._31 * m_direction.z;
-        newDir.y = rotMatrix._12 * m_direction.x + rotMatrix._22 * m_direction.y +
-            rotMatrix._32 * m_direction.z;
-        newDir.z = rotMatrix._13 * m_direction.x + rotMatrix._23 * m_direction.y +
-            rotMatrix._33 * m_direction.z;
+        newDir.x = rotMatrix._11 * m_direction.x + rotMatrix._21 * m_direction.y + rotMatrix._31 * m_direction.z;
+        newDir.y = rotMatrix._12 * m_direction.x + rotMatrix._22 * m_direction.y + rotMatrix._32 * m_direction.z;
+        newDir.z = rotMatrix._13 * m_direction.x + rotMatrix._23 * m_direction.y + rotMatrix._33 * m_direction.z;
 
         // If the turn crossed the target - the side it lies on flipped - take the target exactly.
         float const newSide = newDir.z * desiredDir.x - desiredDir.z * newDir.x;
@@ -505,7 +504,7 @@ namespace ai
         m_direction = newDir * invLength;
     }
 
-    void Formation::_UpdatePosition(float elapsedTime, const CVector& desiredDir, const CVector& curPathPoint)
+    void Formation::_UpdatePosition(float elapsedTime, CVector const& desiredDir, CVector const& curPathPoint)
     {
         // RVA 0x7ED330 - a step that would carry the formation past the path point it is heading
         // for lands on the point instead, and the path advances.
@@ -527,7 +526,7 @@ namespace ai
         m_position.y = 0.0f;
     }
 
-    void Formation::_UpdateVelocity(float elapsedTime, const CVector& desiredDir)
+    void Formation::_UpdateVelocity(float elapsedTime, CVector const& desiredDir)
     {
         // RVA 0x7EEDB0 - the formation accelerates until it hits twice the speed of its slowest
         // truck, and brakes hard whenever anyone is falling out of position behind it.
@@ -561,8 +560,7 @@ namespace ai
             CVector const pos = vehicle->GetPosition();
             CVector desiredPos;
             CVector dummy;
-            GetPositionAndDirectionForVehicle(
-                vehicle->GetIndexInTeam(), totalVehicles, desiredPos, dummy);
+            GetPositionAndDirectionForVehicle(vehicle->GetIndexInTeam(), totalVehicles, desiredPos, dummy);
             // NOTE: the y term uses desiredPos.y alone rather than the difference, unlike x and z.
             float const lag = desiredDir.x * (desiredPos.x - pos.x) + desiredDir.y * desiredPos.y +
                 desiredDir.z * (desiredPos.z - pos.z);
@@ -587,4 +585,4 @@ namespace ai
             m_linearVelocity = 1000.0f;
         }
     }
-}
+}  // namespace ai

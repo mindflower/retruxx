@@ -6,9 +6,7 @@ struct RandomCoeffWithDispersion
     float baseDispersion = 0.0f;
 
     RandomCoeffWithDispersion() = default;
-    RandomCoeffWithDispersion(float coeff, float dispersion) :
-        baseCoeff(coeff),
-        baseDispersion(dispersion)
+    RandomCoeffWithDispersion(float coeff, float dispersion) : baseCoeff(coeff), baseDispersion(dispersion)
     {
     }
 };

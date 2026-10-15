@@ -19,7 +19,6 @@ namespace ai
         virtual Obj* CreateTargetObject() const;
     };
 
-
     class CinematicMover : public Obj
     {
     public:
@@ -48,5 +47,5 @@ namespace ai
         m3d::CameraPath* m_currentFlyPath;
         float m_currentFlyTime;
         int m_controlledObjId;
-    }; /* size: 0x00d8 */
-}
+    };
+}  // namespace ai

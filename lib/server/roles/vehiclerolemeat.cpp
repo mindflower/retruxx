@@ -49,7 +49,8 @@ namespace ai
         return v->EstimateDamageAI() + maxSpeed;
     }
 
-    float VehicleRoleMeatPrototypeInfo::FitAgainstTeam(Vehicle const* v, Team const* target, Vehicle** targetVehicle) const
+    float VehicleRoleMeatPrototypeInfo::FitAgainstTeam(Vehicle const* v, Team const* target, Vehicle** targetVehicle)
+        const
     {
         // RVA 0x800150
         *targetVehicle = getBestOpponentFromTeam(v, target);
@@ -169,7 +170,8 @@ namespace ai
     VehicleRoleMeatPrototypeInfo const* VehicleRoleMeat::GetPrototypeInfo() const
     {
         // RVA 0x800990 - NOTE: the prototype is cast without a type check.
-        return static_cast<VehicleRoleMeatPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<VehicleRoleMeatPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRoleMeat::CreateObject()

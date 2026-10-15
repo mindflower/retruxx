@@ -194,8 +194,12 @@ namespace m3d
             return 1;
         }
 
-        int ModelArrayWnd::CreateModelArrayWnd(rend::TexHandle imageTex, unsigned style, BoundsBase<float> const& rc,
-            unsigned id, rend::TexHandle targetTex)
+        int ModelArrayWnd::CreateModelArrayWnd(
+            rend::TexHandle imageTex,
+            unsigned style,
+            BoundsBase<float> const& rc,
+            unsigned id,
+            rend::TexHandle targetTex)
         {
             // RVA 0x794970 - without a target texture one sized for the window is made.
             if (!style)
@@ -218,8 +222,12 @@ namespace m3d
             return m_renderTexture.IsValid() ? 1 : 0;
         }
 
-        int ModelArrayWnd::CreateModelArrayWnd(CStr const& imageFile, unsigned style, BoundsBase<float> const& rc,
-            unsigned id, rend::TexHandle targetTex)
+        int ModelArrayWnd::CreateModelArrayWnd(
+            CStr const& imageFile,
+            unsigned style,
+            BoundsBase<float> const& rc,
+            unsigned id,
+            rend::TexHandle targetTex)
         {
             // RVA 0x7948C0
             m_textureName = imageFile;
@@ -369,5 +377,5 @@ namespace m3d
             // RVA 0x793BC0
             return ImageWnd::CreateImageWnd(rc, textureName);
         }
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

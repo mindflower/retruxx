@@ -14,8 +14,15 @@ bool compareVector(CVector const& a, CVector const& b)
 }
 
 // orig 0x64d5b0 mesh.cpp:37
-MeshHandle CDevice::AddMesh(VertexType type, void* verts, int numVerts, unsigned short* tris, int numTris,
-                            SubmeshInfo* subs, int numSubs, int* remap)
+MeshHandle CDevice::AddMesh(
+    VertexType type,
+    void* verts,
+    int numVerts,
+    unsigned short* tris,
+    int numTris,
+    SubmeshInfo* subs,
+    int numSubs,
+    int* remap)
 {
     unsigned int fvf;
     int vertSize;
@@ -24,13 +31,12 @@ MeshHandle CDevice::AddMesh(VertexType type, void* verts, int numVerts, unsigned
 
     for (int i1 = 0; i1 < numTris; i1++)
     {
-        if (tris[i1 * 3] > numVerts ||
-            tris[i1 * 3 + 1] > numVerts ||
-            tris[i1 * 3 + 2] > numVerts)
+        if (tris[i1 * 3] > numVerts || tris[i1 * 3 + 1] > numVerts || tris[i1 * 3 + 2] > numVerts)
         {
-            LogMsg(CStr("ERROR: Incoming mesh have index outta vertices in tri # ") + CStr(i1) + ": (" +
-                   CStr((int)tris[i1 * 3]) + "," + CStr((int)tris[i1 * 3 + 1]) + "," + CStr((int)tris[i1 * 3 + 2]) +
-                   "), while maximum vertex index is " + CStr(numVerts));
+            LogMsg(
+                CStr("ERROR: Incoming mesh have index outta vertices in tri # ") + CStr(i1) + ": (" +
+                CStr((int)tris[i1 * 3]) + "," + CStr((int)tris[i1 * 3 + 1]) + "," + CStr((int)tris[i1 * 3 + 2]) +
+                "), while maximum vertex index is " + CStr(numVerts));
             return MeshHandle();
         }
     }
@@ -195,10 +201,18 @@ void CDevice::FinishRenderMeshes()
 }
 
 // orig 0x64e530 mesh.cpp:309
-int CDevice::OptimizeGeometryToSingleStrip(VertexType vt, void* vertsIn, int numVertsIn, unsigned short* indicesIn,
-                                           int numTrisIn, int zeroBaseIndex, void** vertsOut, int* numVertsOut,
-                                           int** remap, unsigned short** singleStripOut,
-                                           int* numSingleStripOutIndices)
+int CDevice::OptimizeGeometryToSingleStrip(
+    VertexType vt,
+    void* vertsIn,
+    int numVertsIn,
+    unsigned short* indicesIn,
+    int numTrisIn,
+    int zeroBaseIndex,
+    void** vertsOut,
+    int* numVertsOut,
+    int** remap,
+    unsigned short** singleStripOut,
+    int* numSingleStripOutIndices)
 {
     *numSingleStripOutIndices = 0;
     *singleStripOut = 0;
@@ -280,9 +294,18 @@ int CDevice::OptimizeGeometryToSingleStrip(VertexType vt, void* vertsIn, int num
 }
 
 // orig 0x64e880 mesh.cpp:438
-int CDevice::OptimizeGeometryToTriList(VertexType vt, void* vertsIn, int numVertsIn, unsigned short* indicesIn,
-                                       int numTrisIn, int zeroBaseIndex, void** vertsOut, int* numVertsOut,
-                                       int** remap, unsigned short** trisIndices, int* numTrisIndices)
+int CDevice::OptimizeGeometryToTriList(
+    VertexType vt,
+    void* vertsIn,
+    int numVertsIn,
+    unsigned short* indicesIn,
+    int numTrisIn,
+    int zeroBaseIndex,
+    void** vertsOut,
+    int* numVertsOut,
+    int** remap,
+    unsigned short** trisIndices,
+    int* numTrisIndices)
 {
     *numTrisIndices = 0;
     *trisIndices = 0;

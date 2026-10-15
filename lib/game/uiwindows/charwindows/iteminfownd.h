@@ -57,15 +57,15 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_propStrIds[24];
+        CStr m_propStrIds[24];
         AuxInfo(ItemInfoWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x0120 */
+    };
 
 protected:
     bool IsValid() const;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     int Update(bool firstUpdate);
     int ShowInfoBase(bool updateOnly);
     // NOTE: declared in the PDB but no code was emitted for it either; the
@@ -81,20 +81,20 @@ protected:
     int GetResourceId() const;
     bool NeedShowPrice() const;
     bool NeedShowChargeSize() const;
-    /* 0x0234 */ ItemInfoWnd::InfoType m_infoType;
-    /* 0x0238 */ ai::GeomRepositoryItem m_repositoryItem;
-    /* 0x0254 */ int m_objId;
-    /* 0x0258 */ CStr m_auxFullName;
+    ItemInfoWnd::InfoType m_infoType;
+    ai::GeomRepositoryItem m_repositoryItem;
+    int m_objId;
+    CStr m_auxFullName;
     static ItemInfoWnd::AuxInfo m_aif;
-    /* 0x0264 */ ref_ptr<m3d::ui::Wnd> m_srcWnd;
+    ref_ptr<m3d::ui::Wnd> m_srcWnd;
     ItemInfoWnd();
     ItemInfoWnd(ItemInfoWnd const& rhs);
 
 public:
-    virtual ~ItemInfoWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~ItemInfoWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     RT_CLASS_DECLARE(ItemInfoWnd);
-}; /* size: 0x0268 */
+};

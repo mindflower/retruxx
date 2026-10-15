@@ -94,7 +94,7 @@ void ObjectCollection::InitClasses()
     CStr collectedClassNames[] = {"Vehicle", "DynamicQuest", "Town", "Lair", "Location", "StaticAutoGun"};
     for (auto const& className : collectedClassNames)
     {
-        if (auto* cls = m3d::g_Kernel->FindClass(className.c_str()))
+        if (auto* cls = M3D_KERNEL->FindClass(className.c_str()))
         {
             m_collectedClasses.push_back(cls);
         }

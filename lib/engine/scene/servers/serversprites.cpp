@@ -16,14 +16,14 @@ namespace m3d
         // What SgSpriteNode hands to RenderItem (SpritesServer::RenderItem::RenderInfo in the PDB).
         struct RenderInfo
         {
-            /* 0x0000 */ CVector* m_org;
-            /* 0x0004 */ float m_scaleX;
-            /* 0x0008 */ float m_scaleY;
-            /* 0x000c */ float m_rotZ;
-            /* 0x0010 */ unsigned int m_color;
-            /* 0x0014 */ unsigned int m_mode;
-            /* 0x0018 */ float m_tsc;
-        }; /* size: 0x001c */
+            CVector* m_org;
+            float m_scaleX;
+            float m_scaleY;
+            float m_rotZ;
+            unsigned int m_color;
+            unsigned int m_mode;
+            float m_tsc;
+        };
 
         // A sprite item is nothing but a texture; its handle is kept in the model's pointer.
         rend::TexHandle& TextureOf(DataServer::Model& model)
@@ -168,10 +168,10 @@ namespace m3d
 
     SpritesServer::SpritesServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("sprites", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("sprites", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
     }
 
@@ -198,4 +198,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

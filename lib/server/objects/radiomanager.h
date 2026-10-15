@@ -7,34 +7,35 @@ namespace ai
     class RadioManagerPrototypeInfo : public ai::PrototypeInfo
     {
     public:
-        virtual ai::Obj* CreateTargetObject() const override /* 0x10 */;
-    }; /* size: 0x0040 */
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class RadioManager : public ai::Obj
     {
         friend class RadioManagerPrototypeInfo;
+
     protected:
-        virtual  ~RadioManager() override /* 0x00 */;
+        virtual ~RadioManager() override;
 
     private:
-        RadioManager(const ai::RadioManagerPrototypeInfo& prototypeInfo);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        RadioManager(ai::RadioManagerPrototypeInfo const& prototypeInfo);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classRadioManager;
-        virtual const ai::RadioManagerPrototypeInfo* GetPrototypeInfo() const override /* 0x4c */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x40 */;
+        virtual ai::RadioManagerPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
     private:
-        void _OnObjectDie(const ai::Event& evn);
-        void _OnSomeoneAtSight(const ai::Event& evn);
-        void _OnUnderAttack(const ai::Event& evn);
-        void _OnRelationChanged(const ai::Event& evn);
-        void _OnPartBroken(const ai::Event& evn);
-        void _OnPlayerVehicleChanged(const ai::Event& evn);
+        void _OnObjectDie(ai::Event const& evn);
+        void _OnSomeoneAtSight(ai::Event const& evn);
+        void _OnUnderAttack(ai::Event const& evn);
+        void _OnRelationChanged(ai::Event const& evn);
+        void _OnPartBroken(ai::Event const& evn);
+        void _OnPlayerVehicleChanged(ai::Event const& evn);
 
         enum RM_ENUM
         {
@@ -47,11 +48,11 @@ namespace ai
         };
 
     private:
-        void ReadyMessage(ai::RadioManager::RM_ENUM type, int belong, const CStr& mes);
-        /* 0x00c0 */ bool m_bRadioEnabled;
+        void ReadyMessage(ai::RadioManager::RM_ENUM type, int belong, CStr const& mes);
+        bool m_bRadioEnabled;
 
     public:
         void EnableRadio();
         void DisableRadio();
-    }; /* size: 0x00c4 */
-}
+    };
+}  // namespace ai

@@ -4,45 +4,48 @@
 namespace ai
 {
     template<class T>
-    class NumericInRange :  public Component<T>
+    class NumericInRange : public Component<T>
     {
         using ThisType = ai::NumericInRange<T>;
         using InnerNumeric = ai::Numeric<T>;
         using Base = ai::Component<T>;
         using ThisAfterChangeCallback = ai::MemberFunctionOneArg<ai::NumericInRange<T>, T, void>;
         using ThisBeforeChangeCallback = ai::MemberFunctionOneArgRef<ai::NumericInRange<T>, T, bool>;
-        using ThisBeforeApplyModifierCallback = ai::MemberFunctionTwoArgsRef<ai::NumericInRange<T>, ai::Modifier, T, bool>;
+        using ThisBeforeApplyModifierCallback =
+            ai::MemberFunctionTwoArgsRef<ai::NumericInRange<T>, ai::Modifier, T, bool>;
 
     public:
-        /* 0x0010 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
-        /* 0x0018 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
-        /* 0x0020 */ ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMaxValueApplyModifier = nullptr;
-        /* 0x0028 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
-        /* 0x0030 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
-        /* 0x0038 */ ai::FuncPtrOneArgRef<T, bool> m_BeforeMaxValueChange = nullptr;
-        /* 0x0040 */ ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
-        /* 0x0048 */ ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
-        /* 0x0050 */ ai::FuncPtrOneArg<T, void> m_AfterMaxValueChange = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeValueApplyModifier = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMinValueApplyModifier = nullptr;
+        ai::FuncPtrTwoArgsRef<ai::Modifier, T, bool> m_BeforeMaxValueApplyModifier = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeValueChange = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeMinValueChange = nullptr;
+        ai::FuncPtrOneArgRef<T, bool> m_BeforeMaxValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterMinValueChange = nullptr;
+        ai::FuncPtrOneArg<T, void> m_AfterMaxValueChange = nullptr;
 
-        NumericInRange(T value, T minValue, T maxValue) :
-            m_value(value),
-            m_minValue(minValue),
-            m_maxValue(maxValue)
+        NumericInRange(T value, T minValue, T maxValue) : m_value(value), m_minValue(minValue), m_maxValue(maxValue)
         {
             m_value.m_AfterChange = new ThisAfterChangeCallback(*this, &NumericInRange<T>::_OnAfterValueChange);
             m_minValue.m_AfterChange = new ThisAfterChangeCallback(*this, &NumericInRange<T>::_OnAfterMinValueChange);
             m_maxValue.m_AfterChange = new ThisAfterChangeCallback(*this, &NumericInRange<T>::_OnAfterMaxValueChange);
 
             m_value.m_BeforeChange = new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeValueChange);
-            m_minValue.m_BeforeChange = new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeMinValueChange);
-            m_maxValue.m_BeforeChange = new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeMaxValueChange);
+            m_minValue.m_BeforeChange =
+                new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeMinValueChange);
+            m_maxValue.m_BeforeChange =
+                new ThisBeforeChangeCallback(*this, &NumericInRange<T>::_OnBeforeMaxValueChange);
 
-            m_value.m_BeforeApplyModifier = new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeValueApplyModifier);
-            m_minValue.m_BeforeApplyModifier = new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeMinValueApplyModifier);
-            m_maxValue.m_BeforeApplyModifier = new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeMaxValueApplyModifier);
+            m_value.m_BeforeApplyModifier =
+                new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeValueApplyModifier);
+            m_minValue.m_BeforeApplyModifier =
+                new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeMinValueApplyModifier);
+            m_maxValue.m_BeforeApplyModifier =
+                new ThisBeforeApplyModifierCallback(*this, &NumericInRange<T>::_OnBeforeMaxValueApplyModifier);
         }
 
-        const ai::Numeric<T>& value() const
+        ai::Numeric<T> const& value() const
         {
             return m_value;
         }
@@ -52,7 +55,7 @@ namespace ai
             return m_value;
         }
 
-        const ai::Numeric<T>& minValue() const
+        ai::Numeric<T> const& minValue() const
         {
             return m_minValue;
         }
@@ -62,7 +65,7 @@ namespace ai
             return m_minValue;
         }
 
-        const ai::Numeric<T>& maxValue() const
+        ai::Numeric<T> const& maxValue() const
         {
             return m_maxValue;
         }
@@ -76,7 +79,7 @@ namespace ai
         // never instantiated, so unlike the rest of this class their bodies do
         // not come from the binary. They follow the guarded/unguarded split the
         // rest of the components use.
-        void assign(const ai::NumericInRange<T>& other)
+        void assign(ai::NumericInRange<T> const& other)
         {
             // The bounds go in before the value so that the value is clamped
             // against the new window rather than the old one.
@@ -108,7 +111,7 @@ namespace ai
         }
 
     protected:
-        void _AssignUnsafe(const ai::NumericInRange<T>& other)
+        void _AssignUnsafe(ai::NumericInRange<T> const& other)
         {
             // Stores all three values with neither the BeforeChange guards nor
             // the AfterChange notifications, so the callbacks stay bound to
@@ -170,26 +173,26 @@ namespace ai
             return m_BeforeMaxValueChange(newValue);
         }
 
-        bool _OnBeforeValueApplyModifier(const ai::Modifier& modifier, T& newValue)
+        bool _OnBeforeValueApplyModifier(ai::Modifier const& modifier, T& newValue)
         {
             // RVA 0x5CDAD0 (float) / 0x834FB0 (int) - the FuncPtr call operator
             // is the null check; an unset hook means "do not veto".
             return m_BeforeValueApplyModifier(modifier, newValue);
         }
 
-        bool _OnBeforeMinValueApplyModifier(const ai::Modifier& modifier, T& newValue)
+        bool _OnBeforeMinValueApplyModifier(ai::Modifier const& modifier, T& newValue)
         {
             // RVA 0x5CDAF0 (float) / 0x834FD0 (int)
             return m_BeforeMinValueApplyModifier(modifier, newValue);
         }
 
-        bool _OnBeforeMaxValueApplyModifier(const ai::Modifier& modifier, T& newValue)
+        bool _OnBeforeMaxValueApplyModifier(ai::Modifier const& modifier, T& newValue)
         {
             // RVA 0x5CDB10 (float) / 0x834FF0 (int)
             return m_BeforeMaxValueApplyModifier(modifier, newValue);
         }
-        /* 0x0058 */ ai::Numeric<T> m_value;
-        /* 0x0074 */ ai::Numeric<T> m_minValue;
-        /* 0x0090 */ ai::Numeric<T> m_maxValue;
-    }; /* size: 0x00ac */
-}
+        ai::Numeric<T> m_value;
+        ai::Numeric<T> m_minValue;
+        ai::Numeric<T> m_maxValue;
+    };
+}  // namespace ai

@@ -21,7 +21,8 @@ namespace ai
     // RVA 0x846A10
     EngineOilLocation::~EngineOilLocation() = default;
 
-    EngineOilLocation::EngineOilLocation(EngineOilLocationPrototypeInfo const& prototypeInfo) : TemporaryLocation(prototypeInfo)
+    EngineOilLocation::EngineOilLocation(EngineOilLocationPrototypeInfo const& prototypeInfo) :
+        TemporaryLocation(prototypeInfo)
     {
         // RVA 0x8469F0
     }
@@ -33,14 +34,14 @@ namespace ai
         return nullptr;
     }
 
-    m3d::Object* __fastcall EngineOilLocation::CreateObject()
+    m3d::Object* EngineOilLocation::CreateObject()
     {
         // RVA 0x846CD0
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
 
-    m3d::Class* __fastcall EngineOilLocation::GetBaseClass()
+    m3d::Class* EngineOilLocation::GetBaseClass()
     {
         return RT_CLASS_LOCAL(TemporaryLocation);
     }
@@ -54,7 +55,8 @@ namespace ai
     EngineOilLocationPrototypeInfo const* EngineOilLocation::GetPrototypeInfo() const
     {
         // RVA 0x846EE0 - NOTE: the prototype is cast without a type check.
-        return static_cast<EngineOilLocationPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<EngineOilLocationPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void EngineOilLocation::OnObjectIn(Obj* object)

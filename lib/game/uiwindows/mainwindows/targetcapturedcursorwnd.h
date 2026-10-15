@@ -1,21 +1,21 @@
 #pragma once
 #include "targetcursorwnd.h"
 
-class TargetCapturedCursorWnd :  public TargetCursorWnd
+class TargetCapturedCursorWnd : public TargetCursorWnd
 {
 public:
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    static m3d::Class * GetBaseClass();
-    virtual m3d::Object * Clone();
+    static m3d::Object* CreateObject();
+    virtual m3d::Class* GetClass() const;
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Object* Clone();
     virtual ~TargetCapturedCursorWnd();
 
 protected:
     virtual void OnNewFrame();
-    TargetCapturedCursorWnd(TargetCapturedCursorWnd const &);
+    TargetCapturedCursorWnd(TargetCapturedCursorWnd const&);
     TargetCapturedCursorWnd();
-    bool bVisible() const ;
-    virtual int GetTargetObjId() const ;
+    bool bVisible() const;
+    virtual int GetTargetObjId() const;
     void UpdateTexAngle();
     void UpdateCaptureTex();
     virtual void Show(bool);

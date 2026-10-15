@@ -33,199 +33,333 @@ namespace m3d
     class Cinematic;
     class IImpulse;
 
-    class Application :
-        public IConHandler,
-        public IEventHandler,
-        public IDeviceResetCallback,
-        public ui::WndStation
+    class Application : public IConHandler, public IEventHandler, public IDeviceResetCallback, public ui::WndStation
     {
         friend class LightsServer;
 
     public:
-        Application(const m3d::Application&);
-        Application(const char* logName);
-        virtual ~Application() /* 0x00 */;
+        Application(m3d::Application const&);
+        Application(char const* logName);
+        virtual ~Application();
         void MiniDump();
-        int init(HINSTANCE__* hInstance, HICON__* icon, const CStr& configName, HWND__* forcedWnd, const CStr& cmdLine);
+        int init(HINSTANCE__* hInstance, HICON__* icon, CStr const& configName, HWND__* forcedWnd, CStr const& cmdLine);
         int run();
         void done();
         int OneFrame();
         int SwitchDisplayModes(HWND__* wnd, int dwWidth, int dwHeight, bool bFullScreen);
-        bool CheckCommandLineParam(const char* param) const;
-        virtual void setZoom(float zoom) /* 0x08 */;
-        virtual float getZoom() /* 0x0c */;
+        bool CheckCommandLineParam(char const* param) const;
+        virtual void setZoom(float zoom);
+        virtual float getZoom();
 
     protected:
-        /* 0x02e0 */ m3d::CmdLine m_cmdLine;
+        m3d::CmdLine m_cmdLine;
 
     public:
-        int SetFont(const CStr& fontName, float height, unsigned int flags, unsigned int cp);
-        int SetFontSelfMaking(const CStr& fontName, float height);
-        int DrawTextAbs(float x, float y, unsigned int dwColor, const CStr& strText, unsigned int dwFlags, int fid);
-        int DrawTextAbsT(float sx, float sy, unsigned int dwColor, const CStr& str, unsigned int dwFlags, int fid);
-        int DrawTextRel(float x, float y, unsigned int dwColor, const CStr& strText, unsigned int dwFlags, int fid);
-        int DrawTextRelT(float x, float y, unsigned int dwColor, const CStr& strText, unsigned int dwFlags, int fid);
+        int SetFont(CStr const& fontName, float height, unsigned int flags, unsigned int cp);
+        int SetFontSelfMaking(CStr const& fontName, float height);
+        int DrawTextAbs(float x, float y, unsigned int dwColor, CStr const& strText, unsigned int dwFlags, int fid);
+        int DrawTextAbsT(float sx, float sy, unsigned int dwColor, CStr const& str, unsigned int dwFlags, int fid);
+        int DrawTextRel(float x, float y, unsigned int dwColor, CStr const& strText, unsigned int dwFlags, int fid);
+        int DrawTextRelT(float x, float y, unsigned int dwColor, CStr const& strText, unsigned int dwFlags, int fid);
 
     private:
-        int DrawStringRelClip(const m3d::ui::FormattedLine& fl, const m3d::ui::DrawInfo& di);
+        int DrawStringRelClip(m3d::ui::FormattedLine const& fl, m3d::ui::DrawInfo const& di);
 
     public:
-        int FormatText(retruxx::vector<m3d::ui::FormattedLine>& linesOfText, const PointBase<float>& at, const CStr& textIn, const m3d::ui::DrawInfo& di, m3d::TextWrapFlags wrapFlags, m3d::TextFormatFlags formatFlags);
-        int DrawTextRelClip(const PointBase<float>& at, const CStr& str, const m3d::ui::DrawInfo& di, m3d::TextWrapFlags wrapFlag, m3d::TextFormatFlags formatFlag);
-        int Render3DText0(const CVector& at, const CStr& str, unsigned int dwFlags, float scale);
-        int GetTextExtent(const CStr& str, PointBase<float>& size, int fid, BoundsBase<float>* csz, int* minc, int* maxc, CStr* leftInvisibleSubstr, CStr* rightInvisibleSubstr);
-        int FindLastColorInStr(const CStr& line);
-        bool IsTextHieroglyphic(const CStr& text) const;
-        int GetTextFit(const CStr& strText, PointBase<float>& size, float maxX, m3d::TextWrapFlags flags);
-        void PutSprite2Abs(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c);
-        void PutSprite2Abs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float tu1, float tv1, float tu2, float tv2, float tu3, float tv3, float tu4, float tv4, float zval, unsigned int c);
+        int FormatText(
+            retruxx::vector<m3d::ui::FormattedLine>& linesOfText,
+            PointBase<float> const& at,
+            CStr const& textIn,
+            m3d::ui::DrawInfo const& di,
+            m3d::TextWrapFlags wrapFlags,
+            m3d::TextFormatFlags formatFlags);
+        int DrawTextRelClip(
+            PointBase<float> const& at,
+            CStr const& str,
+            m3d::ui::DrawInfo const& di,
+            m3d::TextWrapFlags wrapFlag,
+            m3d::TextFormatFlags formatFlag);
+        int Render3DText0(CVector const& at, CStr const& str, unsigned int dwFlags, float scale);
+        int GetTextExtent(
+            CStr const& str,
+            PointBase<float>& size,
+            int fid,
+            BoundsBase<float>* csz,
+            int* minc,
+            int* maxc,
+            CStr* leftInvisibleSubstr,
+            CStr* rightInvisibleSubstr);
+        int FindLastColorInStr(CStr const& line);
+        bool IsTextHieroglyphic(CStr const& text) const;
+        int GetTextFit(CStr const& strText, PointBase<float>& size, float maxX, m3d::TextWrapFlags flags);
+        void PutSprite2Abs(
+            float x1,
+            float y1,
+            float tu1,
+            float tv1,
+            float x2,
+            float y2,
+            float tu2,
+            float tv2,
+            unsigned int c);
+        void PutSprite2Abs(
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            float x4,
+            float y4,
+            float tu1,
+            float tv1,
+            float tu2,
+            float tv2,
+            float tu3,
+            float tv3,
+            float tu4,
+            float tv4,
+            float zval,
+            unsigned int c);
         void PutSpriteAbs(float x1, float y1, float x2, float y2, unsigned int c);
         void PutSpriteAbs(float x, float y, float size2, unsigned int c);
-        void PutSpriteAbs(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, unsigned int c);
+        void PutSpriteAbs(
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            float x4,
+            float y4,
+            unsigned int c);
         void PutSpriteRel(float, float, float, float, float, float, float, float, unsigned int);
         void PutSpriteRel(float x1, float y1, float x2, float y2, unsigned int c);
         void PutSpriteRel(float, float, float, unsigned int);
-        void PutSprite2Rel(float x1, float y1, float tu1, float tv1, float x2, float y2, float tu2, float tv2, unsigned int c);
+        void PutSprite2Rel(
+            float x1,
+            float y1,
+            float tu1,
+            float tv1,
+            float x2,
+            float y2,
+            float tu2,
+            float tv2,
+            unsigned int c);
         void PutSpriteRelRot(float, float, float, unsigned int, float, float, float, float, float, float);
-        void PutSpriteRelRot(float cx, float cy, float sx, float sy, unsigned int c, float angleVerts, float avx, float avy, float angleImage, float aix, float aiy);
+        void PutSpriteRelRot(
+            float cx,
+            float cy,
+            float sx,
+            float sy,
+            unsigned int c,
+            float angleVerts,
+            float avx,
+            float avy,
+            float angleImage,
+            float aix,
+            float aiy);
         void PutSpriteAbsRot(float, float, float, unsigned int, float, float, float, float, float, float);
-        void PutSpriteAbsRot(float cx, float cy, float sx, float sy, unsigned int c, float angleVerts, float avx, float avy, float angleImage, float aix, float aiy);
-        /* 0x02fc */ m3d::rend::IRenderer* m_renderer = nullptr;
-        /* 0x0300 */ snd::ISound* m_sound = nullptr;
-        /* 0x0304 */ m3d::input::IInput* m_input = nullptr;
-        /* 0x0308 */ m3d::Log* m_log = nullptr;
-        /* 0x030c */ CStr m_cfgName;
+        void PutSpriteAbsRot(
+            float cx,
+            float cy,
+            float sx,
+            float sy,
+            unsigned int c,
+            float angleVerts,
+            float avx,
+            float avy,
+            float angleImage,
+            float aix,
+            float aiy);
+        m3d::rend::IRenderer* m_renderer = nullptr;
+        snd::ISound* m_sound = nullptr;
+        m3d::input::IInput* m_input = nullptr;
+        m3d::Log* m_log = nullptr;
+        CStr m_cfgName;
         static m3d::Application* g_pApp;
-        void sysError(const CStr& whence, const CStr& assertion);
+        void sysError(CStr const& whence, CStr const& assertion);
         void panic();
         void texGenEnqueue(m3d::IGeneratedTexture* tex);
         void texGenProcess(m3d::IGeneratedTexture* tex);
-        void EnqueueMessage(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        int ImmediateMessage(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        void EnqueueMessage(
+            int msg,
+            int param0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        int ImmediateMessage(
+            int msg,
+            int param0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
         // retruxx adaptation: the shipped build packed window and object pointers into param0 and
         // param1; these carry them in Event::m_ptrEv, the int slots stay as they are.
-        void EnqueueMessage(int msg, void* ptr0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        void EnqueueMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        int ImmediateMessage(int msg, void* ptr0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        int ImmediateMessage(int msg, void* ptr0, void* ptr1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
-        m3d::Event MakeMessageEvent(int msg, int param0, int param1, int p2, int p3, const CStr& param4, const m3d::AIParam& param5);
+        void EnqueueMessage(
+            int msg,
+            void* ptr0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        void EnqueueMessage(
+            int msg,
+            void* ptr0,
+            void* ptr1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        int ImmediateMessage(
+            int msg,
+            void* ptr0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        int ImmediateMessage(
+            int msg,
+            void* ptr0,
+            void* ptr1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
+        m3d::Event MakeMessageEvent(
+            int msg,
+            int param0,
+            int param1,
+            int p2,
+            int p3,
+            CStr const& param4,
+            m3d::AIParam const& param5);
         void SetKeyboardFocus(m3d::IEventHandler* entity);
         int GetMouseX() const;
         int GetMouseY() const;
         void SetMouseXy(float absX, float absY);
-        virtual float GetMouseSensitivity() const /* 0x10 */;
-        virtual void SetMouseSensitivity(float sensitivity) /* 0x14 */;
-        virtual bool IsMouseYAxisFlipped() const /* 0x18 */;
-        virtual void SetMouseYAxisFlipped(bool bFlip) /* 0x1c */;
-        virtual bool IsMouseXAxisFlipped() const /* 0x20 */;
-        virtual void SetMouseXAxisFlipped(bool bFlip) /* 0x24 */;
-        void TexSoften(m3d::rend::TexHandle dstTex, m3d::rend::TexHandle srcTex, int numJitters, float jitterDist, unsigned int clr);
-        void DrawLine(const CVector2& from, const CVector2& to, unsigned int color);
-        void DrawLine(const CVector& from, const CVector& to, unsigned int color);
-        void DrawBoundingRadius(const CVector& org, float r, unsigned int clr);
-        void DrawCross(const CVector& org, float size, unsigned int clr);
+        virtual float GetMouseSensitivity() const;
+        virtual void SetMouseSensitivity(float sensitivity);
+        virtual bool IsMouseYAxisFlipped() const;
+        virtual void SetMouseYAxisFlipped(bool bFlip);
+        virtual bool IsMouseXAxisFlipped() const;
+        virtual void SetMouseXAxisFlipped(bool bFlip);
+        void TexSoften(
+            m3d::rend::TexHandle dstTex,
+            m3d::rend::TexHandle srcTex,
+            int numJitters,
+            float jitterDist,
+            unsigned int clr);
+        void DrawLine(CVector2 const& from, CVector2 const& to, unsigned int color);
+        void DrawLine(CVector const& from, CVector const& to, unsigned int color);
+        void DrawBoundingRadius(CVector const& org, float r, unsigned int clr);
+        void DrawCross(CVector const& org, float size, unsigned int clr);
         void DrawTri(CVector* tri, unsigned int clr);
         void DrawQuad(CVector* tri, unsigned int clr);
-        void DrawWireRect(const CVector2& from, const CVector2& to, unsigned int color);
-        void DrawWireRectRel(const CVector2& from, const CVector2& to, unsigned int color);
+        void DrawWireRect(CVector2 const& from, CVector2 const& to, unsigned int color);
+        void DrawWireRectRel(CVector2 const& from, CVector2 const& to, unsigned int color);
         void StartQuads(m3d::rend::VertexType vt);
         void FinishQuads();
         void RenderQuadXyzwct1(float x, float y, float sz, unsigned int clr);
         m3d::rend::VertexXYZWCT1* RenderQuadXyzwct1GetNextPtr();
         m3d::rend::VertexXYZCT1* RenderQuadXyzct1GetNextPtr();
         void SetFlushQuadsShader(m3d::rend::IEffect* shader);
-        virtual void OnAfterDeviceReset() override /* 0x08 */;
-        virtual void OnBeforeDeviceReset() override /* 0x04 */;
-        virtual const char* GetCallbackName() const override /* 0x00 */;
-        const CStr& GetStartupFolder() const;
-        const CStr& GetImageName() const;
+        virtual void OnAfterDeviceReset() override;
+        virtual void OnBeforeDeviceReset() override;
+        virtual char const* GetCallbackName() const override;
+        CStr const& GetStartupFolder() const;
+        CStr const& GetImageName() const;
         int StartExclusiveMsgLoop();
         int FinishExclusiveMsgLoop();
         int HeightmapToNormalmap(unsigned short* src, unsigned int* dst, int sx, int sy);
-        virtual bool GetPostEffectParam(const CStr& effectName, float& effParam) /* 0x28 */;
-        virtual bool SetPostEffectParam(const CStr& effectName, float effParam) /* 0x2c */;
-        virtual bool AddPostEffect(const CStr& effectName, float effParam) /* 0x30 */;
-        virtual bool KillPostEffect(const CStr& effectName) /* 0x34 */;
-        virtual void ReloadPostEffects() /* 0x38 */;
+        virtual bool GetPostEffectParam(CStr const& effectName, float& effParam);
+        virtual bool SetPostEffectParam(CStr const& effectName, float effParam);
+        virtual bool AddPostEffect(CStr const& effectName, float effParam);
+        virtual bool KillPostEffect(CStr const& effectName);
+        virtual void ReloadPostEffects();
 
     protected:
-        virtual int InitMedia() = 0 /* 0x3c */;
-        virtual int DoneMedia() = 0 /* 0x40 */;
-        virtual int Render(bool) = 0 /* 0x44 */;
-        virtual int FrameMove() = 0 /* 0x48 */;
-        virtual int NewFrame() = 0 /* 0x4c */;
+        virtual int InitMedia() = 0;
+        virtual int DoneMedia() = 0;
+        virtual int Render(bool) = 0;
+        virtual int FrameMove() = 0;
+        virtual int NewFrame() = 0;
         void RunBenchmark();
         int createInput();
         void doneInput();
-        /* 0x0318 */ LONG_PTR m_dwWindowStyle;
-        /* 0x031c */ tagRECT m_rcWindowBounds;
-        /* 0x032c */ tagRECT m_rcWindowClient;
-        /* 0x033c */ CStr m_frameStats;
-        /* 0x0348 */ unsigned long m_frameFillRate;
-        /* 0x034c */ char* m_strWindowTitle = nullptr;
+        LONG_PTR m_dwWindowStyle;
+        tagRECT m_rcWindowBounds;
+        tagRECT m_rcWindowClient;
+        CStr m_frameStats;
+        unsigned long m_frameFillRate;
+        char* m_strWindowTitle = nullptr;
 
     public:
         char* GetWindowTitle() const;
 
     protected:
-        /* 0x0350 */ CStr m_startupFolder;
-        /* 0x035c */ CStr m_imageName;
-        /* 0x0368 */ int m_appNeedToRedraw = false;
+        CStr m_startupFolder;
+        CStr m_imageName;
+        int m_appNeedToRedraw = false;
 
     public:
         int AppActive() const;
         CStr& GetFrameStats();
 
     protected:
-        /* 0x036c */ int m_screenShotPending = 0;
-        /* 0x0370 */ int m_screenShotPendingAlways = 0;
-        virtual void HandleCommand(int cmdID, const m3d::CConsoleParams& params) override /* 0x00 */;
-        virtual bool HandleCVar(const m3d::CVar* cvar, const m3d::CConsoleParams& params) override /* 0x04 */;
-        virtual int HandleEvent(const m3d::Event& ev) override /* 0x04 */;
+        int m_screenShotPending = 0;
+        int m_screenShotPendingAlways = 0;
+        virtual void HandleCommand(int cmdID, m3d::CConsoleParams const& params) override;
+        virtual bool HandleCVar(m3d::CVar const* cvar, m3d::CConsoleParams const& params) override;
+        virtual int HandleEvent(m3d::Event const& ev) override;
 
     private:
-        /* 0x0374 */ void* m_procTexNewTextureNotifyEvent = nullptr;
-        /* 0x0378 */ void* m_procTexShutdownEvent = nullptr;
-        /* 0x037c */ void* m_procTexThreadHandle = nullptr;
-        /* 0x0380 */ unsigned long m_procTexThreadId;
+        void* m_procTexNewTextureNotifyEvent = nullptr;
+        void* m_procTexShutdownEvent = nullptr;
+        void* m_procTexThreadHandle = nullptr;
+        unsigned long m_procTexThreadId;
         static unsigned long __stdcall texGenThread(void* context);
-        /* 0x0384 */ char Padding_309[4];
-        /* 0x0388 */ m3d::Event m_eventsQueue[5000];
-        /* 0x581c8 */ int m_eventsQueueHead = 0;
-        /* 0x581cc */ int m_eventsQueueTail = 0;
-        /* 0x581d0 */ m3d::IEventHandler* m_focusKbdEntity = nullptr;
-        /* 0x581d4 */ int m_mouseX = 100;
-        /* 0x581d8 */ int m_mouseY = 100;
-        /* 0x581dc */ float m_mouseSensitivity = 1.0;
-        /* 0x581e0 */ bool m_bMouseYAxisFlipped = false;
-        /* 0x581e1 */ bool m_bMouseXAxisFlipped = false;
-        /* 0x581e2 */ char Padding_310[2];
-        /* 0x581e4 */ retruxx::vector<m3d::IEventHandler*, retruxx::allocator<m3d::IEventHandler*> > m_allEventHandlers;
+        m3d::Event m_eventsQueue[5000];
+        int m_eventsQueueHead = 0;
+        int m_eventsQueueTail = 0;
+        m3d::IEventHandler* m_focusKbdEntity = nullptr;
+        int m_mouseX = 100;
+        int m_mouseY = 100;
+        float m_mouseSensitivity = 1.0;
+        bool m_bMouseYAxisFlipped = false;
+        bool m_bMouseXAxisFlipped = false;
+        retruxx::vector<m3d::IEventHandler*, retruxx::allocator<m3d::IEventHandler*>> m_allEventHandlers;
         bool GetEvent(m3d::Event& event, bool removeFromQueue);
-        void EnqueueEvent(const m3d::Event& event);
+        void EnqueueEvent(m3d::Event const& event);
 
         struct CFontType
         {
-            /* 0x0000 */ CStr m_fontId;
-            /* 0x000c */ m3d::rend::TexHandle m_tex;
-            /* 0x0010 */ unsigned int m_glyphHeight;
-            /* 0x0014 */ float m_scale;
-            /* 0x0018 */ unsigned int m_fontFlags;
-            /* 0x001c */ unsigned int m_texSzX;
-            /* 0x0020 */ unsigned int m_texSzY;
-            /* 0x0024 */ float m_tcs[4][224];
-            /* 0x0e24 */ _ABC m_abc[224];
+            CStr m_fontId;
+            m3d::rend::TexHandle m_tex;
+            unsigned int m_glyphHeight;
+            float m_scale;
+            unsigned int m_fontFlags;
+            unsigned int m_texSzX;
+            unsigned int m_texSzY;
+            float m_tcs[4][224];
+            _ABC m_abc[224];
             _ABC GetAbcWidth(unsigned char);
             float GetCharWidthAdvanced(unsigned char);
             float GetCharWidthA(unsigned char);
             float GetCharHeight(unsigned char);
-        }; /* size: 0x18a4 */
+        };
 
     private:
         void enterFontRender();
         void finishFontRender();
         int AdjustWindowForChange(HWND__* hWnd, bool bFullScreen);
-        virtual unsigned long GetStyleForRenderWindow(bool bFullScreen) const /* 0x50 */;
+        virtual unsigned long GetStyleForRenderWindow(bool bFullScreen) const;
         int processWinMessages();
         int FillEngineMessages();
         int createRenderer();
@@ -238,30 +372,29 @@ namespace m3d
         void doneSprite();
         int createUi();
         void doneUi();
-        /* 0x581f4 */ HINSTANCE m_hInputDll;
-        /* 0x581f8 */ HINSTANCE m_hRenderDll;
-        /* 0x581fc */ HINSTANCE m_hSoundDll;
-        /* 0x58200 */ bool m_breakLoop = false;
+        HINSTANCE m_hInputDll;
+        HINSTANCE m_hRenderDll;
+        HINSTANCE m_hSoundDll;
+        bool m_breakLoop = false;
         static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
         LRESULT MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-        /* 0x58201 */ char Padding_311[3];
-        /* 0x58204 */ int m_isAppActive = 0;
+        int m_isAppActive = 0;
         int CheckAndLogPlatform();
         int64_t GetCpuFrequency(unsigned int uiMeasureMSecs);
-        /* 0x58208 */ unsigned int m_prevBtnsMask = 0;
-        /* 0x5820c */ int m_prevJoystickBtnsMask = 0;
-        /* 0x58210 */ int m_prevJoystickAxisInclination[12] = {0};
-        /* 0x58240 */ m3d::rend::VertexXYZWCT1 m_pointsVertsWct1[4000];
-        /* 0x737c0 */ m3d::rend::VertexXYZCT1 m_pointsVertsCt1[4000];
-        /* 0x8aec0 */ int m_numPointsVerts;
-        /* 0x8aec4 */ m3d::rend::IbHandle m_pointsVertsIb;
-        /* 0x8aec8 */ m3d::rend::VbHandle m_pointsVertsVb;
-        /* 0x8aecc */ m3d::rend::VertexType m_vt;
-        /* 0x8aed0 */ void* m_sourceVerts;
-        /* 0x8aed4 */ int m_pointsVertsSz;
-        /* 0x8aed8 */ unsigned int m_frameClearColor;
-        /* 0x8aedc */ m3d::rend::IEffect* m_flushQuadsShader = nullptr;
-        /* 0x8aee0 */ int64_t m_cpuSpeed;
+        unsigned int m_prevBtnsMask = 0;
+        int m_prevJoystickBtnsMask = 0;
+        int m_prevJoystickAxisInclination[12] = {0};
+        m3d::rend::VertexXYZWCT1 m_pointsVertsWct1[4000];
+        m3d::rend::VertexXYZCT1 m_pointsVertsCt1[4000];
+        int m_numPointsVerts;
+        m3d::rend::IbHandle m_pointsVertsIb;
+        m3d::rend::VbHandle m_pointsVertsVb;
+        m3d::rend::VertexType m_vt;
+        void* m_sourceVerts;
+        int m_pointsVertsSz;
+        unsigned int m_frameClearColor;
+        m3d::rend::IEffect* m_flushQuadsShader = nullptr;
+        int64_t m_cpuSpeed;
         void FlushQuads();
         void CreateQuadsIb();
         void RegisterConsoleCommands();
@@ -277,140 +410,137 @@ namespace m3d
         m3d::DataServer& GetLinesServer();
         m3d::DataServer& GetProjectorsServer();
         m3d::DataServer& GetDecalsServer();
-        bool SaveUsedOnlyServers(const CStr& filename, retruxx::set<int, retruxx::less<int>, retruxx::allocator<int> >& usedAnimatedHandles);
-        bool SaveServers(const CStr& filename);
-        bool LoadServers(const CStr& filename, bool bQuiet);
+        bool SaveUsedOnlyServers(
+            CStr const& filename,
+            retruxx::set<int, retruxx::less<int>, retruxx::allocator<int>>& usedAnimatedHandles);
+        bool SaveServers(CStr const& filename);
+        bool LoadServers(CStr const& filename, bool bQuiet);
         void PostLoadServers();
 
     protected:
-        /* 0x8aee8 */ m3d::DataServer* m_serverStaticModels = nullptr;
-        /* 0x8aeec */ m3d::DataServer* m_serverAnimatedModels = nullptr;
-        /* 0x8aef0 */ m3d::DataServer* m_serverLights = nullptr;
-        /* 0x8aef4 */ m3d::DataServer* m_serverSprites = nullptr;
-        /* 0x8aef8 */ m3d::DataServer* m_serverParticles = nullptr;
-        /* 0x8aefc */ m3d::DataServer* m_serverSound = nullptr;
-        /* 0x8af00 */ m3d::DataServer* m_serverMusic = nullptr;
-        /* 0x8af04 */ m3d::DataServer* m_serverLines = nullptr;
-        /* 0x8af08 */ m3d::DataServer* m_serverProjectors = nullptr;
-        /* 0x8af0c */ m3d::DataServer* m_serverDecals = nullptr;
+        m3d::DataServer* m_serverStaticModels = nullptr;
+        m3d::DataServer* m_serverAnimatedModels = nullptr;
+        m3d::DataServer* m_serverLights = nullptr;
+        m3d::DataServer* m_serverSprites = nullptr;
+        m3d::DataServer* m_serverParticles = nullptr;
+        m3d::DataServer* m_serverSound = nullptr;
+        m3d::DataServer* m_serverMusic = nullptr;
+        m3d::DataServer* m_serverLines = nullptr;
+        m3d::DataServer* m_serverProjectors = nullptr;
+        m3d::DataServer* m_serverDecals = nullptr;
         void SetCodepage();
 
     public:
-        /* 0x8af10 */ _cpinfoexA m_codePage;
-        /* 0x8b02c */ _cpinfoexA m_unicodeCodePage;
+        _cpinfoexA m_codePage;
+        _cpinfoexA m_unicodeCodePage;
 
     protected:
-        /* 0x8b148 */ m3d::rend::TexHandle m_texSplash;
-        /* 0x8b14c */ m3d::rend::TexHandle m_texSplash1;
-        /* 0x8b150 */ m3d::rend::TexHandle m_texProgr;
-        /* 0x8b154 */ m3d::rend::TexHandle m_texLogo;
-        /* 0x8b158 */ m3d::rend::TexHandle m_defLoadPicture;
-        /* 0x8b15c */ m3d::rend::TexHandle m_mainMenuLevelLoadBg;
+        m3d::rend::TexHandle m_texSplash;
+        m3d::rend::TexHandle m_texSplash1;
+        m3d::rend::TexHandle m_texProgr;
+        m3d::rend::TexHandle m_texLogo;
+        m3d::rend::TexHandle m_defLoadPicture;
+        m3d::rend::TexHandle m_mainMenuLevelLoadBg;
 
         struct LoadScreenInfo
         {
-            /* 0x0000 */ CStr m_name;
-            /* 0x000c */ CStr m_diz0;
-            /* 0x0018 */ CStr m_diz1;
-            /* 0x0024 */ CStr m_diz2;
-            /* 0x0030 */ m3d::rend::TexHandle m_picture;
-            LoadScreenInfo(const m3d::Application::LoadScreenInfo&);
+            CStr m_name;
+            CStr m_diz0;
+            CStr m_diz1;
+            CStr m_diz2;
+            m3d::rend::TexHandle m_picture;
+            LoadScreenInfo(m3d::Application::LoadScreenInfo const&);
             LoadScreenInfo();
             ~LoadScreenInfo();
-        }; /* size: 0x0034 */
+        };
 
     protected:
-        /* 0x8b160 */ m3d::Application::LoadScreenInfo m_loadScreenInfo;
+        m3d::Application::LoadScreenInfo m_loadScreenInfo;
 
     public:
         void SetFrameClearColor(unsigned int color);
-        virtual void PutSplash(int proc, const char* text) /* 0x54 */;
+        virtual void PutSplash(int proc, char const* text);
         static void PutSplashCallBack(int proc, void* data);
         void DrawLogo();
         void PutSplashMainMenuLevelLoad(int proc, void* data);
         static void PutSplashCallBackQuiet(int, void*);
         int64_t GetMeasuredCpuFrequency() const;
-        /* 0x8b194 */ m3d::CameraController* m_cameraController;
-        /* 0x8b198 */ retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr> > m_cachedSoundIDs;
-        /* 0x8b1a4 */ bool m_stopallsounds;
-        /* 0x8b1a5 */ bool m_pauseAllowed;
-        /* 0x8b1a6 */ char Padding_312[2];
-        /* 0x8b1a8 */ int m_timeFromLevelLoaded;
-        /* 0x8b1ac */ m3d::CIntHash<int> m_belongToIdxHash;
+        m3d::CameraController* m_cameraController;
+        retruxx::set<CStr, retruxx::less<CStr>, retruxx::allocator<CStr>> m_cachedSoundIDs;
+        bool m_stopallsounds;
+        bool m_pauseAllowed;
+        int m_timeFromLevelLoaded;
+        m3d::CIntHash<int> m_belongToIdxHash;
         m3d::CameraController* GetCameraController();
-        float GetOnScreenSize(const CVector& o, float radius);
-        bool StartPlayingMusic(const char* musicName, bool bDoLoop, bool bImmediate);
+        float GetOnScreenSize(CVector const& o, float radius);
+        bool StartPlayingMusic(char const* musicName, bool bDoLoop, bool bImmediate);
         void StopPlayingMusic();
-        virtual void Pause() /* 0x58 */;
-        virtual void UnPause() /* 0x5c */;
+        virtual void Pause();
+        virtual void UnPause();
 
     protected:
-        /* 0x8b1d4 */ m3d::ProfilerStack m_profilerStack;
-        /* 0x8b1e8 */ m3d::DbgCounterStack m_counterStack;
-        /* 0x8b210 */ unsigned int m_profiler_OneFrame;
-        /* 0x8b214 */ unsigned int m_profiler_Render;
-        /* 0x8b218 */ unsigned int m_profiler_UiRender;
-        /* 0x8b21c */ bool m_bDrawStats = false;
-        /* 0x8b21d */ bool m_bDrawMemoryStats = false;
-        /* 0x8b21e */ bool m_bDrawCounters = false;
-        /* 0x8b21f */ bool m_bDrawGraph = false;
+        m3d::ProfilerStack m_profilerStack;
+        m3d::DbgCounterStack m_counterStack;
+        unsigned int m_profiler_OneFrame;
+        unsigned int m_profiler_Render;
+        unsigned int m_profiler_UiRender;
+        bool m_bDrawStats = false;
+        bool m_bDrawMemoryStats = false;
+        bool m_bDrawCounters = false;
+        bool m_bDrawGraph = false;
 
     public:
         m3d::ProfilerStack& GetProfilerStack();
         m3d::DbgCounterStack& GetDbgCounterStack();
-        m3d::Profiler* CreateProfiler(const char* name);
-        m3d::DbgCounter* CreateCounter(const char* name);
+        m3d::Profiler* CreateProfiler(char const* name);
+        m3d::DbgCounter* CreateCounter(char const* name);
         CStr GetClassDesc(m3d::Class* cls) const;
-        CStr GetNativeFuncDesc(const char* funcName) const;
+        CStr GetNativeFuncDesc(char const* funcName) const;
         int SaveExportDescToFile(m3d::fs::FileStream& outputFile, bool skipEmpty) const;
 
     protected:
-        /* 0x8b220 */ bool m_waitForAnykey = false;
-        /* 0x8b221 */ bool m_waitNetworkServer = false;
-        /* 0x8b222 */ bool m_enginePlayingVideo = false;
-        /* 0x8b223 */ bool m_isRenderingAllowed = true;
-        /* 0x8b224 */ bool m_isConsoleAllowed = false;
-        /* 0x8b225 */ bool m_bShowRenderStats = false;
-        /* 0x8b226 */ bool m_bShowDeviceMemStats = false;
+        bool m_waitForAnykey = false;
+        bool m_waitNetworkServer = false;
+        bool m_enginePlayingVideo = false;
+        bool m_isRenderingAllowed = true;
+        bool m_isConsoleAllowed = false;
+        bool m_bShowRenderStats = false;
+        bool m_bShowDeviceMemStats = false;
 
     public:
         void WaitForAnykey();
         void ForbidRendering();
         void AllowRendering();
-        /* 0x8b227 */ char Padding_313;
-        /* 0x8b228 */ m3d::mVideoPlayer* M3dVideoPlayer;
+        m3d::mVideoPlayer* M3dVideoPlayer;
         void ClearViewportToBlack();
-        /* 0x8b22c */ bool m_bDoNotLoadMainmenuLevel;
+        bool m_bDoNotLoadMainmenuLevel;
         bool DoNotLoadMainMenuLevel();
 
         struct DetailSettings
         {
-            /* 0x0000 */ bool m_dsShadows;
-            /* 0x0001 */ char Padding_308[3];
-            /* 0x0004 */ float m_lsViewDistanceDivider;
-            /* 0x0008 */ int m_lsWaterMethod;
-            /* 0x000c */ float m_NPatchLevel;
+            bool m_dsShadows;
+            float m_lsViewDistanceDivider;
+            int m_lsWaterMethod;
+            float m_NPatchLevel;
             void SaveGameSettings();
             void RestoreGameSettings();
             void SetMenuLevelSettings();
             DetailSettings();
-        }; /* size: 0x0010 */
-
-        /* 0x8b22d */ char Padding_314[3];
+        };
 
     public:
-        /* 0x8b230 */ m3d::Application::DetailSettings m_detailSettings;
-        /* 0x8b240 */ m3d::IImpulse* m_pImpulses;
-        virtual int GetCurGameMode() /* 0x60 */;
-        virtual int GetCurDifficultyLevel() const /* 0x64 */;
-        virtual bool bIsMousePointing() const /* 0x68 */;
-        virtual bool GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode) /* 0x6c */;
-        virtual int OnChangeMode(const m3d::AuxImpulseInfo& impInfo) /* 0x70 */;
+        m3d::Application::DetailSettings m_detailSettings;
+        m3d::IImpulse* m_pImpulses;
+        virtual int GetCurGameMode();
+        virtual int GetCurDifficultyLevel() const;
+        virtual bool bIsMousePointing() const;
+        virtual bool GetMouseHitPoint(CVector& hitPoint, m3d::SgNode*& sgNode);
+        virtual int OnChangeMode(m3d::AuxImpulseInfo const& impInfo);
 
     protected:
-        virtual int InitImpulses() /* 0x74 */;
-        virtual void DoneImpulses() /* 0x78 */;
-        virtual int OnLoosingFocus() override /* 0x00 */;
+        virtual int InitImpulses();
+        virtual void DoneImpulses();
+        virtual int OnLoosingFocus() override;
         void ProcessAllEvents();
         void DiscardAllEvents();
 
@@ -420,47 +550,46 @@ namespace m3d
         HWND__* GetRenderWindow() const;
 
     private:
-        /* 0x8b244 */ bool m_bDXCursorEnabled = true;
+        bool m_bDXCursorEnabled = true;
 
         struct MouseInfo
         {
-            MouseInfo(const m3d::Application::MouseInfo&);
+            MouseInfo(m3d::Application::MouseInfo const&);
             MouseInfo();
-            void SetUpForCurPos(const PointBase<int>& curPos);
+            void SetUpForCurPos(PointBase<int> const& curPos);
             void ResetDelta();
-            const PointBase<int>& GetDeltaDuringGameFrame() const;
-            const PointBase<int>& GetLastPos() const;
-            /* 0x0000 */ PointBase<int> m_deltaDuringGameFrame;
-            /* 0x0008 */ PointBase<int> m_lastPos;
-        }; /* size: 0x0010 */
-
-        /* 0x8b245 */ char Padding_315[3];
+            PointBase<int> const& GetDeltaDuringGameFrame() const;
+            PointBase<int> const& GetLastPos() const;
+            PointBase<int> m_deltaDuringGameFrame;
+            PointBase<int> m_lastPos;
+        };
 
     private:
-        /* 0x8b248 */ m3d::Application::MouseInfo m_mouseInfo;
-        /* 0x8b258 */ HWND m_renderWindow = NULL;
-        /* 0x8b25c */ m3d::IConHandler* m_soundConHandler = nullptr;
+        m3d::Application::MouseInfo m_mouseInfo;
+        HWND m_renderWindow = NULL;
+        m3d::IConHandler* m_soundConHandler = nullptr;
 
     protected:
         void CaptureAndClipSystemCursor(bool bState);
         void ShowSystemCursor(bool bShow);
 
     public:
-        /* 0x8b260 */ bool m_bGuiWasHiddenBeforeCinematic = false;
-        /* 0x8b261 */ char Padding_316[3];
-        /* 0x8b264 */ m3d::Cinematic* m_cinematic;
-        virtual int HandleCinematic(float dT) /* 0x7c */;
-        /* 0x8b268 */ CCamera m_curCamera;
-        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x80 */;
-        virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x84 */;
-        virtual void ChangeLanguage() /* 0x88 */;
+        bool m_bGuiWasHiddenBeforeCinematic = false;
+        m3d::Cinematic* m_cinematic;
+        virtual int HandleCinematic(float dT);
+        CCamera m_curCamera;
+        virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+        virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+        virtual void ChangeLanguage();
         unsigned long GetLocale() const;
-        virtual m3d::ui::MbRetCodes RunMsgBoxDlg(const CStr& caption, const CStr& message, unsigned int flags, bool bPause) /* 0x8c */;
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        virtual m3d::ui::MbRetCodes
+            RunMsgBoxDlg(CStr const& caption, CStr const& message, unsigned int flags, bool bPause);
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classApplication;
-    }; /* size: 0x8b290 */
-}
+    };
+}  // namespace m3d
 
-#define M3D_APP m3d::Application::g_pApp
-#define M3D_RENDERER m3d::Application::g_pApp->m_renderer
+#define M3D_APP      m3d::Application::g_pApp
+#define M3D_RENDERER M3D_APP->m_renderer
+#define M3D_SOUND    M3D_APP->m_sound

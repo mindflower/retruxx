@@ -11,7 +11,7 @@ namespace m3d
         {
             // Error code the stream reports when a seek or position runs past the end of the data.
             int const ERROR_PAST_END = 38;
-        }
+        }  // namespace
 
         MemoryFile::~MemoryFile()
         {
@@ -88,8 +88,8 @@ namespace m3d
                 ++curr;
             }
             unsigned int const start = static_cast<unsigned int>(curr - data);
-            while (static_cast<int>(start) < static_cast<int>(m_FileSize) && curr - data < static_cast<int>(m_FileSize) &&
-                *curr != '\r' && *curr != '\n')
+            while (static_cast<int>(start) < static_cast<int>(m_FileSize) &&
+                   curr - data < static_cast<int>(m_FileSize) && *curr != '\r' && *curr != '\n')
             {
                 ++curr;
             }
@@ -287,7 +287,8 @@ namespace m3d
         int MemoryFile::Eof()
         {
             // RVA 0x8AFC20
-            return !m_Data || static_cast<unsigned char*>(m_CurrData) >= static_cast<unsigned char*>(m_Data) + m_FileSize;
+            return !m_Data ||
+                static_cast<unsigned char*>(m_CurrData) >= static_cast<unsigned char*>(m_Data) + m_FileSize;
         }
 
         FileStream& MemoryFile::operator>>(float& k)
@@ -333,8 +334,8 @@ namespace m3d
                 ++curr;
             }
             unsigned int const start = static_cast<unsigned int>(curr - data);
-            while (static_cast<int>(start) < static_cast<int>(m_FileSize) && curr - data < static_cast<int>(m_FileSize) &&
-                *curr > 0x20)
+            while (static_cast<int>(start) < static_cast<int>(m_FileSize) &&
+                   curr - data < static_cast<int>(m_FileSize) && *curr > 0x20)
             {
                 ++curr;
             }
@@ -360,8 +361,7 @@ namespace m3d
             return new MemoryFile();
         }
 
-        MemoryFile::MemoryFile(char const* fileName, Package* package) :
-            m_Package(package)
+        MemoryFile::MemoryFile(char const* fileName, Package* package) : m_Package(package)
         {
             // RVA 0x8AFD80
             m_FileID = m_Package->OpenFile(fileName, &m_Data, &m_FileSize);
@@ -382,5 +382,5 @@ namespace m3d
             }
             return m_FileID != 0;
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

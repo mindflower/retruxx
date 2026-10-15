@@ -162,23 +162,37 @@ namespace ai
             m3d::sArg* const flagArg = scriptStack.popIn();
             switch (flagArg->m_type)
             {
-                case m3d::sArg::ARGTYPE_INT: withChildren = flagArg->GetI() != 0; break;
-                case m3d::sArg::ARGTYPE_FLOAT: withChildren = flagArg->GetF() > 0.0f; break;
-                case m3d::sArg::ARGTYPE_BOOL: withChildren = flagArg->GetB(); break;
-                default: break;
+            case m3d::sArg::ARGTYPE_INT:
+                withChildren = flagArg->GetI() != 0;
+                break;
+            case m3d::sArg::ARGTYPE_FLOAT:
+                withChildren = flagArg->GetF() > 0.0f;
+                break;
+            case m3d::sArg::ARGTYPE_BOOL:
+                withChildren = flagArg->GetB();
+                break;
+            default:
+                break;
             }
         }
 
         Obj* obj = nullptr;
         switch (objArg->m_type)
         {
-            case m3d::sArg::ARGTYPE_INT: obj = theObjects->GetEntityByObjId(objArg->GetI()); break;
-            case m3d::sArg::ARGTYPE_FLOAT:
-                obj = theObjects->GetEntityByObjId(static_cast<int>(objArg->GetF()));
-                break;
-            case m3d::sArg::ARGTYPE_STRING: obj = theObjects->GetEntityByObjName(CStr(objArg->GetS())); break;
-            case m3d::sArg::ARGTYPE_OBJECT: obj = static_cast<Obj*>(objArg->GetO()); break;
-            default: return 1;
+        case m3d::sArg::ARGTYPE_INT:
+            obj = theObjects->GetEntityByObjId(objArg->GetI());
+            break;
+        case m3d::sArg::ARGTYPE_FLOAT:
+            obj = theObjects->GetEntityByObjId(static_cast<int>(objArg->GetF()));
+            break;
+        case m3d::sArg::ARGTYPE_STRING:
+            obj = theObjects->GetEntityByObjName(CStr(objArg->GetS()));
+            break;
+        case m3d::sArg::ARGTYPE_OBJECT:
+            obj = static_cast<Obj*>(objArg->GetO());
+            break;
+        default:
+            return 1;
         }
         if (obj)
         {
@@ -212,7 +226,7 @@ namespace ai
         }
 
         CStr const className(classNameArg->GetS());
-        m3d::Object* const newObject = m3d::g_Kernel->New(className.c_str());
+        m3d::Object* const newObject = M3D_KERNEL->New(className.c_str());
         scriptStack.newOut()->SetO(newObject);
         return newObject != nullptr;
     }
@@ -283,7 +297,12 @@ namespace ai
         m_lastId = id;
     }
 
-    void CServer::Load(StartupMode mode, m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode, bool bContiniousMap, ObjContainer::eSAVE_TYPES saveType)
+    void CServer::Load(
+        StartupMode mode,
+        m3d::cmn::XmlFile* xmlFile,
+        m3d::cmn::XmlNode const* xmlNode,
+        bool bContiniousMap,
+        ObjContainer::eSAVE_TYPES saveType)
     {
         M3D_LOG_INFO("AI: Loading Server...");
 
@@ -298,7 +317,7 @@ namespace ai
         }
 
         M3D_LOG_INFO("\tAI: Loading SoilProps");
-        m_pDynamicScene->ReadSoilProps(M3D_KERNEL->GetEngineCfg().m_pathToSoilProps.GetS());
+        m_pDynamicScene->ReadSoilProps(M3D_ENGINE_CFG.m_pathToSoilProps.GetS());
 
         M3D_LOG_INFO("\tAI: Loading ExternalPaths");
         m_pExternalPaths->Load(m_level->GetFullPathNameA(this->m_level->m_externalPathsFileName));
@@ -623,124 +642,123 @@ namespace ai
 
         retruxx::vector<m3d::Class*> allowedClasses;
         allowedClasses.push_back(RT_CLASS_LOCAL(Barricade));
-        m_pDynamicScene->LoadSceneFromFile(
-            m_level->GetFullPathNameA(m_level->m_dsSrvName).c_str(), allowedClasses);
+        m_pDynamicScene->LoadSceneFromFile(m_level->GetFullPathNameA(m_level->m_dsSrvName).c_str(), allowedClasses);
     }
 
     void CServer::Register()
     {
-        m3d::g_Kernel->AddClass(&Obj::m_classObj);
-        m3d::g_Kernel->AddClass(&Trigger::m_classTrigger);
-        m3d::g_Kernel->AddClass(&ObjContainer::m_classObjContainer);
-        m3d::g_Kernel->AddClass(&TimeStatistic::m_classTimeStatistic);
-        m3d::g_Kernel->AddClass(&IntStatistic::m_classIntStatistic);
-        m3d::g_Kernel->AddClass(&FloatStatistic::m_classFloatStatistic);
-        m3d::g_Kernel->AddClass(&FavoriteStringStatistic::m_classFavoriteStringStatistic);
-        m3d::g_Kernel->AddClass(&IntIntRatioStatistic::m_classIntIntRatioStatistic);
-        m3d::g_Kernel->AddClass(&Player::m_classPlayer);
-        m3d::g_Kernel->AddClass(&PhysicObj::m_classPhysicObj);
-        m3d::g_Kernel->AddClass(&SimplePhysicObj::m_classSimplePhysicObj);
-        m3d::g_Kernel->AddClass(&BreakableObject::m_classBreakableObject);
-        m3d::g_Kernel->AddClass(&DummyObject::m_classDummyObject);
-        m3d::g_Kernel->AddClass(&VehicleSplinter::m_classVehicleSplinter);
-        m3d::g_Kernel->AddClass(&ParticleSplinter::m_classParticleSplinter);
-        m3d::g_Kernel->AddClass(&ComplexPhysicObj::m_classComplexPhysicObj);
-        m3d::g_Kernel->AddClass(&ComplexPhysicObjPartDescription::m_classComplexPhysicObjPartDescription);
-        m3d::g_Kernel->AddClass(&AnimatedComplexPhysicObj::m_classAnimatedComplexPhysicObj);
-        m3d::g_Kernel->AddClass(&PhysicBody::m_classPhysicBody);
-        m3d::g_Kernel->AddClass(&SimplePhysicBody::m_classSimplePhysicBody);
-        m3d::g_Kernel->AddClass(&SphericBody::m_classSphericBody);
-        m3d::g_Kernel->AddClass(&BoxyBody::m_classBoxyBody);
-        m3d::g_Kernel->AddClass(&VehiclePart::m_classVehiclePart);
-        m3d::g_Kernel->AddClass(&CompoundVehiclePart::m_classCompoundVehiclePart);
-        m3d::g_Kernel->AddClass(&Wheel::m_classWheel);
-        m3d::g_Kernel->AddClass(&Vehicle::m_classVehicle);
-        m3d::g_Kernel->AddClass(&ArticulatedVehicle::m_classArticulatedVehicle);
-        m3d::g_Kernel->AddClass(&Gun::m_classGun);
-        m3d::g_Kernel->AddClass(&Shell::m_classShell);
-        m3d::g_Kernel->AddClass(&CompoundGun::m_classCompoundGun);
-        m3d::g_Kernel->AddClass(&Bullet::m_classBullet);
-        m3d::g_Kernel->AddClass(&BulletLauncher::m_classBulletLauncher);
-        m3d::g_Kernel->AddClass(&Rocket::m_classRocket);
-        m3d::g_Kernel->AddClass(&RocketLauncher::m_classRocketLauncher);
-        m3d::g_Kernel->AddClass(&RocketVolleyLauncher::m_classRocketVolleyLauncher);
-        m3d::g_Kernel->AddClass(&PlasmaBunch::m_classPlasmaBunch);
-        m3d::g_Kernel->AddClass(&PlasmaBunchLauncher::m_classPlasmaBunchLauncher);
-        m3d::g_Kernel->AddClass(&MortarShell::m_classMortarShell);
-        m3d::g_Kernel->AddClass(&Mortar::m_classMortar);
-        m3d::g_Kernel->AddClass(&MortarVolleyLauncher::m_classMortarVolleyLauncher);
-        m3d::g_Kernel->AddClass(&ThunderboltLauncher::m_classThunderboltLauncher);
-        m3d::g_Kernel->AddClass(&Mine::m_classMine);
-        m3d::g_Kernel->AddClass(&MinePusher::m_classMinePusher);
-        m3d::g_Kernel->AddClass(&LocationPusher::m_classLocationPusher);
-        m3d::g_Kernel->AddClass(&EngineOilLocation::m_classEngineOilLocation);
-        m3d::g_Kernel->AddClass(&TurboAccelerationPusher::m_classTurboAccelerationPusher);
-        m3d::g_Kernel->AddClass(&ObjPrefab::m_classObjPrefab);
-        m3d::g_Kernel->AddClass(&Barricade::m_classBarricade);
-        m3d::g_Kernel->AddClass(&Chassis::m_classChassis);
-        m3d::g_Kernel->AddClass(&Cabin::m_classCabin);
-        m3d::g_Kernel->AddClass(&Basket::m_classBasket);
-        m3d::g_Kernel->AddClass(&InfectionZone::m_classInfectionZone);
-        m3d::g_Kernel->AddClass(&InfectionTeam::m_classInfectionTeam);
-        m3d::g_Kernel->AddClass(&InfectionLair::m_classInfectionLair);
-        m3d::g_Kernel->AddClass(&Location::m_classLocation);
-        m3d::g_Kernel->AddClass(&StaticAutoGun::m_classStaticAutoGun);
-        m3d::g_Kernel->AddClass(&Settlement::m_classSettlement);
-        m3d::g_Kernel->AddClass(&Town::m_classTown);
-        m3d::g_Kernel->AddClass(&Building::m_classBuilding);
-        m3d::g_Kernel->AddClass(&Workshop::m_classWorkshop);
-        m3d::g_Kernel->AddClass(&Bar::m_classBar);
-        m3d::g_Kernel->AddClass(&Npc::m_classNpc);
-        m3d::g_Kernel->AddClass(&Lair::m_classLair);
-        m3d::g_Kernel->AddClass(&Team::m_classTeam);
-        m3d::g_Kernel->AddClass(&CaravanTeam::m_classCaravanTeam);
-        m3d::g_Kernel->AddClass(&VagabondTeam::m_classVagabondTeam);
-        m3d::g_Kernel->AddClass(&SgNodeObj::m_classSgNodeObj);
-        m3d::g_Kernel->AddClass(&LightObj::m_classLightObj);
-        m3d::g_Kernel->AddClass(&DynamicQuest::m_classDynamicQuest);
-        m3d::g_Kernel->AddClass(&DynamicQuestDestroy::m_classDynamicQuestDestroy);
-        m3d::g_Kernel->AddClass(&DynamicQuestReach::m_classDynamicQuestReach);
-        m3d::g_Kernel->AddClass(&DynamicQuestConvoy::m_classDynamicQuestConvoy);
-        m3d::g_Kernel->AddClass(&DynamicQuestPeace::m_classDynamicQuestPeace);
-        m3d::g_Kernel->AddClass(&DynamicQuestHunt::m_classDynamicQuestHunt);
-        m3d::g_Kernel->AddClass(&DynamicScene::m_classDynamicScene);
-        m3d::g_Kernel->AddClass(&AIManager::m_classAIManager);
-        m3d::g_Kernel->AddClass(&DecisionMatrix::m_classDecisionMatrix);
-        m3d::g_Kernel->AddClass(&QuestStateManager::m_classQuestStateManager);
-        m3d::g_Kernel->AddClass(&GeomObj::m_classGeomObj);
-        m3d::g_Kernel->AddClass(&JointedObj::m_classJointedObj);
-        m3d::g_Kernel->AddClass(&CompositeObj::m_classCompositeObj);
-        m3d::g_Kernel->AddClass(&PhysicUnit::m_classPhysicUnit);
-        m3d::g_Kernel->AddClass(&GeomRepository::m_classGeomRepository);
-        m3d::g_Kernel->AddClass(&IzvratRepository::m_classIzvratRepository);
-        m3d::g_Kernel->AddClass(&Ware::m_classWare);
-        m3d::g_Kernel->AddClass(&BlastWave::m_classBlastWave);
-        m3d::g_Kernel->AddClass(&BossMetalArm::m_classBossMetalArm);
-        m3d::g_Kernel->AddClass(&BossMetalArmLoad::m_classBossMetalArmLoad);
-        m3d::g_Kernel->AddClass(&Boss02::m_classBoss02);
-        m3d::g_Kernel->AddClass(&Boss02Arm::m_classBoss02Arm);
-        m3d::g_Kernel->AddClass(&Boss03::m_classBoss03);
-        m3d::g_Kernel->AddClass(&Boss03Part::m_classBoss03Part);
-        m3d::g_Kernel->AddClass(&Boss04::m_classBoss04);
-        m3d::g_Kernel->AddClass(&Boss04Part::m_classBoss04Part);
-        m3d::g_Kernel->AddClass(&Boss04Station::m_classBoss04Station);
-        m3d::g_Kernel->AddClass(&Boss04StationPart::m_classBoss04StationPart);
-        m3d::g_Kernel->AddClass(&Boss04Drone::m_classBoss04Drone);
-        m3d::g_Kernel->AddClass(&Submarine::m_classSubmarine);
-        m3d::g_Kernel->AddClass(&VehicleRecollection::m_classVehicleRecollection);
-        m3d::g_Kernel->AddClass(&TeamTacticWithRoles::m_classTeamTacticWithRoles);
-        m3d::g_Kernel->AddClass(&VehicleRoleMeat::m_classVehicleRoleMeat);
-        m3d::g_Kernel->AddClass(&VehicleRoleSniper::m_classVehicleRoleSniper);
-        m3d::g_Kernel->AddClass(&VehicleRoleOppressor::m_classVehicleRoleOppressor);
-        m3d::g_Kernel->AddClass(&VehicleRoleBarrier::m_classVehicleRoleBarrier);
-        m3d::g_Kernel->AddClass(&VehicleRolePendulum::m_classVehicleRolePendulum);
-        m3d::g_Kernel->AddClass(&VehicleRoleCoward::m_classVehicleRoleCoward);
-        m3d::g_Kernel->AddClass(&VehicleRoleCheater::m_classVehicleRoleCheater);
-        m3d::g_Kernel->AddClass(&NPCMotionController::m_classNPCMotionController);
-        m3d::g_Kernel->AddClass(&CinematicMover::m_classCinematicMover);
-        m3d::g_Kernel->AddClass(&Static2DPath::m_classStatic2DPath);
-        m3d::g_Kernel->AddClass(&Gadget::m_classGadget);
-        m3d::g_Kernel->AddClass(&Formation::m_classFormation);
+        M3D_KERNEL->AddClass(&Obj::m_classObj);
+        M3D_KERNEL->AddClass(&Trigger::m_classTrigger);
+        M3D_KERNEL->AddClass(&ObjContainer::m_classObjContainer);
+        M3D_KERNEL->AddClass(&TimeStatistic::m_classTimeStatistic);
+        M3D_KERNEL->AddClass(&IntStatistic::m_classIntStatistic);
+        M3D_KERNEL->AddClass(&FloatStatistic::m_classFloatStatistic);
+        M3D_KERNEL->AddClass(&FavoriteStringStatistic::m_classFavoriteStringStatistic);
+        M3D_KERNEL->AddClass(&IntIntRatioStatistic::m_classIntIntRatioStatistic);
+        M3D_KERNEL->AddClass(&Player::m_classPlayer);
+        M3D_KERNEL->AddClass(&PhysicObj::m_classPhysicObj);
+        M3D_KERNEL->AddClass(&SimplePhysicObj::m_classSimplePhysicObj);
+        M3D_KERNEL->AddClass(&BreakableObject::m_classBreakableObject);
+        M3D_KERNEL->AddClass(&DummyObject::m_classDummyObject);
+        M3D_KERNEL->AddClass(&VehicleSplinter::m_classVehicleSplinter);
+        M3D_KERNEL->AddClass(&ParticleSplinter::m_classParticleSplinter);
+        M3D_KERNEL->AddClass(&ComplexPhysicObj::m_classComplexPhysicObj);
+        M3D_KERNEL->AddClass(&ComplexPhysicObjPartDescription::m_classComplexPhysicObjPartDescription);
+        M3D_KERNEL->AddClass(&AnimatedComplexPhysicObj::m_classAnimatedComplexPhysicObj);
+        M3D_KERNEL->AddClass(&PhysicBody::m_classPhysicBody);
+        M3D_KERNEL->AddClass(&SimplePhysicBody::m_classSimplePhysicBody);
+        M3D_KERNEL->AddClass(&SphericBody::m_classSphericBody);
+        M3D_KERNEL->AddClass(&BoxyBody::m_classBoxyBody);
+        M3D_KERNEL->AddClass(&VehiclePart::m_classVehiclePart);
+        M3D_KERNEL->AddClass(&CompoundVehiclePart::m_classCompoundVehiclePart);
+        M3D_KERNEL->AddClass(&Wheel::m_classWheel);
+        M3D_KERNEL->AddClass(&Vehicle::m_classVehicle);
+        M3D_KERNEL->AddClass(&ArticulatedVehicle::m_classArticulatedVehicle);
+        M3D_KERNEL->AddClass(&Gun::m_classGun);
+        M3D_KERNEL->AddClass(&Shell::m_classShell);
+        M3D_KERNEL->AddClass(&CompoundGun::m_classCompoundGun);
+        M3D_KERNEL->AddClass(&Bullet::m_classBullet);
+        M3D_KERNEL->AddClass(&BulletLauncher::m_classBulletLauncher);
+        M3D_KERNEL->AddClass(&Rocket::m_classRocket);
+        M3D_KERNEL->AddClass(&RocketLauncher::m_classRocketLauncher);
+        M3D_KERNEL->AddClass(&RocketVolleyLauncher::m_classRocketVolleyLauncher);
+        M3D_KERNEL->AddClass(&PlasmaBunch::m_classPlasmaBunch);
+        M3D_KERNEL->AddClass(&PlasmaBunchLauncher::m_classPlasmaBunchLauncher);
+        M3D_KERNEL->AddClass(&MortarShell::m_classMortarShell);
+        M3D_KERNEL->AddClass(&Mortar::m_classMortar);
+        M3D_KERNEL->AddClass(&MortarVolleyLauncher::m_classMortarVolleyLauncher);
+        M3D_KERNEL->AddClass(&ThunderboltLauncher::m_classThunderboltLauncher);
+        M3D_KERNEL->AddClass(&Mine::m_classMine);
+        M3D_KERNEL->AddClass(&MinePusher::m_classMinePusher);
+        M3D_KERNEL->AddClass(&LocationPusher::m_classLocationPusher);
+        M3D_KERNEL->AddClass(&EngineOilLocation::m_classEngineOilLocation);
+        M3D_KERNEL->AddClass(&TurboAccelerationPusher::m_classTurboAccelerationPusher);
+        M3D_KERNEL->AddClass(&ObjPrefab::m_classObjPrefab);
+        M3D_KERNEL->AddClass(&Barricade::m_classBarricade);
+        M3D_KERNEL->AddClass(&Chassis::m_classChassis);
+        M3D_KERNEL->AddClass(&Cabin::m_classCabin);
+        M3D_KERNEL->AddClass(&Basket::m_classBasket);
+        M3D_KERNEL->AddClass(&InfectionZone::m_classInfectionZone);
+        M3D_KERNEL->AddClass(&InfectionTeam::m_classInfectionTeam);
+        M3D_KERNEL->AddClass(&InfectionLair::m_classInfectionLair);
+        M3D_KERNEL->AddClass(&Location::m_classLocation);
+        M3D_KERNEL->AddClass(&StaticAutoGun::m_classStaticAutoGun);
+        M3D_KERNEL->AddClass(&Settlement::m_classSettlement);
+        M3D_KERNEL->AddClass(&Town::m_classTown);
+        M3D_KERNEL->AddClass(&Building::m_classBuilding);
+        M3D_KERNEL->AddClass(&Workshop::m_classWorkshop);
+        M3D_KERNEL->AddClass(&Bar::m_classBar);
+        M3D_KERNEL->AddClass(&Npc::m_classNpc);
+        M3D_KERNEL->AddClass(&Lair::m_classLair);
+        M3D_KERNEL->AddClass(&Team::m_classTeam);
+        M3D_KERNEL->AddClass(&CaravanTeam::m_classCaravanTeam);
+        M3D_KERNEL->AddClass(&VagabondTeam::m_classVagabondTeam);
+        M3D_KERNEL->AddClass(&SgNodeObj::m_classSgNodeObj);
+        M3D_KERNEL->AddClass(&LightObj::m_classLightObj);
+        M3D_KERNEL->AddClass(&DynamicQuest::m_classDynamicQuest);
+        M3D_KERNEL->AddClass(&DynamicQuestDestroy::m_classDynamicQuestDestroy);
+        M3D_KERNEL->AddClass(&DynamicQuestReach::m_classDynamicQuestReach);
+        M3D_KERNEL->AddClass(&DynamicQuestConvoy::m_classDynamicQuestConvoy);
+        M3D_KERNEL->AddClass(&DynamicQuestPeace::m_classDynamicQuestPeace);
+        M3D_KERNEL->AddClass(&DynamicQuestHunt::m_classDynamicQuestHunt);
+        M3D_KERNEL->AddClass(&DynamicScene::m_classDynamicScene);
+        M3D_KERNEL->AddClass(&AIManager::m_classAIManager);
+        M3D_KERNEL->AddClass(&DecisionMatrix::m_classDecisionMatrix);
+        M3D_KERNEL->AddClass(&QuestStateManager::m_classQuestStateManager);
+        M3D_KERNEL->AddClass(&GeomObj::m_classGeomObj);
+        M3D_KERNEL->AddClass(&JointedObj::m_classJointedObj);
+        M3D_KERNEL->AddClass(&CompositeObj::m_classCompositeObj);
+        M3D_KERNEL->AddClass(&PhysicUnit::m_classPhysicUnit);
+        M3D_KERNEL->AddClass(&GeomRepository::m_classGeomRepository);
+        M3D_KERNEL->AddClass(&IzvratRepository::m_classIzvratRepository);
+        M3D_KERNEL->AddClass(&Ware::m_classWare);
+        M3D_KERNEL->AddClass(&BlastWave::m_classBlastWave);
+        M3D_KERNEL->AddClass(&BossMetalArm::m_classBossMetalArm);
+        M3D_KERNEL->AddClass(&BossMetalArmLoad::m_classBossMetalArmLoad);
+        M3D_KERNEL->AddClass(&Boss02::m_classBoss02);
+        M3D_KERNEL->AddClass(&Boss02Arm::m_classBoss02Arm);
+        M3D_KERNEL->AddClass(&Boss03::m_classBoss03);
+        M3D_KERNEL->AddClass(&Boss03Part::m_classBoss03Part);
+        M3D_KERNEL->AddClass(&Boss04::m_classBoss04);
+        M3D_KERNEL->AddClass(&Boss04Part::m_classBoss04Part);
+        M3D_KERNEL->AddClass(&Boss04Station::m_classBoss04Station);
+        M3D_KERNEL->AddClass(&Boss04StationPart::m_classBoss04StationPart);
+        M3D_KERNEL->AddClass(&Boss04Drone::m_classBoss04Drone);
+        M3D_KERNEL->AddClass(&Submarine::m_classSubmarine);
+        M3D_KERNEL->AddClass(&VehicleRecollection::m_classVehicleRecollection);
+        M3D_KERNEL->AddClass(&TeamTacticWithRoles::m_classTeamTacticWithRoles);
+        M3D_KERNEL->AddClass(&VehicleRoleMeat::m_classVehicleRoleMeat);
+        M3D_KERNEL->AddClass(&VehicleRoleSniper::m_classVehicleRoleSniper);
+        M3D_KERNEL->AddClass(&VehicleRoleOppressor::m_classVehicleRoleOppressor);
+        M3D_KERNEL->AddClass(&VehicleRoleBarrier::m_classVehicleRoleBarrier);
+        M3D_KERNEL->AddClass(&VehicleRolePendulum::m_classVehicleRolePendulum);
+        M3D_KERNEL->AddClass(&VehicleRoleCoward::m_classVehicleRoleCoward);
+        M3D_KERNEL->AddClass(&VehicleRoleCheater::m_classVehicleRoleCheater);
+        M3D_KERNEL->AddClass(&NPCMotionController::m_classNPCMotionController);
+        M3D_KERNEL->AddClass(&CinematicMover::m_classCinematicMover);
+        M3D_KERNEL->AddClass(&Static2DPath::m_classStatic2DPath);
+        M3D_KERNEL->AddClass(&Gadget::m_classGadget);
+        M3D_KERNEL->AddClass(&Formation::m_classFormation);
         IntersectionManager::Registration();
     }
 
@@ -766,7 +784,7 @@ namespace ai
 
     CServer::CServer()
     {
-        assert(m3d::g_Kernel);
+        assert(M3D_KERNEL);
 
         this->pGlobalMap = 0;
         this->m_pWorld = 0;
@@ -786,68 +804,68 @@ namespace ai
         this->m_AveElapsedTimeUsed = 0;
 
         m_lastElapsedTimes.resize(0x14, 0.0);
-        m_pObjects = dynamic_cast<ObjContainer*>(m3d::g_Kernel->New("ObjContainer"));
-        m3d::g_Kernel->UnRegisterGlobal("g_ObjContainer");
-        m3d::g_Kernel->RegisterGlobal(m_pObjects, "g_ObjContainer");
+        m_pObjects = dynamic_cast<ObjContainer*>(M3D_KERNEL->New("ObjContainer"));
+        M3D_KERNEL->UnRegisterGlobal("g_ObjContainer");
+        M3D_KERNEL->RegisterGlobal(m_pObjects, "g_ObjContainer");
         SetObjects(m_pObjects);
 
-        auto idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI physic step", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto idx = M3D_APP->GetProfilerStack().AddProfiler("AI physic step", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profilerTmpForServer = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_profilerTmpForServer = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI collisions", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        idx = M3D_APP->GetProfilerStack().AddProfiler("AI collisions", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_collideProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_collideProfiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI bullets update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        idx = M3D_APP->GetProfilerStack().AddProfiler("AI bullets update", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_bulletProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_bulletProfiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI blast waves update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        idx = M3D_APP->GetProfilerStack().AddProfiler("AI blast waves update", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_blastWaveProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_blastWaveProfiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI vehicles update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        idx = M3D_APP->GetProfilerStack().AddProfiler("AI vehicles update", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_pathFindingProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_pathFindingProfiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI total objects update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        idx = M3D_APP->GetProfilerStack().AddProfiler("AI total objects update", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_objectsUpdateProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_objectsUpdateProfiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        idx = m3d::Application::g_pApp->GetProfilerStack().AddProfiler("AI full update", 0x1E);
-        if (idx < m3d::Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        idx = M3D_APP->GetProfilerStack().AddProfiler("AI full update", 0x1E);
+        if (idx < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_serverUpdateProfiler = m3d::Application::g_pApp->GetProfilerStack().GetProfiler(idx);
+            m_serverUpdateProfiler = M3D_APP->GetProfilerStack().GetProfiler(idx);
         }
 
-        m3d::g_Kernel->GetEngineCfg().m_console->RegisterCommand("ai_switch_player_physics", 0, this);
-        LoadGlobalPropertiesFromXML(m3d::g_Kernel->GetEngineCfg().m_pathToGlobProps.GetS());
+        M3D_ENGINE_CFG.m_console->RegisterCommand("ai_switch_player_physics", 0, this);
+        LoadGlobalPropertiesFromXML(M3D_ENGINE_CFG.m_pathToGlobProps.GetS());
     }
 
     void CServer::LoadTriggersFromXML(CStr const& fileName)
     {
         // RVA 0x5F2D90
-        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
         {
             M3D_LOG_ERR("Error: cannot open " + fileName);
             return;
         }
 
-        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (xmlFile->Read(*stream))
         {
             stream->Close();
@@ -856,7 +874,8 @@ namespace ai
             xmlFile->GetFirstChild(triggersNode, "triggers");
 
             ref_ptr triggerNode = xmlFile->CreateNode();
-            for (triggersNode->GetFirstChild(triggerNode, "trigger"); !triggerNode->IsEmpty(); triggerNode->GetNextSibling(triggerNode, "trigger"))
+            for (triggersNode->GetFirstChild(triggerNode, "trigger"); !triggerNode->IsEmpty();
+                 triggerNode->GetNextSibling(triggerNode, "trigger"))
             {
                 CStr name;
                 m3d::SafeStrAttrib(name, triggerNode, "Name");
@@ -869,7 +888,8 @@ namespace ai
                 auto* entity = ai::theObjects->GetEntityByObjName(name);
                 if (ai::theObjects->m_SaveType == ai::ObjContainer::eSAVE_TYPES::SAVE_LEVEL && entity)
                 {
-                    M3D_LOG_ERR("Attempting to load trigger " + name + ", but a trigger with this name already exists!");
+                    M3D_LOG_ERR(
+                        "Attempting to load trigger " + name + ", but a trigger with this name already exists!");
                 }
                 if (!entity)
                 {
@@ -928,7 +948,7 @@ namespace ai
 
         // Calculate current time
         float CurTime = 0.0;
-        if (m3d::g_Kernel->GetTimer().GetTimeScale() == 0.0f)
+        if (M3D_KERNEL->GetTimer().GetTimeScale() == 0.0f)
         {
             CurTime = m_LastUpdateTime;
         }
@@ -936,7 +956,7 @@ namespace ai
         {
             // The milliseconds are scaled in double before narrowing, so long sessions keep
             // millisecond resolution.
-            CurTime = static_cast<float>(static_cast<double>(m3d::g_Kernel->GetTimer().GetCurTime()) * 0.001);
+            CurTime = static_cast<float>(static_cast<double>(M3D_KERNEL->GetTimer().GetCurTime()) * 0.001);
         }
 
         // Handle very small elapsed times
@@ -952,7 +972,7 @@ namespace ai
         // The step is capped at ai_min_frame_time (despite the name, a maximum).
         // The server also keeps a running average of the last m_MaxAverageLength steps in
         // m_averageElapsedTime, which replaces the step when m_AveElapsedTimeUsed is set.
-        float const maxFrameTime = m3d::g_Kernel->GetEngineCfg().m_ai_min_frame_time.GetF();
+        float const maxFrameTime = M3D_ENGINE_CFG.m_ai_min_frame_time.GetF();
         float step = elapsedTime;
         if (elapsedTime > maxFrameTime)
         {
@@ -988,8 +1008,7 @@ namespace ai
                 m_CurIndex = 0;
             }
             float& oldest = m_lastElapsedTimes[m_CurIndex];
-            m_averageElapsedTime =
-                (step - oldest) / static_cast<float>(m_MaxAverageLength) + m_averageElapsedTime;
+            m_averageElapsedTime = (step - oldest) / static_cast<float>(m_MaxAverageLength) + m_averageElapsedTime;
             oldest = step;
             ++m_CurIndex;
         }
@@ -1028,7 +1047,7 @@ namespace ai
         bool InCinematic = false;
         if (m_InCinematic)
         {
-            bool useCinematic = m3d::g_Kernel->GetEngineCfg().m_UseCinematicUpdate.GetB();
+            bool useCinematic = M3D_ENGINE_CFG.m_UseCinematicUpdate.GetB();
 
             if (useCinematic)
             {
@@ -1066,7 +1085,7 @@ namespace ai
 
         // Update timing and handle step mode
         m_LastUpdateTime = CurTime;
-        if (m3d::g_Kernel->GetEngineCfg().m_StepMode.GetI() == 1)
+        if (M3D_ENGINE_CFG.m_StepMode.GetI() == 1)
         {
             fPause = true;
         }
@@ -1200,28 +1219,28 @@ namespace ai
     void CServer::InitOnce()
     {
         // RVA 0x5F2160
-        LoadGlobalPropertiesFromXML(m3d::g_Kernel->GetEngineCfg().m_pathToGlobProps.GetS());
+        LoadGlobalPropertiesFromXML(M3D_ENGINE_CFG.m_pathToGlobProps.GetS());
         theResourceManager = new ResourceManager;
         theResourceManager->Init();
         m_pAffixManager = new AffixManager;
         m_pAffixManager->LoadFromXmlFile(ai::theGlobProp.m_pathToAffixes.c_str());
         DynamicScene::InitOnce();
-        m_pDynamicScene = dynamic_cast<DynamicScene*>(m3d::g_Kernel->New("DynamicScene"));
+        m_pDynamicScene = dynamic_cast<DynamicScene*>(M3D_KERNEL->New("DynamicScene"));
         m_pDynamicScene->IncRef();
         SetDynamicScene(m_pDynamicScene);
         m3d::TraceLineManager::InitTraceLineRay(true);
         m_pDynamicScene->InitClashDecalId();
         theQuestManager = new QuestManager;
         theQuestManager->LoadFromXmlFile(ai::theGlobProp.m_pathToQuests.c_str());
-        theQuestStateManager = dynamic_cast<QuestStateManager*>(m3d::g_Kernel->New("QuestStateManager"));
-        m3d::g_Kernel->UnRegisterGlobal("g_QuestStateManager");
-        m3d::g_Kernel->RegisterGlobal(theQuestStateManager, "g_QuestStateManager");
+        theQuestStateManager = dynamic_cast<QuestStateManager*>(M3D_KERNEL->New("QuestStateManager"));
+        M3D_KERNEL->UnRegisterGlobal("g_QuestStateManager");
+        M3D_KERNEL->RegisterGlobal(theQuestStateManager, "g_QuestStateManager");
         theStatisticManager = new StatisticManager;
-        pAIManager = dynamic_cast<AIManager*>(m3d::g_Kernel->New("AIManager"));
+        pAIManager = dynamic_cast<AIManager*>(M3D_KERNEL->New("AIManager"));
         pAIManager->IncRef();
         SetAIManager(pAIManager);
-        m3d::g_Kernel->UnRegisterGlobal("g_AIManager");
-        m3d::g_Kernel->RegisterGlobal(pAIManager, "g_AIManager");
+        M3D_KERNEL->UnRegisterGlobal("g_AIManager");
+        M3D_KERNEL->RegisterGlobal(pAIManager, "g_AIManager");
         thePrototypeManager = new PrototypeManager;
         theRelationship = new Relationship;
         theVehiclesGeneratorInfoCache = new VehiclesGeneratorInfoCache;
@@ -1236,18 +1255,17 @@ namespace ai
     {
         // RVA 0x5F5430 - maps each prototype name to the display name the UI shows, plus which
         // grammatical form that display name takes.
-        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
         {
             M3D_LOG_ERR("Error: cannot open " + fileName);
             return;
         }
 
-        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
-            M3D_LOG_ERR("Error: cannot parse " + fileName + CStr(" ( ") + CStr(xmlFile->GetError()) +
-                CStr(" ) "));
+            M3D_LOG_ERR("Error: cannot parse " + fileName + CStr(" ( ") + CStr(xmlFile->GetError()) + CStr(" ) "));
             return;
         }
         stream->Close();
@@ -1281,13 +1299,13 @@ namespace ai
 
     void CServer::LoadGlobalPropertiesFromXML(CStr const& fileName)
     {
-        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(fileName.c_str(), m3d::fs::IStream::OPEN_READ))
         {
             M3D_LOG_ERR("Error: cannot open " + fileName);
             return;
         }
-        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (xmlFile->Read(*stream))
         {
             stream->Close();
@@ -1320,7 +1338,7 @@ namespace ai
         thePlayer = nullptr;
         m_pExternalPaths = new ExternalPaths;
         m_pPlayerPassMap = new PlayerPassMap;
-        M3D_KERNEL->GetEngineCfg().m_console->executeCommand("/conScript data\\scripts\\server.lua");
+        M3D_ENGINE_CFG.m_console->executeCommand("/conScript data\\scripts\\server.lua");
         theProcessManager = new ProcessManager;
         theAIManager->RegisterMatrix("void", nullptr);
         ai::Obj::Registration();
@@ -1369,13 +1387,23 @@ namespace ai
 
         auto& scriptServer = M3D_KERNEL->GetScriptServer();
         scriptServer.registerGlobalFunction(
-            n_AddToCinematic, "AddToCinematic", "void", "Object, [bool WithChildren]", "adds object to update list for cinematic state.");
-        scriptServer.registerGlobalFunction(n_EndCinematic, "EndCinematic", "void", "void", "Revert Server to normal update mode");
-        scriptServer.registerGlobalFunction(n_CreateObjectByClassName, "CreateObjectByClassName", "Object*", "const char* className", "Creates Object");
+            n_AddToCinematic,
+            "AddToCinematic",
+            "void",
+            "Object, [bool WithChildren]",
+            "adds object to update list for cinematic state.");
+        scriptServer.registerGlobalFunction(
+            n_EndCinematic, "EndCinematic", "void", "void", "Revert Server to normal update mode");
+        scriptServer.registerGlobalFunction(
+            n_CreateObjectByClassName, "CreateObjectByClassName", "Object*", "const char* className", "Creates Object");
 
         pGlobalMap = new Map;
         pGlobalMap->Create(
-            m_level->m_passMapCellSize, m_level->m_passMapCellSize, pServer->m_level->land_size * 128.0f, pServer->m_level->land_size * 128.0f, nullptr);
+            m_level->m_passMapCellSize,
+            m_level->m_passMapCellSize,
+            pServer->m_level->land_size * 128.0f,
+            pServer->m_level->land_size * 128.0f,
+            nullptr);
         pGlobalMap->Clear();
         Map::SetGlobalMap(pGlobalMap);
         pGlobalMap->LoadFromRawFile(m_level->GetFullPathNameA(m_level->m_passMapName).c_str());

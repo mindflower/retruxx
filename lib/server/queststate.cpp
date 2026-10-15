@@ -87,19 +87,18 @@ RT_CLASS_EXPORT_METHOD_DEFINE(QuestStateManager, CanQuestBeGiven)
     return 1;
 }
 
-
 namespace ai
 {
     RT_CLASS_EXPORTS_BEGIN(QuestStateManager)
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, TakeQuest, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, CompleteQuest, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, CompleteQuestIfTaken, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, FailQuest, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, FailQuestIfTaken, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, IsQuestTaken, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, IsQuestComplete, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, IsQuestFailed, "", "", "")
-        RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, CanQuestBeGiven, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, TakeQuest, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, CompleteQuest, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, CompleteQuestIfTaken, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, FailQuest, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, FailQuestIfTaken, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, IsQuestTaken, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, IsQuestComplete, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, IsQuestFailed, "", "", "")
+    RT_CLASS_EXPORT(QuestStateManager, m3d::METHOD, CanQuestBeGiven, "", "", "")
     RT_CLASS_EXPORTS_END;
     RT_CLASS_DEFINE(QuestStateManager);
 
@@ -208,7 +207,8 @@ namespace ai
             {
                 // A failed parent fails its subquests, and so does a completed XOR parent: another subquest won it.
                 if (parent->GetCompleteStatus() == FAILED ||
-                    (theQuestManager->GetQuestById(parent->GetQuestId())->GetSubQuestCondition() == Quest::SUBQUEST_XOR &&
+                    (theQuestManager->GetQuestById(parent->GetQuestId())->GetSubQuestCondition() ==
+                         Quest::SUBQUEST_XOR &&
                      parent->GetCompleteStatus() == COMPLETE))
                 {
                     m_completeStatus = FAILED;
@@ -228,7 +228,8 @@ namespace ai
                 bool bSomeoneFailed = false;
                 for (int const subQuestId : quest->GetSubQuestIds())
                 {
-                    CompleteStatus const status = theQuestStateManager->GetQuestStateById(subQuestId)->GetCompleteStatus();
+                    CompleteStatus const status =
+                        theQuestStateManager->GetQuestStateById(subQuestId)->GetCompleteStatus();
                     bAllComplete &= status == COMPLETE;
                     bSomeoneFailed |= status == FAILED;
                     bSomeoneNotComplete |= status == NOT_COMPLETE;
@@ -253,7 +254,8 @@ namespace ai
                 bool bSomeoneComplete = false;
                 for (int const subQuestId : quest->GetSubQuestIds())
                 {
-                    CompleteStatus const status = theQuestStateManager->GetQuestStateById(subQuestId)->GetCompleteStatus();
+                    CompleteStatus const status =
+                        theQuestStateManager->GetQuestStateById(subQuestId)->GetCompleteStatus();
                     bAllFailed &= status == FAILED;
                     bSomeoneComplete |= status == COMPLETE;
                     bSomeoneNotComplete |= status == NOT_COMPLETE;
@@ -279,15 +281,16 @@ namespace ai
                 bool bSomeoneComplete = false;
                 for (int const subQuestId : quest->GetSubQuestIds())
                 {
-                    CompleteStatus const status = theQuestStateManager->GetQuestStateById(subQuestId)->GetCompleteStatus();
+                    CompleteStatus const status =
+                        theQuestStateManager->GetQuestStateById(subQuestId)->GetCompleteStatus();
                     bAllFailed &= status == FAILED;
                     if (status == COMPLETE)
                     {
                         if (bSomeoneComplete)
                         {
                             M3D_LOG_ERR(
-                                "Error in quest runtime: Two subquests are complete for XOR quest '" + quest->GetName() +
-                                CStr("'"));
+                                "Error in quest runtime: Two subquests are complete for XOR quest '" +
+                                quest->GetName() + CStr("'"));
                         }
                         bSomeoneComplete = true;
                     }
@@ -455,7 +458,9 @@ namespace ai
                 theQuestStateManager->OnQuestTaken(m_questId);
                 return true;
             }
-            M3D_LOG_ERR("Error: attempt to take a quest which cannot be given: '" + theQuestManager->GetQuestById(m_questId)->GetName() + "'");
+            M3D_LOG_ERR(
+                "Error: attempt to take a quest which cannot be given: '" +
+                theQuestManager->GetQuestById(m_questId)->GetName() + "'");
         }
         return false;
     }
@@ -593,7 +598,8 @@ namespace ai
         // RVA 0x69C920
         QuestState const* const questState = _GetQuestStateById(questId);
         CStr const& questName = theQuestManager->GetQuestById(questId)->GetName();
-        CStr const onCanBeGivenFuncName = theQuestManager->GetQuestById(questState->GetQuestId())->GetFuncOnCanBeGiven();
+        CStr const onCanBeGivenFuncName =
+            theQuestManager->GetQuestById(questState->GetQuestId())->GetFuncOnCanBeGiven();
         if (!onCanBeGivenFuncName.empty())
         {
             _ExecuteFunctionCode(onCanBeGivenFuncName, CStr("CAN_BE_GIVEN_") + questName);
@@ -616,14 +622,16 @@ namespace ai
 
         retruxx::map<int, QuestState*> tmpQuestStateMap;
         int iQuest = 0;
-        for (rootNode->GetFirstChild(questNode, "quest"); !questNode->IsEmpty(); questNode->GetNextSibling(questNode, "quest"))
+        for (rootNode->GetFirstChild(questNode, "quest"); !questNode->IsEmpty();
+             questNode->GetNextSibling(questNode, "quest"))
         {
             ++iQuest;
             QuestState questState(-1);
             if (!questState.LoadFromXml(xmlFile, questNode))
             {
                 M3D_LOG_ERR(
-                    "Error: couldn't load quest info from XML file. The quest is " + CStr(iQuest) + CStr("th in the file"));
+                    "Error: couldn't load quest info from XML file. The quest is " + CStr(iQuest) +
+                    CStr("th in the file"));
                 continue;
             }
             if (tmpQuestStateMap.find(questState.GetQuestId()) != tmpQuestStateMap.end())
@@ -687,7 +695,8 @@ namespace ai
         CStr onChangeCompleteStatusFuncName;
         if (questState->GetCompleteStatus() == QuestState::COMPLETE)
         {
-            onChangeCompleteStatusFuncName = theQuestManager->GetQuestById(questState->GetQuestId())->GetFuncOnComplete();
+            onChangeCompleteStatusFuncName =
+                theQuestManager->GetQuestById(questState->GetQuestId())->GetFuncOnComplete();
             M3D_LOG_INFO("Quest '" + questName + CStr("' is complete"));
         }
         else if (questState->GetCompleteStatus() == QuestState::FAILED)
@@ -909,7 +918,8 @@ namespace ai
             Quest const* const quest = theQuestManager->GetQuestById(id);
             _UpdateCanBeGiven(id);
 
-            if (quest->GetSubQuestCondition() == Quest::SUBQUEST_XOR || questState->GetCompleteStatus() == QuestState::FAILED)
+            if (quest->GetSubQuestCondition() == Quest::SUBQUEST_XOR ||
+                questState->GetCompleteStatus() == QuestState::FAILED)
             {
                 for (int const subQuestId : quest->GetSubQuestIds())
                 {
@@ -967,4 +977,4 @@ namespace ai
         }
         m_questStates.clear();
     }
-}
+}  // namespace ai

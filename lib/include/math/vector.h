@@ -35,62 +35,75 @@ struct CVector
     float& operator[](int index);
 };
 
-inline CVector operator + (const CVector& l, const CVector& r) {
-    return { l.x + r.x, l.y + r.y, l.z + r.z };
+inline CVector operator+(CVector const& l, CVector const& r)
+{
+    return {l.x + r.x, l.y + r.y, l.z + r.z};
 };
 
-inline CVector operator + (const CVector& l, float r) {
-    return { l.x + r, l.y + r, l.z + r };
+inline CVector operator+(CVector const& l, float r)
+{
+    return {l.x + r, l.y + r, l.z + r};
 };
 
-inline CVector operator - (const CVector& l, const CVector& r) {
-    return { l.x - r.x, l.y - r.y, l.z - r.z };
+inline CVector operator-(CVector const& l, CVector const& r)
+{
+    return {l.x - r.x, l.y - r.y, l.z - r.z};
 };
 
-inline CVector operator - (const CVector& l, float r) {
-    return { l.x - r, l.y - r, l.z - r };
+inline CVector operator-(CVector const& l, float r)
+{
+    return {l.x - r, l.y - r, l.z - r};
 };
 
-inline CVector operator * (const CVector& l, const CVector& r) {
-    return { l.x * r.x, l.y * r.y, l.z * r.z };
+inline CVector operator*(CVector const& l, CVector const& r)
+{
+    return {l.x * r.x, l.y * r.y, l.z * r.z};
 };
 
-inline CVector operator * (const CVector& l, float r) {
-    return { l.x * r, l.y * r, l.z * r };
+inline CVector operator*(CVector const& l, float r)
+{
+    return {l.x * r, l.y * r, l.z * r};
 };
 
-inline CVector operator / (const CVector& l, const CVector& r) {
-    return { l.x / r.x, l.y / r.y, l.z / r.z };
+inline CVector operator/(CVector const& l, CVector const& r)
+{
+    return {l.x / r.x, l.y / r.y, l.z / r.z};
 };
 
-inline CVector operator / (const CVector& l, float r) {
-    return { l.x / r, l.y / r, l.z / r };
+inline CVector operator/(CVector const& l, float r)
+{
+    return {l.x / r, l.y / r, l.z / r};
 };
 
-inline float dot(const CVector& l, const CVector& r) {
+inline float dot(CVector const& l, CVector const& r)
+{
     return l.x * r.x + l.y * r.y + l.z * r.z;
 };
 
-inline float length(const CVector& v) {
+inline float length(CVector const& v)
+{
     return std::sqrt(dot(v, v));
 };
 
-inline CVector abs(const CVector& v) {
-    return { std::abs(v.x), std::abs(v.y), std::abs(v.z) };
+inline CVector abs(CVector const& v)
+{
+    return {std::abs(v.x), std::abs(v.y), std::abs(v.z)};
 };
 
-inline float distance(const CVector& s, const CVector& e) {
+inline float distance(CVector const& s, CVector const& e)
+{
     return length(s - e);
 };
 
-inline bool iszero(const CVector& v) {
+inline bool iszero(CVector const& v)
+{
     return v.x == 0.0f && v.y == 0.0f && v.z == 0.0f;
 };
 
-inline bool isfinite(const CVector& v) {
+inline bool isfinite(CVector const& v)
+{
     return std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z);
 };
-
 
 static_assert(sizeof(CVector) == 0x000c);
 

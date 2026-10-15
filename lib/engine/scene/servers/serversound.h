@@ -8,10 +8,11 @@ namespace Sound3DServer
         {
         public:
             SoundItem();
+
         protected:
         private:
             SoundTypeEnum type;
             int soundIds[3];
         };
-    }
-}
+    }  // namespace m3d
+}  // namespace Sound3DServer

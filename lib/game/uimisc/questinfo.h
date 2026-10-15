@@ -4,18 +4,21 @@
 #include <vector>
 #include <core/stringm3d.h>
 
-namespace m3d {
-    namespace cmn {
+namespace m3d
+{
+    namespace cmn
+    {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 struct CVector;
 
 class QuestInfo
 {
     friend class QuestInfoManager;
+
 public:
     class AuxLevelInfo
     {
@@ -28,6 +31,7 @@ public:
             COORDTYPE_NUM_COORDTYPES = 0x3,
             COORDTYPE_INVALID = 0x3,
         };
+
     public:
         void SetUp(CStr const&);
         void SetUp(CStr const&, CVector const&);
@@ -51,6 +55,7 @@ public:
         CStr m_targetObjName;
         CoordType m_coordType;
     };
+
 public:
     CStr const& GetBriefDiz() const;
     bool ExistsOnMap(CStr const&) const;
@@ -59,7 +64,7 @@ public:
     int GetQuestId() const;
     CStr const& GetSmallImageFie() const;
     QuestInfo();
-    std::vector<CStr, std::allocator<CStr> > GetMapNames() const;
+    std::vector<CStr, std::allocator<CStr>> GetMapNames() const;
     CStr const& GetFullDiz() const;
     CStr const& GetQuestInfoName() const;
     bool IsCoordinateModified() const;
@@ -92,7 +97,6 @@ private:
     bool m_bCoordinateModified;
 };
 
-
 class QuestInfoManager
 {
 public:
@@ -100,13 +104,13 @@ public:
     QuestInfoManager();
     QuestInfo const* GetQuestInfoByQuestInfoName(CStr const&) const;
     void SetCoordinateForQuest(CStr const&, CStr const&, CVector const&);
-    static CStr __fastcall GetDynamicQuestInfoPatternNameByType(int);
+    static CStr GetDynamicQuestInfoPatternNameByType(int);
     QuestInfo const* GetQuestInfoForStaticQuest(int) const;
     void Clear();
     ~QuestInfoManager();
     int Init();
     int LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
-    static bool __fastcall IsQuestDynamic(CStr const&);
+    static bool IsQuestDynamic(CStr const&);
     int GameDataUpdate(void*, int);
     QuestInfo const* GetQuestInfoForDynamicQuest(int);
     int LoadModifiedQuestInfosFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);

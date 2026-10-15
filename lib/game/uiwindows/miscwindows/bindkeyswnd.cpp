@@ -123,11 +123,12 @@ BindKeysWnd::KeySetButton::KeySetButton(BoundsBase<float>& rc)
     m_impId = IM_ERROR;
     m_isInInputMode = false;
     m_isAnotherInInputMode = false;
-    m_lastTwinkleTime = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
-    Create(m_aif.m_filler,
-           m3d::ui::WS_SEND_NOTIFY_MESSAGES | m3d::ui::WS_TEXT_CENTERED | m3d::ui::WS_IS_VISIBLE,
-           rc,
-           ID_KEY_SET_BUTTON);
+    m_lastTwinkleTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
+    Create(
+        m_aif.m_filler,
+        m3d::ui::WS_SEND_NOTIFY_MESSAGES | m3d::ui::WS_TEXT_CENTERED | m3d::ui::WS_IS_VISIBLE,
+        rc,
+        ID_KEY_SET_BUTTON);
     m_defFont = 1;
 }
 
@@ -343,7 +344,7 @@ void BindKeysWnd::KeySetButton::DrawWndText(m3d::ui::DrawInfo const& di)
     // twinkle colour.
     if (m_isInInputMode)
     {
-        auto const now = m3d::g_Kernel->GetTimer().GetCurTimeUnscaled();
+        auto const now = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
         if (now - m_lastTwinkleTime >= m_aif.m_twinkleTime)
         {
             auto color = m_aif.m_normColor;
@@ -424,8 +425,11 @@ BindKeysWnd::BindKeysItem::~BindKeysItem()
     }
 }
 
-int BindKeysWnd::BindKeysItem::SetUp(Impulse impId, retruxx::vector<retruxx::vector<int>> keys, m3d::Object* parent,
-                                     int idx)
+int BindKeysWnd::BindKeysItem::SetUp(
+    Impulse impId,
+    retruxx::vector<retruxx::vector<int>> keys,
+    m3d::Object* parent,
+    int idx)
 {
     // RVA 0x4A77B0 - builds the row: an impulse label on the left and two
     // key-set buttons sharing the rest of the width.
@@ -469,17 +473,17 @@ int BindKeysWnd::BindKeysItem::SetUp(Impulse impId, retruxx::vector<retruxx::vec
         }
     }
 
-    m_impLabel = RT_DYNCAST(m3d::g_Kernel->New("Wnd"), m3d::ui::Wnd);
+    m_impLabel = RT_DYNCAST(M3D_KERNEL->New("Wnd"), m3d::ui::Wnd);
     if (m_impLabel)
     {
         CStr const impName = M3D_APP->m_pImpulses->GetImpulseNameById(impId);
         CStr const impFullName = M3D_APP->GetStringByStringId0(impName);
         BoundsBase<float> const impB{0.0f, 0.0f, impW, m_aif.m_itemH};
-        if (!m_impLabel->Create(impFullName,
-                                m3d::ui::WS_NOFRAME | m3d::ui::WS_TRANSPARENT | m3d::ui::WS_IS_VISIBLE |
-                                    m3d::ui::WS_TEXT_CENTERED_Y,
-                                impB,
-                                0))
+        if (!m_impLabel->Create(
+                impFullName,
+                m3d::ui::WS_NOFRAME | m3d::ui::WS_TRANSPARENT | m3d::ui::WS_IS_VISIBLE | m3d::ui::WS_TEXT_CENTERED_Y,
+                impB,
+                0))
         {
             res = 0;
         }
@@ -499,7 +503,7 @@ int BindKeysWnd::BindKeysItem::SetUp(Impulse impId, retruxx::vector<retruxx::vec
         res = 0;
     }
 
-    m_bg = RT_DYNCAST(m3d::g_Kernel->New("Wnd"), m3d::ui::Wnd);
+    m_bg = RT_DYNCAST(M3D_KERNEL->New("Wnd"), m3d::ui::Wnd);
     if (!m_bg)
     {
         return 0;
@@ -726,15 +730,13 @@ int BindKeysWnd::BindKeysList::ProcessBinding(BindKeysWnd::KeySetButton* btn)
     {
         // The key belongs to something the player is not allowed to rebind.
         btn->OnRebind(prevKeys);
-        M3D_APP->RunMsgBoxDlg(
-            CStr(), M3D_APP->GetStringByStringId0(m_aif.m_strBindReserved), m3d::ui::MBX_OK, false);
+        M3D_APP->RunMsgBoxDlg(CStr(), M3D_APP->GetStringByStringId0(m_aif.m_strBindReserved), m3d::ui::MBX_OK, false);
         return 1;
     }
 
     CStr const impFullName =
         CStr("\"") + M3D_APP->GetStringByStringId0(M3D_APP->m_pImpulses->GetImpulseNameById(existing)) + "\"";
-    bool const hasOtherBinding =
-        M3D_APP->m_pImpulses->GetKeysForImpulse(existing, BINDINGS_GAME_MODE).size() > 1;
+    bool const hasOtherBinding = M3D_APP->m_pImpulses->GetKeysForImpulse(existing, BINDINGS_GAME_MODE).size() > 1;
 
     CStr text;
     if (hasOtherBinding)
@@ -977,8 +979,7 @@ int BindKeysWnd::GameDataSetup()
     m_lstBindings = new BindKeysList;
     if (!m_lstBindings)
     {
-        M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_lstBindingsName +
-                     " - cannot instantiate variable");
+        M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_lstBindingsName + " - cannot instantiate variable");
         M3D_LOG_INFO("BindKeysWnd error: fail to init because of a bad resource");
         return 0;
     }

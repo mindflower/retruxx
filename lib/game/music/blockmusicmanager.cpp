@@ -100,10 +100,10 @@ namespace m3d
         m_blocks.clear();
         m_blockNamesToIds.clear();
         m_curBlockNum = -1;
-        if (g_Kernel->GetEngineCfg().m_mus_Enable.GetB())
+        if (M3D_ENGINE_CFG.m_mus_Enable.GetB())
         {
             CStr err;
-            CStr fileName = g_Kernel->GetEngineCfg().m_snd_pathToMusicBlocks.GetS();
+            CStr fileName = M3D_ENGINE_CFG.m_snd_pathToMusicBlocks.GetS();
             ref_ptr xmlFile = ReadXmlFile(fileName.c_str(), &err);
             if (xmlFile)
             {
@@ -111,10 +111,11 @@ namespace m3d
                 xmlFile->GetFirstChild(musicBlocksNode, "MusicBlocks");
 
                 ref_ptr blockNode = xmlFile->CreateNode(cmn::XML_NODE_EMPTY, nullptr);
-                for (musicBlocksNode->GetFirstChild(blockNode, "Block"); !blockNode->IsEmpty(); blockNode->GetNextSibling(blockNode, "Block"))
+                for (musicBlocksNode->GetFirstChild(blockNode, "Block"); !blockNode->IsEmpty();
+                     blockNode->GetNextSibling(blockNode, "Block"))
                 {
                     std::vector<CStr> block;
-                    const char* musicNames[3] = { "driving", "alarm", "battle" };
+                    char const* musicNames[3] = {"driving", "alarm", "battle"};
                     for (auto musicName : musicNames)
                     {
                         block.push_back(blockNode->GetAttribute(musicName));
@@ -169,7 +170,9 @@ namespace m3d
         }
 
         auto& block = m_blocks[m_curBlockNum][m_curMusicType];
-        M3D_LOG_INFO("BlockMusicManager: start playing new music: blockNum = " + CStr(m_curBlockNum) + ", musicType = " + CStr(m_curMusicType) + ", name = '" + block + "'");
+        M3D_LOG_INFO(
+            "BlockMusicManager: start playing new music: blockNum = " + CStr(m_curBlockNum) +
+            ", musicType = " + CStr(m_curMusicType) + ", name = '" + block + "'");
         M3D_APP->StartPlayingMusic(block.c_str(), true, m_curMusicType != DRIVING);
 
         m_bMustPlayNewMusic = false;
@@ -182,4 +185,4 @@ namespace m3d
         M3D_LOG_INFO("BlockMusicManager: current music ended");
         m_instance->m_bMustPlayNewMusic = true;
     }
-}
+}  // namespace m3d

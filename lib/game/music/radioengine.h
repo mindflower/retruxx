@@ -18,9 +18,9 @@ namespace m3d
 
         struct SCurId
         {
-            /* 0x0000 */ retruxx::vector<int> ids;
-            /* 0x0010 */ int probability;
-        }; /* size: 0x0014 */
+            retruxx::vector<int> ids;
+            int probability;
+        };
 
     public:
         static inline RadioEngine* m_instance = nullptr;
@@ -42,4 +42,4 @@ namespace m3d
         int m_curChannelId = -1;
         CStr m_curTextToShow;
     };
-}
+}  // namespace m3d

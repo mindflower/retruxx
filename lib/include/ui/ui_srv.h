@@ -38,18 +38,19 @@ namespace m3d
 
         struct FormattedLine
         {
-            /* 0x0000 */ unsigned int m_color;
+            unsigned int m_color;
             CStr m_text;
             PointBase<float> m_origin;
-            /* 0x0018 */ m3d::TextFormatFlags m_format;
-            /* 0x001c */ bool m_isHieroglyphic;
+            m3d::TextFormatFlags m_format;
+            bool m_isHieroglyphic;
             FormattedLine(CStr text);
             FormattedLine();
-        }; /* size: 0x0020 */
+        };
 
         class GfxServer
         {
             friend class WndStation;
+
         public:
             class SoundInfo
             {
@@ -80,8 +81,27 @@ namespace m3d
             ~GfxServer();
             float GetGlyphHeight();
             float GetTabButtonMaxWidth() const;
-            void AddTabWndPaneNormal(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, int, int, CStr const&, PaneFlagBg);
-            void AddTabWndPaneIzvrat(DrawInfo const&, BoundsBase<float> const&, unsigned int, TabButtonInfo const&, retruxx::vector<BoundsBase<float>> const&, retruxx::vector<rend::TexHandle> const&, int, int, CStr const&, PaneFlagBg);
+            void AddTabWndPaneNormal(
+                DrawInfo const&,
+                BoundsBase<float> const&,
+                unsigned int,
+                TabButtonInfo const&,
+                retruxx::vector<BoundsBase<float>> const&,
+                int,
+                int,
+                CStr const&,
+                PaneFlagBg);
+            void AddTabWndPaneIzvrat(
+                DrawInfo const&,
+                BoundsBase<float> const&,
+                unsigned int,
+                TabButtonInfo const&,
+                retruxx::vector<BoundsBase<float>> const&,
+                retruxx::vector<rend::TexHandle> const&,
+                int,
+                int,
+                CStr const&,
+                PaneFlagBg);
             void AddChkButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned int, bool);
             float GetTabButtonSpace() const;
             int Create();
@@ -89,7 +109,13 @@ namespace m3d
             int GetCornerSz() const;
             int SetSchema(CStr const&);
             void AddButtonFlatAxialPane(DrawInfo const&, BoundsBase<float> const&, unsigned int, bool);
-            void AddFlatAxialPane0(DrawInfo const&, BoundsBase<float> const&, unsigned int, int, CStr const&, PaneFlagBg);
+            void AddFlatAxialPane0(
+                DrawInfo const&,
+                BoundsBase<float> const&,
+                unsigned int,
+                int,
+                CStr const&,
+                PaneFlagBg);
             void AddText(DrawInfo const&, PointBase<float> const&, CStr const&, int, TextWrapFlags, TextFormatFlags);
             void AddImagedRect(DrawInfo const&, BoundsBase<float> const&, unsigned int, rend::TexHandle);
             int Done();
@@ -105,7 +131,15 @@ namespace m3d
             int SetFont(int&);
             int SetFont(Font*);
             int SetFont(CStr const&, float, FontType, union FontParams);
-            void AddImagedRectGeneral(DrawInfo const&, BoundsBase<float> const&, unsigned int, rend::TexHandle, float, float, float, float);
+            void AddImagedRectGeneral(
+                DrawInfo const&,
+                BoundsBase<float> const&,
+                unsigned int,
+                rend::TexHandle,
+                float,
+                float,
+                float,
+                float);
             void ClearFonts();
             float GetTabButtonMinWidth() const;
             Font* GetFontById(unsigned int) const;
@@ -156,5 +190,5 @@ namespace m3d
             float m_tabButtonSpace;
             retruxx::map<CStr, SoundInfo*> m_controlSoundInfos;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

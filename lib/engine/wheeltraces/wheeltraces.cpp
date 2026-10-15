@@ -16,7 +16,11 @@ namespace m3d
     namespace
     {
 
-        void FillTraceBuffer(m3d::rend::VertexXYZCT1* write, m3d::SkidQuad const& sq, unsigned int opaque, float texLength)
+        void FillTraceBuffer(
+            m3d::rend::VertexXYZCT1* write,
+            m3d::SkidQuad const& sq,
+            unsigned int opaque,
+            float texLength)
         {
             // RVA 0x697BE0 - one cross section of a strip: two vertices across the wheel.
             write->x = sq.p1.x;
@@ -59,8 +63,7 @@ namespace m3d
                 static_cast<double>(diameter.y) * diameter.y + static_cast<double>(diameter.x) * diameter.x;
             rad = static_cast<float>(sqrt(diameterSq) * 0.5);
         }
-    }
-
+    }  // namespace
 
     SkidStrip::SkidStrip()
     {
@@ -174,7 +177,7 @@ namespace m3d
         SkidStrip& strip = m_skidStrips[stripIdx];
         strip.m_binUse = false;
         m_ownersToIdxMap.erase(it);
-        strip.m_timeStamp = g_Kernel->GetTimer().GetCurTime();
+        strip.m_timeStamp = M3D_KERNEL->GetTimer().GetCurTime();
 
         if (smoothEnd && strip.m_stripSize > 0)
         {
@@ -212,7 +215,7 @@ namespace m3d
         strip.m_binUse = true;
         strip.m_texCoord = 0.0f;
         strip.m_stripSize = 0;
-        strip.m_lastFramestamp = g_Kernel->GetTimer().GetCurFrame();
+        strip.m_lastFramestamp = M3D_KERNEL->GetTimer().GetCurFrame();
         strip.m_soilType = type;
         strip.m_boundCenter = ZeroVector;
         strip.m_boundRadius = 0.0f;
@@ -254,7 +257,7 @@ namespace m3d
         M3D_ASSERT(m_shader);
         m_shader->SetDefaultTechnique(true);
 
-        ProfilerStack& profilers = m3d::Application::g_pApp->GetProfilerStack();
+        ProfilerStack& profilers = M3D_APP->GetProfilerStack();
         m_profiler = profilers.GetProfiler(profilers.AddProfiler("wheeltraces", 0x1Eu));
     }
 
@@ -270,7 +273,13 @@ namespace m3d
         return m_ownersToIdxMap.find(owner) != m_ownersToIdxMap.end();
     }
 
-    void WheelTraceMgr::AddTrace(CVector const& org, Quaternion const& quat, float scale, void* owner, int soilType, bool smoothStart)
+    void WheelTraceMgr::AddTrace(
+        CVector const& org,
+        Quaternion const& quat,
+        float scale,
+        void* owner,
+        int soilType,
+        bool smoothStart)
     {
         // RVA 0x698CE0 - appends a cross section at the wheel's contact point. A new
         // section is only started once the wheel is skidMinDist past the one before the
@@ -287,7 +296,7 @@ namespace m3d
             SkidStrip& strip = m_skidStrips[stripIdx];
 
             // A skipped frame or a change of soil ends the trace.
-            unsigned const curFrame = g_Kernel->GetTimer().GetCurFrame();
+            unsigned const curFrame = M3D_KERNEL->GetTimer().GetCurFrame();
             if (static_cast<int>(curFrame - strip.m_lastFramestamp) > 1 || strip.m_soilType != soilType)
             {
                 EndSkidding(owner, true);
@@ -354,7 +363,8 @@ namespace m3d
             double const minDist = M3D_ENGINE_CFG.m_skidMinDist.GetF();
 
             // The texture repeats once per half width of wheel travelled.
-            strip.m_texCoord = static_cast<float>(static_cast<double>((lastMid - mid).length()) / halfWidth + strip.m_texCoord);
+            strip.m_texCoord =
+                static_cast<float>(static_cast<double>((lastMid - mid).length()) / halfWidth + strip.m_texCoord);
 
             int const nextVertex = 2 * (stripIdx * 64 + strip.m_stripSize);
             if ((beforeLastMid - mid).lengthSq() <= minDist * minDist)
@@ -393,4 +403,4 @@ namespace m3d
             }
         }
     }
-}
+}  // namespace m3d

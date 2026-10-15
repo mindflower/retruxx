@@ -7,19 +7,42 @@ namespace ai
     class TeamRoleManager
     {
     private:
-        static void __fastcall GetRolePrototypeIds(const ai::TeamTacticWithRoles* tactic, const ai::Team* team, retruxx::vector<int, retruxx::allocator<int> >& prototypeIds);
-        static retruxx::vector<int, retruxx::allocator<int> > __fastcall getAgainstVehicle(const retruxx::vector<int, retruxx::allocator<int> >& rolePrototypeIds, const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Vehicle* target, float& value);
-        static retruxx::vector<int, retruxx::allocator<int> > __fastcall getAgainstTeam(const retruxx::vector<int, retruxx::allocator<int> >& rolePrototypeIds, const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Team* target, float& value);
-        static retruxx::vector<int, retruxx::allocator<int> > __fastcall getAgainstObj(const retruxx::vector<int, retruxx::allocator<int> >& rolePrototypeIds, const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Obj* target, float& value);
+        static void GetRolePrototypeIds(
+            ai::TeamTacticWithRoles const* tactic,
+            ai::Team const* team,
+            retruxx::vector<int, retruxx::allocator<int>>& prototypeIds);
+        static retruxx::vector<int, retruxx::allocator<int>> getAgainstVehicle(
+            retruxx::vector<int, retruxx::allocator<int>> const& rolePrototypeIds,
+            ai::TeamTacticWithRoles const* tactic,
+            ai::Team const* team,
+            ai::Vehicle const* target,
+            float& value);
+        static retruxx::vector<int, retruxx::allocator<int>> getAgainstTeam(
+            retruxx::vector<int, retruxx::allocator<int>> const& rolePrototypeIds,
+            ai::TeamTacticWithRoles const* tactic,
+            ai::Team const* team,
+            ai::Team const* target,
+            float& value);
+        static retruxx::vector<int, retruxx::allocator<int>> getAgainstObj(
+            retruxx::vector<int, retruxx::allocator<int>> const& rolePrototypeIds,
+            ai::TeamTacticWithRoles const* tactic,
+            ai::Team const* team,
+            ai::Obj const* target,
+            float& value);
 
     public:
-        static void __fastcall AssignAgainstVehicle(const ai::TeamTacticWithRoles* tactic, ai::Team* team, const ai::Vehicle* target);
-        static void __fastcall AssignAgainstTeam(const ai::TeamTacticWithRoles* tactic, ai::Team* team, const ai::Team* target);
-        static void __fastcall AssignAgainstObj(const ai::TeamTacticWithRoles* tactic, ai::Team* team, const ai::Obj* target);
-        static float __fastcall FitAgainstVehicle(const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Vehicle* target);
-        static float __fastcall FitAgainstTeam(const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Team* target);
-        static float __fastcall FitAgainstObj(const ai::TeamTacticWithRoles* tactic, const ai::Team* team, const ai::Obj* target);
-        static void __fastcall ClearRoles(const ai::Team* team);
-        static void __fastcall GetTargetsPositions(const ai::Team* team, retruxx::vector<CVector, retruxx::allocator<CVector> >& positions);
-    }; /* size: 0x0001 */
-}
+        static void
+            AssignAgainstVehicle(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Vehicle const* target);
+        static void AssignAgainstTeam(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Team const* target);
+        static void AssignAgainstObj(ai::TeamTacticWithRoles const* tactic, ai::Team* team, ai::Obj const* target);
+        static float
+            FitAgainstVehicle(ai::TeamTacticWithRoles const* tactic, ai::Team const* team, ai::Vehicle const* target);
+        static float
+            FitAgainstTeam(ai::TeamTacticWithRoles const* tactic, ai::Team const* team, ai::Team const* target);
+        static float FitAgainstObj(ai::TeamTacticWithRoles const* tactic, ai::Team const* team, ai::Obj const* target);
+        static void ClearRoles(ai::Team const* team);
+        static void GetTargetsPositions(
+            ai::Team const* team,
+            retruxx::vector<CVector, retruxx::allocator<CVector>>& positions);
+    };
+}  // namespace ai

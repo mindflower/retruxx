@@ -625,7 +625,7 @@ int MsgBox::LoadPattern()
     {
         return 1;
     }
-    m_pattern = dynamic_cast<m3d::ui::Wnd*>(m3d::g_Kernel->New("Wnd"));
+    m_pattern = dynamic_cast<m3d::ui::Wnd*>(M3D_KERNEL->New("Wnd"));
     if (m_pattern)
     {
         return help::CloneWndWithChildren(this, m_pattern);
@@ -774,7 +774,7 @@ int MsgBox::GameDataSetup()
         }
         else
         {
-            auto wnd = m3d::g_Kernel->New("Wnd");
+            auto wnd = M3D_KERNEL->New("Wnd");
             m_pattern = dynamic_cast<Wnd*>(wnd);
             if (wnd)
             {

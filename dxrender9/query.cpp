@@ -120,8 +120,7 @@ void Query::ReleaseQuery()
 }
 
 // orig 0x642dc0 query.cpp:90
-Query::Query(Type _type) :
-    m_type(_type)
+Query::Query(Type _type) : m_type(_type)
 {
     m_query = 0;
     m_state = QUERY_ERROR;
@@ -306,7 +305,7 @@ void CDevice::ReleaseQueries()
 {
     for (std::list<IQuery*>::iterator it = m_queries.begin(); it != m_queries.end(); ++it)
     {
-        g_kernel->KernelLog("Warning: Query with type %i is not released (refs = %d)", (*it)->GetType(),
-                            (*it)->GetRefCount());
+        g_kernel->KernelLog(
+            "Warning: Query with type %i is not released (refs = %d)", (*it)->GetType(), (*it)->GetRefCount());
     }
 }

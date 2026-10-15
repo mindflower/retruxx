@@ -14,10 +14,10 @@ namespace m3d
         // What the node hands to LinesServer::RenderItem (SgLinesNode::Render::RenderInfo in the PDB).
         struct RenderInfo
         {
-            /* 0x0000 */ int rad;
-            /* 0x0004 */ int color;
-            /* 0x0008 */ CMatrix matrix;
-        }; /* size: 0x0048 */
+            int rad;
+            int color;
+            CMatrix matrix;
+        };
     }  // namespace
 
     Class* SgLinesNode::GetBaseClass()
@@ -149,4 +149,4 @@ namespace m3d
         m_ownBoundingBox.m_box[4] = r;
         m_ownBoundingBox.m_box[5] = 1.0f;
     }
-}
+}  // namespace m3d

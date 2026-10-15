@@ -80,9 +80,9 @@ namespace m3d
             SafeStrAttrib(m_textureName, xmlNode, "image");
             if (!m_textureName.empty())
             {
-                m_texture = Application::g_pApp->m_renderer->AddTexture(m_textureName, 4);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
-                Application::g_pApp->m_renderer->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
+                m_texture = M3D_RENDERER->AddTexture(m_textureName, 4);
+                M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_S, 3);
+                M3D_RENDERER->SetTextureParameter(m_texture, rend::TM_WRAP_T, 3);
             }
             return 1;
         }
@@ -153,8 +153,7 @@ namespace m3d
             m_paneFlags = 0;
         }
 
-        ImageWnd::ImageWnd(ImageWnd const& rhs)
-            : Wnd(rhs), m_textureName(rhs.m_textureName), m_texture(rhs.m_texture)
+        ImageWnd::ImageWnd(ImageWnd const& rhs) : Wnd(rhs), m_textureName(rhs.m_textureName), m_texture(rhs.m_texture)
         {
             // RVA 0x6B2540
             M3D_RENDERER->ReferenceTexture(m_texture);

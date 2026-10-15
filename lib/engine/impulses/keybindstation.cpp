@@ -149,7 +149,10 @@ namespace m3d
         }
     }
 
-    int KeyBindStation::FindImpulseByLongestSetPossible(m3d::KeysSet const& setToSearchFrom, int keyToSearchWith, KeysSet& impulseSet)
+    int KeyBindStation::FindImpulseByLongestSetPossible(
+        m3d::KeysSet const& setToSearchFrom,
+        int keyToSearchWith,
+        KeysSet& impulseSet)
     {
         // RVA 0x758750
         impulseSet.clear();
@@ -275,7 +278,7 @@ namespace m3d
         return nullptr;
     }
 
-    bool operator==(const KeysSet& lhd, const KeysSet& rhd)
+    bool operator==(KeysSet const& lhd, KeysSet const& rhd)
     {
         if (lhd.size() == rhd.size())
         {
@@ -284,7 +287,7 @@ namespace m3d
         return false;
     }
 
-    KeysSet operator-(const KeysSet& lhd, const KeysSet& rhd)
+    KeysSet operator-(KeysSet const& lhd, KeysSet const& rhd)
     {
         // RVA 0x5975A0 - every key of rhd is looked up and erased by value.
         auto res = lhd;
@@ -299,11 +302,11 @@ namespace m3d
         return res;
     }
 
-    KeysSet operator-(const KeysSet& lhd, int key)
+    KeysSet operator-(KeysSet const& lhd, int key)
     {
         // RVA 0x597520
         auto res = lhd;
         res.m_set.erase(key);
         return res;
     }
-}
+}  // namespace m3d

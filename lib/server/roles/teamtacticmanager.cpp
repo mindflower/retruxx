@@ -101,7 +101,8 @@ namespace ai
         }
     }
 
-    void TeamTacticManager::AssignTacticAgainstVehicle(ai::Team* team, ai::Vehicle const* target, CStr const& tacticName)
+    void
+        TeamTacticManager::AssignTacticAgainstVehicle(ai::Team* team, ai::Vehicle const* target, CStr const& tacticName)
     {
         // RVA 0x8AE060 - the named tactic, if there is one.
         int const id = thePrototypeManager->GetPrototypeId(tacticName);

@@ -8,8 +8,8 @@ namespace m3d
     {
         class XmlFile;
         struct XmlNode;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -20,26 +20,30 @@ namespace ai
     public:
         PrototypeManager();
         void Clear();
-        unsigned int GetPrototypeFullNameLocalizedForm(int) const ;
-        void LoadFromXmlFile(CStr const &);
-        int GetMatrixNum(int) const ;
-        void RefreshFromXmlFile(CStr const &);
-        CStr GetPrototypeFullName(CStr const &) const ;
-        CStr GetPrototypeFullName(int) const ;
-        CStr GetPrototypeName(int) const ;
-        int GetPrototypeId(CStr const &) const ;
+        unsigned int GetPrototypeFullNameLocalizedForm(int) const;
+        void LoadFromXmlFile(CStr const&);
+        int GetMatrixNum(int) const;
+        void RefreshFromXmlFile(CStr const&);
+        CStr GetPrototypeFullName(CStr const&) const;
+        CStr GetPrototypeFullName(int) const;
+        CStr GetPrototypeName(int) const;
+        int GetPrototypeId(CStr const&) const;
         ~PrototypeManager();
-        void GetPrototypeIdsByResourceId(int,retruxx::vector<int> &) const ;
-        PrototypeInfo const * GetPrototypeInfo(CStr const &) const ;
-        PrototypeInfo const * GetPrototypeInfo(int) const ;
-        int GetNumOfPrototypes() const ;
+        void GetPrototypeIdsByResourceId(int, retruxx::vector<int>&) const;
+        PrototypeInfo const* GetPrototypeInfo(CStr const&) const;
+        PrototypeInfo const* GetPrototypeInfo(int) const;
+        int GetNumOfPrototypes() const;
 
     private:
-        void _LoadGameObjectsFolderFromXML(CStr const &,bool (*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
-        PrototypeInfo * _InternalGetPrototypeInfo(CStr const &);
-        static bool _RefreshPrototype(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
-        void _LoadFromFolder(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *,CStr const &,bool (*)(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *));
-        static bool _ReadNewPrototype(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
+        void _LoadGameObjectsFolderFromXML(CStr const&, bool (*)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*));
+        PrototypeInfo* _InternalGetPrototypeInfo(CStr const&);
+        static bool _RefreshPrototype(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
+        void _LoadFromFolder(
+            m3d::cmn::XmlFile*,
+            m3d::cmn::XmlNode const*,
+            CStr const&,
+            bool (*)(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*));
+        static bool _ReadNewPrototype(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
 
         // CServer::LoadPrototypeNamesFromXML fills the display-name tables directly.
         friend class CServer;
@@ -48,10 +52,9 @@ namespace ai
         m3d::CStrHash<CStr> m_prototypeFullNames;
         m3d::CStrHash<unsigned int> m_prototypeFullNamesLocalizedForms;
         m3d::CStrHash<int> m_prototypeNamesToIds;
-        retruxx::vector<PrototypeInfo *> m_prototypes;
+        retruxx::vector<PrototypeInfo*> m_prototypes;
         int m_loadingLock = 0;
     };
 
-
-   inline PrototypeManager* thePrototypeManager = nullptr;
-}
+    inline PrototypeManager* thePrototypeManager = nullptr;
+}  // namespace ai

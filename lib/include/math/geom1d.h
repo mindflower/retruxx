@@ -53,12 +53,12 @@ namespace geom1d
     class Segment1
     {
     public:
-        /* 0x0000 */ T begin;
-        /* 0x0004 */ T end;
+        T begin;
+        T end;
         Segment1(T const& _begin, T const& _end);
         Segment1();
         bool isPointOn(T const& point) const;
-    }; /* size: 0x0008 */
+    };
 
     template<class T>
     bool SegmentsIntersect(Segment1<T> const& seg1, Segment1<T> const& seg2);

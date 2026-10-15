@@ -102,7 +102,7 @@ namespace m3d
                     b.y0 = y0;
                     b.width = btnW;
                     b.height = static_cast<float>(btnHeight);
-                    auto* btn = RT_DYNCAST(g_Kernel->New("GlyphButton"), GlyphButton);
+                    auto* btn = RT_DYNCAST(M3D_KERNEL->New("GlyphButton"), GlyphButton);
                     buttons[i] = btn;
                     btn->CreateGlyphButton(b, set.m_types[i]);
                     btn->m_activationOrder = i;
@@ -204,8 +204,12 @@ namespace m3d
             return RT_CLASS_LOCAL(MsgBoxDlg);
         }
 
-        int MsgBoxDlg::CreateMsgBoxDlg(CStr const& caption, CStr const& msg, BoundsBase<float> const& rc,
-                                       unsigned flags, float maxWidth)
+        int MsgBoxDlg::CreateMsgBoxDlg(
+            CStr const& caption,
+            CStr const& msg,
+            BoundsBase<float> const& rc,
+            unsigned flags,
+            float maxWidth)
         {
             // RVA 0x7986E0 - only records what the dialog should look like; the
             // controls are built in OnInitModal, once the size is known.
@@ -233,7 +237,7 @@ namespace m3d
             if (!m_caption.empty())
             {
                 rect.height = DLG_CAPTION_HEIGHT;
-                m_captionWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_captionWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_captionWnd->Create(m_caption, CAPTION_STYLE, rect, 0);
                 m_captionWnd->AdjustForWndTextToFit(0, m_width);
                 m_captionWnd->m_activationOrder = -1;
@@ -250,7 +254,7 @@ namespace m3d
 
             if (!m_msg.empty())
             {
-                m_msgWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_msgWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_msgWnd->Create(m_msg, MSG_STYLE, rect, 0);
                 m_msgWnd->AdjustForWndTextToFit(1, m_width);
                 m_msgWnd->SetDefaultFont(1);
@@ -380,8 +384,14 @@ namespace m3d
             return RT_CLASS_LOCAL(ArtDlg);
         }
 
-        int ArtDlg::CreateArtDlg(CStr const& caption, CStr const& msg, CStr const& imageFile, CStr const& soundFile,
-                                 BoundsBase<float> const& rc, unsigned flags, float maxWidth)
+        int ArtDlg::CreateArtDlg(
+            CStr const& caption,
+            CStr const& msg,
+            CStr const& imageFile,
+            CStr const& soundFile,
+            BoundsBase<float> const& rc,
+            unsigned flags,
+            float maxWidth)
         {
             // RVA 0x799650
             if (!MsgBoxDlg::CreateMsgBoxDlg(caption, msg, rc, flags, maxWidth))
@@ -392,8 +402,8 @@ namespace m3d
             m_soundFileName = soundFile;
             if (!m_soundFileName.empty() && IsSoundEnabled())
             {
-                m_soundTableId = M3D_APP->m_sound->AddSound(
-                    soundFile.c_str(), snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_HIGH);
+                m_soundTableId =
+                    M3D_APP->m_sound->AddSound(soundFile.c_str(), snd::SND_TYPE_2DSOUND, 1, 1, snd::SND_PRIORITY_HIGH);
             }
 
             if (!imageFile.empty())
@@ -406,13 +416,14 @@ namespace m3d
                     int texW = 0;
                     int texH = 0;
                     M3D_RENDERER->GetDims(m_tex, texW, texH);
-                    m_image = RT_DYNCAST(g_Kernel->New("ImageWnd"), ImageWnd);
+                    m_image = RT_DYNCAST(M3D_KERNEL->New("ImageWnd"), ImageWnd);
                     if (m_image)
                     {
-                        BoundsBase<float> const imgB{DLG_BTN_GAP,
-                                                     DLG_BTN_GAP,
-                                                     static_cast<float>(texW) - DLG_BTN_GAP,
-                                                     static_cast<float>(texH) - DLG_BTN_GAP};
+                        BoundsBase<float> const imgB{
+                            DLG_BTN_GAP,
+                            DLG_BTN_GAP,
+                            static_cast<float>(texW) - DLG_BTN_GAP,
+                            static_cast<float>(texH) - DLG_BTN_GAP};
                         m_image->CreateImageWnd(imgB, m_tex);
                         AddChild(m_image);
                     }
@@ -445,7 +456,7 @@ namespace m3d
             if (!m_caption.empty())
             {
                 rect.height = DLG_CAPTION_HEIGHT;
-                m_captionWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_captionWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_captionWnd->Create(m_caption, CAPTION_STYLE, rect, 0);
                 m_captionWnd->AdjustForWndTextToFit(0, maxTextWidth);
                 m_captionWnd->m_activationOrder = -1;
@@ -459,7 +470,7 @@ namespace m3d
 
             if (!m_msg.empty())
             {
-                m_msgWnd = RT_DYNCAST(g_Kernel->New("Wnd"), Wnd);
+                m_msgWnd = RT_DYNCAST(M3D_KERNEL->New("Wnd"), Wnd);
                 m_msgWnd->Create(m_msg, MSG_STYLE, rect, 0);
                 m_msgWnd->AdjustForWndTextToFit(1, maxTextWidth);
                 m_msgWnd->SetDefaultFont(1);
@@ -501,8 +512,7 @@ namespace m3d
 
             if (m_soundTableId != -1 && m_soundChannelId == -1 && IsSoundEnabled())
             {
-                m_soundChannelId =
-                    M3D_APP->m_sound->PlaySound2D(m_soundTableId, (m_flags & MBX_SOUNDLOOP) != 0);
+                m_soundChannelId = M3D_APP->m_sound->PlaySound2D(m_soundTableId, (m_flags & MBX_SOUNDLOOP) != 0);
             }
             return 1;
         }

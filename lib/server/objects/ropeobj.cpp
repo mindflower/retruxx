@@ -40,7 +40,12 @@ namespace ai
         }
 
         // Stretches the rope's model along its local Z from `from` to `to`; inlined in SetPosFromTies and HangToPosts.
-        void stretchRopeNode(m3d::SgNode* node, m3d::AnimatedModel const* mdl, CVector const& from, CVector const& to, float& strech)
+        void stretchRopeNode(
+            m3d::SgNode* node,
+            m3d::AnimatedModel const* mdl,
+            CVector const& from,
+            CVector const& to,
+            float& strech)
         {
             node->SetOriginAbs(from);
             CMatrix rot;
@@ -51,7 +56,8 @@ namespace ai
             double const dx = to.x - from.x;
             double const dy = to.y - from.y;
             double const dz = to.z - from.z;
-            strech = static_cast<float>(std::sqrt(dz * dz + dy * dy + dx * dx) / (mdl->m_box.m_box[5] - mdl->m_box.m_box[2]));
+            strech = static_cast<float>(
+                std::sqrt(dz * dz + dy * dy + dx * dx) / (mdl->m_box.m_box[5] - mdl->m_box.m_box[2]));
             node->SetScale(CVector(1.0f, 1.0f, strech));
             node->UpdateXForm(true, false);
             node->GetGraph()->RelinkNode(node, true);
@@ -341,8 +347,10 @@ namespace ai
                     CMatrix tieMatr;
                     mdl->GetBoneMatrixByName(lpName, tieMatr, false);
                     CMatrix const& xf = node->m_currentXForm;
-                    float const dx = xf._21 * tieMatr._42 + xf._31 * tieMatr._43 + xf._41 * tieMatr._44 + xf._11 * tieMatr._41 - tiePos.x;
-                    float const dz = xf._13 * tieMatr._41 + xf._23 * tieMatr._42 + xf._33 * tieMatr._43 + xf._43 * tieMatr._44 - tiePos.z;
+                    float const dx = xf._21 * tieMatr._42 + xf._31 * tieMatr._43 + xf._41 * tieMatr._44 +
+                        xf._11 * tieMatr._41 - tiePos.x;
+                    float const dz = xf._13 * tieMatr._41 + xf._23 * tieMatr._42 + xf._33 * tieMatr._43 +
+                        xf._43 * tieMatr._44 - tiePos.z;
                     if (dz * dz + dx * dx < 0.1f)
                     {
                         return node;
@@ -365,7 +373,8 @@ namespace ai
 
         CVector const& tie1 = m_posts[0].m_postTiePos;
         CVector const& tie2 = m_posts[1].m_postTiePos;
-        if (tie1.x * tie1.x + tie1.y * tie1.y + tie1.z * tie1.z < 0.01 || tie2.x * tie2.x + tie2.y * tie2.y + tie2.z * tie2.z < 0.01)
+        if (tie1.x * tie1.x + tie1.y * tie1.y + tie1.z * tie1.z < 0.01 ||
+            tie2.x * tie2.x + tie2.y * tie2.y + tie2.z * tie2.z < 0.01)
         {
             M3D_LOG_ERR(CStr("Rope ") + CStr(GetName()) + CStr(" has wrong post tie pose(s)"));
             Remove();

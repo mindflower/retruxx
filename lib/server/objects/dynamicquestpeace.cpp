@@ -55,7 +55,8 @@ namespace ai
     DynamicQuestPeacePrototypeInfo const* DynamicQuestPeace::GetPrototypeInfo() const
     {
         // RVA 0x747130
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestPeacePrototypeInfo const);
+        return RT_DYNCAST(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestPeacePrototypeInfo const);
     }
 
     int DynamicQuestPeace::OnEvent(Event const& evn)
@@ -141,4 +142,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be cloned\"");
         return nullptr;
     }
-}
+}  // namespace ai

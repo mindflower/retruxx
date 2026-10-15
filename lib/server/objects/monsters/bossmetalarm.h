@@ -9,51 +9,56 @@ namespace ai
     public:
         struct AttackActionInfo
         {
-            /* 0x0000 */ int m_frameToReleaseLoad;
-            /* 0x0004 */ ActionType m_action;
+            int m_frameToReleaseLoad;
+            ActionType m_action;
             AttackActionInfo();
-            void LoadFromXML(const m3d::cmn::XmlNode* xmlNode);
-        }; /* size: 0x0008 */
+            void LoadFromXML(m3d::cmn::XmlNode const* xmlNode);
+        };
 
-        using AttackActionInfoVector = retruxx::vector<ai::BossMetalArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo> >;
+        using AttackActionInfoVector = retruxx::vector<
+            ai::BossMetalArmPrototypeInfo::AttackActionInfo,
+            retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo>>;
 
     public:
-        /* 0x0080 */ CStr m_explosionEffectName;
-        /* 0x008c */ float m_turningSpeed;
-        /* 0x0090 */ int m_frameToPickUpLoad;
-        /* 0x0094 */ int m_lpIdForLoad;
-        /* 0x0098 */ retruxx::vector<int, retruxx::allocator<int> > m_loadProrotypeIds;
-        /* 0x00a8 */ retruxx::vector<ai::BossMetalArmPrototypeInfo::AttackActionInfo, retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo> > m_attacks;
-        /* 0x00b8 */ int m_numExplodedLoadsToDie;
+        CStr m_explosionEffectName;
+        float m_turningSpeed;
+        int m_frameToPickUpLoad;
+        int m_lpIdForLoad;
+        retruxx::vector<int, retruxx::allocator<int>> m_loadProrotypeIds;
+        retruxx::vector<
+            ai::BossMetalArmPrototypeInfo::AttackActionInfo,
+            retruxx::allocator<ai::BossMetalArmPrototypeInfo::AttackActionInfo>>
+            m_attacks;
+        int m_numExplodedLoadsToDie;
         BossMetalArmPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x00 */;
-        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual void RefreshFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual ai::Obj* CreateTargetObject() const override;
 
     private:
-        /* 0x00bc */ retruxx::vector<CStr, retruxx::allocator<CStr> > m_loadPtototypeNames;
-    }; /* size: 0x00cc */
+        retruxx::vector<CStr, retruxx::allocator<CStr>> m_loadPtototypeNames;
+    };
 
     class BossMetalArm : public ai::SimplePhysicObj
     {
         friend class BossMetalArmPrototypeInfo;
 
     protected:
-        virtual  ~BossMetalArm() override /* 0x00 */;
+        virtual ~BossMetalArm() override;
 
     private:
-        BossMetalArm(const ai::BossMetalArmPrototypeInfo& prototypeInfo);
-        BossMetalArm(const ai::BossMetalArm&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        BossMetalArm(ai::BossMetalArmPrototypeInfo const& prototypeInfo);
+        BossMetalArm(ai::BossMetalArm const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classBossMetalArm;
-        virtual const ai::BossMetalArmPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
-        virtual int OnEvent(const ai::Event& evn) override /* 0x00 */;
+        virtual ai::BossMetalArmPrototypeInfo const* GetPrototypeInfo() const override;
+        virtual int OnEvent(ai::Event const& evn) override;
 
         enum AttackState
         {
@@ -64,28 +69,28 @@ namespace ai
         };
 
     public:
-        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
-        virtual bool CanChildBeAdded(m3d::Class* pClass) const override /* 0x00 */;
-        virtual void SetPositionSelf(const CVector& pos) override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
+        virtual void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+        virtual bool CanChildBeAdded(m3d::Class* pClass) const override;
+        virtual void SetPositionSelf(CVector const& pos) override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
         void Die();
         float GetMaxHealth() const;
         float GetHealth() const;
 
     private:
-        /* 0x0144 */ int m_loadObjId;
-        /* 0x0148 */ const float m_turningSpeed;
-        /* 0x014c */ ai::BossMetalArm::AttackState m_attackState;
-        /* 0x0150 */ CVector m_dirForCharging;
-        /* 0x015c */ int m_curAttackAction;
-        /* 0x0160 */ int m_numExplodedLoads;
-        /* 0x0164 */ bool m_bCurLoadExploded;
+        int m_loadObjId;
+        float const m_turningSpeed;
+        ai::BossMetalArm::AttackState m_attackState;
+        CVector m_dirForCharging;
+        int m_curAttackAction;
+        int m_numExplodedLoads;
+        bool m_bCurLoadExploded;
         void _SetAttackState(ai::BossMetalArm::AttackState newState);
         int _GetCurAnimationFrame() const;
-        void _TurnToDir(const CVector& desiredDir, float elapsedTime);
+        void _TurnToDir(CVector const& desiredDir, float elapsedTime);
         void _PlaceLoadOnLoadpoint();
-        void _OnObjectDie(const ai::Event& evn);
-    }; /* size: 0x0168 */
-}
+        void _OnObjectDie(ai::Event const& evn);
+    };
+}  // namespace ai

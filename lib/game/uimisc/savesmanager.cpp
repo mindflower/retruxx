@@ -83,8 +83,7 @@ m3d::Object* SavesManager::Clone()
 
 CStr SavesManager::GetPathForTemporaryMaps() const
 {
-    auto app = dynamic_cast<CMiracle3d*>(m3d::Application::g_pApp);
-    auto profile = app->GetProfileManager()->GetCurProfile();
+    auto profile = M3D_APP->GetProfileManager()->GetCurProfile();
     if (profile)
     {
         auto path = profile->GetFolder() + "\\__temp_maps\\";
@@ -223,7 +222,8 @@ int SavesManager::SaveGame(CStr const& saveName, CStr const& folderName, bool bQ
 
     CStr const saveFolderPath = GetSaveFolderPathByFolderName(folderName);
     auto const attr = GetFileAttributesA(saveFolderPath.c_str());
-    if ((attr == INVALID_FILE_ATTRIBUTES || !(attr & FILE_ATTRIBUTE_DIRECTORY)) && !help::CreateWindowsDir(saveFolderPath))
+    if ((attr == INVALID_FILE_ATTRIBUTES || !(attr & FILE_ATTRIBUTE_DIRECTORY)) &&
+        !help::CreateWindowsDir(saveFolderPath))
     {
         M3D_LOG_INFO("SavesManager::SaveGame error - cannot create folder " + saveFolderPath);
         return 0;
@@ -484,10 +484,11 @@ CStr SavesManager::GetQuickSaveName(CStr const& folderName) const
         return CStr();
     }
     size_t const pos = found - folderName.c_str();
-    CStr const saveName = folderName.substr(pos + m_constantSaveInfo.m_quickSavePrefix.length(), static_cast<size_t>(-1));
+    CStr const saveName =
+        folderName.substr(pos + m_constantSaveInfo.m_quickSavePrefix.length(), static_cast<size_t>(-1));
     int const num = atoi(saveName.c_str());
-    return GetNewSaveDefaultName() + CStr(" ") + M3D_APP->GetStringByStringId0(m_constantSaveInfo.m_quickSaveNameStrId) +
-        CStr(" ") + CStr(num + 1);
+    return GetNewSaveDefaultName() + CStr(" ") +
+        M3D_APP->GetStringByStringId0(m_constantSaveInfo.m_quickSaveNameStrId) + CStr(" ") + CStr(num + 1);
 }
 
 _FILETIME SavesManager::GetSaveFileModifyTime(CStr const& saveFilePath) const
@@ -511,16 +512,15 @@ _FILETIME SavesManager::GetSaveFileModifyTime(CStr const& saveFilePath) const
 int SavesManager::SaveInfos(CStr const& folderName, CStr const& saveName)
 {
     // RVA 0x57C5A0 - writes SaveInfo.xml and records the save.
-    CStr const filePath =
-        GetSaveFolderPathByFolderName(folderName) + CStr("\\") + m_constantSaveInfo.m_infoFileName;
-    scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+    CStr const filePath = GetSaveFolderPathByFolderName(folderName) + CStr("\\") + m_constantSaveInfo.m_infoFileName;
+    scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
     if (!stream->Open(filePath.c_str(), m3d::fs::IStream::OPEN_WRITE))
     {
         M3D_LOG_INFO("SavesManager::SaveInfo error - can't open file " + filePath + " for write.");
         return 0;
     }
 
-    ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+    ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
     ref_ptr rootNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_ELEMENT, "SaveInfo");
     xmlFile->AddChild(rootNode);
     rootNode->SetAttribute("Name", saveName.c_str());
@@ -676,17 +676,18 @@ int SavesManager::LoadInfos()
             continue;
         }
 
-        scoped_ptr stream = m3d::g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(infoFilePath.c_str(), m3d::fs::IStream::OPEN_READ))
         {
             M3D_LOG_INFO("SavesManager::LoadInfos error - can't open file " + infoFilePath + " for read.");
             continue;
         }
-        ref_ptr xmlFile = m3d::g_Kernel->CreateXmlFile();
+        ref_ptr xmlFile = M3D_KERNEL->CreateXmlFile();
         if (!xmlFile->Read(*stream))
         {
             M3D_LOG_INFO(
-                "SavesManager::LoadInfos error - cannot parse " + infoFilePath + " (" + CStr(xmlFile->GetError()) + ") ");
+                "SavesManager::LoadInfos error - cannot parse " + infoFilePath + " (" + CStr(xmlFile->GetError()) +
+                ") ");
             stream->Close();
             continue;
         }
@@ -743,8 +744,7 @@ int SavesManager::LoadInfos()
 
 SavesManager::SavesManager() = default;
 
-SavesManager::SavesManager(SavesManager const&) :
-    m3d::Object()
+SavesManager::SavesManager(SavesManager const&) : m3d::Object()
 {
     // RVA 0x57BEE0 - nothing is copied; the clone starts with no saves.
 }

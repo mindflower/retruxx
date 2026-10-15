@@ -3,15 +3,14 @@
 
 namespace ai
 {
-    template <typename T1, typename T2>
-    class FuncPtrOneArgRef : public ai::FuncPtr<ai::BaseFunctionOneArgRef<T1, T2> >
+    template<typename T1, typename T2>
+    class FuncPtrOneArgRef : public ai::FuncPtr<ai::BaseFunctionOneArgRef<T1, T2>>
     {
         using BaseFunc = ai::BaseFunctionOneArgRef<T1, T2>;
-        using Base = ai::FuncPtr<ai::BaseFunctionOneArgRef<T1, T2> >;
+        using Base = ai::FuncPtr<ai::BaseFunctionOneArgRef<T1, T2>>;
 
     public:
-        FuncPtrOneArgRef(BaseFunc* pFunc) :
-            FuncPtr(pFunc)
+        FuncPtrOneArgRef(BaseFunc* pFunc) : FuncPtr(pFunc)
         {
         }
 
@@ -20,7 +19,7 @@ namespace ai
             return m_pFunc && m_pFunc->Execute(arg);
         }
 
-        const FuncPtrOneArgRef<T1, T2>& operator=(BaseFunc* pNewFunc)
+        FuncPtrOneArgRef<T1, T2> const& operator=(BaseFunc* pNewFunc)
         {
             assert(m_pFunc == 0);
             if (pNewFunc)
@@ -29,16 +28,15 @@ namespace ai
             }
             return *this;
         }
+    };
 
-    }; /* size: 0x0008 */
-
-    template <typename TClass, typename T1, typename RetType>
+    template<typename TClass, typename T1, typename RetType>
     class MemberFunctionOneArgRef : public ai::BaseFunctionOneArgRef<T1, RetType>
     {
         //using (*FuncMemberOfT) = RetType;
 
     public:
-        MemberFunctionOneArgRef(const ai::MemberFunctionOneArgRef<TClass, T1, RetType>&)
+        MemberFunctionOneArgRef(ai::MemberFunctionOneArgRef<TClass, T1, RetType> const&)
         {
             throw std::runtime_error("not implemented");
         }
@@ -48,13 +46,13 @@ namespace ai
             throw std::runtime_error("not implemented");
         }
 
-        MemberFunctionOneArgRef(TClass& t, RetType(TClass::*func)(T1&))
+        MemberFunctionOneArgRef(TClass& t, RetType (TClass::*func)(T1&))
         {
             m_pT = &t;
             m_func = func;
         }
 
-        virtual RetType Execute(T1& arg) override /* 0x04 */
+        virtual RetType Execute(T1& arg) override
         {
             if (m_pT)
             {
@@ -64,7 +62,7 @@ namespace ai
         }
 
     private:
-        /* 0x0004 */ TClass* m_pT = nullptr;
-        /* 0x0008 */ RetType(TClass::*m_func)(T1&) = nullptr;
-    }; /* size: 0x000c */
-}
+        TClass* m_pT = nullptr;
+        RetType (TClass::*m_func)(T1&) = nullptr;
+    };
+}  // namespace ai

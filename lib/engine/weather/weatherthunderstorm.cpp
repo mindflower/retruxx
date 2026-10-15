@@ -109,8 +109,9 @@ namespace m3d
 
                     // A random column of the screen at half height, unprojected into a view ray.
                     int const width = M3D_ENGINE_CFG.m_r_width.GetI();
-                    CVector2 const point(static_cast<float>(rand() % width),
-                                         static_cast<float>(M3D_ENGINE_CFG.m_r_height.GetI()) * 0.5f);
+                    CVector2 const point(
+                        static_cast<float>(rand() % width),
+                        static_cast<float>(M3D_ENGINE_CFG.m_r_height.GetI()) * 0.5f);
                     CVector const finger = M3D_RENDERER->Unproject(point);
 
                     // 95% of the landscape view distance, in visibility cells of 128 units.
@@ -221,7 +222,6 @@ namespace m3d
         m3d::SafeIntAttrib(m_maxThunderPeriod, node, "maxThunderPeriod");
         m3d::SafeIntAttrib(m_effectCount, node, "lightEffectCount");
 
-
         this->m_thunderWorktime = rand() % m_maxThunderDuty;
         if (this->m_thunderWorktime < m_minThunderDuty)
             this->m_thunderWorktime = m_minThunderDuty;
@@ -245,7 +245,7 @@ namespace m3d
 
         // NOTE: m_effectNames is rebuilt but m_effectId is not cleared, so the ids are appended to
         // whatever DefaultInitialize already put there (ET_PS_LIGHT_WEATHER1), as in the binary.
-        for (const auto& name : m_effectNames)
+        for (auto const& name : m_effectNames)
         {
             auto id = M3D_ENGINE_CFG.GetModelIdByName(name);
             if (id != 0x200000)
@@ -275,4 +275,4 @@ namespace m3d
     {
         // RVA 0x7B37A0 - NOTE: copies nothing, like Weather's copy constructor.
     }
-}
+}  // namespace m3d

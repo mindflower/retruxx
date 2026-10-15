@@ -141,18 +141,28 @@ namespace ai
     }
 
     Thunderbolt::ThunderboltPoint::ThunderboltPoint(CVector const& point) :
-        m_Point(point), m_ObjId(-1), m_launcher(false), m_dependant(false)
+        m_Point(point),
+        m_ObjId(-1),
+        m_launcher(false),
+        m_dependant(false)
     {
         // RVA 0x7E1FF0
     }
 
     Thunderbolt::ThunderboltPoint::ThunderboltPoint(int const& objId, bool launcher) :
-        m_Point(ZERO_VECTOR), m_ObjId(objId), m_launcher(launcher), m_dependant(false)
+        m_Point(ZERO_VECTOR),
+        m_ObjId(objId),
+        m_launcher(launcher),
+        m_dependant(false)
     {
         // RVA 0x7E1FA0
     }
 
-    Thunderbolt::ThunderboltPoint::ThunderboltPoint() : m_Point(ZERO_VECTOR), m_ObjId(-1), m_launcher(false), m_dependant(false)
+    Thunderbolt::ThunderboltPoint::ThunderboltPoint() :
+        m_Point(ZERO_VECTOR),
+        m_ObjId(-1),
+        m_launcher(false),
+        m_dependant(false)
     {
         // RVA 0x7E1F60
     }
@@ -183,7 +193,8 @@ namespace ai
     }
 
     void Thunderbolt::ThunderboltPoint::setDependencies(
-        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>> const& dependencies)
+        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>> const&
+            dependencies)
     {
         // RVA 0x7E2340 - a branching point follows the points it was split from.
         if (dependencies.size() > 1)
@@ -234,7 +245,8 @@ namespace ai
         return m_Point;
     }
 
-    retruxx::vector<CVector, retruxx::allocator<CVector>> const& Thunderbolt::ThunderboltSegment::SegmentFinding(Segment const& seg) const
+    retruxx::vector<CVector, retruxx::allocator<CVector>> const& Thunderbolt::ThunderboltSegment::SegmentFinding(
+        Segment const& seg) const
     {
         // RVA 0x7E2470 - a jagged line from seg.begin() to seg.end(): m_nSteps points evenly along
         // it, each pushed off by up to one step length on every axis. NOTE: the result lives in a
@@ -247,7 +259,8 @@ namespace ai
         float const dz = end.z - begin.z;
         float const dy = end.y - begin.y;
         float const dx = end.x - begin.x;
-        float const stepLength = static_cast<float>(std::sqrt(double(dz * dz + dy * dy) + dx * dx) / static_cast<double>(m_nSteps));
+        float const stepLength =
+            static_cast<float>(std::sqrt(double(dz * dz + dy * dy) + dx * dx) / static_cast<double>(m_nSteps));
 
         if (!points.empty())
         {
@@ -302,7 +315,8 @@ namespace ai
         float const dy = finish.y - start.y;
         float const dz = finish.z - start.z;
         m_nSteps = static_cast<unsigned>(static_cast<int>(
-            std::sqrt(double(dz) * dz + double(dy) * dy + double(dx) * dx) / thunderboltPrototype->m_AverageSegmentLength));
+            std::sqrt(double(dz) * dz + double(dy) * dy + double(dx) * dx) /
+            thunderboltPrototype->m_AverageSegmentLength));
     }
 
     Thunderbolt::ThunderboltSegment::~ThunderboltSegment()
@@ -419,11 +433,13 @@ namespace ai
 
                 CVector const segStart = segment.getStartPoint();
                 CVector const& f = segment.getFinishPoint();
-                CVector const localEnd(local._13 * f.z + local._12 * f.y + f.x * local._11 + invTx,
+                CVector const localEnd(
+                    local._13 * f.z + local._12 * f.y + f.x * local._11 + invTx,
                     local._23 * f.z + local._22 * f.y + local._21 * f.x + invTy,
                     local._33 * f.z + local._32 * f.y + local._31 * f.x + invTz);
                 CVector const& s = segment.getStartPoint();
-                CVector const localBegin(local._13 * s.z + local._12 * s.y + s.x * local._11 + invTx,
+                CVector const localBegin(
+                    local._13 * s.z + local._12 * s.y + s.x * local._11 + invTx,
                     s.x * local._21 + local._23 * s.z + local._22 * s.y + invTy,
                     s.x * local._31 + local._33 * s.z + local._32 * s.y + invTz);
                 Segment const localSeg(localBegin, localEnd);
@@ -438,14 +454,16 @@ namespace ai
                         continue;
                     }
                     float const* cp = contact.geom.pos;
-                    CVector const newHitPos(cp[0] * local._11 + cp[2] * local._31 + cp[1] * local._21 + local._41,
+                    CVector const newHitPos(
+                        cp[0] * local._11 + cp[2] * local._31 + cp[1] * local._21 + local._41,
                         cp[2] * local._32 + cp[1] * local._22 + local._12 * cp[0] + local._42,
                         cp[2] * local._33 + cp[1] * local._23 + local._13 * cp[0] + local._43);
 
                     // NOTE: the best hit starts at the world origin, not at infinity, so a hit
                     // farther from the branch start than the origin is ignored.
                     float const oldDistSq = (hitPos.z - segStart.z) * (hitPos.z - segStart.z) +
-                        (hitPos.y - segStart.y) * (hitPos.y - segStart.y) + (hitPos.x - segStart.x) * (hitPos.x - segStart.x);
+                        (hitPos.y - segStart.y) * (hitPos.y - segStart.y) +
+                        (hitPos.x - segStart.x) * (hitPos.x - segStart.x);
                     float const newDistSq = (newHitPos.z - segStart.z) * (newHitPos.z - segStart.z) +
                         (newHitPos.y - segStart.y) * (newHitPos.y - segStart.y) +
                         (newHitPos.x - segStart.x) * (newHitPos.x - segStart.x);
@@ -581,9 +599,11 @@ namespace ai
         return true;
     }
 
-    retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>> Thunderbolt::getThunderboltSegmentsInt(
-        ai::Thunderbolt::ThunderboltPoint& org,
-        retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>& targets)
+    retruxx::vector<ai::Thunderbolt::ThunderboltSegment, retruxx::allocator<ai::Thunderbolt::ThunderboltSegment>>
+        Thunderbolt::getThunderboltSegmentsInt(
+            ai::Thunderbolt::ThunderboltPoint& org,
+            retruxx::vector<ai::Thunderbolt::ThunderboltPoint, retruxx::allocator<ai::Thunderbolt::ThunderboltPoint>>&
+                targets)
     {
         // RVA 0x7E5110 - builds the bolt's tree. Close targets get a branch each straight from org;
         // far ones share a trunk to a fork point halfway towards their average, where the targets
@@ -625,7 +645,8 @@ namespace ai
         }
 
         CVector const& forkBase = org.getThunderboltPoint();
-        CVector const newOrg(forkBase.x + average.x * 0.5f, forkBase.y + average.y * 0.5f, forkBase.z + average.z * 0.5f);
+        CVector const newOrg(
+            forkBase.x + average.x * 0.5f, forkBase.y + average.y * 0.5f, forkBase.z + average.z * 0.5f);
 
         // The plane holds the trunk and the vertical: normal = average x up.
         float const nz = average.x - average.y * 0.0f;

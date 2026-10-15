@@ -24,7 +24,7 @@ class ConversationWnd : public m3d::ui::Wnd
 public:
     int CreateFromPattern(m3d::ui::Wnd* patternWnd, bool deleteSrc);
     void StartConversation(int npcId);
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
     int GetNpcId() const;
     void EndConversation();
     int ShowDynamicQuestsMenu();
@@ -36,7 +36,7 @@ public:
     public:
         PlayerReplyButton(ConversationWnd::PlayerReplyButton const&);
         PlayerReplyButton(PointBase<float> const& origin, float width, int idx, m3d::ui::Wnd* parent);
-        virtual ~PlayerReplyButton() override /* 0x00 */;
+        virtual ~PlayerReplyButton() override;
         Reply const* GetReply() const;
         ai::DynamicQuest* GetDynamicQuest();
         void SetUpForReply(Reply const* reply, ai::DynamicQuest* dQuest);
@@ -44,62 +44,60 @@ public:
 
         struct AuxInfo
         {
-            /* 0x0000 */ unsigned int m_selectColor;
-            /* 0x0004 */ unsigned int m_unselectColor;
+            unsigned int m_selectColor;
+            unsigned int m_unselectColor;
             AuxInfo();
-        }; /* size: 0x0008 */
+        };
 
     private:
-        virtual int OnMouseIn() override /* 0x00 */;
-        virtual int OnMouseOut() override /* 0x00 */;
+        virtual int OnMouseIn() override;
+        virtual int OnMouseOut() override;
         void RecalcHeight();
         static inline ConversationWnd::PlayerReplyButton::AuxInfo m_aif;
-        /* 0x023c */ int m_idx;
-        /* 0x0240 */ Reply const* m_reply;
-        /* 0x0244 */ ai::DynamicQuest* m_dQuest;
-    }; /* size: 0x0248 */
+        int m_idx;
+        Reply const* m_reply;
+        ai::DynamicQuest* m_dQuest;
+    };
 
     class PlayerRepliesListBoxWnd : public m3d::ui::ListBoxWnd<ConversationWnd::PlayerReplyButton*>
     {
     public:
         PlayerRepliesListBoxWnd(ConversationWnd::PlayerRepliesListBoxWnd const&);
         PlayerRepliesListBoxWnd();
-        virtual ~PlayerRepliesListBoxWnd() override /* 0x00 */;
+        virtual ~PlayerRepliesListBoxWnd() override;
         int SetUpForNpcReply(Reply const* npcReply, ai::Npc* npc, bool bDeletePrevItems);
         int SetUpForDynamicQuestThemes(ai::Npc* npc);
 
         struct AuxInfo
         {
-            /* 0x0000 */ float m_space;
+            float m_space;
             AuxInfo();
-        }; /* size: 0x0004 */
+        };
 
     private:
-        virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override /* 0x134 */;
-        virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override
-            /* 0x138 */;
-        virtual int DeleteItem(int itemIdx) override /* 0x13c */;
-        virtual int CompareItem(int itemIdx0, int itemIdx1) override /* 0x140 */;
+        virtual int MeasureItem(int itemIdx, BoundsBase<float>& bounds) const override;
+        virtual int RenderItem(int itemIdx, PointBase<float> const& org, m3d::ui::DrawInfo const& di) override;
+        virtual int DeleteItem(int itemIdx) override;
+        virtual int CompareItem(int itemIdx0, int itemIdx1) override;
         virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data)
-            override /* 0x00 */;
-        virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override /* 0xbc */;
-        /* 0x0238 */ ConversationWnd::PlayerRepliesListBoxWnd::AuxInfo m_aif;
-    }; /* size: 0x023c */
+            override;
+        virtual int OnKey(unsigned short key, unsigned char scanCode, unsigned int state) override;
+        ConversationWnd::PlayerRepliesListBoxWnd::AuxInfo m_aif;
+    };
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_txtNpcReplyName;
-        /* 0x000c */ CStr m_lstPlayerRepliesName;
-        /* 0x0018 */ float m_space;
+        CStr m_txtNpcReplyName;
+        CStr m_lstPlayerRepliesName;
+        float m_space;
         AuxInfo(ConversationWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x001c */
+    };
 
 protected:
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-        /* 0xc8 */;
-    virtual int OnAfterRemoveFromWndStation() override /* 0x74 */;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+    virtual int OnAfterRemoveFromWndStation() override;
     void RecalcLayot();
     int UpdateOnSelectPlayerReply(Reply const* playerReply);
     int UpdateOnBeginConversation(int npcId);
@@ -108,20 +106,20 @@ protected:
     int ExecuteScript(CStr const& script);
     bool NeedConversationExit() const;
 
-    /* 0x0220 */ ConversationWnd::AuxInfo m_aif;
-    /* 0x023c */ m3d::ui::TextBoxWnd* m_txtNpcReply;
-    /* 0x0240 */ ConversationWnd::PlayerRepliesListBoxWnd* m_lstPlayerReplies;
-    /* 0x0244 */ ai::DynamicQuest* m_curDynamicQuest;
-    /* 0x0248 */ ai::Npc* m_npc;
-    /* 0x024c */ int m_scriptFlags;
+    ConversationWnd::AuxInfo m_aif;
+    m3d::ui::TextBoxWnd* m_txtNpcReply;
+    ConversationWnd::PlayerRepliesListBoxWnd* m_lstPlayerReplies;
+    ai::DynamicQuest* m_curDynamicQuest;
+    ai::Npc* m_npc;
+    int m_scriptFlags;
     ConversationWnd();
     ConversationWnd(ConversationWnd const& rhs);
 
 public:
-    virtual ~ConversationWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~ConversationWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classConversationWnd;
-}; /* size: 0x0250 */
+};

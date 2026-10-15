@@ -77,9 +77,8 @@ namespace
         unsigned char bytes[4];
         for (int i = 0; i < 4; ++i)
         {
-            double const channel =
-                ((static_cast<double>(nextBytes[i]) - static_cast<double>(prevBytes[i])) * tt +
-                 static_cast<double>(prevBytes[i])) *
+            double const channel = ((static_cast<double>(nextBytes[i]) - static_cast<double>(prevBytes[i])) * tt +
+                                    static_cast<double>(prevBytes[i])) *
                 fader;
             bytes[i] = static_cast<unsigned char>(static_cast<long long>(channel));
         }
@@ -288,7 +287,7 @@ namespace m3d
             for (unsigned i = 0; i < this->m_numIb; ++i)
             {
                 if (m_skinIb[i].IsValid())
-                    m3d::Application::g_pApp->m_renderer->ReleaseIb(m_skinIb[i]);
+                    M3D_RENDERER->ReleaseIb(m_skinIb[i]);
             }
             delete[] m_skinIb;
             m_skinIb = nullptr;
@@ -2421,7 +2420,8 @@ namespace m3d
         {
             // NOTE: with no reset time the slot index overflows in the binary; what comes out is the first
             // keyframe, or black when that is undefined.
-            color = static_cast<unsigned int>(m_colors[0]) != UNDEFINED_COLOR ? static_cast<unsigned int>(m_colors[0]) : 0u;
+            color =
+                static_cast<unsigned int>(m_colors[0]) != UNDEFINED_COLOR ? static_cast<unsigned int>(m_colors[0]) : 0u;
         }
         else
         {

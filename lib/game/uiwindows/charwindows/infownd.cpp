@@ -375,8 +375,7 @@ void InfoWnd::RecalcLayot(
     m3d::ui::DrawInfo& newDi,
     std::vector<InfoWnd::RowInfo, std::allocator<InfoWnd::RowInfo>>& rowsInfo,
     std::vector<InfoWnd::ColumnInfo, std::allocator<InfoWnd::ColumnInfo>>& columnsInfo,
-    std::map<int, PointBase<int>, std::less<int>, std::allocator<std::pair<int const, PointBase<int>>>>&
-        itemPositions)
+    std::map<int, PointBase<int>, std::less<int>, std::allocator<std::pair<int const, PointBase<int>>>>& itemPositions)
 {
     // RVA 0x44E850 - flows the items into a grid, sizes the window to fit and
     // parks it next to the mouse cursor without letting it leave the screen.
@@ -524,10 +523,10 @@ void InfoWnd::RecalcLayot(
     b.height = m_clientEdges[3] + m_clientEdges[1] + paneBar2 + h;
     SetBounds(b, true);
 
-    float const x = static_cast<float>(M3D_APP->GetMouseX()) * DESIGN_W /
-                    static_cast<float>(M3D_RENDERER->GetViewport().m_width);
-    float const y = static_cast<float>(M3D_APP->GetMouseY()) * DESIGN_H /
-                    static_cast<float>(M3D_RENDERER->GetViewport().m_height);
+    float const x =
+        static_cast<float>(M3D_APP->GetMouseX()) * DESIGN_W / static_cast<float>(M3D_RENDERER->GetViewport().m_width);
+    float const y =
+        static_cast<float>(M3D_APP->GetMouseY()) * DESIGN_H / static_cast<float>(M3D_RENDERER->GetViewport().m_height);
     float const cursorH = GetStation()->GetCurrentCursor().m_sz.y;
 
     float const x0 = (x + b.width >= DESIGN_W) ? DESIGN_W - b.width : x;
@@ -571,9 +570,8 @@ int InfoWnd::OnPaint(m3d::ui::DrawInfo const& di)
         BoundsBase<float> rc;
         rc.x0 = columnsInfo[pos.x].m_x0;
         rc.y0 = rowsInfo[pos.y].m_y0;
-        rc.width = ((item->m_flags & INFOFLAG_FULL_ROW) != 0)
-                       ? m_bounds.width - m_aif0.m_edgeSpace * 2.0f
-                       : columnsInfo[pos.x].m_w;
+        rc.width = ((item->m_flags & INFOFLAG_FULL_ROW) != 0) ? m_bounds.width - m_aif0.m_edgeSpace * 2.0f :
+                                                                columnsInfo[pos.x].m_w;
         rc.height = rowsInfo[pos.y].m_h;
         item->Draw(newDi, rc);
     }

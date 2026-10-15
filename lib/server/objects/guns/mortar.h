@@ -6,12 +6,12 @@ namespace ai
     class MortarPrototypeInfo : public ai::GunPrototypeInfo
     {
     public:
-        /* 0x0198 */ float m_initialVelocity;
+        float m_initialVelocity;
         MortarPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x00 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
-    }; /* size: 0x019c */
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
+    };
 
     class Mortar : public ai::Gun
     {
@@ -19,39 +19,41 @@ namespace ai
         friend class MortarVolleyLauncher;
 
     protected:
-        virtual ~Mortar() override /* 0x00 */;
+        virtual ~Mortar() override;
 
     private:
-        Mortar(const ai::MortarPrototypeInfo& prototypeInfo);
-        Mortar(const ai::Mortar&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        Mortar(ai::MortarPrototypeInfo const& prototypeInfo);
+        Mortar(ai::Mortar const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(Mortar);
-        virtual const ai::MortarPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
+        virtual ai::MortarPrototypeInfo const* GetPrototypeInfo() const override;
         struct TMortarAngles
         {
-            /* 0x0000 */ float phi;
-            /* 0x0004 */ float theta;
+            float phi;
+            float theta;
             TMortarAngles(float _phi, float _theta);
             TMortarAngles();
             CVector ToVector() const;
-        }; /* size: 0x0008 */
-        virtual void LookAtPoint(const CVector& lookAt, float elapsedTime) override /* 0x168 */;
-        virtual bool isLookAtPoint(const CVector& lookAt, float eps) const override /* 0x16c */;
-        static CVector __fastcall GetMortarShellPosition(const CVector& source, const CVector& velocity, float time);
+        };
+        virtual void LookAtPoint(CVector const& lookAt, float elapsedTime) override;
+        virtual bool isLookAtPoint(CVector const& lookAt, float eps) const override;
+        static CVector GetMortarShellPosition(CVector const& source, CVector const& velocity, float time);
 
     protected:
-        virtual void _LaunchShells() override /* 0x198 */;
+        virtual void _LaunchShells() override;
 
     private:
-        CVector GetVelocityByDirection(const CVector& dir) const;
-        void setCurrentMortarAngles(const ai::Mortar::TMortarAngles& angles);
-        float targetFunction(const CVector& src, const CVector& dst, float phi, float initVel, float time) const;
-        float targetFunction2(const CVector& src, const CVector& dst, float phi, float initVel, float time, float theta) const;
-        CVector GetMortarDirection(const CVector& currentDir, const CVector& src, const CVector& dst, float initVel) const;
-    }; /* size: 0x0330 */
-}
+        CVector GetVelocityByDirection(CVector const& dir) const;
+        void setCurrentMortarAngles(ai::Mortar::TMortarAngles const& angles);
+        float targetFunction(CVector const& src, CVector const& dst, float phi, float initVel, float time) const;
+        float targetFunction2(CVector const& src, CVector const& dst, float phi, float initVel, float time, float theta)
+            const;
+        CVector GetMortarDirection(CVector const& currentDir, CVector const& src, CVector const& dst, float initVel)
+            const;
+    };
+}  // namespace ai

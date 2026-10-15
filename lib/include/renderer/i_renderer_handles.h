@@ -18,18 +18,20 @@ namespace m3d
                 m_handle = rhs.m_handle;
             }
 
-            Handle() {}
+            Handle()
+            {
+            }
 
             void SetInvalid()
             {
                 m_handle = -1;
             }
-            
+
             bool IsValid() const
             {
                 return m_handle >= 0;
             }
-            
+
             bool operator==(Handle<T> const& a) const
             {
                 return m_handle == a.m_handle;
@@ -45,5 +47,5 @@ namespace m3d
         class InvalidHandle
         {
         };
-    }
-}
+    }  // namespace rend
+}  // namespace m3d

@@ -17,7 +17,7 @@ namespace m3d
 
     // orig 0x5f69d0 CM3DSoundManager.cpp:2035
     snd::ISound* SoundFactory();
-}
+}  // namespace m3d
 
 // Everything the driver allocates goes through the kernel's memory routines, like the executable's
 // own operator new does, so objects created on one side can be freed on the other. Until

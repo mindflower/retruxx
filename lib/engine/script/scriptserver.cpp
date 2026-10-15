@@ -37,7 +37,7 @@ namespace
     int _getGlobalObject(lua_State* L)
     {
         auto glob = lua_tostring(L, 1);
-        auto obj = m3d::g_Kernel->FindGlobal(glob);
+        auto obj = M3D_KERNEL->FindGlobal(glob);
         if (obj)
         {
             auto scriptObj = m3d::ScriptServer::_getScriptObject(obj);
@@ -103,9 +103,9 @@ namespace
         if (_getLastErrorInfo(L, &ar))
         {
             auto v6 = NameFromFileName(g_scriptServer->getNameOfLastScript());
-            m3d::g_Kernel->m_Log->sourceLine() = ar.currentline;
-            m3d::g_Kernel->m_Log->setSourceFile(v6.c_str());
-            m3d::g_Kernel->m_Log->logTex(buf, m3d::LOG_INFO);
+            M3D_KERNEL->m_Log->sourceLine() = ar.currentline;
+            M3D_KERNEL->m_Log->setSourceFile(v6.c_str());
+            M3D_KERNEL->m_Log->logTex(buf, m3d::LOG_INFO);
         }
         return 0;
     }
@@ -165,7 +165,7 @@ namespace
         // NOTE: the userdata block itself is called, while _addExports stores the function
         // address *inside* it, so invoking any native method jumps into data. No shipped class
         // seems to export one.
-        auto const func = reinterpret_cast<int(__fastcall*)(m3d::Object*, m3d::sArgStack*)>(lua_touserdata(L, 1));
+        auto const func = reinterpret_cast<int (*)(m3d::Object*, m3d::sArgStack*)>(lua_touserdata(L, 1));
         m3d::Object* const self = ctx.asObject(0, "Object");
 
         // NOTE: the arguments are popped from the top, so they reach the function in reverse
@@ -414,8 +414,8 @@ namespace
                 lua_rawgeti(
                     L,
                     LUA_REGISTRYINDEX,
-                    exp->type == m3d::METHOD ? m3d::ScriptServer::m_metatable_ClassMethod
-                                             : m3d::ScriptServer::m_metatable_ClassNativeMethod);
+                    exp->type == m3d::METHOD ? m3d::ScriptServer::m_metatable_ClassMethod :
+                                               m3d::ScriptServer::m_metatable_ClassNativeMethod);
                 lua_setmetatable(L, -2);
             }
             lua_settable(L, -3);
@@ -503,7 +503,7 @@ namespace m3d
         delete[] m_data;
         m_data = nullptr;
         m_bLoaded = false;
-        scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (stream->Open(fileName, fs::IStream::OPEN_READ))
         {
             m_dataLen = stream->GetSize();

@@ -51,20 +51,20 @@ public:
 
     struct AuxInfo
     {
-        /* 0x0000 */ CStr m_wndTradeCostName;
-        /* 0x000c */ CStr m_wndPlayerItemsCostName;
-        /* 0x0018 */ CStr m_wndWorkshopItemsCostName;
-        /* 0x0024 */ CStr m_wndBottomPanelName;
-        /* 0x0030 */ CStr m_btnTransferItemsFromPlayerToWorkshopName;
-        /* 0x003c */ CStr m_btnTransferItemsFromWorkshopToPlayerName;
-        /* 0x0048 */ CStr m_strIdLeftItemsInCabin;
-        /* 0x0054 */ CStr m_strIdLeftItemsInBasket;
-        /* 0x0060 */ CStr m_strIdLeftItemsInVehicle;
-        /* 0x006c */ CStr m_strIdTooltipTransferItemsFromPlayerToWorkshop[3];
-        /* 0x0090 */ CStr m_strIdTooltipTransferItemsFromWorkshopToPlayer[3];
+        CStr m_wndTradeCostName;
+        CStr m_wndPlayerItemsCostName;
+        CStr m_wndWorkshopItemsCostName;
+        CStr m_wndBottomPanelName;
+        CStr m_btnTransferItemsFromPlayerToWorkshopName;
+        CStr m_btnTransferItemsFromWorkshopToPlayerName;
+        CStr m_strIdLeftItemsInCabin;
+        CStr m_strIdLeftItemsInBasket;
+        CStr m_strIdLeftItemsInVehicle;
+        CStr m_strIdTooltipTransferItemsFromPlayerToWorkshop[3];
+        CStr m_strIdTooltipTransferItemsFromWorkshopToPlayer[3];
         AuxInfo(ZnayuKakProdatWnd::AuxInfo const&);
         AuxInfo();
-    }; /* size: 0x00b4 */
+    };
 
     enum ItemType
     {
@@ -97,13 +97,13 @@ public:
         PointBase<int> GetRepositoryPos() const;
         bool IsValid() const;
         void Invalidate();
-        /* 0x0000 */ ZnayuKakProdatWnd::ItemType m_itemType;
-        /* 0x0004 */ int m_gadgetSlotId;
-        /* 0x0008 */ CStr m_vehiclePartName;
-        /* 0x0014 */ PointBase<int> m_repositoryPos;
-        /* 0x001c */ int m_objId;
-        /* 0x0020 */ ZnayuKakProdatWnd::Belong m_belong;
-    }; /* size: 0x0024 */
+        ZnayuKakProdatWnd::ItemType m_itemType;
+        int m_gadgetSlotId;
+        CStr m_vehiclePartName;
+        PointBase<int> m_repositoryPos;
+        int m_objId;
+        ZnayuKakProdatWnd::Belong m_belong;
+    };
 
     using PartFloatValueMap = std::map<CStr, float>;
     using PartFloatValuePair = std::pair<CStr, float>;
@@ -112,27 +112,26 @@ public:
 
     struct CurValues
     {
-        /* 0x0000 */ float m_hp;
-        /* 0x0004 */ float m_fuel;
-        /* 0x0008 */ std::map<CStr, float> m_durability;
-        /* 0x0014 */ std::map<CStr, int> m_shellsInCurCharge;
-        /* 0x0020 */ std::map<CStr, int> m_shellsInPool;
+        float m_hp;
+        float m_fuel;
+        std::map<CStr, float> m_durability;
+        std::map<CStr, int> m_shellsInCurCharge;
+        std::map<CStr, int> m_shellsInPool;
         CurValues(ZnayuKakProdatWnd::CurValues const&);
         CurValues();
         void Clear();
-    }; /* size: 0x002c */
+    };
 
     using ItemSaveInfoMap = std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*>;
     using ItemSaveInfoPair = std::pair<int, ZnayuKakProdatWnd::ItemSaveInfo*>;
 
 protected:
-    virtual int GameDataSetup() override /* 0x00 */;
-    virtual int GameDataClear(bool beforeContinuousLevel) override /* 0x108 */;
-    virtual int GameDataUpdate(void* data, int dataType) override /* 0x10c */;
-    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override
-        /* 0xc8 */;
-    virtual int OnAfterRemoveFromWndStation() override /* 0x00 */;
-    virtual int OnAfterAddToWndStation() override /* 0x00 */;
+    virtual int GameDataSetup() override;
+    virtual int GameDataClear(bool beforeContinuousLevel) override;
+    virtual int GameDataUpdate(void* data, int dataType) override;
+    virtual int OnWndNotify(m3d::ui::Wnd* from, unsigned int id, unsigned int msg, m3d::AIParam const& data) override;
+    virtual int OnAfterRemoveFromWndStation() override;
+    virtual int OnAfterAddToWndStation() override;
     void UpdateTradeCost();
     void Buy();
     void Cancel();
@@ -243,33 +242,33 @@ protected:
     int MakeBottomPanel();
     void UpdateTransferButtonsTooltips();
 
-    /* 0x0224 */ ZnayuKakProdatWnd::AuxInfo m_aif;
-    /* 0x02d8 */ m3d::ui::Wnd* m_wndTradeCost;
-    /* 0x02dc */ m3d::ui::Wnd* m_wndPlayerItemsCost;
-    /* 0x02e0 */ m3d::ui::Wnd* m_wndWorkshopItemsCost;
-    /* 0x02e4 */ m3d::ui::ButtonWnd* m_btnTransferItemsFromPlayerToWorkshop;
-    /* 0x02e8 */ m3d::ui::ButtonWnd* m_btnTransferItemsFromWorkshopToPlayer;
-    /* 0x02ec */ int m_objectToTradeId;
-    /* 0x02f0 */ int m_workshopId;
-    /* 0x02f4 */ int m_workshopVehicleId;
-    /* 0x02f8 */ std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_originalPlayerItems;
-    /* 0x0304 */ std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_originalWorkshopItems;
-    /* 0x0310 */ std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_curPlayerItems;
-    /* 0x031c */ std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_curWorkshopItems;
-    /* 0x0328 */ int m_playerItemsCostToSell;
-    /* 0x032c */ int m_workshopItemsCostToBuy;
-    /* 0x0330 */ ZnayuKakProdatWnd::TradeType m_tradeType;
-    /* 0x0334 */ ZnayuKakProdatWnd::CurValues m_playerCurValues;
-    /* 0x0360 */ ZnayuKakProdatWnd::CurValues m_workshopCurValues;
+    ZnayuKakProdatWnd::AuxInfo m_aif;
+    m3d::ui::Wnd* m_wndTradeCost;
+    m3d::ui::Wnd* m_wndPlayerItemsCost;
+    m3d::ui::Wnd* m_wndWorkshopItemsCost;
+    m3d::ui::ButtonWnd* m_btnTransferItemsFromPlayerToWorkshop;
+    m3d::ui::ButtonWnd* m_btnTransferItemsFromWorkshopToPlayer;
+    int m_objectToTradeId;
+    int m_workshopId;
+    int m_workshopVehicleId;
+    std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_originalPlayerItems;
+    std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_originalWorkshopItems;
+    std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_curPlayerItems;
+    std::map<int, ZnayuKakProdatWnd::ItemSaveInfo*> m_curWorkshopItems;
+    int m_playerItemsCostToSell;
+    int m_workshopItemsCostToBuy;
+    ZnayuKakProdatWnd::TradeType m_tradeType;
+    ZnayuKakProdatWnd::CurValues m_playerCurValues;
+    ZnayuKakProdatWnd::CurValues m_workshopCurValues;
 
     ZnayuKakProdatWnd();
     ZnayuKakProdatWnd(ZnayuKakProdatWnd const& rhs);
 
 public:
-    virtual ~ZnayuKakProdatWnd() override /* 0x00 */;
-    virtual m3d::Object* Clone() override /* 0x04 */;
-    static m3d::Object* __fastcall CreateObject();
-    static m3d::Class* __fastcall GetBaseClass();
-    virtual m3d::Class* GetClass() const override /* 0x34 */;
+    virtual ~ZnayuKakProdatWnd() override;
+    virtual m3d::Object* Clone() override;
+    static m3d::Object* CreateObject();
+    static m3d::Class* GetBaseClass();
+    virtual m3d::Class* GetClass() const override;
     static m3d::Class m_classZnayuKakProdatWnd;
-}; /* size: 0x038c */
+};

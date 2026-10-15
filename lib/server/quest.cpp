@@ -249,7 +249,8 @@ namespace ai
         {
             if (subCond.empty())
             {
-                M3D_LOG_ERR("Error loading quest: the quest '" + m_name + "' has children but there is no quest condition");
+                M3D_LOG_ERR(
+                    "Error loading quest: the quest '" + m_name + "' has children but there is no quest condition");
             }
             auto quest = new Quest;
             if (!quest->LoadFromXml(xmlFile, questNode))
@@ -399,7 +400,8 @@ namespace ai
                 return 0;
             }
             ref_ptr questNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-            for (questsNode->GetFirstChild(questNode, "quest"); !questNode->IsEmpty(); questNode->GetNextSibling(questNode, "quest"))
+            for (questsNode->GetFirstChild(questNode, "quest"); !questNode->IsEmpty();
+                 questNode->GetNextSibling(questNode, "quest"))
             {
                 auto quest = new Quest;
                 if (!quest->LoadFromXml(xmlFile, questNode))
@@ -419,7 +421,8 @@ namespace ai
             if (!mutuallyExclusivesNode->IsEmpty())
             {
                 ref_ptr mutexNode = xmlFile->CreateNode(m3d::cmn::XML_NODE_EMPTY, nullptr);
-                for (mutuallyExclusivesNode->GetFirstChild(mutexNode, "mutex"); !mutexNode->IsEmpty(); mutexNode->GetNextSibling(mutexNode, "mutex"))
+                for (mutuallyExclusivesNode->GetFirstChild(mutexNode, "mutex"); !mutexNode->IsEmpty();
+                     mutexNode->GetNextSibling(mutexNode, "mutex"))
                 {
                     CStr questsNameAttr;
                     m3d::SafeStrAttrib(questsNameAttr, mutexNode, "quests");
@@ -447,7 +450,9 @@ namespace ai
                             {
                                 if (mtx.find(questNameId) != mtx.end())
                                 {
-                                    M3D_LOG_INFO("Warning: Loading QuestManager: quest name " + name + " exists in multiple mutexes");
+                                    M3D_LOG_INFO(
+                                        "Warning: Loading QuestManager: quest name " + name +
+                                        " exists in multiple mutexes");
                                 }
                             }
                             newMtx.insert(questNameId);

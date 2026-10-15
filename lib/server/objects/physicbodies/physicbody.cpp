@@ -64,7 +64,7 @@ namespace
         RotRows const m = RotationRows(q);
         return CVector(m._31, m._32, m._33);
     }
-}
+}  // namespace
 
 namespace ai
 {
@@ -270,7 +270,10 @@ namespace ai
             // NOTE: the shipped code dereferences the inner geom without checking it (an invalid type has none).
             dGeomID const inner = obj->GetGeom()->GetGeomId();
             dGeomSetPosition(
-                inner, collisionInfo.m_relTranslation.x, collisionInfo.m_relTranslation.y, collisionInfo.m_relTranslation.z);
+                inner,
+                collisionInfo.m_relTranslation.x,
+                collisionInfo.m_relTranslation.y,
+                collisionInfo.m_relTranslation.z);
 
             dQuaternion q;
             q[0] = collisionInfo.m_relRotation.w;
@@ -400,7 +403,12 @@ namespace ai
         }
 
         m_Node->SetProperty(m3d::PROP_DM_ACTION, &action);
-        m3d::ForEachDescendant(m_Node, [&action](m3d::SgNode* node) { node->SetProperty(m3d::PROP_DM_ACTION, &action); });
+        m3d::ForEachDescendant(
+            m_Node,
+            [&action](m3d::SgNode* node)
+            {
+                node->SetProperty(m3d::PROP_DM_ACTION, &action);
+            });
     }
 
     void PhysicBody::GetGeoms(retruxx::vector<Geom*, retruxx::allocator<Geom*>>& geoms) const
@@ -412,7 +420,12 @@ namespace ai
         }
     }
 
-    m3d::SgNode* PhysicBody::CreateNode(CStr const& modelname, int action, CVector const& scale, PhysicBody* owner, bool addToRoot)
+    m3d::SgNode* PhysicBody::CreateNode(
+        CStr const& modelname,
+        int action,
+        CVector const& scale,
+        PhysicBody* owner,
+        bool addToRoot)
     {
         auto modelId = M3D_ENGINE_CFG.GetModelIdByName(modelname);
         auto serverNode = m3d::pClient->CreateServerControlledNode(modelId);
@@ -468,18 +481,22 @@ namespace ai
             auto v4 = Rotation.w * NodeRelativeRotation.y;
 
             Quaternion rot;  // [esp+10h] [ebp-30h] BYREF
-            rot.x = (float)((float)((float)(NodeRelativeRotation.z * Rotation.y) + (float)(Rotation.w * NodeRelativeRotation.x)) +
+            rot.x = (float)((float)((float)(NodeRelativeRotation.z * Rotation.y) +
+                                    (float)(Rotation.w * NodeRelativeRotation.x)) +
                             (float)(NodeRelativeRotation.w * Rotation.x)) -
                 (float)(Rotation.z * NodeRelativeRotation.y);
-            auto v5 = (float)((float)((float)(NodeRelativeRotation.w * Rotation.y) + v4) + (float)(Rotation.z * NodeRelativeRotation.x)) -
+            auto v5 = (float)((float)((float)(NodeRelativeRotation.w * Rotation.y) + v4) +
+                              (float)(Rotation.z * NodeRelativeRotation.x)) -
                 (float)(NodeRelativeRotation.z * Rotation.x);
             auto v6 = NodeRelativeRotation.w * Rotation.z;
             rot.y = v5;
-            auto v7 = (float)((float)((float)(NodeRelativeRotation.z * Rotation.w) + v6) + (float)(Rotation.x * NodeRelativeRotation.y)) -
+            auto v7 = (float)((float)((float)(NodeRelativeRotation.z * Rotation.w) + v6) +
+                              (float)(Rotation.x * NodeRelativeRotation.y)) -
                 (float)(Rotation.y * NodeRelativeRotation.x);
             auto v8 = Rotation.x * NodeRelativeRotation.x;
             rot.z = v7;
-            rot.w = (float)((float)((float)(NodeRelativeRotation.w * Rotation.w) - v8) - (float)(Rotation.y * NodeRelativeRotation.y)) -
+            rot.w = (float)((float)((float)(NodeRelativeRotation.w * Rotation.w) - v8) -
+                            (float)(Rotation.y * NodeRelativeRotation.y)) -
                 (float)(NodeRelativeRotation.z * Rotation.z);
             auto NodeAbsolutePosition = ai::PhysicBody::GetNodeAbsolutePosition();
             ai::PhysicBody::_SetScenegraphNode(NodeAbsolutePosition, rot);
@@ -672,7 +689,11 @@ namespace ai
 
         m_Node->SetProperty(m3d::PROP_DM_EFFECT_ACTION, &action);
         m3d::ForEachDescendant(
-            m_Node, [&action](m3d::SgNode* node) { node->SetProperty(m3d::PROP_DM_EFFECT_ACTION, &action); });
+            m_Node,
+            [&action](m3d::SgNode* node)
+            {
+                node->SetProperty(m3d::PROP_DM_EFFECT_ACTION, &action);
+            });
     }
 
     void PhysicBody::DumpPhysicInfo(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const
@@ -901,7 +922,8 @@ namespace ai
         }
         else
         {
-            ai::GetCollisionInfoByModelName(this->m_modelname, this->m_collisionInfos, this->m_bCollisionTrimeshAllowed);
+            ai::GetCollisionInfoByModelName(
+                this->m_modelname, this->m_collisionInfos, this->m_bCollisionTrimeshAllowed);
             ai::PhysicBody::ChangePhysicBodyByCollisionInfo(this->m_collisionInfos);
         }
     }
@@ -984,7 +1006,8 @@ namespace ai
 
     void PhysicBody::Registration()
     {
-        m_countNodeRelinks = M3D_APP->GetDbgCounterStack().GetCounter(M3D_APP->GetDbgCounterStack().AddCounter("node relinks in server"));
+        m_countNodeRelinks = M3D_APP->GetDbgCounterStack().GetCounter(
+            M3D_APP->GetDbgCounterStack().AddCounter("node relinks in server"));
         m_countNodeRelinks->SetI(0);
     }
 
@@ -1144,16 +1167,17 @@ namespace ai
     {
         auto nodeRelativeRotation = ai::PhysicBody::GetNodeRelativeRotation();
         auto rotation = ai::PhysicBody::GetRotation();
-        auto v5 =
-            (((rotation.w * nodeRelativeRotation.y) + (nodeRelativeRotation.w * rotation.y)) + (rotation.z * nodeRelativeRotation.x)) -
+        auto v5 = (((rotation.w * nodeRelativeRotation.y) + (nodeRelativeRotation.w * rotation.y)) +
+                   (rotation.z * nodeRelativeRotation.x)) -
             (rotation.x * nodeRelativeRotation.z);
-        auto v6 =
-            (((rotation.w * nodeRelativeRotation.z) + (rotation.x * nodeRelativeRotation.y)) + (rotation.z * nodeRelativeRotation.w)) -
+        auto v6 = (((rotation.w * nodeRelativeRotation.z) + (rotation.x * nodeRelativeRotation.y)) +
+                   (rotation.z * nodeRelativeRotation.w)) -
             (nodeRelativeRotation.x * rotation.y);
-        auto v7 =
-            (((rotation.w * nodeRelativeRotation.w) - (rotation.x * nodeRelativeRotation.x)) - (rotation.y * nodeRelativeRotation.y)) -
+        auto v7 = (((rotation.w * nodeRelativeRotation.w) - (rotation.x * nodeRelativeRotation.x)) -
+                   (rotation.y * nodeRelativeRotation.y)) -
             (rotation.z * nodeRelativeRotation.z);
-        auto v8 = ((nodeRelativeRotation.z * rotation.y) + (rotation.x * nodeRelativeRotation.w)) + (rotation.w * nodeRelativeRotation.x);
+        auto v8 = ((nodeRelativeRotation.z * rotation.y) + (rotation.x * nodeRelativeRotation.w)) +
+            (rotation.w * nodeRelativeRotation.x);
         auto v9 = rotation.z * nodeRelativeRotation.y;
 
         Quaternion result;

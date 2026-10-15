@@ -76,7 +76,7 @@ namespace
         CStr desc;
         if (err != m3d::SUCCESS)
         {
-            m3d::ScriptServer& scriptServer = m3d::g_Kernel->GetScriptServer();
+            m3d::ScriptServer& scriptServer = M3D_KERNEL->GetScriptServer();
             char const* errorDescString = scriptServer.getErrorDescString(err);
             m3d::auxScriptErrorDesc const& lastError = scriptServer.getLastErrorDesc();
             desc = CStr("(") + lastError.sourceString + " @ " + CStr(lastError.lineNumber) + "): " + errorDescString +
@@ -556,7 +556,7 @@ int RepliesManager::ExecuteScript(CStr const& script, ai::Npc* curNpc) const
     }
 
     ai::Npc::SetCurrentNpc(curNpc);
-    m3d::eScriptError const err = m3d::g_Kernel->GetScriptServer().execute(script.c_str(), "ConversationWnd");
+    m3d::eScriptError const err = M3D_KERNEL->GetScriptServer().execute(script.c_str(), "ConversationWnd");
     ai::Npc::SetCurrentNpc(nullptr);
 
     if (err == m3d::SUCCESS)

@@ -73,4 +73,4 @@ namespace m3d
         RitualInConstructor(RITUAL_THINK_NODE);
         m_persistant = false;
     }
-}
+}  // namespace m3d

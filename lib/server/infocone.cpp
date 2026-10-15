@@ -75,7 +75,8 @@ namespace ai
         {
             // Nothing under the cursor: look far along the camera's forward vector (column 3 of its rotation).
             CMatrix cameraRot;
-            cameraRot.rotYPR(M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
+            cameraRot.rotYPR(
+                M3D_APP->m_curCamera.m_rotYaw, M3D_APP->m_curCamera.m_rotPitch, M3D_APP->m_curCamera.m_rotRoll);
             CVector const forward(0.0f, 0.0f, 1.0f);
             m_lookAt = CVector(
                 (cameraRot._13 * forward.z + cameraRot._12 * forward.y + cameraRot._11 * forward.x) * 1000000.0f,
@@ -98,7 +99,8 @@ namespace ai
         float unused = 0.0f;
         M3D_RENDERER->RelToAbs(edgeOffset, unused);
         CVector const edgeDir =
-            M3D_RENDERER->Unproject(CVector2(M3D_APP->GetMouseX() + edgeOffset, static_cast<float>(M3D_APP->GetMouseY())))
+            M3D_RENDERER
+                ->Unproject(CVector2(M3D_APP->GetMouseX() + edgeOffset, static_cast<float>(M3D_APP->GetMouseY())))
                 .getNormalized();
 
         m_halfConeCos = m_lookDir.z * edgeDir.z + m_lookDir.y * edgeDir.y + m_lookDir.x * edgeDir.x;
@@ -163,8 +165,10 @@ namespace ai
 
                 auto* physicObj = RT_DYNCAST(obj, PhysicObj);
                 if (physicObj->GetId() == m_vehicleId || !physicObj->GetBody() ||
-                    !(IS_KIND_OF(physicObj, Vehicle) || IS_KIND_OF(physicObj, StaticAutoGun) || IS_KIND_OF(physicObj, BossMetalArm) ||
-                      IS_KIND_OF(physicObj, Boss02) || IS_KIND_OF(physicObj, Boss03) || IS_KIND_OF(physicObj, Boss04) || IS_KIND_OF(physicObj, Boss04Drone)))
+                    !(IS_KIND_OF(physicObj, Vehicle) || IS_KIND_OF(physicObj, StaticAutoGun) ||
+                      IS_KIND_OF(physicObj, BossMetalArm) || IS_KIND_OF(physicObj, Boss02) ||
+                      IS_KIND_OF(physicObj, Boss03) || IS_KIND_OF(physicObj, Boss04) ||
+                      IS_KIND_OF(physicObj, Boss04Drone)))
                 {
                     continue;
                 }
@@ -199,17 +203,22 @@ namespace ai
 
                     // Get geometry position and calculate direction to it
                     float const* geomPos = dGeomGetPosition(geom);
-                    CVector objDirection(geomPos[0] - m_cameraPos.x, geomPos[1] - m_cameraPos.y, geomPos[2] - m_cameraPos.z);
+                    CVector objDirection(
+                        geomPos[0] - m_cameraPos.x, geomPos[1] - m_cameraPos.y, geomPos[2] - m_cameraPos.z);
 
                     // Calculate projection onto look vector
-                    float projection = (objDirection.x * m_lookVector.x + objDirection.y * m_lookVector.y + objDirection.z * m_lookVector.z) / m_lookDistance;
+                    float projection = (objDirection.x * m_lookVector.x + objDirection.y * m_lookVector.y +
+                                        objDirection.z * m_lookVector.z) /
+                        m_lookDistance;
 
                     // Check if object is within the view cone
                     if (projection >= 0.0f && projection <= m_lookDistance)
                     {
                         // Calculate sphere position along look direction
                         CVector spherePos(
-                            m_cameraPos.x + m_lookDir.x * projection, m_cameraPos.y + m_lookDir.y * projection, m_cameraPos.z + m_lookDir.z * projection);
+                            m_cameraPos.x + m_lookDir.x * projection,
+                            m_cameraPos.y + m_lookDir.y * projection,
+                            m_cameraPos.z + m_lookDir.z * projection);
 
                         // Set up collision sphere
                         float sphereRadius = projection * m_sphereRadiusCoef;
@@ -222,7 +231,9 @@ namespace ai
                         {
                             // Calculate intersection point and direction
                             CVector toIntersection(
-                                contact.geom.pos[0] - m_cameraPos.x, contact.geom.pos[1] - m_cameraPos.y, contact.geom.pos[2] - m_cameraPos.z);
+                                contact.geom.pos[0] - m_cameraPos.x,
+                                contact.geom.pos[1] - m_cameraPos.y,
+                                contact.geom.pos[2] - m_cameraPos.z);
 
                             float intersectionDistance = toIntersection.length() - 5.0f;
                             float scaleFactor = (intersectionDistance >= 1.0f) ? intersectionDistance : 1.0f;
@@ -238,9 +249,8 @@ namespace ai
                                 // Calculate angle between look direction and object direction
                                 CVector lookDirNormalized = m_lookVector.getNormalized();
                                 CVector objDirNormalized = objDirection.getNormalized();
-                                float angleCos =
-                                    lookDirNormalized.z * objDirNormalized.z + lookDirNormalized.y * objDirNormalized.y +
-                                    lookDirNormalized.x * objDirNormalized.x;
+                                float angleCos = lookDirNormalized.z * objDirNormalized.z +
+                                    lookDirNormalized.y * objDirNormalized.y + lookDirNormalized.x * objDirNormalized.x;
 
                                 // Update best candidate if this object has better alignment
                                 if (angleCos > maxAngleCosFromContact)

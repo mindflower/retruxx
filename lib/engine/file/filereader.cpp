@@ -14,7 +14,7 @@ namespace m3d
         IStream* FileReader::Clone()
         {
             // RVA 0x757580
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->Clone();
@@ -25,7 +25,7 @@ namespace m3d
         int FileReader::ReadLine(CStr& s)
         {
             // RVA 0x757AE0
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->ReadLine(s);
@@ -35,7 +35,7 @@ namespace m3d
 
         int FileReader::Close()
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->Close();
@@ -45,14 +45,14 @@ namespace m3d
 
         int FileReader::Open(char const* fileName, OpenFlags openMode)
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
-            return g_Kernel->GetFileServer().OpenFileStream(this, fileName, openMode);
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
+            return M3D_KERNEL->GetFileServer().OpenFileStream(this, fileName, openMode);
         }
 
         unsigned FileReader::PeekBytes(void* dst, unsigned numBytes)
         {
             // RVA 0x757790
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->PeekBytes(dst, numBytes);
@@ -63,7 +63,7 @@ namespace m3d
         int FileReader::Flush()
         {
             // RVA 0x757890
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->Flush();
@@ -73,7 +73,7 @@ namespace m3d
 
         int FileReader::FSeek(long offset, int origin)
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->FSeek(offset, origin);
@@ -83,7 +83,7 @@ namespace m3d
 
         long FileReader::FTell()
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->FTell();
@@ -93,7 +93,7 @@ namespace m3d
 
         unsigned FileReader::ReadBytes(void* dst, unsigned numBytes)
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->ReadBytes(dst, numBytes);
@@ -104,7 +104,7 @@ namespace m3d
         unsigned FileReader::WriteBytes(void const* src, unsigned numBytes)
         {
             // RVA 0x757730
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->WriteBytes(src, numBytes);
@@ -114,7 +114,7 @@ namespace m3d
 
         FILETIME FileReader::GetDate() const
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->GetDate();
@@ -125,7 +125,7 @@ namespace m3d
         bool FileReader::IsOpen()
         {
             // RVA 0x7575D0
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->IsOpen();
@@ -136,7 +136,7 @@ namespace m3d
         FileStream& FileReader::operator<<(char const* c)
         {
             // RVA 0x757920
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject << c;
@@ -146,7 +146,7 @@ namespace m3d
 
         FileStream& FileReader::operator<<(float k)
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 InternalObject->operator<<(k);
@@ -157,7 +157,7 @@ namespace m3d
         FileStream& FileReader::operator<<(unsigned k)
         {
             // RVA 0x757A20
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject << k;
@@ -168,7 +168,7 @@ namespace m3d
         FileStream& FileReader::operator<<(int k)
         {
             // RVA 0x7579A0
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject << k;
@@ -184,7 +184,7 @@ namespace m3d
         FileStream& FileReader::operator>>(CStr& k)
         {
             // RVA 0x7578E0
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject >> k;
@@ -195,7 +195,7 @@ namespace m3d
         FileStream& FileReader::operator>>(float& k)
         {
             // RVA 0x757A60
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject >> k;
@@ -206,7 +206,7 @@ namespace m3d
         FileStream& FileReader::operator>>(int& k)
         {
             // RVA 0x757960
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject >> k;
@@ -217,7 +217,7 @@ namespace m3d
         FileStream& FileReader::operator>>(unsigned& k)
         {
             // RVA 0x7579E0
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 *InternalObject >> k;
@@ -228,7 +228,7 @@ namespace m3d
         int FileReader::Eof()
         {
             // RVA 0x7577F0
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->Eof();
@@ -239,7 +239,7 @@ namespace m3d
         unsigned FileReader::FRead(void* buffer, unsigned size, unsigned count)
         {
             // RVA 0x757B30
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->FRead(buffer, size, count);
@@ -249,7 +249,7 @@ namespace m3d
 
         unsigned FileReader::GetSize() const
         {
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->GetSize();
@@ -260,12 +260,12 @@ namespace m3d
         int FileReader::Error()
         {
             // RVA 0x757840
-            AutoLock guard(g_Kernel->GetFileServer().GetCriticalSecton());
+            AutoLock guard(M3D_KERNEL->GetFileServer().GetCriticalSecton());
             if (InternalObject)
             {
                 return InternalObject->Error();
             }
             return ERROR_OBJECT_NOT_FOUND;
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

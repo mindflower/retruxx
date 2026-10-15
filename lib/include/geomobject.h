@@ -15,27 +15,26 @@ namespace m3d
     struct Triangle
     {
         int index[3];
-
     };
 
     struct GeometryInfo
     {
-        /* 0x0000 */ void* mesh;
-        /* 0x0004 */ unsigned int numIndices;
-        /* 0x0008 */ m3d::Triangle* indices;
-        /* 0x000c */ unsigned char* vertices;
-        /* 0x0010 */ unsigned int vertexStride;
-        /* 0x0014 */ CMatrix* transform;
-        /* 0x0018 */ void* oldMesh;
-    }; /* size: 0x001c */
+        void* mesh;
+        unsigned int numIndices;
+        m3d::Triangle* indices;
+        unsigned char* vertices;
+        unsigned int vertexStride;
+        CMatrix* transform;
+        void* oldMesh;
+    };
 
     struct DecalData
     {
-        /* 0x0000 */ CVector pos;
-        /* 0x000c */ CVector normal;
-        /* 0x0018 */ CVector tangent;
-        /* 0x0024 */ m3d::GeometryInfo toPutOn;
-    }; /* size: 0x0040 */
+        CVector pos;
+        CVector normal;
+        CVector tangent;
+        m3d::GeometryInfo toPutOn;
+    };
 
     class GeomObject : public m3d::Object
     {
@@ -43,21 +42,21 @@ namespace m3d
 
     protected:
         GeomObject();
-        GeomObject(const m3d::GeomObject& rhs);
+        GeomObject(m3d::GeomObject const& rhs);
 
     public:
-        virtual ~GeomObject() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual ~GeomObject() override;
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGeomObject;
         CVector m_translation;
         Quaternion m_rotation;
-        /* 0x0050 */ dxTriMeshData* m_TriData;
-        /* 0x0054 */ CVector* m_Vertices;
-        /* 0x0058 */ int* m_Indices;
-        /* 0x005c */ bool m_needToDeleteInUnlink;
+        dxTriMeshData* m_TriData;
+        CVector* m_Vertices;
+        int* m_Indices;
+        bool m_needToDeleteInUnlink;
         void Release();
         void IncEnabledCellsCount();
         void DecEnabledCellsCount();
@@ -65,32 +64,30 @@ namespace m3d
         dxGeom* GetGeom() const;
         void SetEnabled(bool enabled);
         void SetMayBeEnabled(bool bMayBeEbabled);
-        void SetBounds(const PointBase<int>& startCell, const PointBase<int>& endCell);
-        const PointBase<int>& GetStartCell();
-        const PointBase<int>& GetEndCell();
-        /* 0x005d */ char Padding_169[3];
+        void SetBounds(PointBase<int> const& startCell, PointBase<int> const& endCell);
+        PointBase<int> const& GetStartCell();
+        PointBase<int> const& GetEndCell();
 
     private:
-        /* 0x0060 */ dxGeom* m_geom;
-        /* 0x0064 */ bool m_bMayBeEnabled;
-        /* 0x0065 */ char Padding_170[3];
+        dxGeom* m_geom;
+        bool m_bMayBeEnabled;
         PointBase<int> m_startCell;
         PointBase<int> m_endCell;
-        /* 0x0078 */ int m_enabledCellsCount;
-    }; /* size: 0x007c */
+        int m_enabledCellsCount;
+    };
 
-    class GeomObjectLandscape :  public GeomObject
+    class GeomObjectLandscape : public GeomObject
     {
     public:
         virtual ~GeomObjectLandscape();
-        virtual Class * GetClass() const ;
-        virtual Object * Clone();
-        static Object * CreateObject();
-        static Class * GetBaseClass();
+        virtual Class* GetClass() const;
+        virtual Object* Clone();
+        static Object* CreateObject();
+        static Class* GetBaseClass();
 
     protected:
         GeomObjectLandscape();
-        GeomObjectLandscape(GeomObjectLandscape const &);
+        GeomObjectLandscape(GeomObjectLandscape const&);
 
     public:
         RT_CLASS_DECLARE(GeomObjectLandscape);
@@ -102,13 +99,13 @@ namespace m3d
         GeomObjectStatics();
 
     public:
-        virtual  ~GeomObjectStatics() override /* 0x00 */;
-        virtual m3d::Object* Clone() override /* 0x04 */;
-        static m3d::Object* __fastcall CreateObject();
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x34 */;
+        virtual ~GeomObjectStatics() override;
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         static m3d::Class m_classGeomObjectStatics;
-    }; /* size: 0x007c */
+    };
 
     class GeomObjectRoad : public GeomObject
     {
@@ -165,4 +162,4 @@ namespace m3d
     public:
         RT_CLASS_DECLARE(GeomObjectPassCell);
     };
-}
+}  // namespace m3d

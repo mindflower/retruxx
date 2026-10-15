@@ -62,26 +62,24 @@ namespace m3d
         friend class GameAttractor;
 
     public:
-        /* 0x0000 */ m3d::CVar m_lsInscatterCoeff;
-        /* 0x002c */ m3d::CVar m_lsOutscatterCoeff;
-        /* 0x0058 */ m3d::CVar m_skyInscatterCoeff;
-        /* 0x0084 */ m3d::CVar m_skyOutscatterCoeff;
-        /* 0x00b0 */ m3d::CVar m_sunColorR;
-        /* 0x00dc */ m3d::CVar m_sunColorG;
-        /* 0x0108 */ m3d::CVar m_sunColorB;
-        /* 0x0134 */ m3d::CVar m_fogStart;
-        /* 0x0160 */ bool m_isWeatherActual;
-        /* 0x0161 */ char Padding_168[3];
-        /* 0x0164 */ dxGeom* m_borderWallGeoms[6];
+        m3d::CVar m_lsInscatterCoeff;
+        m3d::CVar m_lsOutscatterCoeff;
+        m3d::CVar m_skyInscatterCoeff;
+        m3d::CVar m_skyOutscatterCoeff;
+        m3d::CVar m_sunColorR;
+        m3d::CVar m_sunColorG;
+        m3d::CVar m_sunColorB;
+        m3d::CVar m_fogStart;
+        bool m_isWeatherActual;
+        dxGeom* m_borderWallGeoms[6];
 
     protected:
-        /* 0x017c */ m3d::Landscape m_landscape;
-        /* 0x908c */ char Padding_169[116];
-        /* 0x9100 */ m3d::SceneGraph m_sceneGraph;
-        /* 0x39e980 */ m3d::RoadManager m_roadManager;
-        /* 0x39e99c */ m3d::WeatherManager m_weatherManager;
-        /* 0x39e9fc */ m3d::WheelTraceMgr m_wheelTracesMgr;
-        /* 0x39ea2c */ int m_lastId;
+        m3d::Landscape m_landscape;
+        m3d::SceneGraph m_sceneGraph;
+        m3d::RoadManager m_roadManager;
+        m3d::WeatherManager m_weatherManager;
+        m3d::WheelTraceMgr m_wheelTracesMgr;
+        int m_lastId;
 
     public:
         int GetLastID();
@@ -89,15 +87,15 @@ namespace m3d
         dxSpace* GetOdeSpace();
 
     protected:
-        /* 0x39ea30 */ m3d::rend::TexHandle m_texMiniMap;
-        /* 0x39ea34 */ m3d::rend::TexHandle m_texSunGlow;
-        /* 0x39ea38 */ m3d::TexClouds* m_texClouds;
-        bool LoadWorld(const CStr& filename);
+        m3d::rend::TexHandle m_texMiniMap;
+        m3d::rend::TexHandle m_texSunGlow;
+        m3d::TexClouds* m_texClouds;
+        bool LoadWorld(CStr const& filename);
 
     public:
         void ProcessCollisionStuff();
         void ProcessCollisionStuffOnNode(m3d::SgNode* node);
-        bool SaveWorld(const CStr& filename);
+        bool SaveWorld(CStr const& filename);
         void UpdateSkyParams();
         int RenderSky(m3d::Landscape::LandRenderMode rendMode);
         unsigned int GetWeatherFogColor() const;
@@ -114,25 +112,25 @@ namespace m3d
         bool GetShadowVisibilityFromWeather() const;
 
     protected:
-        /* 0x39ea3c */ m3d::CClient* m_owner;
+        m3d::CClient* m_owner;
 
     public:
-        /* 0x39ea40 */ m3d::Level* m_level;
-        static void __fastcall Register();
+        m3d::Level* m_level;
+        static void Register();
         void SetOwner(m3d::CClient* cl);
-        const CVector& GetSun(float azimuth) const;
+        CVector const& GetSun(float azimuth) const;
         float GetSunAscention() const;
         CVector GetScatteringSunColor() const;
         void UpdateSun();
 
     protected:
-        /* 0x39ea44 */ CVector m_sunDir;
-        /* 0x39ea50 */ float m_sunAzimuth;
-        /* 0x39ea54 */ float m_sunAscention;
+        CVector m_sunDir;
+        float m_sunAzimuth;
+        float m_sunAscention;
 
     public:
         void RefreshObjectsOnLandscapeRect(int, int, int, int);
-        void RefreshObjectsOnLandscapeRect(const CVector& org, float r);
+        void RefreshObjectsOnLandscapeRect(CVector const& org, float r);
         CWorld();
         ~CWorld();
         m3d::SceneGraph& GetGraph();
@@ -141,7 +139,7 @@ namespace m3d
         m3d::WheelTraceMgr& GetWheelTracesMgr();
         void Release();
         void New(CCamera& cam, int lsSize, float hgt0);
-        int Load(const CStr& levelname, CCamera& Cam, bool bQuiet);
+        int Load(CStr const& levelname, CCamera& Cam, bool bQuiet);
         void Render();
         void Update();
         int CreateGeomsRepresentingSceneNodes();
@@ -152,33 +150,32 @@ namespace m3d
 
         struct EffectsData
         {
-            /* 0x0000 */ bool onlyOne;
-            /* 0x0001 */ char Padding_166[3];
-            /* 0x0004 */ m3d::SgNode* effect;
-            /* 0x0008 */ retruxx::vector<m3d::SgNode*, retruxx::allocator<m3d::SgNode*> > effects;
-        }; /* size: 0x0018 */
+            bool onlyOne;
+            m3d::SgNode* effect;
+            retruxx::vector<m3d::SgNode*, retruxx::allocator<m3d::SgNode*>> effects;
+        };
 
-        using FxRemap = retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > >;
-        using FxVector = retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData> >;
+        using FxRemap =
+            retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int>>>;
+        using FxVector = retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData>>;
 
     protected:
-        /* 0x39ea58 */ retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData> > m_effectsFactory;
-        /* 0x39ea68 */ retruxx::vector<CStr, retruxx::allocator<CStr> > fxNames;
-        /* 0x39ea78 */ retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int> > > fxRemap;
+        retruxx::vector<m3d::CWorld::EffectsData, retruxx::allocator<m3d::CWorld::EffectsData>> m_effectsFactory;
+        retruxx::vector<CStr, retruxx::allocator<CStr>> fxNames;
+        retruxx::map<CStr, int, retruxx::less<CStr>, retruxx::allocator<retruxx::pair<CStr const, int>>> fxRemap;
         m3d::SgNode* ReadPrefab(ref_ptr<m3d::cmn::XmlFile> file, ref_ptr<m3d::cmn::XmlNode> pnode);
 
     public:
-        const retruxx::vector<CStr, retruxx::allocator<CStr> >& GetFxNames() const;
-        int GetFxId(const CStr& fxName);
+        retruxx::vector<CStr, retruxx::allocator<CStr>> const& GetFxNames() const;
+        int GetFxId(CStr const& fxName);
         m3d::SgNode* CreatePrefabsNode(int type);
-        int CreatePrefabsFromFile(const char* fileName);
+        int CreatePrefabsFromFile(char const* fileName);
         void ReleasePrefabs();
 
     private:
-        /* 0x39ea84 */ m3d::Profiler* m_profilerUpdateOde;
-        /* 0x39ea88 */ char Padding_170[120];
+        m3d::Profiler* m_profilerUpdateOde;
 
         void LoadStaticObstacles();
         void CreatePlayerPassMapGeoms();
-    }; /* size: 0x39eb00 */
-}
+    };
+}  // namespace m3d

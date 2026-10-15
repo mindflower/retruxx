@@ -41,8 +41,7 @@ namespace ai
         // RVA 0x7D2FC0 - the squared closing speed along the contact normal,
         // with a dead zone so that gentle contact does no damage at all. The
         // configured minimum is in km/h, hence the conversion to m/s.
-        float const velProjection =
-            fabsf(deltaVel.z * normal.z + deltaVel.y * normal.y + deltaVel.x * normal.x);
+        float const velProjection = fabsf(deltaVel.z * normal.z + deltaVel.y * normal.y + deltaVel.x * normal.x);
 
         float hitVelocity = velProjection - M3D_ENGINE_CFG.m_ai_min_hit_velocity.GetF() * 0.27777779f;
         if (hitVelocity < 0.0f)
@@ -88,8 +87,8 @@ namespace ai
 
         // Make the normal point away from the body we are damaging, whichever
         // way ODE happened to report it.
-        float const facing = ((posZ - bodyPos.z) * normal.z + (posY - bodyPos.y) * normal.y) +
-            (posX - bodyPos.x) * normal.x;
+        float const facing =
+            ((posZ - bodyPos.z) * normal.z + (posY - bodyPos.y) * normal.y) + (posX - bodyPos.x) * normal.x;
         if (facing < 0.0f)
         {
             normal.x = -normal.x;
@@ -184,15 +183,15 @@ namespace ai
             }
             if (dSpeed > SPARKLE_SPEED)
             {
-                CStr const modelname = (dummy->GetPhysicState() & 1) != 0 ? "ET_PS_VEHICLESPARKLE"
-                                                                         : "ET_PS_STATICSSPARKLE";
+                CStr const modelname =
+                    (dummy->GetPhysicState() & 1) != 0 ? "ET_PS_VEHICLESPARKLE" : "ET_PS_STATICSSPARKLE";
                 PhysicBody::CreateEffectNode(modelname, contactPos, Quaternion(0.0f, 0.0f, 0.0f, 1.0f), true, 1.0f);
                 return 1;
             }
             if (dSpeed > SPARKLE_SLOW_SPEED)
             {
-                CStr const modelname = (dummy->GetPhysicState() & 1) != 0 ? "ET_PS_VEHICLESPARKLE_SLOW"
-                                                                         : "ET_PS_STATICSSPARKLE_SLOW";
+                CStr const modelname =
+                    (dummy->GetPhysicState() & 1) != 0 ? "ET_PS_VEHICLESPARKLE_SLOW" : "ET_PS_STATICSSPARKLE_SLOW";
                 PhysicBody::CreateEffectNode(modelname, contactPos, Quaternion(0.0f, 0.0f, 0.0f, 1.0f), true, 1.0f);
                 return 1;
             }
@@ -388,8 +387,7 @@ namespace ai
             }
             if (speed > SPARKLE_SLOW_SPEED)
             {
-                CStr const modelname =
-                    speed > SPARKLE_SPEED ? "ET_PS_STATICSSPARKLE" : "ET_PS_STATICSSPARKLE_SLOW";
+                CStr const modelname = speed > SPARKLE_SPEED ? "ET_PS_STATICSSPARKLE" : "ET_PS_STATICSSPARKLE_SLOW";
                 CVector pos;
                 pos.x = contacts->geom.pos[0];
                 pos.y = contacts->geom.pos[1];
@@ -505,12 +503,8 @@ namespace ai
 
             if (!part->m_SplashEffect)
             {
-                part->m_SplashEffect = PhysicBody::CreateEffectNode(
-                    "ET_PS_WATERSPLASH",
-                    pos,
-                    vehicle->GetRotation(),
-                    false,
-                    1.0f);
+                part->m_SplashEffect =
+                    PhysicBody::CreateEffectNode("ET_PS_WATERSPLASH", pos, vehicle->GetRotation(), false, 1.0f);
             }
             part->m_SplashEffect->SetOriginAbs(pos);
             part->m_SplashEffect->SetRotation(vehicle->GetRotation());
@@ -595,4 +589,4 @@ namespace ai
         }
         return numContacts != 0;
     }
-}
+}  // namespace ai

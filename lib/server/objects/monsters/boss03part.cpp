@@ -25,7 +25,12 @@ namespace ai
         return VehiclePartPrototypeInfo::LoadFromXML(xmlFile, xmlNode);
     }
 
-    int Boss03Part::CollideBoss03PartAndVehiclePart(Boss03Part* boss03Part, VehiclePart* vp, dContact* contact, unsigned& numContacts, bool reverse)
+    int Boss03Part::CollideBoss03PartAndVehiclePart(
+        Boss03Part* boss03Part,
+        VehiclePart* vp,
+        dContact* contact,
+        unsigned& numContacts,
+        bool reverse)
     {
         // RVA 0x806F60 - the boss's parts do not collide with anything on the boss's side.
         if (vp->GetBelong() == boss03Part->GetBelong())

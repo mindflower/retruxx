@@ -102,7 +102,7 @@ namespace ai
 
     void TeamTacticWithRolesPrototypeInfo::PostLoad()
     {
-        for (auto const& roleName :m_rolePrototypeNames)
+        for (auto const& roleName : m_rolePrototypeNames)
         {
             auto const id = thePrototypeManager->GetPrototypeId(roleName);
             if (id != -1)
@@ -134,7 +134,8 @@ namespace ai
     TeamTacticWithRolesPrototypeInfo const* TeamTacticWithRoles::GetPrototypeInfo() const
     {
         // RVA 0x801660 - NOTE: the prototype is cast without a type check.
-        return static_cast<TeamTacticWithRolesPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<TeamTacticWithRolesPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     void TeamTacticWithRoles::AssignAgainstVehicle(Team* v, Vehicle const* target)
@@ -153,7 +154,8 @@ namespace ai
         return ai::TeamRoleManager::FitAgainstVehicle(this, v, target);
     }
 
-    void TeamTacticWithRoles::GetRolePrototypeIdsEx(int vehicleNum, std::vector<int, std::allocator<int>>& prototypeIds) const
+    void TeamTacticWithRoles::GetRolePrototypeIdsEx(int vehicleNum, std::vector<int, std::allocator<int>>& prototypeIds)
+        const
     {
         // RVA 0x801A70 - one role for each of vehicleNum vehicles: the tactic's roles repeated as
         // often as needed, and when that gives too many, shuffled and cut down to size.
@@ -223,4 +225,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be cloned\"");
         return nullptr;
     }
-}
+}  // namespace ai

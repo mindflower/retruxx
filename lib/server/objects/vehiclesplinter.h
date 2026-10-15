@@ -27,4 +27,4 @@ namespace ai
     public:
         RT_CLASS_DECLARE(VehicleSplinter);
     };
-}
+}  // namespace ai

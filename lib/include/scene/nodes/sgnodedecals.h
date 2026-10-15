@@ -33,4 +33,4 @@ namespace m3d
     private:
         DecalsList m_decals;
     };
-}
+}  // namespace m3d

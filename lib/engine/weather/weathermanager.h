@@ -19,26 +19,25 @@ namespace m3d
         friend class CWorld;
 
     private:
-        /* 0x0000 */ retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*> > m_weatherStorage;
-        /* 0x0010 */ retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*> > m_curWeatherStorage;
-        /* 0x0020 */ m3d::Weather* m_currentWeather = nullptr;
-        /* 0x0024 */ float m_cloudsOffset = 0.0;
-        /* 0x0028 */ m3d::rend::TexHandle m_starsTexture;
-        /* 0x002c */ CStr m_StarsTextureName;
-        /* 0x0038 */ m3d::rend::TexHandle m_cloudTextureHandle;
-        /* 0x003c */ m3d::GlobalTimeParams m_curDayTime;
-        /* 0x0040 */ float m_globalTimeParams[4];
-        /* 0x0050 */ bool m_bEdit = false;
-        /* 0x0051 */ char Padding_90[3];
-        /* 0x0054 */ m3d::rend::VbHandle m_vbSky;
-        /* 0x0058 */ m3d::rend::IbHandle m_ibSky;
-        /* 0x005c */ m3d::CWorld* m_owner;
+        retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*>> m_weatherStorage;
+        retruxx::vector<m3d::Weather*, retruxx::allocator<m3d::Weather*>> m_curWeatherStorage;
+        m3d::Weather* m_currentWeather = nullptr;
+        float m_cloudsOffset = 0.0;
+        m3d::rend::TexHandle m_starsTexture;
+        CStr m_StarsTextureName;
+        m3d::rend::TexHandle m_cloudTextureHandle;
+        m3d::GlobalTimeParams m_curDayTime;
+        float m_globalTimeParams[4];
+        bool m_bEdit = false;
+        m3d::rend::VbHandle m_vbSky;
+        m3d::rend::IbHandle m_ibSky;
+        m3d::CWorld* m_owner;
 
     public:
-        WeatherManager(const m3d::WeatherManager&);
+        WeatherManager(m3d::WeatherManager const&);
         WeatherManager();
-        int ReadFromXmlFile(const char* name);
-        int WriteToXmlFile(const char* name);
+        int ReadFromXmlFile(char const* name);
+        int WriteToXmlFile(char const* name);
         int SaveWeatherStateToXMLNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
         int LoadWeatherStateFromXMLNode(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode);
         int CreateSky();
@@ -54,22 +53,22 @@ namespace m3d
         float GetShadowTransparencyFromWeather() const;
         bool GetShadowVisibilityFromWeather() const;
         void SetActiveWeather(unsigned int Cur);
-        void SetActiveWeatherByName(const CStr& name);
-        const m3d::Weather* GetActiveWeather() const;
+        void SetActiveWeatherByName(CStr const& name);
+        m3d::Weather const* GetActiveWeather() const;
         m3d::Weather* GetWeather(unsigned int N);
-        m3d::Weather* GetWeatherByName(const CStr& name);
+        m3d::Weather* GetWeatherByName(CStr const& name);
         std::size_t GetNumWeathers() const;
         unsigned int GetGlobalTimeParamsNum() const;
-        const char* GetGlobalTimeParamName(unsigned int i) const;
+        char const* GetGlobalTimeParamName(unsigned int i) const;
         float GetGlobalTimeParam(unsigned int iParamIdx) const;
         float SetGlobalTimeParam(unsigned int iParamIdx, float fValue);
         void SetEdit(bool);
         void ChangeStarsTexture(CStr& Name);
-        const CStr& GetStarsTextureName() const;
-        void AddWeather(const CStr& Name, const CStr& ClassName);
+        CStr const& GetStarsTextureName() const;
+        void AddWeather(CStr const& Name, CStr const& ClassName);
         int DeleteWeather(unsigned int iWeatherIdx);
         void SetOwner(m3d::CWorld* owner);
         void ChangeCloudsTexture();
         void ChangeLightmapTexture();
-    }; /* size: 0x0060 */
-}
+    };
+}  // namespace m3d

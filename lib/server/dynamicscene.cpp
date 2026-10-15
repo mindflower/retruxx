@@ -92,18 +92,18 @@ namespace ai
     class ShellTraceLineCallback : public TraceLineCallback
     {
     private:
-        /* 0x0004 */ ai::Bullet const& m_Bullet;
+        ai::Bullet const& m_Bullet;
 
     public:
         ShellTraceLineCallback(ai::Bullet const& bullet) : m_Bullet(bullet)
         {
         }
 
-        virtual bool CollideId(int objId) const override /* 0x04 */
+        virtual bool CollideId(int objId) const override
         {
             return objId != m_Bullet.GetEmittedObjId();
         }
-        virtual bool CollidePhysicObj(ai::PhysicObj const* physicObj) const override /* 0x08 */
+        virtual bool CollidePhysicObj(ai::PhysicObj const* physicObj) const override
         {
             if (IS_KIND_OF(physicObj, Shell))
             {
@@ -112,7 +112,7 @@ namespace ai
             }
             return true;
         }
-    }; /* size: 0x0008 */
+    };
 
     int FillDefaultContactParameters(dContact* contacts, unsigned int numContacts)
     {
@@ -1019,8 +1019,8 @@ namespace ai
         }
 
         // Register player as global
-        m3d::g_Kernel->UnRegisterGlobal("g_Player");
-        m3d::g_Kernel->RegisterGlobal(ai::thePlayer, "g_Player");
+        M3D_KERNEL->UnRegisterGlobal("g_Player");
+        M3D_KERNEL->RegisterGlobal(ai::thePlayer, "g_Player");
 
         // Post-load processing for all objects
         for (auto* obj : *theObjects)
@@ -1168,8 +1168,8 @@ namespace ai
         bool debugAnything = false;
 
         if (bWaypointDebug || bDebugPhysicObjects || bDebugTeams || bDebugPassmap || bDebugPlayerPassmap ||
-            bDebugLocations || bDebugMouse || bDebugInfections || bDebugObstacles || bDebugCompositeObjs || bDebugGuns ||
-            cinematic->GetDebugMode())
+            bDebugLocations || bDebugMouse || bDebugInfections || bDebugObstacles || bDebugCompositeObjs ||
+            bDebugGuns || cinematic->GetDebugMode())
         {
             debugAnything = true;
             M3D_RENDERER->PushZbState(m3d::rend::ZB_DISABLE);
@@ -1229,8 +1229,8 @@ namespace ai
                 Map* const map = Map::theGlobalMap;
                 PlayerPassMap const* const playerPassMap = pServer->GetPlayerPassMap();
 
-                int const radius = std::clamp(
-                    static_cast<int>(M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF() * 8.0f + 4.0f), 4, 12);
+                int const radius =
+                    std::clamp(static_cast<int>(M3D_ENGINE_CFG.m_lsViewDistanceDivider.GetF() * 8.0f + 4.0f), 4, 12);
                 m3d::SceneGraph& graph = m3d::pClient->GetWorld().GetGraph();
                 graph.SortedCellsStartFetching(0, radius);
 
@@ -1252,10 +1252,10 @@ namespace ai
                         MapIndex const& lastIndex = map->GetLastIndex();
                         float const scaleX = 1.0f / cellSize.x;
                         float const scaleZ = 1.0f / cellSize.y;
-                        int const x0 = std::clamp(
-                            static_cast<int>(static_cast<float>(xi) * scaleX * 128.0f), 0, lastIndex.x);
-                        int const z0 = std::clamp(
-                            static_cast<int>(static_cast<float>(zi) * scaleZ * 128.0f), 0, lastIndex.y);
+                        int const x0 =
+                            std::clamp(static_cast<int>(static_cast<float>(xi) * scaleX * 128.0f), 0, lastIndex.x);
+                        int const z0 =
+                            std::clamp(static_cast<int>(static_cast<float>(zi) * scaleZ * 128.0f), 0, lastIndex.y);
                         int const x1 = std::clamp(
                             static_cast<int>(static_cast<float>(xi + 1) * scaleX * 128.0f) + 1, 0, lastIndex.x);
                         int const z1 = std::clamp(
@@ -1291,8 +1291,7 @@ namespace ai
 
                                 if (bDebugPlayerPassmap)
                                 {
-                                    unsigned int const color =
-                                        playerPassMap->GetValue(x, z) ? 0xFF00FF00 : 0xFFFF0000;
+                                    unsigned int const color = playerPassMap->GetValue(x, z) ? 0xFF00FF00 : 0xFFFF0000;
                                     DebugCross(pos, color, 15.0f, 2.0f);
                                 }
                             }
@@ -1337,8 +1336,7 @@ namespace ai
                 float const mouseY = static_cast<float>(M3D_APP->GetMouseY());
                 float const mouseX = static_cast<float>(M3D_APP->GetMouseX());
                 CVector const dir = M3D_RENDERER->Unproject(CVector2(mouseX, mouseY));
-                CVector const dest(
-                    dir.x * 20000.0f + org.x, dir.y * 20000.0f + org.y, dir.z * 20000.0f + org.z);
+                CVector const dest(dir.x * 20000.0f + org.x, dir.y * 20000.0f + org.y, dir.z * 20000.0f + org.z);
 
                 CVector hitPoint;
                 if (graph.TraceLine(hitPoint, org, dest, classes, 0))

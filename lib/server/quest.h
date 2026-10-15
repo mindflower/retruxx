@@ -10,8 +10,8 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 namespace ai
 {
@@ -43,91 +43,88 @@ namespace ai
                 PRECEDERS_TAKEN = 2,
             };
 
-            /* 0x0000 */ ConditionOperator m_operator;
-            /* 0x0004 */ ConditionType m_type;
+            ConditionOperator m_operator;
+            ConditionType m_type;
             ConditionToGive(ConditionOperator op, ConditionType type);
-        }; /* size: 0x0008 */
+        };
 
     public:
-        Quest(const Quest&);
+        Quest(Quest const&);
         Quest();
-        virtual  ~Quest() /* 0x00 */;
-        virtual bool LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x04 */;
-        virtual void PostLoad() /* 0x08 */;
+        virtual ~Quest();
+        virtual bool LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+        virtual void PostLoad();
         int GetId() const;
         int GetParentId() const;
-        const CStr& GetName() const;
+        CStr const& GetName() const;
         bool bSubscribeAutomatic() const;
-        const ConditionToGive& GetConditionToGive() const;
+        ConditionToGive const& GetConditionToGive() const;
         SubQuestCondition GetSubQuestCondition() const;
         bool bCheckAllSubQuests() const;
-        const retruxx::vector<int>& GetSubQuestIds() const;
-        const retruxx::vector<int>& GetSubsequentQuestIds() const;
-        const retruxx::vector<int>& GetPrecedingQuestIds() const;
-        const CStr& GetFuncOnComplete() const;
-        const CStr& GetFuncOnFail() const;
-        const CStr& GetFuncOnTake() const;
-        const CStr& GetFuncOnCanBeGiven() const;
+        retruxx::vector<int> const& GetSubQuestIds() const;
+        retruxx::vector<int> const& GetSubsequentQuestIds() const;
+        retruxx::vector<int> const& GetPrecedingQuestIds() const;
+        CStr const& GetFuncOnComplete() const;
+        CStr const& GetFuncOnFail() const;
+        CStr const& GetFuncOnTake() const;
+        CStr const& GetFuncOnCanBeGiven() const;
         int64_t getTimeForComplete() const;
-        const retruxx::vector<CStr>& getActionLevels() const;
+        retruxx::vector<CStr> const& getActionLevels() const;
 
     protected:
-        /* 0x0008 */ int m_questId;
-        /* 0x000c */ int m_parentQuestId;
-        /* 0x0010 */ bool m_bSubscribeAutomatic;
-        /* 0x0011 */ char Padding_160[3];
-        /* 0x0014 */ retruxx::vector<int> m_subQuestIds;
-        /* 0x0024 */ SubQuestCondition m_subQuestCondition;
-        /* 0x0028 */ bool m_bCheckAllSubQuests;
-        /* 0x0029 */ char Padding_161[3];
-        /* 0x002c */ retruxx::vector<int> m_subsequentQuestIds;
-        /* 0x003c */ retruxx::vector<int> m_precedingQuestIds;
-        /* 0x004c */ ConditionToGive m_conditionToGive;
-        /* 0x0054 */ CStr m_name;
-        /* 0x0060 */ CStr m_parentQuestName;
-        /* 0x006c */ retruxx::vector<CStr> m_subQuestNames;
-        /* 0x007c */ retruxx::vector<CStr> m_precedingQuestNames;
-        /* 0x008c */ CStr m_funcOnComplete;
-        /* 0x0098 */ CStr m_funcOnFail;
-        /* 0x00a4 */ CStr m_funcOnTake;
-        /* 0x00b0 */ CStr m_funcOnCanBeGiven;
-        /* 0x00bc */ char Padding_162[4];
-        /* 0x00c0 */ int64_t m_TimeForComplete;
-        /* 0x00c8 */ retruxx::vector<CStr> m_ActionLevels;
-    }; /* size: 0x00d8 */
+        int m_questId;
+        int m_parentQuestId;
+        bool m_bSubscribeAutomatic;
+        retruxx::vector<int> m_subQuestIds;
+        SubQuestCondition m_subQuestCondition;
+        bool m_bCheckAllSubQuests;
+        retruxx::vector<int> m_subsequentQuestIds;
+        retruxx::vector<int> m_precedingQuestIds;
+        ConditionToGive m_conditionToGive;
+        CStr m_name;
+        CStr m_parentQuestName;
+        retruxx::vector<CStr> m_subQuestNames;
+        retruxx::vector<CStr> m_precedingQuestNames;
+        CStr m_funcOnComplete;
+        CStr m_funcOnFail;
+        CStr m_funcOnTake;
+        CStr m_funcOnCanBeGiven;
+        int64_t m_TimeForComplete;
+        retruxx::vector<CStr> m_ActionLevels;
+    };
 
     class QuestItemPrototypeInfo : public PrototypeInfo
     {
     public:
         QuestItemPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        const CStr& GetModelName() const;
-        virtual Obj* CreateTargetObject() const override /* 0x10 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        CStr const& GetModelName() const;
+        virtual Obj* CreateTargetObject() const override;
 
     private:
         CStr m_modelName;
-    }; /* size: 0x004c */
+    };
 
     class QuestManager
     {
     public:
-        QuestManager(const QuestManager&);
+        QuestManager(QuestManager const&);
         QuestManager();
-        virtual  ~QuestManager() /* 0x00 */;
-        virtual bool LoadFromXmlFile(const char* fileName) /* 0x04 */;
-        virtual int AddQuest(Quest* quest) /* 0x08 */;
-        int GetQuestIdByName(const CStr& questName) const;
-        virtual Quest* GetQuestById(int questId) const /* 0x0c */;
+        virtual ~QuestManager();
+        virtual bool LoadFromXmlFile(char const* fileName);
+        virtual int AddQuest(Quest* quest);
+        int GetQuestIdByName(CStr const& questName) const;
+        virtual Quest* GetQuestById(int questId) const;
         unsigned int GetNumQuests() const;
-        const retruxx::set<int>* GetMutexByQuestId(int questId) const;
-        void StrToQuestIdVector(const CStr& str, retruxx::vector<int>& questIds);
-        CStr QuestIdVectorToStr(const retruxx::vector<int>& questIds);
+        retruxx::set<int> const* GetMutexByQuestId(int questId) const;
+        void StrToQuestIdVector(CStr const& str, retruxx::vector<int>& questIds);
+        CStr QuestIdVectorToStr(retruxx::vector<int> const& questIds);
 
     protected:
         void _Clear();
-        /* 0x0004 */ retruxx::vector<Quest*> m_quests;
-        /* 0x0014 */ retruxx::vector<retruxx::set<int>> m_mutexes;
-    }; /* size: 0x0024 */
+        retruxx::vector<Quest*> m_quests;
+        retruxx::vector<retruxx::set<int>> m_mutexes;
+    };
 
     inline QuestManager* theQuestManager = nullptr;
-}
+}  // namespace ai

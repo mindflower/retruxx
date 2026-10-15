@@ -15,26 +15,33 @@ class CClipper
 public:
     // 26 planes of (normal, distance): the PDB dump prints the dimensions the other way round, but the binary
     // strides planes by 16 bytes.
-    /* 0x0000 */ float m_planes[26][4];    /* 0x01a0 */ unsigned int m_indices[156];
-    /* 0x0410 */ unsigned int m_enabled;
-    /* 0x0414 */ unsigned int m_nfrustums;
+    float m_planes[26][4];
+    unsigned int m_indices[156];
+    unsigned int m_enabled;
+    unsigned int m_nfrustums;
 
     void createIndices();
-    static void __fastcall buildfrustum(float* fr, const CVector* v, const CMatrix& m, const CVector& org, float offset);
-    static void __fastcall buildfrustum(float* fr, const CVector& n, const CMatrix& m, const CVector& org, float offset);
-    void createScreenFrustums(const CVector& origin, const CMatrix& rotMat, float fovx, float fovy, float znear, float zfar);
+    static void buildfrustum(float* fr, CVector const* v, CMatrix const& m, CVector const& org, float offset);
+    static void buildfrustum(float* fr, CVector const& n, CMatrix const& m, CVector const& org, float offset);
+    void createScreenFrustums(
+        CVector const& origin,
+        CMatrix const& rotMat,
+        float fovx,
+        float fovy,
+        float znear,
+        float zfar);
     void CreateScreenFrustums(float farz, float lessen, float nearz, float fov);
     void enableAll();
-    int enableSetFromBox(float* minmaxs, const CVector& ofs);
-    void enableUpdateFromBox(float* minmaxs, const CVector& ofs);
+    int enableSetFromBox(float* minmaxs, CVector const& ofs);
+    void enableUpdateFromBox(float* minmaxs, CVector const& ofs);
     unsigned int enableGetState() const;
     void enableSetState(unsigned int news);
-    int testBBox(tbEnum test, float* minmaxs, const CVector& ofs) const;
-    int testSphere(const CVector& o, float r) const;
-    int testVertexInside(const CVector& v);
+    int testBBox(tbEnum test, float* minmaxs, CVector const& ofs) const;
+    int testSphere(CVector const& o, float r) const;
+    int testVertexInside(CVector const& v);
     int clipPolyInPlace(CVector* verts, int nverts);
     int clipPolyInPlaceZ(CVector* verts, int nverts);
     int clipLineZ(CVector* dst, CVector* src);
-    void CreateFromWinding(int dir, CVector* wnd, int n, const CVector& campos, CPlane* nearplane);
-    void translate(const CVector& add);
-}; /* size: 0x0418 */
+    void CreateFromWinding(int dir, CVector* wnd, int n, CVector const& campos, CPlane* nearplane);
+    void translate(CVector const& add);
+};

@@ -19,29 +19,29 @@ namespace ai
         };
 
     public:
-        int GetQuestId() const ;
-        __int64 getTakeTime() const ;
+        int GetQuestId() const;
+        __int64 getTakeTime() const;
         ~QuestState();
         QuestState(int);
         bool PostLoad();
-        Quest * GetQuest() const ;
+        Quest* GetQuest() const;
         void RecalcState();
-        bool bCanBeGiven() const ;
-        void OnPlayerPassToMap(CStr const &);
+        bool bCanBeGiven() const;
+        void OnPlayerPassToMap(CStr const&);
         bool Fail();
-        bool SaveToXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode *) const ;
-        CompleteStatus GetCompleteStatus() const ;
-        bool LoadFromXml(m3d::cmn::XmlFile *,m3d::cmn::XmlNode const *);
+        bool SaveToXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode*) const;
+        CompleteStatus GetCompleteStatus() const;
+        bool LoadFromXml(m3d::cmn::XmlFile*, m3d::cmn::XmlNode const*);
         void RecalcCanBeGiven();
-        bool bIsTaken() const ;
+        bool bIsTaken() const;
         bool Take();
-        static bool __fastcall LessByTakeTime(QuestState const *,QuestState const *);
+        static bool LessByTakeTime(QuestState const*, QuestState const*);
         void Update();
         bool Complete();
 
     private:
         bool _SetCompleteStatusUnsafe(CompleteStatus);
-        bool _bIsLeaf() const ;
+        bool _bIsLeaf() const;
         int m_questId;
         CompleteStatus m_completeStatus;
         bool m_bIsTaken;
@@ -82,7 +82,7 @@ namespace ai
 
     private:
         void _ExecuteFunctionCode(CStr const&, CStr const&);
-        void _UpdateCanBeGiven(std::queue<int, std::deque<int, std::allocator<int> > >&);
+        void _UpdateCanBeGiven(std::queue<int, std::deque<int, std::allocator<int>>>&);
         void _UpdateCanBeGiven(int);
         void _RecalcStates(int);
         QuestState* _GetQuestStateById(int) const;
@@ -98,4 +98,4 @@ namespace ai
     };
 
     inline QuestStateManager* theQuestStateManager = nullptr;
-}
+}  // namespace ai

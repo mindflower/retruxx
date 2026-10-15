@@ -8,6 +8,7 @@ namespace m3d
         class ModalWnd : public Wnd
         {
             friend class WndStation;
+
         public:
             static Class* GetBaseClass();
             static Object* CreateObject();
@@ -39,5 +40,5 @@ namespace m3d
         private:
             Wnd* m_curControl = nullptr;
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

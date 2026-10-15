@@ -58,14 +58,16 @@ namespace ai
 
         float const wheelBase = wheels.front().m_initialPos.z - wheels.back().m_initialPos.z;
         CVector const velocityDir = m_velocity.getNormalized();
-        float const forwardMult = velocityDir.y * vehicleDir.y + velocityDir.z * vehicleDir.z + velocityDir.x * vehicleDir.x;
+        float const forwardMult =
+            velocityDir.y * vehicleDir.y + velocityDir.z * vehicleDir.z + velocityDir.x * vehicleDir.x;
         float const turnFactor = static_cast<float>(2.0 / (1.0 - cos(steer)));
         int const turnDirection = steer >= 0.0f ? 1 : -1;
 
         CMatrix rot;
         rot.rotTranslate(vehicleRot, ZeroVector);
         CVector const up(rot._21, rot._22, rot._23);
-        double const speed = sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z);
+        double const speed =
+            sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z);
         float const yaw =
             static_cast<float>(speed / (sqrt(turnFactor) * -turnDirection * wheelBase) * forwardMult * elapsedTime);
 
@@ -173,9 +175,12 @@ namespace ai
         m._44 = 1.0f;
         CMatrix const rotation(m);
         CVector const up(
-            rotation._31 * INITIAL_UP_DIRECTION.z + rotation._21 * INITIAL_UP_DIRECTION.y + rotation._11 * INITIAL_UP_DIRECTION.x,
-            rotation._32 * INITIAL_UP_DIRECTION.z + rotation._22 * INITIAL_UP_DIRECTION.y + rotation._12 * INITIAL_UP_DIRECTION.x,
-            rotation._33 * INITIAL_UP_DIRECTION.z + rotation._23 * INITIAL_UP_DIRECTION.y + rotation._13 * INITIAL_UP_DIRECTION.x);
+            rotation._31 * INITIAL_UP_DIRECTION.z + rotation._21 * INITIAL_UP_DIRECTION.y +
+                rotation._11 * INITIAL_UP_DIRECTION.x,
+            rotation._32 * INITIAL_UP_DIRECTION.z + rotation._22 * INITIAL_UP_DIRECTION.y +
+                rotation._12 * INITIAL_UP_DIRECTION.x,
+            rotation._33 * INITIAL_UP_DIRECTION.z + rotation._23 * INITIAL_UP_DIRECTION.y +
+                rotation._13 * INITIAL_UP_DIRECTION.x);
 
         // Gravity splits into a pull down the slope and the part the ground holds up.
         CVector const projectedGravity = ProjectVectorOntoPlane(up, gravityForce);
@@ -191,9 +196,11 @@ namespace ai
             if (m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y + m_velocity.z * m_velocity.z > 0.001f)
             {
                 // Skid against the motion.
-                float const inv = static_cast<float>(1.0 / sqrt(double(m_velocity.x) * m_velocity.x +
-                                                                double(m_velocity.y) * m_velocity.y +
-                                                                double(m_velocity.z) * m_velocity.z + 0.00000011920929));
+                float const inv = static_cast<float>(
+                    1.0 /
+                    sqrt(
+                        double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y +
+                        double(m_velocity.z) * m_velocity.z + 0.00000011920929));
                 friction.x = (0.0f - inv * m_velocity.x) * reactionOfSupport * mu;
                 friction.y = (0.0f - m_velocity.y * inv) * reactionOfSupport * mu;
                 friction.z = (0.0f - m_velocity.z * inv) * reactionOfSupport * mu;
@@ -201,9 +208,9 @@ namespace ai
             else
             {
                 // Hold still against the slope, as far as the grip allows.
-                float const pullSq = static_cast<float>(double(projectedGravity.y) * projectedGravity.y +
-                                                        double(projectedGravity.z) * projectedGravity.z +
-                                                        double(projectedGravity.x) * projectedGravity.x);
+                float const pullSq = static_cast<float>(
+                    double(projectedGravity.y) * projectedGravity.y + double(projectedGravity.z) * projectedGravity.z +
+                    double(projectedGravity.x) * projectedGravity.x);
                 float const inv = static_cast<float>(1.0 / sqrt(pullSq + 0.00000011920929));
                 friction.x = (0.0f - inv * projectedGravity.x) * reactionOfSupport * mu;
                 friction.z = (0.0f - projectedGravity.z * inv) * reactionOfSupport * mu;
@@ -224,8 +231,9 @@ namespace ai
             int gear;
             CalcRpmsAndGear(wheelAVel, engineRpm, gear);
             float torque = m_vehicle->GetMaxTorque() * m_vehicle->m_realThrottle;
-            float const maxSpeed =
-                m_vehicle->GetAttackStatus() == Vehicle::ATTACK_ATTACKING ? m_vehicle->GetMaxSpeed() : m_vehicle->GetCruisingSpeed();
+            float const maxSpeed = m_vehicle->GetAttackStatus() == Vehicle::ATTACK_ATTACKING ?
+                m_vehicle->GetMaxSpeed() :
+                m_vehicle->GetCruisingSpeed();
             if ((fabs(wheelAVel) * m_wheelRadius - maxSpeed > 0.1 && !m_vehicle->bIsBraking()) ||
                 engineRpm > m_vehicle->m_maxEngineRpm || engineRpm < -4000.0f)
             {
@@ -321,19 +329,20 @@ namespace ai
         float const gz = newPositionOnGround.z - groundPos.z;
         if (sqrt(double(gx) * gx + double(gz) * gz + double(gy) * gy) > 0.1)
         {
-            float const inv = static_cast<float>(1.0 / sqrt(double(gx) * gx + double(gz) * gz + double(gy) * gy + 0.00000011920929));
-            if (fabs(double(gz * inv) * INITIAL_UP_DIRECTION.z + double(gy * inv) * INITIAL_UP_DIRECTION.y +
-                     double(inv * gx) * INITIAL_UP_DIRECTION.x) < 0.99000001)
+            float const inv =
+                static_cast<float>(1.0 / sqrt(double(gx) * gx + double(gz) * gz + double(gy) * gy + 0.00000011920929));
+            if (fabs(
+                    double(gz * inv) * INITIAL_UP_DIRECTION.z + double(gy * inv) * INITIAL_UP_DIRECTION.y +
+                    double(inv * gx) * INITIAL_UP_DIRECTION.x) < 0.99000001)
             {
-                float const inv2 = static_cast<float>(1.0 / sqrt(double(gz) * gz + double(gy) * gy + double(gx) * gx + 0.00000011920929));
+                float const inv2 = static_cast<float>(
+                    1.0 / sqrt(double(gz) * gz + double(gy) * gy + double(gx) * gx + 0.00000011920929));
                 double const mz = newPosition.z - groundPos.z;
                 double const my = newPosition.y - groundPos.y;
                 float const mx = newPosition.x - groundPos.x;
                 float const dist = static_cast<float>(sqrt(mz * mz + my * my + double(mx) * mx));
                 newPosition = CVector(
-                    inv2 * gx * dist + groundPos.x,
-                    gy * inv2 * dist + groundPos.y,
-                    gz * inv2 * dist + groundPos.z);
+                    inv2 * gx * dist + groundPos.x, gy * inv2 * dist + groundPos.y, gz * inv2 * dist + groundPos.z);
             }
         }
         m_vehicle->SetGamePositionOnGround(newPosition, false, true);
@@ -348,11 +357,15 @@ namespace ai
         float const vy = (finalGroundPos.y - groundPos.y) * invTime;
         float const vz = (finalGroundPos.z - groundPos.z) * invTime;
         float const maxVel = static_cast<float>(sqrt(double(vz) * vz + double(vy) * vy + double(vx) * vx));
-        if (sqrt(double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y + double(m_velocity.z) * m_velocity.z) >
-            maxVel)
+        if (sqrt(
+                double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y +
+                double(m_velocity.z) * m_velocity.z) > maxVel)
         {
-            float const inv = static_cast<float>(1.0 / sqrt(double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y +
-                                                            double(m_velocity.z) * m_velocity.z + 0.00000011920929));
+            float const inv = static_cast<float>(
+                1.0 /
+                sqrt(
+                    double(m_velocity.x) * m_velocity.x + double(m_velocity.y) * m_velocity.y +
+                    double(m_velocity.z) * m_velocity.z + 0.00000011920929));
             m_velocity.x = inv * m_velocity.x * maxVel;
             m_velocity.y = inv * m_velocity.y * maxVel;
             m_velocity.z = inv * m_velocity.z * maxVel;

@@ -17,25 +17,25 @@ namespace ai
     class Modifier
     {
     public:
-        /* 0x0000 */ float m_timeOut;
-        /* 0x0004 */ ai::eModifierOperation m_Operation;
-        /* 0x0008 */ int m_magicPrototypeId;
-        /* 0x000c */ CStr m_PropertyName;
-        /* 0x0018 */ int m_SenderID;
-        /* 0x001c */ m3d::AIParam m_Value;
-        Modifier(const ai::Modifier& Mod);
+        float m_timeOut;
+        ai::eModifierOperation m_Operation;
+        int m_magicPrototypeId;
+        CStr m_PropertyName;
+        int m_SenderID;
+        m3d::AIParam m_Value;
+        Modifier(ai::Modifier const& Mod);
         Modifier();
-        ai::Modifier& operator=(const ai::Modifier& rhs);
+        ai::Modifier& operator=(ai::Modifier const& rhs);
         ~Modifier();
-        void Create(const CStr& PropertyName, ai::eModifierOperation Operation, const m3d::AIParam& value);
-        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* OwnNode);
+        void Create(CStr const& PropertyName, ai::eModifierOperation Operation, m3d::AIParam const& value);
+        void LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* OwnNode);
         void SaveToXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* OwnNode) const;
-        void ReadFromStr(const CStr& Str);
+        void ReadFromStr(CStr const& Str);
         void Apply(CVector2* Property, CVector2 base) const;
         void Apply(CVector* Property, CVector base) const;
         void Apply(float* Property, float base) const;
         void ApplyModelNum(int* Property, int base) const;
         void ApplyModelNumList(retruxx::vector<int>* MNL) const;
         void ApplyEngineID(int* Property, int base) const;
-    }; /* size: 0x0038 */
-}
+    };
+}  // namespace ai

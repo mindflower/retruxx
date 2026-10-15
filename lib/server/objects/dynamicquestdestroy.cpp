@@ -42,7 +42,8 @@ namespace ai
         return new DynamicQuestDestroy(*this);
     }
 
-    DynamicQuestDestroy::DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const& prototype) : DynamicQuest(prototype)
+    DynamicQuestDestroy::DynamicQuestDestroy(DynamicQuestDestroyPrototypeInfo const& prototype) :
+        DynamicQuest(prototype)
     {
         // RVA 0x82D750 - nothing of its own to set up.
     }
@@ -79,7 +80,8 @@ namespace ai
     DynamicQuestDestroyPrototypeInfo const* DynamicQuestDestroy::GetPrototypeInfo() const
     {
         // RVA 0x82DCA0
-        return RT_DYNCAST(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestDestroyPrototypeInfo const);
+        return RT_DYNCAST(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()), DynamicQuestDestroyPrototypeInfo const);
     }
 
     void DynamicQuestDestroy::Update(float elapsedTime, unsigned workTime)
@@ -90,8 +92,8 @@ namespace ai
 
         Obj* const hirer = theObjects->GetEntityByObjId(GetHirerObjId());
         Obj* const target = theObjects->GetEntityByObjId(GetTargetObjId());
-        if (!hirer || (hirer->GetFlags() & 8) != 0 || (hirer->GetFlags() & 2) != 0 ||
-            hirer->GetParentRepository() || !target)
+        if (!hirer || (hirer->GetFlags() & 8) != 0 || (hirer->GetFlags() & 2) != 0 || hirer->GetParentRepository() ||
+            !target)
         {
             _SetStatus(STATUS_FORGOTTEN);
         }
@@ -193,4 +195,4 @@ namespace ai
         SYS_ERROR("!\"Object cannot be created directly\"");
         return nullptr;
     }
-}
+}  // namespace ai

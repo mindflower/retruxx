@@ -57,8 +57,7 @@ namespace ai
         return 0.0f;
     }
 
-    VehicleRoleCoward::VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const& prototype) :
-        VehicleRole(prototype)
+    VehicleRoleCoward::VehicleRoleCoward(VehicleRoleCowardPrototypeInfo const& prototype) : VehicleRole(prototype)
     {
         // RVA 0x7FC8F0
     }
@@ -145,7 +144,8 @@ namespace ai
     VehicleRoleCowardPrototypeInfo const* VehicleRoleCoward::GetPrototypeInfo() const
     {
         // RVA 0x7FCF60 - NOTE: the prototype is cast without a type check.
-        return static_cast<VehicleRoleCowardPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
+        return static_cast<VehicleRoleCowardPrototypeInfo const*>(
+            thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
     m3d::Object* VehicleRoleCoward::CreateObject()

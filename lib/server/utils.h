@@ -20,12 +20,12 @@ namespace ai
     class cmpByDistToOrg
     {
     private:
-        /* 0x0000 */ CVector m_Org;
+        CVector m_Org;
 
     public:
-        cmpByDistToOrg(const CVector& Org);
-        bool operator()(const int& objId1, const int& objId2) const;
-    }; /* size: 0x000c */
+        cmpByDistToOrg(CVector const& Org);
+        bool operator()(int const& objId1, int const& objId2) const;
+    };
 
     void sortPhysicObjsByDistance(retruxx::vector<int>& vct, CVector const& org);
     class Path;
@@ -57,4 +57,4 @@ namespace ai
     CVector GetGroundPos(CVector2 const&, bool);
     PointBase<float> clampIntoLandscape(PointBase<float> const&);
     CompositeObj* CreateBrokenObj(PhysicObj* obj, CStr const& destroyedModelName, m3d::SgNode* toAccept);
-}
+}  // namespace ai

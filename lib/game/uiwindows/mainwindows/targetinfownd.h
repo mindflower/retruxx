@@ -12,9 +12,9 @@ namespace m3d
     {
         class ProgressBarWnd;
     }
-}
+}  // namespace m3d
 
-class TargetInfoWnd :  public m3d::ui::Wnd
+class TargetInfoWnd : public m3d::ui::Wnd
 {
 public:
     class AuxInfo
@@ -33,38 +33,38 @@ public:
     };
 
 public:
-    static m3d::Object * CreateObject();
-    virtual m3d::Class * GetClass() const ;
-    static bool __fastcall IsObjClassValidForInfo(m3d::Class const *);
-    virtual m3d::Object * Clone();
-    int GetTargetObjId() const ;
-    bool NeedShow() const ;
+    static m3d::Object* CreateObject();
+    virtual m3d::Class* GetClass() const;
+    static bool IsObjClassValidForInfo(m3d::Class const*);
+    virtual m3d::Object* Clone();
+    int GetTargetObjId() const;
+    bool NeedShow() const;
     virtual ~TargetInfoWnd();
-    static m3d::Class * GetBaseClass();
+    static m3d::Class* GetBaseClass();
 
 protected:
     void UpdateName();
     void UpdateControlsOnNewFrame();
     virtual int OnBeforeRemoveFromWndStation();
     virtual int GameDataSetup();
-    virtual int GameDataUpdate(void *,int);
+    virtual int GameDataUpdate(void*, int);
     TargetInfoWnd();
-    TargetInfoWnd(TargetInfoWnd const &);
+    TargetInfoWnd(TargetInfoWnd const&);
     void StopFade();
     void SetTargetObj(int);
     void UpdateToleranceColor();
     void UpdateDurability();
-    void UpdateOnChangeTargetObj(int,int);
+    void UpdateOnChangeTargetObj(int, int);
     virtual int OnAfterRemoveFromWndStation();
     virtual int OnBeforeAddToWndStation();
     void StartFade();
-    ai::Obj const * GetTargetObj() const ;
+    ai::Obj const* GetTargetObj() const;
     void OnNewFrameForce();
-    unsigned char CalcAlpha() const ;
-    bool NeedUpdate() const ;
+    unsigned char CalcAlpha() const;
+    bool NeedUpdate() const;
     void UpdateResistance();
     void CheckAndShow();
-    bool IsFading() const ;
+    bool IsFading() const;
     void ProcessFade();
     void RestoreFromFade();
     void SetAlpha(unsigned char);
@@ -76,13 +76,13 @@ public:
     RT_CLASS_DECLARE(TargetInfoWnd);
 
 private:
-    m3d::ui::ProgressBarWnd *m_pbHealth;
-    m3d::ui::Wnd *m_lblHealth;
-    m3d::ui::ProgressBarWnd *m_pbDurability;
-    m3d::ui::Wnd *m_lblDurability;
-    m3d::ui::Wnd *m_wndDistance;
-    m3d::ui::Wnd *m_wndResistance[3];
-    m3d::ui::Wnd *m_wndName;
+    m3d::ui::ProgressBarWnd* m_pbHealth;
+    m3d::ui::Wnd* m_lblHealth;
+    m3d::ui::ProgressBarWnd* m_pbDurability;
+    m3d::ui::Wnd* m_lblDurability;
+    m3d::ui::Wnd* m_wndDistance;
+    m3d::ui::Wnd* m_wndResistance[3];
+    m3d::ui::Wnd* m_wndName;
     TargetInfoWnd::AuxInfo m_aif;
     int m_targetObjId;
     unsigned int m_fadeStartTime;

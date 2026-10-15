@@ -17,10 +17,10 @@ namespace
 {
     // Block header magic values: live blocks carry kMagic in m_magic and kTrailer after their data, freed ones
     // carry the freed pair.
-    constexpr uint32_t kMagic        = 0xDEADBEEFu;
-    constexpr uint32_t kTrailer      = 0xFEEBDAEDu;
-    constexpr uint32_t kFreedMagic   = 0x21524110u;
-    constexpr uint32_t kFreedTrailer = 0x01142512u;
+    uint32_t constexpr kMagic = 0xDEADBEEFu;
+    uint32_t constexpr kTrailer = 0xFEEBDAEDu;
+    uint32_t constexpr kFreedMagic = 0x21524110u;
+    uint32_t constexpr kFreedTrailer = 0x01142512u;
 
     // m_nextBlock of a block that has its own chunk (a big allocation).
     m3d::auxBlockHeader* const kOwnChunk = reinterpret_cast<m3d::auxBlockHeader*>(-1);
@@ -29,7 +29,7 @@ namespace
     {
         return *reinterpret_cast<int*>(reinterpret_cast<char*>(block + 1) + block->m_size);
     }
-}
+}  // namespace
 
 namespace m3d
 {
@@ -79,7 +79,7 @@ namespace m3d
         void* const n = Malloc(newSize, src_name, src_line);
         if (n)
         {
-            const std::size_t oldSize = (static_cast<auxBlockHeader*>(p) - 1)->m_size;
+            std::size_t const oldSize = (static_cast<auxBlockHeader*>(p) - 1)->m_size;
             memcpy(n, p, newSize > oldSize ? oldSize : newSize);
             Free(p);
         }
@@ -137,9 +137,12 @@ namespace m3d
             fprintf(file, " -----------------------------------------------------------------------\n");
             fprintf(file, "|            Memory leaks dump (%s)               |\n", s);
             fprintf(file, " -----------------------------------------------------------------------\n\n");
-            fprintf(file, ".----------------------------.-------------------.---------------------------------------.\n");
-            fprintf(file, "|       SOURCE FILE          |       LINE        |        BYTES        |     ALLOC #     |\n");
-            fprintf(file, "+----------------------------|-------------------|---------------------------------------+\n");
+            fprintf(
+                file, ".----------------------------.-------------------.---------------------------------------.\n");
+            fprintf(
+                file, "|       SOURCE FILE          |       LINE        |        BYTES        |     ALLOC #     |\n");
+            fprintf(
+                file, "+----------------------------|-------------------|---------------------------------------+\n");
         }
         for (auxChunkHeader* chunk = m_firstChunk; chunk;)
         {
@@ -179,10 +182,15 @@ namespace m3d
         if (file)
         {
             unsigned int const total = appMemLost + appMemLostOverhead;
-            fprintf(file, " -----------------------------------------------------------------------------------------\n\n");
+            fprintf(
+                file, " -----------------------------------------------------------------------------------------\n\n");
             fprintf(file, "# of memory blocks lost: %d\n", blocksLost);
-            fprintf(file, "Memory lost (bytes): app = %d, memman overhead = %d, total = %d \n", appMemLost,
-                    appMemLostOverhead, total);
+            fprintf(
+                file,
+                "Memory lost (bytes): app = %d, memman overhead = %d, total = %d \n",
+                appMemLost,
+                appMemLostOverhead,
+                total);
             float const ratio =
                 appMemLostOverhead ? static_cast<float>(appMemLostOverhead) * 100.0f / static_cast<float>(total) : 0.0f;
             fprintf(file, "Memman overhead/Total memory lost ratio: %0.1f%s\n", ratio, "%");
@@ -224,10 +232,10 @@ namespace m3d
     {
         // RVA 0x748670 - a chunk is a header followed by bnum blocks of a 12-byte header, bsize bytes of data and a
         // 4-byte trailer; its blocks are returned linked into a free list.
-        const std::size_t overhead = sizeof(auxBlockHeader) + sizeof(int);
-        const std::size_t stride = bsize + overhead;
+        std::size_t const overhead = sizeof(auxBlockHeader) + sizeof(int);
+        std::size_t const stride = bsize + overhead;
         m_memOverhead += overhead;
-        const std::size_t total = bnum * stride + sizeof(auxChunkHeader);
+        std::size_t const total = bnum * stride + sizeof(auxChunkHeader);
         auxChunkHeader* const chunk = static_cast<auxChunkHeader*>(malloc(total));
         if (!chunk)
         {
@@ -345,12 +353,12 @@ namespace m3d
         // RVA 0x748610 - empty.
     }
 
-    void __fastcall MemoryManager::operator delete(void* d)
+    void MemoryManager::operator delete(void* d)
     {
         free(d);
     }
 
-    void* __fastcall MemoryManager::operator new(size_t sz)
+    void* MemoryManager::operator new(size_t sz)
     {
         return malloc(sz);
     }
@@ -379,4 +387,4 @@ namespace m3d
         m_memOverhead -= 16;
         free(ch);
     }
-}
+}  // namespace m3d

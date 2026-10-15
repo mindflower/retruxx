@@ -241,9 +241,9 @@ void CBCharacteristicsWnd::UpdateCharacteristics()
 
     // In "hacked" (workshop preview) mode, compare against the player's own
     // vehicle instead of the previewed one.
-    ai::Vehicle* baseVehicle = m_vehicleType != VehicleWnd::VEHICLE_NORMAL
-                                   ? (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr)
-                                   : const_cast<ai::Vehicle*>(vehicle);
+    ai::Vehicle* baseVehicle = m_vehicleType != VehicleWnd::VEHICLE_NORMAL ?
+        (ai::thePlayer ? ai::thePlayer->GetVehicle() : nullptr) :
+        const_cast<ai::Vehicle*>(vehicle);
     if (!baseVehicle)
     {
         return;
@@ -267,8 +267,7 @@ void CBCharacteristicsWnd::UpdateCharacteristics()
     int const baseMaxDurability = 0;
     // Weight's baseline goes through the property system (property id 20),
     // which reverses any installed gadget modification.
-    int const baseWeight =
-        basePart ? static_cast<int>(help::GetBasePropertyValFromObj(basePart, baseVehicle, 20)) : 0;
+    int const baseWeight = basePart ? static_cast<int>(help::GetBasePropertyValFromObj(basePart, baseVehicle, 20)) : 0;
 
     UpdateValue(m_wndPiercingVal, piercing, basePiercing, false);
     UpdateValue(m_wndBlastVal, blast, baseBlast, false);

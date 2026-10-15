@@ -15,7 +15,7 @@ namespace m3d
             int const ERROR_BAD_HANDLE = 6;
             int const ERROR_BAD_ACCESS = 12;
             int const ERROR_PAST_END = 38;
-        }
+        }  // namespace
 
         int RawFile::FSeek(long offset, int origin)
         {
@@ -155,7 +155,7 @@ namespace m3d
                 }
                 unsigned int const start = static_cast<unsigned int>(curr - data);
                 while (static_cast<int>(start) < static_cast<int>(m_FileSize) &&
-                    curr - data < static_cast<int>(m_FileSize) && *curr != '\r' && *curr != '\n')
+                       curr - data < static_cast<int>(m_FileSize) && *curr != '\r' && *curr != '\n')
                 {
                     ++curr;
                 }
@@ -184,22 +184,22 @@ namespace m3d
                     break;
                 }
                 ReadBytesInternal(&ch, 1);
-                    {
-                        DWORD const pos = ::SetFilePointer(m_hFile, 0, nullptr, FILE_CURRENT);
-                        ReadBytesInternal(&ch, 1);
-                        ::SetFilePointer(m_hFile, pos, nullptr, FILE_BEGIN);
-                    }
+                {
+                    DWORD const pos = ::SetFilePointer(m_hFile, 0, nullptr, FILE_CURRENT);
+                    ReadBytesInternal(&ch, 1);
+                    ::SetFilePointer(m_hFile, pos, nullptr, FILE_BEGIN);
+                }
             }
             int i = 0;
             while (ch != '\n' && ch != '\r' && !Eof() && !Error() && i < 1023)
             {
                 line[i++] = ch;
                 ReadBytesInternal(&ch, 1);
-                    {
-                        DWORD const pos = ::SetFilePointer(m_hFile, 0, nullptr, FILE_CURRENT);
-                        ReadBytesInternal(&ch, 1);
-                        ::SetFilePointer(m_hFile, pos, nullptr, FILE_BEGIN);
-                    }
+                {
+                    DWORD const pos = ::SetFilePointer(m_hFile, 0, nullptr, FILE_CURRENT);
+                    ReadBytesInternal(&ch, 1);
+                    ::SetFilePointer(m_hFile, pos, nullptr, FILE_BEGIN);
+                }
             }
             line[i] = 0;
             s = CStr(line);
@@ -386,8 +386,8 @@ namespace m3d
                 ++curr;
             }
             unsigned int const start = static_cast<unsigned int>(curr - data);
-            while (static_cast<int>(start) < static_cast<int>(m_FileSize) && curr - data < static_cast<int>(m_FileSize) &&
-                *curr > 0x20)
+            while (static_cast<int>(start) < static_cast<int>(m_FileSize) &&
+                   curr - data < static_cast<int>(m_FileSize) && *curr > 0x20)
             {
                 ++curr;
             }
@@ -630,13 +630,13 @@ namespace m3d
             {
                 return;
             }
-            unsigned char* const data = static_cast<unsigned char*>(::MapViewOfFile(m_hMapping, FILE_MAP_READ, 0, 0, m_FileSize));
+            unsigned char* const data =
+                static_cast<unsigned char*>(::MapViewOfFile(m_hMapping, FILE_MAP_READ, 0, 0, m_FileSize));
             m_Data = data;
             m_CurrData = data + (static_cast<unsigned char*>(rf.m_CurrData) - static_cast<unsigned char*>(rf.m_Data));
         }
 
-        RawFile::RawFile(char const* fileName, OpenFlags openMode, bool enableMapping) :
-            m_EnableMapping(enableMapping)
+        RawFile::RawFile(char const* fileName, OpenFlags openMode, bool enableMapping) : m_EnableMapping(enableMapping)
         {
             Open(fileName, openMode);
         }
@@ -718,5 +718,5 @@ namespace m3d
                 return numBytes;
             }
         }
-    }
-}
+    }  // namespace fs
+}  // namespace m3d

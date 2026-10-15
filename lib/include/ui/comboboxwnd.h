@@ -14,7 +14,7 @@ namespace m3d
         class ButtonWnd;
         class StringsListBoxWnd;
 
-        class ComboBoxWnd :  public Wnd
+        class ComboBoxWnd : public Wnd
         {
         public:
             class AuxInfo
@@ -37,62 +37,62 @@ namespace m3d
             virtual int GetItemData(int) const;
             virtual BoundsBase<float> GetListBounds() const;
             virtual void SetCurSel(int);
-            virtual void SetItemData(int,int);
+            virtual void SetItemData(int, int);
             unsigned int GetComboStyle() const;
             virtual void Close();
-            virtual struct BoundsBase<float> GetFullBounds() const;
+            virtual BoundsBase<float> GetFullBounds() const;
             virtual void Open();
             virtual int GetCount() const;
             virtual float GetSelTextFixedHeight() const;
             virtual Class* GetClass() const;
             void SetComboStyle(unsigned int);
             virtual ~ComboBoxWnd();
-            virtual void SetBounds(struct BoundsBase<float> const &,bool);
+            virtual void SetBounds(BoundsBase<float> const&, bool);
             virtual void SetSelTextFixedHeight(float);
-            virtual int Create(CStr const &,unsigned int,struct BoundsBase<float> const &,unsigned int);
-            virtual int Create(unsigned int,struct BoundsBase<float> const &,int,unsigned int,float,float);
-            void SetToggleButtonPane(CStr const &,CStr const &);
-            virtual CStr GetItem(int) const ;
+            virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
+            virtual int Create(unsigned int, BoundsBase<float> const&, int, unsigned int, float, float);
+            void SetToggleButtonPane(CStr const&, CStr const&);
+            virtual CStr GetItem(int) const;
             virtual void SetListMaxHeight(float);
             virtual void SetColor(unsigned int);
-            virtual int SetText(CStr const &);
-            virtual Object * Clone();
-            virtual int AddItem(CStr const &);
-            virtual int ReadFromXmlNode(cmn::XmlFile *,cmn::XmlNode *);
-            virtual void SetPane(CStr const &);
-            virtual CStr GetText() const ;
-            virtual void SetItem(int,CStr const &);
-            float GetMaxListHeight() const ;
-            virtual struct BoundsBase<float> GetSelTextBounds() const ;
-            virtual struct BoundsBase<float> GetFullMaxBounds() const ;
+            virtual int SetText(CStr const&);
+            virtual Object* Clone();
+            virtual int AddItem(CStr const&);
+            virtual int ReadFromXmlNode(cmn::XmlFile*, cmn::XmlNode*);
+            virtual void SetPane(CStr const&);
+            virtual CStr GetText() const;
+            virtual void SetItem(int, CStr const&);
+            float GetMaxListHeight() const;
+            virtual BoundsBase<float> GetSelTextBounds() const;
+            virtual BoundsBase<float> GetFullMaxBounds() const;
             virtual void SetTextColor(unsigned int);
-            virtual unsigned int GetDrawFlags() const ;
-            virtual int WriteToXmlNode(cmn::XmlFile *,cmn::XmlNode *);
+            virtual unsigned int GetDrawFlags() const;
+            virtual int WriteToXmlNode(cmn::XmlFile*, cmn::XmlNode*);
             virtual void SetTextColorDisabled(unsigned int);
-            virtual void SetDefaultFont(CStr const &,float,FontType,union FontParams);
+            virtual void SetDefaultFont(CStr const&, float, FontType, union FontParams);
             virtual void SetDefaultFont(int);
             virtual int RemoveItem(int);
-            virtual struct BoundsBase<float> GetListMaxBounds() const ;
-            static Object * CreateObject();
+            virtual BoundsBase<float> GetListMaxBounds() const;
+            static Object* CreateObject();
             virtual void SetDrawFlags(unsigned int);
-            virtual int InsertItem(CStr const &,int);
-            virtual void SetScrollPane(CStr const &);
-            static Class * GetBaseClass();
-            virtual int ItemFromPoint(class PointBase<float> const &);
+            virtual int InsertItem(CStr const&, int);
+            virtual void SetScrollPane(CStr const&);
+            static Class* GetBaseClass();
+            virtual int ItemFromPoint(class PointBase<float> const&);
             virtual int RemoveAllItems();
-            bool IsOpen() const ;
+            bool IsOpen() const;
 
         protected:
             ComboBoxWnd();
             void UpdateToggleButtonPane();
-            virtual void SetState(State,bool);
+            virtual void SetState(State, bool);
             virtual void RecalcLayot();
             virtual void SelectItem();
             virtual void ToggleState();
             virtual void RecalcSelfBounds();
-            virtual int OnWndNotify(Wnd *,unsigned int,unsigned int,AIParam const &);
+            virtual int OnWndNotify(Wnd*, unsigned int, unsigned int, AIParam const&);
             virtual void RecalcListBounds();
-            virtual int OnMouseButton0(unsigned int,class PointBase<float> const &);
+            virtual int OnMouseButton0(unsigned int, class PointBase<float> const&);
             virtual int OnAfterRemoveFromWndStation();
             virtual int OnAfterAddToWndStation();
 
@@ -100,9 +100,9 @@ namespace m3d
             RT_CLASS_DECLARE(ComboBoxWnd);
 
         private:
-            StringsListBoxWnd *m_wndStringList = nullptr;
-            ButtonWnd *m_btnToggle = nullptr;
-            Wnd *m_wndSelText = nullptr;
+            StringsListBoxWnd* m_wndStringList = nullptr;
+            ButtonWnd* m_btnToggle = nullptr;
+            Wnd* m_wndSelText = nullptr;
             AuxInfo m_aif;
             State m_state = STATE_CLOSE;
             float m_maxListH = 100.0;
@@ -111,5 +111,5 @@ namespace m3d
             CStr m_toggleButtonOpenPaneName = "PaneComboToggleBtnOpenDefault";
             CStr m_toggleButtonClosePaneName = "PaneComboToggleBtnCloseDefault";
         };
-    }
-}
+    }  // namespace ui
+}  // namespace m3d

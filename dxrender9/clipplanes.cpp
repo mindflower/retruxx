@@ -63,8 +63,11 @@ void CDevice::ForceRecalcClipPlanes()
 
     for (int i = 0; i < (int)GetMaxClipPlanes(); i++)
     {
-        CVector4 planeCoof(m_userClipPlanesWorld[i].a, m_userClipPlanesWorld[i].b, m_userClipPlanesWorld[i].c,
-                           m_userClipPlanesWorld[i].d);
+        CVector4 planeCoof(
+            m_userClipPlanesWorld[i].a,
+            m_userClipPlanesWorld[i].b,
+            m_userClipPlanesWorld[i].c,
+            m_userClipPlanesWorld[i].d);
 
         planeCoof = worldToProjInvTransposed.vecMul(planeCoof);
 

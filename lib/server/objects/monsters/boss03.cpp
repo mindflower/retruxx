@@ -71,9 +71,9 @@ namespace ai
         CVector const INITIAL_OBJECTS_DIRECTION(0.0f, 0.0f, 1.0f);
         // up x forward
         CVector const INITIAL_LEFT_DIRECTION(
-            INITIAL_UP_DIRECTION.z * INITIAL_OBJECTS_DIRECTION.y - INITIAL_UP_DIRECTION.y * INITIAL_OBJECTS_DIRECTION.z,
-            INITIAL_OBJECTS_DIRECTION.z * INITIAL_UP_DIRECTION.x - INITIAL_UP_DIRECTION.z * INITIAL_OBJECTS_DIRECTION.x,
-            INITIAL_UP_DIRECTION.y * INITIAL_OBJECTS_DIRECTION.x - INITIAL_OBJECTS_DIRECTION.y * INITIAL_UP_DIRECTION.x);
+            INITIAL_UP_DIRECTION.z* INITIAL_OBJECTS_DIRECTION.y - INITIAL_UP_DIRECTION.y * INITIAL_OBJECTS_DIRECTION.z,
+            INITIAL_OBJECTS_DIRECTION.z* INITIAL_UP_DIRECTION.x - INITIAL_UP_DIRECTION.z * INITIAL_OBJECTS_DIRECTION.x,
+            INITIAL_UP_DIRECTION.y* INITIAL_OBJECTS_DIRECTION.x - INITIAL_OBJECTS_DIRECTION.y * INITIAL_UP_DIRECTION.x);
 
         // RVA 0x5CCAF0 - rand() scaled by RAND_MAX+1, so the top bound is exclusive.
         unsigned IntRandom(unsigned highBound)
@@ -208,7 +208,8 @@ namespace ai
         auto const mainIt = m_partPrototypeIds.find(MAIN_PART_NAME);
         if (mainIt != m_partPrototypeIds.end())
         {
-            auto const* const mainInfo = static_cast<PhysicBodyPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(mainIt->second));
+            auto const* const mainInfo =
+                static_cast<PhysicBodyPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(mainIt->second));
             int const itemId = server->GetItemByName(mainInfo->m_engineModelName.c_str(), true);
             if (itemId != -1)
             {
@@ -226,7 +227,8 @@ namespace ai
         {
             return;
         }
-        auto const* const spawnerInfo = static_cast<PhysicBodyPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(spawnerIt->second));
+        auto const* const spawnerInfo =
+            static_cast<PhysicBodyPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(spawnerIt->second));
         int const itemId = server->GetItemByName(spawnerInfo->m_engineModelName.c_str(), true);
         if (itemId == -1)
         {
@@ -248,7 +250,9 @@ namespace ai
         }
         else
         {
-            M3D_LOG_ERR(CStr("Error: LoadPoint not found! Model = '") + spawnerInfo->m_engineModelName + CStr("', lp = ") + DRONE_LP_NAME);
+            M3D_LOG_ERR(
+                CStr("Error: LoadPoint not found! Model = '") + spawnerInfo->m_engineModelName + CStr("', lp = ") +
+                DRONE_LP_NAME);
         }
     }
 
@@ -452,7 +456,8 @@ namespace ai
     {
         // RVA 0x73A210 - the team the drones join.
         ComplexPhysicObj::CreateChildren();
-        int const teamId = theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("settlementTeam")), "", -1, -1);
+        int const teamId =
+            theObjects->CreateNewObject(thePrototypeManager->GetPrototypeId(CStr("settlementTeam")), "", -1, -1);
         // NOTE: a failed creation adds a null child.
         Obj* team = nullptr;
         if (teamId >= 0)
@@ -787,9 +792,12 @@ namespace ai
                 _GetBossPartByName(MAIN_PART_NAME)->SetAnimationStopped(false);
                 if (!m_pointsForShooting.empty())
                 {
-                    CVector const destination = m_pointsForShooting[IntRandom(static_cast<unsigned>(m_pointsForShooting.size()))];
+                    CVector const destination =
+                        m_pointsForShooting[IntRandom(static_cast<unsigned>(m_pointsForShooting.size()))];
                     CVector const pos = GetPosition();
-                    StartMoving(destination, CVector(destination.x - pos.x, destination.y - pos.y, destination.z - pos.z).getNormalized());
+                    StartMoving(
+                        destination,
+                        CVector(destination.x - pos.x, destination.y - pos.y, destination.z - pos.z).getNormalized());
                 }
                 m_droneSpawningStatus = DRONE_FLYING_TO_SHOOT;
             }
@@ -831,9 +839,12 @@ namespace ai
                 _GetBossPartByName(MAIN_PART_NAME)->SetAnimationStopped(false);
                 if (!m_pointsForShooting.empty())
                 {
-                    CVector const destination = m_pointsForShooting[IntRandom(static_cast<unsigned>(m_pointsForShooting.size()))];
+                    CVector const destination =
+                        m_pointsForShooting[IntRandom(static_cast<unsigned>(m_pointsForShooting.size()))];
                     CVector const pos = GetPosition();
-                    StartMoving(destination, CVector(destination.x - pos.x, destination.y - pos.y, destination.z - pos.z).getNormalized());
+                    StartMoving(
+                        destination,
+                        CVector(destination.x - pos.x, destination.y - pos.y, destination.z - pos.z).getNormalized());
                 }
                 m_droneSpawningStatus = DRONE_FLYING_TO_SHOOT;
             }
@@ -853,7 +864,8 @@ namespace ai
             {
                 CVector const pos = GetPosition();
                 CVector const playerPos = playerVehicle->GetPosition();
-                _ProceedSettingHorizontalDirection(elapsedTime, CVector(playerPos.x - pos.x, 0.0f, playerPos.z - pos.z));
+                _ProceedSettingHorizontalDirection(
+                    elapsedTime, CVector(playerPos.x - pos.x, 0.0f, playerPos.z - pos.z));
                 m_shootingTimeout -= elapsedTime;
                 if (m_shootingTimeout < 0.0)
                 {
@@ -909,7 +921,8 @@ namespace ai
         case PATH_SETTING_DIRECTION_TO_MOVE:
         {
             CVector const pos = GetPosition();
-            CVector const desiredDir(m_desiredDestination.x - pos.x, m_desiredDestination.y - pos.y, m_desiredDestination.z - pos.z);
+            CVector const desiredDir(
+                m_desiredDestination.x - pos.x, m_desiredDestination.y - pos.y, m_desiredDestination.z - pos.z);
             if (_ProceedSettingHorizontalDirection(elapsedTime, desiredDir))
             {
                 m_relAngularVelocity = ZeroVector;
@@ -930,18 +943,21 @@ namespace ai
         {
             Boss03PrototypeInfo const* const info = GetPrototypeInfo();
             CVector const pos = GetPosition();
-            CVector dirToMove(m_desiredDestination.x - pos.x, m_desiredDestination.y - pos.y, m_desiredDestination.z - pos.z);
+            CVector dirToMove(
+                m_desiredDestination.x - pos.x, m_desiredDestination.y - pos.y, m_desiredDestination.z - pos.z);
             float const distSq = dirToMove.z * dirToMove.z + dirToMove.y * dirToMove.y + dirToMove.x * dirToMove.x;
             dirToMove.normalizeInplace();
             float const dist = static_cast<float>(sqrt(distSq));
-            float const curVel = m_linearVelocity.z * dirToMove.z + m_linearVelocity.y * dirToMove.y + m_linearVelocity.x * dirToMove.x;
+            float const curVel =
+                m_linearVelocity.z * dirToMove.z + m_linearVelocity.y * dirToMove.y + m_linearVelocity.x * dirToMove.x;
             float step = 0.0f;
             float newVel = 0.0f;
-            bool const arrived =
-                GetSmoothAcceleratedValue(elapsedTime, dist, 0.0f, curVel, info->m_linearAcceleration, info->m_maxLinearVelocity, step, newVel);
+            bool const arrived = GetSmoothAcceleratedValue(
+                elapsedTime, dist, 0.0f, curVel, info->m_linearAcceleration, info->m_maxLinearVelocity, step, newVel);
             m_linearVelocity = CVector(dirToMove.x * newVel, dirToMove.y * newVel, dirToMove.z * newVel);
             CVector const curPos = GetPosition();
-            SetPosition(CVector(curPos.x + dirToMove.x * step, curPos.y + dirToMove.y * step, curPos.z + dirToMove.z * step));
+            SetPosition(
+                CVector(curPos.x + dirToMove.x * step, curPos.y + dirToMove.y * step, curPos.z + dirToMove.z * step));
             if (arrived)
             {
                 m_linearVelocity = ZeroVector;
@@ -1114,11 +1130,13 @@ namespace ai
         Quaternion const droneSpawnerRot = spawner->GetNodeAbsoluteRotation();
         // NOTE: the drone is used without a null check.
         CVector const offset = RotateByQuaternion(prototypeInfo->m_droneRelPosition, droneSpawnerRot);
-        drone->SetPosition(CVector(offset.x + droneSpawnerPos.x, droneSpawnerPos.y + offset.y, droneSpawnerPos.z + offset.z));
+        drone->SetPosition(
+            CVector(offset.x + droneSpawnerPos.x, droneSpawnerPos.y + offset.y, droneSpawnerPos.z + offset.z));
         drone->SetRotation(QuatMul(droneSpawnerRot, prototypeInfo->m_droneRelRotation));
         CVector droneDir = drone->GetDirection();
         droneDir.y = 0.0f;
-        float const invLen = static_cast<float>(1.0 / sqrt(droneDir.z * droneDir.z + droneDir.x * droneDir.x + 1.1920929e-7));
+        float const invLen =
+            static_cast<float>(1.0 / sqrt(droneDir.z * droneDir.z + droneDir.x * droneDir.x + 1.1920929e-7));
         drone->SetDirection(CVector(droneDir.x * invLen, invLen * 0.0f, droneDir.z * invLen));
         drone->SetLinearVelocity(CVector(0.0f, -2.0f, 0.0f));
         m_droneTeam->AddChild(drone);
@@ -1191,7 +1209,8 @@ namespace ai
         CVector const dirToPlayer(playerPos.x - pos.x, playerPos.y - pos.y, playerPos.z - pos.z);
         _ProceedSettingHorizontalDirection(elapsedTime, dirToPlayer);
         float const maxTilt = prototypeInfo->m_pathTrackTiltAngle;
-        float angle = static_cast<float>(atan2(dirToPlayer.y, sqrt(dirToPlayer.x * dirToPlayer.x + dirToPlayer.z * dirToPlayer.z)));
+        float angle = static_cast<float>(
+            atan2(dirToPlayer.y, sqrt(dirToPlayer.x * dirToPlayer.x + dirToPlayer.z * dirToPlayer.z)));
         if (0.0f - maxTilt > angle)
         {
             angle = 0.0f - maxTilt;
@@ -1318,7 +1337,8 @@ namespace ai
             PrototypeInfo const* const partInfo = thePrototypeManager->GetPrototypeInfo(it->second);
             if (partInfo && partInfo->IsPrototypeOf(RT_CLASS_LOCAL(VehiclePart)))
             {
-                keyPartsMaxDurability = static_cast<VehiclePartPrototypeInfo const*>(partInfo)->m_durability + keyPartsMaxDurability;
+                keyPartsMaxDurability =
+                    static_cast<VehiclePartPrototypeInfo const*>(partInfo)->m_durability + keyPartsMaxDurability;
             }
         }
         return keyPartsMaxDurability;

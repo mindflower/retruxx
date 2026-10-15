@@ -28,7 +28,7 @@ namespace ai
         return result;
     }
 
-    Ray* Ray::CreateObject(dxSpace* space, float length, void(*movedCallback)(dxGeom*))
+    Ray* Ray::CreateObject(dxSpace* space, float length, void (*movedCallback)(dxGeom*))
     {
         return new Ray(dCreateRay(space, length), movedCallback);
     }
@@ -38,7 +38,7 @@ namespace ai
         dGeomRaySetLength(m_geomId, length);
     }
 
-    Ray::Ray(dxGeom* const geomId, void(*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)
+    Ray::Ray(dxGeom* const geomId, void (*movedCallback)(dxGeom*)) : Geom(geomId, movedCallback)
     {
     }
-}
+}  // namespace ai

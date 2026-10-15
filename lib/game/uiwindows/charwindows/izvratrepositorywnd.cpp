@@ -10,15 +10,15 @@ RT_CLASS_EXPORTS_BEGIN(IzvratRepositoryWnd)
 RT_CLASS_EXPORTS_END;
 RT_CLASS_DEFINE(IzvratRepositoryWnd);
 
-IzvratRepositoryWnd::FrameSegment::FrameSegment(FrameSegment const& that)
-    : m_frameTexId(that.m_frameTexId)
-    , m_rect(that.m_rect)
+IzvratRepositoryWnd::FrameSegment::FrameSegment(FrameSegment const& that) :
+    m_frameTexId(that.m_frameTexId),
+    m_rect(that.m_rect)
 {
 }
 
-IzvratRepositoryWnd::FrameSegment::FrameSegment(int frameTexId, BoundsBase<float> const& rect)
-    : m_frameTexId(frameTexId)
-    , m_rect(rect)
+IzvratRepositoryWnd::FrameSegment::FrameSegment(int frameTexId, BoundsBase<float> const& rect) :
+    m_frameTexId(frameTexId),
+    m_rect(rect)
 {
 }
 
@@ -131,8 +131,15 @@ void IzvratRepositoryWnd::FindPerimeter(
     int const maxX = rep->GetMaxGeomSize().x;
     int const maxY = rep->GetMaxGeomSize().y;
 
-    static const PointBase<int> dirs[8] = {
-        {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0},
+    static PointBase<int> const dirs[8] = {
+        {-1, -1},
+        {0, -1},
+        {1, -1},
+        {1, 0},
+        {1, 1},
+        {0, 1},
+        {-1, 1},
+        {-1, 0},
     };
 
     for (int cellId = 0; cellId < static_cast<int>(cells.size()); ++cellId)
@@ -175,7 +182,7 @@ namespace
     bool LessByTexId(IzvratRepositoryWnd::FrameSegment const& segment)
     {
         return segment.m_frameTexId == 0 || segment.m_frameTexId == 1 || segment.m_frameTexId == 2 ||
-               segment.m_frameTexId == 3;
+            segment.m_frameTexId == 3;
     }
 }  // namespace
 
@@ -275,15 +282,15 @@ void IzvratRepositoryWnd::CalculateSegmentsBounds(
             float const cornerY0 = cellBottom;
             BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
             frameSegments.push_back(FrameSegment(5, cornerB));
-            frameSegments.push_back(FrameSegment(
-                3, BoundsBase<float>(cellB.x0 - cellB.width, cellBottom, cornerX0, cellBottom + frameW)));
+            frameSegments.push_back(
+                FrameSegment(3, BoundsBase<float>(cellB.x0 - cellB.width, cellBottom, cornerX0, cellBottom + frameW)));
             // NOTE: the three mirrored cases extend this bar by the cell's
             // height; the shipped code (RVA 0x45AD32) adds cellB.width here
             // instead, so on a grid whose cells are not square the bottom-left
             // notch comes out the wrong length. Kept as shipped.
             float const x0 = cellB.x0 - frameUsedW;
-            frameSegments.push_back(FrameSegment(
-                0, BoundsBase<float>(x0, cornerY0 + cornerB.height, x0 + frameW, cornerY0 + cellB.width)));
+            frameSegments.push_back(
+                FrameSegment(0, BoundsBase<float>(x0, cornerY0 + cornerB.height, x0 + frameW, cornerY0 + cellB.width)));
         }
         else if (perimeterSide == 1)  // NW
         {
@@ -297,8 +304,7 @@ void IzvratRepositoryWnd::CalculateSegmentsBounds(
                 0,
                 BoundsBase<float>(cellB.x0 - frameW, cellB.y0 - cellB.height, cellB.x0 - frameW + frameW, cornerY0)));
             frameSegments.push_back(FrameSegment(
-                1,
-                BoundsBase<float>(cellB.x0 - cellB.width, cellB.y0 - frameW, cornerX0, cellB.y0 - frameW + frameW)));
+                1, BoundsBase<float>(cellB.x0 - cellB.width, cellB.y0 - frameW, cornerX0, cellB.y0 - frameW + frameW)));
         }
         else if (perimeterSide == 4)  // NE
         {
@@ -313,8 +319,8 @@ void IzvratRepositoryWnd::CalculateSegmentsBounds(
                     cellB.y0 - frameW,
                     cellB.x0 + cellB.width * 2.0f,
                     cellB.y0 - frameW + frameW)));
-            frameSegments.push_back(FrameSegment(
-                2, BoundsBase<float>(cellRight, cellB.y0 - cellB.height, cellRight + frameW, cornerY0)));
+            frameSegments.push_back(
+                FrameSegment(2, BoundsBase<float>(cellRight, cellB.y0 - cellB.height, cellRight + frameW, cornerY0)));
         }
         // Convex corners: a whole quadrant is missing. These are tested with
         // masks rather than for equality, so the order they run in matters.
@@ -325,11 +331,11 @@ void IzvratRepositoryWnd::CalculateSegmentsBounds(
             BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
             frameSegments.push_back(FrameSegment(4, cornerB));
             float const leftY0 = cornerB.y0 + cornerB.height;
-            frameSegments.push_back(FrameSegment(
-                0, BoundsBase<float>(cornerB.x0, leftY0, cornerB.x0 + frameW, leftY0 + cellB.height)));
+            frameSegments.push_back(
+                FrameSegment(0, BoundsBase<float>(cornerB.x0, leftY0, cornerB.x0 + frameW, leftY0 + cellB.height)));
             float const topX0 = cornerB.x0 + cornerB.width;
-            frameSegments.push_back(FrameSegment(
-                1, BoundsBase<float>(topX0, cornerB.y0, topX0 + cellB.width, cornerB.y0 + frameW)));
+            frameSegments.push_back(
+                FrameSegment(1, BoundsBase<float>(topX0, cornerB.y0, topX0 + cellB.width, cornerB.y0 + frameW)));
         }
         else if ((perimeterSide & 0x0E) == 0x0E)  // N | NE | E
         {
@@ -340,8 +346,8 @@ void IzvratRepositoryWnd::CalculateSegmentsBounds(
             frameSegments.push_back(
                 FrameSegment(1, BoundsBase<float>(cellB.x0, cornerY0, cornerB.x0, cornerY0 + frameW)));
             float const rightX0 = cellRight + frameUsedW - frameW;
-            frameSegments.push_back(FrameSegment(
-                2, BoundsBase<float>(rightX0, cornerB.y0 + cornerB.height, rightX0 + frameW, cellBottom)));
+            frameSegments.push_back(
+                FrameSegment(2, BoundsBase<float>(rightX0, cornerB.y0 + cornerB.height, rightX0 + frameW, cellBottom)));
         }
         else if ((perimeterSide & 0x38) == 0x38)  // E | SE | S
         {
@@ -363,8 +369,8 @@ void IzvratRepositoryWnd::CalculateSegmentsBounds(
             BoundsBase<float> const cornerB(cornerX0, cornerY0, cornerX0 + cornerSz, cornerY0 + cornerSz);
             frameSegments.push_back(FrameSegment(6, cornerB));
             float const bottomY0 = cellBottom + frameUsedW - frameW;
-            frameSegments.push_back(FrameSegment(
-                3, BoundsBase<float>(cornerB.x0 + cornerB.width, bottomY0, cellRight, bottomY0 + frameW)));
+            frameSegments.push_back(
+                FrameSegment(3, BoundsBase<float>(cornerB.x0 + cornerB.width, bottomY0, cellRight, bottomY0 + frameW)));
             frameSegments.push_back(
                 FrameSegment(0, BoundsBase<float>(cornerX0, cellB.y0, cornerX0 + frameW, cornerB.y0)));
         }

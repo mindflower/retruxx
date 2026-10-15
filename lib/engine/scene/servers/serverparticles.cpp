@@ -25,21 +25,21 @@ namespace
 
     struct ParticlesInfo
     {
-        /* 0x0000 */ m3d::SgNode* pNode = nullptr;
-        /* 0x0004 */ m3d::ParticlesList* pList = nullptr;
-        /* 0x0008 */ m3d::ParticleSystem* pSystem = nullptr;
-    }; /* size: 0x000c */
+        m3d::SgNode* pNode = nullptr;
+        m3d::ParticlesList* pList = nullptr;
+        m3d::ParticleSystem* pSystem = nullptr;
+    };
 
     struct FxParamsSet
     {
-        /* 0x0000 */ CVector cAmbient = ZeroVector;
-        /* 0x000c */ CVector cDiffuse = ZeroVector;
-        /* 0x0018 */ CVector fogTerm = ZeroVector;
-        /* 0x0024 */ bool ambientNotSet = true;
-        /* 0x0025 */ bool diffuseNotSet = true;
-        /* 0x0026 */ bool fogNotSet = true;
+        CVector cAmbient = ZeroVector;
+        CVector cDiffuse = ZeroVector;
+        CVector fogTerm = ZeroVector;
+        bool ambientNotSet = true;
+        bool diffuseNotSet = true;
+        bool fogNotSet = true;
         void Clear();
-    }; /* size: 0x0028 */
+    };
 
     struct ParticlesSortPred
     {
@@ -58,8 +58,8 @@ namespace
             }
             return &a->m_texAdd < &b->m_texAdd;
         }
-        /* 0x0000 */ ParticlesInfo* m_particles;
-    }; /* size: 0x0004 */
+        ParticlesInfo* m_particles;
+    };
 }  // namespace
 
 namespace m3d
@@ -320,15 +320,15 @@ namespace m3d
 
     ParticlesServer::ParticlesServer()
     {
-        auto id = Application::g_pApp->GetProfilerStack().AddProfiler("particles", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        auto id = M3D_APP->GetProfilerStack().AddProfiler("particles", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profiler = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profiler = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
-        id = Application::g_pApp->GetProfilerStack().AddProfiler("particles update", 0x1E);
-        if (id < Application::g_pApp->GetProfilerStack().GetNumProfilers())
+        id = M3D_APP->GetProfilerStack().AddProfiler("particles update", 0x1E);
+        if (id < M3D_APP->GetProfilerStack().GetNumProfilers())
         {
-            m_profilerUpdate = Application::g_pApp->GetProfilerStack().GetProfiler(id);
+            m_profilerUpdate = M3D_APP->GetProfilerStack().GetProfiler(id);
         }
         QuadPS::CreateIb();
         SpritePS::CreateIb();

@@ -7,19 +7,19 @@ namespace ai
     class RocketPrototypeInfo : public ai::ShellPrototypeInfo
     {
     public:
-        /* 0x0080 */ float m_velocity;
-        /* 0x0084 */ float m_acceleration;
-        /* 0x0088 */ float m_minTurningRadius;
-        /* 0x008c */ float m_flyTime;
-        /* 0x0090 */ int m_BlastWavePrototypeId;
+        float m_velocity;
+        float m_acceleration;
+        float m_minTurningRadius;
+        float m_flyTime;
+        int m_BlastWavePrototypeId;
         RocketPrototypeInfo();
-        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x04 */;
-        virtual void PostLoad() override /* 0x00 */;
-        virtual ai::Obj* CreateTargetObject() const override /* 0x00 */;
+        virtual bool LoadFromXML(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void PostLoad() override;
+        virtual ai::Obj* CreateTargetObject() const override;
 
     private:
-        /* 0x0094 */ CStr m_BlastWavePrototypeName;
-    }; /* size: 0x00a0 */
+        CStr m_BlastWavePrototypeName;
+    };
 
     // A homing shell: it accelerates up to its top speed and, while it has a target, turns towards
     // it along a circle no tighter than its minimum turning radius.
@@ -32,41 +32,40 @@ namespace ai
         friend class RocketLauncher;
 
     protected:
-        virtual ~Rocket() override /* 0x00 */;
+        virtual ~Rocket() override;
 
     protected:
         // NOTE: private in the PDB; protected here because Mine derives from Rocket.
-        Rocket(const ai::RocketPrototypeInfo& prototypeInfo);
-        Rocket(const ai::Rocket&);
-        virtual m3d::Object* Clone() override /* 0x00 */;
-        static m3d::Object* __fastcall CreateObject();
+        Rocket(ai::RocketPrototypeInfo const& prototypeInfo);
+        Rocket(ai::Rocket const&);
+        virtual m3d::Object* Clone() override;
+        static m3d::Object* CreateObject();
 
     public:
-        static m3d::Class* __fastcall GetBaseClass();
-        virtual m3d::Class* GetClass() const override /* 0x00 */;
+        static m3d::Class* GetBaseClass();
+        virtual m3d::Class* GetClass() const override;
         RT_CLASS_DECLARE(Rocket);
-        virtual const ai::RocketPrototypeInfo* GetPrototypeInfo() const override /* 0x00 */;
-        /* 0x0150 */ int m_targetObjId;
+        virtual ai::RocketPrototypeInfo const* GetPrototypeInfo() const override;
+        int m_targetObjId;
         float GetVelocity() const;
-        virtual void Remove() override /* 0x00 */;
-        virtual void Update(float elapsedTime, unsigned int workTime) override /* 0x00 */;
-        void SetInitialDirection(const CVector& direction);
-        void SetInitialVelocity(const CVector& initVel);
+        virtual void Remove() override;
+        virtual void Update(float elapsedTime, unsigned int workTime) override;
+        void SetInitialDirection(CVector const& direction);
+        void SetInitialVelocity(CVector const& initVel);
         void CreateBlastWave() const;
-        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x00 */;
+        virtual void LoadRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+        virtual void SaveRuntimeValues(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
         bool getWithAngleLimit() const;
         void setWithAngleLimit(bool value);
 
     private:
-        /* 0x0154 */ ai::NumericInRangeRegenerating<float> m_velocity;
-        /* 0x022c */ ai::NumericInRangeRegenerating<float> m_lifeTime;
-        /* 0x0304 */ float m_minTurningRadius;
-        /* 0x0308 */ CVector m_initialDirection;
-        /* 0x0314 */ CVector m_initVelDir;
-        /* 0x0320 */ float m_initVelValue;
-        /* 0x0324 */ bool m_withAngleLimit;
-        /* 0x0325 */ char Padding_336[3];
-        /* 0x0328 */ int m_numCircles;
-    }; /* size: 0x032c */
-}
+        ai::NumericInRangeRegenerating<float> m_velocity;
+        ai::NumericInRangeRegenerating<float> m_lifeTime;
+        float m_minTurningRadius;
+        CVector m_initialDirection;
+        CVector m_initVelDir;
+        float m_initVelValue;
+        bool m_withAngleLimit;
+        int m_numCircles;
+    };
+}  // namespace ai

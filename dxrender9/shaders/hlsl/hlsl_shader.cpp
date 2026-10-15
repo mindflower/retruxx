@@ -21,16 +21,16 @@ CDevice* HlslShaderImpl::m_dev = 0;
 
 // ProfileStringTable @ 0x85280c: the D3DX profile name of each IHlslShader::Profile. The original hands
 // "unsupported" to D3DXCompileShader for VS_3_0 and PS_3_0.
-static const char* ProfileStringTable[9] = {
-    "vs_1_1",      // VS_1_1
-    "vs_2_0",      // VS_2_0
-    "unsupported", // VS_3_0
-    "ps_1_1",      // PS_1_1
-    "ps_1_3",      // PS_1_3
-    "ps_1_4",      // PS_1_4
-    "ps_2_0",      // PS_2_0
-    "ps_2_a",      // PS_2_a
-    "unsupported", // PS_3_0
+static char const* ProfileStringTable[9] = {
+    "vs_1_1",       // VS_1_1
+    "vs_2_0",       // VS_2_0
+    "unsupported",  // VS_3_0
+    "ps_1_1",       // PS_1_1
+    "ps_1_3",       // PS_1_3
+    "ps_1_4",       // PS_1_4
+    "ps_2_0",       // PS_2_0
+    "ps_2_a",       // PS_2_a
+    "unsupported",  // PS_3_0
 };
 
 // orig 0x64b760 hlsl_shader.cpp:39
@@ -68,8 +68,11 @@ bool HlslShaderImpl::IsVertexShader() const
 }
 
 // orig 0x64b850 hlsl_shader.cpp:94
-bool HlslShaderImpl::LoadFromFile(const char* fileName, const char* entryFunc, Profile profile,
-                                  std::vector<CompileParam> const& compileParams)
+bool HlslShaderImpl::LoadFromFile(
+    char const* fileName,
+    char const* entryFunc,
+    Profile profile,
+    std::vector<CompileParam> const& compileParams)
 {
     m_fileName = fileName;
     m_compileParams = compileParams;
@@ -119,37 +122,66 @@ bool HlslShaderImpl::LoadFromFile(const char* fileName, const char* entryFunc, P
     std::string rewritten;
     if (hlsl_compat::LegacyCompilerAvailable())
     {
-        hr = D3DXCompileShader(buffer, fileSize, macros, &includeHandler, entryFunc, ProfileStringTable[profile],
-                               D3DXSHADER_USE_LEGACY_D3DX9_31_DLL, &shaderCode, &errorBuffer, &m_constantTable);
+        hr = D3DXCompileShader(
+            buffer,
+            fileSize,
+            macros,
+            &includeHandler,
+            entryFunc,
+            ProfileStringTable[profile],
+            D3DXSHADER_USE_LEGACY_D3DX9_31_DLL,
+            &shaderCode,
+            &errorBuffer,
+            &m_constantTable);
     }
-    else if (SUCCEEDED(D3DXPreprocessShader(buffer, fileSize, macros, &includeHandler, &preprocessed, 0)) &&
-             preprocessed)
+    else if (
+        SUCCEEDED(D3DXPreprocessShader(buffer, fileSize, macros, &includeHandler, &preprocessed, 0)) && preprocessed)
     {
-        const char* text = (const char*)preprocessed->GetBufferPointer();
+        char const* text = (char const*)preprocessed->GetBufferPointer();
         rewritten.assign(text, strnlen(text, preprocessed->GetBufferSize()));
         preprocessed->Release();
         if (hlsl_compat::AssignSamplerRegistersInDeclarationOrder(rewritten) > 0)
         {
-            LogMsg(CStr::format_("HlslShaderImpl: sampler registers of shader file '%s' assigned in declaration order",
-                                 fileName));
+            LogMsg(
+                CStr::format_(
+                    "HlslShaderImpl: sampler registers of shader file '%s' assigned in declaration order", fileName));
         }
-        hr = D3DXCompileShader(rewritten.c_str(), (UINT)rewritten.size(), 0, &includeHandler, entryFunc,
-                               ProfileStringTable[profile], D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, &shaderCode,
-                               &errorBuffer, &m_constantTable);
+        hr = D3DXCompileShader(
+            rewritten.c_str(),
+            (UINT)rewritten.size(),
+            0,
+            &includeHandler,
+            entryFunc,
+            ProfileStringTable[profile],
+            D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY,
+            &shaderCode,
+            &errorBuffer,
+            &m_constantTable);
     }
     else
     {
-        hr = D3DXCompileShader(buffer, fileSize, macros, &includeHandler, entryFunc, ProfileStringTable[profile],
-                               D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, &shaderCode, &errorBuffer,
-                               &m_constantTable);
+        hr = D3DXCompileShader(
+            buffer,
+            fileSize,
+            macros,
+            &includeHandler,
+            entryFunc,
+            ProfileStringTable[profile],
+            D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY,
+            &shaderCode,
+            &errorBuffer,
+            &m_constantTable);
     }
 
     delete[] buffer;
 
     if (FAILED(hr))
     {
-        LogMsg(CStr::format_("HlslShaderImpl: failed to load shader file '%s' with: %s", fileName,
-                             errorBuffer ? (const char*)errorBuffer->GetBufferPointer() : "No D3DX error message."));
+        LogMsg(
+            CStr::format_(
+                "HlslShaderImpl: failed to load shader file '%s' with: %s",
+                fileName,
+                errorBuffer ? (char const*)errorBuffer->GetBufferPointer() : "No D3DX error message."));
 
         if (errorBuffer)
         {
@@ -175,8 +207,7 @@ bool HlslShaderImpl::LoadFromFile(const char* fileName, const char* entryFunc, P
 }
 
 // orig 0x64ad30 hlsl_shader.cpp:200
-bool HlslShaderImpl::LoadFromString(const char* shaderBuf, unsigned int dataLen, const char* entryFunc,
-                                    Profile profile)
+bool HlslShaderImpl::LoadFromString(char const* shaderBuf, unsigned int dataLen, char const* entryFunc, Profile profile)
 {
     return false;
 }
@@ -298,43 +329,43 @@ unsigned int HlslShaderImpl::GetNumberOfParams() const
 }
 
 // orig 0x64adb0 hlsl_shader.cpp:389
-HlslShaderImpl::ParameterHandle HlslShaderImpl::GetParamHandleByName(const char* paramName)
+HlslShaderImpl::ParameterHandle HlslShaderImpl::GetParamHandleByName(char const* paramName)
 {
     return (ParameterHandle)(size_t)m_constantTable->GetConstantByName(0, paramName);
 }
 
 // orig 0x64add0 hlsl_shader.cpp:396
-void HlslShaderImpl::SetInt(ParameterHandle p,int val)
+void HlslShaderImpl::SetInt(ParameterHandle p, int val)
 {
     m_constantTable->SetInt(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, val);
 }
 
 // orig 0x64ae00 hlsl_shader.cpp:406
-void HlslShaderImpl::SetIntArray(ParameterHandle p,const int* array, int count)
+void HlslShaderImpl::SetIntArray(ParameterHandle p, int const* array, int count)
 {
     m_constantTable->SetIntArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, array, count);
 }
 
 // orig 0x64ae30 hlsl_shader.cpp:416
-void HlslShaderImpl::SetFloat(ParameterHandle p,float val)
+void HlslShaderImpl::SetFloat(ParameterHandle p, float val)
 {
     m_constantTable->SetFloat(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, val);
 }
 
 // orig 0x64ae60 hlsl_shader.cpp:426
-void HlslShaderImpl::SetFloatArray(ParameterHandle p,const float* array, int count)
+void HlslShaderImpl::SetFloatArray(ParameterHandle p, float const* array, int count)
 {
     m_constantTable->SetFloatArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, array, count);
 }
 
 // orig 0x64ae90 hlsl_shader.cpp:440
-void HlslShaderImpl::SetVector4(ParameterHandle p,CVector4 const& val)
+void HlslShaderImpl::SetVector4(ParameterHandle p, CVector4 const& val)
 {
     m_constantTable->SetVector(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)&val);
 }
 
 // orig 0x64b440 hlsl_shader.cpp:451
-void HlslShaderImpl::SetVector3(ParameterHandle p,CVector const& val)
+void HlslShaderImpl::SetVector3(ParameterHandle p, CVector const& val)
 {
     static D3DXVECTOR4 v4;
     v4.x = val.x;
@@ -346,40 +377,40 @@ void HlslShaderImpl::SetVector3(ParameterHandle p,CVector const& val)
 }
 
 // orig 0x64aec0 hlsl_shader.cpp:466
-void HlslShaderImpl::SetFloat4(ParameterHandle p,nFloat4 const& val)
+void HlslShaderImpl::SetFloat4(ParameterHandle p, nFloat4 const& val)
 {
     m_constantTable->SetVector(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)&val);
 }
 
 // orig 0x64aef0 hlsl_shader.cpp:481
-void HlslShaderImpl::SetFloat4Array(ParameterHandle p,const nFloat4* array, int count)
+void HlslShaderImpl::SetFloat4Array(ParameterHandle p, nFloat4 const* array, int count)
 {
     m_constantTable->SetVectorArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)array, count);
 }
 
 // orig 0x64af20 hlsl_shader.cpp:491
-void HlslShaderImpl::SetVector4Array(ParameterHandle p,const CVector4* array, int count)
+void HlslShaderImpl::SetVector4Array(ParameterHandle p, CVector4 const* array, int count)
 {
     m_constantTable->SetVectorArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXVECTOR4*)array, count);
 }
 
 // orig 0x64af50 hlsl_shader.cpp:501
-void HlslShaderImpl::SetMatrix(ParameterHandle p,CMatrix const& val)
+void HlslShaderImpl::SetMatrix(ParameterHandle p, CMatrix const& val)
 {
     m_constantTable->SetMatrix(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX*)&val);
 }
 
 // orig 0x64af80 hlsl_shader.cpp:516
-void HlslShaderImpl::SetMatrixArray(ParameterHandle p,const CMatrix* array, int count)
+void HlslShaderImpl::SetMatrixArray(ParameterHandle p, CMatrix const* array, int count)
 {
     m_constantTable->SetMatrixArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX*)array, count);
 }
 
 // orig 0x64afb0 hlsl_shader.cpp:526
-void HlslShaderImpl::SetMatrixPointerArray(ParameterHandle p,const CMatrix** array, int count)
+void HlslShaderImpl::SetMatrixPointerArray(ParameterHandle p, CMatrix const** array, int count)
 {
-    m_constantTable->SetMatrixPointerArray(m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX**)array,
-                                           count);
+    m_constantTable->SetMatrixPointerArray(
+        m_dev->m_pd3dDevice, (D3DXHANDLE)(size_t)p, (const D3DXMATRIX**)array, count);
 }
 
 // orig 0x64afe0 hlsl_shader.cpp:539
@@ -427,16 +458,19 @@ void HlslShaderImpl::Apply()
 }
 
 // orig 0x64c140 hlsl_shader.cpp:589
-IHlslShader* CDevice::NewHlslShader(const char* fileName, const char* entryFunc, IHlslShader::Profile profile,
-                                    std::vector<CompileParam> const& compileParams)
+IHlslShader* CDevice::NewHlslShader(
+    char const* fileName,
+    char const* entryFunc,
+    IHlslShader::Profile profile,
+    std::vector<CompileParam> const& compileParams)
 {
     ShaderIdData shaderId(CStr(fileName), compileParams);
 
     UnifyFileName(shaderId.filename);
 
     std::sort(shaderId.compileParams.begin(), shaderId.compileParams.end());
-    shaderId.compileParams.erase(std::unique(shaderId.compileParams.begin(), shaderId.compileParams.end()),
-                                 shaderId.compileParams.end());
+    shaderId.compileParams.erase(
+        std::unique(shaderId.compileParams.begin(), shaderId.compileParams.end()), shaderId.compileParams.end());
 
     std::map<ShaderIdData, HlslShaderImpl*>::iterator it = m_HlslShaders.find(shaderId);
     if (it != m_HlslShaders.end())
@@ -460,7 +494,7 @@ IHlslShader* CDevice::NewHlslShader(const char* fileName, const char* entryFunc,
 }
 
 // HTA-only wrapper, no original body
-IHlslShader* CDevice::NewHlslShader(const char* fileName, const char* entryFunc, IHlslShader::Profile profile)
+IHlslShader* CDevice::NewHlslShader(char const* fileName, char const* entryFunc, IHlslShader::Profile profile)
 {
     return NewHlslShader(fileName, entryFunc, profile, std::vector<CompileParam>());
 }
@@ -476,12 +510,14 @@ void CDevice::OnHlslShaderDestructor(HlslShaderImpl* shader)
 // orig 0x64b6b0 hlsl_shader.cpp:640
 void CDevice::ReleaseHlslShaders()
 {
-    for (std::map<ShaderIdData, HlslShaderImpl*>::iterator it = m_HlslShaders.begin(); it != m_HlslShaders.end();
-         ++it)
+    for (std::map<ShaderIdData, HlslShaderImpl*>::iterator it = m_HlslShaders.begin(); it != m_HlslShaders.end(); ++it)
     {
         HlslShaderImpl* shader = it->second;
 
-        LogMsg(CStr::format_("Warning: Hlsl shader '%s' is not released (refs = %d)", shader->m_fileName.c_str(),
-                             shader->GetRefCount()));
+        LogMsg(
+            CStr::format_(
+                "Warning: Hlsl shader '%s' is not released (refs = %d)",
+                shader->m_fileName.c_str(),
+                shader->GetRefCount()));
     }
 }

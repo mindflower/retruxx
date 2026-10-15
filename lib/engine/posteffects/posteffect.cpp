@@ -77,8 +77,7 @@ PostEffect::PostEffect(
         if (unit.m_condItor != model->m_conditionList.end())
         {
             // Decide which way the variable has to travel to reach its limit.
-            unit.m_condItor->m_evalIncrease =
-                unit.m_var[VAR_VALUE] < LimitOf(unit.m_var, unit.m_condItor->m_limit);
+            unit.m_condItor->m_evalIncrease = unit.m_var[VAR_VALUE] < LimitOf(unit.m_var, unit.m_condItor->m_limit);
         }
     }
 

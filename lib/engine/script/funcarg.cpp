@@ -23,7 +23,7 @@ namespace m3d
 
     char const* sArg::GetS() const
     {
-        return  m_s;
+        return m_s;
     }
 
     float sArg::GetF() const
@@ -128,4 +128,4 @@ namespace m3d
     {
         return m_type;
     }
-}
+}  // namespace m3d

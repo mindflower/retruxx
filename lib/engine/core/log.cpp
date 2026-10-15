@@ -76,11 +76,8 @@ namespace m3d
             auto const timestamp = time(NULL);
             CStr timeStr = asctime(localtime(&timestamp));
             timeStr[timeStr.length() - 1] = '\0';
-            logStream <<
-                "----------------------------------------------- Log ends on " <<
-                timeStr.c_str() <<
-                " ----------------------------------------------" <<
-                std::endl;
+            logStream << "----------------------------------------------- Log ends on " << timeStr.c_str()
+                      << " ----------------------------------------------" << std::endl;
             if (m_flushImmediately)
             {
                 logStream.flush();
@@ -229,7 +226,7 @@ namespace m3d
         }
         m_flushImmediately = flush;
 
-        char buf[0x400] = { 0 };
+        char buf[0x400] = {0};
         ::GetCurrentDirectoryA(sizeof(buf), buf);
         CStr logFile(buf);
         logFile += "\\";
@@ -242,11 +239,8 @@ namespace m3d
             auto const timestamp = time(NULL);
             CStr timeStr = asctime(localtime(&timestamp));
             timeStr[timeStr.length() - 1] = '\0';
-            logStream <<
-                "---------------------------------------------- Retruxx log begins on " <<
-                timeStr.c_str() <<
-                " ----------------------------------------------" <<
-                std::endl;
+            logStream << "---------------------------------------------- Retruxx log begins on " << timeStr.c_str()
+                      << " ----------------------------------------------" << std::endl;
             if (m_flushImmediately)
             {
                 logStream.flush();
@@ -263,16 +257,36 @@ namespace m3d
         std::stringstream ss;
         switch (logFlags)
         {
-        case LOG_ALL: ss << "A "; break;
-        case LOG_INDENT: ss << "> "; break;
-        case LOG_UNDENT: ss << "< "; break;
-        case LOG_FLOW: ss << "F "; break;
-        case LOG_DATA: ss << "D "; break;
-        case LOG_INFO: ss << "I "; break;
-        case LOG_WARN: ss << "W "; break;
-        case LOG_ERR: ss << "E "; break;
-        case LOG_CRIT: ss << "! "; break;
-        default: ss << "  "; break;
+        case LOG_ALL:
+            ss << "A ";
+            break;
+        case LOG_INDENT:
+            ss << "> ";
+            break;
+        case LOG_UNDENT:
+            ss << "< ";
+            break;
+        case LOG_FLOW:
+            ss << "F ";
+            break;
+        case LOG_DATA:
+            ss << "D ";
+            break;
+        case LOG_INFO:
+            ss << "I ";
+            break;
+        case LOG_WARN:
+            ss << "W ";
+            break;
+        case LOG_ERR:
+            ss << "E ";
+            break;
+        case LOG_CRIT:
+            ss << "! ";
+            break;
+        default:
+            ss << "  ";
+            break;
         }
         auto pos = m_sourceFile.rfind('\\');
         if (pos == std::string::npos)
@@ -283,17 +297,24 @@ namespace m3d
         {
             pos += 1;
         }
-        char temp[1024] = { 0 };
+        char temp[1024] = {0};
         sprintf(temp, "%20s[%04d]", m_sourceFile.substr(pos).c_str(), m_sourceLine);
         ss << temp;
 
         auto const curTime = time(NULL);
         auto const localTime = localtime(&curTime);
-        sprintf(temp, "%02d/%02d %02d:%02d:%02d ", localTime->tm_mday, localTime->tm_mon + 1, localTime->tm_hour, localTime->tm_min, localTime->tm_sec);
+        sprintf(
+            temp,
+            "%02d/%02d %02d:%02d:%02d ",
+            localTime->tm_mday,
+            localTime->tm_mon + 1,
+            localTime->tm_hour,
+            localTime->tm_min,
+            localTime->tm_sec);
         ss << temp;
 
         static thread_local CStr header;
         header = ss.str().c_str();
         return header;
     }
-}
+}  // namespace m3d

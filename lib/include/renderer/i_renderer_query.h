@@ -13,50 +13,49 @@ namespace m3d
 #pragma pack(push, 8)
         struct BANDWIDTHTIMINGS
         {
-            /* 0x0000 */ float MaxBandwidthUtilized;
-            /* 0x0004 */ float FrontEndUploadMemoryUtilizedPercent;
-            /* 0x0008 */ float VertexRateUtilizedPercent;
-            /* 0x000c */ float TriangleSetupRateUtilizedPercent;
-            /* 0x0010 */ float FillRateUtilizedPercent;
-        }; /* size: 0x0014 */
-
+            float MaxBandwidthUtilized;
+            float FrontEndUploadMemoryUtilizedPercent;
+            float VertexRateUtilizedPercent;
+            float TriangleSetupRateUtilizedPercent;
+            float FillRateUtilizedPercent;
+        };
 
         struct CACHEUTILIZATION
         {
-            /* 0x0000 */ float TextureCacheHitRate;
-            /* 0x0004 */ float PostTransformVertexCacheHitRate;
-        }; /* size: 0x0008 */
+            float TextureCacheHitRate;
+            float PostTransformVertexCacheHitRate;
+        };
 
         struct INTERFACETIMINGS
         {
-            /* 0x0000 */ float WaitingForGPUToUseApplicationResourceTimePercent;
-            /* 0x0004 */ float WaitingForGPUToAcceptMoreCommandsTimePercent;
-            /* 0x0008 */ float WaitingForGPUToStayWithinLatencyTimePercent;
-            /* 0x000c */ float WaitingForGPUExclusiveResourceTimePercent;
-            /* 0x0010 */ float WaitingForGPUOtherTimePercent;
-        }; /* size: 0x0014 */
+            float WaitingForGPUToUseApplicationResourceTimePercent;
+            float WaitingForGPUToAcceptMoreCommandsTimePercent;
+            float WaitingForGPUToStayWithinLatencyTimePercent;
+            float WaitingForGPUExclusiveResourceTimePercent;
+            float WaitingForGPUOtherTimePercent;
+        };
 
         struct PIPELINETIMINGS
         {
-            /* 0x0000 */ float VertexProcessingTimePercent;
-            /* 0x0004 */ float PixelProcessingTimePercent;
-            /* 0x0008 */ float OtherGPUProcessingTimePercent;
-            /* 0x000c */ float GPUIdleTimePercent;
-        }; /* size: 0x0010 */
+            float VertexProcessingTimePercent;
+            float PixelProcessingTimePercent;
+            float OtherGPUProcessingTimePercent;
+            float GPUIdleTimePercent;
+        };
 
         struct STAGETIMINGS
         {
-            /* 0x0000 */ float MemoryProcessingPercent;
-            /* 0x0004 */ float ComputationProcessingPercent;
-        }; /* size: 0x0008 */
+            float MemoryProcessingPercent;
+            float ComputationProcessingPercent;
+        };
 
         struct VCACHE
         {
-            /* 0x0000 */ uint32_t Pattern;
-            /* 0x0004 */ uint32_t OptMethod;
-            /* 0x0008 */ uint32_t CacheSize;
-            /* 0x000c */ uint32_t MagicNumber;
-        }; /* size: 0x0010 */
+            uint32_t Pattern;
+            uint32_t OptMethod;
+            uint32_t CacheSize;
+            uint32_t MagicNumber;
+        };
 
         class QueryReturnValue
         {
@@ -80,36 +79,35 @@ namespace m3d
         public:
             QueryReturnValue();
             ~QueryReturnValue();
-            bool operator==(const m3d::rend::QueryReturnValue&) const;
+            bool operator==(m3d::rend::QueryReturnValue const&) const;
             void SetType(m3d::rend::QueryReturnValue::Type);
             m3d::rend::QueryReturnValue::Type GetType() const;
             bool IsValid() const;
             bool GetBool() const;
             unsigned long GetDword() const;
             uint64_t GetUInt64() const;
-            const m3d::rend::BANDWIDTHTIMINGS& GetBandWidthTimings() const;
-            const m3d::rend::CACHEUTILIZATION& GetCacheUtilization() const;
-            const m3d::rend::INTERFACETIMINGS& GetInterfaceTimings() const;
-            const m3d::rend::PIPELINETIMINGS& GetPipelineTimings() const;
-            const m3d::rend::STAGETIMINGS& GetStageTimings() const;
-            const m3d::rend::VCACHE& GetVCash() const;
+            m3d::rend::BANDWIDTHTIMINGS const& GetBandWidthTimings() const;
+            m3d::rend::CACHEUTILIZATION const& GetCacheUtilization() const;
+            m3d::rend::INTERFACETIMINGS const& GetInterfaceTimings() const;
+            m3d::rend::PIPELINETIMINGS const& GetPipelineTimings() const;
+            m3d::rend::STAGETIMINGS const& GetStageTimings() const;
+            m3d::rend::VCACHE const& GetVCash() const;
 
         private:
-            /* 0x0000 */ m3d::rend::QueryReturnValue::Type m_type;
-            /* 0x0004 */ char Padding_204[4];
+            m3d::rend::QueryReturnValue::Type m_type;
             union
             {
-                /* 0x0008 */ bool b;
-                /* 0x0008 */ uint32_t d;
-                /* 0x0008 */ uint64_t i64;
+                bool b;
+                uint32_t d;
+                uint64_t i64;
                 m3d::rend::BANDWIDTHTIMINGS bw;
                 m3d::rend::CACHEUTILIZATION cu;
                 m3d::rend::INTERFACETIMINGS it;
                 m3d::rend::PIPELINETIMINGS pt;
                 m3d::rend::STAGETIMINGS st;
                 m3d::rend::VCACHE vc;
-            }; /* size: 0x0014 */
-        }; /* size: 0x0020 */
+            };
+        };
 #pragma pack(pop)
 
         static_assert(sizeof(BANDWIDTHTIMINGS) == 0x0014);
@@ -119,5 +117,5 @@ namespace m3d
         static_assert(sizeof(STAGETIMINGS) == 0x0008);
         static_assert(sizeof(VCACHE) == 0x0010);
         static_assert(sizeof(QueryReturnValue) == 0x0020);
-    }
-}
+    }  // namespace rend
+}  // namespace m3d

@@ -85,12 +85,10 @@ int QuestItemsWnd::GameDataSetup()
     m3d::Object* pictureChild = GetChildByName(m_aif.m_wndPictureName);
     if (pictureChild && pictureChild->IsKindOf(&m3d::ui::Wnd::m_classWnd))
     {
-        m_wndPicture = static_cast<ContextModelWnd*>(m3d::g_Kernel->New("ContextModelWnd"));
-        if (!m_wndPicture ||
-            !m_wndPicture->CreateFromPattern(static_cast<m3d::ui::Wnd*>(pictureChild), true))
+        m_wndPicture = static_cast<ContextModelWnd*>(M3D_KERNEL->New("ContextModelWnd"));
+        if (!m_wndPicture || !m_wndPicture->CreateFromPattern(static_cast<m3d::ui::Wnd*>(pictureChild), true))
         {
-            M3D_LOG_INFO(
-                "Make control error: cannot create " + m_aif.m_wndPictureName + " from pattern class");
+            M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndPictureName + " from pattern class");
             res = 0;
         }
     }
@@ -103,12 +101,10 @@ int QuestItemsWnd::GameDataSetup()
     m3d::Object* listChild = GetChildByName(m_aif.m_wndItemsListName);
     if (listChild && listChild->IsKindOf(&m3d::ui::Wnd::m_classWnd))
     {
-        m_wndItemsList = static_cast<CheckList*>(m3d::g_Kernel->New("CheckList"));
-        if (!m_wndItemsList ||
-            !m_wndItemsList->CreateFromPattern(static_cast<m3d::ui::Wnd*>(listChild), true))
+        m_wndItemsList = static_cast<CheckList*>(M3D_KERNEL->New("CheckList"));
+        if (!m_wndItemsList || !m_wndItemsList->CreateFromPattern(static_cast<m3d::ui::Wnd*>(listChild), true))
         {
-            M3D_LOG_INFO(
-                "Make control error: cannot create " + m_aif.m_wndItemsListName + " from pattern class");
+            M3D_LOG_INFO("Make control error: cannot create " + m_aif.m_wndItemsListName + " from pattern class");
             res = 0;
         }
     }

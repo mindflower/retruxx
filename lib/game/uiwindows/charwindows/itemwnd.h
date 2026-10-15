@@ -40,7 +40,7 @@ public:
     virtual ~ItemWnd();
     ai::Obj* GetItem() const;
     virtual m3d::Class* GetRtClass() const;
-    virtual int Create(CStr const&, unsigned int,  BoundsBase<float> const&, unsigned int);
+    virtual int Create(CStr const&, unsigned int, BoundsBase<float> const&, unsigned int);
 
 protected:
     virtual void DrawSelection(m3d::ui::DrawInfo const&);
@@ -62,11 +62,11 @@ protected:
     virtual int GameDataUpdate(void*, int);
     virtual int CanAddDragItem(bool) override;
     virtual int AddItem(ai::GeomRepositoryItem const&) override;
-    virtual int GetResourceId() const = 0 /* 0x17c */;
+    virtual int GetResourceId() const = 0;
     bool IsHidden() const;
     class ai::Vehicle* GetVehicle() const;
-    virtual void OnUpdateWhileNoDrag( PointBase<float> const&);
-    virtual int OnPaint( m3d::ui::DrawInfo const&);
+    virtual void OnUpdateWhileNoDrag(PointBase<float> const&);
+    virtual int OnPaint(m3d::ui::DrawInfo const&);
     virtual int GetItemPrototypeId() const;
     virtual void SetupInfoWnd(ItemInfoWnd*);
     virtual void ShowDragSrc();
@@ -84,7 +84,7 @@ protected:
     virtual void OnDistantStartDrag();
     virtual class PointBase<int> GetCorrectGeomSize() const;
     virtual void Reset();
-    virtual void DrawBg( m3d::ui::DrawInfo const&);
+    virtual void DrawBg(m3d::ui::DrawInfo const&);
     virtual int OnAfterRemoveFromWndStation();
     virtual void OnDistantMouseIn(ai::GeomRepositoryItem const&);
     virtual int OnDragRemove();

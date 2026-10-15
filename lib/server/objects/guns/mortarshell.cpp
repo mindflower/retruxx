@@ -40,10 +40,12 @@ namespace ai
     {
         // RVA 0x84A940
         m_blastWavePrototypeId = thePrototypeManager->GetPrototypeId(m_blastWavePrototypeName);
-        if (m_blastWavePrototypeId == -1 && m_blastWavePrototypeName.c_str() && strlen(m_blastWavePrototypeName.c_str()))
+        if (m_blastWavePrototypeId == -1 && m_blastWavePrototypeName.c_str() &&
+            strlen(m_blastWavePrototypeName.c_str()))
         {
-            M3D_LOG_ERR(CStr("Error: Unknown blast wave prototype name: '") + m_blastWavePrototypeName + CStr("' for mortar shell '") +
-                        m_prototypeName + CStr("'"));
+            M3D_LOG_ERR(
+                CStr("Error: Unknown blast wave prototype name: '") + m_blastWavePrototypeName +
+                CStr("' for mortar shell '") + m_prototypeName + CStr("'"));
             SYS_ERROR("!\"Critical error, see log\"");
         }
     }
@@ -134,7 +136,8 @@ namespace ai
             return;
         }
 
-        CVector const newPos = Mortar::GetMortarShellPosition(m_initialPosition, m_initialVelocity, m_lifeTime.value().get());
+        CVector const newPos =
+            Mortar::GetMortarShellPosition(m_initialPosition, m_initialVelocity, m_lifeTime.value().get());
         CVector const size = GetPrototypeInfo()->GetSize();
         CVector const pos = GetPosition();
         float const dx = newPos.x - pos.x;

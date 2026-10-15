@@ -20,14 +20,14 @@ namespace m3d
         // What the node hands to SpritesServer::RenderItem.
         struct RenderInfo
         {
-            /* 0x0000 */ CVector* m_local;
-            /* 0x0004 */ float m_scaleX;
-            /* 0x0008 */ float m_scaleY;
-            /* 0x000c */ float m_rotZ;
-            /* 0x0010 */ unsigned int m_color;
-            /* 0x0014 */ unsigned int m_mode;
-            /* 0x0018 */ float m_tsc;
-        }; /* size: 0x001c */
+            CVector* m_local;
+            float m_scaleX;
+            float m_scaleY;
+            float m_rotZ;
+            unsigned int m_color;
+            unsigned int m_mode;
+            float m_tsc;
+        };
 
         float const land_scale = 8.0f;
     }  // namespace
@@ -246,4 +246,4 @@ namespace m3d
             m_props[i] = node.m_props[i];
         }
     }
-}
+}  // namespace m3d

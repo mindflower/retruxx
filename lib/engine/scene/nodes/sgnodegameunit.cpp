@@ -33,4 +33,4 @@ namespace m3d
     SgGameUnitNode::SgGameUnitNode()
     {
     }
-}
+}  // namespace m3d

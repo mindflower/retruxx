@@ -3,15 +3,14 @@
 
 namespace ai
 {
-    template <typename T1, typename T2, typename RetType>
-    class FuncPtrTwoArgsRef : public ai::FuncPtr<ai::BaseFunctionTwoArgsRef<T1, T2, RetType> >
+    template<typename T1, typename T2, typename RetType>
+    class FuncPtrTwoArgsRef : public ai::FuncPtr<ai::BaseFunctionTwoArgsRef<T1, T2, RetType>>
     {
         using BaseFunc = ai::BaseFunctionTwoArgsRef<T1, T2, RetType>;
-        using Base = ai::FuncPtr<ai::BaseFunctionTwoArgsRef<T1, T2, RetType> >;
+        using Base = ai::FuncPtr<ai::BaseFunctionTwoArgsRef<T1, T2, RetType>>;
 
     public:
-        FuncPtrTwoArgsRef(BaseFunc* pFunc) :
-            FuncPtr(pFunc)
+        FuncPtrTwoArgsRef(BaseFunc* pFunc) : FuncPtr(pFunc)
         {
         }
 
@@ -20,7 +19,7 @@ namespace ai
             return m_pFunc && m_pFunc->Execute(arg1, arg2);
         }
 
-        const ai::FuncPtrTwoArgsRef<T1, T2, RetType>& operator=(BaseFunc* pNewFunc)
+        ai::FuncPtrTwoArgsRef<T1, T2, RetType> const& operator=(BaseFunc* pNewFunc)
         {
             assert(m_pFunc == 0);
             if (pNewFunc)
@@ -29,15 +28,15 @@ namespace ai
             }
             return *this;
         }
-    }; /* size: 0x0008 */
+    };
 
-    template <typename TClass, typename T1, typename T2, typename RetType>
+    template<typename TClass, typename T1, typename T2, typename RetType>
     class MemberFunctionTwoArgsRef : public ai::BaseFunctionTwoArgsRef<T1, T2, RetType>
     {
-       // using (*FuncMemberOfT) = RetType;
+        // using (*FuncMemberOfT) = RetType;
 
     public:
-        MemberFunctionTwoArgsRef(const ai::MemberFunctionTwoArgsRef<TClass, T1, T2, RetType>&)
+        MemberFunctionTwoArgsRef(ai::MemberFunctionTwoArgsRef<TClass, T1, T2, RetType> const&)
         {
             throw std::runtime_error("not implemented");
         }
@@ -53,7 +52,7 @@ namespace ai
             this->m_func = func;
         }
 
-        virtual bool Execute(const T1& arg1, T2& arg2) override /* 0x04 */
+        virtual bool Execute(const T1& arg1, T2& arg2) override
         {
             if (m_pT)
             {
@@ -63,7 +62,7 @@ namespace ai
         }
 
     private:
-        /* 0x0004 */ TClass* m_pT = nullptr;
-        /* 0x0008 */ bool (TClass::*m_func)(const T1&, T2&) = nullptr;
-    }; /* size: 0x000c */
-}
+        TClass* m_pT = nullptr;
+        bool (TClass::*m_func)(const T1&, T2&) = nullptr;
+    };
+}  // namespace ai

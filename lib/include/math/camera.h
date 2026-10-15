@@ -7,26 +7,26 @@ namespace m3d
     {
         struct XmlNode;
         class XmlFile;
-    }
-}
+    }  // namespace cmn
+}  // namespace m3d
 
 struct CMatrix;
 
 class CAffineXForm
 {
 public:
-    /* 0x0004 */ CVector m_worldOrigin;
-    /* 0x0010 */ float m_rotYaw;
-    /* 0x0014 */ float m_rotPitch;
-    /* 0x0018 */ float m_rotRoll;
-    CAffineXForm(const CAffineXForm&);
+    CVector m_worldOrigin;
+    float m_rotYaw;
+    float m_rotPitch;
+    float m_rotRoll;
+    CAffineXForm(CAffineXForm const&);
     CAffineXForm();
     void createViewMatrix(CMatrix& viewMatrix) const;
     void createRotationMatrix(CMatrix& matRot) const;
-    void MoveAlong(const CVector&);
-    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) /* 0x00 */;
-    virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const /* 0x04 */;
-}; /* size: 0x001c */
+    void MoveAlong(CVector const&);
+    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode);
+    virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const;
+};
 
 enum CameraModes
 {
@@ -41,15 +41,14 @@ enum CameraModes
 class CCamera : public CAffineXForm
 {
 public:
-    /* 0x001c */ float m_fovX;
-    /* 0x0020 */ float m_fovY;
-    CCamera(const CCamera&);
+    float m_fovX;
+    float m_fovY;
+    CCamera(CCamera const&);
     CCamera();
-    void lookAt(const CVector& Aim, const CVector& Up);
-    void lookAt(const CVector& Aim);
+    void lookAt(CVector const& Aim, CVector const& Up);
+    void lookAt(CVector const& Aim);
     void setFov(float fov, float w, float h);
     void createProjectionMatrix(CMatrix& matProj, float nearOverride) const;
-    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, const m3d::cmn::XmlNode* xmlNode) override /* 0x00 */;
-    virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override /* 0x04 */;
-}; /* size: 0x0024 */
-
+    virtual void LoadFromXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode const* xmlNode) override;
+    virtual void SaveToXml(m3d::cmn::XmlFile* xmlFile, m3d::cmn::XmlNode* xmlNode) const override;
+};

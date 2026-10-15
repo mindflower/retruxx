@@ -242,7 +242,8 @@ namespace ai
                     }
                     else
                     {
-                        M3D_LOG_ERR(CStr("Error: couldn't create vehicle for ") + GetDebugDescription() + CStr(": no room"));
+                        M3D_LOG_ERR(
+                            CStr("Error: couldn't create vehicle for ") + GetDebugDescription() + CStr(": no room"));
                     }
                 }
             }

@@ -91,7 +91,7 @@ void GameOptionsWnd::InitAutoHelpControls()
 void GameOptionsWnd::OnSliderNumRepliesChange(m3d::AIParam const&)
 {
     UpdateNumRepliesPrevNextButtonsState();
-    if (IsChildOf(m3d::Application::g_pApp) && !m_sliderNumRepliesBlocked)
+    if (IsChildOf(M3D_APP) && !m_sliderNumRepliesBlocked)
     {
         ApplyNumReplies();
     }
@@ -112,40 +112,40 @@ int GameOptionsWnd::OnWndNotify(m3d::ui::Wnd* from, unsigned id, unsigned msg, m
     switch (id)
     {
     case 0x283Du:
-	    {
-			if (msg != 5)
-				return 0;
-    		GameOptionsWnd::OnSliderNumRepliesChange(data);
-            return 1;
-	    }
+    {
+        if (msg != 5)
+            return 0;
+        GameOptionsWnd::OnSliderNumRepliesChange(data);
+        return 1;
+    }
     case 0x283Eu:
-	    {
-		    if (msg != 1)
-                return 0;
-    		GameOptionsWnd::OnBtnNumRepliesPrevClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        GameOptionsWnd::OnBtnNumRepliesPrevClick(data);
+        return 1;
+    }
     case 0x283Fu:
-	    {
-		    if (msg != 1)
-                return 0;
-    		GameOptionsWnd::OnBtnNumRepliesNextClick(data);
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        GameOptionsWnd::OnBtnNumRepliesNextClick(data);
+        return 1;
+    }
     case 0x2840u:
-	    {
-		    if (msg != 1)
-                return 0;
-    		GameOptionsWnd::ApplyAutoHelp();
-            return 1;
-	    }
+    {
+        if (msg != 1)
+            return 0;
+        GameOptionsWnd::ApplyAutoHelp();
+        return 1;
+    }
     case 0x2841u:
-	    {
-		    if (msg != 5)
-                return 0;
-    		GameOptionsWnd::OnCbGameDifficultyChange(data);
-            return 1;
-	    }
+    {
+        if (msg != 5)
+            return 0;
+        GameOptionsWnd::OnCbGameDifficultyChange(data);
+        return 1;
+    }
     default:
         return 0;
     }
@@ -228,7 +228,7 @@ void GameOptionsWnd::InitGameDifficultyControls()
     {
         for (int i = 0; i < ai::theGlobProp.m_difficultyLevelCoeffs.size(); ++i)
         {
-            auto name = m3d::Application::g_pApp->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name);
+            auto name = M3D_APP->GetStringByStringId0(ai::theGlobProp.m_difficultyLevelCoeffs[i].m_name);
             auto idx = m_cbGameDifficulty->AddItem(name);
             if (idx != -1)
             {
@@ -262,7 +262,8 @@ int GameOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_sliderNumRepliesName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_sliderNumRepliesName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -273,7 +274,8 @@ int GameOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnNumRepliesPrevName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnNumRepliesPrevName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -284,7 +286,8 @@ int GameOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_btnNumRepliesNextName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_btnNumRepliesNextName + " is not found or incorrect type");
             res = 0;
         }
 
@@ -305,7 +308,8 @@ int GameOptionsWnd::GameDataSetup()
         }
         else
         {
-            M3D_LOG_INFO("Get control error: control " + m_aif.m_cbGameDifficultyName + " is not found or incorrect type");
+            M3D_LOG_INFO(
+                "Get control error: control " + m_aif.m_cbGameDifficultyName + " is not found or incorrect type");
             res = 0;
         }
     }

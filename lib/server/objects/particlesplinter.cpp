@@ -40,8 +40,8 @@ namespace ai
         CheckDisablePhysics();
 
         CVector const pos = GetPosition();
-        float const height =
-            m3d::pClient->GetWorld().GetLandscape().getWaterHeight(static_cast<int>(pos.x * 0.03125), static_cast<int>(pos.z * 0.03125)) -
+        float const height = m3d::pClient->GetWorld().GetLandscape().getWaterHeight(
+                                 static_cast<int>(pos.x * 0.03125), static_cast<int>(pos.z * 0.03125)) -
             2.0f;
 
         if (height > pos.y)
@@ -72,7 +72,8 @@ namespace ai
         {
             CVector const vel = GetLinearVelocity();
             CVector const angularVel = GetAngularVelocity();
-            if ((float)((float)((float)(vel.z * vel.z) + (float)(vel.y * vel.y)) + (float)(vel.x * vel.x)) < 0.0099999998 &&
+            if ((float)((float)((float)(vel.z * vel.z) + (float)(vel.y * vel.y)) + (float)(vel.x * vel.x)) <
+                    0.0099999998 &&
                 (float)((float)((float)(angularVel.z * angularVel.z) + (float)(angularVel.y * angularVel.y)) +
                         (float)(angularVel.x * angularVel.x)) < 0.2)
             {

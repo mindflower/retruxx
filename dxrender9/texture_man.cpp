@@ -55,7 +55,7 @@ bool CDevice::IsDynamic(CTexture* tex)
     CTexMap* map = tex->m_maps[0];
 
     return map->m_type == TT_2D_DYNAMIC || map->m_type == TT_2D_RENDER_TARGET || map->m_type == TT_CUBE_DYNAMIC ||
-           map->m_type == TT_CUBE_RENDER_TARGET || map->m_type == TT_3D_DYNAMIC;
+        map->m_type == TT_CUBE_RENDER_TARGET || map->m_type == TT_3D_DYNAMIC;
 }
 
 // orig 0x63fd20 texture_man.cpp:59
@@ -133,17 +133,58 @@ CDevice::CTexMap* CDevice::addTexMap(CStr const& filename, unsigned int flags)
         switch (type)
         {
         case TT_2D_FROM_FILE:
-            hr = D3DXCreateTextureFromFileInMemoryEx(m_pd3dDevice, p, sz, D3DX_DEFAULT, D3DX_DEFAULT, mipLevels, 0, fmt,
-                                                    D3DPOOL_MANAGED, filter, filter, 0, 0, 0, &tm->m_pTex2d);
+            hr = D3DXCreateTextureFromFileInMemoryEx(
+                m_pd3dDevice,
+                p,
+                sz,
+                D3DX_DEFAULT,
+                D3DX_DEFAULT,
+                mipLevels,
+                0,
+                fmt,
+                D3DPOOL_MANAGED,
+                filter,
+                filter,
+                0,
+                0,
+                0,
+                &tm->m_pTex2d);
             break;
         case TT_CUBE_FROM_FILE:
-            hr = D3DXCreateCubeTextureFromFileInMemoryEx(m_pd3dDevice, p, sz, D3DX_DEFAULT, mipLevels, 0, fmt,
-                                                        D3DPOOL_MANAGED, filter, filter, 0, 0, 0, &tm->m_pTexCube);
+            hr = D3DXCreateCubeTextureFromFileInMemoryEx(
+                m_pd3dDevice,
+                p,
+                sz,
+                D3DX_DEFAULT,
+                mipLevels,
+                0,
+                fmt,
+                D3DPOOL_MANAGED,
+                filter,
+                filter,
+                0,
+                0,
+                0,
+                &tm->m_pTexCube);
             break;
         case TT_3D_FROM_FILE:
-            hr = D3DXCreateVolumeTextureFromFileInMemoryEx(m_pd3dDevice, p, sz, D3DX_DEFAULT, D3DX_DEFAULT,
-                                                          D3DX_DEFAULT, mipLevels, 0, fmt, D3DPOOL_MANAGED, filter,
-                                                          filter, 0, 0, 0, &tm->m_pTex3d);
+            hr = D3DXCreateVolumeTextureFromFileInMemoryEx(
+                m_pd3dDevice,
+                p,
+                sz,
+                D3DX_DEFAULT,
+                D3DX_DEFAULT,
+                D3DX_DEFAULT,
+                mipLevels,
+                0,
+                fmt,
+                D3DPOOL_MANAGED,
+                filter,
+                filter,
+                0,
+                0,
+                0,
+                &tm->m_pTex3d);
             break;
         }
 
@@ -152,8 +193,8 @@ CDevice::CTexMap* CDevice::addTexMap(CStr const& filename, unsigned int flags)
         if (FAILED(hr))
         {
             // The original passes the CStr filename itself to the "%s" (its first member is the char pointer).
-            g_kernel->KernelLog("CreateTextureFromFileInMemoryEx error: %s file: %s", getD3dErrorStr(hr).c_str(),
-                                filename.c_str());
+            g_kernel->KernelLog(
+                "CreateTextureFromFileInMemoryEx error: %s file: %s", getD3dErrorStr(hr).c_str(), filename.c_str());
             delete tm;
             return 0;
         }
@@ -267,7 +308,7 @@ TexHandle CDevice::AddTexture(CStr const& filename, unsigned int flags)
 }
 
 // orig 0x6405e0 texture_man.cpp:402
-TexHandle CDevice::AddDynamicTexture(const char* texName, int sx, int sy, unsigned int format)
+TexHandle CDevice::AddDynamicTexture(char const* texName, int sx, int sy, unsigned int format)
 {
     TexHandle result;
 
@@ -340,9 +381,10 @@ TexHandle CDevice::AddDynamicTexture(const char* texName, int sx, int sy, unsign
     HRESULT hr = D3DXCreateTexture(m_pd3dDevice, sx, sy, allMips ? 0 : 1, usage, fmt, pool, &d3dtex);
     if (FAILED(hr))
     {
-        LogMsg(CStr("failed to create dynamic texture:sx = ") + CStr(sx) + " sy = " + CStr(sy) + "usage = " +
-               (usage ? "rt" : "generic") + "fmt = " + getD3dFmtStr(fmt) + "pool = " +
-               (pool == D3DPOOL_MANAGED ? "managed" : "default") + "error = " + getD3dErrorStr(hr));
+        LogMsg(
+            CStr("failed to create dynamic texture:sx = ") + CStr(sx) + " sy = " + CStr(sy) +
+            "usage = " + (usage ? "rt" : "generic") + "fmt = " + getD3dFmtStr(fmt) +
+            "pool = " + (pool == D3DPOOL_MANAGED ? "managed" : "default") + "error = " + getD3dErrorStr(hr));
         result.SetInvalid();
         return result;
     }
@@ -713,8 +755,13 @@ void CDevice::SetTextureParameter(TexHandle const& id, TexParam param, unsigned 
 }
 
 // orig 0x63dd60 texture_man.cpp:933
-int CDevice::UploadTexImage(TexHandle const& id, unsigned int sx, unsigned int sy, unsigned char* bits,
-                            TexDynFormat incomingFormat, int mipLevel)
+int CDevice::UploadTexImage(
+    TexHandle const& id,
+    unsigned int sx,
+    unsigned int sy,
+    unsigned char* bits,
+    TexDynFormat incomingFormat,
+    int mipLevel)
 {
     int Pitch = 0;
 
@@ -1048,18 +1095,33 @@ bool CDevice::rstTexRestoreAfter()
         HRESULT hr = E_FAIL;
         if (tm->Is2D())
         {
-            hr = m_pd3dDevice->CreateTexture(tm->m_desc2d.Width, tm->m_desc2d.Height, 1, tm->m_usage,
-                                             tm->m_desc2d.Format, tm->m_pool, &tm->m_pTex2d, 0);
+            hr = m_pd3dDevice->CreateTexture(
+                tm->m_desc2d.Width,
+                tm->m_desc2d.Height,
+                1,
+                tm->m_usage,
+                tm->m_desc2d.Format,
+                tm->m_pool,
+                &tm->m_pTex2d,
+                0);
         }
         else if (tm->IsCube())
         {
-            hr = m_pd3dDevice->CreateCubeTexture(tm->m_desc2d.Width, 1, tm->m_usage, tm->m_desc2d.Format, tm->m_pool,
-                                                 &tm->m_pTexCube, 0);
+            hr = m_pd3dDevice->CreateCubeTexture(
+                tm->m_desc2d.Width, 1, tm->m_usage, tm->m_desc2d.Format, tm->m_pool, &tm->m_pTexCube, 0);
         }
         else if (tm->Is3D())
         {
-            hr = m_pd3dDevice->CreateVolumeTexture(tm->m_desc3d.Width, tm->m_desc3d.Height, tm->m_desc3d.Depth, 1,
-                                                   tm->m_usage, tm->m_desc3d.Format, tm->m_pool, &tm->m_pTex3d, 0);
+            hr = m_pd3dDevice->CreateVolumeTexture(
+                tm->m_desc3d.Width,
+                tm->m_desc3d.Height,
+                tm->m_desc3d.Depth,
+                1,
+                tm->m_usage,
+                tm->m_desc3d.Format,
+                tm->m_pool,
+                &tm->m_pTex3d,
+                0);
         }
 
         if (FAILED(hr))
@@ -1359,7 +1421,7 @@ int CDevice::loadTexMaps(CTexture* tex, CStr const& str, unsigned int flags)
 
         for (int j = 0; j < k; ++j)
         {
-            const char* fmt = 0;
+            char const* fmt = 0;
 
             if (n == 1)
                 fmt = "%.1d";
@@ -1431,7 +1493,7 @@ TexHandle CDevice::readShader(CStr const& name, unsigned int flags)
     parser->Read(*stream);
     stream->Close();
 
-    const char* err = parser->GetError();
+    char const* err = parser->GetError();
     if (err)
     {
         LogMsg(CStr("parse error: file: ") + name + " err: " + err);
@@ -1569,7 +1631,8 @@ int CDevice::ReloadTextures()
 
         FILETIME ftime = fs->GetDate();
 
-        if (!m_reloadAllTextures && sz == tm->m_lastFileSize && ftime.dwHighDateTime == tm->m_lastFileDate.dwHighDateTime &&
+        if (!m_reloadAllTextures && sz == tm->m_lastFileSize &&
+            ftime.dwHighDateTime == tm->m_lastFileDate.dwHighDateTime &&
             ftime.dwLowDateTime == tm->m_lastFileDate.dwLowDateTime)
             continue;
 
@@ -1622,17 +1685,58 @@ int CDevice::ReloadTextures()
         switch (type)
         {
         case TT_2D_FROM_FILE:
-            hr = D3DXCreateTextureFromFileInMemoryEx(m_pd3dDevice, p, sz, D3DX_DEFAULT, D3DX_DEFAULT, mipLevels, 0,
-                                                    tm->m_fmt, tm->m_pool, filter, filter, 0, 0, 0, &ntm->m_pTex2d);
+            hr = D3DXCreateTextureFromFileInMemoryEx(
+                m_pd3dDevice,
+                p,
+                sz,
+                D3DX_DEFAULT,
+                D3DX_DEFAULT,
+                mipLevels,
+                0,
+                tm->m_fmt,
+                tm->m_pool,
+                filter,
+                filter,
+                0,
+                0,
+                0,
+                &ntm->m_pTex2d);
             break;
         case TT_CUBE_FROM_FILE:
-            hr = D3DXCreateCubeTextureFromFileInMemoryEx(m_pd3dDevice, p, sz, D3DX_DEFAULT, mipLevels, 0, tm->m_fmt,
-                                                        tm->m_pool, filter, filter, 0, 0, 0, &ntm->m_pTexCube);
+            hr = D3DXCreateCubeTextureFromFileInMemoryEx(
+                m_pd3dDevice,
+                p,
+                sz,
+                D3DX_DEFAULT,
+                mipLevels,
+                0,
+                tm->m_fmt,
+                tm->m_pool,
+                filter,
+                filter,
+                0,
+                0,
+                0,
+                &ntm->m_pTexCube);
             break;
         case TT_3D_FROM_FILE:
-            hr = D3DXCreateVolumeTextureFromFileInMemoryEx(m_pd3dDevice, p, sz, D3DX_DEFAULT, D3DX_DEFAULT,
-                                                          D3DX_DEFAULT, mipLevels, 0, tm->m_fmt, tm->m_pool, filter,
-                                                          filter, 0, 0, 0, &ntm->m_pTex3d);
+            hr = D3DXCreateVolumeTextureFromFileInMemoryEx(
+                m_pd3dDevice,
+                p,
+                sz,
+                D3DX_DEFAULT,
+                D3DX_DEFAULT,
+                D3DX_DEFAULT,
+                mipLevels,
+                0,
+                tm->m_fmt,
+                tm->m_pool,
+                filter,
+                filter,
+                0,
+                0,
+                0,
+                &ntm->m_pTex3d);
             break;
         }
 
@@ -1641,8 +1745,10 @@ int CDevice::ReloadTextures()
         if (FAILED(hr))
         {
             // The original passes the CStr file name itself to the "%s" (its first member is the char pointer).
-            g_kernel->KernelLog("error reloading texture: CreateTextureFromFileInMemoryEx error: %s file: %s",
-                                getD3dErrorStr(hr).c_str(), tm->m_fileName.c_str());
+            g_kernel->KernelLog(
+                "error reloading texture: CreateTextureFromFileInMemoryEx error: %s file: %s",
+                getD3dErrorStr(hr).c_str(),
+                tm->m_fileName.c_str());
             delete ntm;
             continue;
         }

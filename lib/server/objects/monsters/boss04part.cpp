@@ -50,7 +50,12 @@ namespace ai
         return static_cast<Boss04PartPrototypeInfo const*>(thePrototypeManager->GetPrototypeInfo(GetPrototypeId()));
     }
 
-    int Boss04Part::CollideBoss04PartAndVehiclePart(Boss04Part* boss04Part, VehiclePart* vp, dContact* contact, unsigned& numContacts, bool reverse)
+    int Boss04Part::CollideBoss04PartAndVehiclePart(
+        Boss04Part* boss04Part,
+        VehiclePart* vp,
+        dContact* contact,
+        unsigned& numContacts,
+        bool reverse)
     {
         // RVA 0x8069A0 - the boss's parts do not collide with anything on the boss's side.
         if (vp->GetBelong() == boss04Part->GetBelong())

@@ -103,8 +103,11 @@ namespace ai
         }
         else
         {
-            float const invLen = static_cast<float>(1.0 / std::sqrt(double(initVel.y) * initVel.y +
-                double(initVel.z) * initVel.z + double(initVel.x) * initVel.x + double(1.1920929e-7f)));
+            float const invLen = static_cast<float>(
+                1.0 /
+                std::sqrt(
+                    double(initVel.y) * initVel.y + double(initVel.z) * initVel.z + double(initVel.x) * initVel.x +
+                    double(1.1920929e-7f)));
             m_initVelDir = CVector(initVel.x * invLen, invLen * initVel.y, invLen * initVel.z);
         }
     }
@@ -129,10 +132,16 @@ namespace ai
     Rocket::Rocket(Rocket const& rocket) :
         Shell(rocket),
         m_targetObjId(rocket.m_targetObjId),
-        m_velocity(rocket.m_velocity.value().get(), rocket.m_velocity.minValue().get(),
-            rocket.m_velocity.maxValue().get(), rocket.m_velocity.regeneration().get()),
-        m_lifeTime(rocket.m_lifeTime.value().get(), rocket.m_lifeTime.minValue().get(),
-            rocket.m_lifeTime.maxValue().get(), rocket.m_lifeTime.regeneration().get()),
+        m_velocity(
+            rocket.m_velocity.value().get(),
+            rocket.m_velocity.minValue().get(),
+            rocket.m_velocity.maxValue().get(),
+            rocket.m_velocity.regeneration().get()),
+        m_lifeTime(
+            rocket.m_lifeTime.value().get(),
+            rocket.m_lifeTime.minValue().get(),
+            rocket.m_lifeTime.maxValue().get(),
+            rocket.m_lifeTime.regeneration().get()),
         m_minTurningRadius(rocket.m_minTurningRadius),
         m_initialDirection(rocket.m_initialDirection),
         m_initVelDir(rocket.m_initVelDir),
@@ -155,7 +164,9 @@ namespace ai
             // Out of fuel: ODE flies it now; just keep it pointing along its velocity.
             CVector const vel = GetLinearVelocity();
             float const invLen = static_cast<float>(
-                1.0 / std::sqrt(double(vel.x) * vel.x + double(vel.y) * vel.y + double(vel.z) * vel.z + double(1.1920929e-7f)));
+                1.0 /
+                std::sqrt(
+                    double(vel.x) * vel.x + double(vel.y) * vel.y + double(vel.z) * vel.z + double(1.1920929e-7f)));
             SetDirection(CVector(vel.x * invLen, vel.y * invLen, vel.z * invLen));
             return;
         }
@@ -165,7 +176,8 @@ namespace ai
 
         CVector const curDir = GetDirection();
         double const dirLen = std::sqrt(
-            double(curDir.x) * curDir.x + double(curDir.y) * curDir.y + double(curDir.z) * curDir.z + double(1.1920929e-7f));
+            double(curDir.x) * curDir.x + double(curDir.y) * curDir.y + double(curDir.z) * curDir.z +
+            double(1.1920929e-7f));
         CVector const dir(
             static_cast<float>(1.0 / dirLen * curDir.x),
             static_cast<float>(1.0 / dirLen * curDir.y),
@@ -190,7 +202,8 @@ namespace ai
                 m_initVelValue = 0.0f;
             }
         }
-        CVector const initVel(m_initVelDir.x * m_initVelValue, m_initVelDir.y * m_initVelValue, m_initVelDir.z * m_initVelValue);
+        CVector const initVel(
+            m_initVelDir.x * m_initVelValue, m_initVelDir.y * m_initVelValue, m_initVelDir.z * m_initVelValue);
 
         float timeForTurning = 0.0f;
         Obj* target = theObjects->GetEntityByObjId(m_targetObjId);
@@ -202,8 +215,8 @@ namespace ai
                 CVector const pos = GetPosition();
                 CVector const targetPos = targetObj->GetGeometricCenter();
                 CVector toTarget(targetPos.x - pos.x, targetPos.y - pos.y, targetPos.z - pos.z);
-                float const distSq = toTarget.x * toTarget.x + (targetPos.z - pos.z) * (targetPos.z - pos.z) +
-                    toTarget.y * toTarget.y;
+                float const distSq =
+                    toTarget.x * toTarget.x + (targetPos.z - pos.z) * (targetPos.z - pos.z) + toTarget.y * toTarget.y;
 
                 // A target with an anti-missile gadget can't be homed on from inside its radius.
                 int const antiMissileId = targetObj->GetPropertyId("GadgetAntiMissileRadius");
@@ -223,7 +236,9 @@ namespace ai
                     toTarget.normalizeInplace();
 
                     // The turn happens in the plane of the current direction and the target.
-                    CVector axis(toTarget.z * dir.y - toTarget.y * dir.z, toTarget.x * dir.z - toTarget.z * dir.x,
+                    CVector axis(
+                        toTarget.z * dir.y - toTarget.y * dir.z,
+                        toTarget.x * dir.z - toTarget.z * dir.x,
                         toTarget.y * dir.x - toTarget.x * dir.y);
                     bool changedNormal = false;
                     if (axis.lengthSq() < 0.00030000001f)
@@ -231,7 +246,9 @@ namespace ai
                         // Flying straight at (or away from) the target: pick a turn axis from a
                         // skewed direction instead.
                         float const skewedX = dir.x + 1000.0f;
-                        CVector const skewed(axis.z * dir.y - axis.y * dir.z, dir.z * skewedX - axis.z * dir.x,
+                        CVector const skewed(
+                            axis.z * dir.y - axis.y * dir.z,
+                            dir.z * skewedX - axis.z * dir.x,
                             axis.y * dir.x - dir.y * skewedX);
                         axis = skewed.getNormalized();
                         changedNormal = true;
@@ -260,7 +277,9 @@ namespace ai
                         angle = angle <= maxTurnAngle ? angle : maxTurnAngle;
                         timeForTurning = m_minTurningRadius / m_velocity.value().get() * angle;
 
-                        CVector const toCircleCenterDir(axis.y * dir.z - axis.z * dir.y, axis.z * dir.x - dir.z * axis.x,
+                        CVector const toCircleCenterDir(
+                            axis.y * dir.z - axis.z * dir.y,
+                            axis.z * dir.x - dir.z * axis.x,
                             dir.y * axis.x - axis.y * dir.x);
                         float const radius = m_minTurningRadius;
                         CVector const centerDir = toCircleCenterDir.getNormalized();
@@ -278,8 +297,11 @@ namespace ai
                         else
                         {
                             double const invNorm = 1.0 / std::sqrt(normSq);
-                            fullRot = Quaternion(static_cast<float>(fullRot.x * invNorm), static_cast<float>(fullRot.y * invNorm),
-                                static_cast<float>(fullRot.z * invNorm), static_cast<float>(fullRot.w * invNorm));
+                            fullRot = Quaternion(
+                                static_cast<float>(fullRot.x * invNorm),
+                                static_cast<float>(fullRot.y * invNorm),
+                                static_cast<float>(fullRot.z * invNorm),
+                                static_cast<float>(fullRot.w * invNorm));
                         }
                         SetRotation(fullRot);
 
@@ -298,7 +320,9 @@ namespace ai
                             m31 * toCircleCenter.z + m21 * toCircleCenter.y + m11 * toCircleCenter.x,
                             m32 * toCircleCenter.z + m22 * toCircleCenter.y + m12 * toCircleCenter.x,
                             m33 * toCircleCenter.z + m23 * toCircleCenter.y + m13 * toCircleCenter.x);
-                        SetPosition(CVector(toCircleCenter.x + pos.x - rotated.x, toCircleCenter.y + pos.y - rotated.y,
+                        SetPosition(CVector(
+                            toCircleCenter.x + pos.x - rotated.x,
+                            toCircleCenter.y + pos.y - rotated.y,
                             toCircleCenter.z + pos.z - rotated.z));
                     }
                 }
@@ -310,10 +334,13 @@ namespace ai
         float const speed = m_velocity.value().get();
         float const timeForStraightFlight = elapsedTime - timeForTurning;
         CVector const flyDir = GetDirection();
-        CVector const straight(flyDir.x * timeForStraightFlight * speed, flyDir.y * timeForStraightFlight * speed,
+        CVector const straight(
+            flyDir.x * timeForStraightFlight * speed,
+            flyDir.y * timeForStraightFlight * speed,
             flyDir.z * timeForStraightFlight * speed);
         CVector const curPos = GetPosition();
-        CVector const newPos(curPos.x + straight.x + drift.x, curPos.y + straight.y + drift.y, curPos.z + straight.z + drift.z);
+        CVector const newPos(
+            curPos.x + straight.x + drift.x, curPos.y + straight.y + drift.y, curPos.z + straight.z + drift.z);
 
         // Stretch the collision box back over the distance covered beyond its own length, so a fast
         // rocket cannot pass through thin geometry between two frames.
@@ -332,10 +359,14 @@ namespace ai
         // Give up the target after turning more than about 143 degrees from the launch direction
         // (when the angle is limited) or after circling it twice.
         CVector const newDir = GetDirection();
-        float const invLen = static_cast<float>(1.0 / std::sqrt(
-            double(newDir.x) * newDir.x + double(newDir.y) * newDir.y + double(newDir.z) * newDir.z + double(1.1920929e-7f)));
+        float const invLen = static_cast<float>(
+            1.0 /
+            std::sqrt(
+                double(newDir.x) * newDir.x + double(newDir.y) * newDir.y + double(newDir.z) * newDir.z +
+                double(1.1920929e-7f)));
         CVector const newDirN(invLen * newDir.x, newDir.y * invLen, newDir.z * invLen);
-        float const newDot = m_initialDirection.z * newDirN.z + m_initialDirection.y * newDirN.y + m_initialDirection.x * newDirN.x;
+        float const newDot =
+            m_initialDirection.z * newDirN.z + m_initialDirection.y * newDirN.y + m_initialDirection.x * newDirN.x;
         float const oldDot = m_initialDirection.z * dir.z + m_initialDirection.y * dir.y + dir.x * m_initialDirection.x;
         if (newDot < -0.80000001f && oldDot >= -0.80000001f)
         {

@@ -43,7 +43,7 @@ namespace m3d
                 for (auto const& effect : actionEffect.lpEffects)
                 {
                     DynamicModel::auxEffectDesc desc = effect;
-                    auto id = M3D_KERNEL->GetEngineCfg().GetModelIdByName(effect.m_effectName);
+                    auto id = M3D_ENGINE_CFG.GetModelIdByName(effect.m_effectName);
                     if (id != -1)
                     {
                         desc.m_effectId = id;
@@ -142,7 +142,7 @@ namespace m3d
                 {
                     model->m_soundIds[actionNum] = soundId;
                     model->m_soundsLooped[actionNum] = looped;
-                    Application::g_pApp->m_cachedSoundIDs.insert(model->m_soundIds[actionNum]);
+                    M3D_APP->m_cachedSoundIDs.insert(model->m_soundIds[actionNum]);
                     break;
                 }
             }
@@ -304,7 +304,7 @@ namespace m3d
         }
         std::sort(modelStats.begin(), modelStats.end(), SortModelStatPred());
 
-        scoped_ptr stream = g_Kernel->GetFileServer().CreateFileStream();
+        scoped_ptr stream = M3D_KERNEL->GetFileServer().CreateFileStream();
         if (!stream->Open(filename, fs::IStream::OPEN_WRITE))
         {
             return false;
@@ -318,7 +318,7 @@ namespace m3d
         *stream << "-==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==- -==-\n\n";
         *stream << "** General stats **\n";
 
-        CStr const levelName = NameFromFileName(g_Kernel->GetEngineCfg().m_levFileName.GetS());
+        CStr const levelName = NameFromFileName(M3D_ENGINE_CFG.m_levFileName.GetS());
         *stream << "Level name: " << levelName.substr(0, levelName.rfind('.')).c_str() << "\n";
         *stream << "Total models count: " << static_cast<int>(m_models.size()) << "\n\n";
         *stream << "** Models **\n";
@@ -373,19 +373,19 @@ namespace m3d
 
     int AnimatedModelsServer::Init()
     {
-        auto const logoFileName = g_Kernel->GetEngineCfg().m_loadFromGAM.GetB() ? "data\\models\\Logos\\Logos.gam" :
-                                                                                  "data\\models\\Logos\\Logos.sam";
-        m_MeshMaterialManager.Init(logoFileName, g_Kernel->GetEngineCfg().m_pathToBelongsToLogos.GetS());
+        auto const logoFileName =
+            M3D_ENGINE_CFG.m_loadFromGAM.GetB() ? "data\\models\\Logos\\Logos.gam" : "data\\models\\Logos\\Logos.sam";
+        m_MeshMaterialManager.Init(logoFileName, M3D_ENGINE_CFG.m_pathToBelongsToLogos.GetS());
 
-        m_impostorVs = Application::g_pApp->m_renderer->NewHlslShader(
-            "data/shaders/impostorTest_vs11.vs", "ImpostorVS", rend::IHlslShader::VS_1_1);
+        m_impostorVs =
+            M3D_RENDERER->NewHlslShader("data/shaders/impostorTest_vs11.vs", "ImpostorVS", rend::IHlslShader::VS_1_1);
         if (!m_impostorVs)
         {
             return 0;
         }
 
-        m_impostorPs = Application::g_pApp->m_renderer->NewHlslShader(
-            "data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::PS_1_1);
+        m_impostorPs =
+            M3D_RENDERER->NewHlslShader("data/shaders/impostorTest_ps11.ps", "ImpostorPS", rend::IHlslShader::PS_1_1);
         if (!m_impostorPs)
         {
             return 0;
@@ -593,10 +593,10 @@ namespace m3d
     {
         struct ImpostoredMeshInfo
         {
-            /* 0x0000 */ m3d::SgAnimatedModelNode* nodeLookup;
-            /* 0x0004 */ m3d::AnimatedModel* modelLookup;
-            /* 0x0008 */ DynamicModel* dmLookup;
-        }; /* size: 0x000c */
+            m3d::SgAnimatedModelNode* nodeLookup;
+            m3d::AnimatedModel* modelLookup;
+            DynamicModel* dmLookup;
+        };
 
         struct MeshImposteredSortPred
         {
@@ -612,16 +612,16 @@ namespace m3d
                 return m_meshes[meshIdx1].nodeLookup->GetServerHandle() <
                     m_meshes[meshIdx2].nodeLookup->GetServerHandle();
             }
-            /* 0x0000 */ ImpostoredMeshInfo const* m_meshes;
-        }; /* size: 0x0004 */
+            ImpostoredMeshInfo const* m_meshes;
+        };
 
         struct MeshInfo
         {
-            /* 0x0000 */ m3d::AnimatedModel::Mesh* mesh;
-            /* 0x0004 */ m3d::DSurfaceMaterial* material;
-            /* 0x0008 */ m3d::SgAnimatedModelNode* nodeLookup;
-            /* 0x000c */ m3d::AnimatedModel* modelLookup;
-        }; /* size: 0x0010 */
+            m3d::AnimatedModel::Mesh* mesh;
+            m3d::DSurfaceMaterial* material;
+            m3d::SgAnimatedModelNode* nodeLookup;
+            m3d::AnimatedModel* modelLookup;
+        };
 
         struct MeshSortPred
         {
@@ -642,8 +642,8 @@ namespace m3d
                 }
                 return material1->Textures.data() < material2->Textures.data();
             }
-            /* 0x0000 */ MeshInfo const* m_meshes;
-        }; /* size: 0x0004 */
+            MeshInfo const* m_meshes;
+        };
 
         // Orders nodes by squared distance from the camera, nearest first.
         struct SortByDist
@@ -659,8 +659,8 @@ namespace m3d
                 return (db.x * db.x + db.y * db.y + db.z * db.z) > (da.x * da.x + da.y * da.y + da.z * da.z);
             }
 
-            /* 0x0000 */ CVector m_org;
-        }; /* size: 0x000c */
+            CVector m_org;
+        };
 
         // A material contributes an alpha-tested diffuse texture when it has any
         // texture at all and either carries no shader or its first technique is
@@ -1123,7 +1123,7 @@ namespace m3d
         // RVA 0x8F45E0 - hands the sun direction and every mesh of at least 10 faces to the shadow manager, which draws
         // the stencil shadows. NOTE: nothing in the game ever creates m_ShadowMan, so with stencil shadows on and
         // casters present this dereferences a null manager, as the original does.
-        if (!M3D_KERNEL->GetEngineCfg().m_g_stencilShadows.GetB())
+        if (!M3D_ENGINE_CFG.m_g_stencilShadows.GetB())
         {
             return 1;
         }
@@ -1194,7 +1194,7 @@ namespace m3d
 
         M3D_RENDERER->SetBlend(rend::BM_NONE, 0);
         M3D_RENDERER->SetCull(rend::M3DCULL_CCW, 0);
-        M3D_RENDERER->SetAlphaTest(M3D_KERNEL->GetEngineCfg().m_alphaTestWorld.GetI());
+        M3D_RENDERER->SetAlphaTest(M3D_ENGINE_CFG.m_alphaTestWorld.GetI());
         M3D_RENDERER->SetZbState(rend::ZB_ENABLE, 0);
         M3D_RENDERER->SetFog(0, 0);
         M3D_RENDERER->TgDisable(0);
@@ -1356,8 +1356,15 @@ namespace m3d
             AnimInfo* anim = nullptr;
             points->m_node->GetProperty(1, &anim);
             anim->CreateCopyMesh(
-                points->m_numMesh, points->m_verts, points->m_numVerts, points->m_indxs, points->m_numIndxs,
-                points->m_strips, points->m_localmatr, points->m_VertexTypes, points->m_VertexTypeSizes,
+                points->m_numMesh,
+                points->m_verts,
+                points->m_numVerts,
+                points->m_indxs,
+                points->m_numIndxs,
+                points->m_strips,
+                points->m_localmatr,
+                points->m_VertexTypes,
+                points->m_VertexTypeSizes,
                 &points->m_numSkinMesh);
             return 1;
         }
@@ -1365,16 +1372,18 @@ namespace m3d
         {
             auto* const actionTime = static_cast<PropSrvActionTime*>(dest);
             int const frames = animModel->GetFrames(actionTime->m_action, 1);
-            actionTime->m_delta = static_cast<float>(static_cast<float>(animModel->GetFps(actionTime->m_action) * frames) * 0.001);
+            actionTime->m_delta =
+                static_cast<float>(static_cast<float>(animModel->GetFps(actionTime->m_action) * frames) * 0.001);
             return 1;
         }
         case PROP_SRV_ATTACK_FRAMETIME:
         {
             auto* const attack = static_cast<PropSrvAttackframeTime*>(dest);
             int const frame = model->m_effects[attack->m_action].startAttackFrame;
-            attack->m_attackFrameTime = frame == -1
-                ? -1.0f
-                : static_cast<float>(static_cast<float>(animModel->GetFps(attack->m_action)) * static_cast<float>(frame) * 0.001);
+            attack->m_attackFrameTime = frame == -1 ?
+                -1.0f :
+                static_cast<float>(
+                    static_cast<float>(animModel->GetFps(attack->m_action)) * static_cast<float>(frame) * 0.001);
             return 1;
         }
         case PROP_DM_CHECK_ACTION:
@@ -1455,10 +1464,10 @@ namespace m3d
 
         struct RenderInfo
         {
-            /* 0x0000 */ m3d::SgNode* m_node;
-            /* 0x0004 */ unsigned int m_dt;
-            /* 0x0008 */ unsigned int m_fps;
-        }; /* size: 0x000c */
+            m3d::SgNode* m_node;
+            unsigned int m_dt;
+            unsigned int m_fps;
+        };
 
         auto* ri = (RenderInfo*)param;
         AnimInfo* anim = nullptr;
@@ -1498,7 +1507,7 @@ namespace m3d
 
     namespace
     {
-        void __fastcall DefineSkinsToLoad(m3d::LoadSkins& skinsToLoad, CStr const& paramsStr)
+        void DefineSkinsToLoad(m3d::LoadSkins& skinsToLoad, CStr const& paramsStr)
         {
             retruxx::string view(paramsStr.c_str(), paramsStr.length());
             auto const skinsPos = view.find("skins:");
@@ -1570,7 +1579,7 @@ namespace m3d
                         {
                             if (!dynamicModel->m_soundIds[j].empty())
                             {
-                                m3d::Application::g_pApp->m_cachedSoundIDs.insert(dynamicModel->m_soundIds[j]);
+                                M3D_APP->m_cachedSoundIDs.insert(dynamicModel->m_soundIds[j]);
                             }
                         }
 
@@ -1723,7 +1732,7 @@ namespace m3d
             mainModel->m_passable = passable;
             mainModel->SetSkinsToLoad(skinsToLoad[itemIndex]);
 
-            bool loadFromGAM = M3D_KERNEL->GetEngineCfg().m_loadFromGAM.GetB();
+            bool loadFromGAM = M3D_ENGINE_CFG.m_loadFromGAM.GetB();
             bool loadSuccess = false;
 
             if (loadFromGAM)
@@ -1811,7 +1820,7 @@ namespace m3d
                     {
                         dynamicModel->m_soundIds[i] = soundId;
                         dynamicModel->m_soundsLooped[i] = looped != 0;
-                        m3d::Application::g_pApp->m_cachedSoundIDs.insert(soundId);
+                        M3D_APP->m_cachedSoundIDs.insert(soundId);
                         break;
                     }
                 }
@@ -2054,7 +2063,7 @@ namespace m3d
     int AnimatedModelsServer::RenderMesh(AnimInfo* ai, AnimatedModel::Mesh& mh, rend::IEffect* shader)
     {
         unsigned beginRenderTime = 0;
-        bool const debugRender = M3D_KERNEL->GetEngineCfg().m_g_renderMeshesDebug.GetB();
+        bool const debugRender = M3D_ENGINE_CFG.m_g_renderMeshesDebug.GetB();
         if (debugRender)
         {
             beginRenderTime = M3D_KERNEL->GetTimer().GetCurTimeUnscaled();
@@ -2119,7 +2128,7 @@ namespace m3d
 
             if (this->m_globalFxParamFrameStartTimeNotActuated && shader->IsParameterUsed(rend::IEffect::Time_Linear))
             {
-                auto frameStartTimeSec = m3d::g_Kernel->GetTimer().GetFrameStartTimeSec();
+                auto frameStartTimeSec = M3D_KERNEL->GetTimer().GetFrameStartTimeSec();
                 shader->SetFloat(rend::IEffect::Time_Linear, frameStartTimeSec);
                 this->m_globalFxParamFrameStartTimeNotActuated = 0;
             }
@@ -2246,8 +2255,8 @@ namespace m3d
         this->m_fogTerm.x = reduceFactor * e;
         this->m_fogTerm.z = v7;
         this->m_fogTerm.y = 1.0f / (float)(v8 - v7);
-        auto const& v9 = m3d::g_Kernel->GetTimer();
-        auto v10 = m3d::g_Kernel->GetTimer().GetFrameStartTimeSec() + m3d::g_Kernel->GetTimer().GetFrameStartTimeSec();
+        auto const& v9 = M3D_KERNEL->GetTimer();
+        auto v10 = M3D_KERNEL->GetTimer().GetFrameStartTimeSec() + M3D_KERNEL->GetTimer().GetFrameStartTimeSec();
         this->m_treeBendTerm.z = 0.0f;
         this->m_globalFxParamFogNotActuated = 1;
         this->m_globalFxParamDiffuseNotActuated = 1;

@@ -26,7 +26,7 @@ int VideoWnd::ShowModelByPrototypeId(int prototypeId, ref_ptr<m3d::ui::Wnd> srcW
     {
         return 0;
     }
-    if (!IsChildOf(m3d::Application::g_pApp) || (m_style & 2) != 0 || (m_style & 0x80000) != 0)
+    if (!IsChildOf(M3D_APP) || (m_style & 2) != 0 || (m_style & 0x80000) != 0)
     {
         return 0;
     }
@@ -98,7 +98,7 @@ int VideoWnd::ShowModelByObjId(int objId, ref_ptr<m3d::ui::Wnd> srcWindow)
     {
         return 0;
     }
-    if (!IsChildOf(m3d::Application::g_pApp) || (m_style & 2) != 0 || (m_style & 0x80000) != 0)
+    if (!IsChildOf(M3D_APP) || (m_style & 2) != 0 || (m_style & 0x80000) != 0)
     {
         return 0;
     }
@@ -288,7 +288,7 @@ VideoWnd::BgMode VideoWnd::DetectBgMode() const
     for (auto const& probe : probes)
     {
         ref_ptr<m3d::ui::Wnd> wnd = M3D_APP->m_pInterfaceManager->GetWindow(probe.windowId);
-        if (wnd && wnd->IsChildOf(m3d::Application::g_pApp))
+        if (wnd && wnd->IsChildOf(M3D_APP))
         {
             return probe.mode;
         }

@@ -38,4 +38,4 @@ namespace m3d
         bool m_bMustPlayNewMusic = 0;
         int m_curChannelId = -1;
     };
-}
+}  // namespace m3d
