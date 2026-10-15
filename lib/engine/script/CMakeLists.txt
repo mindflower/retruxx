@@ -9,5 +9,4 @@ target_sources(retruxx_lib PRIVATE
     luaquaternion.cpp
     luavector.cpp
     scriptcontext.cpp
-    scriptlet.cpp
     scriptserver.cpp)

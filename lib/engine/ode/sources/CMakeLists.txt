@@ -18,7 +18,6 @@ target_sources(retruxx_lib PRIVATE
     dterrainz.cpp
     error.cpp
     fastdot.c
-    fastdot_cpp.cpp
     fastldlt.c
     fastlsolve.c
     fastltsolve.c

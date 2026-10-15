@@ -11,7 +11,6 @@ target_sources(retruxx_lib PRIVATE
     boss04station.cpp
     boss04stationpart.cpp
     bossarm.cpp
-    bossesencrypted.cpp
     bossmetalarm.cpp
     bossmetalarmload.cpp
     submarine.cpp)
